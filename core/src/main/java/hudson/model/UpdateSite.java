@@ -180,6 +180,13 @@ public class UpdateSite {
         }
     }
 
+    /**
+     * Forces an update the data file from the configured URL, irrespective of the last time the data was retrieved.
+     * @param signatureCheck whether to enforce the signature (may be off only for testing!)
+     * @return A {@code FormValidation} indicating the if the update metadata was successfully downloaded from the configured update site
+     * @since TODO
+     * @throws IOException if there was an error downloading or saving the file.
+     */
     public @Nonnull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
