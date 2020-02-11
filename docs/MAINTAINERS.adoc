@@ -25,14 +25,15 @@ Remoting updates in the core are subject to the process though.
 * Chat: N/A, to be created
 * Office hours: N/A, to be created
 
-=== Maintainer roles
+=== Roles
 
-* Committer / reviewer
+* Contributor
 * Core Pull Request Reviewer
 * Core Maintainer
 * Release Team Member
 
-**Committers** and **reviewers** are common contributors who submit their changes and who review changes/issues submitted by others.
+**Contributors** submit pull requests to the Jenkins core and review changes submitted by others.
+They can also review and triage incoming issues in Jenkins Jira.
 There is no special preconditions to do so, anyone is welcome to contribute.
 
 **Core Pull Request Reviewers** is the next step for contributors who are interested to review Jenkins pull requests on a regular basis.
@@ -50,7 +51,7 @@ Team members get `Admin` permissions in the Jenkins core repository, and they al
 
 === Ladder
 
-* Anyone can participate as a **committer** or as a **reviewer**.
+* *Contributors*. Anyone can participate.
   There is no precondition except having a GitHub account, just submit pull requests or comment in existing ones!
 * **Core Pull Request Reviewers** can be nominated by contributors in the link:https://groups.google.com/d/forum/jenkinsci-dev[developer mailing list]. 
 Self-nomination is fine.
