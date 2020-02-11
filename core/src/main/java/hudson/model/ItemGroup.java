@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import org.acegisecurity.AccessDeniedException;
 
@@ -68,6 +69,23 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
                           .filter(pred)
                           .collect(Collectors.toList());
      }
+
+    /**
+     * Gets a read-only stream of all the items in this collection
+     * @since TODO
+     */
+    default Stream<T> getItemsStream() {
+        return getItems().stream();
+    }
+
+    /**
+     * Gets a read-only stream of all the items in this collection
+     * that matches supplied Predicate
+     * @since TODO
+     */
+    default Stream<T> getItemsStream(Predicate<T> pred) {
+        return getItemsStream().filter(pred);
+    }
 
     /**
      * Returns the path relative to the context root,
