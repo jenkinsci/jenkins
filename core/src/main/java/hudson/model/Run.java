@@ -706,7 +706,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @deprecated truncated description based on the {@link #TRUNCATED_DESCRIPTION_LIMIT} setting.
      */
     @Deprecated
-    public @Nonnull String getTruncatedDescription() {
+    public @CheckForNull String getTruncatedDescription() {
         if (TRUNCATED_DESCRIPTION_LIMIT < 0) { // disabled
             return description;
         }
