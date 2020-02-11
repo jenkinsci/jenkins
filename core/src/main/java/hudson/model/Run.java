@@ -157,6 +157,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public static final long QUEUE_ID_UNKNOWN = -1;
 
+    /**
+     * Target size limit for {@link #summary} and truncated {@link #description}.
+     */
+    private static final int SUMMARY_LIMIT = 100;
+
     protected transient final @Nonnull JobT project;
 
     /**
@@ -221,9 +226,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected volatile Result result;
 
     /**
-     * Human-readable description. Can be null.
+     * Human-readable description which is used on the main build page.
+     * It can also be quite long, and it may use markup in a format defined by a {@link hudson.markup.MarkupFormatter}.
+     * {@link #getTruncatedDescription()} may be used to retrieve a size-limited description,
+     * but it implies some limitations.
      */
+    @CheckForNull
     protected volatile String description;
+
+    /**
+     * A short human-readable summary which is used on the main page, build history widgets and other locations.
+     * It may use markup in a format defined by the {@link hudson.markup.MarkupFormatter}.
+     * The goal for this field is to keep the formatted text below the {@link #SUMMARY_LIMIT} symbols limit.
+     */
+    @CheckForNull
+    protected volatile String summary;
 
     /**
      * Human-readable name of this build. Can be null.
@@ -659,14 +676,29 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return startTime;
     }
 
+    //TODO(oleg_nenashev): Do we want to export full description by default taking the size considerations? Looks like it should be another REST API or a flag
     @Exported
+    @CheckForNull
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Gets summary of the run.
+     * This is a formatted string, {@link hudson.markup.MarkupFormatter} should be applied to it in the WebUI.
+     * If the {@link #summary} field is {@code null}, the method will also try to retrieve a truncated {@link #description}.
+     * @since TODO
+     */
+    @Exported
+    @CheckForNull
+    public String getSummary() {
+        return summary != null ? summary : getTruncatedDescription();
+    }
 
     /**
      * Returns the length-limited description.
+     * The method tries to take the HTML tags into account, but it is a best-effort attempt.
+     * Also, the method will not work properly if a non-HTML {@link hudson.markup.MarkupFormatter} is used.
      * @return The length-limited description.
      * @deprecated truncated description uses arbitrary and unconfigurable limit of 100 symbols
      */
@@ -2330,6 +2362,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.description = description;
         save();
     }
+
+    /**
+     * Sets a new summary
+     * @param summary Summary to set. Use {@code null} to remove the summary.
+     * @throws IOException Summary update error
+     * @since TODO
+     */
+    public void setSummary(@CheckForNull String summary) throws IOException {
+        checkPermission(UPDATE);
+        this.description = description;
+        save();
+    }
     
     /**
      * Accepts the new description.
@@ -2337,6 +2381,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         setDescription(req.getParameter("description"));
+        rsp.sendRedirect(".");  // go to the top page
+    }
+
+    /**
+     * Accepts the new summary.
+     * @since TODO
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public synchronized void doSubmitSummary( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        setDescription(req.getParameter("summary"));
         rsp.sendRedirect(".");  // go to the top page
     }
 
@@ -2476,6 +2531,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected void submit(JSONObject json) throws IOException {
         setDisplayName(Util.fixEmptyAndTrim(json.getString("displayName")));
         setDescription(json.getString("description"));
+        setSummary(json.getString("summary"));
     }
 
     public static final XStream XSTREAM = new XStream2();
