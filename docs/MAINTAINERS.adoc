@@ -1,4 +1,9 @@
+:toc:
+:toclevels: 3
+
 = Documentation for core maintainers
+
+toc::[]
 
 Jenkins core is a central component of the project which serves millions of users, and it is critical to maintain it in a good shape.
 We want to ensure quality of the integrated changes and continuity of the project,
@@ -38,15 +43,17 @@ There is no special preconditions to do so, anyone is welcome to contribute.
 
 **Core Pull Request Reviewers** is the next step for contributors who are interested to review Jenkins pull requests on a regular basis.
 They get [Triage permissions](https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization) so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
+Their main responsibility is to triage and review the incoming pull requests,
+and to guide newcomer contributors who are not familiar with the project's processes.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
 
 **Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
-Their responsibility is to perform reviews on a regular basis and to merge ready pull requests towards the weekly releases (`master` branch).
+Their responsibility is to perform pull request reviews on a regular basis and to merge ready pull requests towards the weekly releases (`master` branch).
 They are also responsible to monitor the weekly release status and to perform triage of critical issues.
-GitHub team: link:TODO[@jenkinsci/core].
+GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
-Led by the link:TODO[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:TODO[Stable branch].
+Led by the link:https://jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:TODO[Stable branch].
 Team members get `Admin` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines.
 
 === Ladder
@@ -69,25 +76,45 @@ At the same time, we are interested to make the review process as simple as poss
 
 === Code review goals
 
-* Ensure that the pull request is feasible.
-** Not every change needs to be merged into the core; many features would be better introduced as plugins.
-   Separate release cycles for plugins also help to deliver changes faster.
-** We want to extend the Jenkins core and incorporate widely used functionality there,
-   but we try to keep the core as minimal as possible in terms of dependencies.
-* Ensure that there is a consensus about the suggested change.
-** Not all changes are discussed before they submitted as pull requests.
-   Developer mailing lists, Jira issues and JEPs are used for discussions,
-   but sometimes the changes go straight to the pull requests.
-   And we are fine with that, especially for small patches.
-** Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
-   We are fine with that as well
-** If there is no consensus about the feasibility and implementation,
-   code reviewers are expected to suggest proper channels to maintainers
+There are the following code review goals:
+
+* Ensure that the pull request is feasible
+* Ensure that the pull request fits the Jenkins ecosystem: compatibility, etc. 
 * Ensure that the pull request matches the code quality practices: test automation, Javadoc for newly introduced APIs, etc.
-** There is no goal to make the code perfect though.
-* Ensure that the pull requests contain user-friendly changelogs and, if needed, upgrade guidelines
-* Last but not least,
-  guide newcomer contributors who are not familiar with the project processes.
+* Ensure that the pull request has metadata required for changelogs and upgrade guidelines
+* Ensure there is a consensus among reviewers about all items above 
+
+**Feasibility**.
+Not every change needs to be merged into the core; many features would be better introduced as plugins.
+Separate release cycles for plugins also help to deliver changes faster.
+We want to extend the Jenkins core and incorporate widely used functionality there,
+but we try to keep the core as minimal as possible in terms of dependencies.
+
+**Code quality**.
+There is no goal to make the code perfect, but we want to ensure that all new code matches basic quality standards:
+
+* There is test coverage for newly added functionality and fixes
+* There is documentation for newly introduced APIs
+* The submitted code is readable and matches the code style in the surrounding codebase
+* etc.
+
+**Changelogs and upgrade guidelines**.
+Reviewers are expected to ensure that the pull requests contain user-friendly changelogs and, if needed, upgrade guidelines.
+// TODO: more content
+
+**Consensus**.
+Not all changes are discussed before they submitted as pull requests.
+Developer mailing lists, Jira issues and JEPs are used for discussions,
+but sometimes the changes go straight to the pull requests.
+And we are fine with that, especially for small patches.
+Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
+We are fine with that as well.
+If there is no consensus about the feasibility and implementation,
+code reviewers are expected to suggest proper channels to maintainers.
+
+* A discussion in the link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List] is a default way to go
+* If a consensus cannot be reached in the mailing list,
+  voting at the link:https://jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision
 
 === Code review non-goals
 
@@ -151,8 +178,8 @@ Right now we do not have a strict policy about it.
 
 == Tools
 
-* link:TODO[Core Pull Request Tester]
-* link:TODO[Core Changelog Generator]
+* link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
+* link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
 * link:/update-since-todo.sh[Javadoc @since version updater]
 
 == Feedback
