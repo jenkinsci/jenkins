@@ -78,29 +78,34 @@ At the same time, we are interested to make the review process as simple as poss
 
 There are the following code review goals:
 
-* Ensure that the pull request is feasible
-* Ensure that the pull request fits the Jenkins ecosystem: compatibility, etc. 
+* Ensure that the pull request is feasible and that it fits the Jenkins ecosystem
+* Verify compatibility of the suggested changes
 * Ensure that the pull request matches the code quality practices: test automation, Javadoc for newly introduced APIs, etc.
-* Ensure that the pull request has metadata required for changelogs and upgrade guidelines
+* Ensure that the pull request contains appropriate changelogs and, if needed, upgrade guidelines.
 * Ensure there is a consensus among reviewers about all items above 
 
 **Feasibility**.
-Not every change needs to be merged into the core; many features would be better introduced as plugins.
-Separate release cycles for plugins also help to deliver changes faster.
-We want to extend the Jenkins core and incorporate widely used functionality there,
+Reviewers are expected to look at changes critically from a "product management" point of view.
+It's not just about the code, but also whether the change makes sense in a global / holistic way, considering existing popular plugins and the way users experience Jenkins overall.
+Also, not every change needs to be merged into the core.
+Many features would be better introduced as plugins which have separate release cycles and allow delivering changes faster.
+We want to extend the Jenkins core and incorporate widely used functionality and extension points there,
 but we try to keep the core as minimal as possible in terms of dependencies.
+
+**Compatibility**.
+The Jenkins project has a long history of backward compatibility.
+We accept breaking changes when it is needed (security fixes, feature deprecation and removal, etc.),
+but ultimately the project's goal is retain as much compatibility as possible.
+It includes both feature compatibility and binary/API compatibility which is important for the plugin ecosystem.
+Although we provide some tools for checking API usages across open-source plugins,
+there is no way to confirm external usages in 3rd-party proprietary plugins which is also a part of the ecosystem.
 
 **Code quality**.
 There is no goal to make the code perfect, but we want to ensure that all new code matches basic quality standards:
-
-* There is test coverage for newly added functionality and fixes
-* There is documentation for newly introduced APIs
-* The submitted code is readable and matches the code style in the surrounding codebase
-* etc.
-
-**Changelogs and upgrade guidelines**.
-Reviewers are expected to ensure that the pull requests contain user-friendly changelogs and, if needed, upgrade guidelines.
-// TODO: more content
+test coverage for newly added functionality and fixes,
+documentation for newly introduced APIs,
+the submitted code is readable and matches the code style in the surrounding codebase,
+etc.
 
 **Consensus**.
 Not all changes are discussed before they submitted as pull requests.
@@ -118,10 +123,15 @@ code reviewers are expected to suggest proper channels to maintainers.
 
 === Code review non-goals
 
-* Enforce a particular coding style
-** Jenkins core has a complex codebase created by many contributors,
-   and different files have different designs
-** Main goal is 
+Code reviews do NOT pursue the following goals:
+
+* Accepting/merging any pull request. 
+  Not everything is going to be merged, and reviewers are expected to focus on the Jenkins ecosystem integrity first.
+  We guide contributors and help them to get their changes integrated, but it needs cooperation on both sides.
+  It is **fine** to close invalid and inactive pull requests if there is no activity by a submitter or other contributors.
+* Enforcing a particular coding style.
+  Jenkins core has a complex codebase created by many contributors, and different files have different designs.
+  Our main goal is to firstly have the code readable by other contributors.
 * Make contributors to fix unrelated issues
 ** Create follow-up issues instead, it is fine to reference them in comments so that the contributor might want to pick them up
 * Breakdown the commit history or squashing PRs
