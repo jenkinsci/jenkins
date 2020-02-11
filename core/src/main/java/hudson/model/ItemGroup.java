@@ -65,8 +65,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * @since TODO
      */
      default Collection<T> getItems(Predicate<T> pred) {
-         return getItems().stream()
-                          .filter(pred)
+         return getItemsStream(pred)
                           .collect(Collectors.toList());
      }
 
