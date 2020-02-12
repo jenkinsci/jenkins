@@ -1,7 +1,12 @@
 package jenkins.model;
 
+import java.net.HttpURLConnection;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -214,13 +219,37 @@ public class JenkinsManagePermissionTest {
 
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
         HtmlPage updated = j.submit(form);
-        assertEquals("User with Jenkins.MANAGE permission should be able to update global configuration",
-                     200, updated.getWebResponse().getStatusCode());
+        assertThat("User with Jenkins.MANAGE permission should be able to update global configuration",
+                     updated.getWebResponse(), hasResponseCode(HttpURLConnection.HTTP_OK));
     }
 
     private String getShell() {
         Descriptor descriptorByName = j.getInstance().getDescriptorByName("hudson.tasks.Shell");
         return ((Shell.DescriptorImpl) descriptorByName).getShell();
+    }
+
+    private Matcher<WebResponse> hasResponseCode(final int httpStatus) {
+        return new BaseMatcher<WebResponse>() {
+            @Override
+            public boolean matches(final Object item) {
+                final WebResponse response = (WebResponse) item;
+                return (response.getStatusCode() == httpStatus);
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendText("Jenkins to return  ").appendValue(httpStatus);
+            }
+
+            @Override
+            public void describeMismatch(Object item, Description description) {
+                WebResponse response = (WebResponse) item;
+                description.appendText("Response code was: ");
+                description.appendValue(response.getStatusCode());
+                description.appendText(" with error message: ");
+                description.appendText(response.getStatusMessage());
+            }
+        };
     }
 
     // End of Moved from HusdonTest
