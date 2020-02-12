@@ -1063,7 +1063,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<>();
         for (UpdateSite site : getSites()) {
-            Future<FormValidation> future = site.updateDirectly(DownloadService.signatureCheck);
+            Future<FormValidation> future = site.updateDirectly();
             if (future != null) {
                 futures.add(future);
             }
@@ -2516,7 +2516,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         try {
             // Need to do the following because the plugin manager will attempt to access
             // $JENKINS_HOME/updates/$ID_DEFAULT.json. Needs to be up to date.
-            site.updateDirectlyNow(true);
+            site.updateDirectlyNow();
         } catch (Exception e) {
             LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update the default Update Site '" + UpdateCenter.ID_DEFAULT +
                     "'. Plugin upgrades may fail.", e);
