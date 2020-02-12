@@ -99,19 +99,10 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
         @SuppressWarnings("rawtypes")
         @Override
         public boolean filter(Object context, Descriptor descriptor) {
-            boolean result = false;
-            try {
-                if (descriptor instanceof GlobalConfiguration) {
-                    return Functions.hasPermission(((GlobalConfiguration) descriptor).getPermission());
-                } else {
-                    return true;
-                }
-            } catch (AccessDeniedException e) {
-                return false;
-            } catch (ServletException | IOException e) {
-                e.printStackTrace();
-                return true;
+            if (descriptor instanceof GlobalConfiguration) {
+                return Jenkins.get().hasPermission(((GlobalConfiguration) descriptor).getPermission());
             }
+            return true;
         }
     }
 }
