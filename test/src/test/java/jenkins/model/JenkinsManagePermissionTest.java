@@ -2,6 +2,8 @@ package jenkins.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -35,9 +37,14 @@ public class JenkinsManagePermissionTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    static {
-        // this happens before the Jenkins static fields are loaded
+    @BeforeClass //TODO: remove once Jenkins.MANAGE is no longer an experimental feature
+    public static void enableManagePermission() {
         System.setProperty("jenkins.security.ManagePermission", "true");
+    }
+
+    @AfterClass //TODO: remove once Jenkins.MANAGE is no longer an experimental feature
+    public static void disableManagePermission() {
+        System.setProperty("jenkins.security.ManagePermission", "false");
     }
 
     // -------------------------
