@@ -493,6 +493,16 @@ public class Functions {
         return SystemProperties.getString(key);
     }
 
+    /**
+     * Gets the boolean system property indicated by the specific key.
+     * 
+     * Delegates to {@link SystemProperties#getBoolean(java.lang.String)}
+     */
+    @Restricted(DoNotUse.class)
+    public static boolean isSystemPropertyEnabled(String key) {
+        return SystemProperties.getBoolean(key);
+    }
+
     public static Map getEnvVars() {
         return new TreeMap<>(EnvVars.masterEnvVars);
     }

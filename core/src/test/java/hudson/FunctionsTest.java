@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import static org.junit.Assert.*;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -560,4 +561,22 @@ public class FunctionsTest {
         }
     }
 
+    @Test
+    public void testIsSystemPropertyEnabled() {
+        String key = "jenkins.test.property";
+        try {
+            assertFalse("Reading unset property should return false",
+                    Functions.isSystemPropertyEnabled(key));
+
+            System.setProperty(key, "true");
+            assertTrue("Reading the property should return true",
+                    Functions.isSystemPropertyEnabled(key));
+
+            System.setProperty(key, "false");
+            assertFalse("Reading the property should return false",
+                    Functions.isSystemPropertyEnabled(key));
+        } finally {
+            System.clearProperty(key);
+        }
+    }
 }
