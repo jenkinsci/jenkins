@@ -26,6 +26,8 @@ package hudson.cli;
 
 import java.net.InetSocketAddress;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -48,9 +50,14 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
  */
 public class InstallPluginCommandWithManageTest {
 
-    static {
-        // this happens before the Jenkins static fields are loaded
+    @BeforeClass //TODO: Remove once Jenkins.MANAGE is no longer an experimental feature
+    public static void enableManagePermission() {
         System.setProperty("jenkins.security.ManagePermission", "true");
+    }
+
+    @AfterClass //TODO: Remove once Jenkins.MANAGE is no longer an experimental feature
+    public static void disableManagePermission() {
+        System.setProperty("jenkins.security.ManagePermission", "false");
     }
 
     @Rule
