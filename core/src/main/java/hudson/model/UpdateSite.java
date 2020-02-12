@@ -194,7 +194,7 @@ public class UpdateSite {
     }
 
     /**
-     * Forces an update the data file from the configured URL, irrespective of the last time the data was retrieved.
+     * Forces an update of the data file from the configured URL, irrespective of the last time the data was retrieved.
      * @return A {@code FormValidation} indicating the if the update metadata was successfully downloaded from the configured update site
      * @since TODO
      * @throws IOException if there was an error downloading or saving the file.
