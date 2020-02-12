@@ -439,7 +439,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public Api getApi() {
-        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) return null;
+        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            return null;
+        }
         return new Api(this);
     }
 
