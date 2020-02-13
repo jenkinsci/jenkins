@@ -69,8 +69,12 @@ public abstract class ACL {
         if (a == SYSTEM) {
             return;
         }
-        if(!hasPermission(a,p))
+        if (!hasPermission(a,p)) {
+            while (!p.enabled && p.impliedBy != null) {
+                p = p.impliedBy;
+            }
             throw new AccessDeniedException2(a,p);
+        }
     }
 
     /**
