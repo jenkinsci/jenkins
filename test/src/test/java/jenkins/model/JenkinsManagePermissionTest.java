@@ -228,7 +228,7 @@ public class JenkinsManagePermissionTest {
         return ((Shell.DescriptorImpl) descriptorByName).getShell();
     }
 
-    private Matcher<WebResponse> hasResponseCode(final int httpStatus) {
+    private static Matcher<WebResponse> hasResponseCode(final int httpStatus) {
         return new BaseMatcher<WebResponse>() {
             @Override
             public boolean matches(final Object item) {
