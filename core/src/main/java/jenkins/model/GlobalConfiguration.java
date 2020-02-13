@@ -94,6 +94,11 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     }
 
     @Extension
+
+    /**
+     * Filters GlobalConfiguration items based on if the user has the required permission returned by
+     * {@link GlobalConfiguration#getPermission}
+     */
     public static class GlobalConfigHiddenByPermissionFilter extends DescriptorVisibilityFilter {
 
         @SuppressWarnings("rawtypes")
