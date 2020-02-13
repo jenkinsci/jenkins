@@ -59,7 +59,7 @@ public class InstallPluginCommandWithManageTest {
 
     @AfterClass //TODO: Remove once Jenkins.MANAGE is no longer an experimental feature
     public static void disableManagePermission() {
-        System.setProperty("jenkins.security.ManagePermission", "false");
+        System.clearProperty("jenkins.security.ManagePermission");
     }
 
     @Rule

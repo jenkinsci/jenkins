@@ -49,7 +49,7 @@ public class JenkinsManagePermissionTest {
 
     @AfterClass //TODO: remove once Jenkins.MANAGE is no longer an experimental feature
     public static void disableManagePermission() {
-        System.setProperty("jenkins.security.ManagePermission", "false");
+        System.clearProperty("jenkins.security.ManagePermission");
     }
 
     // -------------------------
