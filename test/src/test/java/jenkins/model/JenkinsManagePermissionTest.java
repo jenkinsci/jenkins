@@ -248,6 +248,7 @@ public class JenkinsManagePermissionTest {
                 description.appendValue(response.getStatusCode());
                 description.appendText(" with error message: ");
                 description.appendText(response.getStatusMessage());
+                description.appendText("\n with headers ").appendValueList("", "\n    ", "", response.getResponseHeaders());
                 description.appendText("\nPage content: ").appendValue(response.getContentAsString());
             }
         };
