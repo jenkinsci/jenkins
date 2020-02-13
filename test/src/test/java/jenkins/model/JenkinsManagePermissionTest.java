@@ -1,7 +1,14 @@
 package jenkins.model;
 
+import java.net.HttpURLConnection;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -35,9 +42,14 @@ public class JenkinsManagePermissionTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    static {
-        // this happens before the Jenkins static fields are loaded
+    @BeforeClass //TODO: remove once Jenkins.MANAGE is no longer an experimental feature
+    public static void enableManagePermission() {
         System.setProperty("jenkins.security.ManagePermission", "true");
+    }
+
+    @AfterClass //TODO: remove once Jenkins.MANAGE is no longer an experimental feature
+    public static void disableManagePermission() {
+        System.clearProperty("jenkins.security.ManagePermission");
     }
 
     // -------------------------
@@ -78,7 +90,7 @@ public class JenkinsManagePermissionTest {
 
         // Unauthorized user can't be able to access the configuration form
         JenkinsRule.WebClient webClient = j.createWebClient().login(UNAUTHORIZED).withThrowExceptionOnFailingStatusCode(false);
-        webClient.assertFails("label/foo/configure", 403);
+        webClient.assertFails("label/foo/configure", HttpURLConnection.HTTP_FORBIDDEN);
 
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.ADMINISTER).everywhere().to(UNAUTHORIZED));
@@ -90,7 +102,7 @@ public class JenkinsManagePermissionTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.READ).everywhere().to(UNAUTHORIZED));
         HtmlPage submitted = j.submit(labelConfigForm);
-        assertEquals(403, submitted.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, submitted.getWebResponse().getStatusCode());
     }
     // End of Moved from hudson/model/labels/LabelAtomPropertyTest.java
     //-------
@@ -148,8 +160,8 @@ public class JenkinsManagePermissionTest {
                                                    .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
                                                    .grant(Jenkins.READ).everywhere().to(MANAGER)
         );
-        j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", 403);
-        j.createWebClient().login(MANAGER).assertFails("computer/(master)/dumpExportTable", 403);
+        j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
+        j.createWebClient().login(MANAGER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     // End of Moved from ComputerTest
@@ -207,13 +219,39 @@ public class JenkinsManagePermissionTest {
 
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
         HtmlPage updated = j.submit(form);
-        assertEquals("User with Jenkins.MANAGE permission should be able to update global configuration",
-                     200, updated.getWebResponse().getStatusCode());
+        assertThat("User with Jenkins.MANAGE permission should be able to update global configuration",
+                     updated.getWebResponse(), hasResponseCode(HttpURLConnection.HTTP_OK));
     }
 
     private String getShell() {
         Descriptor descriptorByName = j.getInstance().getDescriptorByName("hudson.tasks.Shell");
         return ((Shell.DescriptorImpl) descriptorByName).getShell();
+    }
+
+    private static Matcher<WebResponse> hasResponseCode(final int httpStatus) {
+        return new BaseMatcher<WebResponse>() {
+            @Override
+            public boolean matches(final Object item) {
+                final WebResponse response = (WebResponse) item;
+                return (response.getStatusCode() == httpStatus);
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendText("Jenkins to return  ").appendValue(httpStatus);
+            }
+
+            @Override
+            public void describeMismatch(Object item, Description description) {
+                WebResponse response = (WebResponse) item;
+                description.appendText("Response code was: ");
+                description.appendValue(response.getStatusCode());
+                description.appendText(" with error message: ");
+                description.appendText(response.getStatusMessage());
+                description.appendText("\n with headers ").appendValueList("", "\n    ", "", response.getResponseHeaders());
+                description.appendText("\nPage content: ").appendValue(response.getContentAsString());
+            }
+        };
     }
 
     // End of Moved from HusdonTest
