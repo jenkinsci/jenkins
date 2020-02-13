@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +33,7 @@ public class InstallUncaughtExceptionHandler {
     @Initializer
     public static void init(final Jenkins j) throws IOException {
         CompressionFilter.setUncaughtExceptionHandler(j.servletContext, (e, context, req, rsp) -> {
-            handleException(j, e, req, rsp);
+            handleException(j, e, req, rsp, 500);
         });
         try {
             Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler());
@@ -50,7 +49,7 @@ public class InstallUncaughtExceptionHandler {
         }
     }
 
-    private static void handleException(Jenkins j, Throwable e, HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
+    private static void handleException(Jenkins j, Throwable e, HttpServletRequest req, HttpServletResponse rsp, int code) throws IOException, ServletException {
         if (rsp.isCommitted()) {
             LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, null, e);
             return;
@@ -59,6 +58,7 @@ public class InstallUncaughtExceptionHandler {
         LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
         req.setAttribute("jenkins.exception.id", id);
         req.setAttribute("javax.servlet.error.exception",e);
+        rsp.setStatus(code);
         try {
             // If we have an exception, let's see if it's related with missing classes on Java 11. We reach
             // here with a ClassNotFoundException in an action, for example. Setting the report here is the only
@@ -78,9 +78,12 @@ public class InstallUncaughtExceptionHandler {
         @CheckForNull
         @Override
         public HttpResponses.HttpResponseException handleError(int code, Throwable cause) {
+            if (Jenkins.getInstanceOrNull() == null) {
+                return null;
+            }
             return new HttpResponses.HttpResponseException(cause) {
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-                    handleException(Jenkins.get(), cause, req, rsp);
+                    handleException(Jenkins.get(), cause, req, rsp, code);
                 }
             };
         }
