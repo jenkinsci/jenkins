@@ -90,7 +90,7 @@ public class JenkinsManagePermissionTest {
 
         // Unauthorized user can't be able to access the configuration form
         JenkinsRule.WebClient webClient = j.createWebClient().login(UNAUTHORIZED).withThrowExceptionOnFailingStatusCode(false);
-        webClient.assertFails("label/foo/configure", 403);
+        webClient.assertFails("label/foo/configure", HttpURLConnection.HTTP_FORBIDDEN);
 
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.ADMINISTER).everywhere().to(UNAUTHORIZED));
@@ -102,7 +102,7 @@ public class JenkinsManagePermissionTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.READ).everywhere().to(UNAUTHORIZED));
         HtmlPage submitted = j.submit(labelConfigForm);
-        assertEquals(403, submitted.getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, submitted.getWebResponse().getStatusCode());
     }
     // End of Moved from hudson/model/labels/LabelAtomPropertyTest.java
     //-------
@@ -160,8 +160,8 @@ public class JenkinsManagePermissionTest {
                                                    .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
                                                    .grant(Jenkins.READ).everywhere().to(MANAGER)
         );
-        j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", 403);
-        j.createWebClient().login(MANAGER).assertFails("computer/(master)/dumpExportTable", 403);
+        j.createWebClient().login(READER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
+        j.createWebClient().login(MANAGER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     // End of Moved from ComputerTest
