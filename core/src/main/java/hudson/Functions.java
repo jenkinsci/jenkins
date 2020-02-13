@@ -1071,7 +1071,7 @@ public class Functions {
         List<Descriptor> answer = new ArrayList<>(r.size());
         for (Tag d : r) answer.add(d.d);
 
-        return GlobalConfiguration.GlobalConfigHiddenByPermissionFilter.apply(Jenkins.get(),answer);
+        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
     }
 
     /**
