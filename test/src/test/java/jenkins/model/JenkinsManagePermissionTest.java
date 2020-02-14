@@ -20,6 +20,8 @@ import hudson.PluginWrapper;
 import hudson.cli.CLICommandInvoker;
 import hudson.cli.DisablePluginCommand;
 import hudson.model.Descriptor;
+import hudson.model.MyView;
+import hudson.model.View;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.Shell;
 
@@ -71,8 +73,7 @@ public class JenkinsManagePermissionTest {
         HtmlForm labelConfigForm = j.createWebClient().login(MANAGER).goTo("label/foo/configure").getFormByName("config");
         labelConfigForm.getTextAreaByName("description").setText("example description");
         j.submit(labelConfigForm);
-
-        assertEquals("example description",label.getDescription());
+        assertEquals("Label description saved", "example description",label.getDescription());
     }
 
     /**
@@ -181,6 +182,7 @@ public class JenkinsManagePermissionTest {
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
         String formText = form.asText();
         //THEN items restricted to ADMINISTER only should not be displayed.
+        assertThat("Shouldn't be able to configure primary view", formText, not(containsString("primaryView")));
         assertThat("Shouldn't be able to configure # of executors", formText, not(containsString("executors")));
         assertThat("Shouldn't be able to configure Global properties", formText,
                    not(containsString("Global properties")));
@@ -193,14 +195,18 @@ public class JenkinsManagePermissionTest {
     @Issue("JENKINS-60266")
     @Test
     public void someGlobalConfigCanNotBeModifiedWithManagePermission() throws Exception {
+        j.jenkins.addView(new MyView("testView", j.jenkins));
+
         //GIVEN the Global Configuration Form, with some changes unsaved
         int currentNumberExecutors = j.getInstance().getNumExecutors();
         String shell = getShell();
+        View view = j.jenkins.getPrimaryView();
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
         form.getInputByName("_.numExecutors").setValueAttribute(""+(currentNumberExecutors+1));
         form.getInputByName("_.shell").setValueAttribute("/fakeShell");
+        form.getSelectByName("primaryView").setSelectedAttribute("testView", true);
 
-        // WHEN a user with Jenkins.MANAGE permission only try to save those changes
+        // WHEN a user with only Jenkins.MANAGE permission try to save those changes
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                                                    .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
@@ -208,6 +214,7 @@ public class JenkinsManagePermissionTest {
         // THEN the changes on fields forbidden to a Jenkins.MANAGE permission are not saved
         assertEquals("shouldn't be allowed to change the number of executors", currentNumberExecutors, j.getInstance().getNumExecutors());
         assertEquals("shouldn't be allowed to change the shell executable", shell, getShell());
+        assertEquals("shouldn't be allowed to change the primary view", view, j.getInstance().getPrimaryView());
     }
 
     @Issue("JENKINS-60266")

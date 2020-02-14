@@ -64,7 +64,7 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
 
     @Override
     public Permission getPermission() {
-        return Jenkins.MANAGE;
+        return Jenkins.ADMINISTER;
     }
 }
 
