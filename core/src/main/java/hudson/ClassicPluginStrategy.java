@@ -386,7 +386,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
             // initialize plugin
             try {
                 Plugin plugin = wrapper.getPlugin();
-                plugin.setServletContext(pluginManager.context);
+                if (plugin != null) {
+                    plugin.setServletContext(pluginManager.context);
+                }
                 startPlugin(wrapper);
             } catch(Throwable t) {
                 // gracefully handle any error in plugin.
@@ -398,7 +400,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void startPlugin(PluginWrapper plugin) throws Exception {
-        plugin.getPlugin().start();
+        final Plugin plugin1 = plugin.getPlugin();
+        if (plugin1 != null) {
+            plugin1.start();
+        }
     }
 
     @Override
