@@ -39,7 +39,6 @@ import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.security.Permission;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
 import java.io.IOException;

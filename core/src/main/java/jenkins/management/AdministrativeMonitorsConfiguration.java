@@ -27,7 +27,6 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.GlobalConfiguration;
-import jenkins.model.Jenkins;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

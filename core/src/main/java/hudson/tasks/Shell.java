@@ -176,10 +176,8 @@ public class Shell extends CommandInterpreter {
         }
 
         public void setShell(String shell) {
-            if(Jenkins.get().hasPermission(Jenkins.ADMINISTER)){
-                this.shell = Util.fixEmptyAndTrim(shell);
-                save();
-            }
+            this.shell = Util.fixEmptyAndTrim(shell);
+            save();
         }
 
         public String getDisplayName() {

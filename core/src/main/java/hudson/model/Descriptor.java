@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
 import hudson.XmlFile;
@@ -832,10 +833,11 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     /**
-     * Returns the permission type needed in order to use/access this
-     * By default,  require Jenkins.ADMINISTER permission
-     * Override to return something different if appropriate
-     * @return Permission required to use/access this
+     * Returns the permission type needed in order to configure the descriptor if and only if it is configured through the global (Unclassified) configuration.
+     * By default, requires {@link Jenkins.ADMINISTER} permission.
+     * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins.MANAGE}.
+     *
+     * @return Permission required to configure this descriptor.
      */
     public @Nonnull Permission getPermission() {
         return Jenkins.ADMINISTER;
@@ -1182,4 +1184,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     public static final class Self {}
 
     protected static Class self() { return Self.class; }
+
+    /**
+     * Filters GlobalConfiguration items based on if the user has the required permission returned by
+     * {@link GlobalConfiguration#getPermission}
+     */
+    @Extension
+    public static class GlobalConfigHiddenByPermissionFilter extends DescriptorVisibilityFilter {
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public boolean filter(Object context, Descriptor descriptor) {
+            return Jenkins.get().hasPermission((descriptor).getPermission());
+        }
+    }
 }

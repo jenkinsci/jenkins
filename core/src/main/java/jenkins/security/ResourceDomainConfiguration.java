@@ -54,8 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 
-import net.sf.json.JSONObject;
-
 import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
 
 /**

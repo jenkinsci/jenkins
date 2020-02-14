@@ -1,11 +1,9 @@
 package jenkins.model;
 
-import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.DescriptorVisibilityFilter;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -76,19 +74,5 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     public static @Nonnull ExtensionList<GlobalConfiguration> all() {
         return Jenkins.get().getDescriptorList(GlobalConfiguration.class);
         // pointless type parameters help work around bugs in javac in earlier versions http://codepad.org/m1bbFRrH
-    }
-
-    /**
-     * Filters GlobalConfiguration items based on if the user has the required permission returned by
-     * {@link GlobalConfiguration#getPermission}
-     */
-    @Extension
-    public static class GlobalConfigHiddenByPermissionFilter extends DescriptorVisibilityFilter {
-
-        @SuppressWarnings("rawtypes")
-        @Override
-        public boolean filter(Object context, Descriptor descriptor) {
-            return Jenkins.get().hasPermission((descriptor).getPermission());
-        }
     }
 }
