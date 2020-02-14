@@ -225,6 +225,7 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.stapler.HttpRedirect;
@@ -5251,6 +5252,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
      * be enabled with "jenkins.security.ManagePermission" system property.
      */
+    @Restricted(Beta.class)
     public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
             Messages._Jenkins_Manage_Description(),
             ADMINISTER,
