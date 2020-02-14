@@ -31,6 +31,7 @@ import hudson.BulkChange;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.Permission;
 import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
@@ -828,6 +829,16 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
+    }
+
+    /**
+     * Returns the permission type needed in order to use/access this
+     * By default,  require Jenkins.ADMINISTER permission
+     * Override to return something different if appropriate
+     * @return Permission required to use/access this
+     */
+    public @Nonnull Permission getPermission() {
+        return Jenkins.ADMINISTER;
     }
 
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {

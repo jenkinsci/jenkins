@@ -27,6 +27,7 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.security.Permission;
 import hudson.util.Secret;
 import static java.util.concurrent.TimeUnit.DAYS;
 
@@ -35,6 +36,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
@@ -104,6 +106,12 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
             return true;
         }
         return false;
+    }
+
+    @Nonnull
+    @Override
+    public Permission getPermission() {
+        return Jenkins.MANAGE;
     }
 
     private RSAPublicKey getKey() {

@@ -1,20 +1,15 @@
 package jenkins.model;
 
-import java.io.IOException;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.Functions;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
-import hudson.security.Permission;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 
 /**
  * Convenient base class for extensions that contributes to the system configuration page but nothing
@@ -84,30 +79,16 @@ public abstract class GlobalConfiguration extends Descriptor<GlobalConfiguration
     }
 
     /**
-     * Returns the permission type needed in order to use/access this
-     * By default,  require Jenkins.ADMINISTER permission
-     * Override to return something different if appropriate
-     * @return Permission required to use/access this
-     */
-    public @Nonnull Permission getPermission() {
-        return Jenkins.ADMINISTER;
-    }
-
-    @Extension
-
-    /**
      * Filters GlobalConfiguration items based on if the user has the required permission returned by
      * {@link GlobalConfiguration#getPermission}
      */
+    @Extension
     public static class GlobalConfigHiddenByPermissionFilter extends DescriptorVisibilityFilter {
 
         @SuppressWarnings("rawtypes")
         @Override
         public boolean filter(Object context, Descriptor descriptor) {
-            if (descriptor instanceof GlobalConfiguration) {
-                return Jenkins.get().hasPermission(((GlobalConfiguration) descriptor).getPermission());
-            }
-            return true;
+            return Jenkins.get().hasPermission((descriptor).getPermission());
         }
     }
 }

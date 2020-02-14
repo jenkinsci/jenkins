@@ -191,14 +191,6 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         return url;
     }
 
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        if(Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-            return super.configure(req, json);
-        }
-        return true;
-    }
-
     public void setUrl(@CheckForNull String url) {
         if (checkUrl(url, false).kind == FormValidation.Kind.OK) {
             // only accept valid configurations, both with and without URL, but allow for networking issues

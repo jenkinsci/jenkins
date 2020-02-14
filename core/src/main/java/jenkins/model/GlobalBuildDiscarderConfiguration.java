@@ -25,6 +25,7 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.security.Permission;
 import hudson.util.DescribableList;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
@@ -32,6 +33,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -58,6 +60,12 @@ public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
 
     public DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> getConfiguredBuildDiscarders() {
         return configuredBuildDiscarders;
+    }
+
+    @Nonnull
+    @Override
+    public Permission getPermission() {
+        return Jenkins.MANAGE;
     }
 
     @Override

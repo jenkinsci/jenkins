@@ -44,9 +44,6 @@ import java.util.logging.Logger;
 public class AdministrativeMonitorsConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)){
-            return true;
-        }
         JSONArray monitors = json.optJSONArray("administrativeMonitor");
         for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
             try {

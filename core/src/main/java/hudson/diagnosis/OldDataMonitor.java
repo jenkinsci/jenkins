@@ -459,15 +459,5 @@ public class OldDataMonitor extends AdministrativeMonitor {
         public String getDisplayName() {
             return Messages.OldDataMonitor_DisplayName();
         }
-
-        @Override
-        public Permission getRequiredPermission() {
-            return Jenkins.ADMINISTER;
-        }
-    }
-
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
     }
 }

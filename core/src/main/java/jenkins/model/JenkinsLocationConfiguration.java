@@ -135,6 +135,12 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
         save();
     }
 
+    @Nonnull
+    @Override
+    public Permission getPermission() {
+        return Jenkins.MANAGE; // but see setUrl
+    }
+
     public @CheckForNull String getUrl() {
         return jenkinsUrl;
     }

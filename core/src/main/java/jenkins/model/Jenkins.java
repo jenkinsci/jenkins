@@ -2203,18 +2203,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
-        if (Jenkins.get().hasPermission(ADMINISTER)){
-            return administrativeMonitors.stream().filter(m -> {
-                try {
-                    return m.isEnabled() && m.isActivated();
-                } catch (Throwable x) {
-                    LOGGER.log(Level.WARNING, null, x);
-                    return false;
-                }
-            }).collect(Collectors.toList());
-        } else {
-            return Collections.EMPTY_LIST;
-        }
+        return administrativeMonitors.stream().filter(m -> {
+            try {
+                return Jenkins.get().hasPermission(m.getRequiredPermission()) && m.isEnabled() && m.isActivated();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                return false;
+            }
+        }).collect(Collectors.toList());
     }
 
     public NodeDescriptor getDescriptor() {
