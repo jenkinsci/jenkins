@@ -26,7 +26,11 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+
+import javax.annotation.CheckForNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -46,6 +50,12 @@ public class CliLink extends ManagementLink {
     @Override
     public String getDescription() {
         return Messages.CliLink_Description();
+    }
+
+    @CheckForNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.MANAGE;
     }
 
     @Override

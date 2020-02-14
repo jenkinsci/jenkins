@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
 import hudson.XmlFile;
@@ -31,6 +32,7 @@ import hudson.BulkChange;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.Permission;
 import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
@@ -828,6 +830,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      */
     public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
+    }
+
+    /**
+     * Returns the permission type needed in order to configure the descriptor if and only if it is configured through the global (Unclassified) configuration.
+     * By default, requires {@link Jenkins.ADMINISTER} permission.
+     * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins.MANAGE}.
+     *
+     * @return Permission required to configure this descriptor.
+     */
+    public @Nonnull
+    Permission getPermission() {
+        return Jenkins.ADMINISTER;
     }
 
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {

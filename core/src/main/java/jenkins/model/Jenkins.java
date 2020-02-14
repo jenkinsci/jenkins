@@ -2199,6 +2199,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
+        if (!Jenkins.get().hasPermission(ADMINISTER)) {
+            return Collections.emptyList();
+        }
         return administrativeMonitors.stream().filter(m -> {
             try {
                 return m.isEnabled() && m.isActivated();
@@ -3762,7 +3765,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
-            checkPermission(ADMINISTER);
+            checkPermission(MANAGE);
 
             JSONObject json = req.getSubmittedForm();
 
@@ -5236,7 +5239,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
+    /**
+     * Grants ability to configure any and all aspects of the Jenkins instance
+     */
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
+
+    /**
+     * Allows non-privilege escalating configuration permission for a Jenkins instance.  Actions which could result
+     * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission.
+     *
+     * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
+     * be enabled with "jenkins.security.ManagePermission" system property.
+     */
+    public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
+            Messages._Jenkins_Manage_Description(),
+            ADMINISTER,
+            SystemProperties.getBoolean("jenkins.security.ManagePermission"),
+            new PermissionScope[]{PermissionScope.JENKINS});
+
+
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 
