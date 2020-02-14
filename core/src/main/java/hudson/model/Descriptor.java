@@ -834,8 +834,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
 
     /**
      * Returns the permission type needed in order to configure the descriptor if and only if it is configured through the global (Unclassified) configuration.
-     * By default, requires {@link Jenkins.ADMINISTER} permission.
-     * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins.MANAGE}.
+     * By default, requires {@link Jenkins#ADMINISTER} permission.
+     * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins#MANAGE}.
      *
      * @return Permission required to configure this descriptor.
      */
