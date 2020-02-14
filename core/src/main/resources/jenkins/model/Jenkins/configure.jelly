@@ -52,7 +52,9 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
 
-      <st:include page="_cloud-note.jelly"/>
+      <l:isAdmin>
+        <st:include page="_cloud-note.jelly"/>
+      </l:isAdmin>
 
       <f:bottomButtonBar>
         <f:submit value="${%Save}" />
