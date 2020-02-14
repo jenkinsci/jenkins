@@ -840,7 +840,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * @return Permission required to configure this descriptor.
      */
     public @Nonnull
-    Permission getPermission() {
+    Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
     }
 

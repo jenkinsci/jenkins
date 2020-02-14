@@ -1062,7 +1062,7 @@ public class Functions {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
 
-            if (!Jenkins.get().hasPermission(d.getPermission())) {
+            if (!Jenkins.get().hasPermission(d.getRequiredPermission())) {
                 continue;
             }
 

@@ -65,7 +65,7 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
 
     @Nonnull
     @Override
-    public Permission getPermission() {
+    public Permission getRequiredPermission() {
         return Jenkins.MANAGE;
     }
 }
