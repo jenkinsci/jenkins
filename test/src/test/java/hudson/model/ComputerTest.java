@@ -131,14 +131,15 @@ public class ComputerTest {
 
     @Test
     public void tiedJobs() throws Exception {
-        Label label1 = new LabelAtom("label1");
-        Computer c = j.createOnlineSlave(label1).toComputer();
+        DumbSlave s = j.createOnlineSlave();
+        Label l = s.getSelfLabel();
+        Computer c = s.toComputer();
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(label1);
+        p.setAssignedLabel(l);
         FreeStyleProject p2 = j.createFreeStyleProject();
         MockFolder f = j.createFolder("test");
         FreeStyleProject p3 = f.createProject(FreeStyleProject.class, "project");
-        p3.setAssignedLabel(label1);
+        p3.setAssignedLabel(l);
         assertThat(c.getTiedJobs(), containsInAnyOrder(p, p3));
     }
 
