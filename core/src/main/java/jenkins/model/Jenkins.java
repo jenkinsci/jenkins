@@ -295,6 +295,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -1764,12 +1765,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
+        return getItems(t -> true);
+    }
+
+    /**
+     * Gets just the immediate children of {@link Jenkins} based on supplied predicate.
+     *
+     * @see #getAllItems(Class)
+     * @since TODO
+     */
+    public List<TopLevelItem> getItems(Predicate<TopLevelItem> pred) {
         List<TopLevelItem> viewableItems = new ArrayList<>();
         for (TopLevelItem item : items.values()) {
-            if (item.hasPermission(Item.READ))
+            if (pred.test(item) && item.hasPermission(Item.READ))
                 viewableItems.add(item);
         }
-
         return viewableItems;
     }
 
@@ -3300,7 +3310,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 for (Action a : getExtensionList(RootAction.class))
                     if (!actions.contains(a)) actions.add(a);
 
-                setupWizard = new SetupWizard();
+                setupWizard = ExtensionList.lookupSingleton(SetupWizard.class);
                 getInstallState().initializeState();
             }
         });

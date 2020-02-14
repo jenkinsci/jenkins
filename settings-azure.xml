@@ -1,9 +1,0 @@
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
-    <mirrors>
-        <mirror>
-            <id>azure</id>
-            <url>https://repo.azure.jenkins.io/public/</url> <!-- INFRA-1176 -->
-            <mirrorOf>repo.jenkins-ci.org</mirrorOf>
-        </mirror>
-    </mirrors>
-</settings>
