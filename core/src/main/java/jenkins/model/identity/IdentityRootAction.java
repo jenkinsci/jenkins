@@ -1,5 +1,6 @@
 package jenkins.model.identity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import java.security.MessageDigest;
@@ -61,6 +62,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      *
      * @return the fingerprint of the public key.
      */
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security. ")
     public String getFingerprint() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
         if (key == null) {
@@ -68,7 +70,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
         }
         // TODO replace with org.jenkinsci.remoting.util.KeyUtils once JENKINS-36871 changes are merged
         try {
-            MessageDigest digest = MessageDigest.getInstance("MD5");
+            MessageDigest digest = getMd5();
             digest.reset();
             byte[] bytes = digest.digest(key.getEncoded());
             StringBuilder result = new StringBuilder(Math.max(0, bytes.length * 3 - 1));
@@ -83,5 +85,11 @@ public class IdentityRootAction implements UnprotectedRootAction {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("JLS mandates MD5 support");
         }
+    }
+
+    // TODO JENKINS-60563 remove MD5 from all usages in Jenkins
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security. ")
+    private MessageDigest getMd5() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance("MD5");
     }
 }
