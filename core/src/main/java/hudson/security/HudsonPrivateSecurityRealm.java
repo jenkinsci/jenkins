@@ -490,7 +490,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    @Restricted(NoExternalUse.class)
+    @Restricted(NoExternalUse.class) // _entryForm.jelly and signup.jelly
     public boolean isMailerPluginPresent() {
         try {
             // mail support has moved to a separate plugin
