@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:s="jelly:stapler">
+  <j:if test="${h.hasPermission(app.ADMINISTER) || h.hasPermission(app.MANAGE)}">
+    <d:invokeBody />
+  </j:if>
+</j:jelly>

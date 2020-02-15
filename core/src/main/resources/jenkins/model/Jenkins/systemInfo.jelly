@@ -106,8 +106,10 @@ THE SOFTWARE.
         <noscript>
             <img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Memory usage graph}]" />
         </noscript>
+      <l:isAdmin>
         <h1>${%Thread Dumps}</h1>
         <p>${%threadDump_blurb('threadDump')}</p>
+      </l:isAdmin>
     </l:main-panel>
   </l:layout>
 </j:jelly>

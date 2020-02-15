@@ -36,10 +36,19 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
-    <select class="setting-input" name="${name}">
-      <j:forEach var="m" items="${h.getNodeModes()}">
-        <f:option value="${m.name}" selected="${m==node.mode}">${m.description}</f:option>
-      </j:forEach>
-    </select>
+    <j:choose>
+      <j:when test="${readOnlyMode}">
+        <span>${node.mode}</span>
+      </j:when>
+      <j:otherwise>
+
+        <select class="setting-input" name="${name}">
+          <j:forEach var="m" items="${h.getNodeModes()}">
+            <f:option value="${m.name}" selected="${m==node.mode}">${m.description}</f:option>
+          </j:forEach>
+        </select>
+
+      </j:otherwise>
+    </j:choose>
   </f:entry>
 </j:jelly>

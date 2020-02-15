@@ -72,7 +72,6 @@ THE SOFTWARE.
     <td class="setting-leftspace"><st:nbsp/></td>
     <td class="setting-name">
       <j:out value="${escapeEntryTitleAndDescription ? h.escape(attrs.title) : attrs.title}" />
-      (${readOnlyMode})
     </td>
     <td class="setting-main">
       <d:invokeBody />

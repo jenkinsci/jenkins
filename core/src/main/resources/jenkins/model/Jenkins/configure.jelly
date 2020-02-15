@@ -27,8 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout norefresh="true" title="${%Configure System}">
-  ${h.checkAnyPermission(it, app.MANAGE, app.SYSTEM_READ)}
+<l:layout norefresh="true" title="${%Configure System}" allowedPermissions="${app.MANAGE_AND_SYSTEM_READ}">
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline />
   <l:main-panel>
@@ -59,12 +58,16 @@ THE SOFTWARE.
         <st:include page="_cloud-note.jelly"/>
       </l:isAdmin>
 
-      <f:bottomButtonBar>
-        <f:submit value="${%Save}" />
-        <f:apply />
-      </f:bottomButtonBar>
+      <l:isAdminOrManage>
+        <f:bottomButtonBar>
+          <f:submit value="${%Save}" />
+          <f:apply />
+        </f:bottomButtonBar>
+      </l:isAdminOrManage>
     </f:form>
-    <st:adjunct includes="lib.form.confirm" />
+    <l:isAdminOrManage>
+      <st:adjunct includes="lib.form.confirm" />
+    </l:isAdminOrManage>
   </l:main-panel>
 </l:layout>
 </j:jelly>

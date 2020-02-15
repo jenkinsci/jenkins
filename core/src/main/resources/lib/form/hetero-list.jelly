@@ -31,7 +31,7 @@ THE SOFTWARE.
     The submission can be data-bound into List&lt;T&gt; where T is the common base type for the describable instances.
 
     For databinding use, please use &lt;f:repeatableHeteroProperty /&gt;
-    
+
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
     </st:attribute>
@@ -81,7 +81,7 @@ THE SOFTWARE.
         <j:if test="${hasHeader}">
           <tr>
             <td colspan="3">
-              <div class="dd-handle">
+              <div class="${readOnlyMode ? '' : 'dd-handle'}">
                 <b>${descriptor.displayName}</b>
               </div>
             </td>
@@ -96,11 +96,13 @@ THE SOFTWARE.
         <d:invokeBody/>
 
         <f:class-entry descriptor="${descriptor}" />
-        <f:block>
-          <div align="right">
-            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-          </div>
-        </f:block>
+        <j:if test="${!readOnlyMode}">
+          <f:block>
+            <div align="right">
+              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+            </div>
+          </f:block>
+        </j:if>
       </table>
     </d:tag>
   </d:taglib>
@@ -152,8 +154,10 @@ THE SOFTWARE.
       </j:forEach>
     </div>
 
-    <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
-    </div>
+    <j:if test="${!readOnlyMode}">
+      <div>
+        <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+      </div>
+    </j:if>
   </div>
 </j:jelly>

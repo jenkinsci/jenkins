@@ -2200,8 +2200,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
-        if (!Jenkins.get().hasPermission(SYSTEM_READ)) {
-            // half-assed SystemRead support, needs specific support in admin monitors for any user actions
+        if (!Jenkins.get().hasPermission(ADMINISTER)) {
             return Collections.emptyList();
         }
         return administrativeMonitors.stream().filter(m -> {
@@ -5276,6 +5275,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             ADMINISTER,
             SystemProperties.getBoolean("jenkins.security.SystemReadPermission"),
             new PermissionScope[]{PermissionScope.JENKINS});
+
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static final Permission[] MANAGE_AND_SYSTEM_READ =
+            new Permission[] { MANAGE, SYSTEM_READ };
 
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
