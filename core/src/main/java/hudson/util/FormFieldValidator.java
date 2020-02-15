@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
@@ -145,6 +146,7 @@ public abstract class FormFieldValidator {
     /**
      * Gets the parameter as a file.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Not used.")
     protected final File getFileParameter(String paramName) {
         return new File(Util.fixNull(request.getParameter(paramName)));
     }
@@ -329,7 +331,7 @@ public abstract class FormFieldValidator {
 
             try {
                 URL url = new URL(value);
-                HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                HttpURLConnection con = openConnection(url);
                 con.connect();
                 if(con.getResponseCode()!=200
                 || con.getHeaderField("X-Hudson")==null) {
@@ -341,6 +343,11 @@ public abstract class FormFieldValidator {
             } catch (IOException e) {
                 handleIOException(value,e);
             }
+        }
+
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Not used.")
+        private HttpURLConnection openConnection(URL url) throws IOException {
+            return (HttpURLConnection)url.openConnection();
         }
     }
 
