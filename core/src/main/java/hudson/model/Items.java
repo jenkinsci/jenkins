@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.function.Predicate;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
@@ -393,26 +394,44 @@ public class Items {
      * <p>
      * If you do not need to iterate all items, or if the order of the items is not required, consider using
      * {@link #allItems(ItemGroup, Class)} instead.
+     *
+     * @param root Root node to start searching from
+     * @param type Given type of of items being searched for
+     * @return List of items matching given criteria
      * 
      * @since 1.512
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {
+        return getAllItems(root ,type, t -> true);
+    }
+
+    /**
+     * Similar to {@link #getAllItems(ItemGroup, Class)} but with a predicate to pre-filter items to
+     * avoid checking ACLs unnecessarily and returning items not required by the caller
+     * @param root Root node to start searching from
+     * @param type Given type of of items being searched for
+     * @param pred Predicate condition to filter items
+     * @return List of items matching given criteria
+     *
+     * @since TODO
+     */
+    public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type, Predicate<T> pred) {
         List<T> r = new ArrayList<>();
-        getAllItems(root, type, r);
+        getAllItems(root, type, r, pred);
         return r;
     }
-    private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
+    private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r, Predicate<T> pred) {
         List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems());
         // because we add items depth first, we can use the quicker BY_NAME comparison
         items.sort(BY_NAME);
         for (Item i : items) {
-            if (type.isInstance(i)) {
+            if (type.isInstance(i) && pred.test(type.cast(i))) {
                 if (i.hasPermission(Item.READ)) {
                     r.add(type.cast(i));
                 }
             }
             if (i instanceof ItemGroup) {
-                getAllItems((ItemGroup) i, type, r);
+                getAllItems((ItemGroup) i, type, r, pred);
             }
         }
     }
@@ -434,6 +453,24 @@ public class Items {
         return allItems(Jenkins.getAuthentication(), root, type);
     }
 
+    /**
+     * Gets a read-only view of all the {@link Item}s recursively matching type and predicate
+     * in the {@link ItemGroup} tree visible to
+     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @param <T> the predicate.
+     * @return An {@link Iterable} for all items.
+     * @since TODO
+     */
+    public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type, Predicate<T> pred) {
+        return allItems(Jenkins.getAuthentication(), root, type, pred);
+    }
 
     /**
      * Gets a read-only view all the {@link Item}s recursively in the {@link ItemGroup} tree visible to the supplied
@@ -449,7 +486,26 @@ public class Items {
      * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
-        return new AllItemsIterable<>(root, authentication, type);
+        return allItems(authentication, root, type, t -> true);
+    }
+
+    /**
+     * Gets a read-only view all the {@link Item}s recursively matching supplied type and predicate conditions
+     * in the {@link ItemGroup} tree visible to the supplied
+     * authentication without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @param pred the predicate.
+     * @return An {@link Iterable} for all items.
+     * @since TODO
+     */
+    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
+        return new AllItemsIterable<>(root, authentication, type, pred);
     }
 
     /**
@@ -518,11 +574,16 @@ public class Items {
          * The type of item we want to return.
          */
         private final Class<T> type;
+        /**
+        * Predicate to filter items with
+        */
+        private final Predicate<T> pred;
 
-        private AllItemsIterable(ItemGroup root, Authentication authentication, Class<T> type) {
+        private AllItemsIterable(ItemGroup root, Authentication authentication, Class<T> type, Predicate<T> pred) {
             this.root = root;
             this.authentication = authentication;
             this.type = type;
+            this.pred = pred;
         }
 
         @Override
@@ -561,6 +622,7 @@ public class Items {
                 if (next != null) {
                     return true;
                 }
+                Predicate<Item> search = t -> t instanceof ItemGroup || (type.isInstance(t) && pred.test(type.cast(t)));
                 while (true) {
                     if (delegate == null || !delegate.hasNext()) {
                         if (stack.isEmpty()) {
@@ -569,13 +631,13 @@ public class Items {
                         ItemGroup group = stack.pop();
                         // group.getItems() is responsible for performing the permission check so we will not repeat it
                         if (Jenkins.getAuthentication() == authentication) {
-                            delegate = group.getItems().iterator();
+                            delegate = group.getItems(search).iterator();
                         } else {
                             // slower path because the caller has switched authentication
                             // we need to keep the original authentication so that allItems() can be used
                             // like getAllItems() without the cost of building the entire list up front
                             try (ACLContext ctx = ACL.as(authentication)) {
-                                delegate = group.getItems().iterator();
+                                delegate = group.getItems(search).iterator();
                             }
                         }
                     }
@@ -584,7 +646,7 @@ public class Items {
                         if (item instanceof ItemGroup) {
                             stack.push((ItemGroup) item);
                         }
-                        if (type.isInstance(item)) {
+                        if (type.isInstance(item) && pred.test(type.cast(item))) {
                             next = type.cast(item);
                             return true;
                         }

@@ -119,7 +119,7 @@ public class ViewDescriptorTest {
         r.submit(editViewForm);
 
         //Check that the description is updated on view
-        Awaitility.waitAtMost(3, TimeUnit.SECONDS).until(() -> webClient.getPage(myListView)
+        Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> webClient.getPage(myListView)
                                                                         .asText()
                                                                         .contains("This list view is awesome !"));
 
