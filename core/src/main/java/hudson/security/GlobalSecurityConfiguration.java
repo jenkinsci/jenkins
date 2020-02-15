@@ -27,6 +27,7 @@ import com.google.common.base.Predicate;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.markup.MarkupFormatter;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
@@ -184,9 +185,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.ADMINISTER;
     }
 
-    public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {
-        public boolean apply(GlobalConfigurationCategory input) {
-            return input instanceof GlobalConfigurationCategory.Security;
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
+    public static Predicate<Descriptor> FILTER = new Predicate<Descriptor>() {
+        public boolean apply(Descriptor input) {
+            return input.getCategory() instanceof GlobalConfigurationCategory.Security;
         }
     };
 

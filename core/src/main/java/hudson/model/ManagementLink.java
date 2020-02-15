@@ -123,6 +123,16 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
+     * Whether to show this link on /manage
+     *
+     * @return true if and only if the link should be shown
+     */
+    public boolean isShowLink() {
+        final Permission requiredPermission = getRequiredPermission();
+        return requiredPermission == null || Jenkins.get().hasPermission(requiredPermission);
+    }
+
+    /**
      * Define if the rendered link will use the default GET method or POST.
      * @return true if POST must be used
      * @see RequirePOST

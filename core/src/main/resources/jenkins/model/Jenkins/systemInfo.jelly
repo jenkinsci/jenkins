@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%System Information}">
+  <l:layout permission="${app.SYSTEM_READ}" title="${%System Information}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
         <h1>${%System Properties}</h1>

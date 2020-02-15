@@ -27,7 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.MANAGE}">
+<l:layout title="${%Manage Jenkins}" xmlns:local="local">
+  ${h.checkAnyPermission(it, app.MANAGE, app.SYSTEM_READ)}
 
   <l:header>
      <link rel="stylesheet" href="${resURL}/bootstrap/css/bootstrap.min.css" type="text/css" />
@@ -49,7 +50,7 @@ THE SOFTWARE.
     </div>
 
     <j:forEach var="m" items="${it.managementLinks}">
-      <l:hasPermission permission="${m.requiredPermission}">
+      <j:if test="${m.isShowLink()}">
         <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
         <j:if test="${icon!=null}">
           <div class="manage-option">
@@ -90,7 +91,7 @@ THE SOFTWARE.
           </j:choose>
           </div>
         </j:if>
-      </l:hasPermission>
+      </j:if>
     </j:forEach>
 
   </l:main-panel>
