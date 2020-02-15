@@ -39,24 +39,25 @@ import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
  * As Jenkins.MANAGE can be enabled on startup with jenkins.security.ManagePermission property, we need a test class
  * with this property activated.
  */
+// TODO move tests to indicated test classes when we no longer need to set the system property
 public class JenkinsManagePermissionTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @BeforeClass //TODO: remove once Jenkins.MANAGE is no longer an experimental feature
+    @BeforeClass
     public static void enableManagePermission() {
         System.setProperty("jenkins.security.ManagePermission", "true");
     }
 
-    @AfterClass //TODO: remove once Jenkins.MANAGE is no longer an experimental feature
+    @AfterClass
     public static void disableManagePermission() {
         System.clearProperty("jenkins.security.ManagePermission");
     }
 
 
     // -----------------------------
-    //Moved from DisablePluginCommandTest
+    // DisablePluginCommandTest
     @Issue("JENKINS-60266")
     @Test
     @WithPlugin({ "depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
@@ -91,11 +92,11 @@ public class JenkinsManagePermissionTest {
         assertTrue(plugin.isEnabled());
     }
 
-    // End of Moved from DisablePluginCommandTest
+    // End of DisablePluginCommandTest
     //-------
 
     // -----------------------------
-    //Moved from ComputerTest
+    //ComputerTest
     @Issue("JENKINS-60266")
     @Test
     public void dumpExportTableForbiddenWithoutAdminPermission() throws Exception {
@@ -111,11 +112,11 @@ public class JenkinsManagePermissionTest {
         j.createWebClient().login(MANAGER).assertFails("computer/(master)/dumpExportTable", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
-    // End of Moved from ComputerTest
+    // End of ComputerTest
     //-------
 
     // -----------------------------
-    //Moved from HusdonTest
+    // HusdonTest
     @Issue("JENKINS-60266")
     @Test
     public void someGlobalConfigurationIsNotDisplayedWithManagePermission() throws Exception {
@@ -209,6 +210,6 @@ public class JenkinsManagePermissionTest {
         };
     }
 
-    // End of Moved from HusdonTest
+    // End of HusdonTest
     //-------
 }
