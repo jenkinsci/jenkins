@@ -2542,7 +2542,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected void submit(JSONObject json) throws IOException {
         setDisplayName(Util.fixEmptyAndTrim(json.getString("displayName")));
         setDescription(json.getString("description"));
-        setSummary(json.getString("summary"));
+        setSummary(json.optString("summary", null));
     }
 
     public static final XStream XSTREAM = new XStream2();
