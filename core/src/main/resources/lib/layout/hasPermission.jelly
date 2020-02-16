@@ -26,7 +26,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
   <st:documentation>
     Renders the body only if the current user has the specified permission
-    <st:attribute name="permission" use="required" type="Permission">
+    <st:attribute name="it" use="optional">
+      By default it will reuse the current context.
+      If the provided value does not inherit from hudson.security.AccessControlled, 
+      the tag will look for the first ancestor satisfying the condition.
+      The hasPermission will be performed against that value.
+    </st:attribute>
+    <st:attribute name="permission" use="required" type="hudson.security.Permission">
       permission object to check. If this is null, the body will be also rendered.
     </st:attribute>
   </st:documentation>
