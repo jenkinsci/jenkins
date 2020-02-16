@@ -81,7 +81,7 @@ THE SOFTWARE.
         <j:if test="${hasHeader}">
           <tr>
             <td colspan="3">
-              <div class="dd-handle">
+              <div class="${readOnlyMode ? '' : 'dd-handle'}">
                 <b>${descriptor.displayName}</b>
               </div>
             </td>
