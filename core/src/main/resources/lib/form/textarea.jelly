@@ -86,16 +86,7 @@ THE SOFTWARE.
         org.kohsuke.stapler.codemirror.theme.default"/>
   </j:if>
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
-  <j:choose>
-    <j:when test="${readOnlyMode}">
-      <j:choose>
-        <j:when test="${empty(value)}">
-          <span class="jenkins-not-applicable">N/A</span>
-        </j:when>
-        <j:otherwise><pre class="jenkins-readonly">${value}</pre></j:otherwise>
-      </j:choose>
-    </j:when>
-    <j:otherwise>
+  <f:possibleReadOnlyField>
       <textarea id="${attrs.id}" style="${attrs.style}"
                 name ="${name}"
                 class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
@@ -107,8 +98,7 @@ THE SOFTWARE.
         <j:if test="${value != null &amp;&amp; !empty(value.toString()) &amp;&amp; (value.toString().codePointAt(0) == 10 || value.toString().codePointAt(0) == 13)}"><j:whitespace>&#10;</j:whitespace></j:if>
         <st:out value="${value}" />
       </textarea>
-    </j:otherwise>
-  </j:choose>
+  </f:possibleReadOnlyField>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
     <!-- resize handle -->
