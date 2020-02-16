@@ -265,7 +265,7 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public boolean equals(Object o) {
-            return o != null && o.getClass() != getClass();
+            return o != null && o.getClass() == getClass();
         }
 
         @Override
