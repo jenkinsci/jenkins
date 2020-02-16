@@ -47,7 +47,7 @@ THE SOFTWARE.
         <td class="setting-main">
             <!-- create drop-down list -->
             <select class="setting-input dropdownList"
-                    disabled="${displayOnlyMode ? 'true' : null}"
+                    disabled="${readOnlyMode ? 'true' : null}"
             >
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>

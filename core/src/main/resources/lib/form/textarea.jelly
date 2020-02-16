@@ -87,7 +87,7 @@ THE SOFTWARE.
   </j:if>
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:choose>
-    <j:when test="${displayOnlyMode}">
+    <j:when test="${readOnlyMode}">
       <j:choose>
         <j:when test="${empty(value)}">
           <span class="jenkins-not-applicable">N/A</span>

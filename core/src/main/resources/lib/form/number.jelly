@@ -78,7 +78,7 @@ THE SOFTWARE.
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
 
   <j:choose>
-    <j:when test="${displayOnlyMode}">
+    <j:when test="${readOnlyMode}">
       <j:choose>
         <j:when test="${empty(value)}">
           <span class="jenkins-not-applicable">N/A</span>

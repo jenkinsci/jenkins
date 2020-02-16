@@ -62,7 +62,7 @@ THE SOFTWARE.
                value="${value}"
                class="radio-block-control block-control"
                checked="${checked ? 'true' : null}"
-               disabled="${displayOnlyMode ? 'true' : null}"
+               disabled="${readOnlyMode ? 'true' : null}"
         />
         ${title}
       </label>
