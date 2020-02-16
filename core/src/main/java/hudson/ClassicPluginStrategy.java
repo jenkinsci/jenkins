@@ -431,6 +431,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return null;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Administrator action installing a plugin, which could do far worse.")
     private static File resolve(File base, String relative) {
         File rel = new File(relative);
         if(rel.isAbsolute())
