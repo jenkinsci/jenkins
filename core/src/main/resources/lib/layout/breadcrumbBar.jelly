@@ -40,20 +40,7 @@ THE SOFTWARE.
       <div class="top-sticker noedge">
         <div class="top-sticker-inner">
           <div id="right-top-nav">
-            <j:if test="${norefresh==null or norefresh==false}">
-              <div id="right-top-nav">
-                <div class="smallfont">
-                  <j:choose>
-                    <j:when test="${h.isAutoRefresh(request)}">
-                      <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
-                    </j:when>
-                    <j:otherwise>
-                      <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
-                    </j:otherwise>
-                  </j:choose>
-                </div>
-              </div>
-            </j:if>
+          <!-- used to contain auto refresh options, kept for layout backward compatibility -->
           </div>
           <ul id="breadcrumbs">
             <j:forEach var="anc" items="${request.ancestors}">

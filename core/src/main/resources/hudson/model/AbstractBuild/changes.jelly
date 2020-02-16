@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:layout title="${it.fullDisplayName} ${%Changes}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <t:buildCaption autorefresh="true">${%Changes}</t:buildCaption>
+      <t:buildCaption>${%Changes}</t:buildCaption>
       <j:choose>
         <j:when test="${it.hasChangeSetComputed()}">
           <st:include page="index.jelly" it="${it.changeSet}" />

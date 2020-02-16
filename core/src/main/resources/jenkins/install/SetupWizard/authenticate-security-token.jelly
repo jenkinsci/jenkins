@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 
-  <l:layout norefresh="true" type="full-screen" title="${app.instance.displayName}">
+  <l:layout type="full-screen" title="${app.instance.displayName}">
     <l:main-panel>
       <st:include page="client-scripts" />
       <form action="${app.instance.securityRealm.authenticationGatewayUrl}" method="POST">
