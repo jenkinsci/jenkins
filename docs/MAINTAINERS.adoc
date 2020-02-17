@@ -39,7 +39,8 @@ Remoting updates in the core are subject to the process though.
 
 **Contributors** submit pull requests to the Jenkins core and review changes submitted by others.
 They can also review and triage incoming issues in Jenkins Jira.
-There is no special preconditions to do so, anyone is welcome to contribute.
+There is no special preconditions to do so.
+Anyone is welcome to contribute.
 
 **Core Pull Request Reviewers** is the next step for contributors who are interested to review Jenkins pull requests on a regular basis.
 They get https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization[Triage permissions] so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
@@ -53,7 +54,7 @@ They are also responsible to monitor the weekly release status and to perform tr
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
-Led by the link:https://jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:TODO[Stable branch].
+Led by the link:https://jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:https://jenkins.io/download/lts/[Stable release line].
 Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines.
 
 === Ladder
@@ -151,10 +152,13 @@ Code reviews do NOT pursue the following goals:
 * There are at least 2 approvals for the pull request and no outstanding requests for change
 * Conversations in the pull request are over OR it is explicit that a reviewer does not block the change (often indicated by line comments attached to an approving PR review, or by using the term "nit", from "nit-picking")
 * Changelog entries in the PR title and/or _Proposed changelog entries_ are correct and reflect the current, final state of the PR
-* Proper changelog labels are set so that the changelog can be generated automatically
-* If the change needs administrators to be aware of it when upgrading, the `upgrade-guide-needed` label is present. This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out), or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
-  and there is a `Proposed upgrade guidelines` section in the PR title.
-  (link:https://github.com/jenkinsci/jenkins/pull/4387[example])
+* Proper changelog labels are set so that the changelog can be generated automatically.
+ List of labels we use for changelog generation is available link:https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.yml[here].
+* If the change needs administrators to be aware of it when upgrading, the `upgrade-guide-needed` label is present
+  and there is a `Proposed upgrade guidelines` section in the PR title
+  (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
+  This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out),
+  or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
 * It would make sense to backport the change to LTS, a Jira issue should exist and be labeled as `lts-candidate`
 
 **Step 2: Marking for merge**. Once the checklist is passed,
