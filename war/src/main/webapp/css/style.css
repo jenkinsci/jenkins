@@ -137,7 +137,7 @@ dt > .plugin_version {
     -moz-border-radius: 0.5em;
 }
 
-/* #header .login {
+#header .login {
   position: relative;
   top: 6px;
   color: white;
@@ -152,7 +152,7 @@ dt > .plugin_version {
 #header .login a:hover {
     text-decoration: underline;
     color: #ccc;
-} */
+}
 
 a:link {
   text-decoration: underline;
@@ -2071,6 +2071,23 @@ body.no-sticker #bottom-sticker {
 
 #rss-bar .rss-bar-item {
     padding-left: 1em;
+}
+
+/* -------------------------------------- */
+
+/* -------------- SVG icons ------------- */
+
+.svg-icon {
+  display: inline-block;
+  vertical-align: middle;
+
+  /* default dimensions */
+  height: 24px;
+  width: 24px;
+
+  /* default fill fallback */
+  fill: #111;
+  fill: currentColor;
 }
 
 /* -------------------------------------- */
