@@ -42,7 +42,7 @@ They can also review and triage incoming issues in Jenkins Jira.
 There is no special preconditions to do so, anyone is welcome to contribute.
 
 **Core Pull Request Reviewers** is the next step for contributors who are interested to review Jenkins pull requests on a regular basis.
-They get [Triage permissions](https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization) so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
+They get https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization[Triage permissions] so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
 Their main responsibility is to triage and review the incoming pull requests,
 and to guide newcomer contributors who are not familiar with the project's processes.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
@@ -54,11 +54,11 @@ GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
 Led by the link:https://jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:TODO[Stable branch].
-Team members get `Admin` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines.
+Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines.
 
 === Ladder
 
-* *Contributors*. Anyone can participate.
+* **Contributors**. Anyone can participate.
   There is no precondition except having a GitHub account, just submit pull requests or comment in existing ones!
 * **Core Pull Request Reviewers** can be nominated by contributors in the link:https://groups.google.com/d/forum/jenkinsci-dev[developer mailing list]. 
 Self-nomination is fine.
@@ -78,11 +78,11 @@ At the same time, we are interested to make the review process as simple as poss
 
 There are the following code review goals:
 
-* Ensure that the pull request is feasible and that it fits the Jenkins ecosystem
-* Verify compatibility of the suggested changes
-* Ensure that the pull request matches the code quality practices: test automation, Javadoc for newly introduced APIs, etc.
+* Ensure that the pull request is _feasible_ and that it fits the Jenkins ecosystem
+* Verify _compatibility_ of the suggested changes
+* Ensure that the pull request matches the _code quality_ practices: test automation, Javadoc for newly introduced APIs, etc.
 * Ensure that the pull request contains appropriate changelogs and, if needed, upgrade guidelines.
-* Ensure there is a consensus among reviewers about all items above 
+* Ensure there is a _consensus_ among reviewers about all items above.
 
 **Feasibility**.
 Reviewers are expected to look at changes critically from a "product management" point of view.
@@ -97,11 +97,11 @@ The Jenkins project has a long history of backward compatibility.
 We accept breaking changes when it is needed (security fixes, feature deprecation and removal, etc.),
 but ultimately the project's goal is retain as much compatibility as possible.
 It includes both feature compatibility and binary/API compatibility which is important for the plugin ecosystem.
-Although we provide some tools for checking API usages across open-source plugins,
+Although we have some tools (like https://github.com/jenkins-infra/usage-in-plugins[usage-in-plugins]) for checking API usages across open-source plugins,
 there is no way to confirm external usages in 3rd-party proprietary plugins which is also a part of the ecosystem.
 
 **Code quality**.
-There is no goal to make the code perfect, but we want to ensure that all new code matches basic quality standards:
+The code doesn't have to be perfect, but we want to ensure that all new code matches basic quality standards:
 test coverage for newly added functionality and fixes,
 documentation for newly introduced APIs,
 the submitted code is readable and matches the code style in the surrounding codebase,
@@ -115,11 +115,11 @@ And we are fine with that, especially for small patches.
 Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
 We are fine with that as well.
 If there is no consensus about the feasibility and implementation,
-code reviewers are expected to suggest proper channels to maintainers.
+code reviewers are expected to suggest proper channels for contributors to discuss their contribution.
 
-* A discussion in the link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List] is a default way to go
-* If a consensus cannot be reached in the mailing list,
-  voting at the link:https://jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision
+* A discussion in the link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List] is the default way to go
+* If no consensus can be reached on the mailing list,
+  voting at the link:https://jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision.
 
 === Code review non-goals
 
@@ -137,8 +137,8 @@ Code reviews do NOT pursue the following goals:
 * Breakdown the commit history or squashing PRs
 ** Not every contributor is a Git expert, do not request changes in the commit history unless it is necessary
 ** Core maintainers can squash PRs during the merge.
-   If you feel this is important, use the `squash-merge-me` label
-** We want to keep pull requests atomic when possible (one feature / fix - separate commit),
+   If you feel this is important, add the `squash-merge-me` label
+** We want to keep pull requests focused when possible (one feature / fix per pull request),
    but we can live without it if there is no need to backport changes to the stable baseline.
 
 == Merge process
@@ -150,7 +150,7 @@ Code reviews do NOT pursue the following goals:
 * Pull request is compliant with requirements to submitters (see the link:/.github/PULL_REQUEST_TEMPLATE.md[pull request template])
 * There are at least 2 approvals for the pull request and no outstanding requests for change
 * Conversations in the pull request are over OR it is explicit that a reviewer does not block the change (often indicated by line comments attached to an approving PR review, or by using the term "nit", from "nit-picking")
-* Changelog entries in the PR title and/or `Proposed changelog entries` are correct and reflect the current, final state of the PR
+* Changelog entries in the PR title and/or _Proposed changelog entries_ are correct and reflect the current, final state of the PR
 * Proper changelog labels are set so that the changelog can be generated automatically
 * If the change needs administrators to be aware of it when upgrading, the `upgrade-guide-needed` label is present. This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out), or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
   and there is a `Proposed upgrade guidelines` section in the PR title.
@@ -162,9 +162,9 @@ a Core PR Reviewer or a Maintainer can mark the pull request for merge.
 
 * `ready-for-merge` label is set
 * An explicit comment is added to the pull request so that other repository watchers are notified.
-  Example: `Thanks to all contributors! We consider this change as ready to be merged towards the next weekly release. It may be merged after 24hours if there is no negative feedback`
+  Example: _Thanks to all contributors! We consider this change as ready to be merged towards the next weekly release. It may be merged after 24hours if there is no negative feedback_
 
-**Step 3: Merge!**.
+**Step 3: Merge!**
 A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
 After that the change will be landed in the next weekly release.
 LTS Backporting, if needed, will be handled separately by the release team.
@@ -176,7 +176,7 @@ LTS Backporting, if needed, will be handled separately by the release team.
   Security hardening and enhancements go through the standard process.
 * Release Team members are permitted to bypass the review/merge process if and only if a change is needed to unblock the security release.
   Common review process is used otherwise.
-* 24 hours timeout after `ready-for-merge` is not required for...
+* 24 hours waiting period after adding the `ready-for-merge` label is not required for:
 //TODO(oleg_nenashev): Define "trivial" better to avoid loopholes
 ** trivial changes like typo fixes or minor Javadoc improvements
 ** changes which do not affect the production code: Jenkinsfile tweaks, tools inside the repo, etc. 
