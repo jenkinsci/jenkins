@@ -838,6 +838,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins#MANAGE}.
      *
      * @return Permission required to configure this descriptor.
+     * @since TODO
      */
     public @Nonnull
     Permission getRequiredPermission() {

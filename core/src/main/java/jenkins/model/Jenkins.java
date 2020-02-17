@@ -5251,6 +5251,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
      * be enabled with "jenkins.security.ManagePermission" system property.
+     * @since TODO
      */
     @Restricted(Beta.class)
     public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
