@@ -27,7 +27,7 @@ N/A
 
 ### Submitter checklist
 
-- [ ] Jira issue is well described (not mandatory)
+- [ ] (If applicable) Jira issue is well described
 - [ ] Changelog entries and upgrade guidelines are appropriate for the audience affected by the change (users or developer, depending on the change). [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)
   * Fill-in the `Proposed changelog entries` section only if there are breaking changes or other changes which may require extra steps from users during the upgrade
 - [ ] Appropriate autotests or explanation to why this change has no tests
