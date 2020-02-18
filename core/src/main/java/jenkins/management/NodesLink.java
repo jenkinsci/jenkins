@@ -31,7 +31,7 @@ import jenkins.management.Messages;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -53,7 +53,7 @@ public class NodesLink extends ManagementLink {
         return Messages.NodesLink_Description();
     }
 
-    @CheckForNull
+    @Nonnull
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.MANAGE;
