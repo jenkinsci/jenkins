@@ -841,7 +841,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * @since TODO
      */
     public @Nonnull
-    Permission getRequiredPermission() {
+    Permission getRequiredGlobalConfigPagePermission() {
         return Jenkins.ADMINISTER;
     }
 

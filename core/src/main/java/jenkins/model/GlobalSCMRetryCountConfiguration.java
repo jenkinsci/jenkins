@@ -59,7 +59,7 @@ public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
 
     @Nonnull
     @Override
-    public Permission getRequiredPermission() {
+    public Permission getRequiredGlobalConfigPagePermission() {
         return Jenkins.MANAGE;
     }
 }
