@@ -988,10 +988,12 @@ table.parameters > tbody:hover {
 }
 #buildHistoryPage .build-row-cell > div > .build-link {
     max-height: 3em;
+    max-width: 320px;
     overflow-y: hidden;
 }
 #buildHistoryPage .build-row-cell > div.desc {
     max-height: 5em;
+    max-width: 320px;
     overflow-y: hidden;
 }
 
