@@ -129,7 +129,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      */
     public boolean isShowLink() {
         final Permission requiredPermission = getRequiredPermission();
-        return requiredPermission == null || Jenkins.get().hasPermission(requiredPermission);
+        return Jenkins.get().hasPermission(requiredPermission);
     }
 
     /**

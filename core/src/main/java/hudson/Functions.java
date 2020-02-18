@@ -1112,7 +1112,7 @@ public class Functions {
 
     @Restricted(NoExternalUse.class)
     public static void checkAnyPermission(AccessControlled ac, Permission[] permissions) {
-        if (permissions == null) {
+        if (permissions == null || permissions.length == 0) {
             return;
         }
 
