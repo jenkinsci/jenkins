@@ -225,6 +225,7 @@ import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.stapler.HttpRedirect;
@@ -2199,6 +2200,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
+        if (!Jenkins.get().hasPermission(ADMINISTER)) {
+            return Collections.emptyList();
+        }
         return administrativeMonitors.stream().filter(m -> {
             try {
                 return m.isEnabled() && m.isActivated();
@@ -3762,7 +3766,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
-            checkPermission(ADMINISTER);
+            checkPermission(MANAGE);
 
             JSONObject json = req.getSubmittedForm();
 
@@ -5237,6 +5241,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
+
+    /**
+     * This permission grants access to parts of the Jenkins system configuration.
+     *
+     * <p>Only features that won't have an impact on Jenkins' overall security and stability should have their
+     * permission requirement lowered from {@link #ADMINISTER} to {@code MANAGE}.
+     * For example, many scripting and code execution features (e.g., configuring master agents, paths to tools on master, etc.)
+     * are unsafe to make available to users with only this permission,
+     * as they could be used to bypass permission enforcement and elevate permissions.</p>
+     *
+     * <p>This permission is disabled by default and support for it considered experimental.
+     * Administrators can set the system property {@code jenkins.security.ManagePermission} to enable it.</p>
+     *
+     * @since TODO
+     */
+    @Restricted(Beta.class)
+    public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
+            Messages._Jenkins_Manage_Description(),
+            ADMINISTER,
+            SystemProperties.getBoolean("jenkins.security.ManagePermission"),
+            new PermissionScope[]{PermissionScope.JENKINS});
+
+
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 

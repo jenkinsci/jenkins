@@ -112,10 +112,14 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
-     * @return permission required for user to access this management link, in addition to {@link Jenkins#ADMINISTER}
+     * Returns the permission required for user to see this management link on the "Manage Jenkins" page ({@link ManageJenkinsAction}).
+     *
+     * Historically, this returned null, which amounted to the same behavior, as {@link Jenkins#ADMINISTER} was required to access the page.
+     *
+     * @return the permission required for the link to be shown on "Manage Jenkins".
      */
-    public @CheckForNull Permission getRequiredPermission() {
-        return null;
+    public @Nonnull Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
     }
 
     /**
