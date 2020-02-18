@@ -61,7 +61,7 @@ public class JenkinsManagePermissionTest {
     @Issue("JENKINS-60266")
     @Test
     @WithPlugin({ "depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
-    public void managerCanNotDisablePlugin() {
+    public void managerCannotDisablePlugin() {
 
         //GIVEN a user with Jenkins.MANAGE permission
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -116,7 +116,7 @@ public class JenkinsManagePermissionTest {
     //-------
 
     // -----------------------------
-    // HusdonTest
+    // HudsonTest
     @Issue("JENKINS-60266")
     @Test
     public void someGlobalConfigurationIsNotDisplayedWithManagePermission() throws Exception {
@@ -210,6 +210,6 @@ public class JenkinsManagePermissionTest {
         };
     }
 
-    // End of HusdonTest
+    // End of HudsonTest
     //-------
 }

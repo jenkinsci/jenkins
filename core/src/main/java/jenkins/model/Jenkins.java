@@ -5240,17 +5240,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static final Logger LOGGER = Logger.getLogger(Jenkins.class.getName());
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
-    /**
-     * Grants ability to configure any and all aspects of the Jenkins instance
-     */
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
 
     /**
-     * Allows non-privilege escalating configuration permission for a Jenkins instance.  Actions which could result
-     * in a privilege  escalation (such as RUN_SCRIPTS) require explicit ADMINISTER permission.
+     * This permission grants access to parts of the Jenkins system configuration.
      *
-     * As an experimental feature, making the manage permission able to be disabled by default (keep as ADMINISTER), can
-     * be enabled with "jenkins.security.ManagePermission" system property.
+     * <p>Only features that won't have an impact on Jenkins' overall security and stability should have their
+     * permission requirement lowered from {@link #ADMINISTER} to {@code MANAGE}.
+     * For example, many scripting and code execution features (e.g., configuring master agents, paths to tools on master, etc.)
+     * are unsafe to make available to users with only this permission,
+     * as they could be used to bypass permission enforcement and elevate permissions.</p>
+     *
+     * <p>This permission is disabled by default and support for it considered experimental.
+     * Administrators can set the system property {@code jenkins.security.ManagePermission} to enable it.</p>
+     *
      * @since TODO
      */
     @Restricted(Beta.class)
