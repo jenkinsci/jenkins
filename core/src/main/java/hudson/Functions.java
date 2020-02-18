@@ -497,6 +497,8 @@ public class Functions {
      * Gets the boolean system property indicated by the specific key.
      * 
      * Delegates to {@link SystemProperties#getBoolean(java.lang.String)}
+     *
+     * @since TODO
      */
     @Restricted(DoNotUse.class)
     public static boolean isSystemPropertyEnabled(String key) {
