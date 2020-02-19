@@ -29,7 +29,7 @@ THE SOFTWARE.
       <dt>${%DeprecatedPlugins}</dt>
       <j:forEach var="p" items="${it.deprecatedPlugins}">
         <j:choose>
-          <j:when test="${p.url != null and p.url.matches('^(?i)https?')}">
+          <j:when test="${p.url != null and p.url.matches('(?i)^https?.+$')}">
             <dd><a href="${p.url}" target="_blank">${p.longName} ${p.version}</a></dd>
           </j:when>
           <j:otherwise>
