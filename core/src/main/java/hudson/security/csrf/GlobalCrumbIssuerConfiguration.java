@@ -56,7 +56,6 @@ public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
         if (json.has("crumbIssuer")) {
             j.setCrumbIssuer(req.bindJSON(CrumbIssuer.class, json.getJSONObject("crumbIssuer")));
         } else {
-            // set the default crumb issuer
             j.setCrumbIssuer(createDefaultCrumbIssuer());
         }
 
@@ -73,10 +72,9 @@ public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
         if (DISABLE_CSRF_PROTECTION) {
             return null;
         }
-        return new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false));
+        return new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility", false));
     }
 
     @Restricted(NoExternalUse.class)
     public static /* non-final */ boolean DISABLE_CSRF_PROTECTION = SystemProperties.getBoolean(GlobalCrumbIssuerConfiguration.class.getName() + ".DISABLE_CSRF_PROTECTION");
 }
-
