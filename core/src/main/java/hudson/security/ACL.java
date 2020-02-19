@@ -80,13 +80,7 @@ public abstract class ACL {
     }
 
     public final void checkAnyPermission(@Nonnull Permission... permissions) {
-        boolean failed = true;
-
-        for (Permission permission : permissions) {
-            if (hasPermission(permission)) {
-                failed = false;
-            }
-        }
+        boolean failed = !hasAnyPermission(permissions);
 
         Authentication authentication = Jenkins.getAuthentication();
         if (failed) {
@@ -117,6 +111,26 @@ public abstract class ACL {
             return true;
         }
         return hasPermission(a, p);
+    }
+
+    /**
+     * Checks if the current security principal has any of the permissions.
+     *
+     * @return false
+     *      if the user doesn't have one of the required permissions.
+     */
+    public final boolean hasAnyPermission(@Nonnull Permission... permissions) {
+        Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return true;
+        }
+
+        for (Permission permission : permissions) {
+            if (hasPermission(permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

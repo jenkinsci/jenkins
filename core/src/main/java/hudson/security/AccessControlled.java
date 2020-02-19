@@ -59,6 +59,13 @@ public interface AccessControlled {
     }
 
     /**
+     * Convenient short-cut for {@code getACL().hasAnyPermission(permission)}
+     */
+    default boolean hasAnyPermission(@Nonnull Permission... permission) {
+        return getACL().hasAnyPermission(permission);
+    }
+
+    /**
      * Convenient short-cut for {@code getACL().hasPermission(a, permission)}
      * @since 2.92
      */
