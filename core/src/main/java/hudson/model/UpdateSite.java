@@ -44,6 +44,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -1336,6 +1337,15 @@ public class UpdateSite {
             }
 
             return warnings;
+        }
+
+        /**
+         * Is this plugin labeled deprecated?
+         * @return {@code true} when plugin contains deprecated in categories, otherwise {@code false}.
+         * @since TODO
+         */
+        public boolean isDeprecated() {
+            return categories != null && Arrays.asList(categories).contains("deprecated");
         }
 
         /**

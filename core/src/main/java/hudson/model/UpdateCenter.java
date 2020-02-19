@@ -969,6 +969,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         Map<String,Plugin> pluginMap = new LinkedHashMap<>();
         for (UpdateSite site : sites) {
             for (Plugin plugin: site.getAvailables()) {
+                if (plugin.isDeprecated()) {
+                    // hide plugins that are deprecated
+                    continue;
+                }
                 final Plugin existing = pluginMap.get(plugin.name);
                 if (existing == null) {
                     pluginMap.put(plugin.name, plugin);

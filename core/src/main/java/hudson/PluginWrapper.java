@@ -369,8 +369,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @since TODO
      */
     public boolean isDeprecated() {
-        UpdateSite.Plugin info = getInfo();
-        return info != null && Arrays.asList(info.categories).contains("deprecated");
+        return getInfo().isDeprecated();
     }
 
     @ExportedBean
