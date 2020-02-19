@@ -102,6 +102,11 @@ THE SOFTWARE.
                         </j:otherwise>
                       </j:choose>
                     </div>
+                    <j:if test="${p.isDeprecated()}">
+                      <div class="alert alert-danger">
+                        ${%deprecationWarning}
+                      </div>
+                    </j:if>
                   </td>
                   <td class="center pane" style="white-space:normal">
                     <a href="plugin/${p.shortName}/thirdPartyLicenses">
