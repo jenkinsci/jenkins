@@ -38,5 +38,6 @@ THE SOFTWARE.
         </j:choose>
       </j:forEach>
     </dl>
+    <p>${%DeprecatedPluginsDescription}</p>
   </div>
 </j:jelly>
