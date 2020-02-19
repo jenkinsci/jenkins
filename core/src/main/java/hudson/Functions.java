@@ -1086,7 +1086,7 @@ public class Functions {
      */
     @Deprecated
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
-        return getSortedDescriptorsForGlobalConfigUnclassified();
+        return getSortedDescriptorsForGlobalConfig(Predicates.not(GlobalSecurityConfiguration.FILTER));
     }
 
     /**
@@ -1101,7 +1101,6 @@ public class Functions {
     /**
      * Descriptors shown in the global configuration form to users with {@link Jenkins#SYSTEM_READ} permission.
      *
-     * @return
      * @since TODO
      */
     @Restricted(NoExternalUse.class)
@@ -1116,15 +1115,7 @@ public class Functions {
             return;
         }
 
-        boolean failed = true;
-        for (Permission permission : permissions) {
-            if (ac.hasPermission(permission)) {
-                failed = false;
-            }
-        }
-        if (failed) {
-            ac.checkPermission(permissions[0]);
-        }
+        ac.checkAnyPermission(permissions);
     }
 
     private static class Tag implements Comparable<Tag> {

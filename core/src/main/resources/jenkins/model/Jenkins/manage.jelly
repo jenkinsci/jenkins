@@ -48,7 +48,7 @@ THE SOFTWARE.
     </div>
 
     <j:forEach var="m" items="${it.managementLinks}">
-      <j:if test="${m.isShowLink()}">
+      <l:hasPermission permission="${m.requiredPermission}">
         <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
         <j:if test="${icon!=null}">
           <div class="manage-option">
@@ -89,7 +89,7 @@ THE SOFTWARE.
           </j:choose>
           </div>
         </j:if>
-      </j:if>
+      </l:hasPermission>
     </j:forEach>
 
   </l:main-panel>

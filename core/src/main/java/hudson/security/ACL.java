@@ -27,6 +27,8 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -74,6 +76,32 @@ public abstract class ACL {
                 p = p.impliedBy;
             }
             throw new AccessDeniedException2(a,p);
+        }
+    }
+
+    public final void checkAnyPermission(@Nonnull Permission... permissions) {
+        boolean failed = true;
+
+        for (Permission permission : permissions) {
+            if (hasPermission(permission)) {
+                failed = false;
+            }
+        }
+
+        Authentication authentication = Jenkins.getAuthentication();
+        if (failed) {
+            String permissionsDisplayName = Arrays.stream(permissions)
+                    .map(p -> p.group.title + "/" + p.name)
+                    .collect(Collectors.joining(", "));
+
+            String errorMessage;
+            if (permissions.length == 1) {
+                errorMessage = Messages.AccessDeniedException2_MissingPermission(authentication.getName(), permissionsDisplayName);
+            } else {
+                errorMessage = Messages.AccessDeniedException_MissingPermissions(authentication.getName(), permissionsDisplayName);
+            }
+
+            throw new AccessDeniedException(errorMessage);
         }
     }
 

@@ -26,6 +26,8 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -49,10 +51,10 @@ public class ConfigureLink extends ManagementLink {
         return Messages.ConfigureLink_Description();
     }
 
+    @Nonnull
     @Override
-    public boolean isShowLink() {
-        final Jenkins j = Jenkins.get();
-        return j.hasPermission(Jenkins.MANAGE) || j.hasPermission(Jenkins.SYSTEM_READ);
+    public Permission getRequiredPermission() {
+        return Jenkins.READ;
     }
 
     @Override

@@ -47,6 +47,10 @@ public interface AccessControlled {
         getACL().checkPermission(permission);
     }
 
+    default void checkAnyPermission(@Nonnull Permission... permission) throws AccessDeniedException {
+        getACL().checkAnyPermission(permission);
+    }
+
     /**
      * Convenient short-cut for {@code getACL().hasPermission(permission)}
      */
