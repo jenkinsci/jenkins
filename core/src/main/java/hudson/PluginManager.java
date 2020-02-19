@@ -2250,13 +2250,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         public boolean isActivated() {
             if (deprecatedPlugins == null) {
-                deprecatedPlugins = new ArrayList<>();
-                for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
-                    if (p.isDeprecated()) {
-                        deprecatedPlugins.add(p);
-                        isActive = true;
-                    }
-                }
+                deprecatedPlugins = Jenkins.get().getPluginManager().getPlugins().stream()
+                    .filter(PluginWrapper::isDeprecated)
+                    .collect(Collectors.toList());
+                isActive = !deprecatedPlugins.isEmpty();
             }
             return isActive;
         }
