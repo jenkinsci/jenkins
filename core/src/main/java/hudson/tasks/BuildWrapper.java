@@ -76,7 +76,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * It is expected that the subclasses of {@link BuildWrapper} extends this
      * class and implements its own semantics.
      */
-    public static abstract class Environment extends hudson.model.Environment {
+    public abstract class Environment extends hudson.model.Environment {
         /**
          * Runs after the {@link Builder} completes, and performs a tear down.
          *

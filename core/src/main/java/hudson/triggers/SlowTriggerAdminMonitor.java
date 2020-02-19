@@ -92,7 +92,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         return HttpResponses.redirectViaContextPath("/manage");
     }
 
-    public static class Value {
+    public class Value {
 
         private final LocalDateTime time;
         private final String msg;
