@@ -186,6 +186,9 @@ public class Functions {
     private static final AtomicLong iota = new AtomicLong();
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
+    @Restricted(NoExternalUse.class)
+    public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
+
     public Functions() {
     }
 
@@ -494,15 +497,13 @@ public class Functions {
     }
 
     /**
-     * Gets the boolean system property indicated by the specific key.
-     * 
-     * Delegates to {@link SystemProperties#getBoolean(java.lang.String)}
+     * Returns true if and only if the UI refresh is enabled.
      *
      * @since TODO
      */
     @Restricted(DoNotUse.class)
-    public static boolean isSystemPropertyEnabled(String key) {
-        return SystemProperties.getBoolean(key);
+    public static boolean isUiRefreshEnabled() {
+        return UI_REFRESH;
     }
 
     public static Map getEnvVars() {

@@ -560,23 +560,4 @@ public class FunctionsTest {
             return this;
         }
     }
-
-    @Test
-    public void testIsSystemPropertyEnabled() {
-        String key = "jenkins.test.property";
-        try {
-            assertFalse("Reading unset property should return false",
-                    Functions.isSystemPropertyEnabled(key));
-
-            System.setProperty(key, "true");
-            assertTrue("Reading the property should return true",
-                    Functions.isSystemPropertyEnabled(key));
-
-            System.setProperty(key, "false");
-            assertFalse("Reading the property should return false",
-                    Functions.isSystemPropertyEnabled(key));
-        } finally {
-            System.clearProperty(key);
-        }
-    }
 }
