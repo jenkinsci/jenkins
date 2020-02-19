@@ -90,8 +90,6 @@ public class ACLTest {
         try (ACLContext ignored = ACL.as(manager.impersonate())) {
             jenkins.getACL().checkAnyPermission(Jenkins.ADMINISTER);
         }
-        // manager is missing the Overall/Administer permission
-        // manager is missing a permission, one of Overall/Administer, Overall/Read is required
     }
 
     @Test
@@ -109,8 +107,6 @@ public class ACLTest {
         try (ACLContext ignored = ACL.as(manager.impersonate())) {
             jenkins.getACL().checkAnyPermission(Jenkins.ADMINISTER, Jenkins.READ);
         }
-        // manager is missing the Overall/Administer permission
-        // manager is missing a permission, one of Overall/Administer, Overall/Read is required
     }
 
     private static class DoNotBotherMe extends AuthorizationStrategy {
