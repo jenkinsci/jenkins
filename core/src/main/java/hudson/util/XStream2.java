@@ -327,7 +327,7 @@ public class XStream2 extends XStream {
         mapperInjectionPoint.setDelegate(m);
     }
 
-    final class MapperInjectionPoint extends MapperDelegate {
+    final static class MapperInjectionPoint extends MapperDelegate {
         public MapperInjectionPoint(Mapper wrapped) {
             super(wrapped);
         }

@@ -99,7 +99,7 @@ public class ApiSEC1704Test {
         }
 
         @ExportedBean
-        class CustomData {
+        static class CustomData {
             private String secret;
             CustomData(String secret){
                 this.secret = secret;

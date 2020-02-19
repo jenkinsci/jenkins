@@ -107,7 +107,7 @@ public class FingerprintCleanupThreadTest {
         tempDirectory.toFile().deleteOnExit();
     }
 
-    private class TestTaskListener implements TaskListener {
+    private static class TestTaskListener implements TaskListener {
 
         private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         private PrintStream logStream = new PrintStream(outputStream);
@@ -126,7 +126,6 @@ public class FingerprintCleanupThreadTest {
 
         public TestFingerprintCleanupThread(Fingerprint fingerprintToLoad) throws IOException {
             this.fingerprintToLoad = fingerprintToLoad;
-            return;
         }
 
         @Override
@@ -146,7 +145,7 @@ public class FingerprintCleanupThreadTest {
 
     }
 
-    private class TestFingerprint extends Fingerprint {
+    private static class TestFingerprint extends Fingerprint {
 
         private boolean isAlive = true;
 

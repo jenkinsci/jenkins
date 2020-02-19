@@ -201,7 +201,7 @@ public class WhoAmITest {
         )));
     }
 
-    private class SecurityRealmImpl extends AbstractPasswordBasedSecurityRealm {
+    private static class SecurityRealmImpl extends AbstractPasswordBasedSecurityRealm {
 
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {

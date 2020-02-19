@@ -136,7 +136,7 @@ public class TarArchiverTest {
         t1.join();
     }
 
-    private class GrowingFileRunnable implements Runnable {
+    private static class GrowingFileRunnable implements Runnable {
         private boolean finish = false;
         private Exception ex = null;
         private File file;

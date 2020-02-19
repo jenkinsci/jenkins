@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class CyclicGraphDetectorTest {
 
-    private class Edge {
+    private static class Edge {
         String src,dst;
 
         private Edge(String src, String dst) {
@@ -25,7 +25,7 @@ public class CyclicGraphDetectorTest {
         }
     }
 
-    private class Graph extends ArrayList<Edge> {
+    private static class Graph extends ArrayList<Edge> {
         Graph e(String src, String dst) {
             add(new Edge(src,dst));
             return this;

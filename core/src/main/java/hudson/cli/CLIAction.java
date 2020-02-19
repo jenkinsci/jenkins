@@ -190,7 +190,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         }
     }
 
-    class ServerSideImpl extends PlainCLIProtocol.ServerSide {
+    static class ServerSideImpl extends PlainCLIProtocol.ServerSide {
         private Thread runningThread;
         private boolean ready;
         private final List<String> args = new ArrayList<>();

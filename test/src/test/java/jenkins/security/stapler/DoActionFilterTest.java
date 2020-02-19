@@ -73,7 +73,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         
         private TestAccessModifier getPrivate() {return new TestAccessModifier();}
         
-        public class TestAccessModifier {
+        public static class TestAccessModifier {
             @GET
             public String doValue() {
                 return "hello";

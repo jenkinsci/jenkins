@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 class FilePathFilterAggregator extends FilePathFilter {
     private final CopyOnWriteArrayList<Entry> all = new CopyOnWriteArrayList<>();
 
-    private class Entry implements Comparable<Entry> {
+    private static class Entry implements Comparable<Entry> {
         final FilePathFilter filter;
         final double ordinal;
 

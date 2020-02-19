@@ -124,7 +124,7 @@ public class UpdateCenterConnectionStatusTest {
         Assert.assertEquals(ConnectionStatus.FAILED, job.connectionStates.get(ConnectionStatus.UPDATE_SITE));
     }
 
-    private class TestConfig extends UpdateCenter.UpdateCenterConfiguration {
+    private static class TestConfig extends UpdateCenter.UpdateCenterConfiguration {
 
         private IOException checkConnectionException;
         private IOException checkUpdateCenterException;

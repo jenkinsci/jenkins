@@ -72,7 +72,7 @@ public class SecurityRealmTest {
         assertThat(response.getResponseHeaderValue("Expires"), is("0"));
     }
 
-    private class DummyCaptcha extends CaptchaSupport {
+    private static class DummyCaptcha extends CaptchaSupport {
         @Override
         public boolean validateCaptcha(String id, String text) {
             return false;

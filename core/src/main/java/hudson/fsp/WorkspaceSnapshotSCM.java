@@ -69,7 +69,7 @@ public class WorkspaceSnapshotSCM extends SCM {
     /**
      * {@link Exception} indicating that the resolution of the job/permalink failed.
      */
-    private final class ResolvedFailedException extends Exception {
+    private static final class ResolvedFailedException extends Exception {
         private ResolvedFailedException(String message) {
             super(message);
         }

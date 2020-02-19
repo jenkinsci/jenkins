@@ -136,7 +136,7 @@ public class ZipExtractionInstallerTest {
         assertThat(lastRequest.getResponseText(), containsString(Messages.ZipExtractionInstaller_malformed_url()));
     }
     
-    private class SpyingJavaScriptEngine extends JavaScriptEngine {
+    private static class SpyingJavaScriptEngine extends JavaScriptEngine {
         private List<XMLHttpRequest> storedRequests = new ArrayList<>();
         private String urlToMatch;
         private HttpMethod method;
