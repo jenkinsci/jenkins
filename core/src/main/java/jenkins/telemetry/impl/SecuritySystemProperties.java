@@ -99,11 +99,7 @@ public class SecuritySystemProperties extends Telemetry {
 
         Map<String, Object> info = new TreeMap<>();
         VersionNumber jenkinsVersion = Jenkins.getVersion();
-        if (jenkinsVersion != null) {
-            info.put("core", jenkinsVersion.toString());
-        } else {
-            info.put("core", "UNKNOWN");
-        }
+        info.put("core", jenkinsVersion != null ? jenkinsVersion.toString() : "UNKNOWN");
         info.put("clientDate", clientDateString());
         info.put("properties", security);
 
