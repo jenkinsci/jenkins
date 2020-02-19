@@ -23,8 +23,11 @@
 
 package hudson.org.apache.tools.tar;
 
+import hudson.RestrictedSince;
 import org.apache.tools.tar.TarBuffer;
 import org.apache.tools.tar.TarEntry;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -40,6 +43,8 @@ import java.io.ByteArrayOutputStream;
  * @deprecated Use {@link org.apache.commons.compress.archivers.tar.TarArchiveInputStream} instead
  */
 @Deprecated
+@Restricted(NoExternalUse.class)
+@RestrictedSince("2.200")
 public class TarInputStream extends FilterInputStream {
 
     // CheckStyle:VisibilityModifier OFF - bc

@@ -46,7 +46,7 @@ public class ViewTest {
         TopLevelItem item2 = Mockito.mock(TopLevelItem.class);
         Mockito.when(item2.getSearchUrl()).thenReturn(url2);
         Mockito.when(item2.getDisplayName()).thenReturn(displayName2);
-        Collection<TopLevelItem> items = new ArrayList<TopLevelItem>();
+        Collection<TopLevelItem> items = new ArrayList<>();
         items.add(item1);
         items.add(item2);
         
@@ -62,7 +62,7 @@ public class ViewTest {
         SearchIndex index = sib.make();
         
         // now make sure we can fetch item1 from the index
-        List<SearchItem> result = new ArrayList<SearchItem>();
+        List<SearchItem> result = new ArrayList<>();
         index.find(displayName1, result);
         assertEquals(1, result.size());
         SearchItem actual = result.get(0);

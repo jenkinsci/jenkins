@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.Page;
 import groovy.util.XmlSlurper;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
+import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
@@ -214,6 +215,7 @@ public class SlaveTest {
     @Test
     @Issue("JENKINS-36280")
     public void propertyFiltering() throws Exception {
+        j.jenkins.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy()); // otherwise node descriptor is not available
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<NodeProperty<?>, NodePropertyDescriptor> descriptors = NodeProperty.all();

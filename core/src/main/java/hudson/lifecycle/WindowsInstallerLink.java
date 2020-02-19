@@ -24,6 +24,7 @@
 package hudson.lifecycle;
 
 import com.sun.jna.Native;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.model.ManagementLink;
@@ -111,7 +112,7 @@ public class WindowsInstallerLink extends ManagementLink {
      */
     @RequirePOST
     public void doDoInstall(StaplerRequest req, StaplerResponse rsp, @QueryParameter("dir") String _dir) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(installationDir!=null) {
             // installation already complete
@@ -173,7 +174,7 @@ public class WindowsInstallerLink extends ManagementLink {
 
     @RequirePOST
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if(installationDir==null) {
             // if the user reloads the page after Hudson has restarted,
@@ -184,10 +185,11 @@ public class WindowsInstallerLink extends ManagementLink {
         }
 
         rsp.forward(this,"_restart",req);
-        final File oldRoot = Jenkins.getInstance().getRootDir();
+        final File oldRoot = Jenkins.get().getRootDir();
 
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
+            @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
             public void run() {
                 try {
                     Thread.sleep(1000);
@@ -228,7 +230,7 @@ public class WindowsInstallerLink extends ManagementLink {
                         }
                     });
 
-                    Jenkins.getInstance().cleanUp();
+                    Jenkins.get().cleanUp();
                     System.exit(0);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -247,7 +249,7 @@ public class WindowsInstallerLink extends ManagementLink {
     protected final void sendError(String message, StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
         req.setAttribute("message",message);
         req.setAttribute("pre",true);
-        rsp.forward(Jenkins.getInstance(),"error",req);
+        rsp.forward(Jenkins.get(),"error",req);
     }
 
     /**
@@ -269,7 +271,7 @@ public class WindowsInstallerLink extends ManagementLink {
 
             // TODO possibly now unused (JNLP installation mode is long gone):
             if(SystemProperties.getString(WindowsInstallerLink.class.getName()+".prominent")!=null)
-                Jenkins.getInstance().getActions().add(link);
+                Jenkins.get().getActions().add(link);
 
             return link;
         }

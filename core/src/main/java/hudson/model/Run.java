@@ -4,8 +4,8 @@
  * Copyright (c) 2004-2012, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Red Hat, Inc., Tom Huybrechts, Romain Seguy, Yahoo! Inc.,
  * Darek Ostolski, CloudBees, Inc.
- *
  * Copyright (c) 2012, Martin Schroeder, Intel Mobile Communications GmbH
+ * Copyright (c) 2019 Intel Corporation
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,8 +74,11 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.lang.UnsupportedOperationException;
+import java.lang.SecurityException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -107,7 +110,6 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
@@ -132,6 +134,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A particular execution of {@link Job}.
@@ -542,7 +545,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.433 
      */
     public @CheckForNull Executor getOneOffExecutor() {
-        for( Computer c : Jenkins.getInstance().getComputers() ) {
+        for( Computer c : Jenkins.get().getComputers() ) {
             for (Executor e : c.getOneOffExecutors()) {
                 if(e.getCurrentExecutable()==this)
                     return e;
@@ -637,7 +640,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Same as {@link #getTimestamp()} but in a different type, that is since the time of the epoc.
+     * Same as {@link #getTimestamp()} but in a different type, that is since the time of the epoch.
      */
     public final long getTimeInMillis() {
         return timestamp;
@@ -665,7 +668,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Returns the length-limited description.
      * @return The length-limited description.
-     */   
+     * @deprecated truncated description uses arbitrary and unconfigurable limit of 100 symbols
+     */
+    @Deprecated
     public @Nonnull String getTruncatedDescription() {
         final int maxDescrLength = 100;
         if (description == null || description.length() < maxDescrLength) {
@@ -719,7 +724,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public @Nonnull String getTimestampString() {
         long duration = new GregorianCalendar().getTimeInMillis()-timestamp;
-        return Util.getPastTimeString(duration);
+        return Util.getTimeSpanString(duration);
     }
 
     /**
@@ -948,17 +953,35 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.383
      */  
     public @Nonnull List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
-        List<RunT> builds = new ArrayList<>(numberOfBuilds);
-        
         RunT r = getPreviousBuild();
+        if (r != null) {
+            return r.getBuildsOverThreshold(numberOfBuilds, threshold);
+        }
+        return new ArrayList<>(numberOfBuilds);
+    }
+
+    /**
+     * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}.
+     *
+     * @param numberOfBuilds the desired number of builds
+     * @param threshold the build result threshold
+     * @return a list with the builds (youngest build first).
+     *   May be smaller than 'numberOfBuilds' or even empty
+     *   if not enough builds satisfying the threshold have been found. Never null.
+     * @since TODO
+     */
+    protected @Nonnull List<RunT> getBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
+        List<RunT> builds = new ArrayList<>(numberOfBuilds);
+
+        RunT r = _this();
         while (r != null && builds.size() < numberOfBuilds) {
-            if (!r.isBuilding() && 
+            if (!r.isBuilding() &&
                  (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
                 builds.add(r);
             }
             r = r.getPreviousBuild();
         }
-        
+
         return builds;
     }
 
@@ -1567,34 +1590,51 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public void delete() throws IOException {
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
-            throw new IOException(this + ": " + rootDir + " looks to have already been deleted; siblings: " + Arrays.toString(project.getBuildDir().list()));
+            //No root directory found to delete. Somebody seems to have nuked
+            //it externally. Logging a warning before dropping the build
+            LOGGER.warning(String.format(
+                    "%s: %s looks to have already been deleted, assuming build dir was already cleaned up",
+                    this, rootDir
+            ));
+            //Still firing the delete listeners; just no need to clean up rootDir
+            RunListener.fireDeleted(this);
+            synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
+                removeRunFromParent();
+            }
+            return;
         }
         
+        //The root dir exists and is a directory that needs to be purged
         RunListener.fireDeleted(this);
-
+        
         if (artifactManager != null) {
             deleteArtifacts();
         } // for StandardArtifactManager, deleting the whole build dir suffices
-
-        synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
-        File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
         
-        if (tmp.exists()) {
+        synchronized (this) { // avoid holding a lock while calling plugin impls of onDeleted
+            File tmp = new File(rootDir.getParentFile(),'.'+rootDir.getName());
+            
+            if (tmp.exists()) {
+                Util.deleteRecursive(tmp);
+            }
+            try {
+                Files.move(
+                        Util.fileToPath(rootDir),
+                        Util.fileToPath(tmp),
+                        StandardCopyOption.ATOMIC_MOVE
+                );
+            } catch (UnsupportedOperationException | SecurityException ex) {
+                throw new IOException(rootDir + " is in use");
+            }
+            
             Util.deleteRecursive(tmp);
-        }
-        // TODO on Java 7 prefer: Files.move(rootDir.toPath(), tmp.toPath(), StandardCopyOption.ATOMIC_MOVE)
-        boolean renamingSucceeded = rootDir.renameTo(tmp);
-        Util.deleteRecursive(tmp);
-        // some user reported that they see some left-over .xyz files in the workspace,
-        // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
-        if(tmp.exists())
-            tmp.deleteOnExit();
-
-        if(!renamingSucceeded)
-            throw new IOException(rootDir+" is in use");
-        LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
-
-        removeRunFromParent();
+            // some user reported that they see some left-over .xyz files in the workspace,
+            // so just to make sure we've really deleted it, schedule the deletion on VM exit, too.
+            if (tmp.exists()) {
+                tmp.deleteOnExit();
+            }
+            LOGGER.log(FINE, "{0}: {1} successfully deleted", new Object[] {this, rootDir});
+            removeRunFromParent();
         }
     }
 
@@ -1813,11 +1853,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     RunListener.fireStarted(this,listener);
 
-                    updateSymlinks(listener);
-
                     setResult(job.run(listener));
 
-                    LOGGER.log(INFO, "{0} main build action completed: {1}", new Object[] {this, result});
+                    LOGGER.log(FINEST, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
                 } catch (ThreadDeath t) {
                     throw t;
@@ -1926,36 +1964,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
-     * Normally you do not need to call this explicitly, since {@link #execute} does so,
-     * but this may be needed if you are creating synthetic {@link Run}s as part of a container project (such as Maven builds in a module set).
-     * You should also ensure that {@link RunListener#fireStarted} and {@link RunListener#fireCompleted} are called.
-     * @param listener probably unused
-     * @throws InterruptedException probably not thrown
-     * @since 1.530
+     * @deprecated After JENKINS-37862 this no longer does anything.
      */
-    public final void updateSymlinks(@Nonnull TaskListener listener) throws InterruptedException {
-        createSymlink(listener, "lastSuccessful", PermalinkProjectAction.Permalink.LAST_SUCCESSFUL_BUILD);
-        createSymlink(listener, "lastStable", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD);
-    }
-    /**
-     * Backward compatibility.
-     *
-     * We used to have $JENKINS_HOME/jobs/JOBNAME/lastStable and lastSuccessful symlinked to the appropriate
-     * builds, but now those are done in {@link PeepholePermalink}. So here, we simply create symlinks that
-     * resolves to the symlink created by {@link PeepholePermalink}.
-     */
-    private void createSymlink(@Nonnull TaskListener listener, @Nonnull String name, @Nonnull PermalinkProjectAction.Permalink target) throws InterruptedException {
-        File buildDir = getParent().getBuildDir();
-        File rootDir = getParent().getRootDir();
-        String targetDir;
-        if (buildDir.equals(new File(rootDir, "builds"))) {
-            targetDir = "builds" + File.separator + target.getId();
-        } else {
-            targetDir = buildDir + File.separator + target.getId();
-        }
-        Util.createSymlink(rootDir, targetDir, name, listener);
-    }
+    @Deprecated
+    public final void updateSymlinks(@Nonnull TaskListener listener) throws InterruptedException {}
 
     /**
      * Handles a fatal build problem (exception) that occurred during the build.
@@ -2450,7 +2462,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return project.getEstimatedDuration();
     }
 
-    @RequirePOST
+    @POST
     public @Nonnull HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
         try (BulkChange bc = new BulkChange(this)) {
@@ -2487,9 +2499,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public int compare(@Nonnull Run lhs, @Nonnull Run rhs) {
             long lt = lhs.getTimeInMillis();
             long rt = rhs.getTimeInMillis();
-            if(lt>rt)   return -1;
-            if(lt<rt)   return 1;
-            return 0;
+            return Long.compare(rt, lt);
         }
     };
 
@@ -2603,7 +2613,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static class RedirectUp {
         public void doDynamic(StaplerResponse rsp) throws IOException {
             // Compromise to handle both browsers (auto-redirect) and programmatic access
-            // (want accurate 404 response).. send 404 with javscript to redirect browsers.
+            // (want accurate 404 response).. send 404 with javascript to redirect browsers.
             rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out = rsp.getWriter();

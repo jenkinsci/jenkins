@@ -188,6 +188,16 @@ THE SOFTWARE.
     </auth-constraint>
   </security-constraint>
   
+  <!-- Disable TRACE method with security constraint (copied from jetty/webdefaults.xml) -->
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Disable TRACE</web-resource-name>
+      <url-pattern>/*</url-pattern>
+      <http-method>TRACE</http-method>
+    </web-resource-collection>
+    <auth-constraint />
+  </security-constraint>
+  
   <security-constraint>
     <web-resource-collection>
       <web-resource-name>other</web-resource-name>

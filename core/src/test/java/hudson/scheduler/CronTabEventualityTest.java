@@ -20,7 +20,7 @@ import java.util.GregorianCalendar;
 public class CronTabEventualityTest {
     @Parameterized.Parameters
     public static Collection<Object[]> parameters() {
-        Collection<Object[]> parameters = new ArrayList<Object[]>();
+        Collection<Object[]> parameters = new ArrayList<>();
         parameters.add(new Object[]{"zero", Hash.zero()});
         parameters.add(new Object[]{"seed1", Hash.from("seed1")});
         parameters.add(new Object[]{"seed2", Hash.from("seed2")});

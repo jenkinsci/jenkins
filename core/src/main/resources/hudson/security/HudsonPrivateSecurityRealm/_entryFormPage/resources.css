@@ -1,0 +1,12 @@
+input {
+	/* match width with captcha image */
+	width:200px;
+}
+
+.form-content {
+	margin: 2em;
+}
+
+.form-content .error {
+	margin-bottom: 1em;
+}

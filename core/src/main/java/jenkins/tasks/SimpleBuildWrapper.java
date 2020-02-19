@@ -232,7 +232,6 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     }
 
     /**
-     * {@inheritDoc}
      * @return an empty set; this might never be called if the step is not part of the static configuration of a project; instead, add a {@link SimpleBuildStep.LastBuildAction} to a build when run
      */
     @Override public final Collection<? extends Action> getProjectActions(AbstractProject job) {

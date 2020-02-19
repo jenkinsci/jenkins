@@ -388,6 +388,15 @@ public class EnvVars extends TreeMap<String,String> {
         if (value!=null)
             put(key,value);
     }
+
+    /**
+     * Add entire map but filter null values out.
+     * @since TODO
+     */
+    public void putAllNonNull(Map<String, String> map) {
+        map.forEach(this::putIfNotNull);
+    }
+
     
     /**
      * Takes a string that looks like "a=b" and adds that to this map.

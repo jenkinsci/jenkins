@@ -168,7 +168,7 @@ public final class UserDetailsCache {
         @Override
         public UserDetails call() throws Exception {
             try {
-                Jenkins jenkins = Jenkins.getInstance();
+                Jenkins jenkins = Jenkins.get();
                 UserDetails userDetails = jenkins.getSecurityRealm().loadUserByUsername(idOrFullName);
                 if (userDetails == null) {
                     existenceCache.put(this.idOrFullName, Boolean.FALSE);

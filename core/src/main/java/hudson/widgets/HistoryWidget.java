@@ -285,7 +285,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
             return null;
         }
         try {
-            return new Long(paramVal);
+            return Long.valueOf(paramVal);
         } catch (NumberFormatException nfe) {
             return null;
         }

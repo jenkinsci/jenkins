@@ -41,7 +41,7 @@ public class InstallPluginCommandTest {
         assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
         assertThat(new CLICommandInvoker(r, "install-plugin").
                 withStdin(InstallPluginCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).
-                invokeWithArgs("-name", "token-macro", "-deploy", "="),
+                invokeWithArgs("-deploy", "="),
             CLICommandInvoker.Matcher.succeeded());
         assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
     }

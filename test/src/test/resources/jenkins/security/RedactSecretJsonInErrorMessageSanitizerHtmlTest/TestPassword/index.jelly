@@ -40,7 +40,7 @@ THE SOFTWARE.
                         <f:password id="pwd-level-one-a"/>
                     </f:entry>
                     <f:entry field="pwd-level-one-b">
-                        <f:password id="pwd-level-one-b"/>
+                        <f:password id="pwd-level-one-b" value="pre-set secret" />
                     </f:entry>
                 </f:section>
     

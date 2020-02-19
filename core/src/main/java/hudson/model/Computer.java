@@ -62,6 +62,7 @@ import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
 import hudson.util.Futures;
+import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
@@ -78,6 +79,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -88,6 +90,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.annotation.concurrent.GuardedBy;
@@ -148,7 +151,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
@@ -299,9 +302,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.613
      */
     protected @Nonnull File getLogDir() {
-        File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
-        if (!dir.exists() && !dir.mkdirs()) {
-            LOGGER.severe("Failed to create agent log directory " + dir.getAbsolutePath());
+        File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
+        try {
+            IOUtils.mkdirs(dir);
+        } catch (IOException x) {
+            LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
         }
         return dir;
     }
@@ -329,7 +334,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
     /**
@@ -592,32 +597,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Exported
     public LoadStatistics getLoadStatistics() {
-        return LabelAtom.get(nodeName != null ? nodeName : Jenkins.getInstance().getSelfLabel().toString()).loadStatistics;
+        return LabelAtom.get(nodeName != null ? nodeName : Jenkins.get().getSelfLabel().toString()).loadStatistics;
     }
 
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
         // dummy implementation
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
         // dummy implementation
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
         // dummy implementation
@@ -731,10 +727,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getIcon() {
-        if(isOffline())
-            return "computer-x.png";
-        else
-            return "computer.png";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "computer-user-offline.png";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "computer-x.png";
+        return "computer.png";
     }
 
     /**
@@ -750,17 +747,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getIconClassName() {
-        if(isOffline())
-            return "icon-computer-x";
-        else
-            return "icon-computer";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "icon-computer-user-offline";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "icon-computer-x";
+        return "icon-computer";
     }
 
     public String getIconAltText() {
-        if(isOffline())
-            return "[offline]";
-        else
-            return "[online]";
+        // The machine was taken offline by someone
+        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
+        // There is a "technical" reason the computer will not accept new builds
+        if (isOffline() || !isAcceptingTasks()) return "[offline]";
+        return "[online]";
     }
 
     @Exported
@@ -779,7 +778,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.EMPTY_SET;
+        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -787,11 +786,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.EMPTY_LIST;
+        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).node(getNode());
+        return RunList.fromJobs((Iterable)Jenkins.get().allItems(Job.class)).node(getNode());
     }
 
     /**
@@ -877,7 +876,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Computer.constructor->Computer.setNode
      * Computer.kill is called after numExecutors set to zero(Computer.inflictMortalWound) so not need the Queue.lock
      *
-     * @param number of executors
+     * @param n number of executors
      */
     @GuardedBy("hudson.model.Queue.lock")
     private void setNumExecutors(int n) {
@@ -1064,20 +1063,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public final long getDemandStartMilliseconds() {
         long firstDemand = Long.MAX_VALUE;
-        for (Queue.BuildableItem item : Jenkins.getInstance().getQueue().getBuildableItems(this)) {
+        for (Queue.BuildableItem item : Jenkins.get().getQueue().getBuildableItems(this)) {
             firstDemand = Math.min(item.buildableStartMilliseconds, firstDemand);
         }
         return firstDemand;
     }
 
     /**
-     * Returns the {@link Node} description for this computer
+     * Returns the {@link Node} description for this computer. Empty String if the {@link Node} is {@code null}.
      */
     @Restricted(DoNotUse.class)
     @Exported
     public @Nonnull String getDescription() {
         Node node = getNode();
-        return (node != null) ? node.getNodeDescription() : null;
+        return (node != null) ? node.getNodeDescription() : "";
     }
 
 
@@ -1090,6 +1089,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             public void run() {
                 synchronized (Computer.this) {
                     executors.remove(e);
+                    oneOffExecutors.remove(e);
                     addNewExecutorIfNecessary();
                     if (!isAlive()) {
                         AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
@@ -1203,7 +1203,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Node node = getNode();
         if (node==null)     return env; // bail out
 
-        for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
+        for (NodeProperty nodeProperty: Jenkins.get().getGlobalNodeProperties()) {
             nodeProperty.buildEnvVars(env,listener);
         }
 
@@ -1212,7 +1212,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         // TODO: hmm, they don't really belong
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if(rootUrl!=null) {
             env.put("HUDSON_URL", rootUrl); // Legacy.
             env.put("JENKINS_URL", rootUrl);
@@ -1369,16 +1369,36 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 // UI
 //
 //
+    @Restricted(DoNotUse.class)
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", getBuilds());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds());
     }
 
+    @Restricted(DoNotUse.class)
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", getBuilds().failureOnly());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly());
     }
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName() + suffix, getUrl(),
-                runs.newBuilds(), Run.FEED_ADAPTER, req, rsp);
+
+    /**
+     * Retrieve the RSS feed for the last build for each project executed in this computer.
+     * Only the information from {@link AbstractProject} is displayed since there isn't a proper API to gather
+     * information about the node where the builds are executed for other sorts of projects such as Pipeline
+     * @since TODO
+     */
+    @Restricted(DoNotUse.class)
+    public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        final List<Run> lastBuilds = new ArrayList<>();
+        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
+            if (p.getLastBuild() != null) {
+                for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+                    if (b.getBuiltOn() == getNode()) {
+                        lastBuilds.add(b);
+                        break;
+                    }
+                }
+            }
+        }
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds));
     }
 
     @RequirePOST
@@ -1464,7 +1484,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Accepts the update to the node configuration.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(CONFIGURE);
 
@@ -1477,7 +1497,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         if ((!proposedName.equals(nodeName))
-                && Jenkins.getActiveInstance().getNode(proposedName) != null) {
+                && Jenkins.get().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
 
@@ -1487,7 +1507,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
-        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
+        Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
 
         // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
@@ -1529,7 +1549,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
-        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
+        Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
     }
 
     /**
@@ -1540,9 +1560,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(DELETE);
         Node node = getNode();
         if (node != null) {
-            Jenkins.getInstance().removeNode(node);
+            Jenkins.get().removeNode(node);
         } else {
-            AbstractCIBase app = Jenkins.getInstance();
+            AbstractCIBase app = Jenkins.get();
             app.removeComputer(this);
         }
         return new HttpRedirect("..");
@@ -1571,6 +1591,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
         getLogText().doProgressText(req, rsp);
     }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.get().checkPermission(Jenkins.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
      * Gets the current {@link Computer} that the build is running.
@@ -1603,7 +1638,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @CLIResolver
     public static Computer resolveForCLI(
             @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for master") String name) throws CmdLineException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.get();
         Computer item = h.getComputer(name);
         if (item==null) {
             List<String> names = ComputerSet.getComputerNames();
@@ -1625,7 +1660,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Initializer
     public static void relocateOldLogs() {
-        relocateOldLogs(Jenkins.getInstance().getRootDir());
+        relocateOldLogs(Jenkins.get().getRootDir());
     }
 
     /*package*/ static void relocateOldLogs(File dir) {
@@ -1775,4 +1810,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
+
+    static {
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-sm", "16x16/computer-user-offline.png", Icon.ICON_SMALL_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-md", "24x24/computer-user-offline.png", Icon.ICON_MEDIUM_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-lg", "32x32/computer-user-offline.png", Icon.ICON_LARGE_STYLE));
+        IconSet.icons.addIcon(new Icon("icon-computer-user-offline icon-xlg", "48x48/computer-user-offline.png", Icon.ICON_XLARGE_STYLE));
+    }
 }

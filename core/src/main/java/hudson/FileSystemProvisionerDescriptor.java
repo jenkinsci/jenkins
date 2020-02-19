@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 

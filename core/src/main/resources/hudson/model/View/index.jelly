@@ -45,7 +45,9 @@ THE SOFTWARE.
             <!-- for screen resolution detection -->
             <l:yui module="cookie" />
             <script>
-              YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height);
+              YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
+                path: "/"
+              });
             </script>
         </l:header>
     </l:layout>

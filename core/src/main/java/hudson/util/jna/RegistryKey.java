@@ -17,7 +17,6 @@ package hudson.util.jna;
 
 import com.sun.jna.ptr.IntByReference;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.TreeMap;

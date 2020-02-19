@@ -38,7 +38,7 @@ public abstract class MarkupFormatterDescriptor extends Descriptor<MarkupFormatt
      * Returns all the registered {@link MarkupFormatterDescriptor}s.
      */
     public static DescriptorExtensionList<MarkupFormatter,MarkupFormatterDescriptor> all() {
-        return Jenkins.getInstance().
+        return Jenkins.get().
                 getDescriptorList(MarkupFormatter.class);
     }
 }

@@ -4,6 +4,7 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -71,6 +72,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -234,10 +236,10 @@ public class SetupWizard extends PageDecorator {
     /**
      * Called during the initial setup to create an admin user
      */
-    @RequirePOST
+    @POST
     @Restricted(NoExternalUse.class)
     public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
 
         j.checkPermission(Jenkins.ADMINISTER);
 
@@ -281,7 +283,7 @@ public class SetupWizard extends PageDecorator {
             // include the new seed
             newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
             
-            CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
+            CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
             JSONObject data = new JSONObject();
             if (crumbIssuer != null) {
                 data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
@@ -302,7 +304,7 @@ public class SetupWizard extends PageDecorator {
         }
     }    
     
-    @RequirePOST
+    @POST
     @Restricted(NoExternalUse.class)
     public HttpResponse doConfigureInstance(StaplerRequest req, @QueryParameter String rootUrl) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -452,7 +454,7 @@ public class SetupWizard extends PageDecorator {
                         }
                     }
                     
-                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), "utf-8");
+                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
                     initialPluginList = JSONArray.fromObject(initialPluginJson);
                     break updateSiteList;
                 } catch(Exception e) {
@@ -469,7 +471,7 @@ public class SetupWizard extends PageDecorator {
             try {
                 ClassLoader cl = getClass().getClassLoader();
                 URL localPluginData = cl.getResource("jenkins/install/platform-plugins.json");
-                String initialPluginJson = IOUtils.toString(localPluginData.openStream(), "utf-8");
+                String initialPluginJson = IOUtils.toString(localPluginData.openStream(), StandardCharsets.UTF_8);
                 initialPluginList =  JSONArray.fromObject(initialPluginJson);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
@@ -607,7 +609,7 @@ public class SetupWizard extends PageDecorator {
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             // Force root requests to the setup wizard
-            if (request instanceof HttpServletRequest) {
+            if (request instanceof HttpServletRequest && !Jenkins.get().getInstallState().isSetupComplete()) {
                 HttpServletRequest req = (HttpServletRequest) request;
                 String requestURI = req.getRequestURI();
                 if (requestURI.equals(req.getContextPath()) && !requestURI.endsWith("/")) {

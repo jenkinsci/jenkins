@@ -93,7 +93,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     * Package-protected, but accessed API
     * ============================================================================================================== */
 
-    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
+    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<>();
 
     @Restricted(NoExternalUse.class)
     public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
@@ -131,7 +131,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             }
         } else {
             // we always need Computer for the master as a fallback in case there's no other Computer.
-            if(n.getNumExecutors()>0 || n==Jenkins.getInstance()) {
+            if(n.getNumExecutors()>0 || n==Jenkins.get()) {
                 try {
                     c = n.createComputer();
                 } catch(RuntimeException ex) { // Just in case there is a bogus extension
@@ -192,11 +192,11 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      */
     protected void updateComputerList(final boolean automaticSlaveLaunch) {
         final Map<Node,Computer> computers = getComputerMap();
-        final Set<Computer> old = new HashSet<Computer>(computers.size());
+        final Set<Computer> old = new HashSet<>(computers.size());
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                Map<String,Computer> byName = new HashMap<String,Computer>();
+                Map<String,Computer> byName = new HashMap<>();
                 for (Computer c : computers.values()) {
                     old.add(c);
                     Node node = c.getNode();

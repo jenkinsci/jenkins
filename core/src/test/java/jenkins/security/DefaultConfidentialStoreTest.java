@@ -3,6 +3,8 @@ package jenkins.security;
 import hudson.FilePath;
 import hudson.Functions;
 import java.io.File;
+import java.nio.charset.Charset;
+
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -31,7 +33,7 @@ public class DefaultConfidentialStoreTest {
         assertTrue(new File(tmp, "test").exists());
         assertTrue(new File(tmp, "master.key").exists());
 
-        assertThat(FileUtils.readFileToString(new File(tmp, "test")), not(containsString("Hello"))); // the data shouldn't be a plain text, obviously
+        assertThat(FileUtils.readFileToString(new File(tmp, "test"), Charset.defaultCharset()), not(containsString("Hello"))); // the data shouldn't be a plain text, obviously
 
         if (!Functions.isWindows()) {
             assertEquals(0700, new FilePath(tmp).mode() & 0777); // should be read only

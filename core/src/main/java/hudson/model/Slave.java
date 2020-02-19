@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.cli.CLI;
 import hudson.model.Descriptor.FormException;
@@ -73,6 +74,7 @@ import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
@@ -155,10 +157,16 @@ public abstract class Slave extends Node implements Serializable {
     private transient volatile Set<Label> labels;
 
     /**
-     * Id of user which creates this agent {@link User}.
+     * Removed with no replacement.
      */
-    private String userId;
+    @Deprecated
+    private transient String userId;
 
+    /**
+     * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
+     * @deprecated since FIXME
+     */
+    @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this(name,nodeDescription,remoteFS,Util.tryParseNumber(numExecutors, 1).intValue(),mode,labelString,launcher,retentionStrategy, nodeProperties);
@@ -197,15 +205,8 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
 
         this.nodeProperties.replaceBy(nodeProperties);
-         Slave node = (Slave) Jenkins.getInstance().getNode(name);
+         Slave node = (Slave) Jenkins.get().getNode(name);
 
-       if(node!=null){
-            this.userId= node.getUserId(); //agent has already existed
-        }
-       else{
-            User user = User.current();
-            userId = user!=null ? user.getId() : "anonymous";
-        }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
@@ -220,19 +221,31 @@ public abstract class Slave extends Node implements Serializable {
      * Return id of user which created this agent
      *
      * @return id of user
+     *
+     * @deprecated Removed with no replacement
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
     public String getUserId() {
         return userId;
     }
 
+    /**
+     * This method no longer does anything.
+     *
+     * @deprecated Removed with no replacement
+     */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
     public void setUserId(String userId){
-        this.userId = userId;
     }
 
     public ComputerLauncher getLauncher() {
         if (launcher == null && !StringUtils.isEmpty(agentCommand)) {
             try {
-                launcher = (ComputerLauncher) Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
+                launcher = (ComputerLauncher) Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
                 agentCommand = null;
                 save();
             } catch (Exception x) {
@@ -402,30 +415,26 @@ public abstract class Slave extends Node implements Serializable {
             if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
-            
+
+            Class<?> owner = null;
             if (name.equals("hudson-cli.jar") || name.equals("jenkins-cli.jar"))  {
-                File cliJar = Which.jarFile(CLI.class);
-                if (cliJar.isFile()) {
-                    name = "jenkins-cli.jar";
-                } else {
-                    URL res = findExecutableJar(cliJar, CLI.class);
-                    if (res != null) {
-                        return res;
-                    }
-                }
+                owner = CLI.class;
             } else if (name.equals("agent.jar") || name.equals("slave.jar") || name.equals("remoting.jar")) {
-                File remotingJar = Which.jarFile(hudson.remoting.Launcher.class);
-                if (remotingJar.isFile()) {
-                    name = "lib/" + remotingJar.getName();
+                owner = hudson.remoting.Launcher.class;
+            }
+            if (owner != null) {
+                File jar = Which.jarFile(owner);
+                if (jar.isFile()) {
+                    name = "lib/" + jar.getName();
                 } else {
-                    URL res = findExecutableJar(remotingJar, hudson.remoting.Launcher.class);
+                    URL res = findExecutableJar(jar, owner);
                     if (res != null) {
                         return res;
                     }
                 }
             }
             
-            URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
+            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
@@ -434,7 +443,7 @@ public abstract class Slave extends Node implements Serializable {
             return res;
         }
 
-        /** Useful for {@code JenkinsRule.createSlave}, {@code hudson-dev:run}, etc. */
+        /** Useful for {@code JenkinsRule.createSlave}, {@code mvn jetty:run}, etc. */
         private @CheckForNull URL findExecutableJar(File notActuallyJAR, Class<?> mainClass) throws IOException {
             if (notActuallyJAR.getName().equals("classes")) {
                 File[] siblings = notActuallyJAR.getParentFile().listFiles();
@@ -507,7 +516,7 @@ public abstract class Slave extends Node implements Serializable {
             if (isUnix == null) {
                 // isUnix is always set when the channel is not null, so it should never happen
                 reportLauncherCreateError("The agent has not been fully initialized yet",
-                                         "Cannot determing if the agent is a Unix one, the System status request has not completed yet. " +
+                                         "Cannot determine if the agent is a Unix one, the System status request has not completed yet. " +
                                          "It is an invalid channel state, please report a bug to Jenkins if you see it.", 
                                          listener);
                 return new Launcher.DummyLauncher(listener);
@@ -565,7 +574,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public SlaveDescriptor getDescriptor() {
-        Descriptor d = Jenkins.getInstance().getDescriptorOrDie(getClass());
+        Descriptor d = Jenkins.get().getDescriptorOrDie(getClass());
         if (d instanceof SlaveDescriptor)
             return (SlaveDescriptor) d;
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
@@ -604,7 +613,7 @@ public abstract class Slave extends Node implements Serializable {
         @Restricted(NoExternalUse.class) // intended for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
         public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
-                    Jenkins.getInstance().getDescriptorList(
+                    Jenkins.get().getDescriptorList(
                             ComputerLauncher.class);
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, all)
                     : DescriptorVisibilityFilter.apply(it, all);
@@ -638,7 +647,7 @@ public abstract class Slave extends Node implements Serializable {
         public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {
             List<NodePropertyDescriptor> result = new ArrayList<>();
             Collection<NodePropertyDescriptor> list =
-                    (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+                    (Collection) Jenkins.get().getDescriptorList(NodeProperty.class);
             for (NodePropertyDescriptor npd : it == null
                     ? DescriptorVisibilityFilter.applyType(clazz, list)
                     : DescriptorVisibilityFilter.apply(it, list)) {

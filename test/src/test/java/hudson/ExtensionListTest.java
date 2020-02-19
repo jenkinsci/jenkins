@@ -96,7 +96,7 @@ public class ExtensionListTest {
 
     public static abstract class Fish implements Describable<Fish> {
         public Descriptor<Fish> getDescriptor() {
-            return Jenkins.getInstance().getDescriptor(getClass());
+            return Jenkins.get().getDescriptor(getClass());
         }
     }
 

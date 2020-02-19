@@ -25,6 +25,7 @@
 package hudson;
 
 import hudson.model.AbstractProject;
+import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
 import hudson.security.ACL;
 
@@ -35,9 +36,6 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-
 /**
  * Runs a job on all projects in the order of dependencies
  */
@@ -47,19 +45,18 @@ public class DependencyRunner implements Runnable {
 	
     ProjectRunnable runnable;
 
-    List<AbstractProject> polledProjects = new ArrayList<AbstractProject>();
+    List<AbstractProject> polledProjects = new ArrayList<>();
 
     public DependencyRunner(ProjectRunnable runnable) {
         this.runnable = runnable;
     }
 
     public void run() {
-        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-        try {
-            Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+            Set<AbstractProject> topLevelProjects = new HashSet<>();
             // Get all top-level projects
             LOGGER.fine("assembling top level projects");
-            for (AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class))
+            for (AbstractProject p : Jenkins.get().allItems(AbstractProject.class))
                 if (p.getUpstreamProjects().size() == 0) {
                     LOGGER.fine("adding top level project " + p.getName());
                     topLevelProjects.add(p);
@@ -71,8 +68,6 @@ public class DependencyRunner implements Runnable {
                     LOGGER.fine("running project in correct dependency order: " + p.getName());
                 runnable.run(p);
             }
-        } finally {
-            SecurityContextHolder.setContext(oldContext);
         }
     }
 

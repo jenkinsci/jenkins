@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 import hudson.Util;
 
 /**
- * Test for {@link Util.isOverridden} method.
+ * Test for {@link Util#isOverridden} method.
  */
 public class IsOverriddenTest {
 

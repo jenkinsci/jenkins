@@ -43,15 +43,15 @@ THE SOFTWARE.
   <licenses>
     <license>
       <name>The MIT license</name>
-      <url>https://www.opensource.org/licenses/mit</url>
+      <url>https://opensource.org/licenses/MIT</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
 
   <modules>
+    <module>bom</module>
     <module>core</module>
     <module>war</module>
-    <module>test-pom</module>
     <module>test</module>
     <module>cli</module>
   </modules>
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.182</revision>
+    <revision>2.221</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -90,31 +90,29 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <guavaVersion>11.0.1</guavaVersion>
-    <slf4jVersion>1.7.25</slf4jVersion>
-    <maven-plugin.version>2.14</maven-plugin.version>
-    <matrix-project.version>1.4.1</matrix-project.version>
+    <matrix-auth.version>2.3</matrix-auth.version>
+    <matrix-project.version>1.14</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <access-modifier.version>1.14</access-modifier.version>
-    <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
-    <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
-
     <java.level>8</java.level>
 
     <changelog.url>https://jenkins.io/changelog</changelog.url>
 
-    <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
+    <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.29</remoting.version>
+    <remoting.version>4.2</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>3.4</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
     <!-- TODO: JENKINS-36716 - Switch to Medium once FindBugs is cleaned up, 430 issues on Mar 10, 2018 -->
     <findbugs.effort>Max</findbugs.effort>
     <findbugs.threshold>High</findbugs.threshold>
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
+
+    <!-- TODO keep these in sync -->
+    <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
+    <access-modifier-checker.version>1.16</access-modifier-checker.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -136,29 +134,13 @@ THE SOFTWARE.
   </pluginRepositories>
 
   <dependencyManagement>
+    <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
     <dependencies>
-      <dependency>
-        <groupId>org.apache.ant</groupId>
-        <artifactId>ant</artifactId>
-        <version>1.9.14</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>2.6</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>2.6</version>
-      </dependency>
 
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>2.22.0</version>
+        <version>3.0.0</version>
       </dependency>
 
       <dependency>
@@ -178,78 +160,6 @@ THE SOFTWARE.
       </dependency>
 
       <dependency>
-        <groupId>commons-httpclient</groupId>
-        <artifactId>commons-httpclient</artifactId>
-        <version>3.1-jenkins-1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.main</groupId>
-        <artifactId>remoting</artifactId>
-        <version>${remoting.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guavaVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava-testlib</artifactId>
-        <version>${guavaVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.inject</groupId>
-        <artifactId>guice</artifactId>
-        <version>4.0</version>
-      </dependency>
-
-      <!-- SLF4J used in maven-plugin and core -->
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-jdk14</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>1.2</version>
-        <scope>provided</scope><!-- by jcl-over-slf4j -->
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>log4j-over-slf4j</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.17</version>
-        <scope>provided</scope><!-- by log4j-over-slf4j -->
-      </dependency>
-      <dependency>
-        <groupId>org.samba.jcifs</groupId>
-        <artifactId>jcifs</artifactId>
-        <version>1.3.17-kohsuke-1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>access-modifier-annotation</artifactId>
-        <version>${access-modifier-annotation.version}</version>
-      </dependency>
-      <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
         <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
         <groupId>javax.servlet</groupId>
@@ -266,18 +176,6 @@ THE SOFTWARE.
         -->
         <scope>provided</scope>
         <optional>true</optional>
-      </dependency>
-      <!--  TODO also add commons-logging and log4j -->
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.9</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci</groupId>
-        <artifactId>annotation-indexer</artifactId>
-        <version>1.12</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -467,12 +365,6 @@ THE SOFTWARE.
           <artifactId>maven-pmd-plugin</artifactId>
         </plugin>
         <plugin>
-          <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>9.4.12.v20180830-jenkins-2</version>
-        </plugin>
-        <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
           <artifactId>maven-makepkgs-plugin</artifactId>
           <version>0.6.2</version>
@@ -514,6 +406,20 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <configuration>
+            <plugins>
+              <plugin>
+                <groupId>com.h3xstream.findsecbugs</groupId>
+                <artifactId>findsecbugs-plugin</artifactId>
+                <version>1.10.1</version>
+              </plugin>
+            </plugins>
+            <maxHeap>768</maxHeap>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -603,15 +509,6 @@ THE SOFTWARE.
           </execution>
         </executions>
 
-      </plugin>
-
-      <plugin>
-        <!--
-          Since some developers try to run hudson-dev:run from main, define it here so that at least the plugin resolves.
-          This enables us to report a better error message.
-        -->
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-jenkins-dev-plugin</artifactId>
       </plugin>
     </plugins>
 
@@ -771,15 +668,6 @@ THE SOFTWARE.
       </properties>
       <activation>
         <jdk>11</jdk>
-      </activation>
-    </profile>
-    <profile>
-      <id>jdk8</id>
-      <modules>
-        <module>test-jdk8</module>
-      </modules>
-      <activation>
-        <jdk>1.8</jdk>
       </activation>
     </profile>
   </profiles>

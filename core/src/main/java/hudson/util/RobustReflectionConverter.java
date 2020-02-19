@@ -76,7 +76,6 @@ public class RobustReflectionConverter implements Converter {
     protected transient SerializationMethodInvoker serializationMethodInvoker;
     private transient ReflectionProvider pureJavaReflectionProvider;
     private final @Nonnull XStream2.ClassOwnership classOwnership;
-    /** {@code pkg.Clazz#fieldName} */
     /** There are typically few critical fields around, but we end up looking up in this map a lot.
         in addition, this map is really only written to during static initialization, so we should use
         reader writer lock to avoid locking as much as possible.  In addition, to avoid looking up

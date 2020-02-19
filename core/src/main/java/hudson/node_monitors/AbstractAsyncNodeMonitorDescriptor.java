@@ -85,7 +85,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
         Map<Computer,Future<T>> futures = new HashMap<>();
         Set<Computer> skipped = new HashSet<>();
 
-        for (Computer c : Jenkins.getInstance().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             try {
                 VirtualChannel ch = c.getChannel();
                 futures.put(c,null);    // sentinel value
@@ -124,6 +124,11 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
     }
 
     private void error(Computer c, Throwable x) {
+        // JENKINS-54496: don't log if c was removed from Jenkins after we'd started monitoring
+        final boolean cIsStillCurrent = Jenkins.get().getComputer(c.getName()) == c;
+        if (!cIsStillCurrent) {
+            return;
+        }
         if (c instanceof SlaveComputer) {
             Functions.printStackTrace(x, ((SlaveComputer) c).getListener().error("Failed to monitor for " + getDisplayName()));
         } else {

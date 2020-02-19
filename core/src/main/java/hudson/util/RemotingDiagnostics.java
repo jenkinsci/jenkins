@@ -121,7 +121,7 @@ public final class RemotingDiagnostics {
         }
 
         public ClassLoader getClassLoader() {
-            return Jenkins.getInstance().getPluginManager().uberClassLoader;
+            return Jenkins.get().getPluginManager().uberClassLoader;
         }
 
         public String call() throws RuntimeException {

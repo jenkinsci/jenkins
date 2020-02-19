@@ -105,7 +105,7 @@ public abstract class ParameterValue implements Serializable {
     @Restricted(DoNotUse.class) // for value.jelly
     public String getFormattedDescription() {
         try {
-            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+            return Jenkins.get().getMarkupFormatter().translate(description);
         } catch (IOException e) {
             LOGGER.warning("failed to translate description using configured markup formatter");
             return "";

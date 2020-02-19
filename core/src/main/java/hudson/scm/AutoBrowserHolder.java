@@ -60,7 +60,7 @@ final class AutoBrowserHolder {
             cacheGeneration = -1;
             return cache;
         }
-        int g = d.generation;
+        int g = d.getGeneration();
         if(g!=cacheGeneration) {
             cacheGeneration = g;
             cache = infer();
@@ -76,7 +76,7 @@ final class AutoBrowserHolder {
      *      null if no applicable configuration was found.
      */
     private RepositoryBrowser infer() {
-        for( AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class) ) {
+        for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) ) {
             SCM scm = p.getScm();
             if (scm!=null && scm.getClass()==owner.getClass() && scm.getBrowser()!=null &&
                     ((SCMDescriptor)scm.getDescriptor()).isBrowserReusable(scm,owner)) {

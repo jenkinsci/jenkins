@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    This trial collects information about the "Auto Refresh" feature to determine whether the feature is used enough to not remove it in a future release of Jenkins.
+    We collect the number of HTTP sessions that have the feature (typically controlled via a cookie) enabled or disabled.
+</j:jelly>

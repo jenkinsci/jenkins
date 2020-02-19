@@ -71,7 +71,7 @@ public class AbstractItemSecurity1114Test {
         public Item getDynamic(String name) {
             Item item;
             try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
-                 item = Jenkins.getInstance().getItemByFullName(name);
+                 item = Jenkins.get().getItemByFullName(name);
             }
             return item;
         }

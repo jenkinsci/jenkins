@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 
 import com.google.common.base.Strings;
@@ -100,21 +101,13 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
             }
-            out.printf(
-                "<html><head>" +
-                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
-                "<script>window.location.replace('%1$s');</script>" +
-                "</head>" +
-                "<body style='background-color:white; color:white;'>\n" +
-                "\n\n"+
-                "Authentication required\n"+
-                "<!--\n",loginForm);
+            printResponse(loginForm, out);
 
             if (cause!=null)
                 cause.report(out);
 
             out.printf(
-                "-->\n\n"+
+                "-->%n%n"+
                 "</body></html>");
             // Turn Off "Show Friendly HTTP Error Messages" Feature on the Server Side.
             // See http://support.microsoft.com/kb/294807
@@ -122,5 +115,18 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 out.print("                              ");
             out.close();
         }
+    }
+
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "Intermediate step for redirecting users to login page.")
+    private void printResponse(String loginForm, PrintWriter out) {
+        out.printf(
+            "<html><head>" +
+            "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+            "<script>window.location.replace('%1$s');</script>" +
+            "</head>" +
+            "<body style='background-color:white; color:white;'>%n" +
+            "%n%n"+
+            "Authentication required%n"+
+            "<!--%n",loginForm);
     }
 }

@@ -1,0 +1,15 @@
+# Configuration for Release Drafter: https://github.com/toolmantim/release-drafter
+_extends: .github
+# We use the 2-digit versioning in Jenkins weekly releases.
+version-template: $MAJOR.$MINOR
+name-template: $NEXT_MINOR_VERSION
+tag-template: jenkins-$NEXT_MINOR_VERSION
+
+template: |
+  **Disclaimer**: This is an automatically generated changelog draft for Jenkins weekly releases. 
+  See https://jenkins.io/changelog/ for the official changelogs.
+  For `changelog.yaml` drafts see GitHub action artifacts attached to release commits.
+
+  $CHANGES
+  
+  All contributors: $CONTRIBUTORS

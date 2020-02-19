@@ -8,8 +8,6 @@ import static org.junit.Assert.fail;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.ViewTest.CompositeView;
 import hudson.model.View;
@@ -23,15 +21,12 @@ import java.util.List;
 
 
 import jenkins.model.Jenkins;
-import jenkins.model.ModifiableTopLevelItemGroup;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -54,8 +49,7 @@ public class ListJobsCommandTest {
 
         jenkins = mock(Jenkins.class);
         mockStatic(Jenkins.class);
-        when(Jenkins.getInstance()).thenReturn(jenkins);
-        when(Jenkins.getActiveInstance()).thenReturn(jenkins);
+        when(Jenkins.get()).thenReturn(jenkins);
         command = mock(ListJobsCommand.class, Mockito.CALLS_REAL_METHODS);
         command.stdout = new PrintStream(stdout);
         command.stderr = new PrintStream(stderr);
@@ -183,11 +177,11 @@ public class ListJobsCommandTest {
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                final HashSet<String> jobs = new HashSet<String>(
+                final HashSet<String> jobs = new HashSet<>(
                         Arrays.asList(item.toString().split(System.getProperty("line.separator")))
                 );
 
-                return new HashSet<String>(Arrays.asList(expected)).equals(jobs);
+                return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }
 
             @Override

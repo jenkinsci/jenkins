@@ -154,12 +154,12 @@ public class AutoCompletionCandidates implements HttpResponse {
             }
         }
 
-        if (container==null || container==Jenkins.getInstance()) {
-            new Visitor("").onItemGroup(Jenkins.getInstance());
+        if (container==null || container==Jenkins.get()) {
+            new Visitor("").onItemGroup(Jenkins.get());
         } else {
             new Visitor("").onItemGroup(container);
             if (value.startsWith("/"))
-                new Visitor("/").onItemGroup(Jenkins.getInstance());
+                new Visitor("/").onItemGroup(Jenkins.get());
 
             for ( String p="../"; value.startsWith(p); p+="../") {
                 container = ((Item)container).getParent();

@@ -102,7 +102,7 @@ public class MyView extends View {
          */
         @Override
         public boolean isInstantiable() {
-            return Jenkins.getInstance().isUseSecurity();
+            return Jenkins.get().isUseSecurity();
         }
 
         public String getDisplayName() {

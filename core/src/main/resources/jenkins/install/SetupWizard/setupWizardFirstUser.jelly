@@ -18,6 +18,7 @@
         #create-admin-user h1 {
           font-family: 'roboto', sans-serif;
           font-size: 48px;
+          line-height: 48px;
           margin-top: 30px;
           font-weight: 500;
         }

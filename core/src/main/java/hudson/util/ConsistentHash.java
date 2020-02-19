@@ -26,6 +26,7 @@ package hudson.util;
 import java.lang.RuntimeException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Iterators.DuplicateFilterIterator;
 
 /**
@@ -83,9 +85,7 @@ public class ConsistentHash<T> {
         }
 
         public int compareTo(Point that) {
-            if(this.hash<that.hash) return -1;
-            if(this.hash==that.hash) return 0;
-            return 1;
+            return Integer.compare(this.hash, that.hash);
         }
     }
 
@@ -292,7 +292,7 @@ public class ConsistentHash<T> {
      */
     private int md5(String s) {
         try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5 = getMd5();
             md5.update(s.getBytes());
             byte[] digest = md5.digest();
 
@@ -303,6 +303,12 @@ public class ConsistentHash<T> {
         } catch (GeneralSecurityException e) {
             throw new RuntimeException("Could not generate MD5 hash", e);
         }
+    }
+
+    // TODO JENKINS-60563 remove MD5 from all usages in Jenkins
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security.")
+    private MessageDigest getMd5() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance("MD5");
     }
 
     /**

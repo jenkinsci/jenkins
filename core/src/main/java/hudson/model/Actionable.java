@@ -322,7 +322,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Gets the action (first instance to be found) of a specified type that contributed to this build.
      *
      * @param type
-     * @return The action or <code>null</code> if no such actions exist.
+     * @return The action or {@code null} if no such actions exist.
      * @see #getActions(Class)
      */
     public <T extends Action> T getAction(Class<T> type) {

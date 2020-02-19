@@ -67,12 +67,12 @@ public class OverallLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeQueueLength() {
-        return Jenkins.getInstance().getQueue().countBuildableItems();
+        return Jenkins.get().getQueue().countBuildableItems();
     }
 
     @Override
     protected Iterable<Node> getNodes() {
-        return Jenkins.getActiveInstance().getNodes();
+        return Jenkins.get().getNodes();
     }
 
     @Override

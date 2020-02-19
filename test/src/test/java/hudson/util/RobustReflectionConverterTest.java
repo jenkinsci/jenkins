@@ -163,7 +163,7 @@ public class RobustReflectionConverterTest {
                 // unfortunately, default newInstance bypasses newInstances for members.
                 formData = formData.getJSONObject("keywordProperty");
                 @SuppressWarnings("unchecked")
-                Descriptor<AcceptOnlySpecificKeyword> d = Jenkins.getInstance().getDescriptor(AcceptOnlySpecificKeyword.class);
+                Descriptor<AcceptOnlySpecificKeyword> d = Jenkins.get().getDescriptor(AcceptOnlySpecificKeyword.class);
                 return new KeywordProperty(
                         d.newInstance(req, formData.getJSONObject("nonCriticalField")),
                         d.newInstance(req, formData.getJSONObject("criticalField"))

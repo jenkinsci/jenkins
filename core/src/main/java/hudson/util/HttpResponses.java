@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -142,8 +142,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
      */
     static class JSONObjectResponse implements HttpResponse {
 
-        private static final Charset UTF8 = Charset.forName("UTF-8");
-
         private final JSONObject jsonObject;
 
         /**
@@ -205,12 +203,9 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
             return this;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-            byte[] bytes = jsonObject.toString().getBytes(UTF8);
+            byte[] bytes = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
             rsp.setContentType("application/json; charset=UTF-8");
             rsp.setContentLength(bytes.length);
             rsp.getOutputStream().write(bytes);

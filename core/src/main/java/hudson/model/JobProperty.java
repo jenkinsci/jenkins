@@ -97,12 +97,9 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
         this.owner = owner;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public JobPropertyDescriptor getDescriptor() {
-        return (JobPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (JobPropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**

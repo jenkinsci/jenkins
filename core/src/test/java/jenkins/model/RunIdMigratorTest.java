@@ -161,7 +161,7 @@ public class RunIdMigratorTest {
     // TODO test sane recovery from various error conditions
 
     private void write(String file, String text) throws Exception {
-        FileUtils.write(new File(dir, file), text);
+        FileUtils.write(new File(dir, file), text, Charset.defaultCharset());
     }
 
     private void link(String symlink, String dest) throws Exception {
@@ -173,14 +173,14 @@ public class RunIdMigratorTest {
     }
     private static String summarize(File dir) throws Exception {
         File[] kids = dir.listFiles();
-        Map<String,String> m = new TreeMap<String,String>();
+        Map<String,String> m = new TreeMap<>();
         for (File kid : kids) {
             String notation;
             String symlink = Util.resolveSymlink(kid);
             if (symlink != null) {
                 notation = "→" + symlink;
             } else if (kid.isFile()) {
-                notation = "'" + FileUtils.readFileToString(kid) + "'";
+                notation = "'" + FileUtils.readFileToString(kid, Charset.defaultCharset()) + "'";
             } else if (kid.isDirectory()) {
                 notation = summarize(kid);
             } else {

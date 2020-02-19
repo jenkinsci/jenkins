@@ -29,7 +29,6 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;
 import java.io.IOException;
-import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
