@@ -79,7 +79,22 @@ public abstract class ACL {
         }
     }
 
+    /**
+     * Checks if the current security principal has one of the supplied permissions.
+     *
+     * <p>
+     * This is just a convenience function.
+     *
+     * @throws AccessDeniedException
+     *      if the user doesn't have the permission.
+     * @throws IllegalArgumentException
+     *      if no permissions are provided
+     */
     public final void checkAnyPermission(@Nonnull Permission... permissions) {
+        if (permissions.length == 0) {
+            throw new IllegalArgumentException("At least one permission must be provided");
+        }
+
         boolean failed = !hasAnyPermission(permissions);
 
         Authentication authentication = Jenkins.getAuthentication();
@@ -118,8 +133,15 @@ public abstract class ACL {
      *
      * @return false
      *      if the user doesn't have one of the required permissions.
+     *
+     * @throws IllegalArgumentException
+     *      if no permissions are provided
      */
     public final boolean hasAnyPermission(@Nonnull Permission... permissions) {
+        if (permissions.length == 0) {
+            throw new IllegalArgumentException("At least one permission must be provided");
+        }
+
         Authentication a = Jenkins.getAuthentication();
         if (a == SYSTEM) {
             return true;
