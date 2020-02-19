@@ -162,11 +162,7 @@ public class MissingClassTelemetry extends Telemetry {
 
         JSONObject info = new JSONObject();
         VersionNumber jenkinsVersion = Jenkins.getVersion();
-        if (jenkinsVersion != null) {
-            info.put("core", jenkinsVersion.toString());
-        } else {
-            info.put("core", "UNKNOWN");
-        }
+        info.put("core", jenkinsVersion != null ? jenkinsVersion.toString() : "UNKNOWN");
         info.put("clientDate", clientDateString());
         info.put("classMissingEvents", events);
 
