@@ -1062,6 +1062,10 @@ public class Functions {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
 
+            if (!Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission())) {
+                continue;
+            }
+
             if (predicate.apply(d.getCategory())) {
                 r.add(new Tag(c.ordinal(), d));
             }
