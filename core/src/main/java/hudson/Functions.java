@@ -27,6 +27,7 @@ package hudson;
 
 import hudson.model.Slave;
 import hudson.security.*;
+import java.util.function.Predicate;
 import jenkins.telemetry.impl.AutoRefresh;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
@@ -142,6 +143,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
+import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -157,8 +159,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
 
@@ -1053,8 +1053,11 @@ public class Functions {
      * @param predicate
      *      Filter the descriptors based on this predicate
      * @since 1.494
+     * @deprecated use {@link #getSortedDescriptorsForGlobalConfigByDescriptor(Predicate)}
      */
-    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<Descriptor> predicate) {
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(com.google.common.base.Predicate<GlobalConfigurationCategory> predicate) {
         ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
         List<Tag> r = new ArrayList<>(exts.size());
 
@@ -1062,7 +1065,11 @@ public class Functions {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
 
-            if (predicate.apply(d)) {
+            if (!Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission())) {
+                continue;
+            }
+
+            if (predicate.apply(d.getCategory())) {
                 r.add(new Tag(c.ordinal(), d));
             }
         }
@@ -1075,10 +1082,47 @@ public class Functions {
     }
 
     /**
-     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but with a constant truth predicate, to include all descriptors.
+     * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
+     * so that descriptors of similar types come nearby.
+     *
+     * <p>
+     * We sort them by {@link Extension#ordinal()} but only for {@link GlobalConfiguration}s,
+     * as the value is normally used to compare similar kinds of extensions, and we needed
+     * {@link GlobalConfiguration}s to be able to position themselves in a layer above.
+     * This however creates some asymmetry between regular {@link Descriptor}s and {@link GlobalConfiguration}s.
+     * Perhaps it is better to introduce another annotation element? But then,
+     * extensions shouldn't normally concern themselves about ordering too much, and the only reason
+     * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
+     *
+     * @param predicate
+     *      Filter the descriptors based on this predicate
+     * @since TODO
      */
-    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
-        return getSortedDescriptorsForGlobalConfig(descriptor -> true);
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigByDescriptor(Predicate<Descriptor> predicate) {
+        ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
+        List<Tag> r = new ArrayList<>(exts.size());
+
+        for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
+            Descriptor d = c.getInstance();
+            if (d.getGlobalConfigPage()==null)  continue;
+
+            if (predicate.test(d)) {
+                r.add(new Tag(c.ordinal(), d));
+            }
+        }
+        Collections.sort(r);
+
+        List<Descriptor> answer = new ArrayList<>(r.size());
+        for (Tag d : r) answer.add(d.d);
+
+        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
+    }
+
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfigByDescriptor(Predicate)} but with a constant truth predicate, to include all descriptors.
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigByDescriptor() {
+        return getSortedDescriptorsForGlobalConfigByDescriptor(descriptor -> true);
     }
 
     /**
@@ -1086,7 +1130,7 @@ public class Functions {
      */
     @Deprecated
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
-        return getSortedDescriptorsForGlobalConfig(Predicates.not(GlobalSecurityConfiguration.FILTER));
+        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> d != GlobalSecurityConfiguration.FILTER);
     }
 
     /**
@@ -1095,7 +1139,7 @@ public class Functions {
      * @since 1.506
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassified() {
-        return getSortedDescriptorsForGlobalConfig(d -> d.getCategory() instanceof GlobalConfigurationCategory.Unclassified && Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission()));
+        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> d.getCategory() instanceof GlobalConfigurationCategory.Unclassified && Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission()));
     }
 
     /**
@@ -1105,10 +1149,16 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassifiedReadable() {
-        return getSortedDescriptorsForGlobalConfig(d -> d.getCategory() instanceof GlobalConfigurationCategory.Unclassified && (
+        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> d.getCategory() instanceof GlobalConfigurationCategory.Unclassified && (
                 Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission()) || Jenkins.get().hasPermission(Jenkins.SYSTEM_READ)));
     }
 
+    /**
+     * Checks if the current security principal has one of the supplied permissions.
+     *
+     * @throws AccessDeniedException
+     *      if the user doesn't have the permission.
+     */
     @Restricted(NoExternalUse.class)
     public static void checkAnyPermission(AccessControlled ac, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
