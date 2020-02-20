@@ -84,9 +84,12 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.RenderOnDemandClosure;
 
+
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.LockInfo;
@@ -158,7 +161,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
-import java.io.PrintStream;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -650,6 +653,7 @@ public class Functions {
             // to avoid conflicts with any other web apps that might be on the same machine.
             c.setPath("/");
             c.setMaxAge(60*60*24*30); // persist it roughly for a month
+            c.setHttpOnly(true);
             response.addCookie(c);
         }
         if (refresh) {
@@ -766,11 +770,15 @@ public class Functions {
 
     /**
      * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
-     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).
+     * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).<br>
+     * For convenience in jelly code, it also accepts null parameter, and then returns an empty string.
      *
      * @since 2.200
      */
     public static String urlEncode(String s) {
+        if (s == null) {
+            return "";
+        }
         try {
             return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
@@ -1054,6 +1062,10 @@ public class Functions {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
 
+            if (!Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission())) {
+                continue;
+            }
+
             if (predicate.apply(d.getCategory())) {
                 r.add(new Tag(c.ordinal(), d));
             }
@@ -1305,7 +1317,7 @@ public class Functions {
     private static class ThreadSorterBase {
         protected Map<Long,String> map = new HashMap<>();
 
-        private ThreadSorterBase() {
+        public ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
@@ -1325,7 +1337,9 @@ public class Functions {
         }
     }
 
-    public static class ThreadGroupMap extends ThreadSorterBase implements Comparator<ThreadInfo> {
+    public static class ThreadGroupMap extends ThreadSorterBase implements Comparator<ThreadInfo>, Serializable {
+
+        private static final long serialVersionUID = 7803975728695308444L;
 
         /**
          * @return ThreadGroup name or null if unknown
@@ -1342,7 +1356,9 @@ public class Functions {
         }
     }
 
-    private static class ThreadSorter extends ThreadSorterBase implements Comparator<Thread> {
+    private static class ThreadSorter extends ThreadSorterBase implements Comparator<Thread>, Serializable {
+
+        private static final long serialVersionUID = 5053631350439192685L;
 
         public int compare(Thread a, Thread b) {
             int result = compare(a.getId(), b.getId());
@@ -1479,12 +1495,10 @@ public class Functions {
         if(it instanceof Descriptor)
             clazz = ((Descriptor)it).clazz;
 
-        StringBuilder buf = new StringBuilder(Stapler.getCurrentRequest().getContextPath());
-        buf.append(Jenkins.VIEW_RESOURCE_PATH).append('/');
-        buf.append(clazz.getName().replace('.','/').replace('$','/'));
-        buf.append('/').append(path);
-
-        return buf.toString();
+        String buf = Stapler.getCurrentRequest().getContextPath() + Jenkins.VIEW_RESOURCE_PATH + '/' +
+                clazz.getName().replace('.', '/').replace('$', '/') +
+                '/' + path;
+        return buf;
     }
 
     public static boolean hasView(Object it, String path) throws IOException {

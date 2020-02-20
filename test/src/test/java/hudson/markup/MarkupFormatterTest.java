@@ -69,4 +69,12 @@ public class MarkupFormatterTest {
         @TestExtension
         public static class DescriptorImpl extends MarkupFormatterDescriptor {}
     }
+
+    @Test
+    public void defaultEscaped() throws Exception {
+        assertEquals("&lt;your thing here&gt;", j.jenkins.getMarkupFormatter().translate("<your thing here>"));
+        assertEquals("", j.jenkins.getMarkupFormatter().translate(""));
+        assertEquals("", j.jenkins.getMarkupFormatter().translate(null));
+    }
+
 }

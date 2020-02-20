@@ -28,6 +28,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import static org.hamcrest.CoreMatchers.*;
 import org.junit.After;
 import static org.junit.Assert.*;
@@ -70,7 +72,7 @@ public class XStream2EncodingTest {
         Thing t = (Thing) xs.fromXML(new ByteArrayInputStream(ambiguousXml));
         assertThat(t.field, not(msg));
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-        baos2.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+        baos2.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes(StandardCharsets.UTF_8));
         baos2.write(ambiguousXml);
         t = (Thing) xs.fromXML(new ByteArrayInputStream(ambiguousXml));
         assertThat(t.field, not(msg));

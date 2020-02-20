@@ -135,7 +135,7 @@ public class TokenBasedRememberMeServices2Test {
         wc.executeOnServer(() -> {
             Authentication a = Jenkins.getAuthentication();
             assertEquals("bob", a.getName());
-            assertEquals(ImmutableList.of("authenticated", "myteam"), Arrays.asList(a.getAuthorities()).stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+            assertEquals(ImmutableList.of("authenticated", "myteam"), Arrays.stream(a.getAuthorities()).map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
             return null;
         });
     }

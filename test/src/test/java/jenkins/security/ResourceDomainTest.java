@@ -10,6 +10,7 @@ import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import static org.hamcrest.Matchers.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -98,7 +99,7 @@ public class ResourceDomainTest {
 
         {
             webClient.setThrowExceptionOnFailingStatusCode(false);
-            Page page = webClient.getPage(resourceRootUrl + "/static-files");
+            Page page = webClient.getPage(resourceRootUrl + "/static-files/");
             Assert.assertEquals("resource action index page response is 404", 404, page.getWebResponse().getStatusCode());
         }
 
@@ -176,7 +177,7 @@ public class ResourceDomainTest {
             String modifiedUrl = resourceResponseUrl.replaceAll("static[-]files[/]....", "static-files/aaaa");
             Page page = webClient.getPage(modifiedUrl);
             Assert.assertEquals("resource not found", 404, page.getWebResponse().getStatusCode());
-            Assert.assertEquals("resource not found", ResourceDomainFilter.ERROR_RESPONSE, page.getWebResponse().getStatusMessage());
+            Assert.assertThat("resource not found", page.getWebResponse().getContentAsString(), containsString(ResourceDomainFilter.ERROR_RESPONSE));
         }
 
 
@@ -219,7 +220,7 @@ public class ResourceDomainTest {
         // and we get a 403 response
         page = webClient.getPage(anonUrl);
         Assert.assertEquals("page is not found", 403, page.getWebResponse().getStatusCode());
-        Assert.assertTrue("Response mentions workspace permission", page.getWebResponse().getStatusMessage().contains("Failed permission check: anonymous is missing the Job/Workspace permission"));
+        Assert.assertThat("Response mentions workspace permission", page.getWebResponse().getContentAsString(), containsString("Failed permission check: anonymous is missing the Job/Workspace permission"));
 
         // now remove Job/Read permission from all users (but grant Discover)
         a = new MockAuthorizationStrategy();
@@ -230,7 +231,7 @@ public class ResourceDomainTest {
         // and we get a 403 response asking to log in (Job/Discover is basically meant to be granted to anonymous only)
         page = webClient.getPage(anonUrl);
         Assert.assertEquals("page is not found", 403, page.getWebResponse().getStatusCode());
-        Assert.assertTrue("Response mentions workspace permission", page.getWebResponse().getStatusMessage().contains("Failed permission check: Please login to access job"));
+        Assert.assertThat("Response mentions workspace permission", page.getWebResponse().getContentAsString(), containsString("Failed permission check: Please login to access job"));
     }
 
     @Test

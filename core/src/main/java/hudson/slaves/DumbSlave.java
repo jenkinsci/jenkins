@@ -25,7 +25,6 @@ package hudson.slaves;
 
 import hudson.model.Slave;
 import hudson.model.Descriptor.FormException;
-import hudson.slaves.DumbSlave;
 import hudson.Extension;
 
 import java.io.IOException;

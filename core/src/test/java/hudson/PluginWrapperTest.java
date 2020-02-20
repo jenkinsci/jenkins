@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import jenkins.model.Jenkins;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -23,11 +25,20 @@ import static org.mockito.Mockito.when;
 
 public class PluginWrapperTest {
 
+    private Locale loc;
+    
     @Before
     public void before() throws Exception {
         Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
+        loc = Locale.getDefault();
+        Locale.setDefault(new Locale("en", "GB"));
     }
 
+    @After
+    public void after() {
+        Locale.setDefault(loc);
+    }
+    
     @Test
     public void dependencyTest() {
         String version = "plugin:0.0.2";
@@ -53,7 +64,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "fake version 42 failed to load", "update Jenkins from version 2.0 to version 3.0");
+            assertContains(ex, "Failed to load: fake (42)", "Jenkins (3.0) or higher required");
         }
     }
 
@@ -64,7 +75,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "dependee version 42 failed to load", "dependency version 42 is missing. To fix, install version 42 or later");
+            assertContains(ex, "Failed to load: dependee (42)", "Plugin is missing: dependency (42)");
         }
     }
 
@@ -76,7 +87,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "dependee version 42 failed to load", "dependency version 3 is older than required. To fix, install version 5 or later");
+            assertContains(ex, "Failed to load: dependee (42)", "Update required: dependency (3) to be updated to 5 or higher");
         }
     }
 
@@ -88,7 +99,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContains(ex, "dependee version 42 failed to load", "dependency version 5 failed to load. Fix this plugin first");
+            assertContains(ex, "Failed to load: dependee (42)", "Failed to load: dependency (5)");
         }
     }
 

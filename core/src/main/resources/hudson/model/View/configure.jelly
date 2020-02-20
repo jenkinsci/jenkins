@@ -52,7 +52,7 @@ THE SOFTWARE.
         <st:include page="configure-entries.jelly" optional="true" />
 
         <!-- view property configurations -->
-        <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
+        <f:descriptorList descriptors="${it.getVisiblePropertyDescriptors()}" instances="${it.properties}" />
 
         <f:bottomButtonBar>
           <f:submit value="${%OK}" />

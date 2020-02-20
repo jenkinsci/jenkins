@@ -262,8 +262,8 @@ public class FingerprinterTest {
         fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
             assertTrue(f.getOriginal().is(upstream));
-            assertTrue(f.getOriginal().getName().equals(renamedProject1));
-            assertFalse(f.getOriginal().getName().equals(oldUpstreamName));
+            assertEquals(f.getOriginal().getName(), renamedProject1);
+            assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
         }
          
         // Verify that usage entry in fingerprint record is changed after

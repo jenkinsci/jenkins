@@ -4,23 +4,19 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
+import static org.hamcrest.Matchers.*;
 import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 //TODO merge back to DefaultCrumbIssuerTest
 public class DefaultCrumbIssuerSEC1491Test {
@@ -72,7 +68,8 @@ public class DefaultCrumbIssuerSEC1491Test {
             r.createWebClient().getPage(request1);
             fail();
         } catch (FailingHttpStatusCodeException e) {
-            assertTrue(e.getMessage().contains("No valid crumb"));
+            assertEquals(HttpServletResponse.SC_FORBIDDEN, e.getStatusCode());
+            assertThat(e.getResponse().getContentAsString(), containsString("No valid crumb"));
         }
         // cannot create new job due to missing crumb
         assertNull(r.jenkins.getItem(jobName1));

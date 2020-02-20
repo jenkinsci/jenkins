@@ -326,7 +326,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
 
     @Override
     public int compareTo(HealthReport o) {
-        return (this.score < o.score ? -1 : (this.score == o.score ? 0 : 1));
+        return Integer.compare(this.score, o.score);
     }
 
     /**

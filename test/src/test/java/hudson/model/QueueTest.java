@@ -1086,16 +1086,22 @@ public class QueueTest {
     @Test
     @Issue("SECURITY-891")
     public void doCancelItem_PermissionIsChecked() throws Exception {
-        checkCancelOperationUsingUrl(item -> "queue/cancelItem?id=" + item.getId());
+        checkCancelOperationUsingUrl(item -> "queue/cancelItem?id=" + item.getId(), false);
     }
 
     @Test
     @Issue("SECURITY-891")
     public void doCancelQueue_PermissionIsChecked() throws Exception {
-        checkCancelOperationUsingUrl(item -> "queue/item/" + item.getId() + "/cancelQueue");
+        checkCancelOperationUsingUrl(item -> "queue/item/" + item.getId() + "/cancelQueue", true);
     }
 
-    private void checkCancelOperationUsingUrl(Function<Queue.Item, String> urlProvider) throws Exception {
+    /**
+     *
+     * @param urlProvider the endpoint to query
+     * @param legacyRedirect whether the endpoint has the legacy behavior (ie makes a redirect no matter the result)
+     *                       Or it uses the newer response codes introduced by JENKINS-21311
+     */
+    private void checkCancelOperationUsingUrl(Function<Queue.Item, String> urlProvider, boolean legacyRedirect) throws Exception {
         Queue q = r.jenkins.getQueue();
 
         r.jenkins.setCrumbIssuer(null);
@@ -1124,11 +1130,13 @@ public class QueueTest {
                     .withRedirectEnabled(false)
                     .withThrowExceptionOnFailingStatusCode(false);
             wc.login("user");
-            Page p = wc.getPage(request);
-            // currently the endpoint return a redirection to the previously visited page, none in our case
-            // (so force no redirect to avoid false positive error)
-            assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
-
+            if(legacyRedirect) {
+                Page p = wc.getPage(request);
+                // the legacy endpoint returns a redirection to the previously visited page, none in our case
+                // (so force no redirect to avoid false positive error)
+                // see JENKINS-21311
+                assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
+            }
             assertFalse(currentOne.getFuture().isCancelled());
         }
         { // user with right can
