@@ -513,7 +513,15 @@ public class Functions {
     public static boolean isWindows() {
         return File.pathSeparatorChar==';';
     }
-    
+
+    public static boolean isMac() {
+        String osType = System.getenv("_system_name");
+        if (osType == null || osType.isEmpty() || !osType.equalsIgnoreCase("OSX")) {
+            return false;
+        }
+        return true;
+    }
+
     public static boolean isGlibcSupported() {
         try {
             GNUCLibrary.LIBC.getpid();
