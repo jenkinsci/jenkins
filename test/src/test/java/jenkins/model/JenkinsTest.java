@@ -299,7 +299,7 @@ public class JenkinsTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
             grant(Jenkins.READ).everywhere().to("bob").
-            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
+            grantWithoutImplication(Jenkins.RUN_SCRIPTS, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
 
         wc.withBasicApiToken(User.getById("alice", true));
