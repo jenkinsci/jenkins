@@ -60,7 +60,7 @@ public class GroovyshCommand extends CLICommand {
     @Override
     protected int run() {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
-        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         // this being remote means no jline capability is available
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
