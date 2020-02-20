@@ -15,7 +15,7 @@ properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: 
 
 // TODO: Restore 'Windows' once https://groups.google.com/forum/#!topic/jenkinsci-dev/v9d-XosOp2s is resolved
 def buildTypes = ['Linux']
-def jdks = [8, 11]
+def jdks = [8]
 
 def builds = [:]
 for(i = 0; i < buildTypes.size(); i++) {
@@ -120,7 +120,7 @@ void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
     // Using the "tool" Workflow call automatically installs those tools on the
     // node.
     String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
-    String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
+    String jdktool = tool name: "jdk8-adopt", type: 'hudson.model.JDK'
 
     // Set JAVA_HOME, MAVEN_HOME and special PATH variables for the tools we're
     // using.
