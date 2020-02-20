@@ -1257,8 +1257,7 @@ public class Fingerprint implements ModelObject, Saveable {
             file.getParentFile().mkdirs();
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
-            try {
-                PrintWriter w = new PrintWriter(afw);
+            try (PrintWriter w = new PrintWriter((afw))) {
                 w.println("<?xml version='1.1' encoding='UTF-8'?>");
                 w.println("<fingerprint>");
                 w.print("  <timestamp>");
