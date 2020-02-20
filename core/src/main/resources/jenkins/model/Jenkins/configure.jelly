@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permission="${it.ADMINISTER}" title="${%Configure System}">
+<l:layout permission="${it.MANAGE}" title="${%Configure System}">
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline />
   <l:main-panel>
@@ -52,7 +52,9 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
 
-      <st:include page="_cloud-note.jelly"/>
+      <l:isAdmin>
+        <st:include page="_cloud-note.jelly"/>
+      </l:isAdmin>
 
       <f:bottomButtonBar>
         <f:submit value="${%Save}" />
