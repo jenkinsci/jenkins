@@ -31,14 +31,12 @@ THE SOFTWARE.
   <l:layout title="Jenkins" norefresh="true" type="one-column">
     <l:header />
     <l:main-panel>
-      <div style="text-align: center;">
         <h1 style="text-align: center">
           <img src="${imagesURL}/rage.png" height="179" width="154"/> <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
         </h1>
         <div id="error-description">
-          <h2>${%problemHappened}</h2>
-        </div>
-        <p>Logging ID=${request.getAttribute('jenkins.exception.id')}</p>
+          <h2 style="text-align: center">${%problemHappened}</h2>
+        <p style="text-align: center">Logging ID=${request.getAttribute('jenkins.exception.id')}</p>
       </div>
       <j:if test="${app.shouldShowStackTrace()}">
         <p>${%checkJIRA} ${%vote} ${%pleaseReport} ${%stackTracePlease} ${%checkML}</p>
