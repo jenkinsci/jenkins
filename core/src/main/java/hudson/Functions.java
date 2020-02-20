@@ -1158,12 +1158,13 @@ public class Functions {
      *
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
-     *
-     * @throws IllegalArgumentException
-     *      if no permissions are provided.
      */
     @Restricted(NoExternalUse.class)
     public static void checkAnyPermission(AccessControlled ac, Permission[] permissions) {
+        if (permissions == null || permissions.length == 0) {
+            return;
+        }
+
         ac.checkAnyPermission(permissions);
     }
 
