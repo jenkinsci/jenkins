@@ -1130,7 +1130,7 @@ public class Functions {
      */
     @Deprecated
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
-        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> d != GlobalSecurityConfiguration.FILTER);
+        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> GlobalSecurityConfiguration.FILTER.negate(d));
     }
 
     /**
