@@ -317,6 +317,7 @@ public class JenkinsTest {
         wc.withBasicApiToken(User.getById("bob", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
 
+        //TODO: remove once RUN_SCRIPTS is finally retired
         wc.withBasicApiToken(User.getById("charlie", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
     }
