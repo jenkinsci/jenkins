@@ -109,6 +109,18 @@ public class ACLTest {
         }
     }
 
+    @Test
+    public void hasAnyPermissionThrowsIfNoPermissionProvided() {
+        expectedException.expect(IllegalArgumentException.class);
+        r.jenkins.getACL().hasAnyPermission();
+    }
+
+    @Test
+    public void checkAnyPermissionThrowsIfNoPermissionProvided() {
+        expectedException.expect(IllegalArgumentException.class);
+        r.jenkins.getACL().checkAnyPermission();
+    }
+
     private static class DoNotBotherMe extends AuthorizationStrategy {
 
         @Override
