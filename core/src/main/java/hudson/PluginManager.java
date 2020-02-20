@@ -2111,7 +2111,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
     @Deprecated
-    public static final Permission CONFIGURE_UPDATECENTER = new Permission(Jenkins.PERMISSIONS,"ConfigureUpdateCenter", Messages._PluginManager_ConfigureUpdateCenterPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);
+    public static final Permission CONFIGURE_UPDATECENTER = new Permission(Jenkins.PERMISSIONS, "ConfigureUpdateCenter", Messages._PluginManager_ConfigureUpdateCenterPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);
 
     /**
      * Remembers why a plugin failed to deploy.
