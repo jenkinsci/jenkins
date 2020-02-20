@@ -38,7 +38,7 @@ public class JenkinsSystemReadAndManagePermissionTest {
     public void setup() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.MANAGE, Jenkins.SYSTEM_READ).everywhere().to(SYSTEM_READER));
+                .grant(Jenkins.MANAGE, Jenkins.SYSTEM_READ, Jenkins.READ).everywhere().to(SYSTEM_READER));
 
         webClient = j.createWebClient();
         webClient.setThrowExceptionOnFailingStatusCode(false);
