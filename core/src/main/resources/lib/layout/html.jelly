@@ -80,7 +80,7 @@ THE SOFTWARE.
     </j:if>
   </j:if>
 <x:doctype name="html" />
-<html>
+<html class="${h.isUiRefreshEnabled() ? 'ui-refresh' : ''}">
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
 

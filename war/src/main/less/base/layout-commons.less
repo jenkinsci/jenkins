@@ -1,0 +1,121 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0 0 40px 0;
+}
+
+/* --------------- header --------------- */
+
+#header .logo {
+  margin-left: 16px;
+  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+#jenkins-home-link {
+  position: relative;
+}
+
+#jenkins-head-icon {
+  height: 2.5rem;
+}
+
+#jenkins-name-icon {
+  margin-left: 0.25rem;
+}
+
+#breadcrumbBar,
+#footer-container,
+.top-sticker-inner {
+  background-color: @breadcrumbs-bg;
+}
+
+.top-sticker-inner {
+  border-bottom: 1px solid @breadcrumbs-border;
+}
+
+/* -------------------------------------- */
+
+#page-body.clear:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+#side-panel {
+  padding: 15px 15px 40px 15px;
+  float: left;
+  width: 320px;
+}
+
+#main-panel {
+  padding: 15px 15px 40px 15px;
+}
+
+body.two-column #main-panel {
+  margin-left: 320px;
+  display:block;
+}
+
+body.full-screen {
+  padding: 0;
+}
+
+body.full-screen #main-panel {
+  padding: 0;
+}
+
+@media (max-width: 970px) {
+  body.two-column #side-panel {
+    width: 100%;
+    float: none;
+    padding-bottom: 20px;
+  }
+
+  body.two-column #main-panel {
+    margin-left: 0;
+    display:block;
+  }
+}
+
+@media (min-width: 1170px) {
+  body.two-column #side-panel {
+    width: 360px;
+  }
+
+  body.two-column #main-panel {
+    margin-left: 360px;
+    display:block;
+  }
+}
+
+/* --------------- footer --------------- */
+
+footer {
+  padding: 11px 0;
+  background-color: @breadcrumbs-bg;
+  border-top: 1px solid @breadcrumbs-border;
+  border-bottom: 1px solid @breadcrumbs-bg;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  clear: both;
+  font-size: 12px;
+  text-align: right;
+}
+
+footer span {
+  margin-left: 15px;
+  line-height: 14px;
+}
+
+/* -------------------------------------- */

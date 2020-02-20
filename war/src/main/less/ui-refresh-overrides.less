@@ -1,0 +1,85 @@
+@import "./abstracts/colors.less";
+
+.ui-refresh {
+    .page-header {
+        background-color: @header-bg-v2;
+    }
+
+    #header .logo {
+        display: none;
+    }
+
+    // Need to use the element selector to increase weight otherwise it will be overriden by the
+    // a:visited selector if it is declared later
+    A.page-header__brand-link {
+        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        height: 100%;
+        padding: 16px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        line-height: 1.5;
+        background-color: @logo-bg;
+        // TODO: comment on browser support for clip-path
+        clip-path: polygon(0 0, 100% 0, 95% 100%, 0 100%);
+
+        &:link,
+        &:visited {
+            color: @brand-link-color;
+            text-decoration: none;
+        }
+
+        &:hover,
+        &:focus {
+            text-decoration: underline;
+            color: @brand-link-color-hover-v2;
+            text-decoration-color: @brand-link-color-hover-v2;
+        }
+
+        &:link:focus {
+            outline: none;
+            color: @brand-link-color-active-v2;
+            text-decoration-color: @brand-link-color-active-v2;
+
+            .page-header__brand-name {
+                outline: auto;
+            }
+        }
+    }
+
+    .page-header__hyperlinks A {
+        &:hover,
+        &:focus,
+        &.mouseIsOverMenuSelector {
+            background-color: @header-link-bg-hover-v2;
+        }
+
+        &:active {
+            background-color: @header-link-bg-active-v2;
+        }
+    }
+
+    .main-search__input:hover ~ .main-search__icon-leading {
+        color: @header-link-bg-hover-v2;
+    }
+
+    .main-search__input:focus ~ .main-search__icon-leading {
+        color: @header-link-bg-active-v2;
+    }
+
+    .main-search__icon-trailing {
+        &:hover,
+        &:focus {
+            color: @header-link-bg-hover-v2;
+        }
+
+        &:active {
+            fill: @header-link-bg-active-v2;
+        }
+    }
+
+    #visible-am-container.visible #visible-am-button {
+        background-color: @header-link-bg-active-v2;
+    }
+}
