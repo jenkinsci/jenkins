@@ -2105,10 +2105,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
     public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
-    /** @deprecated in Jenkins 2.222 use {@link #ADMINISTER} instead */
+    /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
     @Deprecated
     public static final Permission UPLOAD_PLUGINS = Jenkins.ADMINISTER;
-    /** @deprecated in Jenkins 2.222 use {@link #ADMINISTER} instead */
+    /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
     @Deprecated
     public static final Permission CONFIGURE_UPDATECENTER = Jenkins.ADMINISTER;
 

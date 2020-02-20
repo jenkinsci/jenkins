@@ -5269,7 +5269,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
-    /** @deprecated in Jenkins 2.222 use {@link #ADMINISTER} instead */
+    /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
     @Deprecated
     public static final Permission RUN_SCRIPTS = Jenkins.ADMINISTER;
 
