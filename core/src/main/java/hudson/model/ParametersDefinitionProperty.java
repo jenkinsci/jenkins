@@ -200,6 +200,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     /**
      * Gets the {@link ParameterDefinition} of the given name, if any.
      */
+    @CheckForNull
     public ParameterDefinition getParameterDefinition(String name) {
         for (ParameterDefinition pd : parameterDefinitions)
             if (pd.getName().equals(name))

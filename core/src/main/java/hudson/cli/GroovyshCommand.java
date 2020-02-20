@@ -85,12 +85,12 @@ public class GroovyshCommand extends CLICommand {
         Binding binding = new Binding();
         // redirect "println" to the CLI
         binding.setProperty("out", new PrintWriter(stdout,true));
-        binding.setProperty("hudson", Jenkins.getActiveInstance()); // backward compatibility
-        binding.setProperty("jenkins", Jenkins.getActiveInstance());
+        binding.setProperty("hudson", Jenkins.get()); // backward compatibility
+        binding.setProperty("jenkins", Jenkins.get());
 
         IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
 
-        final ClassLoader cl = Jenkins.getActiveInstance().pluginManager.uberClassLoader;
+        final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
             private static final long serialVersionUID = 1L;
 

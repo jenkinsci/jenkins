@@ -82,6 +82,9 @@ import java.util.Set;
 public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
+        if (!Jenkins.get().getUpdateCenter().isSiteDataReady()) {
+            return false;
+        }
         return !getActiveCoreWarnings().isEmpty() || !getActivePluginWarningsByPlugin().isEmpty();
     }
 

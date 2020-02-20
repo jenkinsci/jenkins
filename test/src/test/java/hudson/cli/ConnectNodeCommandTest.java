@@ -173,7 +173,7 @@ public class ConnectNodeCommandTest {
     }
 
     @Test public void connectNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = j.jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)

@@ -47,7 +47,7 @@ import javax.annotation.Nonnull;
  * private ViewsTabBar viewsTabBar;
  * }</pre>
  * <li>
- * Define a transient field and store ViewGroupMixIn subype, then wire up getters and setters:
+ * Define a transient field and store ViewGroupMixIn subtype, then wire up getters and setters:
  * <pre>
  * private transient ViewGroupMixIn = new ViewGroupMixIn() {
  *     List&lt;View&gt; views() { return views; }
@@ -163,12 +163,14 @@ public abstract class ViewGroupMixIn {
     }
 
     /**
-     * Returns the primary {@link View} that renders the top-page of Hudson.
+     * Returns the primary {@link View} that renders the top-page of Hudson or
+     * {@code null} if there is no primary one defined.
      */
     @Exported
+    @CheckForNull
     public View getPrimaryView() {
         View v = getView(primaryView());
-        if(v==null) // fallback
+        if(v==null && !views().isEmpty()) // fallback
             v = views().get(0);
         return v;
     }

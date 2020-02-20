@@ -82,6 +82,10 @@ dt {
   font-weight: bold;
 }
 
+dt > .plugin_version {
+  font-weight: normal;
+}
+
 .fixed-width {
   font-family: monospace;
 }
@@ -516,6 +520,10 @@ table.bigtable.pane > tbody > tr > td:last-child {
   background-color: #f0f0f0;
   padding: 6px 4px;
   white-space: nowrap;
+}
+
+.bigtable th.minimum-width {
+  width: 1px;
 }
 
 .bigtable td {

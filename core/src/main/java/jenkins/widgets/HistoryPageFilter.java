@@ -240,13 +240,7 @@ public class HistoryPageFilter<T> {
                 long o1QID = HistoryPageEntry.getEntryId(o1);
                 long o2QID = HistoryPageEntry.getEntryId(o2);
 
-                if (o1QID < o2QID) {
-                    return 1;
-                } else if (o1QID == o2QID) {
-                    return 0;
-                } else {
-                    return -1;
-                }
+                return Long.compare(o2QID, o1QID);
             }
         });
     }

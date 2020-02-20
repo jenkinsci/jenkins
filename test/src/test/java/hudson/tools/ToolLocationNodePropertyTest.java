@@ -43,6 +43,7 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -161,6 +162,7 @@ public class ToolLocationNodePropertyTest {
     }
 
     @Test
+    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
     public void nativeMaven() throws Exception {
         MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenPath = maven.getHome();

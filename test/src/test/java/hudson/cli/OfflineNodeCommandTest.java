@@ -453,7 +453,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = Jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -467,7 +467,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnMasterWithCause() throws Exception {
-        final Computer masterComputer = Jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)

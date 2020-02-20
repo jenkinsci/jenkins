@@ -47,7 +47,7 @@ public class ClearQueueCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        Jenkins.getActiveInstance().getQueue().clear();
+        Jenkins.get().getQueue().clear();
         return 0;
     }
 

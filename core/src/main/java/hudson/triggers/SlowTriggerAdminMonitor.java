@@ -64,11 +64,12 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
             if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger)) {
                 String oldest_trigger = null;
                 LocalDateTime oldest_time = null;
-                for (String local_trigger : errors.keySet()) {
+                for (Map.Entry<String, Value> entry : errors.entrySet()) {
+                    String local_trigger = entry.getKey();
                     if (oldest_trigger == null
-                            || errors.get(local_trigger).getTimeLDT().compareTo(oldest_time) < 0) {
+                            || entry.getValue().getTimeLDT().compareTo(oldest_time) < 0) {
                         oldest_trigger = local_trigger;
-                        oldest_time = errors.get(local_trigger).getTimeLDT();
+                        oldest_time = entry.getValue().getTimeLDT();
                     }
                 }
                 errors.remove(oldest_trigger);

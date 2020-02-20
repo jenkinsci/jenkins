@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.ProxyConfiguration;

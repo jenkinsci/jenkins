@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -124,7 +125,7 @@ public class SecretTest {
         for (String str : new String[] {"Hello world", "", "\u0000unprintable"}) {
             Cipher cipher = Secret.getCipher("AES");
             cipher.init(Cipher.ENCRYPT_MODE, legacy);
-            String old = new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))));
+            String old = new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes(StandardCharsets.UTF_8))));
             Secret s = Secret.fromString(old);
             assertEquals("secret by the old key should decrypt", str, s.getPlainText());
             assertNotEquals("but when encrypting, ConfidentialKey should be in use", old, s.getEncryptedValue());

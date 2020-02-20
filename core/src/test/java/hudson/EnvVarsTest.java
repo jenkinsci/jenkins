@@ -23,18 +23,14 @@
  */
 package hudson;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import hudson.EnvVars.OverrideOrderCalculator;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import com.google.common.collect.Sets;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -139,5 +135,26 @@ public class EnvVarsTest {
         List<String> order = calc.getOrderedVariableNames();
         assertEquals(Arrays.asList("B", "A", "C"), order.subList(0, 3));
         assertEquals(Sets.newHashSet("E", "D"), new HashSet<>(order.subList(3, order.size())));
+    }
+
+    @Test
+    public void putIfNotNull() {
+        EnvVars env = new EnvVars();
+        env.putIfNotNull("foo", null);
+        assertTrue(env.isEmpty());
+        env.putIfNotNull("foo", "bar");
+        assertFalse(env.isEmpty());
+    }
+
+    @Test
+    public void putAllNonNull() {
+        EnvVars env = new EnvVars();
+        TreeMap<String, String> map = new TreeMap<>();
+        map.put("A", "a");
+        map.put("B", null);
+        TreeMap<String, String> filteredMap = new TreeMap<>();
+        filteredMap.put("A", "a");
+        env.putAllNonNull(map);
+        assertEquals(filteredMap, env);
     }
 }

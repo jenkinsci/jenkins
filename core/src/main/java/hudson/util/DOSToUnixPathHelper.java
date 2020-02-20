@@ -1,5 +1,6 @@
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Util;
 import org.kohsuke.accmod.Restricted;
@@ -17,18 +18,22 @@ class DOSToUnixPathHelper {
         void validate(File fexe);
     }
     static private boolean checkPrefix(String prefix, Helper helper) {
-        File f = new File(prefix);
+        File f = constructFile(prefix);
         if(f.exists()) {
             helper.checkExecutable(f);
             return true;
         }
 
-        File fexe = new File(prefix+".exe");
+        File fexe = constructFile(prefix+".exe");
         if(fexe.exists()) {
             helper.checkExecutable(fexe);
             return true;
         }
         return false;
+    }
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Limited use for locating shell executable by administrator.")
+    private static File constructFile(String prefix) {
+        return new File(prefix);
     }
     static void iteratePath(String exe, Helper helper) {
         exe = fixEmpty(exe);

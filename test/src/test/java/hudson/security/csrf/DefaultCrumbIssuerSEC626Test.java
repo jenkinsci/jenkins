@@ -10,16 +10,15 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
+import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author dty
@@ -74,7 +73,8 @@ public class DefaultCrumbIssuerSEC626Test { //TODO merge back to DefaultCrumbIss
                 r.submit(p.getFormByName("config"));
                 fail();
             } catch (FailingHttpStatusCodeException e) {
-                assertTrue(e.getMessage().contains("No valid crumb"));
+                assertEquals(HttpServletResponse.SC_FORBIDDEN, e.getStatusCode());
+                assertThat(e.getResponse().getContentAsString(), containsString("No valid crumb"));
             }
         }
     }

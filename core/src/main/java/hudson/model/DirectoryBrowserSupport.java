@@ -24,7 +24,6 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Util;
 import java.io.IOException;
@@ -347,13 +346,12 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Serving "+baseFile+" with lastModified=" + lastModified + ", length=" + length);
 
-        InputStream in = baseFile.open();
         if (view) {
             // for binary files, provide the file name for download
             rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
 
             // pseudo file name to let the Stapler set text/plain
-            rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
+            rsp.serveFile(req, baseFile.open(), lastModified, -1, length, "plain.txt");
         } else {
             if (resourceToken != null) {
                 // redirect to second domain
@@ -369,7 +367,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         }
                     }
                 }
-                rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName());
+                rsp.serveFile(req, baseFile.open(), lastModified, -1, length, baseFile.getName());
             }
         }
     }

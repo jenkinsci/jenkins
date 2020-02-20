@@ -67,7 +67,7 @@ public class GroovyCommand extends CLICommand {
         binding.setProperty("stdout",stdout);
         binding.setProperty("stderr",stderr);
 
-        GroovyShell groovy = new GroovyShell(Jenkins.getActiveInstance().getPluginManager().uberClassLoader, binding);
+        GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
         groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[0]));
         return 0;
     }

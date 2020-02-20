@@ -172,7 +172,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
         } else {
             lastRotateMillis = System.currentTimeMillis();
             // migrate old log files the first time we start-up
-            File oldFile = new File(Jenkins.getActiveInstance().getRootDir(), f.getName());
+            File oldFile = new File(Jenkins.get().getRootDir(), f.getName());
             if (oldFile.isFile()) {
                 File newFile = new File(f.getParentFile(), f.getName() + ".1");
                 if (!newFile.isFile()) {

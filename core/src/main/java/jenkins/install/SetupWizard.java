@@ -4,6 +4,7 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -453,7 +454,7 @@ public class SetupWizard extends PageDecorator {
                         }
                     }
                     
-                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), "utf-8");
+                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
                     initialPluginList = JSONArray.fromObject(initialPluginJson);
                     break updateSiteList;
                 } catch(Exception e) {
@@ -470,7 +471,7 @@ public class SetupWizard extends PageDecorator {
             try {
                 ClassLoader cl = getClass().getClassLoader();
                 URL localPluginData = cl.getResource("jenkins/install/platform-plugins.json");
-                String initialPluginJson = IOUtils.toString(localPluginData.openStream(), "utf-8");
+                String initialPluginJson = IOUtils.toString(localPluginData.openStream(), StandardCharsets.UTF_8);
                 initialPluginList =  JSONArray.fromObject(initialPluginJson);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);

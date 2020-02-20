@@ -24,6 +24,8 @@ import org.jenkinsci.remoting.engine.JnlpConnectionState;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -113,7 +115,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                                     + "Set system property "
                                     + "jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification=true to allow"
                                     + "connections until the plugin has been fixed.",
-                            new Object[]{clientName, event.getSocket().getRemoteSocketAddress(), computer.getLauncher().getClass()});
+                            new Object[]{clientName, event.getRemoteEndpointDescription(), computer.getLauncher().getClass()});
                     event.reject(new ConnectionRefusalException(String.format("%s is not an inbound agent", clientName)));
                     return;
                 }
@@ -122,7 +124,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         Channel ch = computer.getChannel();
         if (ch != null) {
             String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
-            if (cookie != null && cookie.equals(ch.getProperty(COOKIE_NAME))) {
+            if (cookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), ch.getProperty(COOKIE_NAME).toString().getBytes(StandardCharsets.UTF_8))) {
                 // we think we are currently connected, but this request proves that it's from the party
                 // we are supposed to be communicating to. so let the current one get disconnected
                 LOGGER.log(Level.INFO, "Disconnecting {0} as we are reconnected from the current peer", clientName);
@@ -149,7 +151,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
         PrintWriter logw = new PrintWriter(log, true);
-        logw.println("Inbound agent connected from " + event.getSocket().getInetAddress());
+        logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(event.getChannelBuilder(), computer);
         }
@@ -216,5 +218,5 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultJnlpSlaveReceiver.class.getName());
 
-    private static final String COOKIE_NAME = JnlpSlaveAgentProtocol2.class.getName()+".cookie";
+    private static final String COOKIE_NAME = "JnlpAgentProtocol.cookie";
 }
