@@ -37,6 +37,8 @@ import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
+import hudson.security.csrf.DefaultCrumbIssuer;
+import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.security.stapler.DoActionFilter;
@@ -654,7 +656,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * {@link hudson.security.csrf.CrumbIssuer}
      */
-    private volatile CrumbIssuer crumbIssuer;
+    private volatile CrumbIssuer crumbIssuer = GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer();
 
     /**
      * All labels known to Jenkins. This allows us to reuse the same label instances
@@ -1797,9 +1799,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public <T> List<T> getItems(Class<T> type) {
         List<T> r = new ArrayList<>();
-        for (TopLevelItem i : getItems())
-            if (type.isInstance(i))
-                 r.add(type.cast(i));
+        for (TopLevelItem i : getItems(type::isInstance)) {
+             r.add(type.cast(i));
+         }
         return r;
     }
 
@@ -3298,9 +3300,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                 }
 
-
-                // Initialize the filter with the crumb issuer
-                setCrumbIssuer(crumbIssuer);
+                // Allow the disabling system property to interfere here
+                setCrumbIssuer(getCrumbIssuer());
 
                 // auto register root actions
                 for (Action a : getExtensionList(RootAction.class))
@@ -3794,7 +3795,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CheckForNull
     public CrumbIssuer getCrumbIssuer() {
-        return crumbIssuer;
+        return GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION ? null : crumbIssuer;
     }
 
     public void setCrumbIssuer(CrumbIssuer issuer) {

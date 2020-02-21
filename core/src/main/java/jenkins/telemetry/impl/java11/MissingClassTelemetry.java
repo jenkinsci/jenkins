@@ -26,6 +26,7 @@ package jenkins.telemetry.impl.java11;
 
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
+import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
@@ -160,7 +161,8 @@ public class MissingClassTelemetry extends Telemetry {
         }
 
         JSONObject info = new JSONObject();
-        info.put("core", Jenkins.getVersion() != null ? Jenkins.getVersion().toString() : "UNKNOWN");
+        VersionNumber jenkinsVersion = Jenkins.getVersion();
+        info.put("core", jenkinsVersion != null ? jenkinsVersion.toString() : "UNKNOWN");
         info.put("clientDate", clientDateString());
         info.put("classMissingEvents", events);
 
