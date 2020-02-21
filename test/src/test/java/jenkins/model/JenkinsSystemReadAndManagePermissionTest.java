@@ -80,7 +80,7 @@ public class JenkinsSystemReadAndManagePermissionTest {
         Config config = GlobalConfiguration.all().get(Config.class);
 
         assert config != null;
-        assertNull("shouldn't be allowed to change the number of executors", config.getNumber());
+        assertNull("shouldn't be allowed to change a GlobalConfiguration that needs Overall/Administer", config.getNumber());
     }
 
     @TestExtension
