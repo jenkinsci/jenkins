@@ -1310,7 +1310,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Returns null if no such facet.
      * @since TODO
      */
-    public FingerprintFacet facetBlockingDeletion() {
+    public @CheckForNull FingerprintFacet facetBlockingDeletion() {
         for (FingerprintFacet facet : facets) {
             if (facet.isFingerprintDeletionBlocked())
                 return facet;

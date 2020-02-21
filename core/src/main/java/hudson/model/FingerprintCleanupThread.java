@@ -111,14 +111,14 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     private boolean check(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = loadFingerprint(fingerprintFile);
-            if (fp == null || (!fp.isAlive() && fp.facetBlockingDeletion()==null) ) {
+            if (fp == null || (!fp.isAlive() && fp.facetBlockingDeletion() == null) ) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
                 return true;
             } else {
                 if (!fp.isAlive()) {
                     FingerprintFacet deletionBlockerFacet = fp.facetBlockingDeletion();
-                    listener.getLogger().println(deletionBlockerFacet.getClass().getName()+" created on "+DATE_CONVERTER.toString(deletionBlockerFacet.getTimestamp())+" blocked deletion of " + fingerprintFile);
+                    listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + DATE_CONVERTER.toString(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
                 }
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
