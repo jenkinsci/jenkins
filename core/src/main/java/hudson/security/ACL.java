@@ -82,7 +82,6 @@ public abstract class ACL {
     /**
      * Checks if the current security principal has one of the supplied permissions.
      *
-     * <p>
      * This is just a convenience function.
      *
      * @throws AccessDeniedException
@@ -133,7 +132,7 @@ public abstract class ACL {
     /**
      * Checks if the current security principal has any of the permissions.
      *
-     * @return false
+     * @return {@code false}
      *      if the user doesn't have one of the required permissions.
      *
      * @throws IllegalArgumentException
