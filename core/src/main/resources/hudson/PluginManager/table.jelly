@@ -119,6 +119,9 @@ THE SOFTWARE.
                       <j:if test="${p.isForNewerJava()}">
                         <div class="alert alert-danger">${%javaWarning(p.minimumJavaVersion)}</div>
                       </j:if>
+                      <j:if test="${p.fixesSecurityVulnerabilities()}">
+                        <div class="alert alert-warning">${%Applying this update will address security vulnerabilities currently affecting Jenkins.}</div>
+                      </j:if>
                       <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
                         <div class="alert alert-danger">${%depCompatWarning}
                           <br/>${%parentDepCompatWarning}
