@@ -15,7 +15,7 @@ import static org.junit.Assert.assertThat;
 
 public class JenkinsSystemReadAndManagePermissionTest {
 
-    private static final String SYSTEM_READER = "systemReader";
+    private static final String SYSTEM_READER_AND_MANAGER = "systemReaderAndManager";
 
     @BeforeClass
     public static void enablePermissions() {
@@ -38,7 +38,7 @@ public class JenkinsSystemReadAndManagePermissionTest {
     public void setup() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.MANAGE, Jenkins.SYSTEM_READ, Jenkins.READ).everywhere().to(SYSTEM_READER));
+                .grant(Jenkins.MANAGE, Jenkins.SYSTEM_READ, Jenkins.READ).everywhere().to(SYSTEM_READER_AND_MANAGER));
 
         webClient = j.createWebClient();
         webClient.setThrowExceptionOnFailingStatusCode(false);
@@ -46,14 +46,14 @@ public class JenkinsSystemReadAndManagePermissionTest {
 
     @Test
     public void configureReadAllowedWithSystemReadAndManagePermission() throws Exception {
-        HtmlPage configure = webClient.login(SYSTEM_READER)
+        HtmlPage configure = webClient.login(SYSTEM_READER_AND_MANAGER)
                 .goTo("configure");
         assertThat(configure.getWebResponse().getStatusCode(), is(200));
     }
 
     @Test
     public void configureConfigSubmitAllowedWithSystemReadAndManagePermission() throws Exception {
-        HtmlPage configure = webClient.login(SYSTEM_READER)
+        HtmlPage configure = webClient.login(SYSTEM_READER_AND_MANAGER)
                 .goTo("configure");
         assertThat(configure.getWebResponse().getStatusCode(), is(200));
 

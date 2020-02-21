@@ -89,6 +89,8 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      * @throws IllegalArgumentException
      *      if no permissions are provided
+     *
+     * @since TODO
      */
     public final void checkAnyPermission(@Nonnull Permission... permissions) {
         if (permissions.length == 0) {
