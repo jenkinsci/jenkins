@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
@@ -133,7 +134,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
                     // require a crumb issuer
-                    jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
+                    jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
     
                     // set master -> slave security:
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)
