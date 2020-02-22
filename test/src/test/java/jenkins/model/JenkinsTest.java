@@ -299,7 +299,7 @@ public class JenkinsTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
             grant(Jenkins.READ).everywhere().to("bob").
-            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
+            grantWithoutImplication(Jenkins.RUN_SCRIPTS, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
 
         wc.withBasicApiToken(User.getById("alice", true));
@@ -317,6 +317,7 @@ public class JenkinsTest {
         wc.withBasicApiToken(User.getById("bob", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
 
+        //TODO: remove once RUN_SCRIPTS is finally retired
         wc.withBasicApiToken(User.getById("charlie", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
     }
@@ -355,8 +356,8 @@ public class JenkinsTest {
 
         wc.withBasicApiToken(User.getById("charlie", true));
         page = eval(wc);
-        assertEquals("charlie has ADMINISTER but not RUN_SCRIPTS", 
-                HttpURLConnection.HTTP_FORBIDDEN,
+        assertEquals("charlie has ADMINISTER and READ",
+                HttpURLConnection.HTTP_OK,
                 page.getWebResponse().getStatusCode());
     }
     private Page eval(WebClient wc) throws Exception {

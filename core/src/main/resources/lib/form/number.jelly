@@ -76,12 +76,15 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
-  <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-         class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
-         name="${name}"
-         value="${value}"
-         type="number"
-         ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+
+  <f:possibleReadOnlyField>
+    <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+           class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
+           name="${name}"
+           value="${value}"
+           type="number"
+           ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+  </f:possibleReadOnlyField>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>
