@@ -38,9 +38,13 @@ import hudson.model.Descriptor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
+import hudson.scm.ChangeLogParser;
+import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
@@ -164,6 +168,40 @@ public class SimpleBuildWrapperTest {
             @Override public boolean isApplicable(AbstractProject<?,?> item) {
                 return true;
             }
+        }
+    }
+
+    @Test public void disposerForPreCheckoutWrapper() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
+        r.assertLogContains("ran DisposerImpl", r.buildAndAssertSuccess(p));
+    }
+    @Issue("JENKINS-43889")
+    @Test public void disposerForPreCheckoutWrapperWithScmError() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setScm(new FailingSCM());
+        p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
+        r.assertLogContains("ran DisposerImpl", r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0)));
+    }
+    public static class PreCheckoutWrapperWithDisposer extends WrapperWithDisposer {
+        @Override
+        protected boolean runPreCheckout() {
+            return true;
+        }
+        @TestExtension({ "disposerForPreCheckoutWrapper", "disposerForPreCheckoutWrapperWithScmError" }) public static class DescriptorImpl extends BuildWrapperDescriptor {
+            @Override public boolean isApplicable(AbstractProject<?,?> item) {
+                return true;
+            }
+        }
+    }
+    public static class FailingSCM extends SCM {
+        @Override
+        public void checkout(Run<?, ?> build, Launcher launcher, FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline) throws IOException, InterruptedException {
+            throw new RuntimeException("SCM failed");
+        }
+        @Override
+        public ChangeLogParser createChangeLogParser() {
+            return null;
         }
     }
 
