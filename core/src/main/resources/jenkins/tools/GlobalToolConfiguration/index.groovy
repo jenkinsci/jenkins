@@ -25,7 +25,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
         div(class:"behavior-loading", _("LOADING"))
 
         f.form(method:"post",name:"config",action:"configure") {
-            Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->
+            Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
                 f.rowSet(name:descriptor.jsonSafeClassName) {

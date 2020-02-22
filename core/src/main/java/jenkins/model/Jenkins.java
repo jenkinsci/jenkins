@@ -5264,6 +5264,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             SystemProperties.getBoolean("jenkins.security.ManagePermission"),
             new PermissionScope[]{PermissionScope.JENKINS});
 
+    /**
+     * Allows read-only access to large parts of the system configuration.
+     *
+     * When combined with {@link #MANAGE}, it is expected that everything is shown as if only {@link #SYSTEM_READ} was granted,
+     * but that only options editable by users with {@link #MANAGE} are editable.
+     */
+    @Restricted(Beta.class)
+    public static final Permission SYSTEM_READ = new Permission(PERMISSIONS, "SystemRead",
+            Messages._Jenkins_SystemRead_Description(),
+            ADMINISTER,
+            SystemProperties.getBoolean("jenkins.security.SystemReadPermission"),
+            new PermissionScope[]{PermissionScope.JENKINS});
+
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static final Permission[] MANAGE_AND_SYSTEM_READ =
+            new Permission[] { MANAGE, SYSTEM_READ };
 
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);

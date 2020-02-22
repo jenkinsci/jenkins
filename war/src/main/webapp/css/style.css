@@ -396,6 +396,11 @@ pre.console {
   font-size: 12pt;
 }
 
+.jenkins-not-applicable {
+  color: darkgrey;
+  font-style: italic;
+}
+
 #jenkins .task-link {
     text-decoration: none;
 }

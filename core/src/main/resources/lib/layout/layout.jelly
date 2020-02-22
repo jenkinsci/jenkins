@@ -49,8 +49,12 @@ THE SOFTWARE.
       in &lt;l:header/> tag.
     </st:attribute>
     <st:attribute name="permission">
-      If given, this page is only made available to users that has the specified permission.
+      If given, this page is only made available to users who have the specified permission.
       (The permission will be checked against the "it" object.)
+    </st:attribute>
+    <st:attribute name="permissions">
+      If given, this page is made available to users who have one or more of the specified permissions.
+      (The permissions will be checked against the "it" object.)
     </st:attribute>
     <st:attribute name="type" use="optional">
       Available values: two-column (by default), one-column (full-width size) or full-screen (since 2.53).
@@ -95,6 +99,7 @@ THE SOFTWARE.
 <html class="${h.isUiRefreshEnabled() ? 'ui-refresh' : ''}">
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
+    ${h.checkAnyPermission(it, permissions)}
 
     <j:if test="${isMSIE}">
       <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
