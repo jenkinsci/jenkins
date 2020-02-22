@@ -4463,7 +4463,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public static void _doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
-        acl.checkPermission(RUN_SCRIPTS);
+        acl.checkPermission(ADMINISTER);
 
         String text = req.getParameter("script");
         if (text != null) {
@@ -4493,7 +4493,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @RequirePOST
     public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(RUN_SCRIPTS);
+        checkPermission(ADMINISTER);
         req.getWebApp().getDispatchValidator().allowDispatch(req, rsp);
         try {
             MetaClass mc = req.getWebApp().getMetaClass(getClass());
@@ -5282,6 +5282,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new Permission[] { MANAGE, SYSTEM_READ };
 
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
+    /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
+    @Deprecated
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 
     /**

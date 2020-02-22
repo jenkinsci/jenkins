@@ -59,7 +59,7 @@ public class GroovyCommand extends CLICommand {
 
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
-        Jenkins.get().checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Binding binding = new Binding();
         binding.setProperty("out",new PrintWriter(stdout,true));

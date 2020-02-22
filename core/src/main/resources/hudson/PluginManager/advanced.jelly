@@ -35,7 +35,6 @@ THE SOFTWARE.
       <table id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
         <tr style="border-top:none; white-space: normal">
           <td>
-            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
               <h1>${%HTTP Proxy Configuration}</h1>
               <f:form method="post" action="proxyConfigure" name="proxyConfigure">
                 <j:scope>
@@ -47,9 +46,7 @@ THE SOFTWARE.
                   <f:submit />
                 </f:block>
               </f:form>
-            </l:hasPermission>
 
-            <l:hasPermission permission="${app.pluginManager.UPLOAD_PLUGINS}">
               <h1>${%Upload Plugin}</h1>
               <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
                 <f:block>
@@ -65,8 +62,7 @@ THE SOFTWARE.
                   <f:submit value="${%Upload}" />
                 </f:block>
               </f:form>
-            </l:hasPermission>
-            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
+
               <h1>${%Update Site}</h1>
               <f:form method="post" action="siteConfigure" name="siteConfigure">
                 <f:entry title="${%URL}" >
@@ -92,7 +88,6 @@ THE SOFTWARE.
                   </j:forEach>
                 </ul>
               </j:if>
-            </l:hasPermission>
           </td>
         </tr>
       </table>
