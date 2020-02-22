@@ -459,49 +459,90 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             hudsonVersion = Jenkins.VERSION;
             this.listener = listener;
 
-            launcher = createLauncher(listener);
-            if (!Jenkins.get().getNodes().isEmpty()) {
-                if (node instanceof Jenkins) {
-                    listener.getLogger().print(Messages.AbstractBuild_BuildingOnMaster());
-                } else {
-                    listener.getLogger().print(Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, node.getDisplayName())));
-                    Set<LabelAtom> assignedLabels = new HashSet<>(node.getAssignedLabels());
-                    assignedLabels.remove(node.getSelfLabel());
-                    if (!assignedLabels.isEmpty()) {
-                        boolean first = true;
-                        for (LabelAtom label : assignedLabels) {
-                            if (first) {
-                                listener.getLogger().print(" (");
-                                first = false;
-                            } else {
-                                listener.getLogger().print(' ');
+            Result result;
+            buildEnvironments = new ArrayList<>();
+            // JENKINS-43889: try/finally to make sure Environments are eventually teared down. This used to be done in
+            // the doRun() implementation, but was not happening in case of early error (for instance in SCM checkout).
+            // Because some plugin (Maven) implement their own doRun() logic which still includes tearing down in some
+            // cases, we use a dummy Environment as a marker, to avoid doing it here if redundant.
+            TearDownCheckEnvironment tearDownMarker = new TearDownCheckEnvironment();
+            buildEnvironments.add(tearDownMarker);
+            try {
+                launcher = createLauncher(listener);
+                if (!Jenkins.get().getNodes().isEmpty()) {
+                    if (node instanceof Jenkins) {
+                        listener.getLogger().print(Messages.AbstractBuild_BuildingOnMaster());
+                    } else {
+                        listener.getLogger().print(Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, node.getDisplayName())));
+                        Set<LabelAtom> assignedLabels = new HashSet<>(node.getAssignedLabels());
+                        assignedLabels.remove(node.getSelfLabel());
+                        if (!assignedLabels.isEmpty()) {
+                            boolean first = true;
+                            for (LabelAtom label : assignedLabels) {
+                                if (first) {
+                                    listener.getLogger().print(" (");
+                                    first = false;
+                                } else {
+                                    listener.getLogger().print(' ');
+                                }
+                                listener.getLogger().print(label.getName());
                             }
-                            listener.getLogger().print(label.getName());
+                            listener.getLogger().print(')');
                         }
-                        listener.getLogger().print(')');
+                    }
+                } else {
+                    listener.getLogger().print(Messages.AbstractBuild_Building());
+                }
+                
+                lease = decideWorkspace(node, Computer.currentComputer().getWorkspaceList());
+
+                workspace = lease.path.getRemote();
+                listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
+                node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
+
+                for (WorkspaceListener wl : WorkspaceListener.all()) {
+                    wl.beforeUse(AbstractBuild.this, lease.path, listener);
+                }
+
+                getProject().getScmCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
+                getProject().getScmCheckoutStrategy().checkout(this);
+
+                if (!preBuild(listener,project.getProperties()))
+                    return Result.FAILURE;
+
+                result = doRun(listener);
+            } finally {
+                if (!tearDownMarker.tearedDown) {
+                    // looks like environments are not teared down yet, do it now (in reverse order)
+                    boolean tearDownFailed = false;
+                    boolean tearDownInterrupted = false;
+                    for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
+                        final Environment environment = buildEnvironments.get(i);
+                        try {
+                            if (!environment.tearDown(AbstractBuild.this, listener)) {
+                                tearDownFailed = true;
+                            }
+                        } catch (IOException | InterruptedException | RuntimeException e) {
+                            tearDownFailed = true;
+                            // exceptions are ignored to give a chance to all environments to tear down
+                            listener.error("Unable to tear down: " + e.getMessage());
+                            e.printStackTrace(listener.getLogger());
+                            if (e instanceof InterruptedException) {
+                                // don't forget we've been interrupted
+                                tearDownInterrupted = true;
+                            }
+                        }
+                    }
+                    // report any error while tearing down an Environment as a build failure
+                    if (tearDownFailed) {
+                        result = Result.FAILURE;
+                    }
+                    if (tearDownInterrupted) {
+                        // don't forget we've been interrupted
+                        Thread.currentThread().interrupt();
                     }
                 }
-            } else {
-                listener.getLogger().print(Messages.AbstractBuild_Building());
             }
-            
-            lease = decideWorkspace(node, Computer.currentComputer().getWorkspaceList());
-
-            workspace = lease.path.getRemote();
-            listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
-            node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
-
-            for (WorkspaceListener wl : WorkspaceListener.all()) {
-                wl.beforeUse(AbstractBuild.this, lease.path, listener);
-            }
-
-            getProject().getScmCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);
-            getProject().getScmCheckoutStrategy().checkout(this);
-
-            if (!preBuild(listener,project.getProperties()))
-                return Result.FAILURE;
-
-            Result result = doRun(listener);
 
             if (node.getChannel() != null) {
                 // kill run-away processes that are left
@@ -516,6 +557,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if (result==null)    result = Result.SUCCESS;
 
             return result;
+        }
+
+        /**
+         * An {@link Environment} which does nothing, but change state when it gets teared down. Used in
+         * {@link AbstractBuildExecution#run(BuildListener)} to detect whether environments have yet to be teared down,
+         * or if it has been done already (in the {@link AbstractBuildExecution#doRun(BuildListener)} implementation).
+         */
+        private class TearDownCheckEnvironment extends Environment {
+            private boolean tearedDown = false;
+            @Override
+            public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+                this.tearedDown = true;
+                return true;
+            }
         }
 
         /**
@@ -535,8 +590,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 for (BuildWrapper bw : biwbw.getBuildWrappersList())
                     l = bw.decorateLauncher(AbstractBuild.this,l,listener);
             }
-
-            buildEnvironments = new ArrayList<>();
 
             for (RunListener rl: RunListener.all()) {
                 Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
