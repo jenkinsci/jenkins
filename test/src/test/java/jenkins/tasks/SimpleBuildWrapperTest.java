@@ -30,6 +30,8 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.LineTransformationOutputStream;
+import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -50,7 +52,11 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.tasks.Maven;
 import hudson.tasks.Shell;
+import hudson.tasks.Maven.MavenInstallation;
+import jenkins.model.Jenkins;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -65,10 +71,12 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.ToolInstallations;
 
 public class SimpleBuildWrapperTest {
 
@@ -152,7 +160,21 @@ public class SimpleBuildWrapperTest {
     @Test public void disposer() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithDisposer());
-        r.assertLogContains("ran DisposerImpl", r.buildAndAssertSuccess(p));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        r.assertLogContains("ran DisposerImpl #1", b);
+        r.assertLogNotContains("ran DisposerImpl #2", b);
+    }
+    @Test public void disposerWithMaven() throws Exception {
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
+        r.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven);
+        MavenModuleSet p = r.createProject(MavenModuleSet.class, "p");
+        p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
+        p.setIsFingerprintingDisabled(true);
+        p.setIsArchivingDisabled(true);
+        p.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
+        MavenModuleSetBuild b = p.scheduleBuild2(0).get();
+        r.assertLogContains("ran DisposerImpl #1", b);
+        r.assertLogNotContains("ran DisposerImpl #2", b);
     }
     public static class WrapperWithDisposer extends SimpleBuildWrapper {
         @Override public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -160,8 +182,9 @@ public class SimpleBuildWrapperTest {
         }
         private static final class DisposerImpl extends Disposer {
             private static final long serialVersionUID = 1;
+            private int tearDownCount = 0;
             @Override public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-                listener.getLogger().println("ran DisposerImpl");
+                listener.getLogger().println("ran DisposerImpl #" + (++tearDownCount));
             }
         }
         @TestExtension("disposer") public static class DescriptorImpl extends BuildWrapperDescriptor {
@@ -174,14 +197,18 @@ public class SimpleBuildWrapperTest {
     @Test public void disposerForPreCheckoutWrapper() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
-        r.assertLogContains("ran DisposerImpl", r.buildAndAssertSuccess(p));
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        r.assertLogContains("ran DisposerImpl #1", b);
+        r.assertLogNotContains("ran DisposerImpl #2", b);
     }
     @Issue("JENKINS-43889")
     @Test public void disposerForPreCheckoutWrapperWithScmError() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setScm(new FailingSCM());
         p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
-        r.assertLogContains("ran DisposerImpl", r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0)));
+        FreeStyleBuild b = r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0));
+        r.assertLogContains("ran DisposerImpl #1", b);
+        r.assertLogNotContains("ran DisposerImpl #2", b);
     }
     public static class PreCheckoutWrapperWithDisposer extends WrapperWithDisposer {
         @Override
