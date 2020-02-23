@@ -70,7 +70,7 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
+        return Jenkins.SYSTEM_READ;
     }
 
     @POST
