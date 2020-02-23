@@ -182,7 +182,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
+        return Jenkins.SYSTEM_READ;
     }
 
     @Restricted(NoExternalUse.class)
