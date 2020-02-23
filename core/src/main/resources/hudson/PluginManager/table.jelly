@@ -31,7 +31,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+  <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}" norefresh="true">
     <l:header>
       <script type="text/javascript">
       <![CDATA[
@@ -61,9 +61,11 @@ THE SOFTWARE.
         <div class="pane-frame">
           <table id="plugins" class="sortable pane bigtable stripped-odd">
             <tr>
-              <th initialSortDir="${isUpdates?null:'down'}"
-                  tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
-                  width="32" onclick="showhideCategories(this,1)">${%Install}</th>
+              <l:isAdmin>
+                <th initialSortDir="${isUpdates?null:'down'}"
+                    tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
+                    width="32" onclick="showhideCategories(this,1)">${%Install}</th>
+              </l:isAdmin>
               <th initialSortDir="${isUpdates?'down':null}"
                   onclick="showhideCategories(this,0)">${%Name}</th>
               <th onclick="showhideCategories(this,0)">${%Version}</th>
@@ -88,12 +90,14 @@ THE SOFTWARE.
                   <j:set var="installedOk"
                          value="${installJob.status.success and installJob.plugin.version==p.version}" />
                   <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin" name="${p.displayName}">
-                    <td class="pane" align="center" data="${thisCat}_">
-                      <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
-                             checked="${installedOk ? 'checked' : null}"
-                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"
-                             data-compat-warning="${!p.isCompatible(cache)}" />
-                    </td>
+                    <l:isAdmin>
+                      <td class="pane" align="center" data="${thisCat}_">
+                        <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
+                               checked="${installedOk ? 'checked' : null}"
+                               disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"
+                               data-compat-warning="${!p.isCompatible(cache)}" />
+                      </td>
+                    </l:isAdmin>
                     <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                       <div>
                         <a href="${p.wiki}" target="_blank"><st:out value="${p.displayName}"/></a>
@@ -175,13 +179,15 @@ THE SOFTWARE.
 
         <div id="bottom-sticker" >
           <div class="bottom-sticker-inner">
-            <j:if test="${!empty(list)}">
-              <j:if test="${!isUpdates}">
-                <f:submit value="${%Install without restart}" name="dynamicLoad" />
-                <span style="margin-left:2em;"></span>
+            <l:isAdmin>
+              <j:if test="${!empty(list)}">
+                <j:if test="${!isUpdates}">
+                  <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                  <span style="margin-left:2em;"></span>
+                </j:if>
+                <f:submit value="${%Download now and install after restart}" />
               </j:if>
-              <f:submit value="${%Download now and install after restart}" />
-            </j:if>
+            </l:isAdmin>
             <st:include page="check.jelly"/>
             </div>
           </div>
