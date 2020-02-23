@@ -461,7 +461,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
             Result result;
             buildEnvironments = new ArrayList<>();
-            // JENKINS-43889: try/finally to make sure Environments are eventually teared down. This used to be done in
+            // JENKINS-43889: try/finally to make sure Environments are eventually torn down. This used to be done in
             // the doRun() implementation, but was not happening in case of early error (for instance in SCM checkout).
             // Because some plugin (Maven) implement their own doRun() logic which still includes tearing down in some
             // cases, we use a dummy Environment as a marker, to avoid doing it here if redundant.
@@ -512,8 +512,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                 result = doRun(listener);
             } finally {
-                if (!tearDownMarker.tearedDown) {
-                    // looks like environments are not teared down yet, do it now (in reverse order)
+                if (!tearDownMarker.tornDown) {
+                    // looks like environments are not torn down yet, do it now (in reverse order)
                     boolean tearDownFailed = false;
                     boolean tearDownInterrupted = false;
                     for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
@@ -560,15 +560,15 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         /**
-         * An {@link Environment} which does nothing, but change state when it gets teared down. Used in
-         * {@link AbstractBuildExecution#run(BuildListener)} to detect whether environments have yet to be teared down,
+         * An {@link Environment} which does nothing, but change state when it gets torn down. Used in
+         * {@link AbstractBuildExecution#run(BuildListener)} to detect whether environments have yet to be torn down,
          * or if it has been done already (in the {@link AbstractBuildExecution#doRun(BuildListener)} implementation).
          */
         private class TearDownCheckEnvironment extends Environment {
-            private boolean tearedDown = false;
+            private boolean tornDown = false;
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
-                this.tearedDown = true;
+                this.tornDown = true;
                 return true;
             }
         }
