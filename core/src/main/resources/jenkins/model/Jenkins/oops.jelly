@@ -28,7 +28,7 @@ THE SOFTWARE.
     This is the page designated by web.xml and UncaughtExceptionHandler to process an exception thrown by us.
   -->
   <st:statusCode value="${response.getStatus()}" />
-  <l:layout title="Jenkins" norefresh="true" type="one-column">
+  <l:layout title="Jenkins" type="one-column">
     <l:header />
     <l:main-panel>
         <h1 style="text-align: center">

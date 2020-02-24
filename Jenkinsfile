@@ -43,7 +43,7 @@ for(j = 0; j < jdks.size(); j++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -e"
 
                             if(isUnix()) {
                                 sh mvnCmd
@@ -87,7 +87,7 @@ builds.ath = {
             checkout scm
             withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
                           "MAVEN_OPTS=-Xmx1536m -Xms512m"], 8) {
-                sh "mvn --batch-mode --show-version -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml"
+                sh "mvn --batch-mode --show-version -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests -am -pl war package -Dmaven.repo.local=${pwd tmp: true}/m2repo"
             }
             dir("war/target") {
                 fileUri = "file://" + pwd() + "/jenkins.war"

@@ -37,6 +37,8 @@ import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
+import hudson.security.csrf.DefaultCrumbIssuer;
+import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.security.stapler.DoActionFilter;
@@ -293,6 +295,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -653,7 +656,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * {@link hudson.security.csrf.CrumbIssuer}
      */
-    private volatile CrumbIssuer crumbIssuer;
+    private volatile CrumbIssuer crumbIssuer = GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer();
 
     /**
      * All labels known to Jenkins. This allows us to reuse the same label instances
@@ -1762,12 +1765,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
+        return getItems(t -> true);
+    }
+
+    /**
+     * Gets just the immediate children of {@link Jenkins} based on supplied predicate.
+     *
+     * @see #getAllItems(Class)
+     * @since TODO
+     */
+    public List<TopLevelItem> getItems(Predicate<TopLevelItem> pred) {
         List<TopLevelItem> viewableItems = new ArrayList<>();
         for (TopLevelItem item : items.values()) {
-            if (item.hasPermission(Item.READ))
+            if (pred.test(item) && item.hasPermission(Item.READ))
                 viewableItems.add(item);
         }
-
         return viewableItems;
     }
 
@@ -1787,9 +1799,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public <T> List<T> getItems(Class<T> type) {
         List<T> r = new ArrayList<>();
-        for (TopLevelItem i : getItems())
-            if (type.isInstance(i))
-                 r.add(type.cast(i));
+        for (TopLevelItem i : getItems(type::isInstance)) {
+             r.add(type.cast(i));
+         }
         return r;
     }
 
@@ -2190,6 +2202,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
+        if (!Jenkins.get().hasPermission(ADMINISTER)) {
+            return Collections.emptyList();
+        }
         return administrativeMonitors.stream().filter(m -> {
             try {
                 return m.isEnabled() && m.isActivated();
@@ -3285,9 +3300,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     }
                 }
 
-
-                // Initialize the filter with the crumb issuer
-                setCrumbIssuer(crumbIssuer);
+                // Allow the disabling system property to interfere here
+                setCrumbIssuer(getCrumbIssuer());
 
                 // auto register root actions
                 for (Action a : getExtensionList(RootAction.class))
@@ -3753,7 +3767,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
-            checkPermission(ADMINISTER);
+            checkPermission(MANAGE);
 
             JSONObject json = req.getSubmittedForm();
 
@@ -3781,7 +3795,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CheckForNull
     public CrumbIssuer getCrumbIssuer() {
-        return crumbIssuer;
+        return GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION ? null : crumbIssuer;
     }
 
     public void setCrumbIssuer(CrumbIssuer issuer) {
@@ -5235,6 +5249,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public static final PermissionGroup PERMISSIONS = Permission.HUDSON_PERMISSIONS;
     public static final Permission ADMINISTER = Permission.HUDSON_ADMINISTER;
+
+    /**
+     * This permission grants access to parts of the Jenkins system configuration.
+     *
+     * <p>Only features that won't have an impact on Jenkins' overall security and stability should have their
+     * permission requirement lowered from {@link #ADMINISTER} to {@code MANAGE}.
+     * For example, many scripting and code execution features (e.g., configuring master agents, paths to tools on master, etc.)
+     * are unsafe to make available to users with only this permission,
+     * as they could be used to bypass permission enforcement and elevate permissions.</p>
+     *
+     * <p>This permission is disabled by default and support for it considered experimental.
+     * Administrators can set the system property {@code jenkins.security.ManagePermission} to enable it.</p>
+     *
+     * @since TODO
+     */
+    @Restricted(Beta.class)
+    public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",
+            Messages._Jenkins_Manage_Description(),
+            ADMINISTER,
+            SystemProperties.getBoolean("jenkins.security.ManagePermission"),
+            new PermissionScope[]{PermissionScope.JENKINS});
+
+
     public static final Permission READ = new Permission(PERMISSIONS,"Read",Messages._Hudson_ReadPermission_Description(),Permission.READ,PermissionScope.JENKINS);
     public static final Permission RUN_SCRIPTS = new Permission(PERMISSIONS, "RunScripts", Messages._Hudson_RunScriptsPermission_Description(),ADMINISTER,PermissionScope.JENKINS);
 

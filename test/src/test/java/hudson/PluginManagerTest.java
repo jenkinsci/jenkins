@@ -503,6 +503,18 @@ public class PluginManagerTest {
         }
     }
 
+    @Issue("JENKINS-61071")
+    @Test
+    public void requireSystemInInitializer() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
+        String pluginShortName = "require-system-in-initializer";
+        dynamicLoad(pluginShortName + ".jpi");
+        try (ACLContext context = ACL.as(User.getById("underprivileged", true).impersonate())) {
+            r.jenkins.pluginManager.start(Collections.singletonList(r.jenkins.pluginManager.getPlugin(pluginShortName)));
+        }
+    }
+
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {
         PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
     }

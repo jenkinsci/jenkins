@@ -13,4 +13,12 @@
       <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
     </Or>
   </Match>
+  <Match>
+    <!--We don't care about this behavior.-->
+    <Bug pattern="CRLF_INJECTION_LOGS"/>
+  </Match>
+  <Match>
+    <!--Jenkins handles this issue differently or doesn't care about it.-->
+    <Bug pattern="INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE"/>
+  </Match>
 </FindBugsFilter>

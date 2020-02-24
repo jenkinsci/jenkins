@@ -111,7 +111,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
 
         // prepare our keyStore so we can provide our authentication
         keyStore = KeyStore.getInstance("JKS");
-        char[] password = "password".toCharArray();
+        char[] password = constructPassword();
         try {
             keyStore.load(null, password);
         } catch (IOException e) {
@@ -144,6 +144,10 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
             throw new IllegalStateException("Java runtime specification requires support for TLS algorithm", e);
         }
         sslContext.init(kmf.getKeyManagers(), trustManagers, null);
+    }
+
+    private char[] constructPassword() {
+        return "password".toCharArray();
     }
 
     /**
@@ -182,7 +186,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
                 LOGGER.log(Level.INFO, "Updating {0} TLS certificate to retain validity", getName());
                 X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
                 RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
-                char[] password = "password".toCharArray();
+                char[] password = constructPassword();
                 keyStore.setKeyEntry("jenkins", privateKey, password, new X509Certificate[]{identityCertificate});
             }
         } catch (KeyStoreException e) {

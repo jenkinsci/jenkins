@@ -92,7 +92,7 @@ THE SOFTWARE.
   </j:if>
 </j:if>
 <x:doctype name="html" />
-<html>
+<html class="${h.isUiRefreshEnabled() ? 'ui-refresh' : ''}">
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
 
@@ -101,8 +101,8 @@ THE SOFTWARE.
     </j:if>
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
-    <link rel="stylesheet" href="${resURL}/css/layout-common.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+
+    <link rel="stylesheet" href="${resURL}/jsbundles/base-styles-v2.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
     <j:if test="${attrs.css!=null}">
@@ -156,6 +156,9 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
+    <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/jsbundles/ui-refresh-overrides.css" type="text/css" />
+
     <l:hasPermission permission="${app.READ}">
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     </l:hasPermission>
@@ -185,60 +188,12 @@ THE SOFTWARE.
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
     <div id="page-head">
-      <div id="header">
-        <div class="logo">
-          <a id="jenkins-home-link" href="${rootURL}/">
-            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="[${%jenkinshead.alt}]" />
-            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="${%title}" width="139" height="34" />
-          </a>
-        </div>
-        <div class="login">
-          <!-- login field -->
-          <j:if test="${app.useSecurity}">
-            <st:nbsp/>
-            <j:choose>
-              <j:when test="${!h.isAnonymous()}">
-                <j:invokeStatic var="user" className="hudson.model.User" method="current" />
-                <j:choose>
-                  <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
-                    <j:set var="userName" value="${user.id}"/>
-                  </j:when>
-                  <j:otherwise>
-                    <j:set var="userName" value="${user.fullName}"/>
-                  </j:otherwise>
-                </j:choose>
-                <span style="white-space:nowrap">
-                  <a href="${rootURL}/${user.url}" class="model-link inside inverse"><b>${userName}</b></a>
-                  <j:if test="${app.securityRealm.canLogOut()}">
-                    |
-                    <a href="${rootURL}/logout"><b>${%logout}</b></a>
-                  </j:if>
-                </span>
-              </j:when>
-              <j:otherwise>
-                <st:include it="${app.securityRealm}" page="loginLink.jelly" />
-              </j:otherwise>
-            </j:choose>
-          </j:if>
-        </div>
-        <div class="searchbox hidden-xs">
-          <!-- search box -->
-          <j:set var="searchURL" value="${h.searchURL}"/>
-          <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search" role="search">
-            <!-- this div determines the minimum width -->
-            <div id="search-box-minWidth"/>
-            <!-- this div is used to calculate the width of the text box -->
-            <div id="search-box-sizer"/>
-            <div id="searchform">
-              <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" role="searchbox" />
-              <st:nbsp />
-              <a href="${%searchBox.url}"><l:icon class="icon-help icon-sm" /></a>
-              <div id="search-box-completion" />
-              <script>createSearchBox("${searchURL}");</script>
-            </div>
-          </form>
-        </div>
-      </div>
+      <l:pageHeader title="${%title}"
+                    logoAlt="${%jenkinshead.alt}"
+                    searchPlaceholder="${%search}"
+                    searchHelpUrl="${%searchBox.url}"
+                    logout="${%logout}"/>
+
       <div id="breadcrumbBar">
         <l:breadcrumbBar>
           <j:set var="mode" value="breadcrumbs" />
@@ -294,6 +249,9 @@ THE SOFTWARE.
     </footer>
     </j:if>
 
+    <!-- SVG sprite polyfill for IE 11.
+         Loaded at the end in order to not make modern browsers wait for it. This causes a flash-of-no-icons on IE 11  -->
+    <script src="${resURL}/scripts/svgxuse.min.js" type="text/javascript" async="true" />
   </body>
 </html>
 </l:view>
