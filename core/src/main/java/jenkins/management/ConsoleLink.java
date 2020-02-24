@@ -57,6 +57,6 @@ public class ConsoleLink extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.RUN_SCRIPTS;
+        return Jenkins.ADMINISTER;
     }
 }

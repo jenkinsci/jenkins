@@ -4,7 +4,6 @@ import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
 import jenkins.AgentProtocol
-import jenkins.model.GlobalConfiguration
 import hudson.Functions
 import hudson.model.Descriptor
 
@@ -94,7 +93,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
             }
 
-            Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->
+            Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
                 f.rowSet(name:descriptor.jsonSafeClassName) {

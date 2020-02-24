@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%System Information}">
+  <l:layout permission="${app.SYSTEM_READ}" title="${%System Information}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
         <h1>${%System Properties}</h1>
@@ -106,8 +106,10 @@ THE SOFTWARE.
         <noscript>
             <img src="${rootURL}/extensionList/hudson.diagnosis.MemoryUsageMonitor/0/heap/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Memory usage graph}]" />
         </noscript>
+      <l:isAdmin>
         <h1>${%Thread Dumps}</h1>
         <p>${%threadDump_blurb('threadDump')}</p>
+      </l:isAdmin>
     </l:main-panel>
   </l:layout>
 </j:jelly>

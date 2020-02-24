@@ -41,8 +41,8 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                     var doc = target.contentDocument || target.contentWindow.document;
                     var error = doc.getElementById('error-description');
                     var r = YAHOO.util.Dom.getClientRegion();
-                    var contentHeight = r.height*1/5;
-                    var contentWidth = r.width*1/2;
+                    var contentHeight = r.height/5;
+                    var contentWidth = r.width/2;
                     if (!error) {
                         // fallback if it's not a regular error dialog from oops.jelly: use the entire body
                         error = Element('div', {id: 'error-description'});
