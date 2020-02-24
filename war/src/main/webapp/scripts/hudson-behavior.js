@@ -2395,7 +2395,6 @@ function createSearchBox(searchURL) {
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
     var comp  = $("search-box-completion");
-    var minW  = $("search-box-minWidth");
 
     Behaviour.addLoadEvent(function(){
         // make sure all three components have the same font settings
@@ -2408,18 +2407,15 @@ function createSearchBox(searchURL) {
         }
 
         copyFontStyle(box,sizer);
-        copyFontStyle(box,minW);
     });
 
     // update positions and sizes of the components relevant to search
     function updatePos() {
-        function max(a,b) { if(a>b) return a; else return b; }
-
         sizer.innerHTML = box.value.escapeHTML();
-        var w = max(sizer.offsetWidth,minW.offsetWidth);
+        var w = sizer.offsetWidth;
         box.style.width =
-        comp.style.width = 
-        comp.firstChild.style.width = (w+60)+"px";
+        comp.style.width =
+        comp.firstChild.style.minWidth = (w+60)+"px";
 
         var pos = YAHOO.util.Dom.getXY(box);
         pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
@@ -2427,6 +2423,8 @@ function createSearchBox(searchURL) {
     }
 
     updatePos();
+    // on small screens offsetWith is 0, update when screen gets bigger
+    window.addEventListener("resize", updatePos);
     box.onkeyup = updatePos;
 }
 
