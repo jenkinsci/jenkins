@@ -515,8 +515,8 @@ public class Functions {
     }
 
     public static boolean isMac() {
-        String osType = System.getenv("_system_name");
-        if (osType == null || osType.isEmpty() || !osType.equalsIgnoreCase("OSX")) {
+        String osType = System.getProperty("os.name");
+        if (osType == null || osType.isEmpty() || !osType.toLowerCase().contains("mac os x")) {
             return false;
         }
         return true;
