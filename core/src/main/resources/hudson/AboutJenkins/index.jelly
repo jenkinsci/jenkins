@@ -56,7 +56,7 @@ THE SOFTWARE.
           <ul>
             <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- TODO sort -->
             <li>
-              <a href="${rootURL}/pluginManager/plugin/${p.shortName}/thirdPartyLicenses">
+              <a href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
                 <j:choose>
                   <j:when test="${p.active}">
                     ${p.displayName}

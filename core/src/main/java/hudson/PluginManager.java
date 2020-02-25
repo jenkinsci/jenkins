@@ -2240,7 +2240,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         }
         return this;
     }
