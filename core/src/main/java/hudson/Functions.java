@@ -515,9 +515,9 @@ public class Functions {
     }
 
     /**
-     * Boolean check to determine if the jvm is executing on Mac OS/X
+     *  Determines if the code is executing on a Mac OS/X host.
      * 
-     * @return True, if executing under Mac OS/X, false otherwise
+     * @return {@code true}, iff executing under Mac OS/X.
      */
     public static boolean isMac() {
         String osType = System.getProperty("os.name");
