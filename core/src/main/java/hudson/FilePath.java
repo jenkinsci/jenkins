@@ -1321,7 +1321,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Short for {@code getParent().child(rel)}. Useful for getting other files in the same directory. 
+     * Short for {@code getParent().child(rel)}. Useful for getting other files in the same directory.
+     * @return null if {@link #getParent} would have
      */
     @CheckForNull
     public FilePath sibling(String rel) {
