@@ -521,7 +521,7 @@ public class Functions {
      */
     public static boolean isMac() {
         String osType = System.getProperty("os.name");
-        if (osType == null || osType.isEmpty() || !osType.toLowerCase(Locales.ENGLISH).contains("mac os x")) {
+        if (osType == null || osType.isEmpty() || !osType.toLowerCase(Locale.ENGLISH).contains("mac os x")) {
             return false;
         }
         return true;
