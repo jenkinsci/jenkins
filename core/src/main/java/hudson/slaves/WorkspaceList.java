@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -302,6 +303,7 @@ public final class WorkspaceList {
      * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}
      * @since 1.652
      */
+    @CheckForNull
     public static FilePath tempDir(FilePath ws) {
         return ws.sibling(ws.getName() + COMBINATOR + "tmp");
     }

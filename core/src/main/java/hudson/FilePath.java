@@ -1323,8 +1323,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Short for {@code getParent().child(rel)}. Useful for getting other files in the same directory. 
      */
+    @CheckForNull
     public FilePath sibling(String rel) {
-        return getParent().child(rel);
+        FilePath parent = getParent();
+        return parent != null ? parent.child(rel) : null;
     }
 
     /**
@@ -1347,6 +1349,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Gets the parent file.
      * @return parent FilePath or null if there is no parent
      */
+    @CheckForNull
     public FilePath getParent() {
         int i = remote.length() - 2;
         for (; i >= 0; i--) {
