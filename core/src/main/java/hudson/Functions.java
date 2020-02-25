@@ -514,6 +514,11 @@ public class Functions {
         return File.pathSeparatorChar==';';
     }
 
+    /**
+     * Boolean check to determine if the jvm is executing on Mac OS/X
+     * 
+     * @return True, if executing under Mac OS/X, false otherwise
+     */
     public static boolean isMac() {
         String osType = System.getProperty("os.name");
         if (osType == null || osType.isEmpty() || !osType.toLowerCase(Locales.ENGLISH).contains("mac os x")) {
