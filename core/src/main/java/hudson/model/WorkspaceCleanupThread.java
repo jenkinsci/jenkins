@@ -90,7 +90,13 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
                         ws.deleteRecursive();
-                        WorkspaceList.tempDir(ws).deleteRecursive();
+                        final FilePath tempDir = WorkspaceList.tempDir(ws);
+                        if (tempDir != null) {
+                            tempDir.deleteRecursive();
+                        } else {
+                            // WorkspaceList#tempDir() did not allocate a sibling directory, so we just expect it to be in the temp directory somewhere, will be GCed later
+                            listener.getLogger().println("Skipping deletion of a temporary directory for " + ws + ". No workspace-specific directory found");
+                        }
                     } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }

@@ -865,7 +865,14 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         FilePath ws = getWorkspace();
         if (ws != null) { // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
-            env.put("WORKSPACE_TMP", WorkspaceList.tempDir(ws).getRemote()); // JENKINS-60634
+
+            // Try to allocate a temporary directory (JENKINS-60634).
+            FilePath tmpDir = WorkspaceList.tempDir(ws);
+            if (tmpDir == null) { // try using a remote call to the agent to allocate a safe temporary directory
+                tmpDir = ws.createTempDir("workspace", WorkspaceList.getTempDirId(ws));
+            }
+
+            env.put("WORKSPACE_TMP", tmpDir.getRemote());
         }
 
         project.getScm().buildEnvVars(this,env);

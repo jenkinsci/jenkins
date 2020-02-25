@@ -28,6 +28,9 @@ import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.DirectoryBrowserSupport;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.io.Closeable;
 
 import java.util.Date;
@@ -36,6 +39,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -298,12 +302,26 @@ public final class WorkspaceList {
      * {@link FilePath#createTempFile} may be used for this purpose if desired.
      * <p>The resulting directory may not exist; you may call {@link FilePath#mkdirs} on it if you need it to.
      * It may be deleted alongside the workspace itself during cleanup actions.
+     *
+     * The method may operate differently when the path points to a root directory or to a disk root in Windows.
+     * In such cases API users are recommended to allocate a temporary directory on their own in another location,
+     * e.g. by using {@link FilePath#createTempDir(String, String)}.
+     * This logic is not embedded into this method, because a remote operation on the agent is required to allocate the directory.
+     *
      * @param ws a directory such as a build workspace
-     * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}
+     * @return A sibling directory, for example {@code …/something@tmp} for {@code …/something}.
+     *         It may return {@code null} if it is not possible to return a sibling.
      * @since 1.652
      */
-    public static FilePath tempDir(FilePath ws) {
-        return ws.sibling(ws.getName() + COMBINATOR + "tmp");
+    @CheckForNull
+    public static FilePath tempDir(@Nonnull FilePath ws) {
+        return  ws.sibling(getTempDirId(ws));
+    }
+
+
+    @Restricted(NoExternalUse.class)
+    public static String getTempDirId(@Nonnull FilePath ws) {
+        return ws.getName() + COMBINATOR + "tmp";
     }
 
     private static final Logger LOGGER = Logger.getLogger(WorkspaceList.class.getName());
