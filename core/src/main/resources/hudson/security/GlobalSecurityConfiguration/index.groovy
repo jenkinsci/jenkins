@@ -19,7 +19,6 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
         }
         if (!h.hasPermission(app.ADMINISTER)) {
             set("readOnlyMode", "true")
-            input(id: "readOnlyMode", type: "hidden", name: "readOnlyMode", value: "true")
         }
 
         p()
