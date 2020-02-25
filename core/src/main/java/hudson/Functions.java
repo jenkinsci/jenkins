@@ -28,7 +28,6 @@ package hudson;
 import hudson.model.Slave;
 import hudson.security.*;
 import java.util.function.Predicate;
-import jenkins.telemetry.impl.AutoRefresh;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -646,54 +645,17 @@ public class Functions {
     private static final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
-     * Used by {@code layout.jelly} to control the auto refresh behavior.
+     * No longer used.
      *
-     * @param noAutoRefresh
-     *      On certain pages, like a page with forms, will have annoying interference
-     *      with auto refresh. On those pages, disable auto-refresh.
+     * @deprecated auto refresh has been removed
      */
+    @Deprecated
     public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) {
-        if(noAutoRefresh)
-            return;
-
-        String param = request.getParameter("auto_refresh");
-        boolean refresh = isAutoRefresh(request);
-        if (param != null) {
-            refresh = Boolean.parseBoolean(param);
-            Cookie c = new Cookie("hudson_auto_refresh", Boolean.toString(refresh));
-            // Need to set path or it will not stick from e.g. a project page to the dashboard.
-            // Using request.getContextPath() might work but it seems simpler to just use the hudson_ prefix
-            // to avoid conflicts with any other web apps that might be on the same machine.
-            c.setPath("/");
-            c.setMaxAge(60*60*24*30); // persist it roughly for a month
-            c.setHttpOnly(true);
-            response.addCookie(c);
-        }
-        if (refresh) {
-            response.addHeader("Refresh", SystemProperties.getString("hudson.Functions.autoRefreshSeconds", "10"));
-        }
-
-        try {
-            ExtensionList.lookupSingleton(AutoRefresh.class).recordRequest(request, refresh);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to record auto refresh status in telemetry", e);
-        }
+        /* feature has been removed */
     }
 
+    @Deprecated
     public static boolean isAutoRefresh(HttpServletRequest request) {
-        String param = request.getParameter("auto_refresh");
-        if (param != null) {
-            return Boolean.parseBoolean(param);
-        }
-        Cookie[] cookies = request.getCookies();
-        if(cookies==null)
-            return false; // when API design messes it up, we all suffer
-
-        for (Cookie c : cookies) {
-            if (c.getName().equals("hudson_auto_refresh")) {
-                return Boolean.parseBoolean(c.getValue());
-            }
-        }
         return false;
     }
 
