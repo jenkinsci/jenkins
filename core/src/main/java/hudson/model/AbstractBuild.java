@@ -526,7 +526,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                             tearDownFailed = true;
                             // exceptions are ignored to give a chance to all environments to tear down
                             listener.error("Unable to tear down: " + e.getMessage());
-                            e.printStackTrace(listener.getLogger());
+                            Functions.printStackTrace(e, listener.getLogger());
                             if (e instanceof InterruptedException) {
                                 // don't forget we've been interrupted
                                 tearDownInterrupted = true;
@@ -1372,5 +1372,4 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     private static final Logger LOGGER = Logger.getLogger(AbstractBuild.class.getName());
 }
-
 
