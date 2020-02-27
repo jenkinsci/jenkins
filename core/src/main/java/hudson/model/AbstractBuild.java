@@ -460,7 +460,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             hudsonVersion = Jenkins.VERSION;
             this.listener = listener;
 
-            Result result;
+            Result result = null;
             buildEnvironments = new ArrayList<>();
             // JENKINS-43889: try/finally to make sure Environments are eventually torn down. This used to be done in
             // the doRun() implementation, but was not happening in case of early error (for instance in SCM checkout).
