@@ -513,33 +513,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 result = doRun(listener);
             } finally {
                 if (!tearDownMarker.tornDown) {
-                    // looks like environments are not torn down yet, do it now (in reverse order)
-                    boolean tearDownFailed = false;
-                    boolean tearDownInterrupted = false;
-                    for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
-                        final Environment environment = buildEnvironments.get(i);
-                        try {
-                            if (!environment.tearDown(AbstractBuild.this, listener)) {
-                                tearDownFailed = true;
-                            }
-                        } catch (IOException | InterruptedException | RuntimeException e) {
-                            tearDownFailed = true;
-                            // exceptions are ignored to give a chance to all environments to tear down
-                            listener.error("Unable to tear down: " + e.getMessage());
-                            Functions.printStackTrace(e, listener.getLogger());
-                            if (e instanceof InterruptedException) {
-                                // don't forget we've been interrupted
-                                tearDownInterrupted = true;
-                            }
-                        }
-                    }
-                    // report any error while tearing down an Environment as a build failure
-                    if (tearDownFailed) {
+                    // looks like environments are not torn down yet, do it now
+                    if (!tearDownBuildEnvironments(listener)) {
                         result = Result.FAILURE;
-                    }
-                    if (tearDownInterrupted) {
-                        // don't forget we've been interrupted
-                        Thread.currentThread().interrupt();
                     }
                 }
             }
@@ -557,6 +533,38 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             if (result==null)    result = Result.SUCCESS;
 
             return result;
+        }
+
+        /**
+         * Tear down all build environments (in reverse order).
+         *
+         * @return true iff it succeeded for all environments
+         */
+        private boolean tearDownBuildEnvironments(@Nonnull BuildListener listener) {
+            boolean tearDownFailed = false;
+            boolean tearDownInterrupted = false;
+            for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
+                final Environment environment = buildEnvironments.get(i);
+                try {
+                    if (!environment.tearDown(AbstractBuild.this, listener)) {
+                        tearDownFailed = true;
+                    }
+                } catch (IOException | InterruptedException | RuntimeException e) {
+                    tearDownFailed = true;
+                    // exceptions are ignored to give a chance to all environments to tear down
+                    listener.error("Unable to tear down: " + e.getMessage());
+                    Functions.printStackTrace(e, listener.getLogger());
+                    if (e instanceof InterruptedException) {
+                        // don't forget we've been interrupted
+                        tearDownInterrupted = true;
+                    }
+                }
+            }
+            if (tearDownInterrupted) {
+                // don't forget we've been interrupted
+                Thread.currentThread().interrupt();
+            }
+            return tearDownFailed;
         }
 
         /**
