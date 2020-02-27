@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.Util;
 import jenkins.scm.RunWithSCM;
 import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
@@ -513,10 +514,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 result = doRun(listener);
             } finally {
                 if (!tearDownMarker.tornDown) {
-                    // looks like environments are not torn down yet, do it now
-                    if (!tearDownBuildEnvironments(listener)) {
-                        result = Result.FAILURE;
-                    }
+                    // looks like environments are not torn down yet, do it now (might affect the build result)
+                    result = Result.combine(result, tearDownBuildEnvironments(listener));
                 }
             }
 
@@ -537,34 +536,51 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         /**
          * Tear down all build environments (in reverse order).
+         * <p>
+         * Returns a failure {@link Result} in case of failure of at least one {@code tearDown()} method (returning
+         * false, or throwing some exception), and {@code null} if everything went fine.
          *
-         * @return true iff it succeeded for all environments
+         * @return a build result in case of failure/exception
+         * @throws InterruptedException
+         *      if thrown while tearing down an environment (would be the first caught one in case caught several)
          */
-        private boolean tearDownBuildEnvironments(@Nonnull BuildListener listener) {
-            boolean tearDownFailed = false;
-            boolean tearDownInterrupted = false;
+        private Result tearDownBuildEnvironments(@Nonnull BuildListener listener) throws InterruptedException {
+            Result result = null;
+            InterruptedException firstInterruptedException = null;
+            // iterate in reverse order on the environments list
             for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
                 final Environment environment = buildEnvironments.get(i);
                 try {
                     if (!environment.tearDown(AbstractBuild.this, listener)) {
-                        tearDownFailed = true;
+                        // by returning false, tearDown() can actually fail the build
+                        result = Result.combine(result, Result.FAILURE);
                     }
-                } catch (IOException | InterruptedException | RuntimeException e) {
-                    tearDownFailed = true;
-                    // exceptions are ignored to give a chance to all environments to tear down
-                    listener.error("Unable to tear down: " + e.getMessage());
-                    Functions.printStackTrace(e, listener.getLogger());
-                    if (e instanceof InterruptedException) {
-                        // don't forget we've been interrupted
-                        tearDownInterrupted = true;
+                } catch (InterruptedException e) {
+                    // We got interrupted while tearing down an environment.  We'll still try to tear down the
+                    // remaining ones, but then we'll re-throw the (first) caught InterruptedException, to let
+                    // the caller (ie., Run#execute(RunExecution)) deal with it properly.
+                    if (firstInterruptedException == null) {
+                        firstInterruptedException = e;
+                    } else {
+                        // log only InterruptedException we won't re-throw
+                        Functions.printStackTrace(e, listener.error("Interrupted during tear down: " + e.getMessage()));
                     }
+                } catch (IOException | RuntimeException e) {
+                    // exceptions are only logged, to give a chance to all environments to tear down
+                    if(e instanceof IOException) {
+                        // similar to Run#handleFatalBuildProblem(BuildListener, Throwable)
+                        Util.displayIOException((IOException) e, listener);
+                    }
+                    Functions.printStackTrace(e, listener.error("Unable to tear down: " + e.getMessage()));
+                    // would UNSTABLE be more sensible? (see discussion in PR #4517)
+                    result = Result.combine(result, Result.FAILURE);
                 }
             }
-            if (tearDownInterrupted) {
+            if (firstInterruptedException != null) {
                 // don't forget we've been interrupted
-                Thread.currentThread().interrupt();
+                throw firstInterruptedException;
             }
-            return tearDownFailed;
+            return result;
         }
 
         /**
