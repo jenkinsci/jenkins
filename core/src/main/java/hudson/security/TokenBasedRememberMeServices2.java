@@ -161,9 +161,12 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
     @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
-        // as this filter could be called during restart, this corrects at least the symptoms
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j != null && j.isDisableRememberMe()) {
+        if (j == null) {
+            // as this filter could be called during restart, this corrects at least the symptoms
+            return null;
+        }
+        if (j.isDisableRememberMe()) {
             cancelCookie(request, response, null);
             return null;
         } else {
