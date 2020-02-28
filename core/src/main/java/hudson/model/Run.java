@@ -159,10 +159,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Target size limit for truncated {@link #description}s in the Build History Widget.
+     * This is applied to the raw, unformatted description. Especially complex formatting
+     * like hyperlinks can result in much less text being shown than this might imply.
      * Negative values will disable truncation, {@code 0} will enforce empty strings.
      * @since TODO
      */
-    private static int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
+    private static /* non-final for Groovy */ int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
 
     protected transient final @Nonnull JobT project;
 
@@ -679,8 +681,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Returns the length-limited description.
-     * The method tries to take the HTML tags into account, but it is a best-effort attempt.
-     * Also, the method will not work properly if a non-HTML {@link hudson.markup.MarkupFormatter} is used.
+     * The method tries to take HTML tags within the description into account, but it is a best-effort attempt.
+     * Also, the method will likely not work properly if a non-HTML {@link hudson.markup.MarkupFormatter} is used.
      * @return The length-limited description.
      * @deprecated truncated description based on the {@link #TRUNCATED_DESCRIPTION_LIMIT} setting.
      */
