@@ -117,14 +117,14 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * Combines two {@link Result}s and returns the worse one.
      * <p>
-     * This method is null-safe (any {@link Result} is "worse" than {@code null}, and {@link null} is returned if both
+     * This method is null-safe (any {@link Result} is "worse" than {@code null}, and {@code null} is returned if both
      * parameters are {@code null}).
      *
      * @param r1
-     *      a result (may be {@link null})
+     *      a result (may be {@code null})
      * @param r2
-     *      a result (may be {@link null})
-     * @return the worst result (may be {@link null})
+     *      a result (may be {@code null})
+     * @return the worst result (may be {@code null})
      * @since TODO
      */
     public static Result combine(Result r1, Result r2) {
