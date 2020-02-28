@@ -2397,25 +2397,25 @@ function createSearchBox(searchURL) {
     var comp  = $("search-box-completion");
 
     Behaviour.addLoadEvent(function(){
-        // make sure all three components have the same font settings
-        function copyFontStyle(s,d) {
-            var ds = d.style;
-            ds.fontFamily = getStyle(s,"fontFamily");
-            ds.fontSize = getStyle(s,"fontSize");
-            ds.fontStyle = getStyle(s,"fontStyle");
-            ds.fontWeight = getStyle(s,"fontWeight");
-        }
-
-        copyFontStyle(box,sizer);
+        // copy font style of box to sizer
+        var ds = sizer.style;
+        ds.fontFamily = getStyle(box, "fontFamily");
+        ds.fontSize = getStyle(box, "fontSize");
+        ds.fontStyle = getStyle(box, "fontStyle");
+        ds.fontWeight = getStyle(box, "fontWeight");
     });
 
     // update positions and sizes of the components relevant to search
     function updatePos() {
         sizer.innerHTML = box.value.escapeHTML();
-        var w = sizer.offsetWidth;
+        var cssWidth, offsetWidth = sizer.offsetWidth;
+        if (offsetWidth > 0) {
+            cssWidth = offsetWidth + "px";
+        } else { // sizer hidden on small screen, make sure resizing looks OK
+            cssWidth =  getStyle(sizer, "minWidth");
+        }
         box.style.width =
-        comp.style.width =
-        comp.firstChild.style.minWidth = (w+60)+"px";
+        comp.firstChild.style.minWidth = "calc(60px + " + cssWidth + ")";
 
         var pos = YAHOO.util.Dom.getXY(box);
         pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
@@ -2423,9 +2423,7 @@ function createSearchBox(searchURL) {
     }
 
     updatePos();
-    // on small screens offsetWith is 0, update when screen gets bigger
-    window.addEventListener("resize", updatePos);
-    box.onkeyup = updatePos;
+    box.addEventListener("input", updatePos);
 }
 
 
