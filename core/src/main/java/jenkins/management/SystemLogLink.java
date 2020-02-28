@@ -26,6 +26,9 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
 /**
@@ -51,5 +54,11 @@ public class SystemLogLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "log";
+    }
+
+    @Nonnull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 }
