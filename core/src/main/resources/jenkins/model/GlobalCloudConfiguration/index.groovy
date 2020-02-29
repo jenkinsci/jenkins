@@ -7,7 +7,10 @@ def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 def st = namespace("jelly:stapler")
 
-l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
+l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
+    if (!h.hasPermission(app.ADMINISTER)) {
+        set("readOnlyMode", "true")
+    }
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
@@ -20,9 +23,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
             // TODO more appropriate icon
             text(my.displayName)
         }
-
         def clouds = Cloud.all()
-
         if (!clouds.isEmpty()) {
             p()
             div(class:"behavior-loading", _("LOADING"))
@@ -33,19 +34,17 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
                             addCaption:_("Add a new cloud"), deleteCaption:_("Delete cloud"))
                 }
 
-                f.bottomButtonBar {
-                    f.submit(value:_("Save"))
-                    f.apply(value:_("Apply"))
+                l.isAdmin {
+                    f.bottomButtonBar {
+                        f.submit(value: _("Save"))
+                        f.apply(value: _("Apply"))
+                    }
                 }
             }
             st.adjunct(includes: "lib.form.confirm")
         } else {
-            p {
-                _("There are no cloud implementations for dynamically allocated agents installed.")
-                a(href: rootURL + "/pluginManager/available") {
-                    _("Go to plugin manager.")
-                }
-            }
+            p(_("There are no cloud implementations for dynamically allocated agents installed. "))
+            a(href: rootURL + "/pluginManager/available", _("Go to plugin manager."))
         }
     }
 }

@@ -56,7 +56,7 @@ public class NodesLink extends ManagementLink {
     @Nonnull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.MANAGE;
+        return Jenkins.READ;
     }
 
     @Override

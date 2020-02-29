@@ -57,6 +57,10 @@ THE SOFTWARE.
       This is useful for showing links to restricted pages, as showing
       them to unprivileged users don't make sense.
     </st:attribute>
+    <st:attribute name="permissions">
+      If specified, the link will be only displayed when the current user has
+      one or more of the specified permissions against the "it" object.
+    </st:attribute>
     <st:attribute name="post" type="boolean">
       If true, send a POST rather than a GET request.
       (onclick supersedes this except in the context menu.)
@@ -85,7 +89,19 @@ THE SOFTWARE.
     <d:invokeBody />
   </j:scope>
 
-  <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
+  <j:if test="${attrs.permission != null and h.hasPermission(it,attrs.permission)}">
+    <j:set var="hasPermission" value="true" />
+  </j:if>
+
+  <j:if test="${attrs.permissions != null and h.hasAnyPermission(it,attrs.permissions)}">
+    <j:set var="hasPermission" value="true" />
+  </j:if>
+
+  <j:if test="${attrs.permission == null and attrs.permissions == null}">
+    <j:set var="hasPermission" value="true" />
+  </j:if>
+
+  <j:if test="${hasPermission}">
     <j:choose>
       <j:when test="${taskMatching!=null}">
         <j:if test="${match}">
