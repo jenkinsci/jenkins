@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 
@@ -149,8 +150,17 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @RequirePOST
     public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath()+"/manage");
+    }
+
+    /**
+     * Required permission to view this admin monitor
+     *
+     */
+    public Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
     }
 
     /**
@@ -158,7 +168,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(getRequiredPermission());
         return this;
     }
 
