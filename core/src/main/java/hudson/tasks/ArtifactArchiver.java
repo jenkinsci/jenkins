@@ -161,7 +161,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
         if (followSymlinks == null) {
           followSymlinks = true;
-      }
+        }
         return this;
     }
 
