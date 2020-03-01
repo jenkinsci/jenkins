@@ -8,3 +8,10 @@
     margin: 1em;
     text-align: right;
 }
+.category-label {
+    border: 1px solid #ccc;
+    background-color: #eee;
+    border-radius: 4px;
+    padding: 3px;
+    margin: 5px;
+}
