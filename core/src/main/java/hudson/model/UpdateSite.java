@@ -1022,6 +1022,7 @@ public class UpdateSite {
 
         /**
          * Date when this plugin was released.
+         * @since TODO
          */
         @Exported
         public final Date releaseTimestamp;
