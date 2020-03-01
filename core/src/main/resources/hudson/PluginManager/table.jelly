@@ -67,7 +67,7 @@ THE SOFTWARE.
               <th initialSortDir="${isUpdates?'down':null}"
                   onclick="showhideCategories(this,0)">${%Name}</th>
               <th onclick="showhideCategories(this,0)">${%Version}</th>
-              <th>${%Released}</th>
+              <th onclick="showhideCategories(this,0)">${%Released}</th>
               <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
             </tr>
             <j:choose>
@@ -147,7 +147,7 @@ THE SOFTWARE.
                       </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
-                    <td class="pane">
+                    <td class="pane" data="${p.releaseTimestamp.time}">
                       <j:if test="${p.releaseTimestamp != null}">
                         <i:formatDate value="${p.releaseTimestamp}" type="date" dateStyle="short" />
                       </j:if>
