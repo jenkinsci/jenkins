@@ -77,9 +77,22 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
-    public final CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
+    public List<Target> targets = new ArrayList<>();
     private final static TargetComparator TARGET_COMPARATOR = new TargetComparator();
-    
+
+    @DataBoundConstructor
+    public LogRecorder(String name) {
+        this.name = name;
+        // register it only once when constructed, and when this object dies
+        // WeakLogHandler will remove it
+        new WeakLogHandler(handler,Logger.getLogger(""));
+    }
+
+    @DataBoundSetter
+    public void setTargets(List<Target> targets) {
+        this.targets = targets;
+    }
+
     @Restricted(NoExternalUse.class)
     Target[] orderedTargets() {
         // will contain targets ordered by reverse name length (place specific targets at the beginning)
@@ -252,7 +265,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
 
     }
-    
+
     private static class TargetComparator implements Comparator<Target>, Serializable {
 
         private static final long serialVersionUID = 9285340752515798L;
@@ -296,19 +309,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
         @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
-            for (LogRecorder recorder : Jenkins.get().getLog().logRecorders.values()) {
+            for (LogRecorder recorder : Jenkins.get().getLog().logRecorders) {
                 for (Target t : recorder.targets) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
                 }
             }
         }
-    }
-
-    public LogRecorder(String name) {
-        this.name = name;
-        // register it only once when constructed, and when this object dies
-        // WeakLogHandler will remove it
-        new WeakLogHandler(handler,Logger.getLogger(""));
     }
 
     public String getDisplayName() {
@@ -321,6 +327,10 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     public String getName() {
         return name;
+    }
+
+    public List<Target> getTargets() {
+        return targets;
     }
 
     public LogRecorderManager getParent() {
@@ -340,16 +350,14 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
-            getParent().logRecorders.remove(name);
+            getParent().logRecorders.remove(new LogRecorder(name));
             this.name = newName;
-            getParent().logRecorders.put(name,this);
+            getParent().logRecorders.add(this);
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
         List<Target> newTargets = req.bindJSONToList(Target.class, src.get("targets"));
-        for (Target t : newTargets)
-            t.enable();
-        targets.replaceBy(newTargets);
+        setTargets(newTargets);
 
         save();
         if (oldFile!=null) oldFile.delete();
@@ -367,8 +375,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     public synchronized void load() throws IOException {
         getConfigFile().unmarshal(this);
-        for (Target t : targets)
-            t.enable();
+        targets.forEach(Target::enable);
     }
 
     /**
@@ -377,7 +384,26 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
+        targets.forEach(Target::enable);
+
         SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        LogRecorder that = (LogRecorder) o;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 
     /**
@@ -386,14 +412,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
         getConfigFile().delete();
-        getParent().logRecorders.remove(name);
+        getParent().logRecorders.remove(new LogRecorder(name));
         // Disable logging for all our targets,
         // then reenable all other loggers in case any also log the same targets
-        for (Target t : targets)
-            t.disable();
-        for (LogRecorder log : getParent().logRecorders.values())
-            for (Target t : log.targets)
-                t.enable();
+        targets.forEach(Target::disable);
+
+        getParent().logRecorders.forEach(logRecorder -> logRecorder.targets.forEach(Target::enable));
         rsp.sendRedirect2("..");
     }
 

@@ -56,7 +56,7 @@ THE SOFTWARE.
         <th width="32"/>
       </tr>
       <local:row href="all" name="${%All Jenkins Logs}" />
-      <j:forEach var="lr" items="${it.logRecorders.values()}">
+      <j:forEach var="lr" items="${it.logRecorders}">
         <local:row name="${lr.name}" href="${lr.searchUrl}/">
           <a href="${lr.searchUrl}/configure">
             <l:icon class="icon-gear2 icon-lg" tooltip="Configure"/>
@@ -65,7 +65,9 @@ THE SOFTWARE.
       </j:forEach>
     </table>
     <form method="get" action="new">
-      <f:submit value="${%Add new log recorder}" />
+      <p>
+        <f:submit value="${%Add new log recorder}" />
+      </p>
     </form>
   </l:main-panel>
 </l:layout>

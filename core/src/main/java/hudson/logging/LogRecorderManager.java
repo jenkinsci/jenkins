@@ -30,13 +30,14 @@ import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
 import jenkins.model.Jenkins;
 import hudson.model.RSS;
-import hudson.util.CopyOnWriteMap;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -66,9 +67,23 @@ import java.util.logging.Logger;
  */
 public class LogRecorderManager extends AbstractModelObject implements ModelObjectWithChildren, StaplerProxy {
     /**
-     * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#name name}.
+     * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#getName()}  name}.
      */
-    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
+    public List<LogRecorder> logRecorders;
+
+    @DataBoundConstructor
+    public LogRecorderManager() {
+        this.logRecorders = new ArrayList<>();
+    }
+
+    public List<LogRecorder> getLogRecorders() {
+        return logRecorders;
+    }
+
+    @DataBoundSetter
+    public void setLogRecorders(List<LogRecorder> logRecorders) {
+        this.logRecorders = logRecorders;
+    }
 
     public String getDisplayName() {
         return Messages.LogRecorderManager_DisplayName();
@@ -83,7 +98,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     }
 
     public LogRecorder getLogRecorder(String token) {
-        return logRecorders.get(token);
+        return logRecorders.stream().filter(logRecorder -> logRecorder.getName().equals(token)).findAny().orElse(null);
     }
 
     static File configDir() {
@@ -103,7 +118,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             name = name.substring(0,name.length()-4);   // cut off ".xml"
             LogRecorder lr = new LogRecorder(name);
             lr.load();
-            logRecorders.put(name,lr);
+            logRecorders.add(lr);
         }
     }
 
@@ -114,7 +129,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     public HttpResponse doNewLogRecorder(@QueryParameter String name) {
         Jenkins.checkGoodName(name);
         
-        logRecorders.put(name,new LogRecorder(name));
+        logRecorders.add(new LogRecorder(name));
 
         // redirect to the config screen
         return new HttpRedirect(name+"/configure");
@@ -123,7 +138,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         menu.add("all","All Jenkins Logs");
-        for (LogRecorder lr : logRecorders.values()) {
+        for (LogRecorder lr : logRecorders) {
             menu.add(lr.getSearchUrl(), lr.getDisplayName());
         }
         return menu;
