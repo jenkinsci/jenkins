@@ -161,10 +161,15 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
     @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
-        if(Jenkins.get().isDisableRememberMe()){
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            // as this filter could be called during restart, this corrects at least the symptoms
+            return null;
+        }
+        if (j.isDisableRememberMe()) {
             cancelCookie(request, response, null);
             return null;
-        }else {
+        } else {
             try {
                 // we use a patched version of the super.autoLogin
                 String rememberMeValue = findRememberMeCookieValue(request, response);
