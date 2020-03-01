@@ -1145,6 +1145,8 @@ public class Functions {
      * This version is so that the 'hasAnyPermission'
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
+     *
+     * @since TODO
      */
     public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
         if (permissions == null || permissions.length == 0) {
