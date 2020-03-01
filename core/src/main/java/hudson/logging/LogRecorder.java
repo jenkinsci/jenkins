@@ -31,10 +31,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.*;
-import hudson.util.CopyOnWriteMap;
 import hudson.util.HttpResponses;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.SaveableListener;
@@ -352,9 +349,11 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
-            getParent().getRecorders().remove(new LogRecorder(name));
+            List<LogRecorder> recorders = getParent().getRecorders();
+            recorders.remove(new LogRecorder(name));
             this.name = newName;
-            getParent().getRecorders().add(this);
+            recorders.add(this);
+            getParent().setRecorders(recorders); // ensure that legacy logRecorders field is synced on save
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
@@ -385,19 +384,23 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        handleLegacyLogRecordersMap();
+
+        handlePluginUpdatingLegacyLogManagerMap();
         getConfigFile().write(this);
         targets.forEach(Target::enable);
 
         SaveableListener.fireOnChange(this, getConfigFile());
     }
 
-    @SuppressWarnings("deprecation") // intentional as we're keeping compatibility
-    void handleLegacyLogRecordersMap() {
-        Map<String, LogRecorder> values = getParent().getRecorders().stream()
-                .collect(Collectors.toMap(LogRecorder::getName, Function.identity()));
-        // This doesn't work, for some reason it's not saved =/
-        ((CopyOnWriteMap<String,LogRecorder>) getParent().logRecorders).replaceBy(values);
+    @SuppressWarnings("deprecation") // this is for compatibility
+    private void handlePluginUpdatingLegacyLogManagerMap() {
+        if (getParent().logRecorders.size() > getParent().getRecorders().size()) {
+            for (LogRecorder logRecorder : getParent().logRecorders.values()) {
+                if (!getParent().getRecorders().contains(logRecorder)) {
+                    getParent().getRecorders().add(logRecorder);
+                }
+            }
+        }
     }
 
     @Override

@@ -28,8 +28,12 @@ import hudson.Functions;
 import hudson.RestrictedSince;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static java.util.stream.Collectors.toMap;
+
 import hudson.model.AbstractModelObject;
 import hudson.util.CopyOnWriteMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import hudson.model.RSS;
 import jenkins.model.JenkinsLocationConfiguration;
@@ -75,7 +79,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * @deprecated use {@link #getRecorders()} instead
      */
     @Deprecated
-    @Restricted(DoNotUse.class)
+    @Restricted(NoExternalUse.class)
     @RestrictedSince("TODO")
     public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
 
@@ -93,6 +97,10 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     @DataBoundSetter
     public void setRecorders(List<LogRecorder> recorders) {
         this.recorders = recorders;
+
+        Map<String, LogRecorder> values = recorders.stream()
+                .collect(toMap(LogRecorder::getName, Function.identity()));
+        ((CopyOnWriteMap<String,LogRecorder>) logRecorders).replaceBy(values);
     }
 
     public String getDisplayName() {
@@ -130,10 +138,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             lr.load();
             recorders.add(lr);
         }
-
-        if (!recorders.isEmpty()) {
-            recorders.get(0).handleLegacyLogRecordersMap();
-        }
+        setRecorders(recorders); // ensure that legacy logRecorders field is synced on load
     }
 
     /**
