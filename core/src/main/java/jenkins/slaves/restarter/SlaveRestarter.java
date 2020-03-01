@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
- * Extension point to control how to restart JNLP agent when it loses the connection with the master.
+ * Extension point to control how to restart an inbound agent when it loses the connection with the master.
  *
  * <p>
  * Objects are instantiated on the master, then transferred to an agent via serialization.
@@ -32,8 +32,8 @@ public abstract class SlaveRestarter implements ExtensionPoint, Serializable {
      *
      * <p>
      * This method is not expected to return, and the JVM should terminate before this call returns.
-     * If the method returns normally, the JNLP agent will move on to the reconnection without restart.
-     * If an exception is thrown, it is reported as an error and then the JNLP agent will move on to the
+     * If the method returns normally, the agent will move on to the reconnection without restart.
+     * If an exception is thrown, it is reported as an error and then the agent will move on to the
      * reconnection without restart.
      */
     public abstract void restart() throws Exception;

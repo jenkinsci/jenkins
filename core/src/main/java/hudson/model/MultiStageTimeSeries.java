@@ -60,10 +60,6 @@ import javax.servlet.ServletException;
 /**
  * Maintains several {@link TimeSeries} with different update frequencies to satisfy three goals;
  * (1) retain data over long timespan, (2) save memory, and (3) retain accurate data for the recent past.
- *
- * All in all, one instance uses about 8KB space.
- *
- * @author Kohsuke Kawaguchi
  */
 @ExportedBean
 public class MultiStageTimeSeries implements Serializable {
@@ -101,9 +97,9 @@ public class MultiStageTimeSeries implements Serializable {
     public MultiStageTimeSeries(Localizable title, Color color, float initialValue, float decay) {
         this.title = title;
         this.color = color;
-        this.sec10 = new TimeSeries(initialValue,decay,6*60);
-        this.min = new TimeSeries(initialValue,decay,60*24);
-        this.hour = new TimeSeries(initialValue,decay,28*24);
+        this.sec10 = new TimeSeries(initialValue, decay, 6 * (int) TimeUnit.HOURS.toMinutes(6));
+        this.min = new TimeSeries(initialValue, decay, (int) TimeUnit.DAYS.toMinutes(2));
+        this.hour = new TimeSeries(initialValue, decay, (int) TimeUnit.DAYS.toHours(56));
     }
 
     /**
@@ -201,7 +197,7 @@ public class MultiStageTimeSeries implements Serializable {
 
         public TrendChart(TimeScale timeScale, MultiStageTimeSeries... series) {
             this.timeScale = timeScale;
-            this.series = new ArrayList<MultiStageTimeSeries>(Arrays.asList(series));
+            this.series = new ArrayList<>(Arrays.asList(series));
             this.dataset = createDataset();
         }
 

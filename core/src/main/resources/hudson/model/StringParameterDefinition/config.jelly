@@ -35,7 +35,7 @@ THE SOFTWARE.
     <f:entry title="${%Description}" help="/help/parameter/description.html">
         <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
-    <f:entry field="trim" help="/help/parameter/trim.html">
-        <f:checkbox default="false" title="${%Trim the string}"/>
+    <f:entry field="trim">
+        <f:checkbox default="false" title="${%Trim the string}" />
     </f:entry>
 </j:jelly>

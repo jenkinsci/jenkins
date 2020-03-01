@@ -28,6 +28,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.event.FilteredDispatchTriggerListener;
 import org.kohsuke.stapler.event.FilteredDoActionTriggerListener;
 import org.kohsuke.stapler.event.FilteredFieldTriggerListener;
 import org.kohsuke.stapler.event.FilteredGetterTriggerListener;
@@ -37,10 +38,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Log a warning message when a "getter" or "doAction" function that was filtered out by SECURITY-400 new rules
+ * Log a warning message when a "getter" or "doAction" function or fragment view that was filtered out by SECURITY-400 new rules
  */
 @Restricted(NoExternalUse.class)
-public class StaplerFilteredActionListener implements FilteredDoActionTriggerListener, FilteredGetterTriggerListener, FilteredFieldTriggerListener {
+public class StaplerFilteredActionListener implements FilteredDoActionTriggerListener, FilteredGetterTriggerListener, FilteredFieldTriggerListener, FilteredDispatchTriggerListener {
     private static final Logger LOGGER = Logger.getLogger(StaplerFilteredActionListener.class.getName());
 
     private static final String LOG_MESSAGE = "New Stapler routing rules result in the URL \"{0}\" no longer being allowed. " +
@@ -71,6 +72,14 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
                 req.getPathInfo(),
                 f.getSignature()
         });
+        return false;
+    }
+
+    @Override
+    public boolean onDispatchTrigger(StaplerRequest req, StaplerResponse rsp, Object node, String viewName) {
+        LOGGER.warning(() -> "New Stapler dispatch rules result in the URL \"" + req.getPathInfo() + "\" no longer being allowed. " +
+                "If you consider it safe to use, add the following to the whitelist: \"" + node.getClass().getName() + " " + viewName + "\". "+
+                "Learn more: https://jenkins.io/redirect/stapler-facet-restrictions");
         return false;
     }
 }

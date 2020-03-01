@@ -47,9 +47,9 @@ import java.util.logging.Logger;
 class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfiguration {
     private static final Logger LOGGER = Logger.getLogger(DefaultRuntimeSpringConfiguration.class.getName());
     private StaticWebApplicationContext context;
-    private Map<String,BeanConfiguration> beanConfigs = new HashMap<String,BeanConfiguration>();
-    private Map<String,BeanDefinition> beanDefinitions = new HashMap<String,BeanDefinition>();
-    private List<String> beanNames = new ArrayList<String>();
+    private Map<String,BeanConfiguration> beanConfigs = new HashMap<>();
+    private Map<String,BeanDefinition> beanDefinitions = new HashMap<>();
+    private List<String> beanNames = new ArrayList<>();
 
     public DefaultRuntimeSpringConfiguration() {
         super();
@@ -201,8 +201,7 @@ class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfiguration {
             applicationContext.registerBeanDefinition(bc.getName(),
                     bc.getBeanDefinition());
         }
-        for (String key : beanDefinitions.keySet()) {
-            BeanDefinition bd = beanDefinitions.get(key);
+        beanDefinitions.forEach((key, bd) -> {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.finer("[RuntimeConfiguration] Registering bean [" + key + "]");
                 if (LOGGER.isLoggable(Level.FINEST)) {
@@ -217,7 +216,7 @@ class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfiguration {
 
             applicationContext.registerBeanDefinition(key, bd);
 
-        }
+        });
     }
 
     /**

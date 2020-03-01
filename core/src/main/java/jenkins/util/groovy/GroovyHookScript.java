@@ -46,7 +46,7 @@ public class GroovyHookScript {
 
     @Deprecated
     public GroovyHookScript(String hook) {
-        this(hook, Jenkins.getActiveInstance());
+        this(hook, Jenkins.get());
     }
 
     private GroovyHookScript(String hook, Jenkins j) {
@@ -83,7 +83,7 @@ public class GroovyHookScript {
         Set<String> resources = servletContext.getResourcePaths("/WEB-INF/"+ hookGroovyD +"/");
         if (resources!=null) {
             // sort to execute them in a deterministic order
-            for (String res : new TreeSet<String>(resources)) {
+            for (String res : new TreeSet<>(resources)) {
                 try {
                     URL bundled = servletContext.getResource(res);
                     execute(bundled);

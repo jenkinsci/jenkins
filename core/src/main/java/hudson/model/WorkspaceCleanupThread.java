@@ -65,8 +65,8 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
             LOGGER.fine("Disabled. Skipping execution");
             return;
         }
-        List<Node> nodes = new ArrayList<Node>();
-        Jenkins j = Jenkins.getInstance();
+        List<Node> nodes = new ArrayList<>();
+        Jenkins j = Jenkins.get();
         nodes.add(j);
         nodes.addAll(j.getNodes());
         for (TopLevelItem item : j.allItems(TopLevelItem.class)) {
@@ -82,10 +82,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 boolean check;
                 try {
                     check = shouldBeDeleted(item, ws, node);
-                } catch (IOException x) {
-                    Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
-                    continue;
-                } catch (InterruptedException x) {
+                } catch (IOException | InterruptedException x) {
                     Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
                     continue;
                 }
@@ -93,10 +90,11 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
                         ws.deleteRecursive();
-                        WorkspaceList.tempDir(ws).deleteRecursive();
-                    } catch (IOException x) {
-                        Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
-                    } catch (InterruptedException x) {
+                        FilePath tempDir = WorkspaceList.tempDir(ws);
+                        if (tempDir != null) {
+                            tempDir.deleteRecursive();
+                        }
+                    } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
                 }

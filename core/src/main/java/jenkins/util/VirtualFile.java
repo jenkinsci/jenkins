@@ -855,7 +855,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             if (includes.isEmpty()) { // see Glob class Javadoc, and list(String, String, boolean) note
                 return Collections.emptyList();
             }
-            final List<String> paths = new ArrayList<String>();
+            final List<String> paths = new ArrayList<>();
             new DirScanner.Glob(includes, excludes, useDefaultExcludes).scan(f, new FileVisitor() {
                 @Override
                 public void visit(File f, String relativePath) throws IOException {

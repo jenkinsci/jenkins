@@ -54,6 +54,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ResourceDomainConfiguration;
+import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
@@ -87,6 +89,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private final String icon;
     private final boolean serveDirIndex;
     private String indexFileName = "index.html";
+
+    @Restricted(NoExternalUse.class)
+    public static final String CSP_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".CSP";
+
+    /**
+     * Keeps track of whether this has been registered from use via {@link ResourceDomainRootAction}.
+     */
+    private ResourceDomainRootAction.Token resourceToken;
 
     /**
      * @deprecated as of 1.297
@@ -137,6 +147,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        if (!ResourceDomainConfiguration.isResourceRequest(req) && ResourceDomainConfiguration.isResourceDomainConfigured()) {
+            resourceToken = ResourceDomainRootAction.get().getToken(this, req);
+        }
+
         try {
             serveFile(req,rsp,base,icon,serveDirIndex);
         } catch (InterruptedException e) {
@@ -181,7 +195,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
 
         String path = getPath(req);
-        if(path.replace('\\','/').indexOf("/../")!=-1) {
+        if(path.replace('\\', '/').contains("/../")) {
             // don't serve anything other than files in the artifacts dir
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
@@ -290,7 +304,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 req.setAttribute("path", path);
                 req.setAttribute("pattern",rest);
                 req.setAttribute("dir", baseFile);
-                req.getView(this,"dir.jelly").forward(req, rsp);
+                if (ResourceDomainConfiguration.isResourceRequest(req)) {
+                    req.getView(this, "plaindir.jelly").forward(req, rsp);
+                } else {
+                    req.getView(this, "dir.jelly").forward(req, rsp);
+                }
                 return;
             }
 
@@ -308,11 +326,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         boolean view = rest.equals("*view*");
 
         if(rest.equals("*fingerprint*")) {
-            InputStream fingerprintInput = baseFile.open();
-            try {
-                rsp.forward(Jenkins.getInstance().getFingerprint(Util.getDigestOf(fingerprintInput)), "/", req);
-            } finally {
-                fingerprintInput.close();
+            try (InputStream fingerprintInput = baseFile.open()) {
+                rsp.forward(Jenkins.get().getFingerprint(Util.getDigestOf(fingerprintInput)), "/", req);
             }
             return;
         }
@@ -331,25 +346,32 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Serving "+baseFile+" with lastModified=" + lastModified + ", length=" + length);
 
-        InputStream in = baseFile.open();
         if (view) {
             // for binary files, provide the file name for download
             rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
 
             // pseudo file name to let the Stapler set text/plain
-            rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
+            rsp.serveFile(req, baseFile.open(), lastModified, -1, length, "plain.txt");
         } else {
-            String csp = SystemProperties.getString(DirectoryBrowserSupport.class.getName() + ".CSP", DEFAULT_CSP_VALUE);
-            if (!csp.trim().equals("")) {
-                // allow users to prevent sending this header by setting empty system property
-                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                    rsp.setHeader(header, csp);
+            if (resourceToken != null) {
+                // redirect to second domain
+                rsp.sendRedirect(302, ResourceDomainRootAction.get().getRedirectUrl(resourceToken, req.getRestOfPath()));
+            } else {
+                if (!ResourceDomainConfiguration.isResourceRequest(req)) {
+                    // if we're serving this from the main domain, set CSP headers
+                    String csp = SystemProperties.getString(CSP_PROPERTY_NAME, DEFAULT_CSP_VALUE);
+                    if (!csp.trim().equals("")) {
+                        // allow users to prevent sending this header by setting empty system property
+                        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                            rsp.setHeader(header, csp);
+                        }
+                    }
                 }
+                rsp.serveFile(req, baseFile.open(), lastModified, -1, length, baseFile.getName());
             }
-            rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName() );
         }
     }
-    
+
     private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList){
         Stream<List<Path>> pathFragmentsStream = pathFragmentsList.stream().map((List<Path> pathFragments) -> {
             List<Path> mappedFragments = new ArrayList<>(pathFragments.size());
@@ -413,7 +435,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * from a string like "/foo/bar/zot".
      */
     private List<Path> buildParentPath(String pathList, int restSize) {
-        List<Path> r = new ArrayList<Path>();
+        List<Path> r = new ArrayList<>();
         StringTokenizer tokens = new StringTokenizer(pathList, "/");
         int total = tokens.countTokens();
         int current=1;
@@ -669,7 +691,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * (this mechanism is used to skip empty intermediate directory.)
      */
     private static List<List<Path>> buildChildPaths(VirtualFile cur, Locale locale) throws IOException {
-            List<List<Path>> r = new ArrayList<List<Path>>();
+            List<List<Path>> r = new ArrayList<>();
 
             VirtualFile[] files = cur.list();
                 Arrays.sort(files,new FileComparator(locale));
@@ -680,12 +702,12 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         r.add(Collections.singletonList(p));
                     } else {
                         // find all empty intermediate directory
-                        List<Path> l = new ArrayList<Path>();
+                        List<Path> l = new ArrayList<>();
                         l.add(p);
                         String relPath = Util.rawEncode(f.getName());
                         while(true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
-                            List<VirtualFile> sub = new ArrayList<VirtualFile>();
+                            List<VirtualFile> sub = new ArrayList<>();
                             for (VirtualFile vf : f.list()) {
                                 String name = vf.getName();
                                 if (!name.startsWith(".") && !name.equals("CVS") && !name.equals(".svn")) {
@@ -714,7 +736,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             Collection<String> files = baseDir.list(pattern, null, /* TODO what is the user expectation? */true);
 
             if (!files.isEmpty()) {
-                List<List<Path>> r = new ArrayList<List<Path>>(files.size());
+                List<List<Path>> r = new ArrayList<>(files.size());
                 for (String match : files) {
                     List<Path> file = buildPathList(baseDir, baseDir.child(match), baseRef);
                     r.add(file);
@@ -729,7 +751,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
          * Builds a path list from the current workspace directory down to the specified file path.
          */
         private static List<Path> buildPathList(VirtualFile baseDir, VirtualFile filePath, String baseRef) throws IOException {
-            List<Path> pathList = new ArrayList<Path>();
+            List<Path> pathList = new ArrayList<>();
             StringBuilder href = new StringBuilder(baseRef);
 
             buildPathList(baseDir, filePath, pathList, href);

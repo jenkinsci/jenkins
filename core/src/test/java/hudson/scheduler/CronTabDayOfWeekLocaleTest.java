@@ -29,7 +29,7 @@ public class CronTabDayOfWeekLocaleTest {
     @Parameters
     public static Collection<Object[]> parameters() {
         final Locale[] locales = Locale.getAvailableLocales();
-        final Collection<Object[]> parameters = new ArrayList<Object[]>();
+        final Collection<Object[]> parameters = new ArrayList<>();
         for (final Locale locale : locales) {
             final Calendar cal = Calendar.getInstance(locale);
             if (GregorianCalendar.class.equals(cal.getClass())) {

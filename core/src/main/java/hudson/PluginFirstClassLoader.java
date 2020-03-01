@@ -50,7 +50,7 @@ public class PluginFirstClassLoader
         super(null, false);
     }
 
-    private List<URL> urls = new ArrayList<URL>();
+    private List<URL> urls = new ArrayList<>();
 
     public void addPathFiles( Collection<File> paths )
         throws IOException

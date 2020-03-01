@@ -60,13 +60,13 @@ public final class ContainerAuthentication implements Authentication {
 
         // Servlet API doesn't provide a way to list up all roles the current user
         // has, so we need to ask AuthorizationStrategy what roles it is going to check against.
-        List<GrantedAuthority> l = new ArrayList<GrantedAuthority>();
-        for( String g : Jenkins.getInstance().getAuthorizationStrategy().getGroups()) {
+        List<GrantedAuthority> l = new ArrayList<>();
+        for( String g : Jenkins.get().getAuthorizationStrategy().getGroups()) {
             if(request.isUserInRole(g))
                 l.add(new GrantedAuthorityImpl(g));
         }
         l.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
-        authorities = l.toArray(new GrantedAuthority[l.size()]);
+        authorities = l.toArray(new GrantedAuthority[0]);
     }
 
     public GrantedAuthority[] getAuthorities() {

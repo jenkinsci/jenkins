@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Logger;
@@ -96,7 +97,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     private boolean loadMasterKillSwitchFile(@Nonnull File f) {
         try {
             if (!f.exists())    return true;
-            return Boolean.parseBoolean(FileUtils.readFileToString(f).trim());
+            return Boolean.parseBoolean(FileUtils.readFileToString(f, Charset.defaultCharset()).trim());
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to read "+f, e);
             return false;
@@ -160,19 +161,19 @@ public class AdminWhitelistRule implements StaplerProxy {
 
     @RequirePOST
     public HttpResponse doSubmit(StaplerRequest req) throws IOException {
-        String whitelist = Util.fixNull(req.getParameter("whitelist"));
-        if (!whitelist.endsWith("\n"))
-            whitelist+="\n";
+        StringBuilder whitelist = new StringBuilder(Util.fixNull(req.getParameter("whitelist")));
+        if ((whitelist.length() > 0) && (whitelist.charAt(whitelist.length() - 1) != '\n'))
+            whitelist.append("\n");
 
         Enumeration e = req.getParameterNames();
         while (e.hasMoreElements()) {
             String name = (String) e.nextElement();
             if (name.startsWith("class:")) {
-                whitelist += name.substring(6)+"\n";
+                whitelist.append(name.substring(6)).append("\n");
             }
         }
 
-        whitelisted.set(whitelist);
+        whitelisted.set(whitelist.toString());
 
         String newRules = Util.fixNull(req.getParameter("filePathRules"));
         filePathRules.parseTest(newRules);  // test first before writing a potentially broken rules
@@ -211,9 +212,9 @@ public class AdminWhitelistRule implements StaplerProxy {
     public void setMasterKillSwitch(boolean state) {
         final Jenkins jenkins = Jenkins.get();
         try {
-            jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
+            jenkins.checkPermission(Jenkins.ADMINISTER);
             File f = getMasterKillSwitchFile(jenkins);
-            FileUtils.writeStringToFile(f, Boolean.toString(state));
+            FileUtils.writeStringToFile(f, Boolean.toString(state), Charset.defaultCharset());
             // treat the file as the canonical source of information in case write fails
             masterKillSwitch = loadMasterKillSwitchFile(f);
         } catch (IOException e) {
@@ -226,7 +227,7 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     @Override
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         return this;
     }
 

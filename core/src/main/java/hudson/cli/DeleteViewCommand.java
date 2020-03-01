@@ -41,6 +41,7 @@ import java.util.List;
 @Extension
 public class DeleteViewCommand extends CLICommand {
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="View names to delete", required=true, multiValued=true)
     private List<String> views;
 
@@ -56,13 +57,12 @@ public class DeleteViewCommand extends CLICommand {
         boolean errorOccurred = false;
 
         // Remove duplicates
-        final HashSet<String> hs = new HashSet<>();
-        hs.addAll(views);
+        final HashSet<String> hs = new HashSet<>(views);
 
         ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
 
         for(String view_s : hs) {
-            View view = null;
+            View view;
 
             try {
                 view = voh.getView(view_s);
@@ -86,7 +86,7 @@ public class DeleteViewCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(view_s + ": " + e.getMessage());
+                final String errorMsg = view_s + ": " + e.getMessage();
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;

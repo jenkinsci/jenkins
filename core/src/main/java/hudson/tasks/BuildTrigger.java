@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -146,7 +145,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
      */
     @Deprecated
     public List<AbstractProject> getChildProjects() {
-        return getChildProjects(Jenkins.getInstance());
+        return getChildProjects(Jenkins.get());
     }
 
     /** @deprecated use {@link #getChildJobs} */
@@ -200,7 +199,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         if (!jobs.isEmpty() && build.getResult().isBetterOrEqualTo(threshold)) {
             PrintStream logger = listener.getLogger();
             for (Job<?, ?> downstream : jobs) {
-                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) {
+                if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) {
                     LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
                     continue;
                 }
@@ -222,7 +221,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                     continue;
                 }
                 boolean scheduled = pj.scheduleBuild(pj.getQuietPeriod(), new UpstreamCause((Run) build));
-                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) == downstream) {
+                if (Jenkins.get().getItemByFullName(downstream.getFullName()) == downstream) {
                     String name = ModelHyperlinkNote.encodeTo(downstream);
                     if (scheduled) {
                         logger.println(Messages.BuildTrigger_Triggering(name));
@@ -255,11 +254,11 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         PrintStream logger = listener.getLogger();
         // Check all downstream Project of the project, not just those defined by BuildTrigger
         // TODO this may not yet be up to date if rebuildDependencyGraphAsync has been used; need a method to wait for the last call made before now to finish
-        final DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
-        List<Dependency> downstreamProjects = new ArrayList<Dependency>(
+        final DependencyGraph graph = Jenkins.get().getDependencyGraph();
+        List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
-        Collections.sort(downstreamProjects, new Comparator<Dependency>() {
+        downstreamProjects.sort(new Comparator<Dependency>() {
             public int compare(Dependency lhs, Dependency rhs) {
                 // Swapping lhs/rhs to get reverse sort:
                 return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
@@ -267,7 +266,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         });
 
         for (Dependency dep : downstreamProjects) {
-            List<Action> buildActions = new ArrayList<Action>();
+            List<Action> buildActions = new ArrayList<>();
             if (dep.shouldTriggerBuild(build, listener, buildActions)) {
                 AbstractProject p = dep.getDownstreamProject();
                 // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
@@ -275,8 +274,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                     logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
                     continue;
                 }
-                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
-                if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[0]));
+                if (Jenkins.get().getItemByFullName(p.getFullName()) == p) {
                     String name = ModelHyperlinkNote.encodeTo(p);
                     if (scheduled) {
                         logger.println(Messages.BuildTrigger_Triggering(name));
@@ -297,7 +296,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                                   List<Action> actions) {
                     AbstractProject downstream = getDownstreamProject();
-                    if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
+                    if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
                         LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
                         return false; // do not even issue a warning to build log
                     }
@@ -400,7 +399,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             while(tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
-                    Item item = Jenkins.getInstance().getItem(projectName,project,Item.class);
+                    Item item = Jenkins.get().getItem(projectName,project,Item.class);
                     if (item == null) {
                         Job<?, ?> nearest = Items.findNearest(Job.class, projectName, project.getParent());
                         String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
@@ -438,7 +437,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             private void locationChanged(Item item, String oldFullName, String newFullName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
-                for( Project<?,?> p : Jenkins.getInstance().allItems(Project.class) ) {
+                for( Project<?,?> p : Jenkins.get().allItems(Project.class) ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
                         String cp2 = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.childProjects, p.getParent());

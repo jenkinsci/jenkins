@@ -133,20 +133,17 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return a downloadable object
          */
         public Downloadable createDownloadable() {
-            if (this instanceof DownloadFromUrlInstaller.DescriptorImpl) {
-                final DownloadFromUrlInstaller.DescriptorImpl delegate = (DownloadFromUrlInstaller.DescriptorImpl)this;
-                return new Downloadable(getId()) {
-                    public JSONObject reduce(List<JSONObject> jsonList) {
-                        if (isDefaultSchema(jsonList)) {
-                            return delegate.reduce(jsonList);
-                        } else {
-                            //if it's not default schema fall back to the super class implementation
-                            return super.reduce(jsonList);
-                        }
+            final DescriptorImpl delegate = this;
+            return new Downloadable(getId()) {
+                public JSONObject reduce(List<JSONObject> jsonList) {
+                    if (isDefaultSchema(jsonList)) {
+                        return delegate.reduce(jsonList);
+                    } else {
+                        //if it's not default schema fall back to the super class implementation
+                        return super.reduce(jsonList);
                     }
-                };
-            }
-            return new Downloadable(getId());
+                }
+            };
         }
 
         /**
@@ -178,7 +175,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         private JSONObject reduce(List<JSONObject> jsonList) {
             List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
 
-            HashSet<String> processedIds = new HashSet<String>();
+            HashSet<String> processedIds = new HashSet<>();
             for (JSONObject jsonToolList : jsonList) {
                 ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolList, ToolInstallerList.class);
                 for(ToolInstallerEntry entry : toolInstallerList.list) {

@@ -43,6 +43,6 @@ public abstract class CallableWhitelist implements ExtensionPoint {
     public abstract boolean isWhitelisted(RoleSensitive subject, Collection<Role> expected, Object context);
 
     public static ExtensionList<CallableWhitelist> all() {
-        return Jenkins.getInstance().getExtensionList(CallableWhitelist.class);
+        return Jenkins.get().getExtensionList(CallableWhitelist.class);
     }
 }

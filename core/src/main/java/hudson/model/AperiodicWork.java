@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 
 
 /**
@@ -92,7 +92,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
         Timer.get().schedule(getNewInstance(), getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
 
-    @Initializer(after= JOB_LOADED)
+    @Initializer(after= JOB_CONFIG_ADAPTED)
     public static void init() {
         // start all AperidocWorks
         ExtensionList<AperiodicWork> extensionList = all();
@@ -126,9 +126,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
         private final Set<AperiodicWork> registered = new HashSet<>();
 
         AperiodicWorkExtensionListListener(ExtensionList<AperiodicWork> initiallyRegistered) {
-            for (AperiodicWork p : initiallyRegistered) {
-                registered.add(p);
-            }
+            registered.addAll(initiallyRegistered);
         }
 
         @Override

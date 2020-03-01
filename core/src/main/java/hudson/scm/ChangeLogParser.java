@@ -54,6 +54,6 @@ public abstract class ChangeLogParser {
 
     @Deprecated
     public ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
-        return parse((Run) build, build.getProject().getScm().getEffectiveBrowser(), changelogFile);
+        return parse(build, build.getProject().getScm().getEffectiveBrowser(), changelogFile);
     }
 }

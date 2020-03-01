@@ -67,8 +67,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -130,7 +128,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         if (job == null) {
             return false;
         }
@@ -150,15 +148,12 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
 
-        SecurityContext orig = ACL.impersonate(auth);
         Item authUpstream = null;
-        try {
+        try (ACLContext ctx = ACL.as(auth)) {
             authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
         } catch (AccessDeniedException ade) {
             // Fails because of missing Item.READ but downstream user has Item.DISCOVER
-        } finally {
-            SecurityContextHolder.setContext(orig);
         }
 
         if(authUpstream != upstream) {
@@ -220,7 +215,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             while(tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
-                    Job item = Jenkins.getInstance().getItem(projectName, project, Job.class);
+                    Job item = Jenkins.get().getItem(projectName, project, Job.class);
                     if (item == null) {
                         Job nearest = Items.findNearest(Job.class, projectName, project.getParent());
                         String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
@@ -253,7 +248,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
             try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
                 final Map<Job, Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
-                for (Job<?, ?> downstream : Jenkins.getInstance().allItems(Job.class)) {
+                for (Job<?, ?> downstream : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger trigger =
                             ParameterizedJobMixIn.getTrigger(downstream, ReverseBuildTrigger.class);
                     if (trigger == null) {
@@ -266,11 +261,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
                             continue; // handled specially
                         }
-                        Collection<ReverseBuildTrigger> triggers = result.get(upstream);
-                        if (triggers == null) {
-                            triggers = new LinkedList<>();
-                            result.put(upstream, triggers);
-                        }
+                        Collection<ReverseBuildTrigger> triggers = result.computeIfAbsent(upstream, k -> new LinkedList<>());
                         triggers.remove(trigger);
                         triggers.add(trigger);
                     }
@@ -293,6 +284,10 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             }
             for (final ReverseBuildTrigger trigger : triggers) {
                 if (trigger.shouldTrigger(r, listener)) {
+                    // Make SpotBugs happy.
+                    if (trigger.job == null) {
+                        continue;
+                    }
                     if (!trigger.job.isBuildable()) {
                         listener.getLogger().println(hudson.tasks.Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(trigger.job)));
                         continue;
@@ -313,7 +308,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         @Override
         public void onLocationChanged(Item item, final String oldFullName, final String newFullName) {
             try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
-                for (Job<?, ?> p : Jenkins.getInstance().allItems(Job.class)) {
+                for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {
                         String revised =

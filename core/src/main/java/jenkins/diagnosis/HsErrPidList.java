@@ -41,7 +41,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     /**
      * hs_err_pid files that we think belong to us.
      */
-    /*package*/ final List<HsErrPidFile> files = new ArrayList<HsErrPidFile>();
+    /*package*/ final List<HsErrPidFile> files = new ArrayList<>();
 
     /**
      * Used to keep a marker file memory-mapped, so that we can find hs_err_pid files that belong to us.
@@ -151,7 +151,7 @@ public class HsErrPidList extends AdministrativeMonitor {
     }
 
     private File getSecretKeyFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"secret.key");
+        return new File(Jenkins.get().getRootDir(),"secret.key");
     }
 
     private boolean findHeader(BufferedReader r) throws IOException {

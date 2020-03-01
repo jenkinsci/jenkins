@@ -73,7 +73,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
 
     @Deprecated
     protected ChangeLogSet(AbstractBuild<?, ?> build) {
-        this((Run) build, browserFromBuild(build));
+        this(build, browserFromBuild(build));
     }
     private static RepositoryBrowser<?> browserFromBuild(AbstractBuild<?,?> build) {
         if (build == null) { // not generally allowed, but sometimes done in unit tests
@@ -107,7 +107,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     // method for the remote API.
     @Exported
     public final Object[] getItems() {
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         for (T t : this)
             r.add(t);
         return r.toArray();

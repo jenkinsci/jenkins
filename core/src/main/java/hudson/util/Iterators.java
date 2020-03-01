@@ -50,7 +50,7 @@ public class Iterators {
      * Returns the empty iterator.
      */
     public static <T> Iterator<T> empty() {
-        return Collections.<T>emptyList().iterator();
+        return Collections.emptyIterator();
     }
 
     /**
@@ -62,7 +62,7 @@ public class Iterators {
 
         protected FlattenIterator(Iterator<? extends T> core) {
             this.core = core;
-            cur = Collections.<U>emptyList().iterator();
+            cur = Collections.emptyIterator();
         }
 
         protected FlattenIterator(Iterable<? extends T> core) {
@@ -148,7 +148,7 @@ public class Iterators {
      * Remove duplicates from another iterator.
      */
     public static final class DuplicateFilterIterator<T> extends FilterIterator<T> {
-        private final Set<T> seen = new HashSet<T>();
+        private final Set<T> seen = new HashSet<>();
 
         public DuplicateFilterIterator(Iterator<? extends T> core) {
             super(core);
@@ -336,7 +336,7 @@ public class Iterators {
      */
     public static <T> Iterator<T> removeDups(Iterator<T> iterator) {
         return new FilterIterator<T>(iterator) {
-            final Set<T> found = new HashSet<T>();
+            final Set<T> found = new HashSet<>();
             @Override
             protected boolean filter(T t) {
                 return found.add(t);
@@ -357,7 +357,7 @@ public class Iterators {
 
     @SafeVarargs
     public static <T> Iterator<T> sequence(Iterator<? extends T>... iterators) {
-        return com.google.common.collect.Iterators.<T>concat(iterators);
+        return com.google.common.collect.Iterators.concat(iterators);
     }
 
     /**

@@ -36,6 +36,8 @@ import hudson.util.ArgumentListBuilder;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
+import jenkins.util.JenkinsJVM;
 
 /**
  * A hook to allow filtering of information that is written to the console log.
@@ -43,6 +45,10 @@ import java.io.OutputStream;
  * direct access to the underlying {@link OutputStream} so it's possible to suppress
  * data, which isn't possible from the other interfaces.
  * ({@link ArgumentListBuilder#add(String, boolean)} is a simpler way to suppress a single password.)
+ * <p>Implementations which are {@link Serializable} may be sent to an agent JVM for processing.
+ * In particular, this happens under <a href="https://jenkins.io/jep/210">JEP-210</a>.
+ * In this case, the implementation should not assume that {@link JenkinsJVM#isJenkinsJVM},
+ * and if generating {@link ConsoleNote}s will need to encode them on the master side first.
  * @author dty
  * @since 1.383
  * @see BuildWrapper#decorateLogger
@@ -54,6 +60,7 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      *
      * @deprecated as of 1.632. Use {@link #decorateLogger(Run, OutputStream)}
      */
+    @Deprecated
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
         if (Util.isOverridden(ConsoleLogFilter.class, getClass(), "decorateLogger", Run.class, OutputStream.class)) {
             // old client calling newer implementation. forward the call.

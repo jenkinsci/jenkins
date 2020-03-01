@@ -63,13 +63,11 @@ public class I18nTest {
     @Issue("JENKINS-35270")
     @Test
     public void test_baseName_plugin() throws Exception {
-        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("credentials");
-        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("ssh-credentials");
-        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("ssh-slaves");
-        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.plugins.sshslaves.Messages").getJSONObject();
+        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=org.jenkinsci.plugins.matrixauth.Messages").getJSONObject();
         Assert.assertEquals(response.toString(), "ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
-        Assert.assertEquals("The launch timeout must be a number.", data.getString("SSHConnector.LaunchTimeoutMustBeANumber"));
+        Assert.assertEquals("Matrix-based security", data.getString("GlobalMatrixAuthorizationStrategy.DisplayName"));
     }
 
     @Test

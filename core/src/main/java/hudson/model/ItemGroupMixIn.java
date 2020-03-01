@@ -37,7 +37,6 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -107,7 +106,7 @@ public abstract class ItemGroupMixIn {
                 return child.isDirectory();
             }
         });
-        CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<K,V>();
+        CopyOnWriteMap.Tree<K,V> configurations = new CopyOnWriteMap.Tree<>();
         for (File subdir : subdirs) {
             try {
                 // Try to retain the identity of an existing child object if we can.
@@ -175,7 +174,7 @@ public abstract class ItemGroupMixIn {
             String from = req.getParameter("from");
 
             // resolve a name to Item
-            Item src = Jenkins.getInstance().getItem(from, parent);
+            Item src = Jenkins.get().getItem(from, parent);
             if(src==null) {
                 if(Util.fixEmpty(from)==null)
                     throw new Failure("Specify which job to copy");
@@ -255,7 +254,7 @@ public abstract class ItemGroupMixIn {
 
         add(result);
         ItemListener.fireOnCopied(src,result);
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
+        Jenkins.get().rebuildDependencyGraphAsync();
 
         return result;
     }
@@ -263,7 +262,7 @@ public abstract class ItemGroupMixIn {
     public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
         acl.checkPermission(Item.CREATE);
 
-        Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
+        Jenkins.get().getProjectNamingStrategy().checkName(name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
 
         // place it as config.xml
@@ -272,7 +271,7 @@ public abstract class ItemGroupMixIn {
         dir.mkdirs();
         boolean success = false;
         try {
-            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(configXml));
+            XMLUtils.safeTransform(new StreamSource(xml), new StreamResult(configXml));
 
             // load it
             TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {
@@ -287,19 +286,13 @@ public abstract class ItemGroupMixIn {
             add(result);
 
             ItemListener.fireOnCreated(result);
-            Jenkins.getInstance().rebuildDependencyGraphAsync();
+            Jenkins.get().rebuildDependencyGraphAsync();
 
             return result;
-        } catch (TransformerException e) {
+        } catch (TransformerException | SAXException e) {
             success = false;
             throw new IOException("Failed to persist config.xml", e);
-        } catch (SAXException e) {
-            success = false;
-            throw new IOException("Failed to persist config.xml", e);
-        } catch (IOException e) {
-            success = false;
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (IOException | RuntimeException e) {
             success = false;
             throw e;
         } finally {
@@ -316,14 +309,14 @@ public abstract class ItemGroupMixIn {
         type.checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, type);
 
-        Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
+        Jenkins.get().getProjectNamingStrategy().checkName(name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
 
         TopLevelItem item = type.newInstance(parent, name);
         item.onCreatedFromScratch();
         item.save();
         add(item);
-        Jenkins.getInstance().rebuildDependencyGraphAsync();
+        Jenkins.get().rebuildDependencyGraphAsync();
 
         if (notify)
             ItemListener.fireOnCreated(item);

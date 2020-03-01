@@ -31,6 +31,7 @@ THE SOFTWARE.
 	<%@attribute name="idref" required="true" description="ID of the HTML element in which the result is displayed" %>
 	<%@attribute name="spinner" required="false" description="ID of the HTML element in which the spinner is displayed" %>
 	<%@attribute name="startOffset" required="false" description="Skip this many bytes rather than showing from start of data" %>
+	<%@attribute name="onFinishEvent" required="false" description="JS custom event to be fired when progress is finished" %>
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
@@ -49,16 +50,16 @@ THE SOFTWARE.
 	      @param href
 	          Where to retrieve additional text from
 	    -->
-	    function fetchNext(e,href) {
+	    function fetchNext(e,href,onFinishEvent) {
         var headers = {};
         if (e.consoleAnnotator!=undefined)
           headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
 
-	      new Ajax.Request(href,{
-	          method: "post",
-	          parameters: {"start":e.fetchedBytes},
-            requestHeaders: headers,
-	          onComplete: function(rsp,_) {
+          new Ajax.Request(href,{
+              method: "post",
+              parameters: {"start":e.fetchedBytes},
+              requestHeaders: headers,
+              onComplete: function(rsp,_) {
               <!-- append text and do autoscroll if applicable-->
               var stickToBottom = scroller.isSticking();
               var text = rsp.responseText;
@@ -79,17 +80,21 @@ THE SOFTWARE.
 
               e.fetchedBytes     = rsp.getResponseHeader("X-Text-Size");
               e.consoleAnnotator = rsp.getResponseHeader("X-ConsoleAnnotator");
-	            if(rsp.getResponseHeader("X-More-Data")=="true")
-	              setTimeout(function(){fetchNext(e,href);},1000);
-	          <j:if test="${spinner!=null}">
-	            else
-	              $$("${spinner}").style.display = "none";
-	          </j:if>
-	          }
-	      });
-	    }
-	  </j:if>
-	  $$("${idref}").fetchedBytes = ${empty(startOffset)?0:startOffset};
-	  fetchNext($$("${idref}"),"${href}");
-	</script>
+              if(rsp.getResponseHeader("X-More-Data")=="true") {
+                setTimeout(function(){fetchNext(e,href,onFinishEvent);},1000);
+              } else {
+              <j:if test="${spinner!=null}">
+                $$("${spinner}").style.display = "none";
+              </j:if>
+                if (onFinishEvent) {
+                  Event.fire(window, onFinishEvent);
+                }
+              }
+            }
+          });
+        }
+      </j:if>
+      $$("${idref}").fetchedBytes = ${empty(startOffset)?0:startOffset};
+      fetchNext($$("${idref}"),"${href}","${empty(onFinishEvent)?"":onFinishEvent}");
+    </script>
 </j:jelly>

@@ -56,11 +56,8 @@ public class UnixLifecycle extends Lifecycle {
 
             // if we are running as daemon, don't fork into background one more time during restart
             args.remove("--daemon");
-        } catch (UnsupportedOperationException e) {
-            // can't restart
-            failedToObtainArgs = e;
-        } catch (LinkageError e) {
-            // see HUDSON-3875
+        } catch (UnsupportedOperationException | LinkageError e) {
+            // can't restart / see HUDSON-3875
             failedToObtainArgs = e;
         }
     }
@@ -86,7 +83,7 @@ public class UnixLifecycle extends Lifecycle {
 
         // exec to self
         String exe = args.get(0);
-        LIBC.execvp(exe, new StringArray(args.toArray(new String[args.size()])));
+        LIBC.execvp(exe, new StringArray(args.toArray(new String[0])));
         throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
     }
 

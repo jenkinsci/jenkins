@@ -57,7 +57,7 @@ public final class CharSpool extends Writer {
             return;
 
         if(buf==null)
-            buf = new LinkedList<char[]>();
+            buf = new LinkedList<>();
         buf.add(last);
         last = new char[1024];
         pos = 0;

@@ -61,15 +61,15 @@ public enum BallColor implements StatusIcon {
     BLUE("blue",Messages._BallColor_Success(), ColorPalette.BLUE),
     BLUE_ANIME("blue_anime",Messages._BallColor_InProgress(), ColorPalette.BLUE),
     // for historical reasons they are called grey.
-    GREY("grey",Messages._BallColor_Pending(), ColorPalette.GREY),
+    GREY("grey",Messages._BallColor_Disabled(), ColorPalette.GREY),
     GREY_ANIME("grey_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
 
     DISABLED("disabled",Messages._BallColor_Disabled(), ColorPalette.GREY),
     DISABLED_ANIME("disabled_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
-    ABORTED("aborted",Messages._BallColor_Aborted(), ColorPalette.GREY),
-    ABORTED_ANIME("aborted_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
-    NOTBUILT("nobuilt",Messages._BallColor_NotBuilt(), ColorPalette.GREY),
-    NOTBUILT_ANIME("nobuilt_anime",Messages._BallColor_InProgress(), ColorPalette.GREY),
+    ABORTED("aborted",Messages._BallColor_Aborted(), ColorPalette.DARK_GREY),
+    ABORTED_ANIME("aborted_anime",Messages._BallColor_InProgress(), ColorPalette.DARK_GREY),
+    NOTBUILT("nobuilt",Messages._BallColor_NotBuilt(), ColorPalette.LIGHT_GREY),
+    NOTBUILT_ANIME("nobuilt_anime",Messages._BallColor_InProgress(), ColorPalette.LIGHT_GREY),
     ;
 
     private final Localizable description;

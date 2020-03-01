@@ -17,7 +17,8 @@ import java.io.IOException;
 public class HexStringConfidentialKey extends ConfidentialKey {
     private final int length;
 
-    private volatile String secret;
+    private ConfidentialStore lastCS;
+    private String secret;
 
     /**
      * @param length
@@ -43,23 +44,21 @@ public class HexStringConfidentialKey extends ConfidentialKey {
      *      If the secret fails to load. Not throwing a checked exception is for the convenience
      *      of the caller.
      */
-    public String get() {
-        try {
-            if (secret==null) {
-                synchronized (this) {
-                    if (secret==null) {
-                        byte[] payload = load();
-                        if (payload==null) {
-                            payload = ConfidentialStore.get().randomBytes(length/2);
-                            store(payload);
-                        }
-                        secret = Util.toHexString(payload).substring(0,length);
-                    }
+    public synchronized String get() {
+        ConfidentialStore cs = ConfidentialStore.get();
+        if (secret == null || cs != lastCS) {
+            lastCS = cs;
+            try {
+                byte[] payload = load();
+                if (payload == null) {
+                    payload = cs.randomBytes(length / 2);
+                    store(payload);
                 }
+                secret = Util.toHexString(payload).substring(0, length);
+            } catch (IOException e) {
+                throw new Error("Failed to load the key: " + getId(), e);
             }
-            return secret;
-        } catch (IOException e) {
-            throw new Error("Failed to load the key: "+getId(),e);
         }
+        return secret;
     }
 }

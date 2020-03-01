@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.ArtifactManagerConfiguration;
+package jenkins.model.ArtifactManagerConfiguration
 
-f = namespace(lib.FormTagLib);
+f = namespace(lib.FormTagLib)
 
 if (!jenkins.model.ArtifactManagerFactoryDescriptor.all().isEmpty()) {
     f.section(title: _("Artifact Management for Builds")) {

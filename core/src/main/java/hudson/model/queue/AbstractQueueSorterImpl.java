@@ -1,8 +1,10 @@
 package hudson.model.queue;
 
+import hudson.RestrictedSince;
 import hudson.model.Queue.BuildableItem;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -15,7 +17,7 @@ import java.util.List;
 public abstract class AbstractQueueSorterImpl extends QueueSorter implements Comparator<BuildableItem> {
     @Override
     public void sortBuildableItems(List<BuildableItem> buildables) {
-        Collections.sort(buildables,this); // sort is ascending order
+        buildables.sort(this); // sort is ascending order
     }
 
     /**
@@ -29,24 +31,28 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      * The default implementation does FIFO.
      */
     public int compare(BuildableItem lhs, BuildableItem rhs) {
-        return compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
+        return Long.compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
     }
 
     /**
+     * @deprecated Use Long.compare instead.
      * sign(a-b).
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
     protected static int compare(long a, long b) {
-        if (a>b)    return 1;
-        if (a<b)    return -1;
-        return 0;
+        return Long.compare(a, b);
     }
 
     /**
+     * @deprecated Use Integer.compare instead.
      * sign(a-b).
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
     protected static int compare(int a, int b) {
-        if (a>b)    return 1;
-        if (a<b)    return -1;
-        return 0;
+        return Integer.compare(a, b);
     }
 }

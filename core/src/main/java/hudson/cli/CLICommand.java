@@ -242,10 +242,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc.setAuthentication(auth = getTransportAuthentication());
 
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
-            p.parseArgument(args.toArray(new String[args.size()]));
-            if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
+                Jenkins.get().checkPermission(Jenkins.READ);
+            p.parseArgument(args.toArray(new String[0]));
             LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
                     new Object[] {getName(), args.size(), auth.getName()});
             int res = run();
@@ -255,33 +253,33 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         } catch (CmdLineException e) {
             LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
                     getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: " + e.getMessage());
             printUsage(stderr, p);
             return 2;
         } catch (IllegalStateException e) {
             LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
                     getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: " + e.getMessage());
             return 4;
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
                     getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: " + e.getMessage());
             return 3;
         } catch (AbortException e) {
             LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
                     getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
             // signals an error without stack trace
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: " + e.getMessage());
             return 5;
         } catch (AccessDeniedException e) {
             LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
                     getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: " + e.getMessage());
             return 6;
         } catch (BadCredentialsException e) {
@@ -289,13 +287,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             // do that to the server log instead
             String id = UUID.randomUUID().toString();
             LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
             return 7;
         } catch (Throwable e) {
             final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                     getName());
-            stderr.println("");
+            stderr.println();
             stderr.println("ERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
             Functions.printStackTrace(e, stderr);
@@ -502,7 +500,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void registerOptionHandlers() {
         try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getActiveInstance().pluginManager.uberClassLoader,Class.class)) {
+            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader,Class.class)) {
                 Type t = Types.getBaseClass(c, OptionHandler.class);
                 CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t,0)), c);
             }
@@ -530,7 +528,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     private static final Logger LOGGER = Logger.getLogger(CLICommand.class.getName());
 
-    private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<CLICommand>();
+    private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<>();
 
     /*package*/ static CLICommand setCurrent(CLICommand cmd) {
         CLICommand old = getCurrent();

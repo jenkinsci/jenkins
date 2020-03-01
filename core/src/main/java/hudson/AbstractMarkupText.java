@@ -73,7 +73,7 @@ public abstract class AbstractMarkupText {
      *
      * <p>
      * For example, if the text was "abc", then {@code addMarkup(1,2,"<b>","</b>")}
-     * would generate {@code"a<b>b</b>c"}
+     * would generate {@code "a<b>b</b>c"}
      */
     public abstract void addMarkup( int startPos, int endPos, String startTag, String endTag );
 
@@ -141,7 +141,7 @@ public abstract class AbstractMarkupText {
     public List<MarkupText.SubText> findTokens(Pattern pattern) {
         String text = getText();
         Matcher m = pattern.matcher(text);
-        List<SubText> r = new ArrayList<SubText>();
+        List<SubText> r = new ArrayList<>();
 
         while(m.find()) {
             int idx = m.start();

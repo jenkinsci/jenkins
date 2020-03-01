@@ -48,7 +48,7 @@ import java.util.List;
  * @since 1.333
  */
 public class PersistedList<T> extends AbstractList<T> {
-    protected final CopyOnWriteList<T> data = new CopyOnWriteList<T>();
+    protected final CopyOnWriteList<T> data = new CopyOnWriteList<>();
     protected Saveable owner = Saveable.NOOP;
 
     protected PersistedList() {
@@ -100,7 +100,7 @@ public class PersistedList<T> extends AbstractList<T> {
      * Gets all instances that matches the given type.
      */
     public <U extends T> List<U> getAll(Class<U> type) {
-        List<U> r = new ArrayList<U>();
+        List<U> r = new ArrayList<>();
         for (T t : data)
             if(type.isInstance(t))
                 r.add(type.cast(t));
@@ -131,7 +131,7 @@ public class PersistedList<T> extends AbstractList<T> {
      * as copy-on-write semantics make this rather slow.
      */
     public void replace(T from, T to) throws IOException {
-        List<T> copy = new ArrayList<T>(data.getView());
+        List<T> copy = new ArrayList<>(data.getView());
         for (int i=0; i<copy.size(); i++) {
             if (copy.get(i).equals(from))
                 copy.set(i,to);

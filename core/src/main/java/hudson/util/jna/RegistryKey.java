@@ -17,7 +17,6 @@ package hudson.util.jna;
 
 import com.sun.jna.ptr.IntByReference;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.TreeMap;
@@ -76,7 +75,7 @@ public class RegistryKey {
      * @return int
      */
     private static int convertBufferToInt(byte[] buf) {
-        return (((int) (buf[0] & 0xff)) + (((int) (buf[1] & 0xff)) << 8) + (((int) (buf[2] & 0xff)) << 16) + (((int) (buf[3] & 0xff)) << 24));
+        return ((buf[0] & 0xff) + ((buf[1] & 0xff) << 8) + ((buf[2] & 0xff) << 16) + ((buf[3] & 0xff) << 24));
     }
 
     public String getStringValue(String valueName) {
@@ -187,7 +186,7 @@ public class RegistryKey {
      */
     public Collection<String> getSubKeys() {
         WINBASE.FILETIME lpftLastWriteTime;
-        TreeSet<String> subKeys = new TreeSet<String>();
+        TreeSet<String> subKeys = new TreeSet<>();
         char[] lpName = new char[256];
         IntByReference lpcName = new IntByReference(256);
         lpftLastWriteTime = new WINBASE.FILETIME();
@@ -228,7 +227,7 @@ public class RegistryKey {
         byte[] lpData;
         IntByReference lpcchValueName, lpType, lpcbData;
         String name;
-        TreeMap<String, Object> values = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
+        TreeMap<String, Object> values = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         lpValueName = new char[16384];
         lpcchValueName = new IntByReference(16384);

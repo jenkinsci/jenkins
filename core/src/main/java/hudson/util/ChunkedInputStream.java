@@ -111,18 +111,7 @@ public class ChunkedInputStream extends InputStream {
      */
     public int read() throws IOException {
 
-        if (closed) {
-            throw new IOException("Attempted read from closed stream.");
-        }
-        if (eof) {
-            return -1;
-        }
-        if (pos >= chunkSize) {
-            nextChunk();
-            if (eof) {
-                return -1;
-            }
-        }
+        if (advanceChunk()) return -1;
         pos++;
         return in.read();
     }
@@ -141,23 +130,28 @@ public class ChunkedInputStream extends InputStream {
     @Override
     public int read (byte[] b, int off, int len) throws IOException {
 
+        if (advanceChunk()) return -1;
+        len = Math.min(len, chunkSize - pos);
+        int count = in.read(b, off, len);
+        pos += count;
+        return count;
+    }
+
+    private boolean advanceChunk() throws IOException {
         if (closed) {
             throw new IOException("Attempted read from closed stream.");
         }
 
         if (eof) {
-            return -1;
+            return true;
         }
         if (pos >= chunkSize) {
             nextChunk();
             if (eof) {
-                return -1;
+                return true;
             }
         }
-        len = Math.min(len, chunkSize - pos);
-        int count = in.read(b, off, len);
-        pos += count;
-        return count;
+        return false;
     }
 
     /**
@@ -344,7 +338,8 @@ public class ChunkedInputStream extends InputStream {
     static void exhaustInputStream(InputStream inStream) throws IOException {
         // read and discard the remainder of the message
         byte[] buffer = new byte[1024];
-        while (inStream.read(buffer) >= 0) {
-        }
+        //noinspection StatementWithEmptyBody
+        while (inStream.read(buffer) >= 0)
+            ;
     }
 }

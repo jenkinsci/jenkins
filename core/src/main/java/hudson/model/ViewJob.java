@@ -60,9 +60,9 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     /**
      * All {@link Run}s. Copy-on-write semantics.
      */
-    protected transient /*almost final*/ RunMap<RunT> runs = new RunMap<RunT>();
+    protected transient volatile /*almost final*/ RunMap<RunT> runs = new RunMap<>(null, null);
 
-    private transient boolean notLoaded = true;
+    private transient volatile boolean notLoaded = true;
 
     /**
      * If the reloading of runs are in progress (in another thread,
@@ -105,7 +105,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
             // if none is loaded yet, do so immediately.
             synchronized(this) {
                 if(runs==null)
-                    runs = new RunMap<RunT>();
+                    runs = new RunMap<>();
                 if(notLoaded) {
                     notLoaded = false;
                     _reload();   
@@ -177,7 +177,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
          * This is a set, so no {@link ExternalJob}s are scheduled twice, yet
          * it's order is predictable, avoiding starvation.
          */
-        final Set<ViewJob> reloadQueue = new LinkedHashSet<ViewJob>();
+        final Set<ViewJob> reloadQueue = new LinkedHashSet<>();
 
         private ReloadThread() {
             setName("ViewJob reload thread");
@@ -198,7 +198,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
         }
 
         private boolean terminating() {
-            return Jenkins.getInstance().isTerminating();
+            return Jenkins.get().isTerminating();
         }
 
         @Override

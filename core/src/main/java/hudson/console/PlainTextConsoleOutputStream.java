@@ -28,21 +28,19 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.logging.Logger;
 
 /**
  * Filters out console notes.
  *
  * @author Kohsuke Kawaguchi
  */
-public class PlainTextConsoleOutputStream extends LineTransformationOutputStream {
-    private final OutputStream out;
+public class PlainTextConsoleOutputStream extends LineTransformationOutputStream.Delegating {
 
     /**
      *
      */
     public PlainTextConsoleOutputStream(OutputStream out) {
-        this.out = out;
+        super(out);
     }
 
     /**
@@ -77,17 +75,4 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
         out.write(in,written,sz-written);
     }
 
-    @Override
-    public void flush() throws IOException {
-        out.flush();
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-        out.close();
-    }
-
-
-    private static final Logger LOGGER = Logger.getLogger(PlainTextConsoleOutputStream.class.getName());
 }

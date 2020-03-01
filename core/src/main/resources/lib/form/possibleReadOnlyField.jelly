@@ -1,0 +1,18 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
+  <j:choose>
+    <j:when test="${readOnlyMode}">
+      <j:choose>
+        <j:when test="${empty(value)}">
+          <span class="jenkins-not-applicable">N/A</span>
+        </j:when>
+        <j:otherwise>
+          <pre class="jenkins-readonly">${value}</pre>
+        </j:otherwise>
+      </j:choose>
+    </j:when>
+    <j:otherwise>
+      <d:invokeBody/>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

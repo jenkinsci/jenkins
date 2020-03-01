@@ -51,7 +51,8 @@ THE SOFTWARE.
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
       </j:when>
       <j:otherwise>
-        ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
+        <j:set var="changelog_url" value="${app.CHANGELOG_URL}"/>
+        ${%NewVersionAvailable(ucData.core.version,ucData.core.url,changelog_url)}
         <j:if test="${ucData.canUpgrade()}">
         <form method="post" action="${rootURL}/updateCenter/upgrade">
           <f:submit value="${%Or Upgrade Automatically}"/>

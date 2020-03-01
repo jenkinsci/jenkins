@@ -86,6 +86,12 @@ function saveApiToken(button){
                 var tokenValueSpan = repeatedChunk.querySelector('.new-token-value');
                 tokenValueSpan.innerText = tokenValue;
                 tokenValueSpan.addClassName('visible');
+
+                // show the copy button
+                var tokenCopyButton = repeatedChunk.querySelector('.copy-button');
+                tokenCopyButton.setAttribute('text', tokenValue);
+                tokenCopyButton.removeClassName('invisible')
+                tokenCopyButton.addClassName('visible');
                 
                 var tokenUuid = json.data.tokenUuid;
                 var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');

@@ -46,7 +46,7 @@ public class SCMS {
      *      Use {@link SCM#all()} for read access and {@link Extension} for registration.
      */
     @Deprecated
-    public static final List<SCMDescriptor<?>> SCMS = (List)new DescriptorList<SCM>(SCM.class);
+    public static final List<SCMDescriptor<?>> SCMS = (List) new DescriptorList<>(SCM.class);
 
     /**
      * Parses {@link SCM} configuration from the submitted form.
@@ -60,7 +60,7 @@ public class SCMS {
         if (scm == null) {
             scm = new NullSCM(); // JENKINS-36043 workaround for AbstractMultiBranchProject.submit
         }
-        scm.getDescriptor().generation++;
+        scm.getDescriptor().incrementGeneration();
         return scm;
     }
 

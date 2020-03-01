@@ -14,11 +14,11 @@ import java.util.Stack;
  * @author Kohsuke Kawaguchi
  */
 public abstract class CyclicGraphDetector<N> {
-    private final Set<N> visited = new HashSet<N>();
-    private final Set<N> visiting = new HashSet<N>();
-    private final Stack<N> path = new Stack<N>();
+    private final Set<N> visited = new HashSet<>();
+    private final Set<N> visiting = new HashSet<>();
+    private final Stack<N> path = new Stack<>();
 
-    private final List<N> topologicalOrder = new ArrayList<N>();
+    private final List<N> topologicalOrder = new ArrayList<>();
 
     public void run(Iterable<? extends N> allNodes) throws CycleDetectedException {
         for (N n : allNodes){

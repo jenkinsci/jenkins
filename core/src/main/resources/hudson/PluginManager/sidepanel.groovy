@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.PluginManager;
+package hudson.PluginManager
 l=namespace(lib.LayoutTagLib)
 
 l.header()
 l.side_panel {
     l.tasks {
         l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-        l.task(icon:"icon-gear2 icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"), permission:app.ADMINISTER, it:app)
+        l.task(icon:"icon-gear2 icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"), permission:app.MANAGE, it:app)
         if (!app.updateCenter.jobs.isEmpty()) {
             l.task(icon:"icon-plugin icon-md", href:"${rootURL}/updateCenter/", title:_("Update Center"))
         }

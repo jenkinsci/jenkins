@@ -50,7 +50,7 @@ public class CopyJobCommand extends CLICommand {
     public String dst;
 
     protected int run() throws Exception {
-        Jenkins jenkins = Jenkins.getActiveInstance();
+        Jenkins jenkins = Jenkins.get();
 
         if (jenkins.getItemByFullName(dst)!=null) {
             throw new IllegalStateException("Job '"+dst+"' already exists");

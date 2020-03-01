@@ -61,7 +61,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     }
 
     protected CopyOnWriteMap() {
-        update(Collections.<K,V>emptyMap());
+        update(Collections.emptyMap());
     }
 
     protected void update(Map<K,V> m) {
@@ -124,7 +124,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
     protected abstract Map<K,V> copy();
 
     public synchronized void clear() {
-        update(Collections.<K,V>emptyMap());
+        update(Collections.emptyMap());
     }
 
     /**
@@ -166,14 +166,14 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
      */
     public static final class Hash<K,V> extends CopyOnWriteMap<K,V> {
         public Hash(Map<K,V> core) {
-            super(new LinkedHashMap<K,V>(core));
+            super(new LinkedHashMap<>(core));
         }
 
         public Hash() {
         }
 
         protected Map<K,V> copy() {
-            return new LinkedHashMap<K,V>(core);
+            return new LinkedHashMap<>(core);
         }
 
         public static class ConverterImpl extends MapConverter {
@@ -210,7 +210,7 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         }
 
         public Tree(Comparator<K> comparator) {
-            super(new TreeMap<K,V>(comparator));
+            super(new TreeMap<>(comparator));
             this.comparator = comparator;
         }
 
@@ -219,14 +219,14 @@ public abstract class CopyOnWriteMap<K,V> implements Map<K,V> {
         }
 
         protected Map<K,V> copy() {
-            TreeMap<K,V> m = new TreeMap<K,V>(comparator);
+            TreeMap<K,V> m = new TreeMap<>(comparator);
             m.putAll(core);
             return m;
         }
 
         @Override
         public synchronized void clear() {
-            update(new TreeMap<K,V>(comparator));
+            update(new TreeMap<>(comparator));
         }
 
         public static class ConverterImpl extends TreeMapConverter {

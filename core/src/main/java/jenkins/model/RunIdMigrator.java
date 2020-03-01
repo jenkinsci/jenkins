@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
@@ -81,12 +82,12 @@ public final class RunIdMigrator {
     static final Logger LOGGER = Logger.getLogger(RunIdMigrator.class.getName());
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
-    private static final Map<String,Integer> EMPTY = new TreeMap<String,Integer>();
+    private static final Map<String,Integer> EMPTY = new TreeMap<>();
 
     /**
      * Did we record "unmigrate" instruction for this $JENKINS_HOME? Yes if it's in the set.
      */
-    private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<File>());
+    private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<>());
 
     private @Nonnull Map<String,Integer> idToNumber = EMPTY;
 
@@ -103,7 +104,7 @@ public final class RunIdMigrator {
         if (f.length() == 0) {
             return true;
         }
-        idToNumber = new TreeMap<String,Integer>();
+        idToNumber = new TreeMap<>();
         try {
             for (String line : FileUtils.readLines(f)) {
                 int i = line.indexOf(' ');
@@ -117,8 +118,7 @@ public final class RunIdMigrator {
 
     private void save(File dir) {
         File f = new File(dir, MAP_FILE);
-        try {
-            AtomicFileWriter w = new AtomicFileWriter(f);
+        try (AtomicFileWriter w = new AtomicFileWriter(f)) {
             try {
                 for (Map.Entry<String,Integer> entry : idToNumber.entrySet()) {
                     w.write(entry.getKey() + ' ' + entry.getValue() + '\n');
@@ -190,10 +190,10 @@ public final class RunIdMigrator {
 
     private static final Pattern NUMBER_ELT = Pattern.compile("(?m)^  <number>(\\d+)</number>(\r?\n)");
     private void doMigrate(File dir) {
-        idToNumber = new TreeMap<String,Integer>();
+        idToNumber = new TreeMap<>();
         File[] kids = dir.listFiles();
         // Need to process symlinks first so we can rename to them.
-        List<File> kidsList = new ArrayList<File>(Arrays.asList(kids));
+        List<File> kidsList = new ArrayList<>(Arrays.asList(kids));
         Iterator<File> it = kidsList.iterator();
         while (it.hasNext()) {
             File kid = it.next();
@@ -314,13 +314,19 @@ public final class RunIdMigrator {
         if (args.length != 1) {
             throw new Exception("pass one parameter, $JENKINS_HOME");
         }
-        File root = new File(args[0]);
+        File root = constructFile(args[0]);
         File jobs = new File(root, "jobs");
         if (!jobs.isDirectory()) {
             throw new FileNotFoundException("no such $JENKINS_HOME " + root);
         }
         new RunIdMigrator().unmigrateJobsDir(jobs);
     }
+
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only invoked from the command line as a standalone utility")
+    private static File constructFile(String arg) {
+        return new File(arg);
+    }
+
     private void unmigrateJobsDir(File jobs) throws Exception {
         File[] jobDirs = jobs.listFiles();
         if (jobDirs == null) {
@@ -423,12 +429,12 @@ public final class RunIdMigrator {
 
         @Override
         public Object getTarget() {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             return this;
         }
 
         public String getCommand() {
-            return RunIdMigrator.getUnmigrationCommandLine(Jenkins.getInstance().getRootDir());
+            return RunIdMigrator.getUnmigrationCommandLine(Jenkins.get().getRootDir());
         }
     }
 }

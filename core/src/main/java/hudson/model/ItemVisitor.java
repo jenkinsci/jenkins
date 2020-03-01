@@ -56,6 +56,6 @@ public abstract class ItemVisitor {
      * To walk a subtree, call {@link #onItemGroup(ItemGroup)} or {@link #onItem(Item)}
      */
     public final void walk() {
-        onItemGroup(Jenkins.getInstance());
+        onItemGroup(Jenkins.get());
     }
 }

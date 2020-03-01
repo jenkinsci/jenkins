@@ -59,7 +59,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
         // this computation needs to be done and the value be captured,
         // since $JENKINS_HOME/config.xml can be saved later before the user has
         // actually rewritten XML files.
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         if (j.isUpgradedFromBefore(new VersionNumber("1.496.*"))
         &&  new FileBoolean(new File(j.getRootDir(),"secret.key.not-so-secret")).isOff())
             needed.on();
@@ -141,8 +141,8 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
         try {
             PrintStream log = listener.getLogger();
             log.println("Started re-keying " + new Date());
-            int count = rewriter.rewriteRecursive(Jenkins.getInstance().getRootDir(), listener);
-            log.printf("Completed re-keying %d files on %s\n",count,new Date());
+            int count = rewriter.rewriteRecursive(Jenkins.get().getRootDir(), listener);
+            log.printf("Completed re-keying %d files on %s%n",count,new Date());
             new RekeySecretAdminMonitor().done.on();
             LOGGER.info("Secret re-keying completed");
         } catch (Exception e) {

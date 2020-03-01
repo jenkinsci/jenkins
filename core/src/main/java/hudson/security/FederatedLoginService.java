@@ -189,7 +189,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
             User u = locateUser();
             if (u!=null) {
                 // login as this user
-                UserDetails d = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(u.getId());
+                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername(u.getId());
 
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
                 token.setDetails(d);
@@ -246,7 +246,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
         }
 
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-            SecurityRealm sr = Jenkins.getInstance().getSecurityRealm();
+            SecurityRealm sr = Jenkins.get().getSecurityRealm();
             if (sr.allowsSignup()) {
                 try {
                     sr.commenceSignup(identity).generateResponse(req,rsp,node);

@@ -25,20 +25,17 @@
 package hudson;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.CoreMatchers.*;
@@ -149,7 +146,7 @@ public class PluginManagerTest {
         File newFolder = tmp.newFolder("myJar");
         String manifestPath = "META-INF/MANIFEST.MF";
         new File("META-INF").mkdir();
-        FileUtils.write(new File(newFolder, manifestPath), SAMPLE_MANIFEST_FILE);
+        FileUtils.write(new File(newFolder, manifestPath), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
         
         final File f = new File(tmp.getRoot(), "my.hpi");
         try(ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {

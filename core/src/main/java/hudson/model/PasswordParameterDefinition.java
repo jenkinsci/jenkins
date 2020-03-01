@@ -96,16 +96,11 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = Secret.fromString(defaultValue);
     }
 
-    @Extension @Symbol({"password","nonStoredPasswordParam"})
+    @Extension @Symbol({"password"})
     public final static class ParameterDescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
             return Messages.PasswordParameterDefinition_DisplayName();
-        }
-        
-        @Override
-        public String getHelpFile() {
-            return "/help/parameter/string.html";
         }
     }
 }

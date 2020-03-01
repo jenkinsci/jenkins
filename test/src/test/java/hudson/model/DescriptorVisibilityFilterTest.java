@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.Extension;
 import hudson.security.ACL;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
@@ -18,11 +17,9 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.xml.sax.SAXException;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

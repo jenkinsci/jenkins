@@ -105,7 +105,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     }
 
     public Job getProject() {
-        return Jenkins.getInstance().getItemByFullName(projectName, Job.class);
+        return Jenkins.get().getItemByFullName(projectName, Job.class);
     }
 
     /**
@@ -154,7 +154,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
         
         public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value) {
-            return AutoCompletionCandidates.ofJobNames(Job.class, value, null, Jenkins.getInstance());
+            return AutoCompletionCandidates.ofJobNames(Job.class, value, null, Jenkins.get());
         }
 
     }
@@ -165,7 +165,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return createValue(runId);
         }
 
-        Run<?,?> lastBuild = null;
+        Run<?,?> lastBuild;
         Job project = getProject();
 
         if (project == null) {

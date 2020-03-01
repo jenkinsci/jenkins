@@ -36,12 +36,11 @@ import java.util.regex.Matcher;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MavenConsoleAnnotator extends LineTransformationOutputStream {
-    private final OutputStream out;
+public class MavenConsoleAnnotator extends LineTransformationOutputStream.Delegating {
     private final Charset charset;
 
     public MavenConsoleAnnotator(OutputStream out, Charset charset) {
-        this.out = out;
+        super(out);
         this.charset = charset;
     }
 
@@ -75,9 +74,4 @@ public class MavenConsoleAnnotator extends LineTransformationOutputStream {
         out.write(b,0,len);
     }
 
-    @Override
-    public void close() throws IOException {
-        super.close();
-        out.close();
-    }
 }

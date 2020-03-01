@@ -21,7 +21,7 @@ public class Jenkins41511Test {
 
     @Test
     public void configRoundTrip() throws Exception {
-        Jenkins.getInstance().setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null));
+        Jenkins.get().setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null));
         j.submit(j.createWebClient().goTo("configureSecurity").getFormByName("config"));
     }
 }

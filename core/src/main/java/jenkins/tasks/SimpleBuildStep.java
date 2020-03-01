@@ -127,7 +127,6 @@ public interface SimpleBuildStep extends BuildStep {
             // results, the job would then have no TestResultProjectAction.
             return actions;
         }
-
     }
 
 }

@@ -78,7 +78,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         if (actions == null) {
             synchronized (this) {
                 if (actions == null) {
-                    actions = new CopyOnWriteArrayList<Action>();
+                    actions = new CopyOnWriteArrayList<>();
                 }
             }
         }
@@ -196,7 +196,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             throw new IllegalArgumentException("Action must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        List<Action> old = new ArrayList<Action>(1);
+        List<Action> old = new ArrayList<>(1);
         List<Action> current = getActions();
         boolean found = false;
         for (Action a2 : current) {
@@ -255,7 +255,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             throw new IllegalArgumentException("Action type must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        List<Action> old = new ArrayList<Action>();
+        List<Action> old = new ArrayList<>();
         List<Action> current = getActions();
         for (Action a : current) {
             if (clazz.isInstance(a)) {
@@ -290,7 +290,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             throw new IllegalArgumentException("Action must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        List<Action> old = new ArrayList<Action>();
+        List<Action> old = new ArrayList<>();
         List<Action> current = getActions();
         boolean found = false;
         for (Action a1 : current) {
@@ -322,7 +322,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Gets the action (first instance to be found) of a specified type that contributed to this build.
      *
      * @param type
-     * @return The action or <code>null</code> if no such actions exist.
+     * @return The action or {@code null} if no such actions exist.
      * @see #getActions(Class)
      */
     public <T extends Action> T getAction(Class<T> type) {

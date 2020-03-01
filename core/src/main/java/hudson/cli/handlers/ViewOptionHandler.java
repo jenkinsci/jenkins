@@ -94,7 +94,7 @@ public class ViewOptionHandler extends OptionHandler<View> {
     @CheckForNull
     public View getView(final String name) {
 
-        ViewGroup group = Jenkins.getActiveInstance();
+        ViewGroup group = Jenkins.get();
         View view = null;
 
         final StringTokenizer tok = new StringTokenizer(name, "/");

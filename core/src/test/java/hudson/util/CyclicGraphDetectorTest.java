@@ -32,7 +32,7 @@ public class CyclicGraphDetectorTest {
         }
 
         Set<String> nodes() {
-            Set<String> nodes = new LinkedHashSet<String>();
+            Set<String> nodes = new LinkedHashSet<>();
             for (Edge e : this) {
                 nodes.add(e.src);
                 nodes.add(e.dst);
@@ -41,7 +41,7 @@ public class CyclicGraphDetectorTest {
         }
 
         Set<String> edges(String from) {
-            Set<String> edges = new LinkedHashSet<String>();
+            Set<String> edges = new LinkedHashSet<>();
             for (Edge e : this) {
                 if (e.src.equals(from))
                     edges.add(e.dst);

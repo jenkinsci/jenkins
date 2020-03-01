@@ -37,7 +37,7 @@ authenticationManager(ProviderManager) {
 
         // these providers apply everywhere
         bean(RememberMeAuthenticationProvider) {
-            key = Jenkins.getInstance().getSecretKey();
+            key = Jenkins.get().getSecretKey()
         },
         // this doesn't mean we allow anonymous access.
         // we just authenticate anonymous users as such,

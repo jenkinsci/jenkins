@@ -25,13 +25,13 @@ public class SequentialExecutionQueue implements Executor {
     /**
      * Access is synchronized by {@code Queue.this}
      */
-    private final Map<Runnable,QueueEntry> entries = new HashMap<Runnable,QueueEntry>();
+    private final Map<Runnable,QueueEntry> entries = new HashMap<>();
     private ExecutorService executors;
 
     /**
      * {@link Runnable}s that are currently executing. Useful for trouble-shooting.
      */
-    private final Set<QueueEntry> inProgress = new HashSet<QueueEntry>();
+    private final Set<QueueEntry> inProgress = new HashSet<>();
 
     public SequentialExecutionQueue(ExecutorService executors) {
         this.executors = executors;
@@ -86,7 +86,7 @@ public class SequentialExecutionQueue implements Executor {
      * Gets {@link Runnable}s that are currently executed by a live thread.
      */
     public synchronized Set<Runnable> getInProgress() {
-        Set<Runnable> items = new HashSet<Runnable>();
+        Set<Runnable> items = new HashSet<>();
         for (QueueEntry entry : inProgress) {
             items.add(entry.item);
         }

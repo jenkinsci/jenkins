@@ -43,7 +43,7 @@ public interface SecureRequester extends ExtensionPoint {
         }
 
         @Override public boolean permit(StaplerRequest req, Object bean) {
-            return INSECURE || !Jenkins.getInstance().isUseSecurity();
+            return INSECURE || !Jenkins.get().isUseSecurity();
         }
 
     }

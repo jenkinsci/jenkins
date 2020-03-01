@@ -3,7 +3,6 @@ package hudson.util.io;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
@@ -83,21 +82,11 @@ public class ZipArchiverTest {
         // back-slashes ("\")
         String zipEntryName = null;
 
-        ZipFile zipFileVerify = null;
-        try {
-            zipFileVerify = new ZipFile(zipFile);
+        try (ZipFile zipFileVerify = new ZipFile(zipFile)) {
 
             zipEntryName = ((ZipEntry) zipFileVerify.entries().nextElement()).getName();
         } catch (Exception e) {
             fail("failure enumerating zip entries", e);
-        } finally {
-            if (zipFileVerify != null) {
-                try {
-                    zipFileVerify.close();
-                } catch (IOException e) {
-                    // ignored
-                }
-            }
         }
 
         assertEquals("foo/bar/baz/Test.txt", zipEntryName);
@@ -145,21 +134,11 @@ public class ZipArchiverTest {
         // examine zip contents and assert that there's an item there...
         String zipEntryName = null;
 
-        ZipFile zipFileVerify = null;
-        try {
-            zipFileVerify = new ZipFile(zipFile);
+        try (ZipFile zipFileVerify = new ZipFile(zipFile)) {
 
             zipEntryName = ((ZipEntry) zipFileVerify.entries().nextElement()).getName();
         } catch (Exception e) {
             fail("failure enumerating zip entries", e);
-        } finally {
-            if (zipFileVerify != null) {
-                try {
-                    zipFileVerify.close();
-                } catch (IOException e) {
-                    // ignored
-                }
-            }
         }
 
         assertEquals("huge64bitFileTest.txt", zipEntryName);

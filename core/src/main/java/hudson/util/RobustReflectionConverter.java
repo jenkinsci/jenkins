@@ -76,7 +76,6 @@ public class RobustReflectionConverter implements Converter {
     protected transient SerializationMethodInvoker serializationMethodInvoker;
     private transient ReflectionProvider pureJavaReflectionProvider;
     private final @Nonnull XStream2.ClassOwnership classOwnership;
-    /** {@code pkg.Clazz#fieldName} */
     /** There are typically few critical fields around, but we end up looking up in this map a lot.
         in addition, this map is really only written to during static initialization, so we should use
         reader writer lock to avoid locking as much as possible.  In addition, to avoid looking up
@@ -84,7 +83,7 @@ public class RobustReflectionConverter implements Converter {
         with the fields as the keys.**/
     private final ReadWriteLock criticalFieldsLock = new ReentrantReadWriteLock();
     @GuardedBy("criticalFieldsLock")
-    private final Map<String, Set<String>> criticalFields = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> criticalFields = new HashMap<>();
 
     public RobustReflectionConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
         this(mapper, reflectionProvider, new XStream2().new PluginClassOwnership());
@@ -104,7 +103,7 @@ public class RobustReflectionConverter implements Converter {
             // If the class already exists, then add a new field, otherwise
             // create the hash map field
             if (!criticalFields.containsKey(field)) {
-                criticalFields.put(field, new HashSet<String>());
+                criticalFields.put(field, new HashSet<>());
             }
             criticalFields.get(field).add(clazz.getName());
         }
@@ -376,7 +375,7 @@ public class RobustReflectionConverter implements Converter {
         LOGGER.log(FINE, "Failed to load", e);
         ArrayList<Throwable> list = (ArrayList<Throwable>)context.get("ReadError");
         if (list == null)
-            context.put("ReadError", list = new ArrayList<Throwable>());
+            context.put("ReadError", list = new ArrayList<>());
         list.add(e);
     }
 

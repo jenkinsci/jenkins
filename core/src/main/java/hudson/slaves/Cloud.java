@@ -116,9 +116,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return "cloud/" + name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public @Nonnull String getSearchUrl() {
         return getUrl();
     }

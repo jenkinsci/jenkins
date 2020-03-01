@@ -65,7 +65,7 @@ public class JSONSignatureValidator {
             }
             o.remove("signature");
 
-            List<X509Certificate> certs = new ArrayList<X509Certificate>();
+            List<X509Certificate> certs = new ArrayList<>();
             {// load and verify certificates
                 CertificateFactory cf = CertificateFactory.getInstance("X509");
                 for (Object cert : signature.getJSONArray("certificates")) {
@@ -140,7 +140,7 @@ public class JSONSignatureValidator {
 
 
     /**
-     * Computes the specified {@code digest} and {@code signature} for the provided {@code json} object and checks whether they match {@code digestEntry} and {@signatureEntry} in the provided {@code signatureJson} object.
+     * Computes the specified {@code digest} and {@code signature} for the provided {@code json} object and checks whether they match {@code digestEntry} and {@code signatureEntry} in the provided {@code signatureJson} object.
      *
      * @param json the full update-center.json content
      * @param signatureJson signature block from update-center.json
@@ -243,9 +243,9 @@ public class JSONSignatureValidator {
     protected Set<TrustAnchor> loadTrustAnchors(CertificateFactory cf) throws IOException {
         // if we trust default root CAs, we end up trusting anyone who has a valid certificate,
         // which isn't useful at all
-        Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
-        Jenkins j = Jenkins.getInstance();
-        for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
+        Set<TrustAnchor> anchors = new HashSet<>(); // CertificateUtil.getDefaultRootCAs();
+        Jenkins j = Jenkins.get();
+        for (String cert : j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
             if (cert.endsWith("/") || cert.endsWith(".txt"))  {
                 continue;       // skip directories also any text files that are meant to be documentation
             }

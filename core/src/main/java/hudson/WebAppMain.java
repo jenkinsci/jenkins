@@ -130,7 +130,7 @@ public class WebAppMain implements ServletContextListener {
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
-            System.out.println("Jenkins home directory: "+home+" found at: "+describedHomeDir.description);
+            LOGGER.info("Jenkins home directory: "+ home +" found at: " + describedHomeDir.description);
 
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
             if (!home.exists())
@@ -276,7 +276,7 @@ public class WebAppMain implements ServletContextListener {
      */
     private void recordBootAttempt(File home) {
         try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            o.write((new Date().toString() + System.getProperty("line.separator", "\n")).toString().getBytes());
+            o.write((new Date().toString() + System.getProperty("line.separator", "\n")).getBytes());
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
         }

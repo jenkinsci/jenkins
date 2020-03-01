@@ -23,14 +23,20 @@
  */
 package hudson.scm;
 
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Job;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import static java.util.logging.Level.WARNING;
+
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 /**
@@ -47,16 +53,8 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * that type. Otherwise this SCM will not have any repository browser.
      */
     public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
-
-    /**
-     * Incremented every time a new {@link SCM} instance is created from this descriptor. 
-     * This is used to invalidate cache of {@link SCM#getEffectiveBrowser}. Due to the lack of synchronization and serialization,
-     * this field doesn't really count the # of instances created to date,
-     * but it's good enough for the cache invalidation.
-     * @deprecated No longer used by default.
-     */
-    @Deprecated
-    public volatile int generation = 1;
+    
+    private transient final AtomicInteger atomicGeneration = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
@@ -74,6 +72,29 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
         this.repositoryBrowser = repositoryBrowser;
     }
 
+    /**
+     * Incremented every time a new {@link SCM} instance is created from this descriptor.
+     * This is used to invalidate cache of {@link SCM#getEffectiveBrowser}. Due to the lack of synchronization and serialization,
+     * this field doesn't really count the # of instances created to date,
+     * but it's good enough for the cache invalidation.
+     * @deprecated No longer used by default.
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    public int getGeneration() {
+        return atomicGeneration.get();
+    }
+
+    /**
+     * Increments the generation value {@link SCMDescriptor#getGeneration} by one atomically.
+     * @deprecated No longer used by default.
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    public void incrementGeneration() {
+        atomicGeneration.incrementAndGet();
+    }
+
     // work around HUDSON-4514. The repositoryBrowser field was marked as non-transient until 1.325,
     // causing the field to be persisted and overwritten on the load method.
     @SuppressWarnings({"ConstantConditions"})
@@ -86,9 +107,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
                 Field f = SCMDescriptor.class.getDeclaredField("repositoryBrowser");
                 f.setAccessible(true);
                 f.set(this,rb);
-            } catch (NoSuchFieldException e) {
-                LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 LOGGER.log(WARNING, "Failed to overwrite the repositoryBrowser field",e);
             }
         }

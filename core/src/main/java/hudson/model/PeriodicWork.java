@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.Random;
 
-import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import hudson.triggers.Trigger;
 
 /**
@@ -99,7 +99,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
         return ExtensionList.lookup(PeriodicWork.class);
     }
 
-    @Initializer(after= JOB_LOADED)
+    @Initializer(after= JOB_CONFIG_ADAPTED)
     public static void init() {
         // start all PeriodicWorks
         ExtensionList<PeriodicWork> extensionList = all();
@@ -129,9 +129,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
         private final Set<PeriodicWork> registered = new HashSet<>();
 
         PeriodicWorkExtensionListListener(ExtensionList<PeriodicWork> initiallyRegistered) {
-            for (PeriodicWork p : initiallyRegistered) {
-                registered.add(p);
-            }
+            registered.addAll(initiallyRegistered);
         }
 
         @Override

@@ -115,7 +115,7 @@ public final class BuildReference<R> {
     private static <R> Holder<R> findHolder(R referent) {
         if (referent == null) {
             // AbstractBuild.NONE
-            return new DefaultHolderFactory.NoHolder<R>();
+            return new DefaultHolderFactory.NoHolder<>();
         }
         for (HolderFactory f : ExtensionList.lookup(HolderFactory.class)) {
             Holder<R> h = f.make(referent);
@@ -131,13 +131,13 @@ public final class BuildReference<R> {
      * Default factory if none other are installed.
      * Its behavior can be controlled via the system property {@link DefaultHolderFactory#MODE_PROPERTY}:
      * <dl>
-     * <dt><code>soft</code> (default)
+     * <dt>{@code soft} (default)
      * <dd>Use {@link SoftReference}s. Builds will be kept around so long as memory pressure is not too high.
-     * <dt><code>weak</code>
+     * <dt>{@code weak}
      * <dd>Use {@link WeakReference}s. Builds will be kept only until the next full garbage collection cycle.
-     * <dt><code>strong</code>
+     * <dt>{@code strong}
      * <dd>Use strong references. Builds will still be loaded lazily, but once loaded, will not be released.
-     * <dt><code>none</code>
+     * <dt>{@code none}
      * <dd>Do not hold onto builds at all. Mainly offered as an option for the purpose of reproducing lazy-loading bugs.
      * </dl>
      */
@@ -149,13 +149,13 @@ public final class BuildReference<R> {
 
         @Override public <R> Holder<R> make(R referent) {
             if (mode == null || mode.equals("soft")) {
-                return new SoftHolder<R>(referent);
+                return new SoftHolder<>(referent);
             } else if (mode.equals("weak")) {
-                return new WeakHolder<R>(referent);
+                return new WeakHolder<>(referent);
             } else if (mode.equals("strong")) {
-                return new StrongHolder<R>(referent);
+                return new StrongHolder<>(referent);
             } else if (mode.equals("none")) {
-                return new NoHolder<R>();
+                return new NoHolder<>();
             } else {
                 throw new IllegalStateException("unrecognized value of " + MODE_PROPERTY + ": " + mode);
             }

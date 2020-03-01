@@ -62,7 +62,9 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     private static final String HEALTH_0_TO_20_IMG = "health-00to19.png";
     private static final String HEALTH_UNKNOWN_IMG = "empty.png";
 
-    private static final Map<String, String> iconIMGToClassMap = new HashMap<String, String>();
+    private static final Map<String, String> iconIMGToClassMap = new HashMap<>();
+    private static final long serialVersionUID = 7451361788415642230L;
+
     static {
         iconIMGToClassMap.put(HEALTH_OVER_80_IMG, HEALTH_OVER_80);
         iconIMGToClassMap.put(HEALTH_61_TO_80_IMG, HEALTH_61_TO_80);
@@ -82,11 +84,11 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
     private String iconClassName;
 
     /**
-     * The path to the icon corresponding to this health score or <code>null</code> to use the default icon
+     * The path to the icon corresponding to this health score or {@code null} to use the default icon
      * corresponding to the current health score.
      * <p>
      * If the path begins with a '/' then it will be the absolute path, otherwise the image is assumed to be in one of
-     * <code>/images/16x16/</code>, <code>/images/24x24/</code> or <code>/images/32x32/</code> depending on the icon
+     * {@code /images/16x16/}, {@code /images/24x24/} or {@code /images/32x32/} depending on the icon
      * size selected by the user.
      */
     private String iconUrl;
@@ -108,12 +110,12 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Create a new HealthReport.
      *
      * @param score       The percentage health score (from 0 to 100 inclusive).
-     * @param iconUrl     The path to the icon corresponding to this {@link Action}'s health or <code>null</code> to
+     * @param iconUrl     The path to the icon corresponding to this {@link Action}'s health or {@code null} to
      *                    display the default icon corresponding to the current health score.
      *                    <p>
      *                    If the path begins with a '/' then it will be the absolute path, otherwise the image is
-     *                    assumed to be in one of <code>/images/16x16/</code>, <code>/images/24x24/</code> or
-     *                    <code>/images/32x32/</code> depending on the icon size selected by the user.
+     *                    assumed to be in one of {@code /images/16x16/}, {@code /images/24x24/} or
+     *                    {@code /images/32x32/} depending on the icon size selected by the user.
      *                    When calculating the url to display for absolute paths, the getIconUrl(String) method
      *                    will replace /32x32/ in the path with the appropriate size.
      * @param description The health icon's tool-tip.
@@ -129,12 +131,12 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Create a new HealthReport.
      *
      * @param score       The percentage health score (from 0 to 100 inclusive).
-     * @param iconUrl     The path to the icon corresponding to this {@link Action}'s health or <code>null</code> to
+     * @param iconUrl     The path to the icon corresponding to this {@link Action}'s health or {@code null} to
      *                    display the default icon corresponding to the current health score.
      *                    <p>
      *                    If the path begins with a '/' then it will be the absolute path, otherwise the image is
-     *                    assumed to be in one of <code>/images/16x16/</code>, <code>/images/24x24/</code> or
-     *                    <code>/images/32x32/</code> depending on the icon size selected by the user.
+     *                    assumed to be in one of {@code /images/16x16/}, {@code /images/24x24/} or
+     *                    {@code /images/32x32/} depending on the icon size selected by the user.
      *                    When calculating the url to display for absolute paths, the getIconUrl(String) method
      *                    will replace /32x32/ in the path with the appropriate size.
      * @param description The health icon's tool-tip.
@@ -322,12 +324,9 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int compareTo(HealthReport o) {
-        return (this.score < o.score ? -1 : (this.score == o.score ? 0 : 1));
+        return Integer.compare(this.score, o.score);
     }
 
     /**

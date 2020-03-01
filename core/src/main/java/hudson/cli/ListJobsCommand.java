@@ -49,7 +49,7 @@ public class ListJobsCommand extends CLICommand {
     public String name;
 
     protected int run() throws Exception {
-        Jenkins h = Jenkins.getActiveInstance();
+        Jenkins h = Jenkins.get();
         final Collection<TopLevelItem> jobs;
 
         // If name is given retrieve jobs for the given view.

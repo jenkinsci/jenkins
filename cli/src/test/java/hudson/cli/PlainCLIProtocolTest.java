@@ -24,12 +24,16 @@
 
 package hudson.cli;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import static org.junit.Assert.*;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class PlainCLIProtocolTest {
 
@@ -41,7 +45,7 @@ public class PlainCLIProtocolTest {
             int code = -1;
             final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             Client() throws IOException {
-                super(new PipedInputStream(download), upload);
+                super(new PlainCLIProtocol.FramedOutput(upload));
             }
             @Override
             protected synchronized void onExit(int code) {
@@ -62,6 +66,7 @@ public class PlainCLIProtocolTest {
                 streamStdin().write("hello".getBytes());
             }
             void newop() throws IOException {
+                DataOutputStream dos = new DataOutputStream(upload);
                 dos.writeInt(0);
                 dos.writeByte(99);
                 dos.flush();
@@ -72,7 +77,7 @@ public class PlainCLIProtocolTest {
             boolean started;
             final ByteArrayOutputStream stdin = new ByteArrayOutputStream();
             Server() throws IOException {
-                super(new PipedInputStream(upload), download);
+                super(new PlainCLIProtocol.FramedOutput(download));
             }
             @Override
             protected void onArg(String text) {
@@ -89,6 +94,13 @@ public class PlainCLIProtocolTest {
             }
             @Override
             protected void onStdin(byte[] chunk) throws IOException {
+                /* To inject a race condition:
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException x) {
+                    throw new IOException(x);
+                }
+                */
                 stdin.write(chunk);
             }
             @Override
@@ -100,6 +112,7 @@ public class PlainCLIProtocolTest {
                 sendExit(2);
             }
             void newop() throws IOException {
+                DataOutputStream dos = new DataOutputStream(download);
                 dos.writeInt(0);
                 dos.writeByte(99);
                 dos.flush();
@@ -107,8 +120,8 @@ public class PlainCLIProtocolTest {
         }
         Client client = new Client();
         Server server = new Server();
-        client.begin();
-        server.begin();
+        new PlainCLIProtocol.FramedReader(client, new PipedInputStream(download)).start();
+        new PlainCLIProtocol.FramedReader(server, new PipedInputStream(upload)).start();
         client.send();
         client.newop();
         synchronized (server) {
@@ -122,6 +135,9 @@ public class PlainCLIProtocolTest {
             while (client.code == -1) {
                 client.wait();
             }
+        }
+        while (server.stdin.size() == 0) {
+            Thread.sleep(100);
         }
         assertEquals("hello", server.stdin.toString());
         assertEquals("command", server.arg);

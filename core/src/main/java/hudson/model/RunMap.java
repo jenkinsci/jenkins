@@ -156,7 +156,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     @Deprecated
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
-            return -o1.compareTo(o2);
+            return o2.compareTo(o1);
         }
     };
 
@@ -227,11 +227,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                     LOGGER.log(FINEST, "Loaded " + b.getFullDisplayName() + " in " + Thread.currentThread().getName(), new ThisIsHowItsLoaded());
                 }
                 return b;
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "could not load " + d, e);
-            } catch (InstantiationError e) {
-                LOGGER.log(Level.WARNING, "could not load " + d, e);
-            } catch (Exception e) {
+            } catch (Exception | InstantiationError e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             }
         }

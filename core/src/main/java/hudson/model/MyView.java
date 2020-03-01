@@ -75,7 +75,7 @@ public class MyView extends View {
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        List<TopLevelItem> items = new ArrayList<TopLevelItem>();
+        List<TopLevelItem> items = new ArrayList<>();
         for (TopLevelItem item : getOwner().getItemGroup().getItems()) {
             if (item.hasPermission(Item.CONFIGURE)) {
                 items.add(item);
@@ -102,7 +102,7 @@ public class MyView extends View {
          */
         @Override
         public boolean isInstantiable() {
-            return Jenkins.getInstance().isUseSecurity();
+            return Jenkins.get().isUseSecurity();
         }
 
         public String getDisplayName() {

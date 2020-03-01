@@ -47,7 +47,7 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
      * but then like Zeno’s paradox we will never seem to finish until we actually do.
      */
     private static final double MAX_LIKELY_RUNS = 20;
-    private final List<JSONObject> results = new ArrayList<JSONObject>();
+    private final List<JSONObject> results = new ArrayList<>();
     private Iterable<? extends Run<?,?>> builds;
 
     /** Jelly cannot call a constructor with arguments. */

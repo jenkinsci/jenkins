@@ -58,8 +58,6 @@ import java.util.Objects;
  * @see hudson.security.AuthenticationProcessingFilter2 for the addition of seed inside the session
  * @see hudson.security.HttpSessionContextIntegrationFilter2 for the seed check from the session before using it
  */
-//TODO remove restriction on the weekly after the security fix
-@Restricted(NoExternalUse.class)
 public class UserSeedProperty extends UserProperty {
     /**
      * Escape hatch for User seed based revocation feature. 

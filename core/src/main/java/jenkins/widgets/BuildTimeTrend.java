@@ -53,7 +53,7 @@ public class BuildTimeTrend extends RunListProgressiveRendering {
                 if (ns != null && !ns.isEmpty()) {
                     element.put("builtOnStr", ns);
                 }
-            } else if (n != Jenkins.getInstance()) {
+            } else if (n != Jenkins.get()) {
                 element.put("builtOn", n.getNodeName());
                 element.put("builtOnStr", n.getDisplayName());
             } else {

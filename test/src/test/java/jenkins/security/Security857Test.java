@@ -11,7 +11,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 
 /**
  * Tests about the behavior expected setting different values in the escape-by-default directive and the

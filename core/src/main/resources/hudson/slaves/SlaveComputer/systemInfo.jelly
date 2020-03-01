@@ -45,7 +45,7 @@ THE SOFTWARE.
       <l:hasPermission permission="${it.CONNECT}">
         <j:choose>
           <j:when test="${it.channel != null}">
-            <h2>${it.oSDescription} slave, version ${it.slaveVersion}</h2>
+            <h2>${it.oSDescription} agent, version ${it.slaveVersion}</h2>
 
             <j:forEach var="instance" items="${it.systemInfoExtensions}">
               <h1>${instance.displayName}</h1>

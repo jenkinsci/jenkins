@@ -42,7 +42,7 @@ public class ResourceController {
     /**
      * {@link ResourceList}s that are used by activities that are in progress.
      */
-    private final Set<ResourceActivity> inProgress = new CopyOnWriteArraySet<ResourceActivity>();
+    private final Set<ResourceActivity> inProgress = new CopyOnWriteArraySet<>();
 
     /**
      * View of {@link #inProgress} that exposes its {@link ResourceList}.

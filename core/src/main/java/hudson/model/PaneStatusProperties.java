@@ -13,7 +13,7 @@ import org.kohsuke.stapler.Stapler;
 
 public class PaneStatusProperties extends UserProperty implements Saveable {
 	
-	private final PersistedList<String> collapsed = new PersistedList<String>(this);
+	private final PersistedList<String> collapsed = new PersistedList<>(this);
 	
 	private static final PaneStatusProperties FALLBACK = new PaneStatusPropertiesSessionFallback();
 	

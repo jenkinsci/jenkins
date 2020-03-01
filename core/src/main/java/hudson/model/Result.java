@@ -155,7 +155,7 @@ public final class Result implements Serializable, CustomExportedBean {
     }
 
     private static @Nonnull List<String> getNames() {
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         for (Result r : all)
             l.add(r.name);
         return l;
@@ -195,9 +195,10 @@ public final class Result implements Serializable, CustomExportedBean {
         public int parseArguments(Parameters params) throws CmdLineException {
             String param = params.getParameter(0);
             Result v = fromString(param.replace('-', '_'));
-            if (v==null)
+            if (v== FAILURE) {
                 throw new CmdLineException(owner,"No such status '"+param+"'. Did you mean "+
                         EditDistance.findNearest(param.replace('-', '_').toUpperCase(), getNames()));
+            }
             setter.addValue(v);
             return 1;
         }

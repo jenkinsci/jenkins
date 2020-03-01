@@ -22,13 +22,13 @@
   <li>For launchers where Jenkins controls starting the agent process, such
   as SSH, the current working directory will typically be consistent,
   e.g. the user's home directory.</li>
-  <li>For launchers where Jenkins has no control over starting the agent
-  process, such as JNLP when launched from either the command line or via
-  a web browser link, the current working directory may change between
+  <li>For launchers where Jenkins has no control over starting the agent process,
+  such as inbound agents launched from the command line,
+  the current working directory may change between
   launches of the agent and use of a relative path may prove problematic.
   <br>
-  The principal issue encountered when using relative paths with launchers
-  like JNLP is the proliferation of stale workspaces and tool installation
+  The principal issue encountered when using relative paths with inbound launchers
+  is the proliferation of stale workspaces and tool installation
   on the agent machine. This can cause disk space issues.</li>
   </ul>
 </div>

@@ -50,7 +50,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         if (c != null) {
             return encodeTo("/" + c.getUrl(), node.getDisplayName());
         }
-        String nodePath = node == Jenkins.getInstance() ? "(master)" : node.getNodeName();
+        String nodePath = node == Jenkins.get() ? "(master)" : node.getNodeName();
         return encodeTo("/computer/" + nodePath, node.getDisplayName());
     }
 

@@ -24,6 +24,7 @@
  */
 package hudson.util;
 
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 
@@ -46,7 +47,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  */
 public class ArgumentListBuilder implements Serializable, Cloneable {
-    private final List<String> args = new ArrayList<String>();
+    private final List<String> args = new ArrayList<>();
     /**
      * Bit mask indicating arguments that shouldn't be echoed-back (e.g., password)
      */
@@ -260,7 +261,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     public String[] toCommandArray() {
-        return args.toArray(new String[args.size()]);
+        return args.toArray(new String[0]);
     }
     
     @Override
@@ -353,7 +354,13 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
                 percent = (c == '%');
                 if (quoted) quotedArgs.append(c);
             }
-            if(i == 0 && quoted) quotedArgs.insert(0, '"'); else if (i == 0 && !quoted) quotedArgs.append('"');
+            if (i == 0) {
+                if (quoted) {
+                    quotedArgs.insert(0, '"'); 
+                } else {
+                    quotedArgs.append('"');
+                }
+            }
             if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
             
             windowsCommand.add(quotedArgs, mask.get(i));
@@ -376,7 +383,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     private static boolean startQuoting(StringBuilder buf, String arg, int atIndex) {
-        buf.append('"').append(arg.substring(0, atIndex));
+        buf.append('"').append(arg, 0, atIndex);
         return true;
     }
 

@@ -23,7 +23,7 @@
  */
 package jenkins.security.QueueItemAuthenticatorConfiguration
 
-import jenkins.security.QueueItemAuthenticatorDescriptor;
+import jenkins.security.QueueItemAuthenticatorDescriptor
 
 f=namespace(lib.FormTagLib)
 

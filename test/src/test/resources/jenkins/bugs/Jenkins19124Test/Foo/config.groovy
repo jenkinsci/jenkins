@@ -1,4 +1,4 @@
-package jenkins.bugs.Jenkins19124Test.Foo;
+package jenkins.bugs.Jenkins19124Test.Foo
 
 def f = namespace(lib.FormTagLib)
 

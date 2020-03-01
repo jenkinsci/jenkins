@@ -166,7 +166,7 @@ public class CompressedFile {
      * this should be a fairly low-priority task.
      */
     private static final ExecutorService compressionThread = new ThreadPoolExecutor(
-        0, 1, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+        0, 1, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
         new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "CompressedFile")));
 
     private static final Logger LOGGER = Logger.getLogger(CompressedFile.class.getName());

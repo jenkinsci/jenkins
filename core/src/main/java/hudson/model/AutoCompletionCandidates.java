@@ -48,7 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Kohsuke Kawaguchi
  */
 public class AutoCompletionCandidates implements HttpResponse {
-    private final List<String> values = new ArrayList<String>();
+    private final List<String> values = new ArrayList<>();
 
     public AutoCompletionCandidates add(String v) {
         values.add(v);
@@ -154,12 +154,12 @@ public class AutoCompletionCandidates implements HttpResponse {
             }
         }
 
-        if (container==null || container==Jenkins.getInstance()) {
-            new Visitor("").onItemGroup(Jenkins.getInstance());
+        if (container==null || container==Jenkins.get()) {
+            new Visitor("").onItemGroup(Jenkins.get());
         } else {
             new Visitor("").onItemGroup(container);
             if (value.startsWith("/"))
-                new Visitor("/").onItemGroup(Jenkins.getInstance());
+                new Visitor("/").onItemGroup(Jenkins.get());
 
             for ( String p="../"; value.startsWith(p); p+="../") {
                 container = ((Item)container).getParent();

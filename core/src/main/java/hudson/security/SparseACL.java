@@ -50,7 +50,7 @@ public class SparseACL extends SidACL {
         }
     }
 
-    private final List<Entry> entries = new ArrayList<Entry>();
+    private final List<Entry> entries = new ArrayList<>();
     /**
      * Parent to delegate to. Can be null.
      */

@@ -20,6 +20,6 @@ public abstract class BuildDiscarderDescriptor extends Descriptor<BuildDiscarder
      * Returns all the registered {@link BuildDiscarderDescriptor}s.
      */
     public static DescriptorExtensionList<BuildDiscarder,BuildDiscarderDescriptor> all() {
-        return Jenkins.getInstance().<BuildDiscarder,BuildDiscarderDescriptor>getDescriptorList(BuildDiscarder.class);
+        return Jenkins.get().getDescriptorList(BuildDiscarder.class);
     }
 }

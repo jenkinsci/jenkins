@@ -39,6 +39,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -139,7 +140,7 @@ public class Executor extends Thread implements ModelObject {
      * Cause of interruption. Access needs to be synchronized.
      */
     @GuardedBy("lock")
-    private final List<CauseOfInterruption> causes = new Vector<CauseOfInterruption>();
+    private final List<CauseOfInterruption> causes = new Vector<>();
 
     public Executor(@Nonnull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
@@ -271,7 +272,7 @@ public class Executor extends Thread implements ModelObject {
         lock.writeLock().lock();
         try {
             if (causes.isEmpty())   return;
-            r = new ArrayList<CauseOfInterruption>(causes);
+            r = new ArrayList<>(causes);
             causes.clear();
         } finally {
             lock.writeLock().unlock();
@@ -338,9 +339,7 @@ public class Executor extends Thread implements ModelObject {
             lock.writeLock().unlock();
         }
 
-        ACL.impersonate(ACL.SYSTEM);
-
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
@@ -767,7 +766,7 @@ public class Executor extends Thread implements ModelObject {
      *      string like "3 minutes" "1 day" etc.
      */
     public String getTimestampString() {
-        return Util.getPastTimeString(getElapsedTime());
+        return Util.getTimeSpanString(getElapsedTime());
     }
 
     /**
@@ -830,7 +829,7 @@ public class Executor extends Thread implements ModelObject {
 
     /**
      * @deprecated as of 1.489
-     *      Use {@link #doStop()}.
+     *      Use {@link #doStop()} or {@link #doStopBuild(String)}.
      */
     @RequirePOST
     @Deprecated
@@ -839,17 +838,38 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Stops the current build.
+     * Stops the current build.<br>
+     * You can use {@link #doStopBuild(String)} instead to ensure what will be
+     * interrupted is actually what you want to interrupt.
      *
      * @since 1.489
+     * @see #doStopBuild(String)
      */
     @RequirePOST
     public HttpResponse doStop() {
+        return doStopBuild(null);
+    }
+
+    /**
+     * Stops the current build, if matching the specified external id
+     * (or no id is specified, or the current {@link Executable} is not a {@link Run}).
+     *
+     * @param runExtId
+     *      if not null, the externalizable id ({@link Run#getExternalizableId()})
+     *      of the build the user expects to interrupt
+     * @since TODO
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doStopBuild(@CheckForNull @QueryParameter(fixEmpty = true) String runExtId) {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
             if (executable != null) {
-                getParentOf(executable).getOwnerTask().checkAbortPermission();
-                interrupt();
+                if (runExtId == null || runExtId.isEmpty() || ! (executable instanceof Run)
+                        || (executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
+                    getParentOf(executable).getOwnerTask().checkAbortPermission();
+                    interrupt();
+                }
             }
         } finally {
             lock.writeLock().unlock();
@@ -961,7 +981,7 @@ public class Executor extends Thread implements ModelObject {
      * Mechanism to allow threads (in particular the channel request handling threads) to
      * run on behalf of {@link Executor}.
      */
-    private static final ThreadLocal<Executor> IMPERSONATION = new ThreadLocal<Executor>();
+    private static final ThreadLocal<Executor> IMPERSONATION = new ThreadLocal<>();
 
     private static final Logger LOGGER = Logger.getLogger(Executor.class.getName());
 }

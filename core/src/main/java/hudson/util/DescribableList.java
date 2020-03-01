@@ -162,7 +162,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      *      Structured form data that includes the data for nested descriptor list.
      */
     public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors) throws FormException, IOException {
-        List<T> newList = new ArrayList<T>();
+        List<T> newList = new ArrayList<>();
 
         for (Descriptor<T> d : descriptors) {
             T existing = get((D)d);

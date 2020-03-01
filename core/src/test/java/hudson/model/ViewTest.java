@@ -19,6 +19,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
@@ -45,7 +46,7 @@ public class ViewTest {
         TopLevelItem item2 = Mockito.mock(TopLevelItem.class);
         Mockito.when(item2.getSearchUrl()).thenReturn(url2);
         Mockito.when(item2.getDisplayName()).thenReturn(displayName2);
-        Collection<TopLevelItem> items = new ArrayList<TopLevelItem>();
+        Collection<TopLevelItem> items = new ArrayList<>();
         items.add(item1);
         items.add(item2);
         
@@ -61,7 +62,7 @@ public class ViewTest {
         SearchIndex index = sib.make();
         
         // now make sure we can fetch item1 from the index
-        List<SearchItem> result = new ArrayList<SearchItem>();
+        List<SearchItem> result = new ArrayList<>();
         index.find(displayName1, result);
         assertEquals(1, result.size());
         SearchItem actual = result.get(0);
@@ -105,6 +106,22 @@ public class ViewTest {
         final TopLevelItem[] expected = new TopLevelItem[] {rootJob, sharedJob, leftJob, rightJob};
 
         assertArrayEquals(expected, rootView.getAllItems().toArray());
+    }
+
+    @Test
+    @Issue("JENKINS-43322")
+    public void getAllViewsRecursively() {
+        //given
+        View left2ndNestedView = Mockito.mock(View.class);
+        View right2ndNestedView = Mockito.mock(View.class);
+        CompositeView rightNestedGroupView = new CompositeView("rightNestedGroupView", left2ndNestedView, right2ndNestedView);
+        //and
+        View leftTopLevelView = Mockito.mock(View.class);
+        CompositeView rootView = new CompositeView("rootGroupView", leftTopLevelView, rightNestedGroupView);
+        //when
+        Collection<View> allViews = rootView.getAllViews();
+        //then
+        assertEquals(4, allViews.size());
     }
 
     private TopLevelItem createJob(String jobName) {

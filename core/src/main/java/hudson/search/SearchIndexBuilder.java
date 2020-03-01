@@ -38,9 +38,9 @@ import java.util.List;
  * @see AbstractModelObject#makeSearchIndex()
  */
 public final class SearchIndexBuilder {
-    private final List<SearchItem> items = new ArrayList<SearchItem>();
+    private final List<SearchItem> items = new ArrayList<>();
 
-    private final List<SearchIndex> indices = new ArrayList<SearchIndex>();
+    private final List<SearchIndex> indices = new ArrayList<>();
 
     /**
      * Adds all {@link QuickSilver}-annotated properties to the search index.

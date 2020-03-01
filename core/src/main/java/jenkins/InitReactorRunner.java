@@ -4,10 +4,12 @@ import com.google.common.collect.Lists;
 import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
+import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
 import jenkins.model.Configuration;
 import jenkins.model.Jenkins;
+import jenkins.security.ImpersonatingExecutorService;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
@@ -41,11 +43,11 @@ public class InitReactorRunner {
         ExecutorService es;
         if (Jenkins.PARALLEL_LOAD)
             es = new ThreadPoolExecutor(
-                TWICE_CPU_NUM, TWICE_CPU_NUM, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new DaemonThreadFactory());
+                TWICE_CPU_NUM, TWICE_CPU_NUM, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new DaemonThreadFactory());
         else
             es = Executors.newSingleThreadExecutor(new NamingThreadFactory(new DaemonThreadFactory(), "InitReactorRunner"));
         try {
-            reactor.execute(es,buildReactorListener());
+            reactor.execute(new ImpersonatingExecutorService(es, ACL.SYSTEM), buildReactorListener());
         } finally {
             es.shutdownNow();   // upon a successful return the executor queue should be empty. Upon an exception, we want to cancel all pending tasks
         }

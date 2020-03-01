@@ -87,7 +87,7 @@ public interface VariableResolver<V> {
         }
 
         public Union(Collection<? extends VariableResolver<? extends V>> resolvers) {
-            this.resolvers = resolvers.toArray(new VariableResolver[resolvers.size()]);
+            this.resolvers = resolvers.toArray(new VariableResolver[0]);
         }
 
         public V resolve(String name) {

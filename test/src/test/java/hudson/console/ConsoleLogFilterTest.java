@@ -38,8 +38,8 @@ public class ConsoleLogFilterTest extends Assert {
         }
 
         @Override
-        public OutputStream decorateLogger(final Computer c, final OutputStream out) throws IOException, InterruptedException {
-            return new LineTransformationOutputStream() {
+        public OutputStream decorateLogger(final Computer c, OutputStream out) throws IOException, InterruptedException {
+            return new LineTransformationOutputStream.Delegating(out) {
                 @Override
                 protected void eol(byte[] b, int len) throws IOException {
                     out.write(("[["+c.getName()+"]] ").getBytes());

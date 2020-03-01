@@ -49,7 +49,7 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
     @Nonnull
     protected Iterable<SMT> allAsIterable() {
         Collection<SMT> all = all();
-        return all == null ? Collections.<SMT>emptySet() : all;
+        return all == null ? Collections.emptySet() : all;
     }
 
     public void find(String token, List<SearchItem> result) {

@@ -34,6 +34,6 @@ THE SOFTWARE.
       }
     </style>
   </st:once>
-  <pre id="example">java -jar <a href="${rootURL}/jnlpJars/jenkins-cli.jar" style="color: white">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} ${commandArgs}</pre>
+  <pre id="example">java -jar <a href="${rootURL}/jnlpJars/jenkins-cli.jar" style="color: white">jenkins-cli.jar</a> -s ${h.inferHudsonURL(request)} <j:if test="${it.webSocketSupported}">-webSocket</j:if> ${commandArgs}</pre>
 </j:jelly>
 

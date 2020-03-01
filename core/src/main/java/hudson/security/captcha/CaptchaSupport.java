@@ -52,7 +52,7 @@ public abstract class CaptchaSupport extends AbstractDescribableImpl<CaptchaSupp
      * Returns all the registered {@link CaptchaSupport} descriptors.
      */
     public static DescriptorExtensionList<CaptchaSupport, Descriptor<CaptchaSupport>> all() {
-        return Jenkins.getInstance().<CaptchaSupport, Descriptor<CaptchaSupport>>getDescriptorList(CaptchaSupport.class);
+        return Jenkins.get().getDescriptorList(CaptchaSupport.class);
     }
     
     abstract public  boolean validateCaptcha(String id, String text); 

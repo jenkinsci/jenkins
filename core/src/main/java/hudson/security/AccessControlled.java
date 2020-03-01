@@ -48,10 +48,30 @@ public interface AccessControlled {
     }
 
     /**
+     * Convenient short-cut for {@code getACL().checkAnyPermission(permission)}
+     * @see ACL#checkAnyPermission(Permission...)
+     *
+     * @since TODO
+     */
+    default void checkAnyPermission(@Nonnull Permission... permission) throws AccessDeniedException {
+        getACL().checkAnyPermission(permission);
+    }
+
+    /**
      * Convenient short-cut for {@code getACL().hasPermission(permission)}
      */
     default boolean hasPermission(@Nonnull Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    /**
+     * Convenient short-cut for {@code getACL().hasAnyPermission(permission)}
+     * @see ACL#hasAnyPermission(Permission...)
+     *
+     * @since TODO
+     */
+    default boolean hasAnyPermission(@Nonnull Permission... permission) {
+        return getACL().hasAnyPermission(permission);
     }
 
     /**

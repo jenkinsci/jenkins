@@ -36,7 +36,6 @@ import hudson.widgets.HistoryWidget;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -210,7 +209,7 @@ public class HistoryPageFilter<T> {
                     }
                 }
             }
-        } else if (olderThan != null) {
+        } else {
             Iterator<ItemT> iter = items.iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
@@ -235,19 +234,13 @@ public class HistoryPageFilter<T> {
         // Queue items can start building out of order with how they got added to the queue. Sorting them
         // before adding to the page. They'll still get displayed before the building items coz they end
         // up in a different list in HistoryPageFilter.
-        Collections.sort(items, new Comparator<Object>() {
+        items.sort(new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2) {
                 long o1QID = HistoryPageEntry.getEntryId(o1);
                 long o2QID = HistoryPageEntry.getEntryId(o2);
 
-                if (o1QID < o2QID) {
-                    return 1;
-                } else if (o1QID == o2QID) {
-                    return 0;
-                } else {
-                    return -1;
-                }
+                return Long.compare(o2QID, o1QID);
             }
         });
     }

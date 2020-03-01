@@ -1,4 +1,4 @@
-package hudson.model.EnvironmentContributor.EnvVarsHtml;
+package hudson.model.EnvironmentContributor.EnvVarsHtml
 import hudson.model.EnvironmentContributor
 import hudson.scm.SCM
 

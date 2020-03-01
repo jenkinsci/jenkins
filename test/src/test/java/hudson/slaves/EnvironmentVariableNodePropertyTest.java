@@ -1,7 +1,5 @@
 package hudson.slaves;
 
-import static org.junit.Assert.assertEquals;
-
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;

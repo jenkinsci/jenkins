@@ -27,17 +27,20 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.model.*;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import java.io.IOError;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
 
 /**
  * @author suren
@@ -76,6 +79,91 @@ public class SlaveComputerTest {
             Assert.assertNotNull(getRemoteFS(nodeA, userBob));
         }
     }
+
+    @Test
+    @Issue("JENKINS-57111")
+    public void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
+        DumbSlave nodeA = j.createOnlineSlave();
+        Assert.assertTrue(nodeA.getComputer() instanceof SlaveComputer);
+
+        int retries = 10;
+        while (IOExceptionOnOnlineListener.onOnlineCount == 0 && retries > 0) {
+            retries--;
+            Thread.sleep(500);
+        }
+        Assert.assertTrue(retries > 0);
+        Thread.sleep(500);
+
+        Assert.assertFalse(nodeA.getComputer().isOffline());
+        Assert.assertTrue(nodeA.getComputer().isOnline());
+
+        // Both listeners should fire and not cause the other not to fire.
+        Assert.assertEquals(1, IOExceptionOnOnlineListener.onOnlineCount);
+        Assert.assertEquals(1, RuntimeExceptionOnOnlineListener.onOnlineCount);
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnExceptionOnlineListener")
+    public static final class IOExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            if (c instanceof SlaveComputer) {
+                onOnlineCount++;
+                throw new IOException("Something happened (the listener always throws this exception)");
+            }
+        }
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnExceptionOnlineListener")
+    public static final class RuntimeExceptionOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            if (c instanceof SlaveComputer) {
+                onOnlineCount++;
+                throw new RuntimeException("Something happened (the listener always throws this exception)");
+            }
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-57111")
+
+    public void startupShouldFailOnErrorOnlineListener() throws Exception {
+        DumbSlave nodeA = j.createSlave();
+        Assert.assertTrue(nodeA.getComputer() instanceof SlaveComputer);
+        int retries = 10;
+        while (ErrorOnOnlineListener.onOnlineCount == 0 && retries > 0) {
+            retries--;
+            Thread.sleep(500);
+        }
+        Assert.assertTrue(retries > 0);
+        Thread.sleep(500);
+
+        Assert.assertEquals(1, ErrorOnOnlineListener.onOnlineCount);
+
+        Assert.assertTrue(nodeA.getComputer().isOffline());
+        Assert.assertFalse(nodeA.getComputer().isOnline());
+    }
+
+    @TestExtension(value = "startupShouldFailOnErrorOnlineListener")
+    public static final class ErrorOnOnlineListener extends ComputerListener {
+
+        static int onOnlineCount = 0;
+
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            if (c instanceof SlaveComputer) {
+                onOnlineCount++;
+                throw new IOError(new Exception("Something happened (the listener always throws this exception)"));
+            }
+        }
+    }
+
 
     /**
      * Get remote path through json api

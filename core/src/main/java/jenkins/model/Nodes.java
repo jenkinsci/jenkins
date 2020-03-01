@@ -46,13 +46,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,7 +73,7 @@ public class Nodes implements Saveable {
     /**
      * The map of nodes.
      */
-    private final ConcurrentMap<String, Node> nodes = new ConcurrentSkipListMap<String, Node>();
+    private final ConcurrentMap<String, Node> nodes = new ConcurrentSkipListMap<>();
 
     /**
      * Constructor, intended to be called only from {@link Jenkins}.
@@ -93,7 +93,7 @@ public class Nodes implements Saveable {
      */
     @Nonnull
     public List<Node> getNodes() {
-        return new ArrayList<Node>(nodes.values());
+        return new ArrayList<>(nodes.values());
     }
 
     /**
@@ -106,7 +106,7 @@ public class Nodes implements Saveable {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                Set<String> toRemove = new HashSet<String>(Nodes.this.nodes.keySet());
+                Set<String> toRemove = new HashSet<>(Nodes.this.nodes.keySet());
                 for (Node n : nodes) {
                     final String name = n.getNodeName();
                     toRemove.remove(name);
@@ -131,10 +131,11 @@ public class Nodes implements Saveable {
         if (node != oldNode) {
             // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
             // computer list for just the new node
+            AtomicReference<Node> old = new AtomicReference<>();
             Queue.withLock(new Runnable() {
                 @Override
                 public void run() {
-                    nodes.put(node.getNodeName(), node);
+                    old.set(nodes.put(node.getNodeName(), node));
                     jenkins.updateComputerList();
                     jenkins.trimLabels();
                 }
@@ -155,7 +156,11 @@ public class Nodes implements Saveable {
                 });
                 throw e;
             }
-            NodeListener.fireOnCreated(node);
+            if (old.get() != null) {
+                NodeListener.fireOnUpdated(old.get(), node);
+            } else {
+                NodeListener.fireOnCreated(node);
+            }
         }
     }
 
@@ -210,6 +215,7 @@ public class Nodes implements Saveable {
         if (exists) {
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             persistNode(node);
+            // TODO should this fireOnUpdated?
             return true;
         }
         return false;
@@ -233,7 +239,11 @@ public class Nodes implements Saveable {
                 }
             });
             updateNode(newOne);
+            if (!newOne.getNodeName().equals(oldOne.getNodeName())) {
+                Util.deleteRecursive(new File(getNodesDir(), oldOne.getNodeName()));
+            }
             NodeListener.fireOnUpdated(oldOne, newOne);
+
             return true;
         } else {
             return false;
@@ -270,16 +280,13 @@ public class Nodes implements Saveable {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void save() throws IOException {
         if (BulkChange.contains(this)) {
             return;
         }
         final File nodesDir = getNodesDir();
-        final Set<String> existing = new HashSet<String>();
+        final Set<String> existing = new HashSet<>();
         for (Node n : nodes.values()) {
             if (n instanceof EphemeralNode) {
                 continue;
@@ -322,7 +329,7 @@ public class Nodes implements Saveable {
                 return child.isDirectory();
             }
         });
-        final Map<String, Node> newNodes = new TreeMap<String, Node>();
+        final Map<String, Node> newNodes = new TreeMap<>();
         if (subdirs != null) {
             for (File subdir : subdirs) {
                 try {
@@ -339,11 +346,7 @@ public class Nodes implements Saveable {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                for (Iterator<Map.Entry<String, Node>> i = nodes.entrySet().iterator(); i.hasNext(); ) {
-                    if (!(i.next().getValue() instanceof EphemeralNode)) {
-                        i.remove();
-                    }
-                }
+                nodes.entrySet().removeIf(stringNodeEntry -> !(stringNodeEntry.getValue() instanceof EphemeralNode));
                 nodes.putAll(newNodes);
                 jenkins.updateComputerList();
                 jenkins.trimLabels();

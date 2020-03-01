@@ -129,7 +129,7 @@ public class Maven extends Builder {
      *
      * @since 1.322
      */
-    public boolean usePrivateRepository = false;
+    public boolean usePrivateRepository;
     
     /**
      * Provides access to the settings.xml to be used for a build.
@@ -349,7 +349,7 @@ public class Maven extends Builder {
             }
 
             // Add properties from builder configuration, AFTER the injected build variables.
-            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+            final VariableResolver<String> resolver = new Union<>(new ByMap<>(env), vr);
             args.addKeyValuePairsFromPropertyString("-D", this.properties, resolver, sensitiveVars);
 
             if (usesPrivateRepository())
@@ -460,7 +460,7 @@ public class Maven extends Builder {
         }
 
 		public void setInstallations(MavenInstallation... installations) {
-			List<MavenInstallation> tmpList = new ArrayList<Maven.MavenInstallation>();
+			List<MavenInstallation> tmpList = new ArrayList<>();
 			// remote empty Maven installation : 
 			if(installations != null) {
 				Collections.addAll(tmpList, installations);
@@ -470,7 +470,7 @@ public class Maven extends Builder {
 					}
 				}
 			}
-            this.installations = tmpList.toArray(new MavenInstallation[tmpList.size()]);
+            this.installations = tmpList.toArray(new MavenInstallation[0]);
             save();
         }
 
@@ -580,17 +580,11 @@ public class Maven extends Builder {
                 if (jars != null) { // be defensive
                     for (File jar : jars) {
                         if (jar.getName().startsWith("maven-")) {
-                            JarFile jf = null;
-                            try {
-                                jf = new JarFile(jar);
+                            try (JarFile jf = new JarFile(jar)) {
                                 Manifest manifest = jf.getManifest();
                                 String version = manifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
                                 if (version != null) {
                                     return version;
-                                }
-                            } finally {
-                                if (jf != null) {
-                                    jf.close();
                                 }
                             }
                         }
@@ -684,14 +678,14 @@ public class Maven extends Builder {
             // newer code need not do this
             @Override
             public MavenInstallation[] getInstallations() {
-                return Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
+                return Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
             }
 
             // overriding them for backward compatibility.
             // newer code need not do this
             @Override
             public void setInstallations(MavenInstallation... installations) {
-                Jenkins.getInstance().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(installations);
+                Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(installations);
             }
 
             /**

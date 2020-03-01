@@ -1,17 +1,17 @@
 package hudson.init.impl;
 
 import hudson.init.Initializer;
-import java.io.EOFException;
 import jenkins.model.Jenkins;
+import jenkins.telemetry.impl.java11.MissingClassTelemetry;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.compression.CompressionFilter;
 
 import javax.servlet.ServletException;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.kohsuke.stapler.Stapler;
 
 /**
  * Deals with exceptions that get thrown all the way up to the Stapler rendering layer.
@@ -29,6 +29,10 @@ public class InstallUncaughtExceptionHandler {
                 }
                 req.setAttribute("javax.servlet.error.exception",e);
                 try {
+                    // If we have an exception, let's see if it's related with missing classes on Java 11. We reach
+                    // here with a ClassNotFoundException in an action, for example. Setting the report here is the only
+                    // way to catch the missing classes when the plugin uses Thread.currentThread().getContextClassLoader().loadClass
+                    MissingClassTelemetry.reportExceptionInside(e);
                     WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
                 } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
@@ -42,10 +46,10 @@ public class InstallUncaughtExceptionHandler {
         }
         catch (SecurityException ex) {
             LOGGER.log(Level.SEVERE,
-                                                       "Failed to set the default UncaughtExceptionHandler.  " + 
+                                                       "Failed to set the default UncaughtExceptionHandler.  " +
                                                        "If any threads die due to unhandled coding errors then there will be no logging of this information.  " +
-                                                       "The lack of this diagnostic information will make it harder to track down issues which will reduce the supportability of Jenkins.  " + 
-                                                       "It is highly recommended that you consult the documentation that comes with you servlet container on how to allow the " + 
+                                                       "The lack of this diagnostic information will make it harder to track down issues which will reduce the supportability of Jenkins.  " +
+                                                       "It is highly recommended that you consult the documentation that comes with you servlet container on how to allow the " +
                                                        "`setDefaultUncaughtExceptionHandler` permission and enable it.", ex);
         }
     }
@@ -70,10 +74,14 @@ public class InstallUncaughtExceptionHandler {
                        "A thread (" + t.getName() + '/' + t.getId()
                                      + ") died unexpectedly due to an uncaught exception, this may leave your Jenkins in a bad way and is usually indicative of a bug in the code.",
                        ex);
+
+            // If we have an exception, let's see if it's related with missing classes on Java 11. We reach
+            // here with a ClassNotFoundException in an action, for example. Setting the report here is the only
+            // way to catch the missing classes when the plugin uses Thread.currentThread().getContextClassLoader().loadClass
+            MissingClassTelemetry.reportExceptionInside(ex);
         }
 
     }
 
     private InstallUncaughtExceptionHandler() {}
-
 }

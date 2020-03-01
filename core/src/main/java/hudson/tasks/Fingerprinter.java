@@ -59,6 +59,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +69,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -92,11 +92,38 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
      */
     private final String targets;
 
+    /**
+     * Default null 'excludes' pattern as in Ant.
+     */
+    private String excludes = null;
+
+    /**
+     * Default ant exclusion
+     */
+    private Boolean defaultExcludes = true;
+
+    /**
+     * Indicate whether include and exclude patterns should be considered as case sensitive
+     */
+    private Boolean caseSensitive = true;
+
     @Deprecated
     Boolean recordBuildArtifacts;
 
     @DataBoundConstructor public Fingerprinter(String targets) {
         this.targets = targets;
+    }
+
+    @DataBoundSetter public void setExcludes(String excludes) {
+        this.excludes = Util.fixEmpty(excludes);
+    }
+
+    @DataBoundSetter public void setDefaultExcludes(boolean defaultExcludes) {
+        this.defaultExcludes = defaultExcludes;
+    }
+
+    @DataBoundSetter public void setCaseSensitive(boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
     }
 
     @Deprecated
@@ -109,6 +136,32 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return targets;
     }
 
+    public String getExcludes() {
+        return excludes;
+    }
+
+    public boolean getDefaultExcludes() {
+        return defaultExcludes;
+    }
+
+    public boolean getCaseSensitive() {
+        return caseSensitive;
+    }
+
+    /**
+     * We ensure that fields are initialized to
+     * default values after deserialization.
+     */
+    private Object readResolve() {
+        if(defaultExcludes == null) {
+            defaultExcludes = true;
+        }
+        if(caseSensitive == null) {
+            caseSensitive = true;
+        }
+        return this;
+    }
+
     @Deprecated
     public boolean getRecordBuildArtifacts() {
         return recordBuildArtifacts != null && recordBuildArtifacts;
@@ -119,7 +172,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
-            Map<String,String> record = new HashMap<String,String>();
+            Map<String,String> record = new HashMap<>();
             
             EnvVars environment = build.getEnvironment(listener);
             if(targets.length()!=0) {
@@ -135,7 +188,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             }
 
             if (enableFingerprintsInDependencyGraph) {
-                Jenkins.getInstance().rebuildDependencyGraphAsync();
+                Jenkins.get().rebuildDependencyGraphAsync();
             }
         } catch (IOException e) {
             Functions.printStackTrace(e, listener.error(Messages.Fingerprinter_Failed()));
@@ -152,7 +205,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         if (enableFingerprintsInDependencyGraph) {
             RunList builds = owner.getBuilds();
-            Set<String> seenUpstreamProjects = new HashSet<String>();
+            Set<String> seenUpstreamProjects = new HashSet<>();
 
             for (Object build1 : builds) {
                 Run build = (Run) build1;
@@ -203,7 +256,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         Fingerprint addRecord(Run build) throws IOException {
-            FingerprintMap map = Jenkins.getInstance().getFingerprintMap();
+            FingerprintMap map = Jenkins.get().getFingerprintMap();
             return map.getOrCreate(produced?build:null, fileName, md5sum);
         }
 
@@ -213,18 +266,26 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     private static final class FindRecords extends MasterToSlaveFileCallable<List<Record>> {
 
         private final String targets;
+        private final String excludes;
+        private final boolean defaultExcludes;
+        private final boolean caseSensitive;
         private final long buildTimestamp;
 
-        FindRecords(String targets, long buildTimestamp) {
+        FindRecords(String targets, String excludes, boolean defaultExcludes, boolean caseSensitive, long buildTimestamp) {
             this.targets = targets;
+            this.excludes = excludes;
+            this.defaultExcludes = defaultExcludes;
+            this.caseSensitive = caseSensitive;
             this.buildTimestamp = buildTimestamp;
         }
 
         @Override
         public List<Record> invoke(File baseDir, VirtualChannel channel) throws IOException {
-            List<Record> results = new ArrayList<Record>();
+            List<Record> results = new ArrayList<>();
 
-            FileSet src = Util.createFileSet(baseDir,targets);
+            FileSet src = Util.createFileSet(baseDir, targets, excludes);
+            src.setDefaultexcludes(defaultExcludes);
+            src.setCaseSensitive(caseSensitive);
 
             DirectoryScanner ds = src.getDirectoryScanner();
             for( String f : ds.getIncludedFiles() ) {
@@ -250,7 +311,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     }
 
     private void record(Run<?,?> build, FilePath ws, TaskListener listener, Map<String,String> record, final String targets) throws IOException, InterruptedException {
-        for (Record r : ws.act(new FindRecords(targets, build.getTimeInMillis()))) {
+        for (Record r : ws.act(new FindRecords(targets, excludes, defaultExcludes, caseSensitive, build.getTimeInMillis()))) {
             Fingerprint fp = r.addRecord(build);
             if(fp==null) {
                 listener.error(Messages.Fingerprinter_FailedFor(r.relativePath));
@@ -316,7 +377,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
 
         public void add(Map<String,String> moreRecords) {
-            Map<String,String> r = new HashMap<String, String>(record);
+            Map<String,String> r = new HashMap<>(record);
             r.putAll(moreRecords);
             record = compact(r);
             ref = null;
@@ -361,7 +422,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
         /** Share data structure with other builds, mainly those of the same job. */
         private PackedMap<String,String> compact(Map<String,String> record) {
-            Map<String,String> b = new HashMap<String,String>();
+            Map<String,String> b = new HashMap<>();
             for (Entry<String,String> e : record.entrySet()) {
                 b.put(e.getKey().intern(), e.getValue().intern());
             }
@@ -378,9 +439,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                     return m;
             }
 
-            Jenkins h = Jenkins.getInstance();
+            Jenkins h = Jenkins.get();
 
-            Map<String,Fingerprint> m = new TreeMap<String,Fingerprint>();
+            Map<String,Fingerprint> m = new TreeMap<>();
             for (Entry<String, String> r : record.entrySet()) {
                 try {
                     Fingerprint fp = h._getFingerprint(r.getValue());
@@ -392,7 +453,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             }
 
             m = ImmutableMap.copyOf(m);
-            ref = new WeakReference<Map<String,Fingerprint>>(m);
+            ref = new WeakReference<>(m);
             return m;
         }
 
@@ -411,7 +472,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          * @since 1.430
          */
         public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
-            Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
+            Map<AbstractProject,Integer> r = new HashMap<>();
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();

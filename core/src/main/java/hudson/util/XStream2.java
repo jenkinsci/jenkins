@@ -30,6 +30,7 @@ import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
+import com.thoughtworks.xstream.mapper.XStream11XmlFriendlyMapper;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
@@ -46,7 +47,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.XmlFile;
@@ -70,7 +70,7 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -90,9 +90,9 @@ public class XStream2 extends XStream {
     private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
 
     private RobustReflectionConverter reflectionConverter;
-    private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
+    private final ThreadLocal<Boolean> oldData = new ThreadLocal<>();
     private final @CheckForNull ClassOwnership classOwnership;
-    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<String, Class<?>>();
+    private final Map<String,Class<?>> compatibilityAliases = new ConcurrentHashMap<>();
 
     /**
      * Hook to insert {@link Mapper}s after they are created.
@@ -308,7 +308,7 @@ public class XStream2 extends XStream {
      * @since 1.504
      */
     public void toXMLUTF8(Object obj, OutputStream out) throws IOException {
-        Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
+        Writer w = new OutputStreamWriter(out, StandardCharsets.UTF_8);
         w.write("<?xml version=\"1.1\" encoding=\"UTF-8\"?>\n");
         toXML(obj, w);
     }
@@ -361,7 +361,7 @@ public class XStream2 extends XStream {
     /**
      * Prior to Hudson 1.106, XStream 1.1.x was used which encoded "$" in class names
      * as "-" instead of "_-" that is used now.  Up through Hudson 1.348 compatibility
-     * for old serialized data was maintained via {@code XStream11XmlFriendlyMapper}.
+     * for old serialized data was maintained via {@link XStream11XmlFriendlyMapper}.
      * However, it was found (HUDSON-5768) that this caused fields with "__" to fail
      * deserialization due to double decoding.  Now this class is used for compatibility.
      */
@@ -397,7 +397,7 @@ public class XStream2 extends XStream {
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
         private final ConcurrentHashMap<Class<?>,Converter> cache =
-                new ConcurrentHashMap<Class<?>,Converter>();
+                new ConcurrentHashMap<>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
@@ -445,11 +445,7 @@ public class XStream2 extends XStream {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
-            } catch (InstantiationException e) {
-                InstantiationError x = new InstantiationError();
-                x.initCause(e);
-                throw x;
-            } catch (InvocationTargetException e) {
+            } catch (InstantiationException | InvocationTargetException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
                 throw x;
@@ -519,7 +515,6 @@ public class XStream2 extends XStream {
 
         private PluginManager pm;
 
-        @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
         @Override public String ownerOf(Class<?> clazz) {
             if (classOwnership != null) {
                 return classOwnership.ownerOf(clazz);

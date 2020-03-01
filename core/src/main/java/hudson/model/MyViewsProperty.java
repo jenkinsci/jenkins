@@ -54,7 +54,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A UserProperty that remembers user-private views.
@@ -73,7 +73,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     /**
      * Always hold at least one view.
      */
-    private CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<View>();
+    private CopyOnWriteArrayList<View> views = new CopyOnWriteArrayList<>();
 
     private transient ViewGroupMixIn viewGroupMixIn;
 
@@ -91,7 +91,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     public Object readResolve() {
         if (views == null)
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
-            views = new CopyOnWriteArrayList<View>();
+            views = new CopyOnWriteArrayList<>();
 
         if (views.isEmpty()) {
             // preserve the non-empty invariant
@@ -171,7 +171,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return new HttpRedirect("view/" + Util.rawEncode(getPrimaryView().getViewName()) + "/");
     }
 
-    @RequirePOST
+    @POST
     public synchronized void doCreateView(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException, ParseException, FormException {
         checkPermission(View.CREATE);
@@ -237,11 +237,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     public ViewsTabBar getViewsTabBar() {
-        return Jenkins.getInstance().getViewsTabBar();
+        return Jenkins.get().getViewsTabBar();
     }
 
     public List<Action> getViewActions() {
-        // Jenkins.getInstance().getViewActions() are tempting but they are in a wrong scope
+        // Jenkins.get().getViewActions() are tempting but they are in a wrong scope
         return Collections.emptyList();
     }
 
@@ -250,7 +250,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     public MyViewsTabBar getMyViewsTabBar() {
-        return Jenkins.getInstance().getMyViewsTabBar();
+        return Jenkins.get().getMyViewsTabBar();
     }
     
     @Extension @Symbol("myView")

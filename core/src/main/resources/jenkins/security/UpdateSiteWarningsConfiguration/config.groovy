@@ -34,7 +34,7 @@ def printEntry(warning, title, checked) {
         f.checkbox(name: warning.id,
                 title: title,
                 checked: checked,
-                class: 'hideWarnings');
+                class: 'hideWarnings')
         div(class: "setting-description") {
             a(warning.url, href: warning.url)
         }

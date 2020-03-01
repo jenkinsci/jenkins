@@ -44,7 +44,7 @@ public final class WeakLogHandler extends Handler {
     public WeakLogHandler(Handler target, Logger logger) {
         this.logger = logger;
         logger.addHandler(this);
-        this.target = new WeakReference<Handler>(target);
+        this.target = new WeakReference<>(target);
     }
 
     public void publish(LogRecord record) {

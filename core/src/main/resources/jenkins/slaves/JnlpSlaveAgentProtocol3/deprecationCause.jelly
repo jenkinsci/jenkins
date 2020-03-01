@@ -1,5 +1,0 @@
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-  ${%This protocol is unstable. See the protocol documentation for more info.}
-  <a href="https://jenkins.io/redirect/project/remoting/protocols/jnlp3-errata">${%JNLP3 Protocol Errata}</a>
-</j:jelly>

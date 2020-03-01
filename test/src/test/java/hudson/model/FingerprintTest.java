@@ -29,6 +29,7 @@ import hudson.security.ACLContext;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
+import hudson.security.SidACL;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.Fingerprinter;
 
@@ -365,7 +366,7 @@ public class FingerprintTest {
         public ACL getACL(Job<?, ?> project) {
             AuthorizationMatrixProperty amp = project.getProperty(AuthorizationMatrixProperty.class);
             if (amp != null) {
-                return amp.getACL().newInheritingACL(getRootACL());
+                return amp.getACL().newInheritingACL((SidACL)getRootACL());
             } else {
                 return getRootACL();
             }

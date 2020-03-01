@@ -23,7 +23,7 @@ import java.util.List;
 @Extension @Symbol("queueItemAuthenticator")
 public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     private final DescribableList<QueueItemAuthenticator,QueueItemAuthenticatorDescriptor> authenticators
-        = new DescribableList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor>(this);
+        = new DescribableList<>(this);
 
     private Object readResolve() {
         authenticators.setOwner(this);

@@ -58,8 +58,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @return
      *      null to avoid setting an instance of {@link JobProperty} to the target project (or just use {@link OptionalJobProperty})
      */
@@ -99,7 +97,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      * Gets the {@link JobPropertyDescriptor}s applicable for a given job type.
      */
     public static List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
-        List<JobPropertyDescriptor> r = new ArrayList<JobPropertyDescriptor>();
+        List<JobPropertyDescriptor> r = new ArrayList<>();
         for (JobPropertyDescriptor p : all())
             if(p.isApplicable(clazz))
                 r.add(p);
@@ -107,6 +105,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     public static Collection<JobPropertyDescriptor> all() {
-        return (Collection) Jenkins.getInstance().getDescriptorList(JobProperty.class);
+        return (Collection) Jenkins.get().getDescriptorList(JobProperty.class);
     }
 }

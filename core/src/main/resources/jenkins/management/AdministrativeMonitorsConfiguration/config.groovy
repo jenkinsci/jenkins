@@ -34,19 +34,20 @@ f.section(title: _("Administrative monitors configuration")) {
         f.entry(title: _("Enabled administrative monitors")) {
             p(_("blurb"))
             table(width: "100%") {
-                for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
+                for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
+                        .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
                     f.block() {
                         f.checkbox(name: "administrativeMonitor",
                                 title: am.displayName,
                                 checked: am.enabled,
-                                json: am.id);
+                                json: am.id)
                     }
                     tr() {
-                        td(colspan: "2");
+                        td(colspan: "2")
                         td(class: "setting-description") {
-                            st.include(from: am, page: "description", optional: true);
+                            st.include(from: am, page: "description", optional: true)
                         }
-                        td();
+                        td()
                     }
                 }
             }

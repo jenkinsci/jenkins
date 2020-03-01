@@ -132,7 +132,7 @@ public class BulkChange implements Closeable {
     /**
      * {@link BulkChange}s that are effective currently.
      */
-    private static final ThreadLocal<BulkChange> INSCOPE = new ThreadLocal<BulkChange>();
+    private static final ThreadLocal<BulkChange> INSCOPE = new ThreadLocal<>();
 
     /**
      * Gets the {@link BulkChange} instance currently in scope for the current thread.

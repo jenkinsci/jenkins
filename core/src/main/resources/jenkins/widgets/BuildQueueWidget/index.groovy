@@ -1,4 +1,4 @@
-package jenkins.widgets.BuildQueueWidget;
+package jenkins.widgets.BuildQueueWidget
 
 def t = namespace(lib.JenkinsTagLib.class)
 

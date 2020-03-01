@@ -44,6 +44,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -66,10 +67,10 @@ import javax.annotation.Nullable;
  */
 public class LabelAtom extends Label implements Saveable {
     private DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor> properties =
-            new DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor>(this);
+            new DescribableList<>(this);
 
     @CopyOnWrite
-    protected transient volatile List<Action> transientActions = new Vector<Action>();
+    protected transient volatile List<Action> transientActions = new Vector<>();
 
     private String description;
 
@@ -100,7 +101,7 @@ public class LabelAtom extends Label implements Saveable {
     @Override
     public List<Action> getActions() {
         // add all the transient actions, too
-        List<Action> actions = new Vector<Action>(super.getActions());
+        List<Action> actions = new Vector<>(super.getActions());
         actions.addAll(transientActions);
         // return the read only list to cause a failure on plugins who try to add an action here
         return Collections.unmodifiableList(actions);
@@ -109,7 +110,7 @@ public class LabelAtom extends Label implements Saveable {
     // TODO implement addAction, addOrReplaceAction, removeAction, removeActions, replaceActions
 
     protected void updateTransientActions() {
-        Vector<Action> ta = new Vector<Action>();
+        Vector<Action> ta = new Vector<>();
 
         for (LabelAtomProperty p : properties)
             ta.addAll(p.getActions(this));
@@ -162,7 +163,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /*package*/ XmlFile getConfigFile() {
-        return new XmlFile(XSTREAM, new File(Jenkins.getInstance().root, "labels/"+name+".xml"));
+        return new XmlFile(XSTREAM, new File(Jenkins.get().root, "labels/"+name+".xml"));
     }
 
     public void save() throws IOException {
@@ -199,9 +200,9 @@ public class LabelAtom extends Label implements Saveable {
     /**
      * Accepts the update to the node configuration.
      */
-    @RequirePOST
+    @POST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        final Jenkins app = Jenkins.getInstance();
+        final Jenkins app = Jenkins.get();
 
         app.checkPermission(Jenkins.ADMINISTER);
 
@@ -221,7 +222,7 @@ public class LabelAtom extends Label implements Saveable {
     @RequirePOST
     @Restricted(DoNotUse.class)
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
@@ -232,12 +233,12 @@ public class LabelAtom extends Label implements Saveable {
      * @see Jenkins#getLabelAtom
      */
     public static @Nullable LabelAtom get(@CheckForNull String l) {
-        return Jenkins.getInstance().getLabelAtom(l);
+        return Jenkins.get().getLabelAtom(l);
     }
 
     public static LabelAtom findNearest(String name) {
-        List<String> candidates = new ArrayList<String>();
-        for (LabelAtom a : Jenkins.getInstance().getLabelAtoms()) {
+        List<String> candidates = new ArrayList<>();
+        for (LabelAtom a : Jenkins.get().getLabelAtoms()) {
             candidates.add(a.getName());
         }
         return get(EditDistance.findNearest(name, candidates));

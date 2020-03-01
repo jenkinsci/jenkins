@@ -52,7 +52,7 @@ public class CreateNodeCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Computer.CREATE);
 
         final Node newNode = (Node) Jenkins.XSTREAM2.fromXML(stdin);
@@ -61,11 +61,6 @@ public class CreateNodeCommand extends CLICommand {
 
             // Using deprecated method but it's contract is preserved
             newNode.setNodeName(nodeName);
-        }
-
-        if(newNode instanceof Slave) { //change userId too
-            User user = User.current();
-            ((Slave) newNode).setUserId(user==null ? "anonymous" : user.getId());
         }
 
         if (jenkins.getNode(newNode.getNodeName()) != null) {

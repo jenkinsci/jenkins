@@ -38,7 +38,7 @@ import static java.lang.Math.*;
 */
 final class Timeline {
     // int[] is always length=1
-    private final TreeMap<Long, int[]> data = new TreeMap<Long, int[]>();
+    private final TreeMap<Long, int[]> data = new TreeMap<>();
 
     /**
      * Obtains q(t) for the given t.

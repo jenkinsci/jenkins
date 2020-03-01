@@ -42,6 +42,7 @@ import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.nio.charset.Charset;
 
@@ -152,9 +153,7 @@ public class Main {
                 // run the command
                 long start = System.currentTimeMillis();
 
-                List<String> cmd = new ArrayList<String>();
-                for( int i=1; i<args.length; i++ )
-                    cmd.add(args[i]);
+                List<String> cmd = new ArrayList<>(Arrays.asList(args).subList(1, args.length));
                 Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
                     new DualOutputStream(System.out,new EncodingStream(os)));
 
@@ -221,7 +220,7 @@ public class Main {
     public static boolean isUnitTest = false;
 
     /**
-     * Set to true if we are running inside "mvn hpi:run" or "mvn hudson-dev:run"
+     * Set to true if we are running inside {@code mvn hpi:run} or {@code mvn jetty:run}.
      */
     public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName()+".development");
 

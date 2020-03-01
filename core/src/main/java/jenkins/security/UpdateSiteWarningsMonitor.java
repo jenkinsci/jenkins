@@ -82,6 +82,9 @@ import java.util.Set;
 public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
+        if (!Jenkins.get().getUpdateCenter().isSiteDataReady()) {
+            return false;
+        }
         return !getActiveCoreWarnings().isEmpty() || !getActivePluginWarningsByPlugin().isEmpty();
     }
 
@@ -109,10 +112,10 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
 
             String pluginName = warning.component;
 
-            PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(pluginName);
+            PluginWrapper plugin = Jenkins.get().getPluginManager().getPlugin(pluginName);
 
             if (!activePluginWarningsByPlugin.containsKey(plugin)) {
-                activePluginWarningsByPlugin.put(plugin, new ArrayList<UpdateSite.Warning>());
+                activePluginWarningsByPlugin.put(plugin, new ArrayList<>());
             }
             activePluginWarningsByPlugin.get(plugin).add(warning);
         }

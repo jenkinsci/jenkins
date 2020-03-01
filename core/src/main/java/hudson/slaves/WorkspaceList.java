@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -155,7 +156,7 @@ public final class WorkspaceList {
         }
     }
 
-    private final Map<FilePath,Entry> inUse = new HashMap<>();
+    private final Map<String, Entry> inUse = new HashMap<>();
 
     public WorkspaceList() {
     }
@@ -181,7 +182,7 @@ public final class WorkspaceList {
     public synchronized Lease allocate(@Nonnull FilePath base, Object context) throws InterruptedException {
         for (int i=1; ; i++) {
             FilePath candidate = i==1 ? base : base.withSuffix(COMBINATOR+i);
-            Entry e = inUse.get(candidate);
+            Entry e = inUse.get(candidate.getRemote());
             if(e!=null && !e.quick && e.context!=context)
                 continue;
             return acquire(candidate,false,context);
@@ -195,7 +196,7 @@ public final class WorkspaceList {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "recorded " + p, new Throwable("from " + this));
         }
-        Entry old = inUse.put(p, new Entry(p, false));
+        Entry old = inUse.put(p.getRemote(), new Entry(p, false));
         if (old!=null)
             throw new AssertionError("Tried to record a workspace already owned: "+old);
         return lease(p);
@@ -205,7 +206,7 @@ public final class WorkspaceList {
      * Releases an allocated or acquired workspace.
      */
     private synchronized void _release(@Nonnull FilePath p) {
-        Entry old = inUse.get(p);
+        Entry old = inUse.get(p.getRemote());
         if (old==null)
             throw new AssertionError("Releasing unallocated workspace "+p);
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -213,7 +214,7 @@ public final class WorkspaceList {
         }
         old.lockCount--;
         if (old.lockCount==0)
-            inUse.remove(p);
+            inUse.remove(p.getRemote());
         notifyAll();
     }
 
@@ -253,7 +254,7 @@ public final class WorkspaceList {
         t.setName("Waiting to acquire "+p+" : "+t.getName());
         try {
             while (true) {
-                e = inUse.get(p);
+                e = inUse.get(p.getRemote());
                 if (e==null || e.context==context)
                     break;
                 wait();
@@ -266,7 +267,7 @@ public final class WorkspaceList {
         }
         
         if (e!=null)    e.lockCount++;
-        else            inUse.put(p,new Entry(p,quick,context));
+        else            inUse.put(p.getRemote(), new Entry(p,quick,context));
         return lease(p);
     }
 
@@ -299,9 +300,10 @@ public final class WorkspaceList {
      * <p>The resulting directory may not exist; you may call {@link FilePath#mkdirs} on it if you need it to.
      * It may be deleted alongside the workspace itself during cleanup actions.
      * @param ws a directory such as a build workspace
-     * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}
+     * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}, or {@code null} if {@link FilePath#getParent} is null
      * @since 1.652
      */
+    @CheckForNull
     public static FilePath tempDir(FilePath ws) {
         return ws.sibling(ws.getName() + COMBINATOR + "tmp");
     }

@@ -1,6 +1,6 @@
-@import (css) '../css/font-awesome/css/font-awesome.min.css';
-@import (css) '../css/icomoon/css/icomoon.css';
-@import (css) '../css/google-fonts/roboto/css/roboto.css';
+@import (css) '../fonts/font-awesome/css/font-awesome.min.css';
+@import (css) '../fonts/icomoon/css/icomoon.css';
+@import (css) '../fonts/google-fonts/roboto/css/roboto.css';
 
 .bootstrap-3 * {
     // simple reset
@@ -942,4 +942,8 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
         box-shadow: 0 -2em @fb-loader-color;
         height: 5em;
     }
+}
+
+.bootstrap-3 {
+    @import (less) '../../../node_modules/bootstrap/less/bootstrap.less';
 }

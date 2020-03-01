@@ -23,14 +23,13 @@
  */
 package jenkins.tools;
 
-import com.google.common.base.Predicate;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import hudson.util.FormApply;
-import jenkins.model.GlobalConfigurationCategory;
+import java.util.function.Predicate;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
@@ -38,7 +37,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -74,19 +73,19 @@ public class GlobalToolConfiguration extends ManagementLink {
         return Jenkins.ADMINISTER;
     }
 
-    @RequirePOST
+    @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
         LOGGER.log(Level.FINE, "tools saved: "+result);
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 
-    private boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException, IOException {
-        Jenkins j = Jenkins.getInstance();
+    private boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException, IOException {
+        Jenkins j = Jenkins.get();
         j.checkPermission(Jenkins.ADMINISTER);
 
         boolean result = true;
-        for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig(FILTER)){
+        for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigByDescriptor(FILTER)) {
             result &= configureDescriptor(req, json, d);
         }
         j.save();
@@ -101,11 +100,7 @@ public class GlobalToolConfiguration extends ManagementLink {
         return d.configure(req, js);
     }
 
-    public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {
-        public boolean apply(GlobalConfigurationCategory input) {
-            return input instanceof ToolConfigurationCategory;
-        }
-    };
+    public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
 
     private static final Logger LOGGER = Logger.getLogger(GlobalToolConfiguration.class.getName());
 }

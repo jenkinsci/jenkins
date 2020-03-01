@@ -90,7 +90,7 @@ public class ValidateButtonTest {
         }
     
         public DescriptorImpl getDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class);
+            return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         }
     
         @Extension
@@ -190,7 +190,7 @@ public class ValidateButtonTest {
         }
         
         public DescriptorImpl getDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class);
+            return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         }
         
         @Extension

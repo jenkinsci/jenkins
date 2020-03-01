@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout norefresh="true" title="${%Edit View}" permission="${it.CONFIGURE}">
+  <l:layout title="${%Edit View}" permission="${it.CONFIGURE}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <!-- to make the form field binding work -->
@@ -41,18 +41,18 @@ THE SOFTWARE.
         <f:entry title="${%Description}" help="/help/view-config/description.html">
           <f:textarea name="description" field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
-        <f:entry title="${%Filter build queue}" help="/help/view-config/filter-queue.html">
-        	<f:checkbox name="filterQueue" field="filterQueue"/>
+        <f:entry field="filterQueue">
+            <f:checkbox title="${%Filter build queue}" help="/help/view-config/filter-queue.html" name="filterQueue" />
         </f:entry>
-        <f:entry title="${%Filter build executors}" help="/help/view-config/filter-executors.html">
-        	<f:checkbox name="filterExecutors" field="filterExecutors"/>
+        <f:entry field="filterExecutors">
+            <f:checkbox title="${%Filter build executors}" help="/help/view-config/filter-executors.html" name="filterExecutors" />
         </f:entry>
 
         <!-- subtypes can put entries here. -->
         <st:include page="configure-entries.jelly" optional="true" />
 
         <!-- view property configurations -->
-        <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
+        <f:descriptorList descriptors="${it.getVisiblePropertyDescriptors()}" instances="${it.properties}" />
 
         <f:bottomButtonBar>
           <f:submit value="${%OK}" />

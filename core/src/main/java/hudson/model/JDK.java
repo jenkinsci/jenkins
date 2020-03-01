@@ -64,6 +64,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      * @since 1.577
      */
     public static final String DEFAULT_NAME = "(System)";
+    private static final long serialVersionUID = -3318291200160313357L;
 
     @Restricted(NoExternalUse.class)
     public static boolean isDefaultName(String name) {
@@ -81,7 +82,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
     private transient String javaHome;
 
     public JDK(String name, String javaHome) {
-        super(name, javaHome, Collections.<ToolProperty<?>>emptyList());
+        super(name, javaHome, Collections.emptyList());
     }
 
     @DataBoundConstructor
@@ -163,9 +164,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             TaskListener listener = new StreamTaskListener(new NullStream());
             Launcher launcher = n.createLauncher(listener);
             return launcher.launch().cmds("java","-fullversion").stdout(listener).join()==0;
-        } catch (IOException e) {
-            return false;
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             return false;
         }
     }
@@ -178,17 +177,17 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
 
         public @Override JDK[] getInstallations() {
-            return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
+            return Jenkins.get().getJDKs().toArray(new JDK[0]);
         }
 
         public @Override void setInstallations(JDK... jdks) {
-            Jenkins.getInstance().setJDKs(Arrays.asList(jdks));
+            Jenkins.get().setJDKs(Arrays.asList(jdks));
         }
 
         @Override
         public List<? extends ToolInstaller> getDefaultInstallers() {
             try {
-                Class<? extends ToolInstaller> jdkInstallerClass = Jenkins.getInstance().getPluginManager()
+                Class<? extends ToolInstaller> jdkInstallerClass = Jenkins.get().getPluginManager()
                         .uberClassLoader.loadClass("hudson.tools.JDKInstaller").asSubclass(ToolInstaller.class);
                 Constructor<? extends ToolInstaller> constructor = jdkInstallerClass.getConstructor(String.class, boolean.class);
                 return Collections.singletonList(constructor.newInstance(null, false));

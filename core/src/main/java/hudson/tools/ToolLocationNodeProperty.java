@@ -57,7 +57,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     @DataBoundConstructor
     public ToolLocationNodeProperty(List<ToolLocation> locations) {
         if (locations == null) {
-            locations = new ArrayList<ToolLocation>();
+            locations = new ArrayList<>();
         }
         this.locations = locations;
     }

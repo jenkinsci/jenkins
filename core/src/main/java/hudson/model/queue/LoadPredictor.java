@@ -92,7 +92,7 @@ public abstract class LoadPredictor implements ExtensionPoint {
         @Override
         public Iterable<FutureLoad> predict(MappingWorksheet plan, final Computer computer, long start, long eternity) {
             long now = System.currentTimeMillis();
-            List<FutureLoad> fl = new ArrayList<FutureLoad>();
+            List<FutureLoad> fl = new ArrayList<>();
             for (Executor e : computer.getExecutors()) {
                 if (e.isIdle())     continue;
 

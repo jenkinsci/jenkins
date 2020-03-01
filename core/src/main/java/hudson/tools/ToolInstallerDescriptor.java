@@ -48,14 +48,14 @@ public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends D
     }
 
     public static DescriptorExtensionList<ToolInstaller,ToolInstallerDescriptor<?>> all() {
-        return Jenkins.getInstance().<ToolInstaller,ToolInstallerDescriptor<?>>getDescriptorList(ToolInstaller.class);
+        return Jenkins.get().getDescriptorList(ToolInstaller.class);
     }
 
     /**
      * Filters {@link #all()} by eliminating things that are not applicable to the given type.
      */
     public static List<ToolInstallerDescriptor<?>> for_(Class<? extends ToolInstallation> type) {
-        List<ToolInstallerDescriptor<?>> r = new ArrayList<ToolInstallerDescriptor<?>>();
+        List<ToolInstallerDescriptor<?>> r = new ArrayList<>();
         for (ToolInstallerDescriptor<?> d : all())
             if(d.isApplicable(type))
                 r.add(d);

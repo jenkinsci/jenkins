@@ -29,7 +29,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.fullDisplayName} Console" norefresh="true">
+  <l:layout title="${it.fullDisplayName} Console">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <t:buildCaption>
@@ -56,7 +56,8 @@ THE SOFTWARE.
             <div id="spinner">
               <img src="${imagesURL}/spinner.gif" alt="" /> 
             </div>
-          <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner" startOffset="${offset}" />
+          <t:progressiveText href="logText/progressiveHtml" idref="out" spinner="spinner"
+               startOffset="${offset}" onFinishEvent="jenkins:consoleFinished"/>
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>

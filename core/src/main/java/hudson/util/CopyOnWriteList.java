@@ -59,7 +59,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     }
 
     private CopyOnWriteList(List<E> core, boolean noCopy) {
-        this.core = noCopy ? core : new ArrayList<E>(core);
+        this.core = noCopy ? core : new ArrayList<>(core);
     }
 
     public CopyOnWriteList() {
@@ -67,13 +67,13 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     }
 
     public synchronized void add(E e) {
-        List<E> n = new ArrayList<E>(core);
+        List<E> n = new ArrayList<>(core);
         n.add(e);
         core = n;
     }
 
     public synchronized void addAll(Collection<? extends E> items) {
-        List<E> n = new ArrayList<E>(core);
+        List<E> n = new ArrayList<>(core);
         n.addAll(items);
         core = n;
     }
@@ -86,7 +86,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
      *      in which case there's no change.
      */
     public synchronized boolean remove(E e) {
-        List<E> n = new ArrayList<E>(core);
+        List<E> n = new ArrayList<>(core);
         boolean r = n.remove(e);
         core = n;
         return r;
@@ -135,7 +135,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     }
 
     public void clear() {
-        this.core = new ArrayList<E>();
+        this.core = new ArrayList<>();
     }
 
     public <E> E[] toArray(E[] array) {
@@ -143,7 +143,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     }
 
     public List<E> getView() {
-        return Collections.<E>unmodifiableList(core);
+        return Collections.unmodifiableList(core);
     }
 
     public void addAllTo(Collection<? super E> dst) {
@@ -198,9 +198,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                     items.add(item);
                 } catch (CriticalXStreamException e) {
                     throw e;
-                } catch (XStreamException e) {
-                    RobustReflectionConverter.addErrorInContext(context, e);
-                } catch (LinkageError e) {
+                } catch (XStreamException | LinkageError e) {
                     RobustReflectionConverter.addErrorInContext(context, e);
                 }
                 reader.moveUp();

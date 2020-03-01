@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.model.Computer;
@@ -40,6 +36,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 
+/**
+ * @author pjanouse
+ */
 public class DeleteNodeCommandTest {
 
     private CLICommandInvoker command;

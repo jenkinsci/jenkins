@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * <p>
  * This code was originally moved from {@link ClassicPluginStrategy}.
  *
- * @since TODO
+ * @since 2.163
  */
 @Restricted(NoExternalUse.class)
 public class DetachedPluginsUtil {
@@ -93,7 +93,7 @@ public class DetachedPluginsUtil {
             }
             // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
             if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(detached.splitWhen) <= 0) {
-                out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requiredVersion));
+                out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requiredVersion + ";resolution:=optional"));
                 LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}",
                            new Object[]{pluginName, detached.shortName, jenkinsVersion});
             }

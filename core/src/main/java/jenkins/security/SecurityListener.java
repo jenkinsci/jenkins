@@ -69,7 +69,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     protected void loggedIn(@Nonnull String username){}
 
     /**
-     * @since TODO
+     * @since 2.161
      *
      * Fired after a new user account has been created and saved to disk.
      *
@@ -93,7 +93,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     /** @since 1.569 */
     public static void fireAuthenticated(@Nonnull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {
-            List<String> groups = new ArrayList<String>();
+            List<String> groups = new ArrayList<>();
             for (GrantedAuthority auth : details.getAuthorities()) {
                 if (!auth.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
                     groups.add(auth.getAuthority());
@@ -106,7 +106,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         }
     }
 
-    /** @since TODO */
+    /** @since 2.161 */
     public static void fireUserCreated(@Nonnull String username) {
         LOGGER.log(Level.FINE, "new user created: {0}", username);
         for (SecurityListener l : all()) {

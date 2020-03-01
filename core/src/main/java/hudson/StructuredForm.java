@@ -68,7 +68,7 @@ public class StructuredForm {
         if(v instanceof JSONObject)
             return Collections.singletonList((JSONObject)v);
         if(v instanceof JSONArray)
-            return (List)(JSONArray)v;
+            return (List) v;
 
         throw new IllegalArgumentException();
     }

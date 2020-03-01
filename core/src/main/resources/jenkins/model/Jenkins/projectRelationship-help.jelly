@@ -35,8 +35,8 @@ THE SOFTWARE.
         ${%For this feature to work, the following conditions need to be met:}
       </p>
       <ol>
-        <li>${%The upstream project records the fingerprints of its build artifacts}</li>
-        <li>${%The downstream project records the fingerprints of the upstream files it uses}</li>
+        <li>${%The upstream project records the fingerprints of its build artifacts.}</li>
+        <li>${%The downstream project records the fingerprints of the upstream files it uses.}</li>
       </ol>
       <p>
         ${%This allows Jenkins to correlate two projects.}

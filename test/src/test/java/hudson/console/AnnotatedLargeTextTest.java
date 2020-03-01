@@ -79,7 +79,7 @@ public class AnnotatedLargeTextTest {
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("hellothere\n", w.toString());
-        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation")); // TODO assert that this is IOException: Refusing to deserialize unsigned note from an old log.
+        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation from \"\\u001B[8mha:AAAAwR+LCAAAAAAAAP9dzLEOwVAUxvHThtiNprYxsGiMQhiwNSIhMR/tSZXr3Lr3oJPwPt7FM5hM3gFh8i3/5Bt+1yeUrYH6ap9Yza1Ys9WKWuMiR05wqWhEgpmyEy306Jxvwb19ccGNoBJjLplmgWq0xgOGCjkNZ2IyTrsRlFayVTs4gVMYqP3pw28/JnznuABF/rYWyIyeJfLQe1vxZiDQ7NnYZLn0UZGRRjA9MiV+0OyFv3+utadQyH8B+aJxVM4AAAA=\\u001B[0mthere\\n\"")); // TODO assert that this is IOException: Refusing to deserialize unsigned note from an old log.
         ConsoleNote.INSECURE = true;
         try {
             w = new StringWriter();
@@ -102,7 +102,7 @@ public class AnnotatedLargeTextTest {
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("Go back to your home.\n", w.toString());
-        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation")); // TODO assert that this is IOException: MAC mismatch
+        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation from \"\\u001B[8mha:////4ByIhqPpAc43AbrEtyDUDc1/UEOXsoY6LeoHSeSlb1d7AAAAlR+LCAAAAAAAAP9b85aBtbiIQS+jNKU4P08vOT+vOD8nVc8xLy+/JLEkNcUnsSg9NSS1oiQktbhEBUT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VYlqifk5iXrh9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4JABmN28qcAAAA\\u001B[0myour home.\\n\"")); // TODO assert that this is IOException: MAC mismatch
     }
 
     /** Simplified version of {@link HyperlinkNote}. */

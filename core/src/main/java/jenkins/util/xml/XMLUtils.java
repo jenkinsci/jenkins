@@ -4,8 +4,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -32,14 +30,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 /**
- * Utilities useful when working with various XML types.
+  * Utilities useful when working with various XML types.
+  * @since 1.596.1 and 1.600, unrestricted since TODO
  */
-@Restricted(NoExternalUse.class)
 public final class XMLUtils {
 
     private final static Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());
@@ -51,10 +50,10 @@ public final class XMLUtils {
     /**
      * Transform the source to the output in a manner that is protected against XXE attacks.
      * If the transform can not be completed safely then an IOException is thrown.
-     * Note - to turn off safety set the system property <code>disableXXEPrevention</code> to <code>true</code>.
-     * @param source The XML input to transform. - This should be a <code>StreamSource</code> or a
-     *               <code>SAXSource</code> in order to be able to prevent XXE attacks.
-     * @param out The Result of transforming the <code>source</code>.
+     * Note - to turn off safety set the system property {@code disableXXEPrevention} to {@code true}.
+     * @param source The XML input to transform. - This should be a {@link StreamSource} or a
+     *               {@link SAXSource} in order to be able to prevent XXE attacks.
+     * @param out The Result of transforming the {@code source}.
      */
     public static void safeTransform(@Nonnull Source source, @Nonnull Result out) throws TransformerException,
             SAXException {
@@ -198,7 +197,7 @@ public final class XMLUtils {
     /**
      * potentially unsafe XML transformation.
      * @param source The XML input to transform.
-     * @param out The Result of transforming the <code>source</code>.
+     * @param out The Result of transforming the {@code source}.
      */
     private static void _transform(Source source, Result out) throws TransformerException {
         TransformerFactory factory = TransformerFactory.newInstance();

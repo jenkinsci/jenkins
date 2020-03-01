@@ -3,7 +3,7 @@ import hudson.slaves.SlaveComputer
 def fmt = new java.text.DecimalFormat("0.0")
 def right = 'text-align: right'
 if (my instanceof SlaveComputer) {
-    SlaveComputer c = my;
+    SlaveComputer c = my
 
     table(class: 'bigtable') {
         tr {
@@ -16,7 +16,7 @@ if (my instanceof SlaveComputer) {
             td(style: right) {text(fmt.format(c.classLoadingTime / 1000000000))}
             td(style: right) {
                 text(c.classLoadingCount)
-                def classLoadingPrefetchCacheCount = c.classLoadingPrefetchCacheCount;
+                def classLoadingPrefetchCacheCount = c.classLoadingPrefetchCacheCount
                 if (classLoadingPrefetchCacheCount != -1) {
                     text(_(' (prefetch cache: '))
                     text(classLoadingPrefetchCacheCount)

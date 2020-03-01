@@ -32,8 +32,10 @@ import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
 import jenkins.util.SystemProperties;
+import jenkins.util.Timer;
 import org.jenkinsci.Symbol;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import java.awt.Color;
@@ -125,6 +127,7 @@ public class NodeProvisioner {
      * Null if this {@link NodeProvisioner} is working for the entire Hudson,
      * for jobs that are unassigned to any particular node.
      */
+    @CheckForNull
     private final Label label;
 
     private final AtomicReference<List<PlannedNode>> pendingLaunches
@@ -136,6 +139,7 @@ public class NodeProvisioner {
     private StrategyState provisioningState = null;
 
     private transient volatile long lastSuggestedReview;
+    private transient volatile boolean queuedReview;
 
     /**
      * Exponential moving average of the "planned capacity" over time, which is the number of
@@ -147,7 +151,7 @@ public class NodeProvisioner {
     private final MultiStageTimeSeries plannedCapacitiesEMA =
             new MultiStageTimeSeries(Messages._NodeProvisioner_EmptyString(),Color.WHITE,0,DECAY);
 
-    public NodeProvisioner(Label label, LoadStatistics loadStatistics) {
+    public NodeProvisioner(@CheckForNull Label label, LoadStatistics loadStatistics) {
         this.label = label;
         this.stat = loadStatistics;
     }
@@ -165,18 +169,30 @@ public class NodeProvisioner {
 
     /**
      * Give the {@link NodeProvisioner} a hint that now would be a good time to think about provisioning some nodes.
-     * The hint will be ignored if subjected to excessive pestering by callers.
+     * Hints are throttled to one every second.
      *
      * @since 1.415
      */
     public void suggestReviewNow() {
-        if (System.currentTimeMillis() > lastSuggestedReview + TimeUnit.SECONDS.toMillis(1)) {
-            lastSuggestedReview = System.currentTimeMillis();
-            Computer.threadPoolForRemoting.submit(new Runnable() {
-                public void run() {
+        if (!queuedReview) {
+            long delay = TimeUnit.SECONDS.toMillis(1) - (System.currentTimeMillis() - lastSuggestedReview);
+            if (delay < 0) {
+                lastSuggestedReview = System.currentTimeMillis();
+                Computer.threadPoolForRemoting.submit(() -> {
+                    LOGGER.fine(() -> "running suggested review for " + label);
                     update();
-                }
-            });
+                });
+            } else {
+                queuedReview = true;
+                LOGGER.fine(() -> "running suggested review in " + delay + " ms for " + label);
+                Timer.get().schedule(() -> {
+                    lastSuggestedReview = System.currentTimeMillis();
+                    LOGGER.fine(() -> "running suggested review for " + label + " after " + delay + " ms");
+                    update();
+                }, delay, TimeUnit.MILLISECONDS);
+            }
+        } else {
+            LOGGER.fine(() -> "ignoring suggested review for " + label);
         }
     }
 
@@ -188,10 +204,11 @@ public class NodeProvisioner {
      * instance of this provisioner is running at a time) and then a lock on {@link Queue#lock}
      */
     private void update() {
+        long start = LOGGER.isLoggable(Level.FINER) ? System.nanoTime() : 0;
         provisioningLock.lock();
         try {
             lastSuggestedReview = System.currentTimeMillis();
-
+            queuedReview = false;
             // We need to get the lock on Queue for two reasons:
             // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
             //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
@@ -205,9 +222,7 @@ public class NodeProvisioner {
             // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
             //
             // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
+            Queue.withLock(() -> {
                     Jenkins jenkins = Jenkins.get();
                     // clean up the cancelled launch activity, then count the # of executors that we are about to
                     // bring up.
@@ -307,7 +322,6 @@ public class NodeProvisioner {
                     } else {
                         provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);
                     }
-                }
             });
 
             if (provisioningState != null) {
@@ -326,6 +340,9 @@ public class NodeProvisioner {
             }
         } finally {
             provisioningLock.unlock();
+        }
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer(() -> "ran update on " + label + " in " + (System.nanoTime() - start) / 1_000_000 + "ms");
         }
     }
 
@@ -380,6 +397,7 @@ public class NodeProvisioner {
         /**
          * The label under consideration.
          */
+        @CheckForNull
         private final Label label;
         /**
          * The planned capacity for this {@link #label}.
@@ -401,7 +419,7 @@ public class NodeProvisioner {
          * @param label the label.
          * @param plannedCapacitySnapshot the planned executor count.
          */
-        private StrategyState(LoadStatistics.LoadStatisticsSnapshot snapshot, Label label, int plannedCapacitySnapshot) {
+        private StrategyState(LoadStatistics.LoadStatisticsSnapshot snapshot, @CheckForNull Label label, int plannedCapacitySnapshot) {
             this.snapshot = snapshot;
             this.label = label;
             this.plannedCapacitySnapshot = plannedCapacitySnapshot;
@@ -410,6 +428,7 @@ public class NodeProvisioner {
         /**
          * The label under consideration.
          */
+        @CheckForNull
         public Label getLabel() {
             return label;
         }
@@ -593,18 +612,14 @@ public class NodeProvisioner {
             }
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("StrategyState{");
-            sb.append("label=").append(label);
-            sb.append(", snapshot=").append(snapshot);
-            sb.append(", plannedCapacitySnapshot=").append(plannedCapacitySnapshot);
-            sb.append(", additionalPlannedCapacity=").append(additionalPlannedCapacity);
-            sb.append('}');
-            return sb.toString();
+            String sb = "StrategyState{" + "label=" + label +
+                    ", snapshot=" + snapshot +
+                    ", plannedCapacitySnapshot=" + plannedCapacitySnapshot +
+                    ", additionalPlannedCapacity=" + additionalPlannedCapacity +
+                    '}';
+            return sb;
         }
     }
 
@@ -616,7 +631,6 @@ public class NodeProvisioner {
     @Extension @Symbol("standard")
     public static class StandardStrategyImpl extends Strategy {
 
-        /** {@inheritDoc} */
         @Nonnull
         @Override
         public StrategyDecision apply(@Nonnull StrategyState state) {

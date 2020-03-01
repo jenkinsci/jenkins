@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2008-2009 Yahoo! Inc. 
  * All rights reserved. 
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -91,7 +91,7 @@ public class CrumbFilter implements Filter {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
                     valid = true;
                 } else {
-                    LOGGER.log(level, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
+                    LOGGER.log(level, "Found invalid crumb {0}. If you are calling this URL with a script, please use the API Token instead. More information: https://jenkins.io/redirect/crumb-cannot-be-used-for-script", crumb);
                 }
             }
 
@@ -129,9 +129,6 @@ public class CrumbFilter implements Filter {
         return MultipartFormDataParser.isMultiPartForm(request.getContentType());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void destroy() {
     }

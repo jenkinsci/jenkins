@@ -24,6 +24,7 @@
 
 package jenkins.util;
 
+import hudson.model.AbstractItem;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -161,7 +162,7 @@ public abstract class ProgressiveRendering {
     private static RequestImpl createMockRequest() {
         RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest();
         HttpServletRequest original = (HttpServletRequest) currentRequest.getRequest();
-        final Map<String,Object> getters = new HashMap<String,Object>();
+        final Map<String,Object> getters = new HashMap<>();
         for (Method method : HttpServletRequest.class.getMethods()) {
             String m = method.getName();
             if ((m.startsWith("get") || m.startsWith("is")) && method.getParameterTypes().length == 0) {

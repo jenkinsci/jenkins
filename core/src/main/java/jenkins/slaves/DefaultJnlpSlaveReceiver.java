@@ -1,6 +1,5 @@
 package jenkins.slaves;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
@@ -24,6 +23,9 @@ import jenkins.util.SystemProperties;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -34,11 +36,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Match the name against the agent name and route the incoming JNLP agent as {@link Slave}.
+ * Match the name against the agent name and route the incoming agent as {@link Slave}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.561  
- * @since 1.614 handle() returns true on handshake error as it required in JnlpAgentReceiver.
+ * @since 1.614 handle() returns true on handshake error as it required in {@link JnlpAgentReceiver}.
  */
 @Extension
 public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
@@ -81,11 +83,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterProperties(@NonNull JnlpConnectionState event) {
+    public void afterProperties(@Nonnull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.get().getComputer(clientName);
         if (computer == null) {
-            event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
+            event.reject(new ConnectionRefusalException(String.format("%s is not an inbound agent", clientName)));
             return;
         }
         ComputerLauncher launcher = computer.getLauncher();
@@ -96,25 +98,25 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             } else if (launcher instanceof ComputerLauncherFilter) {
                 launcher = ((ComputerLauncherFilter) launcher).getCore();
             } else if (null != (l = getDelegate(launcher))) {  // TODO remove when all plugins are fixed
-                LOGGER.log(Level.INFO, "Connecting {0} as a JNLP agent where the launcher {1} does not mark "
-                                + "itself correctly as being a JNLP agent",
+                LOGGER.log(Level.INFO, "Connecting {0} as an inbound agent where the launcher {1} does not mark "
+                                + "itself correctly as being an inbound agent",
                         new Object[]{clientName, computer.getLauncher().getClass()});
                 launcher = l;
             } else {
                 if (disableStrictVerification) {
-                    LOGGER.log(Level.WARNING, "Connecting {0} as a JNLP agent where the launcher {1} does not mark "
-                            + "itself correctly as being a JNLP agent",
+                    LOGGER.log(Level.WARNING, "Connecting {0} as an inbound agent where the launcher {1} does not mark "
+                            + "itself correctly as being an inbound agent",
                             new Object[]{clientName, computer.getLauncher().getClass()});
                     break;
                 } else {
-                    LOGGER.log(Level.WARNING, "Rejecting connection to {0} from {1} as a JNLP agent as the launcher "
+                    LOGGER.log(Level.WARNING, "Rejecting connection to {0} from {1} as an inbound agent as the launcher "
                                     + "{2} does not extend JNLPLauncher or does not implement "
                                     + "DelegatingComputerLauncher with a delegation chain leading to a JNLPLauncher. "
                                     + "Set system property "
                                     + "jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification=true to allow"
                                     + "connections until the plugin has been fixed.",
-                            new Object[]{clientName, event.getSocket().getRemoteSocketAddress(), computer.getLauncher().getClass()});
-                    event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
+                            new Object[]{clientName, event.getRemoteEndpointDescription(), computer.getLauncher().getClass()});
+                    event.reject(new ConnectionRefusalException(String.format("%s is not an inbound agent", clientName)));
                     return;
                 }
             }
@@ -122,7 +124,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         Channel ch = computer.getChannel();
         if (ch != null) {
             String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
-            if (cookie != null && cookie.equals(ch.getProperty(COOKIE_NAME))) {
+            if (cookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), ch.getProperty(COOKIE_NAME).toString().getBytes(StandardCharsets.UTF_8))) {
                 // we think we are currently connected, but this request proves that it's from the party
                 // we are supposed to be communicating to. so let the current one get disconnected
                 LOGGER.log(Level.INFO, "Disconnecting {0} as we are reconnected from the current peer", clientName);
@@ -143,13 +145,13 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void beforeChannel(@NonNull JnlpConnectionState event) {
+    public void beforeChannel(@Nonnull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
         PrintWriter logw = new PrintWriter(log, true);
-        logw.println("JNLP agent connected from " + event.getSocket().getInetAddress());
+        logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(event.getChannelBuilder(), computer);
         }
@@ -161,7 +163,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterChannel(@NonNull JnlpConnectionState event) {
+    public void afterChannel(@Nonnull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         try {
@@ -178,10 +180,12 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void channelClosed(@NonNull JnlpConnectionState event) {
+    public void channelClosed(@Nonnull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
-        if (cause != null) {
+        if (cause instanceof ClosedChannelException) {
+            LOGGER.log(Level.INFO, "{0} for {1} terminated: {2}", new Object[] {Thread.currentThread().getName(), nodeName, cause});
+        } else if (cause != null) {
             LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated",
                     cause);
         }
@@ -214,5 +218,5 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultJnlpSlaveReceiver.class.getName());
 
-    private static final String COOKIE_NAME = JnlpSlaveAgentProtocol2.class.getName()+".cookie";
+    private static final String COOKIE_NAME = "JnlpAgentProtocol.cookie";
 }

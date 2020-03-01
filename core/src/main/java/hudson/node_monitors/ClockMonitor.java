@@ -53,6 +53,7 @@ public class ClockMonitor extends NodeMonitor {
      * @deprecated as of 2.0
      *      Don't use this field, use injection.
      */
+    @Deprecated
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR;
 

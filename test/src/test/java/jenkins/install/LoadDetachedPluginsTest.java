@@ -24,9 +24,9 @@
 
 package jenkins.install;
 
+import hudson.ClassicPluginStrategy;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
-import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
@@ -34,6 +34,8 @@ import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,18 +46,15 @@ import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import org.jvnet.hudson.test.LoggerRule;
 
 @Category(SmokeTest.class)
 public class LoadDetachedPluginsTest {
 
     @Rule public RestartableJenkinsRule rr = PluginManagerUtil.newRestartableJenkinsRule();
+    @Rule public LoggerRule logging = new LoggerRule();
 
     @Issue("JENKINS-48365")
     @Test
@@ -87,62 +86,6 @@ public class LoadDetachedPluginsTest {
         });
     }
 
-    @Issue("JENKINS-48604")
-    @Test
-    @LocalData
-    public void upgradeFromJenkins2WithNewerDependency() {
-        VersionNumber since = new VersionNumber("2.0");
-        rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
-            assertThat("Plugins have been detached since the pre-upgrade version",
-                    detachedPlugins.size(), greaterThan(1));
-            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
-                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
-            Plugin scriptSecurity = r.jenkins.getPlugin("script-security");
-            assertThat("Script-security should be installed", scriptSecurity, notNullValue());
-            assertThat("Dependencies of detached plugins should not be downgraded",
-                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.34")));
-            assertNoFailedPlugins(r);
-        });
-    }
-
-    @Test
-    @LocalData
-    public void upgradeFromJenkins2WithOlderDependency() {
-        VersionNumber since = new VersionNumber("2.0");
-        rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
-            assertThat("Plugins have been detached since the pre-upgrade version",
-                    detachedPlugins.size(), greaterThan(1));
-            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
-                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
-            Plugin scriptSecurity = r.jenkins.getPlugin("script-security");
-            assertThat("Script-security should be installed", scriptSecurity, notNullValue());
-            assertThat("Dependencies of detached plugins should be upgraded to the required version",
-                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.18.1")));
-            assertNoFailedPlugins(r);
-        });
-    }
-
-    @Issue("JENKINS-48899")
-    @Test
-    @LocalData
-    public void upgradeFromJenkins2WithNewerPlugin() {
-        // @LocalData has command-launcher 1.2 installed, which should not be downgraded to the detached version: 1.0.
-        VersionNumber since = new VersionNumber("2.0");
-        rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
-            assertThat("Plugins have been detached since the pre-upgrade version",
-                    detachedPlugins.size(), greaterThan(1));
-            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
-                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
-            Plugin commandLauncher = r.jenkins.getPlugin("command-launcher");
-            assertThat("Installed detached plugins should not be overwritten by older versions",
-                    commandLauncher.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.2")));
-            assertNoFailedPlugins(r);
-        });
-    }
-
     @Test
     public void newInstallation() {
         rr.then(r -> {
@@ -158,6 +101,43 @@ public class LoadDetachedPluginsTest {
             assertThat("Detached plugins should not be installed after restarting",
                     getInstalledDetachedPlugins(r, detachedPlugins), empty());
             assertNoFailedPlugins(r);
+        });
+    }
+
+    @Issue("JENKINS-55582")
+    @LocalData
+    @Test
+    public void installDetachedDependencies() {
+        logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
+        rr.then(r -> {
+            List<String> activePlugins = r.jenkins.getPluginManager().getPlugins().stream().filter(PluginWrapper::isActive).map(PluginWrapper::getShortName).collect(Collectors.toList());
+            assertThat("we precreated $JENKINS_HOME/plugins/example.jpi so it had better be loaded", activePlugins, hasItem("example"));
+            { // Check that it links correctly against an implied dependency from a detached plugin:
+                Class<?> callerC = r.jenkins.pluginManager.uberClassLoader.loadClass("io.jenkins.plugins.example.Caller");
+                assertLoader(callerC, "example", r);
+                Object jdkInstaller = callerC.getMethod("use").invoke(null);
+                assertLoader(jdkInstaller.getClass(), "jdk-tool", r);
+            }
+            assertThat("it had various implicit detached dependencies so those should have been loaded too", activePlugins, hasSize(greaterThan(1)));
+        });
+    }
+    private void assertLoader(Class<?> c, String expectedPlugin, JenkinsRule r) {
+        PluginWrapper pw = r.jenkins.pluginManager.whichPlugin(c);
+        assertNotNull("did not expect to be loading " + c + " from " + c.getClassLoader(), pw);
+        assertEquals(expectedPlugin, pw.getShortName());
+    }
+
+    @Issue("JENKINS-55582")
+    @LocalData
+    @Test
+    public void nonstandardFilenames() {
+        logging.record(PluginManager.class, Level.FINE).record(ClassicPluginStrategy.class, Level.FINE);
+        rr.then(r -> {
+            assertTrue(r.jenkins.pluginManager.getPlugin("build-token-root").isActive());
+            assertEquals("1.2", r.jenkins.pluginManager.getPlugin("jdk-tool").getVersion());
+            /* TODO currently still loads the detached 1.0, since we only skip $shortName.[jh]pi not $shortName-$version.[jh]pi; during PLUGINS_LISTED there is a list of known filenames but not short names
+            assertEquals("1.3", r.jenkins.pluginManager.getPlugin("command-launcher").getVersion());
+            */
         });
     }
 

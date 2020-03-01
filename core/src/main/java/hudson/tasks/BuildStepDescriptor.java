@@ -72,9 +72,9 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
     public static <T extends BuildStep&Describable<T>>
     List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject> type) {
         // descriptor of the project
-        Descriptor pd = Jenkins.getInstance().getDescriptor((Class) type);
+        Descriptor pd = Jenkins.get().getDescriptor((Class) type);
 
-        List<Descriptor<T>> r = new ArrayList<Descriptor<T>>(base.size());
+        List<Descriptor<T>> r = new ArrayList<>(base.size());
         for (Descriptor<T> d : base) {
             if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor)pd).isApplicable(d))
                 continue;

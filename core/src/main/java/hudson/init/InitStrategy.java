@@ -45,7 +45,7 @@ public class InitStrategy {
      *      and when that happens, Jenkins will ignore all but the first one in the list.
      */
     public List<File> listPluginArchives(PluginManager pm) throws IOException {
-        List<File> r = new ArrayList<File>();
+        List<File> r = new ArrayList<>();
 
         // the ordering makes sure that during the debugging we get proper precedence among duplicates.
         // for example, while doing "mvn jpi:run" or "mvn hpi:run" on a plugin that's bundled with Jenkins, we want to the
@@ -72,7 +72,7 @@ public class InitStrategy {
     /**
      * Lists up additional bundled plugins from the system property {@code hudson.bundled.plugins}.
      * Since 1.480 glob syntax is supported.
-     * For use in the "mvn hudson-dev:run".
+     * For use in {@code mvn jetty:run}.
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
     protected void getBundledPluginsFromProperty(final List<File> r) {

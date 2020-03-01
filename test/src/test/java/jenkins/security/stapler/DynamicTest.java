@@ -14,7 +14,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import javax.annotation.CheckForNull;
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 @Issue("SECURITY-400")

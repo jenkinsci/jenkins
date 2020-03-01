@@ -210,11 +210,9 @@ public final class Secret implements Serializable {
         } else {
             try {
                 return HistoricalSecrets.decrypt(data, KEY);
-            } catch (GeneralSecurityException e) {
-                return null;
             } catch (UnsupportedEncodingException e) {
                 throw new Error(e); // impossible
-            } catch (IOException e) {
+            } catch (GeneralSecurityException | IOException e) {
                 return null;
             }
         }
@@ -300,19 +298,15 @@ public final class Secret implements Serializable {
      */
     private static final CryptoConfidentialKey KEY = new CryptoConfidentialKey(Secret.class.getName());
 
-    /**
-     * Reset the internal secret key for testing.
-     */
-    @Restricted(NoExternalUse.class)
-    /*package*/ static void resetKeyForTest() {
-        KEY.resetForTest();
-    }
-
     private static final long serialVersionUID = 1L;
 
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
             public Secret convert(Class type, Object value) {
+                if (value instanceof Secret) {
+                    return (Secret) value;
+                }
+
                 return Secret.fromString(value.toString());
             }
         }, Secret.class);

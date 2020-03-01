@@ -60,10 +60,9 @@ public class ReloadJobCommand extends CLICommand {
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
 
-        final HashSet<String> hs = new HashSet<>();
-        hs.addAll(jobs);
+        final HashSet<String> hs = new HashSet<>(jobs);
 
         for (String job_s: hs) {
             AbstractItem job = null;
@@ -91,7 +90,7 @@ public class ReloadJobCommand extends CLICommand {
                     throw e;
                 }
 
-                final String errorMsg = String.format(job_s + ": " + e.getMessage());
+                final String errorMsg = job_s + ": " + e.getMessage();
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;

@@ -42,7 +42,7 @@ import java.io.IOException;
 public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
     // TODO: get the proper Saveable
     public final DescribableList<ToolInstaller, Descriptor<ToolInstaller>> installers =
-            new DescribableList<ToolInstaller, Descriptor<ToolInstaller>>(Saveable.NOOP);
+            new DescribableList<>(Saveable.NOOP);
 
     @DataBoundConstructor
     public InstallSourceProperty(List<? extends ToolInstaller> installers) throws IOException {

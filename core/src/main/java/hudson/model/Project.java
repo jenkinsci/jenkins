@@ -157,7 +157,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
 
     @Override
     protected Set<ResourceActivity> getResourceActivities() {
-        final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
+        final Set<ResourceActivity> activities = new HashSet<>();
 
         activities.addAll(super.getResourceActivities());
         activities.addAll(Util.filter(getBuildersList(),ResourceActivity.class));

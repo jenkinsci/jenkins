@@ -65,7 +65,7 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
 
     public static <T extends Descriptor> List<T> apply(Object context, Iterable<T> source) {
         ExtensionList<DescriptorVisibilityFilter> filters = all();
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
         Class<?> contextClass = context == null ? null : context.getClass();
 
         if (source == null) {
@@ -110,7 +110,7 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
 
     public static <T extends Descriptor> List<T> applyType(Class<?> contextClass, Iterable<T> source) {
         ExtensionList<DescriptorVisibilityFilter> filters = all();
-        List<T> r = new ArrayList<T>();
+        List<T> r = new ArrayList<>();
 
         OUTER:
         for (T d : source) {
