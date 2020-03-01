@@ -68,7 +68,7 @@ public class LogRecorderManagerTest {
         // TODO could also go through WebClient to assert that the config UI works
         LogRecorderManager mgr = j.jenkins.getLog();
         LogRecorder r1 = new LogRecorder("r1");
-        mgr.logRecorders.add(r1);
+        mgr.getRecorders().add(r1);
         LogRecorder.Target t = new LogRecorder.Target("ns1", Level.FINE);
         r1.targets.add(t);
         r1.save();
@@ -80,7 +80,7 @@ public class LogRecorderManagerTest {
         r1.save();
         t.enable();
         LogRecorder r2 = new LogRecorder("r2");
-        mgr.logRecorders.add(r2);
+        mgr.getRecorders().add(r2);
         t = new LogRecorder.Target("ns3", Level.FINE);
         r2.targets.add(t);
         r2.save();

@@ -31,14 +31,16 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.*;
+import hudson.util.CopyOnWriteMap;
 import hudson.util.HttpResponses;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
-import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
 import jenkins.security.MasterToSlaveCallable;
@@ -309,7 +311,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
         @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
-            for (LogRecorder recorder : Jenkins.get().getLog().logRecorders) {
+            for (LogRecorder recorder : Jenkins.get().getLog().getRecorders()) {
                 for (Target t : recorder.targets) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
                 }
@@ -350,9 +352,9 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
-            getParent().logRecorders.remove(new LogRecorder(name));
+            getParent().getRecorders().remove(new LogRecorder(name));
             this.name = newName;
-            getParent().logRecorders.add(this);
+            getParent().getRecorders().add(this);
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
@@ -383,10 +385,19 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
+        handleLegacyLogRecordersMap();
         getConfigFile().write(this);
         targets.forEach(Target::enable);
 
         SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+    @SuppressWarnings("deprecation") // intentional as we're keeping compatibility
+    void handleLegacyLogRecordersMap() {
+        Map<String, LogRecorder> values = getParent().getRecorders().stream()
+                .collect(Collectors.toMap(LogRecorder::getName, Function.identity()));
+        // This doesn't work, for some reason it's not saved =/
+        ((CopyOnWriteMap<String,LogRecorder>) getParent().logRecorders).replaceBy(values);
     }
 
     @Override
@@ -412,12 +423,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
         getConfigFile().delete();
-        getParent().logRecorders.remove(new LogRecorder(name));
+        getParent().getRecorders().remove(new LogRecorder(name));
         // Disable logging for all our targets,
         // then reenable all other loggers in case any also log the same targets
         targets.forEach(Target::disable);
 
-        getParent().logRecorders.forEach(logRecorder -> logRecorder.targets.forEach(Target::enable));
+        getParent().getRecorders().forEach(logRecorder -> logRecorder.targets.forEach(Target::enable));
         rsp.sendRedirect2("..");
     }
 

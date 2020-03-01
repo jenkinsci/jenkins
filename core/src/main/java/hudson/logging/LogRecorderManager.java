@@ -25,9 +25,11 @@ package hudson.logging;
 
 import hudson.FeedAdapter;
 import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import hudson.model.AbstractModelObject;
+import hudson.util.CopyOnWriteMap;
 import jenkins.model.Jenkins;
 import hudson.model.RSS;
 import jenkins.model.JenkinsLocationConfiguration;
@@ -35,6 +37,7 @@ import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -68,21 +71,28 @@ import java.util.logging.Logger;
 public class LogRecorderManager extends AbstractModelObject implements ModelObjectWithChildren, StaplerProxy {
     /**
      * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#getName()}  name}.
+     *
+     * @deprecated use {@link #getRecorders()} instead
      */
-    public List<LogRecorder> logRecorders;
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
+    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
+
+    private List<LogRecorder> recorders;
 
     @DataBoundConstructor
     public LogRecorderManager() {
-        this.logRecorders = new ArrayList<>();
+        this.recorders = new ArrayList<>();
     }
 
-    public List<LogRecorder> getLogRecorders() {
-        return logRecorders;
+    public List<LogRecorder> getRecorders() {
+        return recorders;
     }
 
     @DataBoundSetter
-    public void setLogRecorders(List<LogRecorder> logRecorders) {
-        this.logRecorders = logRecorders;
+    public void setRecorders(List<LogRecorder> recorders) {
+        this.recorders = recorders;
     }
 
     public String getDisplayName() {
@@ -98,7 +108,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     }
 
     public LogRecorder getLogRecorder(String token) {
-        return logRecorders.stream().filter(logRecorder -> logRecorder.getName().equals(token)).findAny().orElse(null);
+        return recorders.stream().filter(logRecorder -> logRecorder.getName().equals(token)).findAny().orElse(null);
     }
 
     static File configDir() {
@@ -109,7 +119,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Loads the configuration from disk.
      */
     public void load() throws IOException {
-        logRecorders.clear();
+        recorders.clear();
         File dir = configDir();
         File[] files = dir.listFiles((FileFilter)new WildcardFileFilter("*.xml"));
         if(files==null)     return;
@@ -118,7 +128,11 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             name = name.substring(0,name.length()-4);   // cut off ".xml"
             LogRecorder lr = new LogRecorder(name);
             lr.load();
-            logRecorders.add(lr);
+            recorders.add(lr);
+        }
+
+        if (!recorders.isEmpty()) {
+            recorders.get(0).handleLegacyLogRecordersMap();
         }
     }
 
@@ -128,8 +142,8 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     @RequirePOST
     public HttpResponse doNewLogRecorder(@QueryParameter String name) {
         Jenkins.checkGoodName(name);
-        
-        logRecorders.add(new LogRecorder(name));
+
+        recorders.add(new LogRecorder(name));
 
         // redirect to the config screen
         return new HttpRedirect(name+"/configure");
@@ -138,7 +152,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         menu.add("all","All Jenkins Logs");
-        for (LogRecorder lr : logRecorders) {
+        for (LogRecorder lr : recorders) {
             menu.add(lr.getSearchUrl(), lr.getDisplayName());
         }
         return menu;

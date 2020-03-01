@@ -56,7 +56,7 @@ THE SOFTWARE.
         <th width="32"/>
       </tr>
       <local:row href="all" name="${%All Jenkins Logs}" />
-      <j:forEach var="lr" items="${it.logRecorders}">
+      <j:forEach var="lr" items="${it.recorders}">
         <local:row name="${lr.name}" href="${lr.searchUrl}/">
           <a href="${lr.searchUrl}/configure">
             <l:icon class="icon-gear2 icon-lg" tooltip="Configure"/>
