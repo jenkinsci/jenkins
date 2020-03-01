@@ -63,7 +63,7 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class ArtifactArchiverTest {
-    
+
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
@@ -138,6 +138,35 @@ public class ArtifactArchiverTest {
         assertEquals(1, kids.length);
         assertEquals("lodge", kids[0].getName());
         // do not check that it .exists() since its target has not been archived
+    }
+
+    @Issue("JENKINS-5597")
+    @Test public void not_follow_symlinks() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                FilePath dir = ws.child("dir");
+                dir.mkdirs();
+                dir.child("fizz").write("contents", null);
+                dir.child("lodge").symlinkTo("fizz", listener);
+                ws.child("linkdir").symlinkTo("dir", listener);
+                return true;
+            }
+        });
+        ArtifactArchiver aa = new ArtifactArchiver("dir/lodge, linkdir/fizz");
+        aa.setFollowSymlinks(false);
+        aa.setAllowEmptyArchive(true);
+        p.getPublishersList().add(aa);
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FilePath ws = b.getWorkspace();
+        assertNotNull(ws);
+        assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(0, artifacts.size());
     }
 
     @Issue("SECURITY-162")
@@ -318,7 +347,7 @@ public class ArtifactArchiverTest {
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
     }
 
-    @Test 
+    @Test
     @Issue("JENKINS-55049")
     public void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
@@ -345,19 +374,19 @@ public class ArtifactArchiverTest {
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(3, artifacts.size());
         artifacts.sort(Comparator.comparing(Run.Artifact::getFileName));
-        
+
         // invalid symlink => size of 0
         FreeStyleBuild.Artifact artifact = artifacts.get(0);
         assertEquals("dir/_nonexistant", artifact.relativePath);
         assertEquals(0, artifact.getFileSize());
         assertEquals("", artifact.getLength());
-    
+
         // valid symlink => same size of the target, 8
         artifact = artifacts.get(1);
         assertEquals("dir/_toExistant", artifact.relativePath);
         assertEquals(8, artifact.getFileSize());
         assertEquals("8", artifact.getLength());
-    
+
         // existant => size of 8
         artifact = artifacts.get(2);
         assertEquals("dir/existant", artifact.relativePath);

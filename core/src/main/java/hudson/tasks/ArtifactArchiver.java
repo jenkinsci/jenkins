@@ -111,7 +111,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     private Boolean caseSensitive = true;
 
     /**
-     * Indicate whether include and exclude patterns should be considered as case sensitive
+     * Indicate whether symbolic links should be followed or not
      */
     @Nonnull
     private Boolean followSymlinks = true;
