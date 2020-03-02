@@ -161,7 +161,7 @@ public class ArtifactArchiverTest {
     }
 
     @Issue("JENKINS-5597")
-    @Test public void not_follow_symlinks() throws Exception {
+    @Test public void notFollowSymlinks() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -187,6 +187,24 @@ public class ArtifactArchiverTest {
         assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(0, artifacts.size());
+    }
+
+    @Test public void followSymlinksEnabledForOldConfig() throws Exception {
+
+      FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
+
+      FreeStyleBuild b = p.scheduleBuild2(0).get();
+      assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b),b.getResult()==Result.SUCCESS);
+      FilePath ws = b.getWorkspace();
+      assertNotNull(ws);
+      List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+      assertEquals(2, artifacts.size());
+      VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
+      assertEquals(1, kids.length);
+      assertEquals("lodge", kids[0].getName());
+      VirtualFile[] linkkids = b.getArtifactManager().root().child("linkdir").list();
+      assertEquals(1, kids.length);
+      assertEquals("fizz", linkkids[0].getName());
     }
 
     @Issue("SECURITY-162")
