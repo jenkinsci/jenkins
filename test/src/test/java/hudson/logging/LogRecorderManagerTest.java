@@ -23,6 +23,7 @@
  */
 package hudson.logging;
 
+import java.io.IOException;
 import jenkins.security.MasterToSlaveCallable;
 import org.jvnet.hudson.test.Url;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -107,6 +110,42 @@ public class LogRecorderManagerTest {
         assertTrue(text, text.contains("msg #2"));
         assertFalse(text, text.contains("msg #3"));
         assertFalse(text, text.contains("msg #4"));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void addingLogRecorderToLegacyMapAddsToRecordersList() throws IOException {
+        LogRecorderManager log = j.jenkins.getLog();
+
+        assertThat(log.logRecorders.size(), is(0));
+        assertThat(log.getRecorders().size(), is(0));
+
+        LogRecorder logRecorder = new LogRecorder("dummy");
+        logRecorder.targets.add(new LogRecorder.Target("dummy", Level.ALL));
+
+        log.logRecorders.put("dummy", logRecorder);
+        logRecorder.save();
+
+        assertThat(log.logRecorders.size(), is(1));
+        assertThat(log.getRecorders().size(), is(1));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void addingLogRecorderToListAddsToLegacyRecordersMap() throws IOException {
+        LogRecorderManager log = j.jenkins.getLog();
+
+        assertThat(log.logRecorders.size(), is(0));
+        assertThat(log.getRecorders().size(), is(0));
+
+        LogRecorder logRecorder = new LogRecorder("dummy");
+        logRecorder.targets.add(new LogRecorder.Target("dummy", Level.ALL));
+
+        log.getRecorders().add(logRecorder);
+        logRecorder.save();
+
+        assertThat(log.logRecorders.size(), is(1));
+        assertThat(log.getRecorders().size(), is(1));
     }
 
     private static final class Log extends MasterToSlaveCallable<Boolean,Error> {

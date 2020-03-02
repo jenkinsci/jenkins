@@ -401,6 +401,13 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                 }
             }
         }
+        if (getParent().getRecorders().size() > getParent().logRecorders.size()) {
+            for (LogRecorder logRecorder : getParent().getRecorders()) {
+                if (!getParent().logRecorders.containsKey(logRecorder.getName())) {
+                    getParent().logRecorders.put(logRecorder.getName(), logRecorder);
+                }
+            }
+        }
     }
 
     @Override
