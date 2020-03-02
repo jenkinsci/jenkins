@@ -149,7 +149,9 @@ THE SOFTWARE.
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <td class="pane" data="${p.releaseTimestamp.time}">
                       <j:if test="${p.releaseTimestamp != null}">
-                        <i:formatDate value="${p.releaseTimestamp}" type="date" dateStyle="short" />
+                        <time datetime="${h.iso8601DateTime(p.releaseTimestamp)}" tooltip="${h.localDate(p.releaseTimestamp)}">
+                          ${%ago(h.getTimeSpanString(p.releaseTimestamp))}
+                        </time>
                       </j:if>
                     </td>
                     <j:if test="${isUpdates}">
