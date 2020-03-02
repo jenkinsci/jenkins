@@ -189,6 +189,7 @@ public class ArtifactArchiverTest {
         assertEquals(0, artifacts.size());
     }
 
+    @LocalData
     @Test public void followSymlinksEnabledForOldConfig() throws Exception {
 
       FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
