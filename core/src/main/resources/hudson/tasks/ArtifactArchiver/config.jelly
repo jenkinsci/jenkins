@@ -47,7 +47,7 @@ THE SOFTWARE.
       <f:checkbox title="${%caseSensitive}" default="true" />
     </f:entry>
     <f:entry field="followSymlinks" >
-      <f:checkbox title="${%followSymlinks}" default="true"/>
+      <f:checkbox title="${%followSymlinks}" default="false"/>
     </f:entry>
   </f:advanced>
 </j:jelly>
