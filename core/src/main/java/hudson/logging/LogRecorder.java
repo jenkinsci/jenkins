@@ -407,6 +407,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * RSS feed for log entries.
      */
     public void doRss( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
+
         LogRecorderManager.doRss(req,rsp,getLogRecords());
     }
 
