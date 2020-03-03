@@ -28,9 +28,11 @@ import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.*;
+import hudson.util.CopyOnWriteList;
 import hudson.util.HttpResponses;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
@@ -76,7 +78,16 @@ import org.kohsuke.stapler.verb.POST;
 public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
-    public List<Target> targets = new ArrayList<>();
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
+    /**
+     * No longer used.
+     *
+     * @deprecated use {@link #getLoggers()}
+     */
+    public transient final CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
+    private List<Target> loggers = new ArrayList<>();
     private final static TargetComparator TARGET_COMPARATOR = new TargetComparator();
 
     @DataBoundConstructor
@@ -87,15 +98,28 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         new WeakLogHandler(handler,Logger.getLogger(""));
     }
 
-    @DataBoundSetter
-    public void setTargets(List<Target> targets) {
-        this.targets = targets;
+    private Object readResolve() {
+        if (!targets.isEmpty()) {
+            loggers.addAll(targets.getView());
+        }
+        if (!loggers.isEmpty()) {
+            targets.addAll(loggers);
+        }
+        return this;
+    }
+
+    public List<Target> getLoggers() {
+        return loggers;
+    }
+
+    public void setLoggers(List<Target> loggers) {
+        this.loggers = loggers;
     }
 
     @Restricted(NoExternalUse.class)
     Target[] orderedTargets() {
         // will contain targets ordered by reverse name length (place specific targets at the beginning)
-        Target[] ts = targets.toArray(new Target[]{});
+        Target[] ts = loggers.toArray(new Target[]{});
 
         Arrays.sort(ts, TARGET_COMPARATOR);
 
@@ -309,7 +333,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
         @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
             for (LogRecorder recorder : Jenkins.get().getLog().getRecorders()) {
-                for (Target t : recorder.targets) {
+                for (Target t : recorder.getLoggers()) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
                 }
             }
@@ -326,10 +350,6 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     public String getName() {
         return name;
-    }
-
-    public List<Target> getTargets() {
-        return targets;
     }
 
     public LogRecorderManager getParent() {
@@ -357,8 +377,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
-        List<Target> newTargets = req.bindJSONToList(Target.class, src.get("targets"));
-        setTargets(newTargets);
+        List<Target> newTargets = req.bindJSONToList(Target.class, src.get("loggers"));
+        setLoggers(newTargets);
 
         save();
         if (oldFile!=null) oldFile.delete();
@@ -376,7 +396,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     public synchronized void load() throws IOException {
         getConfigFile().unmarshal(this);
-        targets.forEach(Target::enable);
+        loggers.forEach(Target::enable);
     }
 
     /**
@@ -387,7 +407,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         handlePluginUpdatingLegacyLogManagerMap();
         getConfigFile().write(this);
-        targets.forEach(Target::enable);
+        loggers.forEach(Target::enable);
 
         SaveableListener.fireOnChange(this, getConfigFile());
     }
@@ -436,9 +456,9 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         getParent().getRecorders().remove(new LogRecorder(name));
         // Disable logging for all our targets,
         // then reenable all other loggers in case any also log the same targets
-        targets.forEach(Target::disable);
+        loggers.forEach(Target::disable);
 
-        getParent().getRecorders().forEach(logRecorder -> logRecorder.targets.forEach(Target::enable));
+        getParent().getRecorders().forEach(logRecorder -> logRecorder.getLoggers().forEach(Target::enable));
         rsp.sendRedirect2("..");
     }
 
@@ -483,7 +503,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             List<LogRecord> recs = new ArrayList<>();
             try {
                 for (LogRecord rec : c.getLogRecords()) {
-                    for (Target t : targets) {
+                    for (Target t : loggers) {
                         if (t.includes(rec)) {
                             recs.add(rec);
                             break;
