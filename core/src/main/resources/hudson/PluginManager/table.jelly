@@ -120,7 +120,7 @@ THE SOFTWARE.
                         <div class="alert alert-danger">${%javaWarning(p.minimumJavaVersion)}</div>
                       </j:if>
                       <j:if test="${p.fixesSecurityVulnerabilities()}">
-                        <div class="alert alert-warning">${%Applying this update will address security vulnerabilities currently affecting Jenkins.}</div>
+                        <div class="alert alert-warning">${%Applying this update will address security vulnerabilities in the currently installed version.}</div>
                       </j:if>
                       <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
                         <div class="alert alert-danger">${%depCompatWarning}
