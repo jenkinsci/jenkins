@@ -492,6 +492,11 @@ THE SOFTWARE.
               <value>true</value>
             </systemProperty>
             <systemProperty>
+              <!-- show the full stack trace on errors (the oops page) -->
+              <name>jenkins.model.Jenkins.SHOW_STACK_TRACE</name>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
               <!-- always reload scripts during debugging -->
               <name>hudson.script.noCache</name>
               <value>true</value>
