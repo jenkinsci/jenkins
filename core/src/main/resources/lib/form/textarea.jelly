@@ -98,12 +98,12 @@ THE SOFTWARE.
         <j:if test="${value != null &amp;&amp; !empty(value.toString()) &amp;&amp; (value.toString().codePointAt(0) == 10 || value.toString().codePointAt(0) == 13)}"><j:whitespace>&#10;</j:whitespace></j:if>
         <st:out value="${value}" />
       </textarea>
+    <j:if test="${customizedFields != null and attrs.field != null and value != default}">
+      <j:mute>${customizedFields.add(name)}</j:mute>
+    </j:if>
+    <!-- resize handle -->
+    <div class="textarea-handle"/>
   </f:possibleReadOnlyField>
-  <j:if test="${customizedFields != null and attrs.field != null and value != default}">
-    <j:mute>${customizedFields.add(name)}</j:mute>
-  </j:if>
-  <!-- resize handle -->
-  <div class="textarea-handle"/>
   <j:if test="${attrs.previewEndpoint!=null}">
     <div class="textarea-preview-container">
       <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
