@@ -71,22 +71,6 @@ THE SOFTWARE.
         <p>${%title.no_manual_launch(it.retentionStrategy.descriptor.displayName)}</p>
       </j:if>
 
-     <!-- Display user which created this node -->
-     <j:set var="user" value="${app.getUser(it.node.userId)}"/>
-     <j:if test="${it.node.userId !=null and user!=null}">
-       <p>
-          ${%Created by} 
-         <j:choose>
-            <j:when test="${it.node.userId.equals('anonymous')}">
-             ${%anonymous user}
-            </j:when>
-           <j:otherwise>
-             <a href="${app.rootUrl}${user.url}">${user.displayName}</a>
-            </j:otherwise>
-         </j:choose>
-       </p>
-      </j:if>
-
         <j:if test="${it.node.assignedLabels.size() gt 1}">
         <div>
           <h2>${%Labels}</h2>

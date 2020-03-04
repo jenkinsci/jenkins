@@ -1,0 +1,17 @@
+/**
+  * New base styles, inherited from the layout-commons.css
+  * and style.lcss files
+  */
+
+html {
+  // Ensure that the 1rem size is 16px and scales with the browser settings
+  // This is needed because bootstrap 3 overrides the font-size when loaded
+  font-size: 100% !important;
+}
+
+@import './base/layout-commons.less';
+@import './base/style.less';
+
+// Keep page header code in this bundle to avoid loading multiple files
+// that are always needed
+@import './modules/page-header.less';

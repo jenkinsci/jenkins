@@ -27,6 +27,8 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -69,8 +71,48 @@ public abstract class ACL {
         if (a == SYSTEM) {
             return;
         }
-        if(!hasPermission(a,p))
+        if (!hasPermission(a,p)) {
+            while (!p.enabled && p.impliedBy != null) {
+                p = p.impliedBy;
+            }
             throw new AccessDeniedException2(a,p);
+        }
+    }
+
+    /**
+     * Checks if the current security principal has one of the supplied permissions.
+     *
+     * This is just a convenience function.
+     *
+     * @throws AccessDeniedException
+     *      if the user doesn't have the permission.
+     * @throws IllegalArgumentException
+     *      if no permissions are provided
+     *
+     * @since TODO
+     */
+    public final void checkAnyPermission(@Nonnull Permission... permissions) {
+        if (permissions.length == 0) {
+            throw new IllegalArgumentException("At least one permission must be provided");
+        }
+
+        boolean failed = !hasAnyPermission(permissions);
+
+        Authentication authentication = Jenkins.getAuthentication();
+        if (failed) {
+            String permissionsDisplayName = Arrays.stream(permissions)
+                    .map(p -> p.group.title + "/" + p.name)
+                    .collect(Collectors.joining(", "));
+
+            String errorMessage;
+            if (permissions.length == 1) {
+                errorMessage = Messages.AccessDeniedException2_MissingPermission(authentication.getName(), permissionsDisplayName);
+            } else {
+                errorMessage = Messages.AccessDeniedException_MissingPermissions(authentication.getName(), permissionsDisplayName);
+            }
+
+            throw new AccessDeniedException(errorMessage);
+        }
     }
 
     /**
@@ -85,6 +127,33 @@ public abstract class ACL {
             return true;
         }
         return hasPermission(a, p);
+    }
+
+    /**
+     * Checks if the current security principal has any of the permissions.
+     *
+     * @return {@code false}
+     *      if the user doesn't have one of the required permissions.
+     *
+     * @throws IllegalArgumentException
+     *      if no permissions are provided
+     */
+    public final boolean hasAnyPermission(@Nonnull Permission... permissions) {
+        if (permissions.length == 0) {
+            throw new IllegalArgumentException("At least one permission must be provided");
+        }
+
+        Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return true;
+        }
+
+        for (Permission permission : permissions) {
+            if (hasPermission(permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -778,7 +778,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.EMPTY_SET;
+        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -786,7 +786,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.EMPTY_LIST;
+        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
@@ -1371,12 +1371,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 //
     @Restricted(DoNotUse.class)
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        RSS.rss(req, rsp, getDisplayName() + " all builds", getUrl(), getBuilds());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds());
     }
 
     @Restricted(DoNotUse.class)
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        RSS.rss(req, rsp, getDisplayName() + " failed builds", getUrl(), getBuilds().failureOnly());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly());
     }
 
     /**
@@ -1398,7 +1398,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 }
             }
         }
-        RSS.rss(req, rsp, getDisplayName() + " last builds only", getUrl(), RunList.fromRuns(lastBuilds));
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds));
     }
 
     @RequirePOST

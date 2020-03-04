@@ -164,10 +164,23 @@ public class UpdateSite {
      * Update the data file from the given URL if the file
      * does not exist, or is otherwise due for update.
      * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
+     * @return null if no updates are necessary, or the future result
+     * @since TODO
+     */
+    public @CheckForNull Future<FormValidation> updateDirectly() {
+        return updateDirectly(DownloadService.signatureCheck);
+    }
+
+    /**
+     * Update the data file from the given URL if the file
+     * does not exist, or is otherwise due for update.
+     * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
      * @param signatureCheck whether to enforce the signature (may be off only for testing!)
      * @return null if no updates are necessary, or the future result
      * @since 1.502
+     * @deprecated use {@linkplain #updateDirectly()}
      */
+    @Deprecated
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
             return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
@@ -178,6 +191,16 @@ public class UpdateSite {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Forces an update of the data file from the configured URL, irrespective of the last time the data was retrieved.
+     * @return A {@code FormValidation} indicating the if the update metadata was successfully downloaded from the configured update site
+     * @since TODO
+     * @throws IOException if there was an error downloading or saving the file.
+     */
+    public @Nonnull FormValidation updateDirectlyNow() throws IOException {
+        return updateDirectlyNow(DownloadService.signatureCheck);
     }
 
     @Restricted(NoExternalUse.class)
@@ -1049,11 +1072,12 @@ public class UpdateSite {
 
         /**
          * Returns true if the plugin and its dependencies are fully compatible with the current installation
-         * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
+         * This is set to restricted for now, since it is only being used by Jenkins UI or Restful API at the moment.
          *
          * @since 2.175
          */
         @Restricted(NoExternalUse.class)
+        @Exported
         public boolean isCompatible() {
             return isCompatible(new PluginManager.MetadataCache());
         }
@@ -1136,7 +1160,7 @@ public class UpdateSite {
 
             return deps;
         }
-        
+
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(

@@ -4,6 +4,7 @@
         "plugins": [
             { "name": "dashboard-view" },
             { "name": "cloudbees-folder", "suggested": true },
+            { "name": "configuration-as-code" },
             { "name": "antisamy-markup-formatter", "suggested": true }
         ]
     },

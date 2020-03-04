@@ -90,7 +90,10 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
                         ws.deleteRecursive();
-                        WorkspaceList.tempDir(ws).deleteRecursive();
+                        FilePath tempDir = WorkspaceList.tempDir(ws);
+                        if (tempDir != null) {
+                            tempDir.deleteRecursive();
+                        }
                     } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }

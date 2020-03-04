@@ -219,7 +219,7 @@ public class ListView extends View implements DirectlyModifiableView {
         if (recurse) {
             candidates = parent.getAllItems(TopLevelItem.class);
         } else {
-            candidates = parent.getItems();
+            candidates = parentItems;
         }
         for (TopLevelItem item : candidates) {
             if (!names.contains(item.getRelativeNameFrom(getOwner().getItemGroup()))) continue;

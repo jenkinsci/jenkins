@@ -35,7 +35,8 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
-import static hudson.init.InitMilestone.JOB_LOADED;
+
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIResolver;
@@ -3061,7 +3062,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Restores the queue content during the start up.
      */
-    @Initializer(after=JOB_LOADED)
+    @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) {
         h.getQueue().load();
     }

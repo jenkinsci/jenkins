@@ -871,11 +871,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        RSS.rss(req, rsp, getDisplayName() + " all builds", getUrl(), getBuilds().newBuilds());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        RSS.rss(req, rsp, getDisplayName() + " regression builds", getUrl(), getBuilds().regressionOnly());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().regressionOnly());
     }
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -891,7 +891,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // historically these have been reported sorted by project name, we switched to the lazy iteration
         // so we only have to sort the sublist of runs rather than the full list of irrelevant projects
         lastBuilds.sort((o1, o2) -> Items.BY_FULL_NAME.compare(o1.getParent(), o2.getParent()));
-        RSS.rss(req, rsp, getDisplayName() + " latest build", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
     @Override
@@ -1036,7 +1036,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
 
-        @Initializer(after = InitMilestone.JOB_LOADED)
+        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
         public static void scanAll() {
             for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
                 User user = new User(userId, userId);
