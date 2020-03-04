@@ -73,19 +73,19 @@ public class LogRecorderManagerTest {
         LogRecorder r1 = new LogRecorder("r1");
         mgr.getRecorders().add(r1);
         LogRecorder.Target t = new LogRecorder.Target("ns1", Level.FINE);
-        r1.targets.add(t);
+        r1.getLoggers().add(t);
         r1.save();
         t.enable();
         Computer c = j.createOnlineSlave().toComputer();
         assertNotNull(c);
         t = new LogRecorder.Target("ns2", Level.FINER);
-        r1.targets.add(t);
+        r1.getLoggers().add(t);
         r1.save();
         t.enable();
         LogRecorder r2 = new LogRecorder("r2");
         mgr.getRecorders().add(r2);
         t = new LogRecorder.Target("ns3", Level.FINE);
-        r2.targets.add(t);
+        r2.getLoggers().add(t);
         r2.save();
         t.enable();
         VirtualChannel ch = c.getChannel();
@@ -121,7 +121,7 @@ public class LogRecorderManagerTest {
         assertThat(log.getRecorders().size(), is(0));
 
         LogRecorder logRecorder = new LogRecorder("dummy");
-        logRecorder.targets.add(new LogRecorder.Target("dummy", Level.ALL));
+        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
 
         log.logRecorders.put("dummy", logRecorder);
         logRecorder.save();
@@ -139,7 +139,7 @@ public class LogRecorderManagerTest {
         assertThat(log.getRecorders().size(), is(0));
 
         LogRecorder logRecorder = new LogRecorder("dummy");
-        logRecorder.targets.add(new LogRecorder.Target("dummy", Level.ALL));
+        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
 
         log.getRecorders().add(logRecorder);
         logRecorder.save();
