@@ -69,6 +69,7 @@ import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
+import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
@@ -1293,6 +1294,32 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class) // table.jelly
         public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
             return getDependenciesIncompatibleWithInstalledVersion(cache).isEmpty();
+        }
+
+        /**
+         * Returns true if and only if this update addressed a currently active security vulnerability.
+         *
+         * @return true if and only if this update addressed a currently active security vulnerability.
+         */
+        @Restricted(NoExternalUse.class) // Jelly
+        public boolean fixesSecurityVulnerabilities() {
+            final PluginWrapper installed = getInstalled();
+            if (installed == null) {
+                return false;
+            }
+            boolean allWarningsStillApply = true;
+            for (Warning warning : ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class).getActivePluginWarningsByPlugin().getOrDefault(installed, Collections.emptyList())) {
+                boolean thisWarningApplies = false;
+                for (WarningVersionRange range : warning.versionRanges) {
+                    if (range.includes(new VersionNumber(version))) {
+                        thisWarningApplies = true;
+                    }
+                }
+                if (!thisWarningApplies) {
+                    allWarningsStillApply = false;
+                }
+            }
+            return !allWarningsStillApply;
         }
 
         /**
