@@ -48,7 +48,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
 

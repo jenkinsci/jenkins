@@ -29,7 +29,6 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Stapler;
 
