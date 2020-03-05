@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:layout norefresh="true" type="one-column" permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
 
     <j:choose>
-      <j:when test="${app.hasPermission(it.CONFIGURE)}">
+      <j:when test="${it.hasPermission(it.CONFIGURE)}">
         <j:set var="readOnlyMode" value="false" />
       </j:when>
       <j:otherwise>
