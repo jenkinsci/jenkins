@@ -4717,14 +4717,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {
                 continue;
             }
-            String categoryName = link.getCategory();
-            ManagementLink.Category category;
-            try {
-                category = ManagementLink.Category.valueOf(categoryName);
-            } catch (IllegalArgumentException ex) {
-                category = ManagementLink.Category.UNCATEGORIZED;
-            }
-            byCategory.computeIfAbsent(category, c -> new ArrayList<>()).add(link);
+            byCategory.computeIfAbsent(link.getCategory(), c -> new ArrayList<>()).add(link);
         }
         return byCategory;
     }

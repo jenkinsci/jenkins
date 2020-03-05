@@ -65,7 +65,7 @@ public class ConfigureLink extends ManagementLink {
 
     @Nonnull
     @Override
-    public String getCategory() {
-        return Category.CONFIGURATION.toString();
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 }

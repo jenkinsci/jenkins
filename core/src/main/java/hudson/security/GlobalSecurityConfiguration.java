@@ -96,9 +96,10 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     @Nonnull
     @Override
-    public String getCategory() {
-        return Category.SECURITY.toString();
+    public Category getCategory() {
+        return Category.SECURITY;
     }
+
     @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins

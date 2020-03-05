@@ -64,7 +64,7 @@ public class SystemInfoLink extends ManagementLink {
 
     @Nonnull
     @Override
-    public String getCategory() {
-        return Category.STATUS.toString();
+    public Category getCategory() {
+        return Category.STATUS;
     }
 }

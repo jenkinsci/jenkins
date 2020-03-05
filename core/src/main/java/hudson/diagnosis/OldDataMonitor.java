@@ -442,9 +442,10 @@ public class OldDataMonitor extends AdministrativeMonitor {
     public static class ManagementLinkImpl extends ManagementLink {
         @Nonnull
         @Override
-        public String getCategory() {
-            return Category.TROUBLESHOOTING.toString();
+        public Category getCategory() {
+            return Category.TROUBLESHOOTING;
         }
+
         @Override
         public String getIconFileName() {
             return "document.png";

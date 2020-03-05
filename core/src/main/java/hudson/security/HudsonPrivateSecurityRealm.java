@@ -774,8 +774,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Nonnull
         @Override
-        public String getCategory() {
-            return Category.SECURITY.toString();
+        public Category getCategory() {
+            return Category.SECURITY;
         }
     }
 

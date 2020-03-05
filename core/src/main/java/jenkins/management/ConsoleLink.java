@@ -64,7 +64,7 @@ public class ConsoleLink extends ManagementLink {
 
     @Nonnull
     @Override
-    public String getCategory() {
-        return Category.TOOLS.toString();
+    public Category getCategory() {
+        return Category.TOOLS;
     }
 }
