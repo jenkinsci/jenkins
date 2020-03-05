@@ -30,7 +30,7 @@ THE SOFTWARE.
      page: page name to be passed to local:tabBar
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%Update Center}" permission="${app.ADMINISTER}">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
@@ -52,6 +52,7 @@ THE SOFTWARE.
                   width="32">${%Install}</th>
               <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
               <th>${%Version}</th>
+              <th>${%Released}</th>
               <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
             </tr>
             <j:choose>
@@ -132,6 +133,13 @@ THE SOFTWARE.
                       </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
+                    <td class="pane" data="${p.releaseTimestamp.time}">
+                      <j:if test="${p.releaseTimestamp != null}">
+                        <time datetime="${h.iso8601DateTime(p.releaseTimestamp)}" tooltip="${h.localDate(p.releaseTimestamp)}">
+                          ${%ago(h.getTimeSpanString(p.releaseTimestamp))}
+                        </time>
+                      </j:if>
+                    </td>
                     <j:if test="${isUpdates}">
                       <td class="pane">
                         <j:choose><j:when test="${p.installed.active}">

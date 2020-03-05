@@ -4,6 +4,10 @@
     width: 15em;
 }
 
+time {
+    white-space: nowrap;
+}
+
 #filter-container {
     margin: 1em;
     text-align: right;
