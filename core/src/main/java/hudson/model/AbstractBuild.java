@@ -584,20 +584,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
 
         /**
-         * An {@link Environment} which does nothing, but change state when it gets torn down. Used in
-         * {@link AbstractBuildExecution#run(BuildListener)} to detect whether environments have yet to be torn down,
-         * or if it has been done already (in the {@link AbstractBuildExecution#doRun(BuildListener)} implementation).
-         */
-        private class TearDownCheckEnvironment extends Environment {
-            private boolean tornDown = false;
-            @Override
-            public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
-                this.tornDown = true;
-                return true;
-            }
-        }
-
-        /**
          * Creates a {@link Launcher} that this build will use. This can be overridden by derived types
          * to decorate the resulting {@link Launcher}.
          *
@@ -870,6 +856,20 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {AbstractBuild.this, bs});
                     return false;
                 }
+            return true;
+        }
+    }
+
+    /**
+     * An {@link Environment} which does nothing, but change state when it gets torn down. Used in
+     * {@link AbstractBuildExecution#run(BuildListener)} to detect whether environments have yet to be torn down,
+     * or if it has been done already (in the {@link AbstractBuildExecution#doRun(BuildListener)} implementation).
+     */
+    private static class TearDownCheckEnvironment extends Environment {
+        private boolean tornDown = false;
+        @Override
+        public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+            this.tornDown = true;
             return true;
         }
     }
