@@ -32,7 +32,7 @@ THE SOFTWARE.
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
 
     <j:choose>
-      <j:when test="${app.hasPermission(it.CONFIGURE)}">
+      <j:when test="${it.hasPermission(it.CONFIGURE)}">
         <j:set var="readOnlyMode" value="false" />
       </j:when>
       <j:otherwise>
