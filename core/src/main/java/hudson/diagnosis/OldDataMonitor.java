@@ -440,6 +440,11 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     @Extension @Symbol("oldData")
     public static class ManagementLinkImpl extends ManagementLink {
+        @Nonnull
+        @Override
+        public String getCategory() {
+            return Category.TROUBLESHOOTING.toString();
+        }
         @Override
         public String getIconFileName() {
             return "document.png";

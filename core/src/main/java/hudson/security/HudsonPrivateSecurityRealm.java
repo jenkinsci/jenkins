@@ -771,6 +771,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public String getDescription() {
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_Description();
         }
+
+        @Nonnull
+        @Override
+        public String getCategory() {
+            return Category.SECURITY.toString();
+        }
     }
 
     /**

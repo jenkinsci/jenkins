@@ -4705,6 +4705,29 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public List<ManagementLink> getManagementLinks() {
         return ManagementLink.all();
     }
+
+    // for Jelly
+    @Restricted(NoExternalUse.class)
+    public Map<ManagementLink.Category, List<ManagementLink>> getCategorizedManagementLinks() {
+        Map<ManagementLink.Category, List<ManagementLink>> byCategory = new TreeMap<>();
+        for (ManagementLink link : ManagementLink.all()) {
+            if (link.getIconFileName() == null) {
+                continue;
+            }
+            if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {
+                continue;
+            }
+            String categoryName = link.getCategory();
+            ManagementLink.Category category;
+            try {
+                category = ManagementLink.Category.valueOf(categoryName);
+            } catch (IllegalArgumentException ex) {
+                category = ManagementLink.Category.UNCATEGORIZED;
+            }
+            byCategory.computeIfAbsent(category, c -> new ArrayList<>()).add(link);
+        }
+        return byCategory;
+    }
     
     /**
      * If set, a currently active setup wizard - e.g. installation

@@ -30,7 +30,9 @@ import hudson.ExtensionList;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
@@ -130,5 +132,38 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      */
     public boolean getRequiresPOST() {
         return false;
+    }
+
+    /**
+     * Category for management link, uses {@code String} so it can be done with core dependency pre-dating the version this feature was added.
+     *
+     * @return An enum value of {@link Category}.
+     * @since TODO
+     */
+    public @Nonnull String getCategory() {
+        return Category.UNCATEGORIZED.toString();
+    }
+
+    /**
+     * Categories supported by this version of core.
+     *
+     * @since TODO
+     */
+    public enum Category {
+        CONFIGURATION,
+        SECURITY,
+        STATUS,
+        TROUBLESHOOTING,
+        TOOLS,
+        MISC,
+        UNCATEGORIZED;
+
+        public @Nonnull String getLabel() {
+            try {
+                return Messages.class.getMethod("ManagementLink_Category_" + this.toString()).invoke(null).toString();
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                return Messages.ManagementLink_Category_UNCATEGORIZED();
+            }
+        }
     }
 }

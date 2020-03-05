@@ -46,4 +46,10 @@ public class AboutJenkins extends ManagementLink {
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
     }
+
+    @Nonnull
+    @Override
+    public String getCategory() {
+        return Category.STATUS.toString();
+    }
 }

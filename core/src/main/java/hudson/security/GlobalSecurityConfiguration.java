@@ -41,6 +41,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 
 import jenkins.model.GlobalConfigurationCategory;
@@ -93,6 +94,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.get().isDisableRememberMe();
     }
 
+    @Nonnull
+    @Override
+    public String getCategory() {
+        return Category.SECURITY.toString();
+    }
     @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins

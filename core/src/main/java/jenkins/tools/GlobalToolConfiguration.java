@@ -39,6 +39,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -71,6 +72,12 @@ public class GlobalToolConfiguration extends ManagementLink {
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
+    }
+
+    @Nonnull
+    @Override
+    public String getCategory() {
+        return Category.CONFIGURATION.toString();
     }
 
     @POST

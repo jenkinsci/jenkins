@@ -29,6 +29,8 @@ import hudson.model.ManagementLink;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -57,5 +59,11 @@ public class ShutdownLink extends ManagementLink {
     @Override
     public boolean getRequiresPOST() {
         return true;
+    }
+
+    @Nonnull
+    @Override
+    public String getCategory() {
+        return Category.TOOLS.toString();
     }
 }
