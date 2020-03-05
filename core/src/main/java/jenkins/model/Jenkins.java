@@ -2582,7 +2582,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return securityRealm;
     }
 
-    public void setSecurityRealm(SecurityRealm securityRealm) {
+    /**
+     * Sets a security realm.
+     * @param securityRealm Security realm to set.
+     *                      If {@code null}, {@link SecurityRealm#NO_AUTHENTICATION} will be set.
+     */
+    public void setSecurityRealm(@CheckForNull SecurityRealm securityRealm) {
         if(securityRealm==null)
             securityRealm= SecurityRealm.NO_AUTHENTICATION;
         this.useSecurity = true;
@@ -2612,7 +2617,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         saveQuietly();
     }
 
-    public void setAuthorizationStrategy(AuthorizationStrategy a) {
+    /**
+     * Sets a new authorization strategy.
+     * @param a Authorization strategy to set.
+     *          If {@code null}, {@link AuthorizationStrategy#UNSECURED} will be set
+     */
+    public void setAuthorizationStrategy(@CheckForNull AuthorizationStrategy a) {
         if (a == null)
             a = AuthorizationStrategy.UNSECURED;
         useSecurity = true;
