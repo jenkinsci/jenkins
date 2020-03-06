@@ -177,27 +177,26 @@ public class ExtensionListTest {
         assertEquals(0,LIST.size());
     }
 
-	@Test
-	public void newInstanceFromRadioList() throws Exception {
-		// test for DescriptorList
-		Map<String, String> CONFIGMAP = new HashMap<>();
-		CONFIGMAP.put("value", Tai.class.getName());
-		JSONObject CONFIG = JSONObject.fromObject(CONFIGMAP);
+    @Test
+    public void newInstanceFromRadioList() throws Exception {
+        // test for DescriptorList
+        Map<String, String> CONFIGMAP = new HashMap<>();
+        CONFIGMAP.put("value", Tai.class.getName());
+        JSONObject CONFIG = JSONObject.fromObject(CONFIGMAP);
 
-		DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
-		Fish FISH = LIST.newInstanceFromRadioList(CONFIG);
-		assertTrue(FISH instanceof Tai);
+        DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
+        Fish FISH = LIST.newInstanceFromRadioList(CONFIG);
+        assertTrue(FISH instanceof Tai);
 
-		// test for DescriptorExtensionList
-		Map<String, String> configMap = new HashMap<>();
-		configMap.put("value", Saba.class.getName());
-		JSONObject config = JSONObject.fromObject(configMap);
+        // test for DescriptorExtensionList
+        Map<String, String> configMap = new HashMap<>();
+        configMap.put("value", Saba.class.getName());
+        JSONObject config = JSONObject.fromObject(configMap);
 
-		DescriptorExtensionList<Fish, Descriptor<Fish>> list = j.jenkins
-				.<Fish, Descriptor<Fish>>getDescriptorList(Fish.class);
-		Fish fish = list.newInstanceFromRadioList(config);
-		assertTrue(fish instanceof Saba);
-	}
+        DescriptorExtensionList<Fish, Descriptor<Fish>> list = j.jenkins.<Fish, Descriptor<Fish>>getDescriptorList(Fish.class);
+        Fish fish = list.newInstanceFromRadioList(config);
+        assertTrue(fish instanceof Saba);
+    }
 
     public static class Car implements ExtensionPoint {
         final String name;
