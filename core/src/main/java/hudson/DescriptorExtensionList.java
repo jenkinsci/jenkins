@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.CheckForNull;
 
+import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
 import net.sf.json.JSONObject;
 
@@ -144,7 +145,11 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
-        return newInstanceFromRadioList(parent.getJSONObject(name));
+        try {
+            return newInstanceFromRadioList(parent.getJSONObject(name));
+        } catch (JSONException ex) {
+            throw new FormException(ex, name);
+        }
     }
 
     /**

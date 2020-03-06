@@ -1305,6 +1305,19 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Returns a facet that blocks the deletion of the fingerprint.
+     * Returns null if no such facet.
+     * @since TODO
+     */
+    public @CheckForNull FingerprintFacet getFacetBlockingDeletion() {
+        for (FingerprintFacet facet : facets) {
+            if (facet.isFingerprintDeletionBlocked())
+                return facet;
+        }
+        return null;
+    }
+
+    /**
      * Update references to a renamed job in the fingerprint
      */
     public synchronized void rename(String oldName, String newName) throws IOException {

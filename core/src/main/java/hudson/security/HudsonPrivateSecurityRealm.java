@@ -251,7 +251,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     private User _doCreateAccount(StaplerRequest req, StaplerResponse rsp, String formView) throws ServletException, IOException {
         if(!allowsSignup())
-            throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
+            throw HttpResponses.errorWithoutStack(SC_UNAUTHORIZED, "User sign up is prohibited");
 
         boolean firstUser = !hasSomeUser();
         User u = createAccount(req, rsp, enableCaptcha, formView);
