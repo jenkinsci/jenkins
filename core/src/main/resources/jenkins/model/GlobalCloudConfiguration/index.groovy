@@ -30,6 +30,10 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
 
             f.form(method:"post",name:"config",action:"configure") {
                 f.block {
+                    if (app.clouds.size() == 0 && !h.hasPermission(app.ADMINISTER)) {
+                        p(_("No clouds have been configured."))
+                    }
+
                     f.hetero_list(name:"cloud", hasHeader:true, descriptors:Cloud.all(), items:app.clouds,
                             addCaption:_("Add a new cloud"), deleteCaption:_("Delete cloud"))
                 }
@@ -41,7 +45,9 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
                     }
                 }
             }
-            st.adjunct(includes: "lib.form.confirm")
+            l.isAdmin {
+                st.adjunct(includes: "lib.form.confirm")
+            }
         } else {
             p(_("There are no cloud implementations for dynamically allocated agents installed. "))
             a(href: rootURL + "/pluginManager/available", _("Go to plugin manager."))
