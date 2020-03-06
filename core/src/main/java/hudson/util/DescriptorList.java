@@ -151,7 +151,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * by a radio button group. 
      * @param config Submitted configuration for Radio List
      * @return New instance.
-     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
      * @throws FormException Data submission error
      */
     @CheckForNull
@@ -169,7 +169,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * @param parent JSON, which contains the configuration entry for the radio list
      * @param name Name of the configuration entry for the radio list
      * @return New instance.
-     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
      * @throws FormException Data submission error
      */
     @CheckForNull
