@@ -88,13 +88,26 @@ THE SOFTWARE.
     <j:set var="taskMatching" value="${context.parent}"/>
     <d:invokeBody />
   </j:scope>
-
-  <j:if test="${attrs.permission != null and h.hasPermission(it,attrs.permission)}">
-    <j:set var="hasPermission" value="true" />
+  <j:if test="${attrs.permission != null}">
+    <j:choose>
+      <j:when test="${h.hasPermission(it, attrs.permission)}">
+        <j:set var="hasPermission" value="true" />
+      </j:when>
+      <j:otherwise>
+        <j:set var="hasPermission" value="false" />
+      </j:otherwise>
+    </j:choose>
   </j:if>
 
-  <j:if test="${attrs.permissions != null and h.hasAnyPermission(it,attrs.permissions)}">
-    <j:set var="hasPermission" value="true" />
+  <j:if test="${attrs.permissions != null}">
+    <j:choose>
+      <j:when test="${h.hasAnyPermission(it, attrs.permissions)}">
+        <j:set var="hasPermission" value="true" />
+      </j:when>
+      <j:otherwise>
+        <j:set var="hasPermission" value="false" />
+      </j:otherwise>
+    </j:choose>
   </j:if>
 
   <j:if test="${attrs.permission == null and attrs.permissions == null}">
