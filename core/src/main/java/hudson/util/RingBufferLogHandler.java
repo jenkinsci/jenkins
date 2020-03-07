@@ -54,6 +54,10 @@ public class RingBufferLogHandler extends Handler {
         records = new LogRecord[ringSize];
     }
 
+    public static int getDefaultRingBufferSize() {
+        return DEFAULT_RING_BUFFER_SIZE;
+    }
+
     public synchronized void publish(LogRecord record) {
         int len = records.length;
         records[(start+size)%len]=record;

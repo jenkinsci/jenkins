@@ -80,16 +80,26 @@ import static java.util.logging.Level.*;
  */
 public class WebAppMain implements ServletContextListener {
 
-    // use RingBufferLogHandler class name to configure for backward compatibility
-    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
+    private final RingBufferLogHandler handler = new RingBufferLogHandler(WebAppMain.getDefaultRingBufferSize()) {
 
-    private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
                 super.publish(record);
             }
         }
     };
+
+    /**This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
+     * Exposes access from RingBufferLogHandler.DEFAULT_RING_BUFFER_SIZE to WebAppMain.
+     * Written for the requirements of JENKINS-50669
+     * @return int This returns DEFAULT_RING_BUFFER_SIZE
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     */
+    public static int getDefaultRingBufferSize() {
+        return RingBufferLogHandler.getDefaultRingBufferSize();
+    }
+
+
     private static final String APP = "app";
     private boolean terminated;
     private Thread initThread;
