@@ -833,7 +833,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
      */
-    private boolean noUsageStatistics;
+    private Boolean noUsageStatistics;
 
     /**
      * HTTP proxy configuration.
@@ -1378,7 +1378,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since TODO
      */
-    public boolean isNoUsageStatistics() {
+    public Boolean isNoUsageStatistics() {
         return noUsageStatistics;
     }
 
@@ -1388,7 +1388,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since TODO
      */
     public boolean isUsageStatisticsCollected() {
-        return !noUsageStatistics;
+        return noUsageStatistics==null || !noUsageStatistics;
     }
 
     /**
@@ -1396,7 +1396,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since TODO
      */
-    public void setNoUsageStatistics(boolean noUsageStatistics) throws IOException {
+    public void setNoUsageStatistics(Boolean noUsageStatistics) throws IOException {
         this.noUsageStatistics = noUsageStatistics;
         save();
     }
