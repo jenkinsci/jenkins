@@ -119,7 +119,7 @@ public class WindowsInstallerLink extends ManagementLink {
             sendError("Installation is already complete",req,rsp);
             return;
         }
-        if(!DotNet.isInstalled(2,0)) {
+        if(!DotNet.isInstalled(4,0) && !DotNet.isInstalled(2,0)) {
             sendError(".NET Framework 2.0 or later is required for this feature",req,rsp);
             return;
         }
