@@ -28,14 +28,11 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import hudson.Extension;
 import hudson.util.EnumConverter;
 import hudson.util.RunList;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.QueryParameter;
 
 public class RunParameterDefinition extends SimpleParameterDefinition {
 
@@ -152,9 +149,9 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
-        
-        public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value) {
-            return AutoCompletionCandidates.ofJobNames(Job.class, value, null, Jenkins.get());
+
+        public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value, @AncestorInPath ItemGroup context) {
+            return AutoCompletionCandidates.ofJobNames(value, context);
         }
 
     }

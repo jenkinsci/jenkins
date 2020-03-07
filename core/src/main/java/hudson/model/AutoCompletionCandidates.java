@@ -173,4 +173,23 @@ public class AutoCompletionCandidates implements HttpResponse {
     private static boolean startsWithImpl(String str, String prefix, boolean ignoreCase) {
         return ignoreCase ? StringUtils.startsWithIgnoreCase(str, prefix) : str.startsWith(prefix);
     }
+
+    /**
+     * Auto-completes possible job names with support for folder suggestions.
+     * Inspired from hudson.plugins.parameterizedtrigger.BuildTriggerConfig
+     * @param value The value the user has typed in.
+     * @param container The nearby contextual {@link ItemGroup} to resolve relative job names from.
+     */
+
+    public static AutoCompletionCandidates ofJobNames(final String value, ItemGroup container) {
+        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        List<Job> jobs = Jenkins.get().getAllItems(Job.class);
+        for (Job job: jobs) {
+            String relativeName = job.getRelativeNameFrom(container);
+            if (relativeName.startsWith(value) && job.hasPermission(Item.READ)) {
+                candidates.add(relativeName);
+            }
+        }
+        return candidates;
+    }
 }
