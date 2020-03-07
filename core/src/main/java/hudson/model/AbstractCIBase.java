@@ -93,13 +93,26 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     * Package-protected, but accessed API
     * ============================================================================================================== */
 
-    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<>();
+    private Set<String> disabledAdministrativeMonitors = new HashSet<>();
 
-    @Restricted(NoExternalUse.class)
-    public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
+    /**
+     * Get the disabled administrative monitors
+     *
+     * @since TODO
+     */
+    public Set<String> getDisabledAdministrativeMonitors(){
     	return disabledAdministrativeMonitors;
     }
-    
+
+    /**
+     * Set the disabled administrative monitors
+     *
+     * @since TODO
+     */
+    public void setDisabledAdministrativeMonitors(Set<String> disabledAdministrativeMonitors){
+        this.disabledAdministrativeMonitors = disabledAdministrativeMonitors;
+    }
+
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */
