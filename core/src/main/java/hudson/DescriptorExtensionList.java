@@ -140,8 +140,9 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     public T newInstanceFromRadioList(JSONObject config) throws FormException {
         if(config.isNullObject())
             return null;    // none was selected
-        int idx = config.getInt("value");
-        return get(idx).newInstance(Stapler.getCurrentRequest(),config);
+        String descriptorId = config.getString("value");
+        Descriptor<T> d = findByName(descriptorId);
+        return d != null ? d.newInstance(Stapler.getCurrentRequest(),config) : null;
     }
 
     public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
