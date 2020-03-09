@@ -192,20 +192,20 @@ public class ArtifactArchiverTest {
     @LocalData
     @Test public void followSymlinksEnabledForOldConfig() throws Exception {
 
-      FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
+        FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
 
-      FreeStyleBuild b = p.scheduleBuild2(0).get();
-      assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b),b.getResult()==Result.SUCCESS);
-      FilePath ws = b.getWorkspace();
-      assertNotNull(ws);
-      List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
-      assertEquals(2, artifacts.size());
-      VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
-      assertEquals(1, kids.length);
-      assertEquals("lodge", kids[0].getName());
-      VirtualFile[] linkkids = b.getArtifactManager().root().child("linkdir").list();
-      assertEquals(1, kids.length);
-      assertEquals("fizz", linkkids[0].getName());
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b),b.getResult()==Result.SUCCESS);
+        FilePath ws = b.getWorkspace();
+        assertNotNull(ws);
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(2, artifacts.size());
+        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
+        assertEquals(1, kids.length);
+        assertEquals("lodge", kids[0].getName());
+        VirtualFile[] linkkids = b.getArtifactManager().root().child("linkdir").list();
+        assertEquals(1, kids.length);
+        assertEquals("fizz", linkkids[0].getName());
     }
 
     @Issue("SECURITY-162")

@@ -160,7 +160,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             caseSensitive = true;
         }
         if (followSymlinks == null) {
-          followSymlinks = true;
+            followSymlinks = true;
         }
         return this;
     }
@@ -228,7 +228,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     @DataBoundSetter public final void setFollowSymlinks(boolean followSymlinks) {
-      this.followSymlinks = followSymlinks;
+        this.followSymlinks = followSymlinks;
     }
 
     @Override

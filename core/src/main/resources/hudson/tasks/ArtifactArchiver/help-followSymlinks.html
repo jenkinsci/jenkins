@@ -1,6 +1,4 @@
 <div>
-    Artifact archiver uses Ant <code>org.apache.tools.ant.DirectoryScanner</code> which by default follows symbolic links.
-    For instance, if the job produces a file a.log and a symbolic link b.log -> a.log, the pattern "*.log" will archive both files.<BR/><BR/>
-    This option can be used to disable following of symbolic links. When it's unchecked, pattern "*.log" will match only a.log but no b.log.
+    By disabling this option all symbolic links found in the workspace will be ignored. 
 </div>
 
