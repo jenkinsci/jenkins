@@ -39,7 +39,6 @@ public class AutoCompletionCandidatesTest {
         c = AutoCompletionCandidates.ofJobNames(Item.class, "bar/", foo, j.jenkins);
         assertContains(c, "bar/x=1", "bar/x=2", "bar/x=3");
 
-
         c = AutoCompletionCandidates.ofJobNames(FreeStyleProject.class, "", foo, j.jenkins);
         assertContains(c, "foo");
 
@@ -70,28 +69,21 @@ public class AutoCompletionCandidatesTest {
         AutoCompletionCandidates c;
 
         c = AutoCompletionCandidates.ofJobNames("", j.jenkins);
-        assertContains(c, "foo", "bar");
+        assertContains(c, "foo", "bar", "bar/x=1", "bar/x=2", "bar/x=3");
 
         c = AutoCompletionCandidates.ofJobNames("ba", j.jenkins);
-        assertContains(c, "bar");
+        assertContains(c,  "bar", "bar/x=1", "bar/x=2", "bar/x=3");
 
         c = AutoCompletionCandidates.ofJobNames("bar/", j.jenkins);
         assertContains(c, "bar/x=1", "bar/x=2", "bar/x=3");
 
-        c = AutoCompletionCandidates.ofJobNames("", x3.getParent());
-        assertContains(c, "x=1", "x=2", "x=3");
-
-        c = AutoCompletionCandidates.ofJobNames("/", x3.getParent());
-        assertContains(c, "/foo", "/bar");
-
-        c = AutoCompletionCandidates.ofJobNames("/bar/", x3.getParent());
-        assertContains(c, "/bar/x=1", "/bar/x=2", "/bar/x=3");
+        c = AutoCompletionCandidates.ofJobNames( "", x3.getParent());
+        assertContains(c, "../foo", "../bar", "x=1", "x=2", "x=3");
 
         // relative path
-        c = AutoCompletionCandidates.ofJobNames("../", x3.getParent());
+        c = AutoCompletionCandidates.ofJobNames(Item.class, "../", x3, x3.getParent());
         assertContains(c, "../bar", "../foo");
     }
-
 
     private void assertContains(AutoCompletionCandidates c, String... values) {
         assertEquals(new TreeSet<String>(Arrays.asList(values)), new TreeSet<String>(c.getValues()));
