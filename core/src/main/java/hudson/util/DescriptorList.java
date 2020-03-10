@@ -158,8 +158,9 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     public T newInstanceFromRadioList(JSONObject config) throws FormException {
         if(config.isNullObject())
             return null;    // none was selected
-        int idx = config.getInt("value");
-        return get(idx).newInstance(Stapler.getCurrentRequest(),config);
+        String descriptorId = config.getString("value");
+        Descriptor<T> d = findByName(descriptorId);
+        return d != null ? d.newInstance(Stapler.getCurrentRequest(),config) : null;
     }
 
     /**
