@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import hudson.model.User;
 import java.util.Collections;
 import jenkins.model.Jenkins;
+import jenkins.security.UserDetailsCache;
 import jenkins.security.seed.UserSeedProperty;
 
 import static org.hamcrest.Matchers.emptyString;
@@ -296,6 +297,7 @@ public class TokenBasedRememberMeServices2Test {
         User alice = User.getOrCreateByIdOrFullName("alice");
         realm.verifyInvocations(1);
 
+        UserDetailsCache.get().invalidate("alice");
         // first, start a session with a remember me token
         Cookie cookie = getRememberMeCookie(j.createWebClient().login("alice", "alice", true));
         // next, start a new session with that token
