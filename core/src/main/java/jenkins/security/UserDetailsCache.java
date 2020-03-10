@@ -170,6 +170,10 @@ public final class UserDetailsCache {
                 }
                 existenceCache.put(this.idOrFullName, Boolean.TRUE);
                 return userDetails;
+            } catch (UserMayOrMayNotExistException | DataAccessException e) {
+                // In that case, we cannot guarantee the user does not exist
+                existenceCache.invalidate(this.idOrFullName);
+                throw e;
             } catch (UsernameNotFoundException e) {
                 existenceCache.put(this.idOrFullName, Boolean.FALSE);
                 throw e;
