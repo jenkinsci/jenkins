@@ -49,7 +49,7 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
             } catch (ExecutionException ex) {
                 LOGGER.log(Level.INFO, "Failure to retrieve {0} from cache", username);
                 userDetails = loadUserByUsernameFromBase(username);
-            } catch (DataAccessException | UsernameNotFoundException e) {
+            } catch (DataAccessException | UserMayOrMayNotExistException e) {
                 // Those Exception originates from the SecurityRealm and tell us that the User may or may not exists
                 userDetails = attemptToImpersonate(username, e);
             }
