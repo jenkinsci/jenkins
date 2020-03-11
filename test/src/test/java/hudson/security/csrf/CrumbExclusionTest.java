@@ -36,7 +36,10 @@ import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 import static org.hamcrest.Matchers.containsString;
 
+import jenkins.security.SuspiciousRequestFilter;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -56,6 +59,16 @@ public class CrumbExclusionTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
+
+    @BeforeClass
+    public static void prepare() {
+        SuspiciousRequestFilter.allowSemicolonsInPath = true;
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        SuspiciousRequestFilter.allowSemicolonsInPath = false;
+    }
 
     @Issue("SECURITY-1774")
     @Test
