@@ -32,7 +32,7 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
     private final UserDetailsService base;
 
     @Restricted(NoExternalUse.class)
-    public static /* Script Console modifiable */ boolean DISABLE_CACHE_FOR_IMPERSONATION = 
+    private static boolean DISABLE_CACHE_FOR_IMPERSONATION = 
             Boolean.getBoolean(ImpersonatingUserDetailsService.class.getName() + ".disableCacheForImpersonation");
 
     public ImpersonatingUserDetailsService(UserDetailsService base) {
