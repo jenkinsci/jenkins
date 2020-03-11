@@ -1980,6 +1980,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             // non-existent
             try {
+                // For the record, this method creates temporary labels but there is a periodic task
+                // calling "trimLabels" to remove unused labels running every 5 minutes.
                 labels.putIfAbsent(expr,Label.parseExpression(expr));
             } catch (ANTLRException e) {
                 // laxly accept it as a single label atom for backward compatibility
@@ -2002,6 +2004,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             // non-existent
             LabelAtom la = new LabelAtom(name);
+            // For the record, this method creates temporary labels but there is a periodic task
+            // calling "trimLabels" to remove unused labels running every 5 minutes.
             if (labels.putIfAbsent(name, la)==null)
                 la.load();
         }
