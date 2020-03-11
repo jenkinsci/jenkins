@@ -153,9 +153,7 @@ THE SOFTWARE.
     </j:if>
 
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 

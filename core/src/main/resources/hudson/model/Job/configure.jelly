@@ -65,8 +65,8 @@ THE SOFTWARE.
             <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
               <f:bottomButtonBar>
                 <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-                <f:submit value="${%Save}"/>
-                <f:apply value="${%Apply}"/>
+                <f:submit value="${%Save}" isLarge="true"/>
+                <f:apply value="${%Apply}" isLarge="true" />
               </f:bottomButtonBar>
             </j:if>
           </f:form>

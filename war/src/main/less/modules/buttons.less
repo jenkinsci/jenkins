@@ -1,0 +1,253 @@
+@import '../abstracts/colors.less';
+@import '../abstracts/font.less';
+
+@button-secondary-color: secondary;
+@button-secondary-color-hover: @primary-hover;
+@button-secondary-color-active: @primary-active;
+
+// Button variant mixins
+
+.button-danger() {
+  color: @secondary;
+  background-color: @white;
+  border-color: @danger;
+
+  &:hover,
+  &:focus {
+    color: @danger-hover;
+    background-color: @white;
+    border-color: @danger-hover;
+  }
+
+  &:active {
+    color: @danger-active;
+    background-color: @white;
+    border-color: @danger-active;
+  }
+}
+.button-danger-disabled() {
+  pointer-events: none;
+  opacity: 0.5;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: @secondary;
+    background-color: @white;
+    border-color: @danger;
+  }
+}
+
+.button-primary() {
+  color: @white;
+  background-color: @secondary;
+  border-color: @secondary;
+
+  &:hover,
+  &:focus {
+    background-color: @primary-hover;
+    border-color: @primary-hover;
+  }
+
+  &:active {
+    background-color: @primary-active;
+    border-color: @primary-active;
+  }
+}
+.button-primary-disabled() {
+  pointer-events: none;
+  opacity: 0.5;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: @white;
+    background-color: @secondary;
+    border-color: @secondary;
+  }
+}
+
+.button-secondary() {
+  color: @secondary;
+  border-color: #9BA7AF;
+  background-color: @white;
+
+  &:hover,
+  &:focus {
+    color: @button-secondary-color-hover;
+    // background-color: #f8f8f8;
+    border-color: @button-secondary-color-hover;
+  }
+
+  &:active {
+    color: @button-secondary-color-active;
+    border-color: @button-secondary-color-active;
+  }
+}
+.button-secondary-disabled() {
+  pointer-events: none;
+  opacity: 0.5;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: @secondary;
+    background-color: @white;
+    border-color: #9BA7AF;
+  }
+}
+
+.button-link {
+  color: @primary;
+  background-color: transparent;
+  border-color: transparent;
+
+  &:hover,
+  &:focus {
+    color: @primary-hover;
+    background-color: #f8f8f8;
+    border-color: #f8f8f8;
+  }
+
+  &:active {
+    color: @primary-active;
+    background-color: #EAEFF2;
+    border-color: #EAEFF2;
+  }
+}
+
+// Button styles
+
+.yui-button {
+  display: inline-block;
+}
+
+.yui-button .first-child {
+  display: block;
+}
+
+.yui-button button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+  @button-height: 2rem;
+  @button-border: 2px;
+  @button-line-height: calc(@button-height - @button-border - @button-border);
+
+  box-sizing: border-box;
+  display: inline-block;
+  padding: 0 1rem;
+  margin-right: 0.25rem;
+  margin-left: 0.25rem;
+  height: @button-height;
+  min-width: 4.5rem;
+
+  cursor: pointer;
+  user-select: none;
+
+  font-size: @font-size-xs;
+  line-height: @button-line-height;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+
+  border: @button-border solid;
+  border-radius: 4px;
+
+  transition: all 0.15s ease-in-out;
+
+  .button-secondary();
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(@focus, 0.5)
+  }
+}
+
+.yui-button.danger button,
+input[type="button"].danger,
+input[type="reset"].danger,
+input[type="submit"].danger {
+  .button-danger();
+}
+
+.yui-button.primary button,
+input[type="button"].primary,
+input[type="reset"].primary,
+input[type="submit"].primary {
+  .button-primary();
+}
+
+.yui-button.link-button button,
+input[type="button"].link-button,
+input[type="reset"].link-button,
+input[type="submit"].link-button {
+  .button-link();
+}
+
+.yui-button.large-button button,
+input[type="button"].large-button,
+input[type="reset"].large-button,
+input[type="submit"].large-button {
+  @button-height: 2.5rem;
+  @button-border: 2px;
+  @button-line-height: calc(@button-height - @button-border - @button-border);
+
+  min-width: 6.5rem;
+  height: @button-height;
+  font-size: @font-size-sm;
+  line-height: @button-line-height;
+}
+
+.yui-button a {
+  // text-decoration: none;
+}
+
+// Dropdown buttons
+.yui-button.yui-menu-button button,
+.yui-button.yui-split-button button {
+  // These buttons have a caret as the :after element
+  &::after {
+    display: inline-block;
+    margin-left: 0.4em;
+    vertical-align: 0.1875em;
+    content: "";
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+  }
+}
+
+.yui-button-disabled button,
+.yui-button button:disabled,
+input[type="button"]:disabled,
+input[type="reset"]:disabled,
+input[type="submit"]:disabled,
+.yui-button-disabled input[type="button"],
+.yui-button-disabled input[type="reset"],
+.yui-button-disabled input[type="submit"] {
+  .button-secondary-disabled();
+}
+
+.yui-button-disabled.primary button,
+.yui-button.primary button:disabled,
+input[type="button"].primary:disabled,
+input[type="reset"].primary:disabled,
+input[type="submit"].primary:disabled,
+.yui-button-disabled.primary input[type="button"],
+.yui-button-disabled.primary input[type="reset"],
+.yui-button-disabled.primary input[type="submit"] {
+  .button-primary-disabled();
+}
+
+.yui-button-disabled.danger button,
+.yui-button.danger button:disabled,
+input[type="button"].danger:disabled,
+input[type="reset"].danger:disabled,
+input[type="submit"].danger:disabled,
+.yui-button-disabled.danger input[type="button"],
+.yui-button-disabled.danger input[type="reset"],
+.yui-button-disabled.danger input[type="submit"] {
+  .button-danger-disabled();
+}
