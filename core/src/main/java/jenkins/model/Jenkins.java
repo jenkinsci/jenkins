@@ -5147,6 +5147,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    @Restricted(NoExternalUse.class)
+    public boolean shouldShowStackTrace() {
+        // Used by oops.jelly
+        return Boolean.getBoolean(Jenkins.class.getName() + ".SHOW_STACK_TRACE");
+    }
+
     /**
      * Hash of {@link #VERSION}.
      */
@@ -5232,6 +5238,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #getRawWorkspaceDir()
      */
     static final String WORKSPACES_DIR_PROP = Jenkins.class.getName() + ".workspacesDir";
+
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.

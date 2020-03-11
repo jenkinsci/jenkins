@@ -4,7 +4,23 @@
     width: 15em;
 }
 
+time {
+    white-space: nowrap;
+}
+
 #filter-container {
     margin: 1em;
     text-align: right;
+}
+.plugin-manager__categories {
+    margin-top: 0.5em;
+}
+
+.plugin-manager__category-label {
+    display: inline-block;
+    border: 1px solid #ccc;
+    background-color: #eee;
+    border-radius: 4px;
+    padding: 0.25rem;
+    margin: 0 0.25rem 0.25rem 0;
 }

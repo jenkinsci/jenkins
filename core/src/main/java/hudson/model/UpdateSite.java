@@ -43,8 +43,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +69,7 @@ import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
+import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
@@ -1018,6 +1021,13 @@ public class UpdateSite {
          */
         private Set<Plugin> incompatibleParentPlugins;
 
+        /**
+         * Date when this plugin was released.
+         * @since TODO
+         */
+        @Exported
+        public final Date releaseTimestamp;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -1027,6 +1037,16 @@ public class UpdateSite {
             this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
             this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
             this.requiredCore = Util.intern(get(o,"requiredCore"));
+            final String releaseTimestamp = get(o, "releaseTimestamp");
+            Date date = null;
+            if (releaseTimestamp != null) {
+                try {
+                    date = Date.from(Instant.parse(releaseTimestamp));
+                } catch (Exception ex) {
+                    LOGGER.log(Level.FINE, "Failed to parse releaseTimestamp for " + title + " from " + sourceId, ex);
+                }
+            }
+            this.releaseTimestamp = date;
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             JSONArray ja = o.getJSONArray("dependencies");
             int depCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count());
@@ -1274,6 +1294,32 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class) // table.jelly
         public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
             return getDependenciesIncompatibleWithInstalledVersion(cache).isEmpty();
+        }
+
+        /**
+         * Returns true if and only if this update addressed a currently active security vulnerability.
+         *
+         * @return true if and only if this update addressed a currently active security vulnerability.
+         */
+        @Restricted(NoExternalUse.class) // Jelly
+        public boolean fixesSecurityVulnerabilities() {
+            final PluginWrapper installed = getInstalled();
+            if (installed == null) {
+                return false;
+            }
+            boolean allWarningsStillApply = true;
+            for (Warning warning : ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class).getActivePluginWarningsByPlugin().getOrDefault(installed, Collections.emptyList())) {
+                boolean thisWarningApplies = false;
+                for (WarningVersionRange range : warning.versionRanges) {
+                    if (range.includes(new VersionNumber(version))) {
+                        thisWarningApplies = true;
+                    }
+                }
+                if (!thisWarningApplies) {
+                    allWarningsStillApply = false;
+                }
+            }
+            return !allWarningsStillApply;
         }
 
         /**

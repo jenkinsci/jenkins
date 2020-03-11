@@ -7,27 +7,6 @@ function checkPluginsWithoutWarnings() {
         }
     }
 }
-function showhideCategories(hdr,on) {
-  var table = hdr.parentNode.parentNode.parentNode,
-      newDisplay = on ? '' : 'none',
-      nameList = new Array(), id;
-  for (var i = 1; i < table.rows.length; i++) {
-    if (on || table.rows[i].cells.length == 1)
-      table.rows[i].style.display = newDisplay;
-     else {
-      // Hide duplicate rows for a plugin:version when not viewing by-category
-      id = table.rows[i].cells[1].getAttribute('data-id');
-      if (nameList[id] == 1) table.rows[i].style.display = 'none';
-      nameList[id] = 1;
-    }
-  }
-}
-function showhideCategory(col) {
-  var row = col.parentNode.nextSibling;
-  var newDisplay = row && row.style.display == 'none' ? '' : 'none';
-  for (; row && row.cells.length > 1; row = row.nextSibling)
-    row.style.display = newDisplay;
-}
 
 Behaviour.specify("#filter-box", '_table', 0, function(e) {
       function applyFilter() {

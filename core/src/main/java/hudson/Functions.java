@@ -27,6 +27,8 @@ package hudson;
 
 import hudson.model.Slave;
 import hudson.security.*;
+
+import java.text.SimpleDateFormat;
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
@@ -219,8 +221,34 @@ public class Functions {
         return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
     }
 
+    @Restricted(NoExternalUse.class)
+    public static String iso8601DateTime(Date date) {
+        return Util.XS_DATETIME_FORMATTER.format(date);
+    }
+
+    /**
+     * Returns a localized string for the specified date, not including time.
+     * @param date
+     * @return
+     */
+    @Restricted(NoExternalUse.class)
+    public static String localDate(Date date) {
+        return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+    }
+
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+    }
+
+    /**
+     * Returns a human-readable string describing the time difference between now and the specified date.
+     *
+     * @param date
+     * @return
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getTimeSpanString(Date date) {
+        return Util.getTimeSpanString(Math.abs(date.getTime() - new Date().getTime()));
     }
 
     /**
