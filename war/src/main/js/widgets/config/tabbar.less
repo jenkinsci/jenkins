@@ -2,6 +2,8 @@
  * Tab bar specific rules.
  */
 
+@import '../../../less/abstracts/font.less';
+
 .jenkins-config-widgets {
   position: relative;
   border:1px solid @solid-border;
@@ -41,7 +43,7 @@
     cursor: pointer;
     color: @solid-border;
     text-shadow: @brightest 0 1px 2px;
-    font-size: 0.85em;
+    font-size: @font-size-sm;
     padding: 3px 7px;
     display:none;
   }
@@ -173,7 +175,7 @@
 
       .section-header{
         margin: 30px 0px 5px -10px;
-        font-size: 1.5em;
+        font-size: 1.25rem;
         padding: 10px 15px;
         border: none;
         border-top: 1px solid #ddd;
@@ -238,9 +240,8 @@
         p,
         .help,
         .setting-description {
-          font-size:1em;
-          line-height:1.4;
-        } 
+          font-size: @font-size-base;
+        }
       }
       td[colspan="4"]:empty{
         display:none
