@@ -7,7 +7,7 @@ import jenkinsLocalStorage from '../../util/jenkinsLocalStorage';
 
 /**
  * Extracting this call from outside of the addPageTabs due to a regression
- * in 2.216/2.217
+ * in 2.216/2.217 (see JENKINS-61429)
  *
  * The proxied call to Behaviour.specify needs to be called from outside of the
  * addPageTabs function. Otherwise, it will not apply to existing draggable
