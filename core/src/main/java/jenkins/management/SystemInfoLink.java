@@ -56,7 +56,8 @@ public class SystemInfoLink extends ManagementLink {
     @Nonnull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.SYSTEM_READ;
+        //This link is displayed to any user with permission to access the management menu
+        return Jenkins.READ;
     }
 
     @Override
