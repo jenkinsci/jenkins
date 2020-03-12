@@ -1378,6 +1378,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since TODO
      */
+    @CheckForNull
     public Boolean isNoUsageStatistics() {
         return noUsageStatistics;
     }
@@ -1385,6 +1386,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * If usage statistics are being collected
      *
+     * @return {@code true} if usage statistics should be collected.
+     *                Defaults to {@code true} when {@link #noUsageStatistics} is not set.
      * @since TODO
      */
     public boolean isUsageStatisticsCollected() {
