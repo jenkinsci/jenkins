@@ -3,5 +3,6 @@
       "\\.hbs$": "jest-handlebars",
       "\\.js$": "babel-jest"
   },
-  "reporters": ["jest-standard-reporter"]
+  "reporters": ["jest-standard-reporter"],
+  "testPathIgnorePatterns": ["<rootDir>/work", "<rootDir>/target", "<rootDir>/node_modules/"]
 }
