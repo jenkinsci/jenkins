@@ -47,14 +47,21 @@ public class AboutJenkinsTest {
     
     @Test
     @Issue("SECURITY-771")
-    public void onlyAdminCanReadAbout() throws Exception {
+    public void onlyAdminOrManageOrSystemReadCanReadAbout() throws Exception {
         final String ADMIN = "admin";
         final String USER = "user";
+        final String MANAGER = "manager";
+        final String READONLY = "readonly";
+        final String MANAGER_READONLY = "manager-readonly";
         
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
                 .grant(Jenkins.READ).everywhere().to(USER)
+                .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
+                .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY)
+                .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY)
+                .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY)
         );
         
         JenkinsRule.WebClient wc = j.createWebClient()
@@ -71,6 +78,24 @@ public class AboutJenkinsTest {
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), containsString("Mavenized dependencies"));
+        }
+
+        { // manager can access it
+            wc.login(MANAGER);
+            HtmlPage page = wc.goTo("about/");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        }
+
+        { // readonly can access it
+            wc.login(READONLY);
+            HtmlPage page = wc.goTo("about/");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        }
+
+        { // manager-readonly can access it
+            wc.login(MANAGER_READONLY);
+            HtmlPage page = wc.goTo("about/");
+            assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         }
     }
     
