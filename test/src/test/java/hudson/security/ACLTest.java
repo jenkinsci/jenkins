@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import hudson.model.Build;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;
@@ -106,6 +107,42 @@ public class ACLTest {
         expectedException.expect(AccessDeniedException.class);
         try (ACLContext ignored = ACL.as(manager.impersonate())) {
             jenkins.getACL().checkAnyPermission(Jenkins.ADMINISTER, Jenkins.READ);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-61467")
+    public void checkAnyPermissionDoesNotShowDisabledPermissionsInError() throws Exception {
+        Jenkins jenkins = r.jenkins;
+        jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("manager")
+        );
+
+        final User manager = User.getOrCreateByIdOrFullName("manager");
+
+        expectedException.expectMessage("manager is missing the Overall/Administer permission");
+        expectedException.expect(AccessDeniedException.class);
+        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+            jenkins.getACL().checkAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-61467")
+    public void checkAnyPermissionShouldShowDisabledPermissionsIfNotImplied() throws Exception {
+        Jenkins jenkins = r.jenkins;
+        jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("manager")
+        );
+
+        final User manager = User.getOrCreateByIdOrFullName("manager");
+
+        expectedException.expectMessage("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required");
+        expectedException.expect(AccessDeniedException.class);
+        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+            jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Build.ARTIFACTS);
         }
     }
 
