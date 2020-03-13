@@ -190,7 +190,7 @@ public class JenkinsManagePermissionTest {
         form.getInputByName("_.usageStatisticsCollected").setChecked(!previousValue);
         j.submit(form);
 
-        assertThat("Can set UsageStadistics", j.jenkins.isUsageStatisticsCollected(), not(previousValue));
+        assertThat("Can set UsageStatistics", j.jenkins.isUsageStatisticsCollected(), not(previousValue));
     }
 
     private String getShell() {
