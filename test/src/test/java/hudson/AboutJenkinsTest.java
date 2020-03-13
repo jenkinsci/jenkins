@@ -56,10 +56,22 @@ public class AboutJenkinsTest {
         
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                // full access
                 .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
+
+                // Read access
                 .grant(Jenkins.READ).everywhere().to(USER)
+
+                // Read and Manage
+                .grant(Jenkins.READ).everywhere().to(MANAGER)
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
+
+                // Read and System read
+                .grant(Jenkins.READ).everywhere().to(READONLY)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(READONLY)
+
+                // Read, Manage and System read
+                .grant(Jenkins.READ).everywhere().to(MANAGER_READONLY)
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY)
         );
