@@ -29,6 +29,7 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Stapler;
 
@@ -174,7 +175,11 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      */
     @CheckForNull
     public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
-        return newInstanceFromRadioList(parent.getJSONObject(name));
+        try {
+            return newInstanceFromRadioList(parent.getJSONObject(name));
+        } catch (JSONException ex) {
+            throw new FormException(ex, name);
+        }
     }
 
     /**

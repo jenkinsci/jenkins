@@ -13,7 +13,7 @@ time {
     text-align: right;
 }
 .plugin-manager__categories {
-    margin-top: 0.5em;
+    margin-top: 0.25em;
 }
 
 .plugin-manager__category-label {
@@ -21,6 +21,7 @@ time {
     border: 1px solid #ccc;
     background-color: #eee;
     border-radius: 4px;
-    padding: 0.25rem;
+    font-size: 0.75rem;
+    padding: 0 0.5rem;
     margin: 0 0.25rem 0.25rem 0;
 }
