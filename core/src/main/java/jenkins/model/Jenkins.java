@@ -3863,7 +3863,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public HttpRedirect doQuietDown(@QueryParameter boolean block, @QueryParameter int timeout) throws InterruptedException, IOException {
         synchronized (this) {
-            checkPermission(ADMINISTER);
+            checkPermission(MANAGE);
             isQuietingDown = true;
         }
         if (block) {
@@ -3883,7 +3883,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @RequirePOST // TODO the cancel link needs to be updated accordingly
     public synchronized HttpRedirect doCancelQuietDown() {
-        checkPermission(ADMINISTER);
+        checkPermission(MANAGE);
         isQuietingDown = false;
         getQueue().scheduleMaintenance();
         return new HttpRedirect(".");
