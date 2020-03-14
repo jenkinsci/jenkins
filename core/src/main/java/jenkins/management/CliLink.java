@@ -62,4 +62,10 @@ public class CliLink extends ManagementLink {
     public String getUrlName() {
         return "cli";
     }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.TOOLS;
+    }
 }

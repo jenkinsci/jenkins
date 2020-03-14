@@ -31,8 +31,6 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.CheckForNull;
-
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -62,5 +60,11 @@ public class SystemInfoLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "systemInfo";
+    }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
     }
 }

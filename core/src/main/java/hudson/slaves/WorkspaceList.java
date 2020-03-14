@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -299,9 +300,10 @@ public final class WorkspaceList {
      * <p>The resulting directory may not exist; you may call {@link FilePath#mkdirs} on it if you need it to.
      * It may be deleted alongside the workspace itself during cleanup actions.
      * @param ws a directory such as a build workspace
-     * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}
+     * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}, or {@code null} if {@link FilePath#getParent} is null
      * @since 1.652
      */
+    @CheckForNull
     public static FilePath tempDir(FilePath ws) {
         return ws.sibling(ws.getName() + COMBINATOR + "tmp");
     }
