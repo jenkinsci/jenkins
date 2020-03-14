@@ -53,6 +53,7 @@ import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -98,6 +99,13 @@ public class WindowsInstallerLink extends ManagementLink {
 
     public String getDescription() {
         return Messages.WindowsInstallerLink_Description();
+    }
+
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 
     /**
