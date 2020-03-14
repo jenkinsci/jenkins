@@ -113,6 +113,15 @@ THE SOFTWARE.
                         </j:otherwise>
                       </j:choose>
                     </div>
+                    <j:if test="${!p.getActiveWarnings().isEmpty()}">
+                      <div class="alert alert-danger">${%securityWarning}
+                        <ul>
+                          <j:forEach var="warning" items="${p.getActiveWarnings()}">
+                            <li><a href="${warning.url}" target="_blank">${warning.message}</a></li>
+                          </j:forEach>
+                        </ul>
+                      </div>
+                    </j:if>
                   </td>
                   <td class="center pane" style="white-space:normal">
                     <a href="plugin/${p.shortName}/thirdPartyLicenses">

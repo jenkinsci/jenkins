@@ -31,6 +31,8 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -60,5 +62,11 @@ public class PluginsLink extends ManagementLink {
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
+    }
+  
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 }
