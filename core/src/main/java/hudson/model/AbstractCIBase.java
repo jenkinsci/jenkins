@@ -89,11 +89,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         c.kill();
     }
 
-    /* =================================================================================================================
-    * Package-protected, but accessed API
-    * ============================================================================================================== */
-
-    private Set<String> disabledAdministrativeMonitors = new HashSet<>();
+    private Set<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<>();
 
     /**
      * Get the disabled administrative monitors
