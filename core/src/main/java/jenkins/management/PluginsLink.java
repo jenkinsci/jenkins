@@ -28,6 +28,8 @@ import hudson.Extension;
 import hudson.model.ManagementLink;
 import org.jenkinsci.Symbol;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -51,5 +53,11 @@ public class PluginsLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "pluginManager";
+    }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 }

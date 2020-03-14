@@ -159,7 +159,6 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/jsbundles/ui-refresh-overrides.css" type="text/css" />
 
     <l:hasPermission permission="${app.READ}">
