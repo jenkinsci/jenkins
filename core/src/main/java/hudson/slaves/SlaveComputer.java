@@ -54,7 +54,9 @@ import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
+import jenkins.model.RemotingConfiguration;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
@@ -638,10 +640,21 @@ public class SlaveComputer extends Computer {
         String slaveVersion = channel.call(new SlaveVersion());
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
+        boolean rejectConnection = GlobalConfiguration.all().get(RemotingConfiguration.class).getRejectConnection();
+
+
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
-                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
-                    RemotingVersionInfo.getMinimumSupportedVersion()));
+            if (rejectConnection) {
+                log.println(String.format("Remoting version is older than a minimum required one (%s). " +
+                                "Connection is rejected.",
+                        RemotingVersionInfo.getMinimumSupportedVersion()));
+                channel.close();
+                return;
+            } else {
+                log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
+                                "Connection will not be rejected, but the compatibility is NOT guaranteed",
+                        RemotingVersionInfo.getMinimumSupportedVersion()));
+            }
         }
 
         boolean _isUnix = channel.call(new DetectOS());
