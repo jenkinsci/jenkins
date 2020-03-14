@@ -29,6 +29,7 @@ import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
@@ -102,7 +103,7 @@ public abstract class ACL {
 
         Authentication authentication = Jenkins.getAuthentication();
         if (failed) { // we know that none of the permissions are granted
-            Set<Permission> enabledPermissions = new HashSet<>();
+            Set<Permission> enabledPermissions = new LinkedHashSet<>();
             for (Permission p : permissions) {
                 while (!p.enabled && p.impliedBy != null) {
                     p = p.impliedBy;
