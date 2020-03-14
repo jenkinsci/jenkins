@@ -2,6 +2,7 @@
     background: white url('search.gif') no-repeat 2px center;
     padding-left: 20px;
     width: 15em;
+    font-size: 1em;
 }
 
 time {
@@ -10,7 +11,8 @@ time {
 
 #filter-container {
     margin: 1em;
-    text-align: right;
+    text-align: center;
+    font-size: 2em;
 }
 .plugin-manager__categories {
     margin-top: 0.25em;
@@ -24,4 +26,12 @@ time {
     font-size: 0.75rem;
     padding: 0 0.5rem;
     margin: 0 0.25rem 0.25rem 0;
+}
+.hidden-by-default {
+}
+.hidden {
+    display: none;
+}
+#hidden-by-default-instructions td {
+    font-size: 1.5em;
 }
