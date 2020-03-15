@@ -34,8 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import hudson.model.listeners.SaveableListener;
-
 import jenkins.model.FingerprintFacet;
 
 import static org.hamcrest.io.FileMatchers.aReadableFile;
