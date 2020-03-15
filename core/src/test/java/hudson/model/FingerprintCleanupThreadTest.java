@@ -38,9 +38,14 @@ import hudson.model.listeners.SaveableListener;
 
 import jenkins.model.FingerprintFacet;
 
+import static org.hamcrest.io.FileMatchers.aReadableFile;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 public class FingerprintCleanupThreadTest {
 
@@ -104,7 +109,7 @@ public class FingerprintCleanupThreadTest {
         fp.facets.add(facet);
         FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(fp);
         cleanupThread.execute(testTaskListener);
-        assertTrue("Should have deleted obsolete file.", fpFile.toFile().exists());
+        assertThat(fpFile.toFile(), is(aReadableFile()));
     }
 
     @Test
@@ -117,7 +122,7 @@ public class FingerprintCleanupThreadTest {
         fp.facets.add(facet);
         FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(fp);
         cleanupThread.execute(testTaskListener);
-        assertFalse("Should have deleted obsolete file.", fpFile.toFile().exists());
+        assertThat(fpFile.toFile(), is(not(aReadableFile())));
     }
 
     private void createFolderStructure() throws IOException {
