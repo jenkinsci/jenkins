@@ -1373,10 +1373,32 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return updateCenter;
     }
 
+    /**
+     * If usage statistics has been disabled
+     *
+     * @since TODO
+     */
+    @CheckForNull
+    public Boolean isNoUsageStatistics() {
+        return noUsageStatistics;
+    }
+
+    /**
+     * If usage statistics are being collected
+     *
+     * @return {@code true} if usage statistics should be collected.
+     *                Defaults to {@code true} when {@link #noUsageStatistics} is not set.
+     * @since TODO
+     */
     public boolean isUsageStatisticsCollected() {
         return noUsageStatistics==null || !noUsageStatistics;
     }
 
+    /**
+     * Sets the noUsageStatistics flag
+     *
+     * @since TODO
+     */
     public void setNoUsageStatistics(Boolean noUsageStatistics) throws IOException {
         this.noUsageStatistics = noUsageStatistics;
         save();
@@ -2582,7 +2604,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return securityRealm;
     }
 
-    public void setSecurityRealm(SecurityRealm securityRealm) {
+    /**
+     * Sets a security realm.
+     * @param securityRealm Security realm to set.
+     *                      If {@code null}, {@link SecurityRealm#NO_AUTHENTICATION} will be set.
+     */
+    public void setSecurityRealm(@CheckForNull SecurityRealm securityRealm) {
         if(securityRealm==null)
             securityRealm= SecurityRealm.NO_AUTHENTICATION;
         this.useSecurity = true;
@@ -2612,7 +2639,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         saveQuietly();
     }
 
-    public void setAuthorizationStrategy(AuthorizationStrategy a) {
+    /**
+     * Sets a new authorization strategy.
+     * @param a Authorization strategy to set.
+     *          If {@code null}, {@link AuthorizationStrategy#UNSECURED} will be set
+     */
+    public void setAuthorizationStrategy(@CheckForNull AuthorizationStrategy a) {
         if (a == null)
             a = AuthorizationStrategy.UNSECURED;
         useSecurity = true;
@@ -4704,6 +4736,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     // for Jelly
     public List<ManagementLink> getManagementLinks() {
         return ManagementLink.all();
+    }
+
+    // for Jelly
+    @Restricted(NoExternalUse.class)
+    public Map<ManagementLink.Category, List<ManagementLink>> getCategorizedManagementLinks() {
+        Map<ManagementLink.Category, List<ManagementLink>> byCategory = new TreeMap<>();
+        for (ManagementLink link : ManagementLink.all()) {
+            if (link.getIconFileName() == null) {
+                continue;
+            }
+            if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {
+                continue;
+            }
+            byCategory.computeIfAbsent(link.getCategory(), c -> new ArrayList<>()).add(link);
+        }
+        return byCategory;
     }
     
     /**
