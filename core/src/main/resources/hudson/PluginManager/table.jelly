@@ -42,8 +42,17 @@ THE SOFTWARE.
       <st:adjunct includes="hudson.PluginManager._table"/>
       
       <div id="filter-container">
-        ${filtered == 'true' ? '%Search' : '%Filter'}:
-        <input type="text" id="filter-box"/>
+        <div class="plugin-manager__search">
+          <input
+              role="searchbox"
+              class="plugin-manager__search-input"
+              type="text"
+              id="filter-box"
+              placeholder="${filtered == 'true' ? '%search' : '%filter'}" />
+          <span class="plugin-manager__icon-leading">
+            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
+          </span>
+        </div>
       </div>
 
       <form method="post" action="install">
