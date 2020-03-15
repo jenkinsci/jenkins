@@ -25,8 +25,10 @@
 package hudson.security;
 
 import hudson.model.Build;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +42,9 @@ import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
+
+import javax.annotation.CheckForNull;
 
 public class ACLTest {
 
@@ -158,6 +163,29 @@ public class ACLTest {
         r.jenkins.getACL().checkAnyPermission();
     }
 
+    @Test
+    @Issue("JENKINS-61465")
+    public void checkAnyPermissionOnNonAccessControlled() throws Exception {
+        expectedException = ExpectedException.none();
+
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone());
+
+        JenkinsRule.WebClient wc = r.createWebClient();
+        try {
+            wc.goTo("either");
+            fail();
+        } catch (FailingHttpStatusCodeException ex) {
+            assertEquals(403, ex.getStatusCode());
+        }
+
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().toEveryone());
+
+        wc.goTo("either"); // expected to work
+    }
+
     private static class DoNotBotherMe extends AuthorizationStrategy {
 
         @Override
@@ -175,6 +203,28 @@ public class ACLTest {
             return Collections.emptySet();
         }
 
+    }
+
+    @TestExtension
+    public static class EitherPermission implements UnprotectedRootAction {
+
+        @CheckForNull
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getUrlName() {
+            return "either";
+        }
     }
 
 }

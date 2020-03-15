@@ -2746,53 +2746,6 @@ function loadScript(href,callback) {
     head.insertBefore( script, head.firstChild );
 }
 
-/*
-redirects to a page once the page is ready.
-
-    @param url
-        Specifies the URL to redirect the user.
-*/
-function applySafeRedirector(url) {
-    var i=0;
-    new PeriodicalExecuter(function() {
-      i = (i+1)%4;
-      var s = "";
-      var j=0;
-      for( j=0; j<i; j++ )
-        s+='.';
-      // put the rest of dots as hidden so that the layout doesn't change
-      // depending on the # of dots.
-      s+="<span style='visibility:hidden'>";
-      for( ; j<4; j++ )
-        s+='.';
-      s+="</span>";
-      $('progress').innerHTML = s;
-    },1);
-
-    window.setTimeout(function() {
-      var statusChecker = arguments.callee;
-        new Ajax.Request(url, {
-            method: "get",
-            onFailure: function(rsp) {
-                if((rsp.status >= 502 && rsp.status <= 504) && rsp.getHeader("X-Jenkins-Interactive")==null) {
-                  // redirect as long as we are still loading
-                  window.setTimeout(statusChecker,5000);
-                } else {
-                  window.location.replace(url);
-                }
-            },
-            onSuccess: function(rsp) {
-                if(rsp.status!=200) {
-                    // if connection fails, somehow Prototype thinks it's a success
-                    window.setTimeout(statusChecker,5000);
-                } else {
-                    window.location.replace(url);
-                }
-            }
-        });
-    }, 5000);
-}
-
 // logic behind <f:validateButton />
 function safeValidateButton(yuiButton) {
     var button = yuiButton._button;
