@@ -642,7 +642,6 @@ public class SlaveComputer extends Computer {
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
         boolean rejectConnection = GlobalConfiguration.all().get(RemotingConfiguration.class).getRejectConnection();
 
-
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
             if (rejectConnection) {
                 log.println(String.format("Remoting version is older than a minimum required one (%s). " +
