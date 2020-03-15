@@ -2213,4 +2213,11 @@ public class Functions {
             return true;
         }
     }
+
+    @Restricted(NoExternalUse.class) // for manage.jelly
+    public static ModelObjectWithContextMenu.MenuItem createMenuItemWithSubMenu(String displayName) {
+        final ModelObjectWithContextMenu.MenuItem menuItem = new ModelObjectWithContextMenu.MenuItem().withDisplayName(displayName);
+        menuItem.subMenu = new ModelObjectWithContextMenu.ContextMenu();
+        return menuItem;
+    }
 }

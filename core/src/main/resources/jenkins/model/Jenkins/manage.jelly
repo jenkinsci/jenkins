@@ -47,6 +47,8 @@ THE SOFTWARE.
     </div>
 
     <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
+      <j:set var="currentCategoryItem" value="${h.createMenuItemWithSubMenu(category.key.label)}"/>
+      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(currentCategoryItem) : null}
       <h2>${category.key.label}</h2>
       <div class="manage-page__row">
       <j:forEach var="m" items="${category.value}">
@@ -55,7 +57,7 @@ THE SOFTWARE.
           <div class="manage-option manage-page__column">
           <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
           <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
-          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
+          ${taskTags!=null and attrs.contextMenu!='false' ? currentCategoryItem.subMenu.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
           <j:choose>
             <j:when test="${m.requiresConfirmation}">
               <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
