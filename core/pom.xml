@@ -189,7 +189,6 @@ THE SOFTWARE.
       <artifactId>jenkins-stapler-support</artifactId>
       <version>1.1</version>
     </dependency>
-
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
@@ -202,11 +201,13 @@ THE SOFTWARE.
       <version>2.2</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
       <version>1.13</version>
     </dependency>
+
     <dependency><!-- until we get this version through Stapler -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>json-lib</artifactId>
