@@ -839,7 +839,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins#MANAGE}.
      *
      * @return Permission required to globally configure this descriptor.
-     * @since TODO
+     * @since 2.222
      */
     public @Nonnull
     Permission getRequiredGlobalConfigPagePermission() {
