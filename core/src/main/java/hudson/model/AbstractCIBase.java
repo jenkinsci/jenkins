@@ -105,7 +105,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      *
      * @since TODO
      */
-    public synchronized void setDisabledAdministrativeMonitors(Set<String> disabledAdministrativeMonitors) {
+    public void setDisabledAdministrativeMonitors(Set<String> disabledAdministrativeMonitors) {
         synchronized (this.disabledAdministrativeMonitors) {
             this.disabledAdministrativeMonitors.clear();
             this.disabledAdministrativeMonitors.addAll(disabledAdministrativeMonitors);
