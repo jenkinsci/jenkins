@@ -129,4 +129,5 @@ A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows 
 
 #breadcrumb-menu .header {
   font-weight: bold;
+  font-size: 0.875rem;
 }
