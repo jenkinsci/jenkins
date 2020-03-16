@@ -42,6 +42,7 @@ THE SOFTWARE.
     <stapler.version>1.259</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
+    <hamcrest.version>2.2</hamcrest.version>
   </properties>
 
   <dependencyManagement>
@@ -192,13 +193,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
-      <version>2.2</version>
+      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
-      <version>2.2</version>
+      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
 
