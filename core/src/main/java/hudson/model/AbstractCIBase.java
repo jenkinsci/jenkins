@@ -97,9 +97,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * @since TODO
      */
     public Set<String> getDisabledAdministrativeMonitors(){
-        synchronized (disabledAdministrativeMonitors) {
-            return disabledAdministrativeMonitors;
-        }
+        return disabledAdministrativeMonitors;
     }
 
     /**
