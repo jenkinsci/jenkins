@@ -126,3 +126,7 @@
 A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
     padding-right: 16px;
 }
+
+#breadcrumb-menu .header {
+  font-weight: bold;
+}

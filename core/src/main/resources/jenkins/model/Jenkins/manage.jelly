@@ -47,6 +47,7 @@ THE SOFTWARE.
     </div>
 
     <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
+      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
       <h2>${category.key.label}</h2>
       <div class="manage-page__row">
       <j:forEach var="m" items="${category.value}">

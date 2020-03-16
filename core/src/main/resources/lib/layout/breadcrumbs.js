@@ -203,7 +203,11 @@ var breadcrumbs = (function() {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
                     function fillMenuItem(e) {
-                        e.text = makeMenuHtml(e.icon, e.displayName);
+                        if (e.header) {
+                            e.text = makeMenuHtml(e.icon, "<span class='header'>" + e.displayName + "</span>");
+                        } else {
+                            e.text = makeMenuHtml(e.icon, e.displayName);
+                        }
                         if (e.subMenu!=null)
                             e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
                         if (e.requiresConfirmation) {
