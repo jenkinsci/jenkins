@@ -89,15 +89,17 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         c.kill();
     }
 
-    private volatile Set<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<>();
+    private final Set<String> disabledAdministrativeMonitors = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Get the disabled administrative monitors
      *
      * @since TODO
      */
-    public synchronized Set<String> getDisabledAdministrativeMonitors(){
-    	return disabledAdministrativeMonitors;
+    public Set<String> getDisabledAdministrativeMonitors(){
+        synchronized (disabledAdministrativeMonitors) {
+            return disabledAdministrativeMonitors;
+        }
     }
 
     /**
@@ -106,7 +108,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * @since TODO
      */
     public synchronized void setDisabledAdministrativeMonitors(Set<String> disabledAdministrativeMonitors) {
-        this.disabledAdministrativeMonitors = new CopyOnWriteArraySet<>(disabledAdministrativeMonitors);
+        synchronized (this.disabledAdministrativeMonitors) {
+            this.disabledAdministrativeMonitors.clear();
+            this.disabledAdministrativeMonitors.addAll(disabledAdministrativeMonitors);
+        }
     }
 
     /* =================================================================================================================
