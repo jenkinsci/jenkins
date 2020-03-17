@@ -33,7 +33,7 @@ THE SOFTWARE.
         <st:adjunct includes="hudson.PluginManager._table"/>
         <div id="filter-container">
             ${%Filter}:
-            <input type="text" id="filter-box"/>
+            <input type="text" id="filter-box" value="${request.getParameter('filter')}"/>
         </div>
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
