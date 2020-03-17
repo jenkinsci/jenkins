@@ -39,6 +39,7 @@ import jenkins.model.FingerprintFacet;
 import static org.hamcrest.io.FileMatchers.aReadableFile;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.StringContains.containsString;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -107,7 +108,8 @@ public class FingerprintCleanupThreadTest {
         fp.facets.add(facet);
         FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(fp);
         cleanupThread.execute(testTaskListener);
-        assertThat(fpFile.toFile(), is(aReadableFile()));
+        String logOutput = testTaskListener.outputStream.toString();
+        assertThat(logOutput, containsString("blocked deletion of"));
     }
 
     @Test
