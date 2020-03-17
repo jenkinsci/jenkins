@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.52</version>
+    <version>1.54</version>
     <relativePath />
   </parent>
 
@@ -52,7 +52,6 @@ THE SOFTWARE.
     <module>bom</module>
     <module>core</module>
     <module>war</module>
-    <module>test-pom</module>
     <module>test</module>
     <module>cli</module>
   </modules>
@@ -77,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.211</revision>
+    <revision>2.227</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -102,7 +101,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3.36</remoting.version>
+    <remoting.version>4.2</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -112,8 +111,8 @@ THE SOFTWARE.
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
     <!-- TODO keep these in sync -->
-    <access-modifier-annotation.version>1.14</access-modifier-annotation.version>
-    <access-modifier-checker.version>1.14</access-modifier-checker.version>
+    <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
+    <access-modifier-checker.version>1.16</access-modifier-checker.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -408,6 +407,20 @@ THE SOFTWARE.
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
         </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <configuration>
+            <plugins>
+              <plugin>
+                <groupId>com.h3xstream.findsecbugs</groupId>
+                <artifactId>findsecbugs-plugin</artifactId>
+                <version>1.10.1</version>
+              </plugin>
+            </plugins>
+            <maxHeap>768</maxHeap>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -655,15 +668,6 @@ THE SOFTWARE.
       </properties>
       <activation>
         <jdk>11</jdk>
-      </activation>
-    </profile>
-    <profile>
-      <id>jdk8</id>
-      <modules>
-        <module>test-jdk8</module>
-      </modules>
-      <activation>
-        <jdk>1.8</jdk>
       </activation>
     </profile>
   </profiles>

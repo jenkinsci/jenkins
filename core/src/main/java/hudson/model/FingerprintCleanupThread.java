@@ -23,9 +23,11 @@
  */
 package hudson.model;
 
+import com.thoughtworks.xstream.converters.basic.DateConverter;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Functions;
+import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -51,6 +53,8 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
+
+    private static final DateConverter DATE_CONVERTER = new DateConverter();
 
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
@@ -107,11 +111,15 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     private boolean check(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = loadFingerprint(fingerprintFile);
-            if (fp == null || !fp.isAlive()) {
+            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null) ) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
                 return true;
             } else {
+                if (!fp.isAlive()) {
+                    FingerprintFacet deletionBlockerFacet = fp.getFacetBlockingDeletion();
+                    listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + DATE_CONVERTER.toString(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
+                }
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
                 fp = getFingerprint(fp);

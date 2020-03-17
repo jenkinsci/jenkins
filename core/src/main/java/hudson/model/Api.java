@@ -247,6 +247,10 @@ public class Api extends AbstractModelObject {
     protected void setHeaders(StaplerResponse rsp) {
         rsp.setHeader("X-Jenkins", Jenkins.VERSION);
         rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
+        // to be really defensive against dumb browsers not taking into consideration the content-type being set
+        rsp.setHeader("X-Content-Type-Options", "nosniff");
+        // recommended by OWASP: https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html#security-headers
+        rsp.setHeader("X-Frame-Options", "deny");
     }
 
     private static final Logger LOGGER = Logger.getLogger(Api.class.getName());

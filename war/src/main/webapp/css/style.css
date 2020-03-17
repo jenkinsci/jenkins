@@ -58,12 +58,12 @@ body, table, form, input, td, th, p, textarea, select
 @media (min-width:1600px){
   body#jenkins.j-hide-left #main-panel{max-width:75%}
   body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:14px;}  
+    {font-size:14px;}
 }
 @media (min-width:2000px){
   body#jenkins.j-hide-left #main-panel{max-width:85%}
   body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:15px;}  
+    {font-size:15px;}
 }
 body, table, form, td, th, p
 {
@@ -80,6 +80,10 @@ td {
 
 dt {
   font-weight: bold;
+}
+
+dt > .plugin_version {
+  font-weight: normal;
 }
 
 .fixed-width {
@@ -261,7 +265,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;  
+    word-wrap: break-word;
 }
 
 pre.console {
@@ -403,6 +407,11 @@ pre.console {
   font-size: 12pt;
 }
 
+.jenkins-not-applicable {
+  color: darkgrey;
+  font-style: italic;
+}
+
 #jenkins .task-link {
     text-decoration: none;
 }
@@ -527,6 +536,10 @@ table.bigtable.pane > tbody > tr > td:last-child {
   background-color: #f0f0f0;
   padding: 6px 4px;
   white-space: nowrap;
+}
+
+.bigtable th.minimum-width {
+  width: 1px;
 }
 
 .bigtable td {
@@ -1500,7 +1513,7 @@ DIV.yahooTree td {
   height: 24px;
   padding-left: 20px;
   width: 15em;
-  position: static; 
+  position: static;
   border: 1px solid #DDD;
   border-radius: 4px;
   box-shadow: 0 0 5px #DDD inset;
@@ -1598,7 +1611,7 @@ TEXTAREA.rich-editor {
 }
 
 /*
- * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299, 
+ * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299,
  *                  remove once there are no more dependencies
  */
 #plugins .compatWarning {
@@ -1760,7 +1773,7 @@ select.select-ajax-pending {
 
 /* ========================= Button styles ================= */
 .btn-box {
-  display:block; 
+  display:block;
   margin-top:2em
 }
 #disable-project {
@@ -2084,6 +2097,23 @@ body.no-sticker #bottom-sticker {
 
 #rss-bar .rss-bar-item {
     padding-left: 1em;
+}
+
+/* -------------------------------------- */
+
+/* -------------- SVG icons ------------- */
+
+.svg-icon {
+  display: inline-block;
+  vertical-align: middle;
+
+  /* default dimensions */
+  height: 24px;
+  width: 24px;
+
+  /* default fill fallback */
+  fill: #111;
+  fill: currentColor;
 }
 
 /* -------------------------------------- */

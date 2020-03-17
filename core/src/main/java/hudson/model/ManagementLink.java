@@ -31,6 +31,12 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
@@ -112,10 +118,14 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
-     * @return permission required for user to access this management link, in addition to {@link Jenkins#ADMINISTER}
+     * Returns the permission required for user to see this management link on the "Manage Jenkins" page ({@link ManageJenkinsAction}).
+     *
+     * Historically, this returned null, which amounted to the same behavior, as {@link Jenkins#ADMINISTER} was required to access the page.
+     *
+     * @return the permission required for the link to be shown on "Manage Jenkins".
      */
-    public @CheckForNull Permission getRequiredPermission() {
-        return null;
+    public @Nonnull Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
     }
 
     /**
@@ -127,4 +137,58 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     public boolean getRequiresPOST() {
         return false;
     }
+
+    /**
+     * Name of the category for this management link. Exists so that plugins with core dependency pre-dating the version
+     * when this was introduced can define a category. Plugins with newer core dependency override {@link #getCategory()} instead.
+     *
+     * @return name of the desired category, one of the enum values of {@link Category}, e.g. {@code STATUS}.
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class) // TODO I don't think this works
+    protected @Nonnull String getCategoryName() {
+        return "UNCATEGORIZED";
+    }
+
+    /**
+     * Category for management link, uses {@code String} so it can be done with core dependency pre-dating the version this feature was added.
+     *
+     * @return An enum value of {@link Category}.
+     * @since TODO
+     */
+    public @Nonnull Category getCategory() {
+        try {
+            return Category.valueOf(getCategoryName());
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "invalid category {0} for class {1}", new Object[]{getCategoryName() , this.getClass().getName()});
+            return Category.UNCATEGORIZED;
+        }
+    }
+
+    /**
+     * Categories supported by this version of core.
+     *
+     * @since TODO
+     */
+    public enum Category {
+        CONFIGURATION(Messages._ManagementLink_Category_CONFIGURATION()),
+        SECURITY(Messages._ManagementLink_Category_SECURITY()),
+        STATUS(Messages._ManagementLink_Category_STATUS()),
+        TROUBLESHOOTING(Messages._ManagementLink_Category_TROUBLESHOOTING()),
+        TOOLS(Messages._ManagementLink_Category_TOOLS()),
+        MISC(Messages._ManagementLink_Category_MISC()),
+        UNCATEGORIZED(Messages._ManagementLink_Category_UNCATEGORIZED());
+
+        private Localizable label;
+
+        Category(Localizable label) {
+            this.label = label;
+        }
+
+        public @Nonnull String getLabel() {
+            return label.toString();
+        }
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(ManagementLink.class.getName());
 }

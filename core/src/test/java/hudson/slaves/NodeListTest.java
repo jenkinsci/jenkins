@@ -36,7 +36,6 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * @author Kohsuke Kawaguchi

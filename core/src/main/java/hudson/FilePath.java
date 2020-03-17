@@ -59,7 +59,7 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
 
-
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -758,10 +758,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public enum TarCompression {
         NONE {
             public InputStream extract(InputStream in) {
-                return in;
+                return new BufferedInputStream(in);
             }
             public OutputStream compress(OutputStream out) {
-                return out;
+                return new BufferedOutputStream(out);
             }
         },
         GZIP {
@@ -1321,10 +1321,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Short for {@code getParent().child(rel)}. Useful for getting other files in the same directory. 
+     * Short for {@code getParent().child(rel)}. Useful for getting other files in the same directory.
+     * @return null if {@link #getParent} would have
      */
+    @CheckForNull
     public FilePath sibling(String rel) {
-        return getParent().child(rel);
+        FilePath parent = getParent();
+        return parent != null ? parent.child(rel) : null;
     }
 
     /**
@@ -1347,6 +1350,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Gets the parent file.
      * @return parent FilePath or null if there is no parent
      */
+    @CheckForNull
     public FilePath getParent() {
         int i = remote.length() - 2;
         for (; i >= 0; i--) {
@@ -2971,7 +2975,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private static void checkPermissionForValidate() {
         AccessControlled subject = Stapler.getCurrentRequest().findAncestorObject(AbstractProject.class);
         if (subject == null)
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.MANAGE);
         else
             subject.checkPermission(Item.CONFIGURE);
     }

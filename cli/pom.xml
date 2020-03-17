@@ -53,14 +53,17 @@
     <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-annotation</artifactId>
+        <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -71,32 +74,41 @@
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
       <version>1.26</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
       <version>1.7.0</version>
-      <optional>true</optional> <!-- do not expose to core -->
+      <optional>true</optional>
     </dependency>
-	<!-- ed25519 algorithm, see JENKINS-45318 -->
-	<dependency>
-  	  <groupId>net.i2p.crypto</groupId>
-	  <artifactId>eddsa</artifactId>
-	  <version>0.3.0</version>
-	</dependency>
+    <!-- ed25519 algorithm, see JENKINS-45318 -->
+    <dependency>
+      <groupId>net.i2p.crypto</groupId>
+      <artifactId>eddsa</artifactId>
+      <version>0.3.0</version>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <optional>true</optional> <!-- ditto -->
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.tyrus.bundles</groupId>
+      <artifactId>tyrus-standalone-client-jdk</artifactId>
+      <version>1.12</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 
@@ -107,29 +119,43 @@
         <version>2.22.2</version>
       </plugin>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <descriptorRefs>
-                <descriptorRef>jar-with-dependencies</descriptorRef>
-              </descriptorRefs>
-              <archive>
-                <manifest>
-                  <mainClass>hudson.cli.CLI</mainClass>
-                </manifest>
-                <manifestEntries>
-                  <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
-                </manifestEntries>
-              </archive>
-            </configuration>
-          </execution>
-        </executions>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.2.1</version>
+          <executions>
+              <execution>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>shade</goal>
+                  </goals>
+                  <configuration>
+                      <createDependencyReducedPom>false</createDependencyReducedPom>
+                      <relocations>
+                          <relocation>
+                              <pattern>javax.websocket</pattern>
+                              <shadedPattern>io.jenkins.cli.shaded.javax.websocket</shadedPattern>
+                          </relocation>
+                          <relocation>
+                              <pattern>org</pattern>
+                              <shadedPattern>io.jenkins.cli.shaded.org</shadedPattern>
+                          </relocation>
+                          <relocation>
+                              <pattern>net</pattern>
+                              <shadedPattern>io.jenkins.cli.shaded.net</shadedPattern>
+                          </relocation>
+                      </relocations>
+                      <transformers>
+                          <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                              <mainClass>hudson.cli.CLI</mainClass>
+                              <manifestEntries>
+                                  <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
+                              </manifestEntries>
+                          </transformer>
+                          <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                      </transformers>
+                  </configuration>
+              </execution>
+          </executions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>

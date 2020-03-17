@@ -10,6 +10,9 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         var menu = document.createElement("SELECT");
         var btns = findElementsBySelector(e,"INPUT.hetero-list-add"),
             btn = btns[btns.length-1]; // In case nested content also uses hetero-list
+        if (!btn) {
+            return;
+        }
         YAHOO.util.Dom.insertAfter(menu,btn);
 
         var prototypes = $(e.lastChild);

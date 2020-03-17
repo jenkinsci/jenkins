@@ -157,6 +157,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public static final long QUEUE_ID_UNKNOWN = -1;
 
+    /**
+     * Target size limit for truncated {@link #description}s in the Build History Widget.
+     * This is applied to the raw, unformatted description. Especially complex formatting
+     * like hyperlinks can result in much less text being shown than this might imply.
+     * Negative values will disable truncation, {@code 0} will enforce empty strings.
+     * @since TODO
+     */
+    private static /* non-final for Groovy */ int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
+
     protected transient final @Nonnull JobT project;
 
     /**
@@ -221,8 +230,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     protected volatile Result result;
 
     /**
-     * Human-readable description. Can be null.
+     * Human-readable description which is used on the main build page.
+     * It can also be quite long, and it may use markup in a format defined by a {@link hudson.markup.MarkupFormatter}.
+     * {@link #getTruncatedDescription()} may be used to retrieve a size-limited description,
+     * but it implies some limitations.
      */
+    @CheckForNull
     protected volatile String description;
 
     /**
@@ -640,7 +653,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Same as {@link #getTimestamp()} but in a different type, that is since the time of the epoc.
+     * Same as {@link #getTimestamp()} but in a different type, that is since the time of the epoch.
      */
     public final long getTimeInMillis() {
         return timestamp;
@@ -660,6 +673,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     @Exported
+    @CheckForNull
     public String getDescription() {
         return description;
     }
@@ -667,25 +681,35 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Returns the length-limited description.
+     * The method tries to take HTML tags within the description into account, but it is a best-effort attempt.
+     * Also, the method will likely not work properly if a non-HTML {@link hudson.markup.MarkupFormatter} is used.
      * @return The length-limited description.
-     * @deprecated truncated description uses arbitrary and unconfigurable limit of 100 symbols
+     * @deprecated truncated description based on the {@link #TRUNCATED_DESCRIPTION_LIMIT} setting.
      */
     @Deprecated
-    public @Nonnull String getTruncatedDescription() {
-        final int maxDescrLength = 100;
-        if (description == null || description.length() < maxDescrLength) {
+    public @CheckForNull String getTruncatedDescription() {
+        if (TRUNCATED_DESCRIPTION_LIMIT < 0) { // disabled
             return description;
+        }
+        if (TRUNCATED_DESCRIPTION_LIMIT == 0) { // Someone wants to suppress descriptions, why not?
+            return "";
+        }
+
+        final int maxDescrLength = TRUNCATED_DESCRIPTION_LIMIT;
+        final String localDescription = description;
+        if (localDescription == null || localDescription.length() < maxDescrLength) {
+            return localDescription;
         }
 
         final String ending = "...";
-        final int sz = description.length(), maxTruncLength = maxDescrLength - ending.length();
+        final int sz = localDescription.length(), maxTruncLength = maxDescrLength - ending.length();
 
         boolean inTag = false;
         int displayChars = 0;
         int lastTruncatablePoint = -1;
 
         for (int i=0; i<sz; i++) {
-            char ch = description.charAt(i);
+            char ch = localDescription.charAt(i);
             if(ch == '<') {
                 inTag = true;
             } else if (ch == '>') {
@@ -702,7 +726,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         }
 
-        String truncDesc = description;
+        String truncDesc = localDescription;
 
         // Could not find a preferred truncatable index, force a trunc at maxTruncLength
         if (lastTruncatablePoint == -1)
@@ -954,7 +978,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */  
     public @Nonnull List<RunT> getPreviousBuildsOverThreshold(int numberOfBuilds, @Nonnull Result threshold) {
         RunT r = getPreviousBuild();
-        return r.getBuildsOverThreshold(numberOfBuilds, threshold);
+        if (r != null) {
+            return r.getBuildsOverThreshold(numberOfBuilds, threshold);
+        }
+        return new ArrayList<>(numberOfBuilds);
     }
 
     /**
@@ -2610,7 +2637,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public static class RedirectUp {
         public void doDynamic(StaplerResponse rsp) throws IOException {
             // Compromise to handle both browsers (auto-redirect) and programmatic access
-            // (want accurate 404 response).. send 404 with javscript to redirect browsers.
+            // (want accurate 404 response).. send 404 with javascript to redirect browsers.
             rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out = rsp.getWriter();

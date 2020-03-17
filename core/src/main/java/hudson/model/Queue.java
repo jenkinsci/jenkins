@@ -35,7 +35,8 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
-import static hudson.init.InitMilestone.JOB_LOADED;
+
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIResolver;
@@ -2417,6 +2418,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Restricted(NoExternalUse.class)
     @ExportedBean(defaultVisibility = 999)
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "it is exported, so it might be used")
     public class StubItem {
 
         @Exported public StubTask task;
@@ -3060,7 +3062,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Restores the queue content during the start up.
      */
-    @Initializer(after=JOB_LOADED)
+    @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins h) {
         h.getQueue().load();
     }

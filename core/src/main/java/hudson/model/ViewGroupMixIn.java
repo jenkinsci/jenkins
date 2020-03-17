@@ -47,7 +47,7 @@ import javax.annotation.Nonnull;
  * private ViewsTabBar viewsTabBar;
  * }</pre>
  * <li>
- * Define a transient field and store ViewGroupMixIn subype, then wire up getters and setters:
+ * Define a transient field and store ViewGroupMixIn subtype, then wire up getters and setters:
  * <pre>
  * private transient ViewGroupMixIn = new ViewGroupMixIn() {
  *     List&lt;View&gt; views() { return views; }

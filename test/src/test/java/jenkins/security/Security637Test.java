@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -224,11 +225,9 @@ public class Security637Test {
         
         private Set<URL> urlSet;
         
-        public URLJobProperty(URL... urls) throws Exception {
+        public URLJobProperty(URL... urls) {
             this.urlSet = new HashSet<>();
-            for (URL url : urls) {
-                urlSet.add(url);
-            }
+            Collections.addAll(urlSet, urls);
         }
         
         @Override

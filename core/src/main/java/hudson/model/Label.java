@@ -55,6 +55,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,6 +66,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -203,7 +206,9 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
     }
 
-    private static class NodeSorter implements Comparator<Node> {
+    private static class NodeSorter implements Comparator<Node>, Serializable {
+        private static final long serialVersionUID = -7368519598046684532L;
+
         @Override
         public int compare(Node o1, Node o2) {
             if (o1 == o2) {
@@ -385,13 +390,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Exported
     public List<AbstractProject> getTiedJobs() {
-        List<AbstractProject> r = new ArrayList<>();
-        for (AbstractProject<?,?> p : Jenkins.get().allItems(AbstractProject.class)) {
-            if(p instanceof TopLevelItem && this.equals(p.getAssignedLabel()))
-                r.add(p);
-        }
-        r.sort(Items.BY_FULL_NAME);
-        return r;
+        return StreamSupport.stream(Jenkins.get().allItems(AbstractProject.class,
+                i -> i instanceof TopLevelItem && this.equals(i.getAssignedLabel())).spliterator(),
+                true)
+                .sorted(Items.BY_FULL_NAME).collect(Collectors.toList());
     }
 
     /**

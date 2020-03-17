@@ -26,6 +26,6 @@ THE SOFTWARE.
   This is used to create the first user.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:_entryFormPage host="${it}" title="${%Create First Admin User}" action="createFirstAccount" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+<j:jelly xmlns:j="jelly:core" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm">
+  <local:_entryFormPage host="${it}" title="${%Create First Admin User}" action="createFirstAccount" captcha="${false}" data="${data}"/>
 </j:jelly>

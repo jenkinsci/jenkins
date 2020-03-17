@@ -40,12 +40,8 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
             }
             st.adjunct(includes: "lib.form.confirm")
         } else {
-            p {
-                _("There are no cloud implementations for dynamically allocated agents installed.")
-                a(href: rootURL + "/pluginManager/available") {
-                    _("Go to plugin manager.")
-                }
-            }
+            p(_("There are no cloud implementations for dynamically allocated agents installed. "))
+            a(href: rootURL + "/pluginManager/available", _("Go to plugin manager."))
         }
     }
 }

@@ -26,6 +26,7 @@ package jenkins.telemetry.impl.java11;
 
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
+import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
@@ -104,7 +105,9 @@ public class MissingClassTelemetry extends Telemetry {
             {"java.util.ResourceBundle$Control", "newBundle"},
             //hundreds when a job is created
             {"org.codehaus.groovy.control.ClassNodeResolver", "tryAsLoaderClassOrScript"},
-            {"org.kohsuke.stapler.RequestImpl$TypePair", "convertJSON"}
+            {"org.kohsuke.stapler.RequestImpl$TypePair", "convertJSON"},
+            {"net.bull.javamelody.FilterContext", "isMojarraAvailable"} // JENKINS-60725
+            
     };
 
     @Nonnull
@@ -158,7 +161,8 @@ public class MissingClassTelemetry extends Telemetry {
         }
 
         JSONObject info = new JSONObject();
-        info.put("core", Jenkins.getVersion() != null ? Jenkins.getVersion().toString() : "UNKNOWN");
+        VersionNumber jenkinsVersion = Jenkins.getVersion();
+        info.put("core", jenkinsVersion != null ? jenkinsVersion.toString() : "UNKNOWN");
         info.put("clientDate", clientDateString());
         info.put("classMissingEvents", events);
 

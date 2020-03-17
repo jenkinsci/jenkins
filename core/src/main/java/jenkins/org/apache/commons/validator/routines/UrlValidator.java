@@ -266,7 +266,7 @@ public class UrlValidator implements Serializable {
     }
     
     /**
-     * Customizable constructor. Validation behavior is modifed by passing in options.
+     * Customizable constructor. Validation behavior is modified by passing in options.
      * @param schemes the set of valid schemes. Ignored if the ALLOW_ALL_SCHEMES option is set.
      * @param authorityValidator Regular expression validator used to validate the authority part
      * @param options Validation options. Set using the public constants of this class.
@@ -381,7 +381,7 @@ public class UrlValidator implements Serializable {
      * If a RegexValidator was supplied and it matches, then the authority is regarded
      * as valid with no further checks, otherwise the method checks against the
      * AUTHORITY_PATTERN and the DomainValidator (ALLOW_LOCAL_URLS)
-     * @param authority Authority value to validate, alllows IDN
+     * @param authority Authority value to validate, allows IDN
      * @return true if authority (hostname and port) is valid.
      */
     protected boolean isValidAuthority(String authority) {

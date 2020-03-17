@@ -7,7 +7,6 @@ import hudson.XmlFile;
 import hudson.model.PersistentDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
-import jenkins.security.ApiTokenProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
 import org.jenkinsci.Symbol;

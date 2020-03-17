@@ -50,6 +50,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.Collator;
 import java.util.*;
 import java.util.logging.Level;
@@ -252,7 +253,9 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     }
     
-    private static class TargetComparator implements Comparator<Target> {
+    private static class TargetComparator implements Comparator<Target>, Serializable {
+
+        private static final long serialVersionUID = 9285340752515798L;
 
         @Override
         public int compare(Target left, Target right) {

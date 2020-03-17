@@ -49,7 +49,9 @@ THE SOFTWARE.
         </j:if>
         <div class="setting-main">
             <!-- create drop-down list -->
-            <select class="setting-input dropdownList">
+            <select class="setting-input dropdownList"
+                    disabled="${readOnlyMode ? 'true' : null}"
+            >
                 <j:set var="dropdownListMode" value="createSelectField"/>
                 <d:invokeBody/>
             </select>

@@ -74,7 +74,7 @@ public class UpdateCenterCustomTest {
         public String getUpdateCenterClassName() {
             return updateCenterClassName;
         }
-    };
+    }
     
     public static final class CustomUpdateCenter extends UpdateCenter {
 

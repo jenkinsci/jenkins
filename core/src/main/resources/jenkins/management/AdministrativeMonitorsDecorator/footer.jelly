@@ -27,7 +27,10 @@ THE SOFTWARE.
         <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>
         <div id="visible-am-container">
             <a id="visible-am-button" href="#" onclick="toggleVisibleAmList(event)" title="${%tooltip(it.activeAdministrativeMonitorsCount)}">
-                ${it.activeAdministrativeMonitorsCount}
+                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px" />
+                <span class="am-monitor__count">
+                    ${it.activeAdministrativeMonitorsCount}
+                </span>
             </a>
             <div id="visible-am-list">
                 <j:forEach var="am" items="${it.activeAdministrativeMonitors}">
@@ -41,7 +44,14 @@ THE SOFTWARE.
             </div>
         </div>
         <script type="text/javascript">
-            document.getElementById("header").appendChild(document.getElementById("visible-am-container"));
+            (function() {
+                var amContainer = document.getElementById("visible-am-container");
+                var amInsertion = document.getElementById("visible-am-insertion");
+
+                if (amInsertion) {
+                    amInsertion.appendChild(amContainer);
+                }
+            })();
         </script>
     </j:if>
 </j:jelly>

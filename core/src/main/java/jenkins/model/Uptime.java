@@ -25,7 +25,7 @@ public class Uptime {
         return System.currentTimeMillis()-startTime;
     }
 
-    @Initializer(after=InitMilestone.JOB_LOADED)
+    @Initializer(after=InitMilestone.JOB_CONFIG_ADAPTED)
     public void init() {
         startTime = System.currentTimeMillis();
     }

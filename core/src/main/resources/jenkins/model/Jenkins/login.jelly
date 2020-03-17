@@ -40,7 +40,7 @@ THE SOFTWARE.
     without it we would add ";jsessionid=" to the url which will result in a 404
   -->
   <j:set var="_" value="${request.getSession()}"/>
-  <!-- get default/commong page variable -->
+  <!-- get default/common page variable -->
   ${h.initPageVariables(context)}
   <x:doctype name="html" />
   <!-- needed for the redirect after login -->
