@@ -57,33 +57,33 @@ public class ParametersTest {
 
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = DomNodeUtil.selectSingleNode(form, "//@class='tr'[div/div/input/@value='string']");
+        HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[input/@value='string']")).getParentNode().getParentNode();
         assertNotNull(element);
         assertEquals("string description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
 
         HtmlTextInput stringParameterInput = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
-        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "[@class='setting-name']")).getTextContent());
+        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "div[contains(@class, 'setting-name')]")).getTextContent());
         stringParameterInput.setAttribute("value", "newValue");
 
-        element = DomNodeUtil.selectSingleNode(form, "//@class='tr'[div/div/input/@value='boolean']");
+        element = (HtmlElement) ((HtmlElement)DomNodeUtil.selectSingleNode(form, "//div[input/@value='boolean']")).getParentNode().getParentNode();
         assertNotNull(element);
         assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
         Object o = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
         assertEquals(true, booleanParameterInput.isChecked());
-        assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "div[@class='setting-main']")).getTextContent());
+        assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "div[@class='setting-main']/div")).getTextContent());
 
-        element = DomNodeUtil.selectSingleNode(form, ".//@class='tr'[div/div/input/@value='choice']");
+        element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode().getParentNode();
         assertNotNull(element);
         assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "div[@class='setting-name']")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "div[contains(@class, 'setting-name')]")).getTextContent());
 
-        element = DomNodeUtil.selectSingleNode(form, ".//@class='tr'[div/div/input/@value='run']");
+        element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='run']")).getParentNode().getParentNode();
         assertNotNull(element);
         assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "div[@class='setting-name']")).getTextContent());
+        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "div[contains(@class, 'setting-name')]")).getTextContent());
 
         j.submit(form);
         Queue.Item q = j.jenkins.getQueue().getItem(project);
