@@ -3913,7 +3913,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Cancel previous quiet down Jenkins - preparation for a restart
      */
-    @RequirePOST // TODO the cancel link needs to be updated accordingly
+    @RequirePOST
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(MANAGE);
         isQuietingDown = false;
