@@ -54,3 +54,5 @@ push-build.sh
 war/node_modules/
 war/yarn-error.log
 .java-version
+
+war/package-lock.json
