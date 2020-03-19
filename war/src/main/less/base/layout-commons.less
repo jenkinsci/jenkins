@@ -54,17 +54,15 @@ body {
 
 #side-panel {
   padding: 15px 15px 40px 15px;
-  float: left;
   width: 320px;
+  display: inline-block;
+  vertical-align: top;
 }
 
 #main-panel {
   padding: 15px 15px 40px 15px;
-}
-
-body.two-column #main-panel {
-  margin-left: 320px;
-  display:block;
+  display: inline-block;
+  width: calc(100% - 320px);
 }
 
 body.full-screen {
@@ -84,7 +82,7 @@ body.full-screen #main-panel {
 
   body.two-column #main-panel {
     margin-left: 0;
-    display:block;
+    width: 100%;
   }
 }
 
@@ -93,9 +91,8 @@ body.full-screen #main-panel {
     width: 360px;
   }
 
-  body.two-column #main-panel {
-    margin-left: 360px;
-    display:block;
+  #main-panel {
+    width: calc(100% - 370px);
   }
 }
 
