@@ -62,6 +62,10 @@ body {
 #main-panel {
   padding: 15px 15px 40px 15px;
   display: inline-block;
+  width: 100%;
+}
+
+body.two-column #main-panel {
   width: calc(100% - 320px);
 }
 
@@ -91,7 +95,7 @@ body.full-screen #main-panel {
     width: 360px;
   }
 
-  #main-panel {
+  body.two-column #main-panel {
     width: calc(100% - 370px);
   }
 }
