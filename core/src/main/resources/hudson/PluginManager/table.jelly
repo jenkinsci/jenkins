@@ -156,7 +156,7 @@ THE SOFTWARE.
               </j:when>
               <j:otherwise>
                 <tr>
-                  <td colspan="4" align="center">
+                  <td colspan="5" align="center">
                     <div style="padding:1em">
                       ${%No updates}
                     </div>
