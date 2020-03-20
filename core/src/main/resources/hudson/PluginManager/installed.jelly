@@ -111,6 +111,11 @@ THE SOFTWARE.
                         </ul>
                       </div>
                     </j:if>
+                    <j:if test="${it.hasAdoptThisPluginLabel(p)}">
+                      <div class="alert alert-warning">
+                        ${%adoptThisPlugin}
+                      </div>
+                    </j:if>
                   </td>
                   <td class="center pane" style="white-space:normal">
                     <a href="plugin/${p.shortName}/thirdPartyLicenses">

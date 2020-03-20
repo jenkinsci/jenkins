@@ -143,7 +143,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * when this was introduced can define a category. Plugins with newer core dependency override {@link #getCategory()} instead.
      *
      * @return name of the desired category, one of the enum values of {@link Category}, e.g. {@code STATUS}.
-     * @since TODO
+     * @since 2.226
      */
     @Restricted(NoExternalUse.class) // TODO I don't think this works
     protected @Nonnull String getCategoryName() {
@@ -154,7 +154,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * Category for management link, uses {@code String} so it can be done with core dependency pre-dating the version this feature was added.
      *
      * @return An enum value of {@link Category}.
-     * @since TODO
+     * @since 2.226
      */
     public @Nonnull Category getCategory() {
         try {
@@ -168,7 +168,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     /**
      * Categories supported by this version of core.
      *
-     * @since TODO
+     * @since 2.226
      */
     public enum Category {
         CONFIGURATION(Messages._ManagementLink_Category_CONFIGURATION()),
