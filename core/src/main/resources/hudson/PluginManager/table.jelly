@@ -76,11 +76,10 @@ THE SOFTWARE.
                       <j:if test="${!p.categories.isEmpty()}">
                         <div class="plugin-manager__categories">
                           <j:forEach var="label" items="${p.categories}">
-                            <span class="plugin-manager__category-label">
-                              <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}">
-                                ${app.updateCenter.getCategoryDisplayName(label)}
-                              </a>
-                            </span>
+                            <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
+                               class="plugin-manager__category-label">
+                              ${app.updateCenter.getCategoryDisplayName(label)}
+                            </a>
                           </j:forEach>
                         </div>
                       </j:if>
