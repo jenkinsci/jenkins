@@ -616,12 +616,12 @@ public class ListView extends View implements DirectlyModifiableView {
 
     @Restricted(NoExternalUse.class)
     @Extension
-    public final class StatusFilter extends ViewJobFilter {
+    public static final class StatusFilter extends ViewJobFilter {
 
-        private final Boolean statusFilter;
+        private final boolean statusFilter;
 
         @DataBoundConstructor
-        public StatusFilter(Boolean statusFilter) {
+        public StatusFilter(boolean statusFilter) {
             this.statusFilter = statusFilter;
         }
 
@@ -629,7 +629,7 @@ public class ListView extends View implements DirectlyModifiableView {
         public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
             List<TopLevelItem> filtered = new ArrayList<>();
             for (TopLevelItem item : added) {
-                if (statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
+                if (!(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
                         || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
                     filtered.add(item);
             }
