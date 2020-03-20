@@ -103,7 +103,8 @@ public class ListView extends View implements DirectlyModifiableView {
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
      */
-    private Boolean statusFilter;
+    @Deprecated
+    private transient Boolean statusFilter;
 
     @DataBoundConstructor
     public ListView(String name) {
@@ -146,6 +147,9 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         initColumns();
         initJobFilters();
+        if (statusFilter != null) {
+            jobFilters.add(new StatusFilter(statusFilter));
+        }
         return this;
     }
 
@@ -213,19 +217,19 @@ public class ListView extends View implements DirectlyModifiableView {
 
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
 
-        Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         Collection<ViewJobFilter> jobFilters = getJobFilters();
         List<TopLevelItem> allItems = null;
         if (recurse) {
+            // Recursive case so we need all items down initialize allItems so filters can reuse it later
             allItems = parent.getAllItems(TopLevelItem.class);
             for (TopLevelItem item : allItems) {
                 String itemName = item.getRelativeNameFrom(parent);
                 if (names.contains(itemName)) {
-                    checkAddItem(statusFilter, items, item);
+                    items.add(item);
                 }
                 if (includePattern != null) {
                     if (includePattern.matcher(itemName).matches()) {
-                        checkAddItem(statusFilter, items, item);
+                        items.add(item);
                     }
                 }
             }
@@ -234,22 +238,22 @@ public class ListView extends View implements DirectlyModifiableView {
                 try {
                     TopLevelItem i = parent.getItem(name);
                     if (i != null) {
-                        checkAddItem(statusFilter, items, i);
+                        items.add(i);
                     }
                 } catch (AccessDeniedException e) {
                     //Ignore
                 }
             }
-            //Only call getItems if there is a pattern or we have Job Filters
             if (includePattern != null) {
+                //We have to iterate child items just initialize allItems with the child items can be reused by filters
                 allItems = new ArrayList<>(parent.getItems());
                 for (TopLevelItem item : allItems) {
                     String itemName = item.getRelativeNameFrom(parent);
                     if (includePattern.matcher(itemName).matches()) {
-                        checkAddItem(statusFilter, items, item);
+                        items.add(item);
                     }
                 }
-            } else if(!jobFilters.isEmpty()) {
+            } else if(!jobFilters.isEmpty()) { //If there are job filters they need allItems initialized
                 allItems = new ArrayList<>(parent.getItems());
             }
         }
@@ -262,13 +266,6 @@ public class ListView extends View implements DirectlyModifiableView {
         items = new ArrayList<>(new LinkedHashSet<>(items));
         
         return items;
-    }
-
-    // Used by getItems
-    private static void checkAddItem(Boolean statusFilter, List<TopLevelItem> items, TopLevelItem item) {
-        if (statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
-            items.add(item);
     }
 
     @Override
@@ -338,6 +335,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
      */
+    @Deprecated
     public Boolean getStatusFilter() {
         return statusFilter;
     }
@@ -489,6 +487,7 @@ public class ListView extends View implements DirectlyModifiableView {
         this.jobNames = new TreeSet<>(jobNames);
     }
 
+    @Deprecated
     @DataBoundSetter
     public void setStatusFilter(Boolean statusFilter) {
         this.statusFilter = statusFilter;
@@ -612,6 +611,29 @@ public class ListView extends View implements DirectlyModifiableView {
                     Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
                 }
             }
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Extension
+    public final class StatusFilter extends ViewJobFilter {
+
+        private final Boolean statusFilter;
+
+        @DataBoundConstructor
+        public StatusFilter(Boolean statusFilter) {
+            this.statusFilter = statusFilter;
+        }
+
+        @Override
+        public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
+            List<TopLevelItem> filtered = new ArrayList<>();
+            for (TopLevelItem item : added) {
+                if (statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
+                        || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
+                    filtered.add(item);
+            }
+            return filtered;
         }
     }
 
