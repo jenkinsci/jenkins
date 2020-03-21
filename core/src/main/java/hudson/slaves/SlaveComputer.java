@@ -56,7 +56,6 @@ import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
-import jenkins.model.RemotingConfiguration;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
@@ -140,6 +139,12 @@ public class SlaveComputer extends Computer {
      * trying.)
      */
     private transient int numRetryAttempt;
+
+    /**
+     * Escape hatch for rejecting connections from agents with unsupported Remoting versions
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean REJECT_CONNECTION = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedAgentConnection");
 
     /**
      * Tracks the status of the last launch operation, which is always asynchronous.
@@ -640,14 +645,13 @@ public class SlaveComputer extends Computer {
         String slaveVersion = channel.call(new SlaveVersion());
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
-        boolean rejectConnection = GlobalConfiguration.all().get(RemotingConfiguration.class).getRejectConnection();
 
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            if (rejectConnection) {
+            if (REJECT_CONNECTION) {
                 log.println(String.format("Remoting version is older than a minimum required one (%s). " +
                                 "Connection is rejected.",
                         RemotingVersionInfo.getMinimumSupportedVersion()));
-                channel.close();
+                disconnect(new OfflineCause.ChannelTermination(new Exception("terminate")));
                 return;
             } else {
                 log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
