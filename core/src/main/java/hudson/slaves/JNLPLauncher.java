@@ -148,14 +148,14 @@ public class JNLPLauncher extends ComputerLauncher {
     }
 
     /**
-     * @since TODO
+     * @since 2.216
      */
     public boolean isWebSocket() {
         return webSocket;
     }
 
     /**
-     * @since TODO
+     * @since 2.216
      */
     @DataBoundSetter
     public void setWebSocket(boolean webSocket) {

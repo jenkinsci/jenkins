@@ -413,7 +413,7 @@ public class Items {
      * @param pred Predicate condition to filter items
      * @return List of items matching given criteria
      *
-     * @since TODO
+     * @since 2.221
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type, Predicate<T> pred) {
         List<T> r = new ArrayList<>();
@@ -466,7 +466,7 @@ public class Items {
      * @param <T> the type.
      * @param <T> the predicate.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.221
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type, Predicate<T> pred) {
         return allItems(Jenkins.getAuthentication(), root, type, pred);
@@ -502,7 +502,7 @@ public class Items {
      * @param <T> the type.
      * @param pred the predicate.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.221
      */
     public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
         return new AllItemsIterable<>(root, authentication, type, pred);

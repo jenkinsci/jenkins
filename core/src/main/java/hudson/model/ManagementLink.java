@@ -143,7 +143,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * when this was introduced can define a category. Plugins with newer core dependency override {@link #getCategory()} instead.
      *
      * @return name of the desired category, one of the enum values of {@link Category}, e.g. {@code STATUS}.
-     * @since TODO
+     * @since 2.226
      */
     @Restricted(NoExternalUse.class) // TODO I don't think this works
     protected @Nonnull String getCategoryName() {
@@ -154,7 +154,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * Category for management link, uses {@code String} so it can be done with core dependency pre-dating the version this feature was added.
      *
      * @return An enum value of {@link Category}.
-     * @since TODO
+     * @since 2.226
      */
     public @Nonnull Category getCategory() {
         try {
@@ -168,15 +168,39 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     /**
      * Categories supported by this version of core.
      *
-     * @since TODO
+     * @since 2.226
      */
     public enum Category {
+        /**
+         * Configuration pages that don't fit into a more specific section.
+         */
         CONFIGURATION(Messages._ManagementLink_Category_CONFIGURATION()),
+        /**
+         * Security related options. Useful for plugins providing security related {@code ManagementLink}s (e.g. security realms).
+         * Use {@link Category#STATUS} instead if the feature is informational.
+         */
         SECURITY(Messages._ManagementLink_Category_SECURITY()),
+        /**
+         * Status information about the Jenkins instance, such as log messages, load statistics, or general information.
+         */
         STATUS(Messages._ManagementLink_Category_STATUS()),
+        /**
+         * Troubleshooting utilities. This overlaps some with status information, but the difference is that status
+         * always applies, while troubleshooting only matters when things go wrong.
+         */
         TROUBLESHOOTING(Messages._ManagementLink_Category_TROUBLESHOOTING()),
+        /**
+         * Tools are specifically tools for administrators, such as the Jenkins CLI and Script Console, as well as specific stand-alone administrative features ({@link jenkins.management.ShutdownLink}, {@link jenkins.management.ReloadLink}).
+         * This has nothing to do with build tools or tool installers.
+         */
         TOOLS(Messages._ManagementLink_Category_TOOLS()),
+        /**
+         * Anything that doesn't fit into any of the other categories. Expected to be necessary only very rarely.
+         */
         MISC(Messages._ManagementLink_Category_MISC()),
+        /**
+         * The default category for uncategorized items. Do not explicitly specify this category for your {@code ManagementLink}.
+         */
         UNCATEGORIZED(Messages._ManagementLink_Category_UNCATEGORIZED());
 
         private Localizable label;

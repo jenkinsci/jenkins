@@ -126,6 +126,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -2243,6 +2244,33 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         }
         return this;
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean isMetaLabel(String label) {
+        return "adopt-this-plugin".equals(label);
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean hasAdoptThisPluginLabel(UpdateSite.Plugin plugin) {
+        final String[] categories = plugin.categories;
+        if (categories == null) {
+            return false;
+        }
+        return Arrays.asList(categories).contains("adopt-this-plugin");
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean hasAdoptThisPluginLabel(PluginWrapper plugin) {
+        final UpdateSite.Plugin pluginMeta = Jenkins.get().getUpdateCenter().getPlugin(plugin.getShortName());
+        if (pluginMeta == null) {
+            return false;
+        }
+        final String[] categories = pluginMeta.categories;
+        if (categories == null) {
+            return false;
+        }
+        return Arrays.asList(categories).contains("adopt-this-plugin");
     }
 
     /**
