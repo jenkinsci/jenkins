@@ -2926,7 +2926,7 @@ var notificationBar = {
         options = options || {}
 
         this.init();
-        this.div.style.height = this.div.style.lineHeight = options.height || "40px";
+        this.div.style.height = this.div.style.lineHeight = options.height || "3.5rem";
         this.div.style.display = "block";
 
         if (options.icon)
