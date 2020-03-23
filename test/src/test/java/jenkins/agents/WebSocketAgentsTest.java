@@ -103,7 +103,7 @@ public class WebSocketAgentsTest {
             assertNotNull(s.getChannel().call(new FatTask()));
             FreeStyleProject p = r.createFreeStyleProject();
             p.setAssignedNode(s);
-            p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("dd if=/dev/random of=file.txt count=1024 bs=200;cat file.txt"));
+            p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("dd if=/dev/random count=1024 bs=200"));
             r.buildAndAssertSuccess(p);
             s.toComputer().getLogText().writeLogTo(0, System.out);
         } finally {
