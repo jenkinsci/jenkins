@@ -52,7 +52,7 @@ public abstract class SafeTimerTask extends TimerTask {
 
     /**
      * Lambda-friendly means of creating a task.
-     * @since TODO
+     * @since 2.216
      */
     public static SafeTimerTask of(ExceptionRunnable r) {
         return new SafeTimerTask() {
@@ -64,7 +64,7 @@ public abstract class SafeTimerTask extends TimerTask {
     }
     /**
      * @see #of
-     * @since TODO
+     * @since 2.216
      */
     @FunctionalInterface
     public interface ExceptionRunnable {

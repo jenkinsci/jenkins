@@ -100,7 +100,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.8</version>
+      <version>5.9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -111,7 +111,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.7</version>
+      <version>1.8</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -361,7 +361,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.70</version>
+                  <version>1.71</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -489,6 +489,11 @@ THE SOFTWARE.
             <systemProperty>
               <!-- show the stapler evaluation during execution -->
               <name>stapler.trace</name>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
+              <!-- show the full stack trace on errors (the oops page) -->
+              <name>jenkins.model.Jenkins.SHOW_STACK_TRACE</name>
               <value>true</value>
             </systemProperty>
             <systemProperty>

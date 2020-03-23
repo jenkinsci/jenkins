@@ -62,4 +62,10 @@ public class StatisticsLink extends ManagementLink {
     public String getUrlName() {
         return "load-statistics";
     }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
+    }
 }

@@ -145,7 +145,7 @@ public abstract class Telemetry implements ExtensionPoint {
      * Returns true iff we're in the time period during which this is supposed to collect data.
      * @return true iff we're in the time period during which this is supposed to collect data
      *
-     * @since TODO
+     * @since 2.202
      */
     public boolean isActivePeriod() {
         LocalDate now = LocalDate.now();
