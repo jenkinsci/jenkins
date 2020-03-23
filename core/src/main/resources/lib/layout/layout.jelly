@@ -245,7 +245,7 @@ THE SOFTWARE.
 
           <div class="page-footer__links page-footer__links--white jenkins_ver">
             <a href="${h.getFooterURL()}" target="_blank">
-              Jenkins ver. ${h.version}<l:svgIcon href="${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px" />
+              Jenkins v${h.version}<l:svgIcon href="${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px" />
             </a>
           </div>
         </div>
