@@ -220,21 +220,17 @@ public class ListView extends View implements DirectlyModifiableView {
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
 
         Collection<ViewJobFilter> jobFilters = getJobFilters();
-        List<TopLevelItem> allItems = null;
         if (recurse) {
-            // Recursive case so we need all items down initialize allItems so filters can reuse it later
-            allItems = parent.getAllItems(TopLevelItem.class);
-            for (TopLevelItem item : allItems) {
+            items.addAll(parent.getAllItems(TopLevelItem.class, item -> {
                 String itemName = item.getRelativeNameFrom(parent);
                 if (names.contains(itemName)) {
-                    items.add(item);
+                    return true;
                 }
                 if (includePattern != null) {
-                    if (includePattern.matcher(itemName).matches()) {
-                        items.add(item);
-                    }
+                    return includePattern.matcher(itemName).matches();
                 }
-            }
+                return false;
+            }));
         } else {
             for (String name : names) {
                 try {
@@ -247,23 +243,20 @@ public class ListView extends View implements DirectlyModifiableView {
                 }
             }
             if (includePattern != null) {
-                //We have to iterate child items just initialize allItems with the child items can be reused by filters
-                allItems = new ArrayList<>(parent.getItems());
-                for (TopLevelItem item : allItems) {
+                items.addAll(parent.getItems(item -> {
                     String itemName = item.getRelativeNameFrom(parent);
-                    if (includePattern.matcher(itemName).matches()) {
-                        items.add(item);
-                    }
-                }
-            } else if(!jobFilters.isEmpty()) { //If there are job filters they need allItems initialized
-                allItems = new ArrayList<>(parent.getItems());
+                    return includePattern.matcher(itemName).matches();
+                }));
             }
         }
 
-        // check the filters
-    	for (ViewJobFilter jobFilter: jobFilters) {
-    		items = jobFilter.filter(items, allItems, this);
-    	}
+        if (!jobFilters.isEmpty()) {
+            List<TopLevelItem> candidates = recurse ? new ArrayList<>(parent.getItems()) : parent.getAllItems(TopLevelItem.class);
+            // check the filters
+            for (ViewJobFilter jobFilter : jobFilters) {
+                items = jobFilter.filter(items, candidates, this);
+            }
+        }
         // for sanity, trim off duplicates
         items = new ArrayList<>(new LinkedHashSet<>(items));
         

@@ -43,9 +43,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -283,6 +288,45 @@ public class ListViewTest {
         } catch(Failure e) {
             assertEquals(e.getMessage(), "Query parameter 'name' does not correspond to a known and readable item");
         }
+    }
+
+    @Test public void getItemsNames() throws Exception {
+        MockFolder f1 = j.createFolder("f1");
+        MockFolder f2 = j.createFolder("f2");
+        FreeStyleProject p1 = j.createFreeStyleProject("p1");
+        FreeStyleProject p2 = j.createFreeStyleProject("p2");
+        FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
+        FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
+        ListView lv = new ListView("view", Jenkins.get());
+        lv.setRecurse(false);
+        Set<String> names = new TreeSet<>();
+        names.add("p1");
+        names.add("p2");
+        names.add("f1/p3");
+        names.add("f2/p4");
+        lv.setJobNames(names);
+        assertThat(lv.getItems(), containsInAnyOrder(p1,p2));
+        lv.setRecurse(true);
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2, p3, p4));
+    }
+
+    @Test public void getItemsRegex() throws Exception {
+        MockFolder f1 = j.createFolder("f1");
+        MockFolder f2 = j.createFolder("f2");
+        FreeStyleProject p1 = j.createFreeStyleProject("p1");
+        FreeStyleProject p2 = j.createFreeStyleProject("p2");
+        FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
+        FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
+        ListView lv = new ListView("view", Jenkins.get());
+        lv.setRecurse(false);
+        lv.setIncludeRegex("p.*");
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2));
+        lv.setRecurse(true);
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2));
+        lv.setIncludeRegex("f.*");
+        assertThat(lv.getItems(), containsInAnyOrder(p3, p4, f1, f2));
+        lv.setRecurse(false);
+        assertThat(lv.getItems(), containsInAnyOrder(f1, f2));
     }
 
     private static class AllButViewsAuthorizationStrategy extends AuthorizationStrategy {
