@@ -4,5 +4,6 @@
       "\\.js$": "babel-jest"
   },
   "reporters": ["jest-standard-reporter"],
+  "roots": ["<rootDir>/src"],
   "testPathIgnorePatterns": ["<rootDir>/work", "<rootDir>/target", "<rootDir>/node_modules"]
 }
