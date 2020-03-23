@@ -37,6 +37,7 @@ import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
+import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
 
 import java.io.IOException;
@@ -102,6 +103,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
+     * Deprecated see {@link StatusFilter}
      */
     @Deprecated
     private transient Boolean statusFilter;
@@ -148,7 +150,7 @@ public class ListView extends View implements DirectlyModifiableView {
         initColumns();
         initJobFilters();
         if (statusFilter != null) {
-            jobFilters.add(new StatusFilter(statusFilter));
+            jobFilters.add(0, new StatusFilter(statusFilter));
         }
         return this;
     }
@@ -334,6 +336,7 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
+     * Status filter is now controlled via a JobViewFilter, see {@link StatusFilter}
      */
     @Deprecated
     public Boolean getStatusFilter() {
@@ -487,6 +490,10 @@ public class ListView extends View implements DirectlyModifiableView {
         this.jobNames = new TreeSet<>(jobNames);
     }
 
+    /**
+     * Deprecated see, {@link StatusFilter}
+     * @param statusFilter
+     */
     @Deprecated
     @DataBoundSetter
     public void setStatusFilter(Boolean statusFilter) {
@@ -613,28 +620,4 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
     }
-
-    @Restricted(NoExternalUse.class)
-    @Extension
-    public static final class StatusFilter extends ViewJobFilter {
-
-        private final boolean statusFilter;
-
-        @DataBoundConstructor
-        public StatusFilter(boolean statusFilter) {
-            this.statusFilter = statusFilter;
-        }
-
-        @Override
-        public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
-            List<TopLevelItem> filtered = new ArrayList<>();
-            for (TopLevelItem item : added) {
-                if (!(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                        || ((ParameterizedJobMixIn.ParameterizedJob) item).isDisabled() ^ statusFilter)
-                    filtered.add(item);
-            }
-            return filtered;
-        }
-    }
-
 }
