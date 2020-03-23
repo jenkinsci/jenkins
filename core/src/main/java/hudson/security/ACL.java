@@ -89,7 +89,7 @@ public abstract class ACL {
      * @throws IllegalArgumentException
      *      if no permissions are provided
      *
-     * @since TODO
+     * @since 2.222
      */
     public final void checkAnyPermission(@Nonnull Permission... permissions) {
         if (permissions.length == 0) {
