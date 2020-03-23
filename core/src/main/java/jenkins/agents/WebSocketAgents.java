@@ -33,6 +33,7 @@ import hudson.model.UnprotectedRootAction;
 import hudson.remoting.AbstractByteBufferCommandTransport;
 import hudson.remoting.Capability;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.ChunkHeader;
 import hudson.remoting.Engine;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -129,9 +130,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             LOGGER.finest(() -> "reading block of length " + len + " from " + agent);
             try {
                 transport.receive(ByteBuffer.wrap(payload, offset, len));
-            } catch (IOException e) {
-                error(e);
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 error(e);
             }
         }
@@ -154,8 +153,9 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
 
             @Override
             protected void write(ByteBuffer header, ByteBuffer data) throws IOException {
-                sendBinary(header);
-                sendBinary(data);
+                LOGGER.finest(() -> "sending message of length " + ChunkHeader.length(ChunkHeader.peek(header)));
+                sendBinary(header, false);
+                sendBinary(data, true);
             }
 
             @Override
