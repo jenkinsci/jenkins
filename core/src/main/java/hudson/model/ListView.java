@@ -251,7 +251,7 @@ public class ListView extends View implements DirectlyModifiableView {
         }
 
         if (!jobFilters.isEmpty()) {
-            List<TopLevelItem> candidates = recurse ? new ArrayList<>(parent.getItems()) : parent.getAllItems(TopLevelItem.class);
+            List<TopLevelItem> candidates = recurse ? parent.getAllItems(TopLevelItem.class) : new ArrayList<>(parent.getItems());
             // check the filters
             for (ViewJobFilter jobFilter : jobFilters) {
                 items = jobFilter.filter(items, candidates, this);
