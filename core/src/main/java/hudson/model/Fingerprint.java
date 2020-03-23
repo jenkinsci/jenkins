@@ -1257,8 +1257,7 @@ public class Fingerprint implements ModelObject, Saveable {
             file.getParentFile().mkdirs();
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
-            try {
-                PrintWriter w = new PrintWriter(afw);
+            try (PrintWriter w = new PrintWriter((afw))) {
                 w.println("<?xml version='1.1' encoding='UTF-8'?>");
                 w.println("<fingerprint>");
                 w.print("  <timestamp>");
@@ -1303,6 +1302,19 @@ public class Fingerprint implements ModelObject, Saveable {
             // Slower fallback that can persist facets.
             getConfigFile(file).write(this);
         }
+    }
+
+    /**
+     * Returns a facet that blocks the deletion of the fingerprint.
+     * Returns null if no such facet.
+     * @since 2.223
+     */
+    public @CheckForNull FingerprintFacet getFacetBlockingDeletion() {
+        for (FingerprintFacet facet : facets) {
+            if (facet.isFingerprintDeletionBlocked())
+                return facet;
+        }
+        return null;
     }
 
     /**

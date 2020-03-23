@@ -989,7 +989,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Returns a list of plugins that should be shown in the "available" tab, grouped by category.
      * A plugin with multiple categories will appear multiple times in the list.
+     * @deprecated
      */
+    @Deprecated
     public PluginEntry[] getCategorizedAvailables() {
         TreeSet<PluginEntry> entries = new TreeSet<>();
         for (Plugin p : getAvailables()) {
@@ -1002,7 +1004,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return entries.toArray(new PluginEntry[0]);
     }
 
-    private static String getCategoryDisplayName(String category) {
+    @Restricted(NoExternalUse.class) // Jelly only
+    public static String getCategoryDisplayName(String category) {
         if (category==null)
             return Messages.UpdateCenter_PluginCategory_misc();
         try {
@@ -1011,7 +1014,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
-            return Messages.UpdateCenter_PluginCategory_unrecognized(category);
+            return category;
         }
     }
 
@@ -1063,7 +1066,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<>();
         for (UpdateSite site : getSites()) {
-            Future<FormValidation> future = site.updateDirectly(DownloadService.signatureCheck);
+            Future<FormValidation> future = site.updateDirectly();
             if (future != null) {
                 futures.add(future);
             }
@@ -2454,6 +2457,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
     }
 
+    @Deprecated
     public static final class PluginEntry implements Comparable<PluginEntry> {
         public Plugin plugin;
         public String category;
@@ -2516,7 +2520,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         try {
             // Need to do the following because the plugin manager will attempt to access
             // $JENKINS_HOME/updates/$ID_DEFAULT.json. Needs to be up to date.
-            site.updateDirectlyNow(true);
+            site.updateDirectlyNow();
         } catch (Exception e) {
             LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update the default Update Site '" + UpdateCenter.ID_DEFAULT +
                     "'. Plugin upgrades may fail.", e);

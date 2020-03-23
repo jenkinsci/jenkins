@@ -89,14 +89,14 @@ public enum InitMilestone implements Milestone {
 
     /**
      * By this milestone, all the system configurations are loaded from file system
-     * @since TODO
+     * @since 2.220
      */
     SYSTEM_CONFIG_LOADED("System config loaded"),
 
     /**
      * By this milestone, the system configuration is adapted just in case any plugin (CasC might be an example) needs
      * to update configuration files
-     * @since TODO
+     * @since 2.220
      */
     SYSTEM_CONFIG_ADAPTED("System config adapted"),
 
@@ -107,7 +107,7 @@ public enum InitMilestone implements Milestone {
 
     /**
      * By this milestone, any job configuration is adapted or updated just in case any plugin needs to update former/old configurations or init scripts
-     * @since TODO
+     * @since 2.220
      */
     JOB_CONFIG_ADAPTED("Configuration for all jobs updated"),
 

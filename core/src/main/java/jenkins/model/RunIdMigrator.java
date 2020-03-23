@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
@@ -313,13 +314,19 @@ public final class RunIdMigrator {
         if (args.length != 1) {
             throw new Exception("pass one parameter, $JENKINS_HOME");
         }
-        File root = new File(args[0]);
+        File root = constructFile(args[0]);
         File jobs = new File(root, "jobs");
         if (!jobs.isDirectory()) {
             throw new FileNotFoundException("no such $JENKINS_HOME " + root);
         }
         new RunIdMigrator().unmigrateJobsDir(jobs);
     }
+
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only invoked from the command line as a standalone utility")
+    private static File constructFile(String arg) {
+        return new File(arg);
+    }
+
     private void unmigrateJobsDir(File jobs) throws Exception {
         File[] jobDirs = jobs.listFiles();
         if (jobDirs == null) {

@@ -251,7 +251,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     private User _doCreateAccount(StaplerRequest req, StaplerResponse rsp, String formView) throws ServletException, IOException {
         if(!allowsSignup())
-            throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
+            throw HttpResponses.errorWithoutStack(SC_UNAUTHORIZED, "User sign up is prohibited");
 
         boolean firstUser = !hasSomeUser();
         User u = createAccount(req, rsp, enableCaptcha, formView);
@@ -490,7 +490,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    @Restricted(NoExternalUse.class)
+    @Restricted(NoExternalUse.class) // _entryForm.jelly and signup.jelly
     public boolean isMailerPluginPresent() {
         try {
             // mail support has moved to a separate plugin
@@ -770,6 +770,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         @Override
         public String getDescription() {
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_Description();
+        }
+
+        @Nonnull
+        @Override
+        public Category getCategory() {
+            return Category.SECURITY;
         }
     }
 

@@ -27,7 +27,9 @@ package hudson;
 
 import hudson.model.Slave;
 import hudson.security.*;
-import jenkins.telemetry.impl.AutoRefresh;
+
+import java.text.SimpleDateFormat;
+import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -142,6 +144,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
+import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -157,8 +160,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
 
@@ -185,6 +186,9 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 public class Functions {
     private static final AtomicLong iota = new AtomicLong();
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
+
+    @Restricted(NoExternalUse.class)
+    public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
 
     public Functions() {
     }
@@ -217,8 +221,34 @@ public class Functions {
         return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
     }
 
+    @Restricted(NoExternalUse.class)
+    public static String iso8601DateTime(Date date) {
+        return Util.XS_DATETIME_FORMATTER.format(date);
+    }
+
+    /**
+     * Returns a localized string for the specified date, not including time.
+     * @param date
+     * @return
+     */
+    @Restricted(NoExternalUse.class)
+    public static String localDate(Date date) {
+        return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+    }
+
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+    }
+
+    /**
+     * Returns a human-readable string describing the time difference between now and the specified date.
+     *
+     * @param date
+     * @return
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getTimeSpanString(Date date) {
+        return Util.getTimeSpanString(Math.abs(date.getTime() - new Date().getTime()));
     }
 
     /**
@@ -406,7 +436,7 @@ public class Functions {
      * </pre>
      *
      * <p>
-     * The head portion is the part of the URL from the {@link jenkins.model.Jenkins}
+     * The head portion is the part of the URL from the {@link Jenkins}
      * object to the first {@link Run} subtype. When "next/prev build"
      * is chosen, this part remains intact.
      *
@@ -486,11 +516,21 @@ public class Functions {
     /**
      * Gets the system property indicated by the specified key.
      * 
-     * Delegates to {@link SystemProperties#getString(java.lang.String)}.
+     * Delegates to {@link SystemProperties#getString(String)}.
      */
     @Restricted(DoNotUse.class)
     public static String getSystemProperty(String key) {
         return SystemProperties.getString(key);
+    }
+
+    /**
+     * Returns true if and only if the UI refresh is enabled.
+     *
+     * @since 2.222
+     */
+    @Restricted(DoNotUse.class)
+    public static boolean isUiRefreshEnabled() {
+        return UI_REFRESH;
     }
 
     public static Map getEnvVars() {
@@ -633,54 +673,17 @@ public class Functions {
     private static final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
-     * Used by {@code layout.jelly} to control the auto refresh behavior.
+     * No longer used.
      *
-     * @param noAutoRefresh
-     *      On certain pages, like a page with forms, will have annoying interference
-     *      with auto refresh. On those pages, disable auto-refresh.
+     * @deprecated auto refresh has been removed
      */
+    @Deprecated
     public static void configureAutoRefresh(HttpServletRequest request, HttpServletResponse response, boolean noAutoRefresh) {
-        if(noAutoRefresh)
-            return;
-
-        String param = request.getParameter("auto_refresh");
-        boolean refresh = isAutoRefresh(request);
-        if (param != null) {
-            refresh = Boolean.parseBoolean(param);
-            Cookie c = new Cookie("hudson_auto_refresh", Boolean.toString(refresh));
-            // Need to set path or it will not stick from e.g. a project page to the dashboard.
-            // Using request.getContextPath() might work but it seems simpler to just use the hudson_ prefix
-            // to avoid conflicts with any other web apps that might be on the same machine.
-            c.setPath("/");
-            c.setMaxAge(60*60*24*30); // persist it roughly for a month
-            c.setHttpOnly(true);
-            response.addCookie(c);
-        }
-        if (refresh) {
-            response.addHeader("Refresh", SystemProperties.getString("hudson.Functions.autoRefreshSeconds", "10"));
-        }
-
-        try {
-            ExtensionList.lookupSingleton(AutoRefresh.class).recordRequest(request, refresh);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to record auto refresh status in telemetry", e);
-        }
+        /* feature has been removed */
     }
 
+    @Deprecated
     public static boolean isAutoRefresh(HttpServletRequest request) {
-        String param = request.getParameter("auto_refresh");
-        if (param != null) {
-            return Boolean.parseBoolean(param);
-        }
-        Cookie[] cookies = request.getCookies();
-        if(cookies==null)
-            return false; // when API design messes it up, we all suffer
-
-        for (Cookie c : cookies) {
-            if (c.getName().equals("hudson_auto_refresh")) {
-                return Boolean.parseBoolean(c.getValue());
-            }
-        }
         return false;
     }
 
@@ -1051,16 +1054,23 @@ public class Functions {
      * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
      *
      * @param predicate
-     *      Filter the descriptors based on {@link GlobalConfigurationCategory}
+     *      Filter the descriptors based on this predicate
      * @since 1.494
+     * @deprecated use {@link #getSortedDescriptorsForGlobalConfigByDescriptor(Predicate)}
      */
-    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(Predicate<GlobalConfigurationCategory> predicate) {
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig(com.google.common.base.Predicate<GlobalConfigurationCategory> predicate) {
         ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
         List<Tag> r = new ArrayList<>(exts.size());
 
         for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
+
+            if (!Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission())) {
+                continue;
+            }
 
             if (predicate.apply(d.getCategory())) {
                 r.add(new Tag(c.ordinal(), d));
@@ -1075,10 +1085,47 @@ public class Functions {
     }
 
     /**
-     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but with a constant truth predicate, to include all descriptors.
+     * Gets all the descriptors sorted by their inheritance tree of {@link Describable}
+     * so that descriptors of similar types come nearby.
+     *
+     * <p>
+     * We sort them by {@link Extension#ordinal()} but only for {@link GlobalConfiguration}s,
+     * as the value is normally used to compare similar kinds of extensions, and we needed
+     * {@link GlobalConfiguration}s to be able to position themselves in a layer above.
+     * This however creates some asymmetry between regular {@link Descriptor}s and {@link GlobalConfiguration}s.
+     * Perhaps it is better to introduce another annotation element? But then,
+     * extensions shouldn't normally concern themselves about ordering too much, and the only reason
+     * we needed this for {@link GlobalConfiguration}s are for backward compatibility.
+     *
+     * @param predicate
+     *      Filter the descriptors based on this predicate
+     * @since 2.222
      */
-    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfig() {
-        return getSortedDescriptorsForGlobalConfig(Predicates.<GlobalConfigurationCategory>alwaysTrue());
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigByDescriptor(Predicate<Descriptor> predicate) {
+        ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
+        List<Tag> r = new ArrayList<>(exts.size());
+
+        for (ExtensionComponent<Descriptor> c : exts.getComponents()) {
+            Descriptor d = c.getInstance();
+            if (d.getGlobalConfigPage()==null)  continue;
+
+            if (predicate.test(d)) {
+                r.add(new Tag(c.ordinal(), d));
+            }
+        }
+        Collections.sort(r);
+
+        List<Descriptor> answer = new ArrayList<>(r.size());
+        for (Tag d : r) answer.add(d.d);
+
+        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
+    }
+
+    /**
+     * Like {@link #getSortedDescriptorsForGlobalConfigByDescriptor(Predicate)} but with a constant truth predicate, to include all descriptors.
+     */
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigByDescriptor() {
+        return getSortedDescriptorsForGlobalConfigByDescriptor(descriptor -> true);
     }
 
     /**
@@ -1086,21 +1133,70 @@ public class Functions {
      */
     @Deprecated
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigNoSecurity() {
-        return getSortedDescriptorsForGlobalConfig(Predicates.not(GlobalSecurityConfiguration.FILTER));
+        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> GlobalSecurityConfiguration.FILTER.negate().test(d));
     }
 
     /**
-     * Like {@link #getSortedDescriptorsForGlobalConfig(Predicate)} but for unclassified descriptors only.
+     * Descriptors in the global configuration form that users with {@link Jenkins#MANAGE} permission can configure.
+     *
      * @since 1.506
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassified() {
-        return getSortedDescriptorsForGlobalConfig(new Predicate<GlobalConfigurationCategory>() {
-            public boolean apply(GlobalConfigurationCategory cat) {
-                return cat instanceof GlobalConfigurationCategory.Unclassified;
-            }
-        });
+        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> d.getCategory() instanceof GlobalConfigurationCategory.Unclassified && Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission()));
     }
-    
+
+    /**
+     * Descriptors shown in the global configuration form to users with {@link Jenkins#SYSTEM_READ} permission.
+     *
+     * @since 2.222
+     */
+    @Restricted(NoExternalUse.class)
+    public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassifiedReadable() {
+        return getSortedDescriptorsForGlobalConfigByDescriptor(d -> d.getCategory() instanceof GlobalConfigurationCategory.Unclassified && (
+                Jenkins.get().hasPermission(d.getRequiredGlobalConfigPagePermission()) || Jenkins.get().hasPermission(Jenkins.SYSTEM_READ)));
+    }
+
+    /**
+     * Checks if the current security principal has one of the supplied permissions.
+     *
+     * @throws AccessDeniedException
+     *      if the user doesn't have the permission.
+     *
+     * @since 2.222
+     */
+    public static void checkAnyPermission(AccessControlled ac, Permission[] permissions) {
+        if (permissions == null || permissions.length == 0) {
+            return;
+        }
+
+        ac.checkAnyPermission(permissions);
+    }
+
+    /**
+     * This version is so that the 'checkAnyPermission' on {@code layout.jelly}
+     * degrades gracefully if "it" is not an {@link AccessControlled} object.
+     * Otherwise it will perform no check and that problem is hard to notice.
+     */
+    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+        if (permissions == null || permissions.length == 0) {
+            return;
+        }
+
+        if (object instanceof AccessControlled)
+            checkAnyPermission((AccessControlled) object, permissions);
+        else {
+            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            for(Ancestor anc : Iterators.reverse(ancs)) {
+                Object o = anc.getObject();
+                if (o instanceof AccessControlled) {
+                    checkAnyPermission((AccessControlled) o, permissions);
+                    return;
+                }
+            }
+            checkAnyPermission(Jenkins.get(), permissions);
+        }
+    }
+
     private static class Tag implements Comparable<Tag> {
         double ordinal;
         String hierarchy;

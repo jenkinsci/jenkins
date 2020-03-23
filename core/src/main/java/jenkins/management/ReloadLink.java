@@ -28,6 +28,8 @@ import hudson.Extension;
 import hudson.model.ManagementLink;
 import org.jenkinsci.Symbol;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -60,5 +62,11 @@ public class ReloadLink extends ManagementLink {
     @Override
     public boolean getRequiresPOST() {
         return true;
+    }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.TOOLS;
     }
 }

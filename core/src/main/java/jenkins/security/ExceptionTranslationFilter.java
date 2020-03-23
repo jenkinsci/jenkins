@@ -1,4 +1,5 @@
 /* Copyright 2004, 2005, 2006 Acegi Technology Pty Limited
+ * Copyright (c) 2020 CloudBees, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +42,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -122,8 +126,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
 		} catch (ServletException ex) {
-			if (ex.getRootCause() instanceof AuthenticationException
-					|| ex.getRootCause() instanceof AccessDeniedException) {
+			if (ex.getRootCause() instanceof AuthenticationException || ex.getRootCause() instanceof AccessDeniedException) {
 				handleException(request, response, chain, (AcegiSecurityException) ex.getRootCause());
 			}
 			else {
@@ -235,4 +238,5 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
     public void destroy() {
     }
+
 }

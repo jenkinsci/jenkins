@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import static org.junit.Assert.*;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -559,5 +560,4 @@ public class FunctionsTest {
             return this;
         }
     }
-
 }

@@ -91,7 +91,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     /**
      * Used in {@link #all()} to quickly determine if we've already loaded everything.
      */
-    private boolean fullyLoaded;
+    private volatile boolean fullyLoaded;
 
     /**
      * Currently visible index.

@@ -778,7 +778,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.EMPTY_SET;
+        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -786,7 +786,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.EMPTY_LIST;
+        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
@@ -1383,7 +1383,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Retrieve the RSS feed for the last build for each project executed in this computer.
      * Only the information from {@link AbstractProject} is displayed since there isn't a proper API to gather
      * information about the node where the builds are executed for other sorts of projects such as Pipeline
-     * @since TODO
+     * @since 2.215
      */
     @Restricted(DoNotUse.class)
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
