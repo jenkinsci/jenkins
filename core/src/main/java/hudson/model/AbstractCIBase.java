@@ -97,7 +97,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * @since TODO
      */
     public Set<String> getDisabledAdministrativeMonitors(){
-        return new HashSet<>(disabledAdministrativeMonitors);
+        synchronized (this.disabledAdministrativeMonitors) {
+            return new HashSet<>(disabledAdministrativeMonitors);
+        }
     }
 
     /**
