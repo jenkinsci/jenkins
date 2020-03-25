@@ -673,7 +673,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
-            doDoDelete(req,rsp);
+            delete();
+            rsp.setStatus(204);
         } catch (InterruptedException e) {
             // TODO: allow this in Stapler
             throw new ServletException(e);

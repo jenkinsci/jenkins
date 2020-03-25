@@ -26,7 +26,6 @@ THE SOFTWARE.
 
   <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
     <l:main-panel>
-      <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
       <style type="text/css">
         #configure-instance {
           padding: 20px 100px 20px 100px;
@@ -38,7 +37,6 @@ THE SOFTWARE.
         }
 
         #configure-instance h1 {
-          font-family: 'roboto', sans-serif;
           font-size: 48px;
           margin-top: 30px;
           font-weight: 500;

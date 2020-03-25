@@ -1,3 +1,4 @@
+@import "../abstracts/font.less";
 @import "../abstracts/colors.less";
 
 .page-header {
@@ -5,11 +6,8 @@
     display: flex;
     align-items: center;
     height: 3.5rem;
-
-    font-family: Roboto, Helvetica, Arial, sans-serif;
-    font-size: 1rem;
-    line-height: 1.5;
-
+    font-size: @font-size-base;
+    line-height: @line-height-base;
     background-color: @header-bg-classic;
 }
 
@@ -108,7 +106,7 @@ a.page-header__brand-link {
 // the YUI Autocomplete module
 #searchform {
     position: relative;
-    font-family: Roboto, Helvetica, Arial, sans-serif;
+    font-family: @font-family-sans;
     display: inline-block;
     display: inline-flex;
     height: 2.5rem;
@@ -121,11 +119,10 @@ a.page-header__brand-link {
     padding: 0.25rem 2.5rem;
     margin: 0;
 
-    font-size: 1rem;
-    line-height: 1.5;
+    font-size: @font-size-base;
+    line-height: @line-height-base;
     font-weight: bold;
     color: @search-input-color;
-    font-family: Roboto, Helvetica, Arial, sans-serif;
 
     border-radius: @header-item-border-radius;
     border: 3px solid white;
@@ -204,11 +201,12 @@ a.page-header__brand-link {
 }
 
 #search-box-completion LI {
-    white-space:nowrap;
-
+    white-space: nowrap;
     padding: 0.25rem 1.25rem;
-    font-size: 1rem;
-    line-height: 1.5;
+    font-size: @font-size-base;
+    line-height: @line-height-base;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #search-box-completion LI.yui-ac-highlight {
@@ -216,13 +214,9 @@ a.page-header__brand-link {
     font-weight: bold;
 }
 
-#search-box-minWidth {
-    position:absolute;
-    visibility: hidden;
-    width:15rem;
-}
-
 #search-box-sizer {
     position:absolute;
     visibility: hidden;
+    min-width: 15rem;
+    max-width: calc(100vw - 500px);
 }

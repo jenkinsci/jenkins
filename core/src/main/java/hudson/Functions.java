@@ -526,7 +526,7 @@ public class Functions {
     /**
      * Returns true if and only if the UI refresh is enabled.
      *
-     * @since TODO
+     * @since 2.222
      */
     @Restricted(DoNotUse.class)
     public static boolean isUiRefreshEnabled() {
@@ -1099,7 +1099,7 @@ public class Functions {
      *
      * @param predicate
      *      Filter the descriptors based on this predicate
-     * @since TODO
+     * @since 2.222
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigByDescriptor(Predicate<Descriptor> predicate) {
         ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
@@ -1148,7 +1148,7 @@ public class Functions {
     /**
      * Descriptors shown in the global configuration form to users with {@link Jenkins#SYSTEM_READ} permission.
      *
-     * @since TODO
+     * @since 2.222
      */
     @Restricted(NoExternalUse.class)
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassifiedReadable() {
@@ -1162,7 +1162,7 @@ public class Functions {
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
      *
-     * @since TODO
+     * @since 2.222
      */
     public static void checkAnyPermission(AccessControlled ac, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
@@ -1170,6 +1170,31 @@ public class Functions {
         }
 
         ac.checkAnyPermission(permissions);
+    }
+
+    /**
+     * This version is so that the 'checkAnyPermission' on {@code layout.jelly}
+     * degrades gracefully if "it" is not an {@link AccessControlled} object.
+     * Otherwise it will perform no check and that problem is hard to notice.
+     */
+    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+        if (permissions == null || permissions.length == 0) {
+            return;
+        }
+
+        if (object instanceof AccessControlled)
+            checkAnyPermission((AccessControlled) object, permissions);
+        else {
+            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            for(Ancestor anc : Iterators.reverse(ancs)) {
+                Object o = anc.getObject();
+                if (o instanceof AccessControlled) {
+                    checkAnyPermission((AccessControlled) o, permissions);
+                    return;
+                }
+            }
+            checkAnyPermission(Jenkins.get(), permissions);
+        }
     }
 
     private static class Tag implements Comparable<Tag> {

@@ -36,6 +36,7 @@ import hudson.util.VersionNumber;
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
+import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.java.JavaUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
@@ -439,7 +440,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public Api getApi() {
-        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
+        Jenkins.get().checkAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
         return new Api(this);
     }
 
@@ -1263,6 +1264,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
     }
 
+    @Restricted(DoNotUse.class) // Jelly
+    public List<UpdateSite.Warning> getActiveWarnings() {
+        return ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class).getActivePluginWarningsByPlugin().getOrDefault(this, Collections.emptyList());
+    }
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());
 

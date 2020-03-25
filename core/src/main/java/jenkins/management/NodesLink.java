@@ -27,7 +27,6 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
-import jenkins.management.Messages;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -62,5 +61,11 @@ public class NodesLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "computer";
+    }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 }
