@@ -60,6 +60,7 @@ public abstract class WebSocketSession {
     private static final Logger LOGGER = Logger.getLogger(WebSocketSession.class.getName());
 
     private Object session;
+    // https://www.eclipse.org/jetty/javadoc/9.4.24.v20191120/org/eclipse/jetty/websocket/common/WebSocketRemoteEndpoint.html
     private Object remoteEndpoint;
     private ScheduledFuture<?> pings;
 
@@ -125,6 +126,15 @@ public abstract class WebSocketSession {
     protected final Future<Void> sendBinary(ByteBuffer data) {
         try {
             return (Future<Void>) remoteEndpoint.getClass().getMethod("sendBytesByFuture", ByteBuffer.class).invoke(remoteEndpoint, data);
+        } catch (Exception x) {
+            throw new RuntimeException(x);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected final void sendBinary(ByteBuffer partialByte, boolean isLast) {
+        try {
+            remoteEndpoint.getClass().getMethod("sendPartialBytes", ByteBuffer.class, boolean.class).invoke(remoteEndpoint, partialByte, isLast);
         } catch (Exception x) {
             throw new RuntimeException(x);
         }
