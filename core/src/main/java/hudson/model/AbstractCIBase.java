@@ -89,7 +89,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         c.kill();
     }
 
-    private final Set<String> disabledAdministrativeMonitors = Collections.synchronizedSet(new HashSet<>());
+    private final Set<String> disabledAdministrativeMonitors = new HashSet<>();
 
     /**
      * Get the disabled administrative monitors
@@ -97,7 +97,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * @since TODO
      */
     public Set<String> getDisabledAdministrativeMonitors(){
-        return disabledAdministrativeMonitors;
+        return new HashSet<>(disabledAdministrativeMonitors);
     }
 
     /**
