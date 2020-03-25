@@ -37,7 +37,9 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 
+import hudson.FilePath;
 import hudson.model.labels.LabelAtom;
+import hudson.slaves.WorkspaceList;
 import jenkins.model.Jenkins;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
@@ -141,6 +143,18 @@ public class ComputerTest {
         FreeStyleProject p3 = f.createProject(FreeStyleProject.class, "project");
         p3.setAssignedLabel(l);
         assertThat(c.getTiedJobs(), containsInAnyOrder(p, p3));
+    }
+
+    @Test
+    public void workspaceClear() throws Exception {
+        DumbSlave s = j.createOnlineSlave();
+        Computer c = s.toComputer();
+        WorkspaceList wl = c.getWorkspaceList();
+        FilePath fp = new FilePath(c.getChannel(), "/file/path");
+        wl.acquire(fp);
+        c.doDoReleaseWorkspaces();
+        WorkspaceList.Lease lease = wl.acquire(fp);
+        assertEquals(lease.path.getRemote(), "/file/path");
     }
 
 }

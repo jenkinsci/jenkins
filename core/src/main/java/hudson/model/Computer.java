@@ -1569,6 +1569,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Really deletes the agent.
+     */
+    @RequirePOST
+    public HttpResponse doDoReleaseWorkspaces() {
+        checkPermission(CONFIGURE);
+        WorkspaceList wl = getWorkspaceList();
+        wl.clear();
+        return new HttpRedirect("./");
+    }
+
+    /**
      * Blocks until the node becomes online/offline.
      */
     public void waitUntilOnline() throws InterruptedException {

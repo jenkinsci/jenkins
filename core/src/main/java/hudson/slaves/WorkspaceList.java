@@ -289,6 +289,13 @@ public final class WorkspaceList {
     }
 
     /**
+     * Clears all current leases
+     */
+    public synchronized void clear() {
+        inUse.clear();
+    }
+
+    /**
      * Locates a conventional temporary directory to be associated with a workspace.
      * <p>This directory is suitable for temporary files to be deleted later in the course of a build,
      * or caches and local repositories which should persist across builds done in the same workspace.
