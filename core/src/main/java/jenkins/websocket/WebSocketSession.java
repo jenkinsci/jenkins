@@ -39,7 +39,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * One WebSocket connection.
  * @see WebSockets
- * @since TODO
+ * @since 2.216
  */
 @Restricted(Beta.class)
 public abstract class WebSocketSession {
