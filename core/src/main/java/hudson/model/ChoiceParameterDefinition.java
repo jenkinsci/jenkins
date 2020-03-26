@@ -13,7 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;

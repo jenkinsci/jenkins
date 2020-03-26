@@ -30,7 +30,7 @@ import jenkins.model.Jenkins;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**

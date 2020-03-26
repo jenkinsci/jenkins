@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 // TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)

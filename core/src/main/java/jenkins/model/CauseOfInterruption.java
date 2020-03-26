@@ -33,7 +33,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.Serializable;
 import java.util.Collections;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**

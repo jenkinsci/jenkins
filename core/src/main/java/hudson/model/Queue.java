@@ -131,7 +131,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.annotation.Nonnegative;
 import javax.servlet.http.HttpServletResponse;
 

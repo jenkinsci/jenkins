@@ -116,7 +116,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.util.Timer;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;

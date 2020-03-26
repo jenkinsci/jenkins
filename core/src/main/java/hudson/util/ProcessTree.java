@@ -73,7 +73,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
 import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;

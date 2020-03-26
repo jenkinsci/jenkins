@@ -5,7 +5,7 @@ import hudson.model.TaskListener;
 import hudson.Launcher;
 import hudson.FilePath;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
 

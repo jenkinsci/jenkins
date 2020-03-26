@@ -7,7 +7,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
 import jenkins.model.Jenkins;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -30,7 +30,7 @@ import hudson.util.ProcessTreeRemoting.IOSProcess;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.util.JenkinsJVM;

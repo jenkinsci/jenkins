@@ -29,7 +29,7 @@ import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.model.Item;

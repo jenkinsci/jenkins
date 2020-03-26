@@ -33,7 +33,7 @@ import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ObjectStreamException;
 import java.util.Collections;

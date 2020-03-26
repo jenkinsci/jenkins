@@ -41,7 +41,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;

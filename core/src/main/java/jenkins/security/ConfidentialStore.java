@@ -7,7 +7,7 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.kohsuke.MetaInfServices;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.security.SecureRandom;

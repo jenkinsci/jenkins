@@ -34,7 +34,7 @@ import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.AbstractSet;
 import java.util.HashSet;

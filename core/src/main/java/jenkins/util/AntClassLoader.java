@@ -32,7 +32,7 @@ import org.apache.tools.ant.util.ReflectUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;

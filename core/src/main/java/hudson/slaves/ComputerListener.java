@@ -35,7 +35,7 @@ import hudson.remoting.Channel;
 
 import java.io.IOException;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**

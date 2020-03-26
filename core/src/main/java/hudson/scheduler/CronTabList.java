@@ -28,7 +28,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.Collection;
 import java.util.Vector;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.kohsuke.accmod.Restricted;

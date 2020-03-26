@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;

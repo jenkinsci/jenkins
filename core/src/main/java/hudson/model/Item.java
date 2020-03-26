@@ -42,7 +42,7 @@ import hudson.security.PermissionGroup;
 import hudson.security.AccessControlled;
 import hudson.util.Secret;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**

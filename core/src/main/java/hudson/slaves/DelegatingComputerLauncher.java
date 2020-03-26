@@ -31,7 +31,7 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;

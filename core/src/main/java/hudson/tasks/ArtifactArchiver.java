@@ -53,7 +53,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import net.sf.json.JSONObject;
 import edu.umd.cs.findbugs.annotations.NonNull;

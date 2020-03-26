@@ -33,7 +33,7 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;

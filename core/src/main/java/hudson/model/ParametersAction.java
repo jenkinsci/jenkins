@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.Lists;
 import static com.google.common.collect.Sets.newHashSet;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.util.SystemProperties;
 

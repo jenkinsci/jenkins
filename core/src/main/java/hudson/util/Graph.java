@@ -37,7 +37,7 @@ import java.util.Calendar;
 import java.awt.image.BufferedImage;
 import java.awt.*;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * A JFreeChart-generated graph that's bound to UI.

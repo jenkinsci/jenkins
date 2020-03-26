@@ -44,7 +44,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Environment variables.

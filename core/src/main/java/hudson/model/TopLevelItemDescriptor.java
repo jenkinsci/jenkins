@@ -40,7 +40,7 @@ import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.StringWriter;
 import java.util.logging.Level;

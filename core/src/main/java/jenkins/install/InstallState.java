@@ -23,7 +23,7 @@
  */
 package jenkins.install;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.Extension;

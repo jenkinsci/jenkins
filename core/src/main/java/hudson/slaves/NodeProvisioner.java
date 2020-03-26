@@ -35,7 +35,7 @@ import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.annotation.concurrent.GuardedBy;
 import java.awt.Color;

@@ -29,7 +29,7 @@ import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;

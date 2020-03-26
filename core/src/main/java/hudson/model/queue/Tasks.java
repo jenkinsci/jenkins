@@ -26,7 +26,7 @@ package hudson.model.queue;
 import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.acegisecurity.Authentication;
 
 import java.util.Collection;

@@ -67,7 +67,7 @@ import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import java.util.Collection;
 import static java.util.logging.Level.*;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.security.QueueItemAuthenticatorConfiguration;

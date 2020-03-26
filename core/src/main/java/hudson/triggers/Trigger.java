@@ -58,7 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import antlr.ANTLRException;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.model.Items;

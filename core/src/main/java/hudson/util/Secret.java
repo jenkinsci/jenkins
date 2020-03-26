@@ -44,7 +44,7 @@ import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

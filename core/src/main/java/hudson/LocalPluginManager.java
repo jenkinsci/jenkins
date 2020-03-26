@@ -27,7 +27,7 @@ package hudson;
 import jenkins.util.SystemProperties;
 import jenkins.model.Jenkins;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import java.io.File;

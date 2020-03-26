@@ -34,7 +34,7 @@ import hudson.model.Resource;
 import hudson.model.ResourceActivity;
 import hudson.model.ResourceController;
 import hudson.model.ResourceList;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.annotation.concurrent.GuardedBy;
 import jenkins.model.Jenkins;

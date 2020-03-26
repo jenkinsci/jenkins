@@ -250,7 +250,7 @@ import org.kohsuke.stapler.jelly.JellyRequestDispatcher;
 import org.kohsuke.stapler.verb.POST;
 import org.xml.sax.InputSource;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.crypto.SecretKey;

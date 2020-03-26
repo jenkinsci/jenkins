@@ -28,7 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Item;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**

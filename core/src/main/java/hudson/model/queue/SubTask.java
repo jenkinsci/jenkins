@@ -33,7 +33,7 @@ import hudson.model.ResourceActivity;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.

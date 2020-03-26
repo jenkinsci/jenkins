@@ -3,7 +3,7 @@ package hudson.util;
 import hudson.EnvVars;
 import hudson.util.ProcessTree.ProcessCallable;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.lang.reflect.Proxy;

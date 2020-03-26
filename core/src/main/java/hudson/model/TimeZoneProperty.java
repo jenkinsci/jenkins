@@ -3,7 +3,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.IOException;

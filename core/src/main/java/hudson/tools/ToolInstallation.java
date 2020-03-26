@@ -40,7 +40,7 @@ import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
