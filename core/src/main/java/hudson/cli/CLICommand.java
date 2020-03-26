@@ -560,6 +560,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
     }
 
+    @Restricted(NoExternalUse.class) 
     static public void reportException(String name, Logger logger, PrintStream stderr, Throwable e) {
         final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
                 name);
