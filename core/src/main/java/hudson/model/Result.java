@@ -42,7 +42,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnegative;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
@@ -84,7 +83,7 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * Bigger numbers are worse.
      */
-    public final @Nonnegative int ordinal;
+    public final /* @java.annotation.Nonnegative */ int ordinal;
 
     /**
      * Default ball color for this status.
@@ -97,7 +96,7 @@ public final class Result implements Serializable, CustomExportedBean {
      */
     public final boolean completeBuild;
 
-    private Result(@NonNull String name, @NonNull BallColor color, @Nonnegative int ordinal, boolean complete) {
+    private Result(@NonNull String name, @NonNull BallColor color, /*@java.annotation.Nonnegative */int ordinal, boolean complete) {
         this.name = name;
         this.color = color;
         this.ordinal = ordinal;

@@ -132,7 +132,6 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.annotation.Nonnegative;
 import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.queue.AsynchronousExecution;
@@ -1020,7 +1019,7 @@ public class Queue extends ResourceController implements Saveable {
      *    use {@link #strictCountBuildableItemsFor(hudson.model.Label)}.
      * @return Number of {@link BuildableItem}s for the specified label. 
      */
-    public @Nonnegative int countBuildableItemsFor(@CheckForNull Label l) {
+    public /* @java.annotation.Nonnegative */ int countBuildableItemsFor(@CheckForNull Label l) {
         Snapshot snapshot = this.snapshot;
         int r = 0;
         for (BuildableItem bi : snapshot.buildables)
@@ -1044,7 +1043,7 @@ public class Queue extends ResourceController implements Saveable {
      * @return Number of {@link BuildableItem}s for the specified label.
      * @since 1.615
      */
-    public @Nonnegative int strictCountBuildableItemsFor(@CheckForNull Label l) {
+    public /* @java.annotation.Nonnegative */ int strictCountBuildableItemsFor(@CheckForNull Label l) {
         Snapshot _snapshot = this.snapshot;
         int r = 0;
         for (BuildableItem bi : _snapshot.buildables)

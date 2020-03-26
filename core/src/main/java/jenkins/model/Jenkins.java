@@ -306,7 +306,6 @@ import static hudson.init.InitMilestone.*;
 import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
-import javax.annotation.Nonnegative;
 import static javax.servlet.http.HttpServletResponse.*;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.WebMethod;
@@ -2833,7 +2832,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @throws IOException Failed to save the configuration
      * @throws IllegalArgumentException Negative value has been passed
      */
-    public void setNumExecutors(@Nonnegative int n) throws IOException, IllegalArgumentException {
+    public void setNumExecutors(/* @javax.annotation.Nonnegative*/ int n) throws IOException, IllegalArgumentException {
         if (n < 0) {
             throw new IllegalArgumentException("Incorrect field \"# of executors\": " + n +". It should be a non-negative number.");
         }
