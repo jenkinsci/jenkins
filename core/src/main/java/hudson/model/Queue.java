@@ -109,7 +109,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;

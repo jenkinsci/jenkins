@@ -93,7 +93,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 
 import java.io.File;

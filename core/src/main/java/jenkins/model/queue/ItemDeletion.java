@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 
 /**
  * A {@link Queue.QueueDecisionHandler} that blocks items being deleted from entering the queue.

@@ -37,7 +37,7 @@ import org.jenkinsci.Symbol;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collections;

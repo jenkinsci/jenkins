@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
