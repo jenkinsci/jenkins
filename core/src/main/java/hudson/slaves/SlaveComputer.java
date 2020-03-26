@@ -78,7 +78,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.annotation.CheckForNull;
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import javax.annotation.Nonnull;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -171,7 +171,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
-    @OverridingMethodsMustInvokeSuper
+    @OverrideMustInvoke
     public boolean isAcceptingTasks() {
         // our boolean flag is an override on any additional programmatic reasons why this agent might not be
         // accepting tasks.

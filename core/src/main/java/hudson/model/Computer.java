@@ -92,7 +92,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 
@@ -1626,7 +1626,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
      * @see hudson.model.Node#isAcceptingTasks()
      */
-    @OverridingMethodsMustInvokeSuper
+    @OverrideMustInvoke
     public boolean isAcceptingTasks() {
         final Node node = getNode();
         return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());
