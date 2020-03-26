@@ -66,7 +66,7 @@ public class HyperlinkNote extends ConsoleNote {
                 url = req.getContextPath()+url;
             } else {
                 // otherwise presumably this is rendered for e-mails and other non-HTTP stuff
-                url = Jenkins.getInstance().getRootUrl()+url.substring(1);
+                url = Jenkins.get().getRootUrl()+url.substring(1);
             }
         }
         text.addMarkup(charPos, charPos + length, "<a href='" + url + "'"+extraAttributes()+">", "</a>");

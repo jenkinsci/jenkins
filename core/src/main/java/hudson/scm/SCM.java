@@ -97,6 +97,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Stores {@link AutoBrowserHolder}. Lazily created.
      * @deprecated Unused by default.
      */
+    @Deprecated
     private transient AutoBrowserHolder autoBrowserHolder;
 
     /**
@@ -642,7 +643,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * all the module roots that were checked out from SCM.
      *
      * <p>
-     * For normal SCMs, the array will be of length <code>1</code> and it's contents
+     * For normal SCMs, the array will be of length {@code 1} and it's contents
      * will be identical to calling {@link #getModuleRoot(FilePath, AbstractBuild)}.
      *
      * @param workspace The workspace root directory
@@ -683,7 +684,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public abstract ChangeLogParser createChangeLogParser();
 
     public SCMDescriptor<?> getDescriptor() {
-        return (SCMDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (SCMDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
 //
@@ -727,7 +728,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns all the registered {@link SCMDescriptor}s.
      */
     public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
-        return Jenkins.getInstance().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
+        return Jenkins.get().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
     }
 
     /**
@@ -740,8 +741,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
     public static List<SCMDescriptor<?>> _for(@CheckForNull final Job project) {
         if(project==null)   return all();
         
-        final Descriptor pd = Jenkins.getInstance().getDescriptor((Class) project.getClass());
-        List<SCMDescriptor<?>> r = new ArrayList<SCMDescriptor<?>>();
+        final Descriptor pd = Jenkins.get().getDescriptor((Class) project.getClass());
+        List<SCMDescriptor<?>> r = new ArrayList<>();
         for (SCMDescriptor<?> scmDescriptor : all()) {
             if(!scmDescriptor.isApplicable(project))    continue;
 

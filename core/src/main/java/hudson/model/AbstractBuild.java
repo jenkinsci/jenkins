@@ -207,9 +207,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     public @CheckForNull Node getBuiltOn() {
         if (builtOn==null || builtOn.equals(""))
-            return Jenkins.getInstance();
+            return Jenkins.get();
         else
-            return Jenkins.getInstance().getNode(builtOn);
+            return Jenkins.get().getNode(builtOn);
     }
 
     /**
@@ -460,7 +460,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             this.listener = listener;
 
             launcher = createLauncher(listener);
-            if (!Jenkins.getInstance().getNodes().isEmpty()) {
+            if (!Jenkins.get().getNodes().isEmpty()) {
                 if (node instanceof Jenkins) {
                     listener.getLogger().print(Messages.AbstractBuild_BuildingOnMaster());
                 } else {
@@ -545,7 +545,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 }
             }
 
-            for (NodeProperty nodeProperty: Jenkins.getInstance().getGlobalNodeProperties()) {
+            for (NodeProperty nodeProperty: Jenkins.get().getGlobalNodeProperties()) {
                 Environment environment = nodeProperty.setUp(AbstractBuild.this, l, listener);
                 if (environment != null) {
                     buildEnvironments.add(environment);
@@ -863,8 +863,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = super.getEnvironment(log);
         FilePath ws = getWorkspace();
-        if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
+        if (ws != null) { // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
+            FilePath tempDir = WorkspaceList.tempDir(ws);
+            if (tempDir != null) {
+                env.put("WORKSPACE_TMP", tempDir.getRemote()); // JENKINS-60634
+            }
+        }
 
         project.getScm().buildEnvVars(this,env);
 
@@ -1001,7 +1006,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Deprecated
     public Action getTestResultAction() {
         try {
-            return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AbstractTestResultAction").asSubclass(Action.class));
+            return getAction(Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AbstractTestResultAction").asSubclass(Action.class));
         } catch (ClassNotFoundException x) {
             return null;
         }
@@ -1013,7 +1018,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Deprecated
     public Action getAggregatedTestResultAction() {
         try {
-            return getAction(Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AggregatedTestResultAction").asSubclass(Action.class));
+            return getAction(Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AggregatedTestResultAction").asSubclass(Action.class));
         } catch (ClassNotFoundException x) {
             return null;
         }

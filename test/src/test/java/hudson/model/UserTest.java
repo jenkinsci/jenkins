@@ -54,7 +54,6 @@ import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;

@@ -29,6 +29,8 @@ import hudson.model.ManagementLink;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -41,21 +43,27 @@ public class ShutdownLink extends ManagementLink {
     }
 
     public String getDisplayName() {
-        return Jenkins.getInstance().isQuietingDown() ? Messages.ShutdownLink_DisplayName_cancel() : Messages.ShutdownLink_DisplayName_prepare();
+        return Jenkins.get().isQuietingDown() ? Messages.ShutdownLink_DisplayName_cancel() : Messages.ShutdownLink_DisplayName_prepare();
     }
 
     @Override
     public String getDescription() {
-        return Jenkins.getInstance().isQuietingDown() ? "" : Messages.ShutdownLink_Description();
+        return Jenkins.get().isQuietingDown() ? "" : Messages.ShutdownLink_Description();
     }
 
     @Override
     public String getUrlName() {
-        return Jenkins.getInstance().isQuietingDown() ? "cancelQuietDown" : "quietDown";
+        return Jenkins.get().isQuietingDown() ? "cancelQuietDown" : "quietDown";
     }
 
     @Override
     public boolean getRequiresPOST() {
         return true;
+    }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.TOOLS;
     }
 }

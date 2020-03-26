@@ -26,7 +26,11 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -48,8 +52,20 @@ public class StatisticsLink extends ManagementLink {
         return Messages.StatisticsLink_Description();
     }
 
+    @Nonnull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.MANAGE;
+    }
+
     @Override
     public String getUrlName() {
         return "load-statistics";
+    }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
     }
 }

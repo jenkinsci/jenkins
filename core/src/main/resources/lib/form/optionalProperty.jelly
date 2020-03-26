@@ -35,7 +35,7 @@ THE SOFTWARE.
     <st:attribute name="title" use="required" />
   </st:documentation>
   <!--
-    Without @checked, optionalBlock will try to coarse an object to a boolean, which fails,
+    Without @checked, optionalBlock will try to coerce an object to a boolean, which fails,
     so override @checked manually.
   -->
   <f:optionalBlock field="${field}" title="${title}" checked="${instance[field]!=null}">

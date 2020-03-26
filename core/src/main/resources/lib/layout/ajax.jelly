@@ -50,13 +50,10 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <!-- called to generate partial HTML. set up HTML headers and etc -->
-      <!-- copied from layout.jelly -->
-      <st:contentType value="${attrs.contentType?:'text/html;charset=UTF-8'}" />
-      <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
-      ${h.initPageVariables(context)}
       <j:set var="ajax" value="true"/>
-      
-      <d:invokeBody/>
+      <l:view contentType="${attrs.contentType?:'text/html;charset=UTF-8'}">
+        <d:invokeBody/>
+      </l:view>
     </j:otherwise>
   </j:choose>
 </j:jelly>

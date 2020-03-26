@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
+import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
 import hudson.XmlFile;
@@ -31,6 +32,7 @@ import hudson.BulkChange;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.listeners.SaveableListener;
+import hudson.security.Permission;
 import hudson.util.FormApply;
 import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
@@ -59,6 +61,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -199,7 +202,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
          * Returns {@link Descriptor} whose 'clazz' is the same as {@link #getItemType() the item type}.
          */
         public Descriptor getItemTypeDescriptor() {
-            return Jenkins.getInstance().getDescriptor(getItemType());
+            return Jenkins.get().getDescriptor(getItemType());
         }
 
         public Descriptor getItemTypeDescriptorOrDie() {
@@ -207,7 +210,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if (it == null) {
                 throw new AssertionError(clazz + " is not an array/collection type in " + displayName + ". See https://jenkins.io/redirect/developer/class-is-missing-descriptor");
             }
-            Descriptor d = Jenkins.getInstance().getDescriptor(it);
+            Descriptor d = Jenkins.get().getDescriptor(it);
             if (d==null)
                 throw new AssertionError(it +" is missing its descriptor in "+displayName+". See https://jenkins.io/redirect/developer/class-is-missing-descriptor");
             return d;
@@ -217,14 +220,14 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
          * Returns all the descriptors that produce types assignable to the property type.
          */
         public List<? extends Descriptor> getApplicableDescriptors() {
-            return Jenkins.getInstance().getDescriptorList(clazz);
+            return Jenkins.get().getDescriptorList(clazz);
         }
 
         /**
          * Returns all the descriptors that produce types assignable to the item type for a collection property.
          */
         public List<? extends Descriptor> getApplicableItemDescriptors() {
-            return Jenkins.getInstance().getDescriptorList(getItemType());
+            return Jenkins.get().getDescriptorList(getItemType());
         }
     }
 
@@ -246,7 +249,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
 
         private String resolve() {
             // the resolution has to be deferred to avoid ordering issue among descriptor registrations.
-            return Jenkins.getInstance().getDescriptor(owner).getHelpFile(fieldNameToRedirectTo);
+            return Jenkins.get().getDescriptor(owner).getHelpFile(fieldNameToRedirectTo);
         }
     }
 
@@ -644,7 +647,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if (isApplicable(actualType, json)) {
                 LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
                 try {
-                    final Descriptor descriptor = Jenkins.getActiveInstance().getDescriptor(actualType);
+                    final Descriptor descriptor = Jenkins.get().getDescriptor(actualType);
                     if (descriptor != null) {
                         return descriptor.newInstance(Stapler.getCurrentRequest(), json);
                     } else {
@@ -670,7 +673,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 if (isApplicable(targetTypeErasure, json)) {
                     LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
                     try {
-                        return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
+                        return Jenkins.get().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
                     } catch (Exception x) {
                         LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
                     }
@@ -690,7 +693,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     private T verifyNewInstance(T t) {
         if (t!=null && t.getDescriptor()!=this) {
             // TODO: should this be a fatal error?
-            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably malplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
+            LOGGER.warning("Father of "+ t+" and its getDescriptor() points to two different instances. Probably misplaced @Extension. See http://hudson.361315.n4.nabble.com/Help-Hint-needed-Post-build-action-doesn-t-stay-activated-td2308833.html");
         }
         return t;
     }
@@ -829,6 +832,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
     }
 
+    /**
+     * Returns the permission type needed in order to access the {@link #getGlobalConfigPage()} for this descriptor.
+     * By default, requires {@link Jenkins#ADMINISTER} permission.
+     * For now this only applies to descriptors configured through the global ({@link jenkins.model.GlobalConfigurationCategory.Unclassified}) configuration.
+     * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins#MANAGE}.
+     *
+     * @return Permission required to globally configure this descriptor.
+     * @since 2.222
+     */
+    public @Nonnull
+    Permission getRequiredGlobalConfigPagePermission() {
+        return Jenkins.ADMINISTER;
+    }
+
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
     }
@@ -856,7 +873,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
 
     protected List<String> getPossibleViewNames(String baseName) {
         List<String> names = new ArrayList<>();
-        for (Facet f : WebApp.get(Jenkins.getInstance().servletContext).facets) {
+        for (Facet f : WebApp.get(Jenkins.get().servletContext).facets) {
             if (f instanceof JellyCompatibleFacet) {
                 JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
                 for (String ext : jcf.getScriptExtensions())
@@ -901,7 +918,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     protected XmlFile getConfigFile() {
-        return new XmlFile(new File(Jenkins.getInstance().getRootDir(),getId()+".xml"));
+        return new XmlFile(new File(Jenkins.get().getRootDir(),getId()+".xml"));
     }
 
     /**
@@ -911,7 +928,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      null to indicate that this descriptor came from the core.
      */
     protected PluginWrapper getPlugin() {
-        return Jenkins.getInstance().getPluginManager().whichPlugin(clazz);
+        return Jenkins.get().getPluginManager().whichPlugin(clazz);
     }
 
     /**
@@ -943,7 +960,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
                 try (InputStream in = url.openStream()) {
-                    String literal = IOUtils.toString(in,"UTF-8");
+                    String literal = IOUtils.toString(in, StandardCharsets.UTF_8);
                     rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
                 }
                 return;
@@ -1108,6 +1125,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Finds a descriptor from a collection by its class name or ID.
      * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
      */
+    @Deprecated
     public static @CheckForNull <T extends Descriptor> T find(Collection<? extends T> list, String string) {
         T d = findByClassName(list, string);
         if (d != null) {
@@ -1119,6 +1137,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * @deprecated choose between {@link #findById} or {@link #findByDescribableClassName}
      */
+    @Deprecated
     public static @CheckForNull Descriptor find(String className) {
         return find(ExtensionList.lookup(Descriptor.class),className);
     }

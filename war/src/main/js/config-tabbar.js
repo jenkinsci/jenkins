@@ -1,14 +1,13 @@
-var $ = require('jquery-detached').getJQuery();
-var page = require('./util/page.js');
-var jenkinsLocalStorage = require('./util/jenkinsLocalStorage.js');
+import $ from 'jquery';
+import jenkinsLocalStorage from './util/jenkinsLocalStorage';
+import page from './util/page';
+import * as tabBarWidget from './widgets/config/tabbar';
 
-exports.tabs = []; // Useful for testing.
+export const tabs = []; // Useful for testing.
 
 $(function() {
-    var tabBarWidget = require('./widgets/config/tabbar.js');
-
     tabBarWidget.addPageTabs('.config-table.tabbed', function(tabBar) {
-        exports.tabs.push(tabBar);
+        tabs.push(tabBar);
 
         // We want to merge some sections together.
         // Merge the "Advanced" section into the "General" section.

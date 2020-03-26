@@ -146,4 +146,10 @@ public class UrlHelperTest {
         assertTrue(UrlHelper.isValidRootUrl("http://jenkins.com."));
         assertTrue(UrlHelper.isValidRootUrl("http://jenkins.com......"));
     }
+
+    @Test
+    @Issue("SECURITY-1471")
+    public void ensureJavascriptSchemaIsNotAllowed() {
+        assertFalse(UrlHelper.isValidRootUrl("javascript:alert(123)"));
+    }
 }

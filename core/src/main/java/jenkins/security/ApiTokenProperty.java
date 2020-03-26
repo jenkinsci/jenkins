@@ -154,7 +154,6 @@ public class ApiTokenProperty extends UserProperty {
      * @since 1.426, and since 1.638 the method performs security checks
      */
     @Nonnull
-    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public String getApiToken() {
         LOGGER.log(Level.FINE, "Deprecated usage of getApiToken");
         if(LOGGER.isLoggable(Level.FINER)){
@@ -181,7 +180,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         String p = apiToken.getPlainText();
-        if (p.equals(Util.getDigestOf(Jenkins.getInstance().getSecretKey()+":"+user.getId()))) {
+        if (p.equals(Util.getDigestOf(Jenkins.get().getSecretKey()+":"+user.getId()))) {
             // if the current token is the initial value created by pre SECURITY-49 Jenkins, we can't use that.
             // force using the newer value
             apiToken = Secret.fromString(p=API_KEY_SEED.mac(user.getId()));

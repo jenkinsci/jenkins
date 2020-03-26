@@ -74,7 +74,7 @@ public class DisplayNameTest {
         FreeStyleProject project = j.createFreeStyleProject(projectName);
         assertEquals(projectName, project.getDisplayName());
 
-        AbstractProject newProject = Jenkins.getInstance().copy((AbstractProject)project, newProjectName);
+        AbstractProject newProject = Jenkins.get().copy((AbstractProject)project, newProjectName);
         assertEquals(newProjectName, newProject.getName());
         assertEquals(newProjectName, newProject.getDisplayName());
     }
@@ -89,7 +89,7 @@ public class DisplayNameTest {
         project.setDisplayName(oldDisplayName);
         assertEquals(oldDisplayName, project.getDisplayName());
 
-        AbstractProject newProject = Jenkins.getInstance().copy((AbstractProject)project, newProjectName);
+        AbstractProject newProject = Jenkins.get().copy((AbstractProject)project, newProjectName);
         assertEquals(newProjectName, newProject.getName());
         assertEquals(newProjectName, newProject.getDisplayName());
         

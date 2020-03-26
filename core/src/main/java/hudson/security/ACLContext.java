@@ -58,7 +58,6 @@ public class ACLContext implements AutoCloseable {
         return previousContext;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void close() {
         SecurityContextHolder.setContext(previousContext);

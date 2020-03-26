@@ -1,11 +1,12 @@
+import upgradePanel from './templates/upgradePanel.hbs';
+import upgradeSuccessPanel from './templates/upgradeSuccessPanel.hbs';
+import upgradeSkippedPanel from './templates/upgradeSkippedPanel.hbs';
+
 /* globals onSetupWizardInitialized: true */
 onSetupWizardInitialized(function(wizard) {
 	var jenkins = wizard.jenkins; // wizard-provided jenkins api
 	var pluginManager = wizard.pluginManager;
 
-	var upgradePanel = require('./templates/upgradePanel.hbs');
-	var upgradeSuccessPanel = require('./templates/upgradeSuccessPanel.hbs');
-	var upgradeSkippedPanel = require('./templates/upgradeSkippedPanel.hbs');
 
 	wizard.addActions({
 		'.skip-recommended-plugins': function() {

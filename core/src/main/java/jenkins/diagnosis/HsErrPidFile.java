@@ -45,13 +45,13 @@ public class HsErrPidFile {
     }
 
     public HttpResponse doDownload() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         return HttpResponses.staticResource(file);
     }
 
     @RequirePOST
     public HttpResponse doDelete() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         file.delete();
         owner.files.remove(this);
         return HttpResponses.redirectTo("../..");

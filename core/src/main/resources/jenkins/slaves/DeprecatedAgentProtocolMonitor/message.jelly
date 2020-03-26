@@ -1,7 +1,0 @@
-<?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-<div class="alert alert-warning">
-  ${%blurb(it.deprecatedProtocols)}
-  ${%See Protocol Configuration(rootURL)}
-</div>
-</j:jelly>

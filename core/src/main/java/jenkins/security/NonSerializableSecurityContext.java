@@ -14,6 +14,7 @@
  */
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextImpl;
 import org.acegisecurity.Authentication;
@@ -40,6 +41,7 @@ import javax.servlet.http.HttpSession;
  * @see hudson.security.HttpSessionContextIntegrationFilter2
  * @since 1.509
  */
+@SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "It is not intended to be serialized. Default values will be used in case of deserialization")
 public class NonSerializableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
 

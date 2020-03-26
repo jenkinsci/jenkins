@@ -24,6 +24,7 @@
 
 package jenkins.util;
 
+import hudson.model.AbstractItem;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

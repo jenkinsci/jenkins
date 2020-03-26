@@ -1,7 +1,6 @@
 package hudson.model;
 
 import com.google.common.base.Throwables;
-import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;

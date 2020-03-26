@@ -30,9 +30,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;

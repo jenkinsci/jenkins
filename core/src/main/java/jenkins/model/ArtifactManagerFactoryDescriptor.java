@@ -35,7 +35,7 @@ import hudson.model.Descriptor;
 public abstract class ArtifactManagerFactoryDescriptor extends Descriptor<ArtifactManagerFactory> {
 
     public static DescriptorExtensionList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> all() {
-        return Jenkins.getInstance().getDescriptorList(ArtifactManagerFactory.class);
+        return Jenkins.get().getDescriptorList(ArtifactManagerFactory.class);
     }
 
 }

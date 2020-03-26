@@ -100,7 +100,7 @@ public class RunParameterValue extends ParameterValue {
     public void buildEnvironment(Run<?,?> build, EnvVars env) {
         Run run = getRun();
         
-        String value = (null == run) ? "UNKNOWN" : Jenkins.getInstance().getRootUrl() + run.getUrl();
+        String value = (null == run) ? "UNKNOWN" : Jenkins.get().getRootUrl() + run.getUrl();
         env.put(name, value);
 
         env.put(name + ".jobName", getJobName());   // undocumented, left for backward compatibility

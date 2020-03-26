@@ -88,7 +88,7 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
     protected abstract T parse(String line);
 
     public synchronized void set(String newContent) throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         write(newContent);
         load2();

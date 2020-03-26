@@ -57,7 +57,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     }
 
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (DescriptorImpl)Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -67,6 +67,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
      * @deprecated as of 2.0
      *      Use injection
      */
+    @Deprecated
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ DescriptorImpl DESCRIPTOR;
 

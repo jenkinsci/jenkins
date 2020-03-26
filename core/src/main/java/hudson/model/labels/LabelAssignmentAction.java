@@ -33,7 +33,7 @@ public interface LabelAssignmentAction extends Action {
      * @param task
      *      Never null.
      * @return
-     *      null to let other {@link LabelAssignmentAction}s take control, eventually to {@code SubTask#getAssignedLabel()}.
+     *      null to let other {@link LabelAssignmentAction}s take control, eventually to {@link SubTask#getAssignedLabel()}.
      *      If non-null value is returned, that label will be authoritative.
      */
     Label getAssignedLabel(@Nonnull SubTask task);

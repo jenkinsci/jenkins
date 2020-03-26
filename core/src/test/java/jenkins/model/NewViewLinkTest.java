@@ -2,7 +2,7 @@ package jenkins.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,7 +37,7 @@ public class NewViewLinkTest {
     @Before
     public void initTests() throws Exception {
     PowerMockito.mockStatic(Jenkins.class);
-    PowerMockito.when(Jenkins.getInstance()).thenReturn(jenkins);
+    PowerMockito.when(Jenkins.get()).thenReturn(jenkins);
     PowerMockito.when(jenkins.getRootUrl()).thenReturn(rootUrl);
     newViewLink = new NewViewLink();
     }

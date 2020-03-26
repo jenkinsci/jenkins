@@ -46,7 +46,7 @@ public class GroovyHookScript {
 
     @Deprecated
     public GroovyHookScript(String hook) {
-        this(hook, Jenkins.getActiveInstance());
+        this(hook, Jenkins.get());
     }
 
     private GroovyHookScript(String hook, Jenkins j) {

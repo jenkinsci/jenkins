@@ -30,7 +30,6 @@ import hudson.model.Job;
 import hudson.model.ListView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
-import org.junit.Before;
 import org.junit.Test;
 
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;

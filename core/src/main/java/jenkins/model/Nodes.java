@@ -280,9 +280,6 @@ public class Nodes implements Saveable {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void save() throws IOException {
         if (BulkChange.contains(this)) {

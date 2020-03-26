@@ -31,7 +31,6 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
@@ -49,8 +48,8 @@ public class LazyBuildMixInTest {
         FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
         assertEquals(b2, b1.getNextBuild());
         assertEquals(b3, b2.getNextBuild());
-        assertEquals(null, b3.getNextBuild());
-        assertEquals(null, b1.getPreviousBuild());
+        assertNull(b3.getNextBuild());
+        assertNull(b1.getPreviousBuild());
         assertEquals(b1, b2.getPreviousBuild());
         assertEquals(b2, b3.getPreviousBuild());
         b1.getRunMixIn().createReference().clear();
@@ -71,8 +70,8 @@ public class LazyBuildMixInTest {
         FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
         assertEquals(b2, b1.getNextBuild());
         assertEquals(b3, b2.getNextBuild());
-        assertEquals(null, b3.getNextBuild());
-        assertEquals(null, b1.getPreviousBuild());
+        assertNull(b3.getNextBuild());
+        assertNull(b1.getPreviousBuild());
         assertEquals(b1, b2.getPreviousBuild());
         assertEquals(b2, b3.getPreviousBuild());
         b2.delete();

@@ -36,7 +36,7 @@ import java.util.Arrays;
  * @author Kohsuke Kawaguchi
  */
 public class SortedListTest {
-    SortedList<String> l = new SortedList<String>(new ArrayList<String>(Arrays.asList("B","D","F")));
+    SortedList<String> l = new SortedList<>(new ArrayList<>(Arrays.asList("B", "D", "F")));
 
     @Test
     public void testCeil() {
@@ -106,7 +106,7 @@ public class SortedListTest {
     @Test
     public void testClone() {
         final int originalSize = l.size();
-        SortedList<String> l2 = new SortedList<String>(l);
+        SortedList<String> l2 = new SortedList<>(l);
         assertEquals(originalSize, l2.size());
         assertEquals(originalSize, l.size());
         for (int i = 0; i < originalSize; i++) {

@@ -17,6 +17,6 @@ public /*for Jelly*/ class RejectedCallable {
 
     public @CheckForNull
     PluginWrapper getPlugin() {
-        return Jenkins.getInstance().pluginManager.whichPlugin(clazz);
+        return Jenkins.get().pluginManager.whichPlugin(clazz);
     }
 }

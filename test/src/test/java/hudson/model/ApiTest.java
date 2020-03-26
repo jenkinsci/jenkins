@@ -77,7 +77,7 @@ public class ApiTest {
     }
 
     /**
-     * Test that calling the XML API with the XPath <code>document</code> function fails.
+     * Test that calling the XML API with the XPath {@code document} function fails.
      *
      * @throws Exception if so
      */

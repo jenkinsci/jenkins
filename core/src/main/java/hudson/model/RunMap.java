@@ -156,7 +156,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     @Deprecated
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
         public int compare(Comparable o1, Comparable o2) {
-            return -o1.compareTo(o2);
+            return o2.compareTo(o1);
         }
     };
 

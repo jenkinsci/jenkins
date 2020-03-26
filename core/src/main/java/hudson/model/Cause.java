@@ -47,7 +47,7 @@ import javax.annotation.Nonnull;
 /**
  * Cause object base class.  This class hierarchy is used to keep track of why
  * a given build was started. This object encapsulates the UI rendering of the cause,
- * as well as providing more useful information in respective subypes.
+ * as well as providing more useful information in respective subtypes.
  *
  * The Cause object is connected to a build via the {@link CauseAction} object.
  *
@@ -191,7 +191,7 @@ public abstract class Cause {
 
         @Override
         public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {
-            Item i = Jenkins.getInstance().getItemByFullName(this.upstreamProject);
+            Item i = Jenkins.get().getItemByFullName(this.upstreamProject);
             if (!(i instanceof Job)) {
                 // cannot initialize upstream causes
                 return;
@@ -275,7 +275,7 @@ public abstract class Cause {
          * @since 1.505
          */
         public @CheckForNull Run<?,?> getUpstreamRun() {
-            Job<?,?> job = Jenkins.getInstance().getItemByFullName(upstreamProject, Job.class);
+            Job<?,?> job = Jenkins.get().getItemByFullName(upstreamProject, Job.class);
             return job != null ? job.getBuildByNumber(upstreamBuild) : null;
         }
 
@@ -333,7 +333,6 @@ public abstract class Cause {
             public ConverterImpl(XStream2 xstream) { super(xstream); }
             @Override protected void callback(UpstreamCause uc, UnmarshallingContext context) {
                 if (uc.upstreamCause != null) {
-                    if (uc.upstreamCauses == null) uc.upstreamCauses = new ArrayList<>();
                     uc.upstreamCauses.add(uc.upstreamCause);
                     uc.upstreamCause = null;
                     OldDataMonitor.report(context, "1.288");
@@ -486,7 +485,7 @@ public abstract class Cause {
         public String getShortDescription() {
             if(note != null) {
                 try {
-                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, Jenkins.getInstance().getMarkupFormatter().translate(note));
+                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, Jenkins.get().getMarkupFormatter().translate(note));
                 } catch (IOException x) {
                     // ignore
                 }

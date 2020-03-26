@@ -24,7 +24,7 @@
 package jenkins.telemetry.impl;
 
 import hudson.Extension;
-import jenkins.model.DownloadSettings;
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.telemetry.Telemetry;
 import jenkins.util.SystemProperties;
@@ -93,15 +93,13 @@ public class SecuritySystemProperties extends Telemetry {
         putBoolean(security, "org.kohsuke.stapler.Facet.allowViewNamePathTraversal", false);
         putBoolean(security, "org.kohsuke.stapler.jelly.CustomJellyContext.escapeByDefault", true);
 
-        // not controlled by a system property for historical reasons only
-        security.put("jenkins.model.DownloadSettings.useBrowser", Boolean.toString(DownloadSettings.get().isUseBrowser()));
-
         putStringInfo(security, "hudson.model.ParametersAction.safeParameters");
         putStringInfo(security, "hudson.model.DirectoryBrowserSupport.CSP");
         putStringInfo(security, "hudson.security.HudsonPrivateSecurityRealm.ID_REGEX");
 
         Map<String, Object> info = new TreeMap<>();
-        info.put("core", Jenkins.getVersion().toString());
+        VersionNumber jenkinsVersion = Jenkins.getVersion();
+        info.put("core", jenkinsVersion != null ? jenkinsVersion.toString() : "UNKNOWN");
         info.put("clientDate", clientDateString());
         info.put("properties", security);
 

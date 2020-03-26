@@ -55,7 +55,13 @@ var Sortable = (function() {
 
         // We have a first row: assume it's the header, and make its contents clickable links
         firstRow.each(function (cell){
-            cell.innerHTML = '<a href="#" class="sortheader">'+this.getInnerText(cell)+'<span class="sortarrow"></span></a>';
+            /*
+             * Normally the innerHTML is dangerous, but in this case, we receive the column caption from an escaped jelly
+             * and thus, the content there is already escaped.
+             * If we use innerText, we will get the unescaped version and potentially trigger a XSS.
+             * Using the innerHTML will return the escaped content that could be reused directly within the wrapper.
+             */
+            cell.innerHTML = '<a href="#" class="sortheader">'+cell.innerHTML+'<span class="sortarrow"></span></a>';
             this.arrows.push(cell.firstChild.lastChild);
 
             var self = this;

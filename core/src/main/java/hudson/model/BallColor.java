@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.util.ColorPalette;
 import jenkins.model.Jenkins;
 import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jvnet.localizer.LocaleProvider;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.Stapler;

@@ -70,7 +70,7 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        Queue q = Jenkins.getInstance().getQueue();
+        Queue q = Jenkins.get().getQueue();
         synchronized (q) {
             synchronized (this) {
                 if(!executors.isEmpty()) {

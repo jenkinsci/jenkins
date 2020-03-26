@@ -5,6 +5,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -144,7 +145,7 @@ public class Retrier <V>{
          * @return this builder
          */
         public @Nonnull Builder<V> withDuringActionExceptions(@CheckForNull Class<?>[] exceptions) {
-            this.duringActionExceptions = exceptions;
+            this.duringActionExceptions = exceptions != null ? Arrays.copyOf(exceptions, exceptions.length) : null;
             return this;
         }
 

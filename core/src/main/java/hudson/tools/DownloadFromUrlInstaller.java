@@ -133,20 +133,17 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return a downloadable object
          */
         public Downloadable createDownloadable() {
-            if (this instanceof DownloadFromUrlInstaller.DescriptorImpl) {
-                final DownloadFromUrlInstaller.DescriptorImpl delegate = this;
-                return new Downloadable(getId()) {
-                    public JSONObject reduce(List<JSONObject> jsonList) {
-                        if (isDefaultSchema(jsonList)) {
-                            return delegate.reduce(jsonList);
-                        } else {
-                            //if it's not default schema fall back to the super class implementation
-                            return super.reduce(jsonList);
-                        }
+            final DescriptorImpl delegate = this;
+            return new Downloadable(getId()) {
+                public JSONObject reduce(List<JSONObject> jsonList) {
+                    if (isDefaultSchema(jsonList)) {
+                        return delegate.reduce(jsonList);
+                    } else {
+                        //if it's not default schema fall back to the super class implementation
+                        return super.reduce(jsonList);
                     }
-                };
-            }
-            return new Downloadable(getId());
+                }
+            };
         }
 
         /**
@@ -160,10 +157,12 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
 
             if (toolInstallerList != null) {
                 ToolInstallerEntry[] entryList = toolInstallerList.list;
-                ToolInstallerEntry sampleEntry = entryList[0];
-                if (sampleEntry != null) {
-                    if (sampleEntry.id != null && sampleEntry.name != null && sampleEntry.url != null) {
-                        return true;
+                if (entryList != null) {
+                    ToolInstallerEntry sampleEntry = entryList[0];
+                    if (sampleEntry != null) {
+                        if (sampleEntry.id != null && sampleEntry.name != null && sampleEntry.url != null) {
+                            return true;
+                        }
                     }
                 }
             }

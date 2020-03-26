@@ -121,7 +121,7 @@ public final class RemotingDiagnostics {
         }
 
         public ClassLoader getClassLoader() {
-            return Jenkins.getInstance().getPluginManager().uberClassLoader;
+            return Jenkins.get().getPluginManager().uberClassLoader;
         }
 
         public String call() throws RuntimeException {
@@ -196,7 +196,7 @@ public final class RemotingDiagnostics {
 
         @WebMethod(name="heapdump.hprof")
         public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
-            owner.checkPermission(Jenkins.RUN_SCRIPTS);
+            owner.checkPermission(Jenkins.ADMINISTER);
             rsp.setContentType("application/octet-stream");
 
             FilePath dump = obtain();

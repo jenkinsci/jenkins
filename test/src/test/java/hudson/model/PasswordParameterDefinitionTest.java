@@ -31,7 +31,6 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import static org.junit.Assert.assertEquals;
 
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,6 +82,7 @@ public class PasswordParameterDefinitionTest {
 
         // Another control case: anyone can enter a different value.
         HtmlForm form = wc.withBasicApiToken(dev).getPage(p, "build?delay=0sec").getFormByName("parameters");
+        form.getElementsByAttribute("input", "class", "hidden-password-update-btn").get(0).click();
         HtmlPasswordInput input = form.getInputByName("value");
         input.setText("rumor");
         j.submit(form);
@@ -100,6 +100,7 @@ public class PasswordParameterDefinitionTest {
 
         // Another control case: blank values.
         form = wc.withBasicApiToken(dev).getPage(p, "build?delay=0sec").getFormByName("parameters");
+        form.getElementsByAttribute("input", "class", "hidden-password-update-btn").get(0).click();
         input = form.getInputByName("value");
         input.setText("");
         j.submit(form);

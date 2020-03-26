@@ -42,7 +42,7 @@ public class UpgradeWizardTest {
     private void setSetupWizard(SetupWizard wiz) throws Exception {
         Field f = Jenkins.class.getDeclaredField("setupWizard");
         f.setAccessible(true);
-        f.set(Jenkins.getInstance(), wiz);
+        f.set(Jenkins.get(), wiz);
     }
     
     @Before

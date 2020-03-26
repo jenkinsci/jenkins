@@ -4,10 +4,24 @@
     width: 15em;
 }
 
+time {
+    white-space: nowrap;
+}
+
 #filter-container {
     margin: 1em;
     text-align: right;
 }
-.compatWarning, .securityWarning {
-    font-weight: bold;
+.plugin-manager__categories {
+    margin-top: 0.25em;
+}
+
+.plugin-manager__category-label {
+    display: inline-block;
+    border: 1px solid #ccc;
+    background-color: #eee;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    padding: 0 0.5rem;
+    margin: 0 0.25rem 0.25rem 0;
 }

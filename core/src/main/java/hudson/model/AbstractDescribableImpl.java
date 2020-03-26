@@ -39,7 +39,7 @@ public abstract class AbstractDescribableImpl<T extends AbstractDescribableImpl<
      */
     @Override
     public Descriptor<T> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return Jenkins.get().getDescriptorOrDie(getClass());
     }
 
 }
