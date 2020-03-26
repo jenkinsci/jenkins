@@ -101,7 +101,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.3-20200323.083513-2</remoting.version><!-- https://github.com/jenkinsci/remoting/pull/373 -->
+    <remoting.version>4.3</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
