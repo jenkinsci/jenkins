@@ -19,9 +19,12 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -81,7 +84,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
     private void verifyRewrite(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
         Pattern pattern = Pattern.compile("<foo>"+plain_regex_match+"</foo>");
-        assertTrue(pattern.matcher(FileUtils.readFileToString(xml).trim()).matches());
+        MatcherAssert.assertThat(FileUtils.readFileToString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
     }
 
     // TODO sometimes fails: "Invalid request submission: {json=[Ljava.lang.String;@2c46358e, .crumb=[Ljava.lang.String;@35661457}"

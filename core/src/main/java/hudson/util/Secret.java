@@ -288,6 +288,13 @@ public final class Secret implements Serializable {
     private static final String PROVIDER = SystemProperties.getString(Secret.class.getName()+".provider");
 
     /**
+     * For testing only.
+     * @deprecated Normally unnecessary.
+     */
+    @Deprecated
+    /*package*/ static String SECRET = null;
+
+    /**
      * The key that encrypts the data on disk.
      */
     private static final CryptoConfidentialKey KEY = new CryptoConfidentialKey(Secret.class.getName());
