@@ -28,6 +28,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -44,6 +46,7 @@ import jenkins.model.Jenkins;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 
+import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,6 +56,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.kohsuke.stapler.StaplerRequest;
 
 @Category(SmokeTest.class)
 public class ComputerTest {
@@ -150,11 +154,16 @@ public class ComputerTest {
         DumbSlave s = j.createOnlineSlave();
         Computer c = s.toComputer();
         WorkspaceList wl = c.getWorkspaceList();
-        FilePath fp = new FilePath(c.getChannel(), "/file/path");
+        String remote = "/file/path";
+        FilePath fp = new FilePath(c.getChannel(), remote);
         wl.acquire(fp);
-        c.doDoReleaseWorkspaces();
+        StaplerRequest req = mock(StaplerRequest.class);
+        JSONObject o = new JSONObject();
+        o.put("remote", remote);
+        when(req.getSubmittedForm()).thenReturn(o);
+        c.doReleaseWorkspace(req, null);
         WorkspaceList.Lease lease = wl.acquire(fp);
-        assertEquals(lease.path.getRemote(), "/file/path");
+        assertEquals(lease.path.getRemote(), remote);
     }
 
 }

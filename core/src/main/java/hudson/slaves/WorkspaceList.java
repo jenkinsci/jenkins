@@ -28,8 +28,12 @@ import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.DirectoryBrowserSupport;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.io.Closeable;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -289,10 +293,28 @@ public final class WorkspaceList {
     }
 
     /**
-     * Clears all current leases
+     * Get the current active workspace leases
+     * @return the active workspace lease entries
      */
-    public synchronized void clear() {
-        inUse.clear();
+    @Restricted(NoExternalUse.class)
+    public Collection<Entry> getLeaseEntries() {
+        return inUse.values();
+    }
+
+    /**
+     * Release workspace
+     * @param remote workspace to be released
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized void releaseWorkspace(@Nonnull String remote) {
+        Entry old = inUse.get(remote);
+        if (old==null)
+            throw new AssertionError("Releasing unallocated workspace "+ remote);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "releasing " + remote + " with lock count " + old.lockCount, new Throwable("from " + this));
+        }
+        inUse.remove(remote);
+        notifyAll();
     }
 
     /**

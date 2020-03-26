@@ -1572,10 +1572,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Really deletes the agent.
      */
     @RequirePOST
-    public HttpResponse doDoReleaseWorkspaces() {
+    public HttpResponse doReleaseWorkspace(final StaplerRequest req, final StaplerResponse rsp) throws ServletException {
         checkPermission(CONFIGURE);
         WorkspaceList wl = getWorkspaceList();
-        wl.clear();
+        String remote = req.getSubmittedForm().getString("remote");
+        wl.releaseWorkspace(remote);
         return new HttpRedirect("./");
     }
 

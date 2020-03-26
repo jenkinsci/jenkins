@@ -1,0 +1,39 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <l:layout>
+        <st:include page="sidepanel.jelly" />
+        <l:main-panel>
+            <h1>${%Workspace Leases}</h1>
+            <j:if test="${!it.workspaceList.leaseEntries.isEmpty()}">
+                <table class="pane" style="width: auto;">
+                    <tbody>
+                        <tr>
+                            <td class="pane-header">Path</td>
+                            <td class="pane-header">Context</td>
+                            <td class="pane-header">Release</td>
+                        </tr>
+                        <j:forEach var="entry" items="${it.workspaceList.leaseEntries}" indexVar="i">
+                            <td class="pane">
+                                <strong>${entry.path.remote}</strong>
+                            </td>
+                            <td class="pane">
+                                <j:if test="${entry.context != null}">
+                                    <strong>${entry.context}</strong>
+                                </j:if>
+                            </td>
+                            <td>
+                                <form action="releaseWorkspace" method="post">
+                                    <input type="hidden" id="remote" name="remote" value="${entry.path.remote}"/>
+                                    <f:submit value="${%Release}" />
+                                </form>
+                            </td>
+                        </j:forEach>
+                    </tbody>
+                </table>
+            </j:if>
+            <j:if test="${it.workspaceList.leaseEntries.isEmpty()}">
+                <strong>${%No workspace leases are active}</strong>
+            </j:if>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
