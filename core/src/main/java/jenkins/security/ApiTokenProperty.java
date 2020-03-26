@@ -209,10 +209,10 @@ public class ApiTokenProperty extends UserProperty {
      */
     private boolean hasPermissionToSeeToken() {
         // Administrators can do whatever they want
-        return checkPermission(SHOW_LEGACY_TOKEN_TO_ADMINS, user);
+        return canCurrentUserControlObject(SHOW_LEGACY_TOKEN_TO_ADMINS, user);
     }
 
-    private static boolean checkPermission(boolean trustAdmins, User user) {
+    private static boolean canCurrentUserControlObject(boolean trustAdmins, User propertyOwner) {
         if (trustAdmins && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return true;
         }
@@ -227,7 +227,7 @@ public class ApiTokenProperty extends UserProperty {
             return true;
         }
 
-        return User.idStrategy().equals(user.getId(), current.getId());
+        return User.idStrategy().equals(propertyOwner.getId(), current.getId());
     }
 
     // only for Jelly
@@ -419,8 +419,8 @@ public class ApiTokenProperty extends UserProperty {
     
         // for Jelly view
         @Restricted(NoExternalUse.class)
-        public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner){
-            return checkPermission(ADMIN_CAN_GENERATE_NEW_TOKENS, propertyOwner);
+        public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner) {
+            return canCurrentUserControlObject(ADMIN_CAN_GENERATE_NEW_TOKENS, propertyOwner);
         }
 
         /**
