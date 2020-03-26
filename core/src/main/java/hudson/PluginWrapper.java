@@ -52,7 +52,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -227,7 +227,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Set the list of components that depend on this plugin.
      * @param dependents The list of components that depend on this plugin.
      */
-    public void setDependents(@Nonnull Set<String> dependents) {
+    public void setDependents(@NonNull Set<String> dependents) {
         this.dependents = dependents;
     }
 
@@ -235,7 +235,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @deprecated Please use {@link #setDependents}.
      */
     @Deprecated
-    public void setDependants(@Nonnull Set<String> dependents) {
+    public void setDependants(@NonNull Set<String> dependents) {
         setDependents(dependents);
     }
 
@@ -243,7 +243,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Set the list of components that depend optionally on this plugin.
      * @param optionalDependents The list of components that depend optionally on this plugin.
      */
-    public void setOptionalDependents(@Nonnull Set<String> optionalDependents) {
+    public void setOptionalDependents(@NonNull Set<String> optionalDependents) {
         this.optionalDependents = optionalDependents;
     }
 
@@ -251,7 +251,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @deprecated Please use {@link #setOptionalDependents}.
      */
     @Deprecated
-    public void setOptionalDependants(@Nonnull Set<String> optionalDependents) {
+    public void setOptionalDependants(@NonNull Set<String> optionalDependents) {
         setOptionalDependents(dependents);
     }
 
@@ -260,7 +260,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Note that the list will include elements of {@link #getOptionalDependents}.
      * @return The list of components that depend on this plugin.
      */
-    public @Nonnull Set<String> getDependents() {
+    public @NonNull Set<String> getDependents() {
         if (isBundled && dependents.isEmpty()) {
             return CORE_ONLY_DEPENDANT;
         } else {
@@ -272,7 +272,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @deprecated Please use {@link #getDependents}.
      */
     @Deprecated
-    public @Nonnull Set<String> getDependants() {
+    public @NonNull Set<String> getDependants() {
         return getDependents();
     }
 
@@ -280,7 +280,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Like {@link #getDependents} but excluding optional dependencies.
      * @since 2.181
      */
-    public @Nonnull Set<String> getMandatoryDependents() {
+    public @NonNull Set<String> getMandatoryDependents() {
         Set<String> s = new HashSet<>(dependents);
         s.removeAll(optionalDependents);
         return s;
@@ -289,7 +289,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * @return The list of components that depend optionally on this plugin.
      */
-    public @Nonnull Set<String> getOptionalDependents() {
+    public @NonNull Set<String> getOptionalDependents() {
         return optionalDependents;
     }
 
@@ -297,7 +297,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @deprecated Please use {@link #getOptionalDependents}.
      */
     @Deprecated
-    public @Nonnull Set<String> getOptionalDependants() {
+    public @NonNull Set<String> getOptionalDependants() {
         return getOptionalDependents();
     }
 
@@ -707,7 +707,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @param strategy strategy to use
      * @return an object representing the result of the disablement of this plugin and its dependents plugins.
      */
-    public @Nonnull PluginDisableResult disable(@Nonnull PluginDisableStrategy strategy) {
+    public @NonNull PluginDisableResult disable(@NonNull PluginDisableStrategy strategy) {
         PluginDisableResult result = new PluginDisableResult(shortName);
 
         if (!this.isEnabled()) {
@@ -955,7 +955,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Similar to {@code org.apache.maven.artifact.ArtifactUtils.isSnapshot}.
      */
-    static boolean isSnapshot(@Nonnull String version) {
+    static boolean isSnapshot(@NonNull String version) {
         return version.contains("-SNAPSHOT") || version.matches(".+-[0-9]{8}.[0-9]{6}-[0-9]+");
     }
 

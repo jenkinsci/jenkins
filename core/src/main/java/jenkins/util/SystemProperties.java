@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -87,7 +87,7 @@ public class SystemProperties {
 
     private static final Handler NULL_HANDLER = key -> null;
 
-    private static @Nonnull Handler handler = NULL_HANDLER;
+    private static @NonNull Handler handler = NULL_HANDLER;
 
     // declared in WEB-INF/web.xml
     public static final class Listener implements ServletContextListener, OnMaster {

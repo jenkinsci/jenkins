@@ -31,7 +31,7 @@ import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.ResourceActivity;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import javax.annotation.CheckForNull;
 
@@ -90,7 +90,7 @@ public interface SubTask extends ResourceActivity {
      * Gets the {@link Task} that this subtask belongs to.
      * @return by default, {@code this}
      */
-    default @Nonnull Task getOwnerTask() {
+    default @NonNull Task getOwnerTask() {
         return (Task) this;
     }
 

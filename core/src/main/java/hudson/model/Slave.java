@@ -65,7 +65,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
@@ -181,7 +181,7 @@ public abstract class Slave extends Node implements Serializable {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
 
-    public Slave(@Nonnull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+    public Slave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
         this.name = name;
         this.remoteFS = remoteFS;
         this.launcher = launcher;
@@ -192,7 +192,7 @@ public abstract class Slave extends Node implements Serializable {
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
     @Deprecated
-    public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
+    public Slave(@NonNull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
@@ -479,7 +479,7 @@ public abstract class Slave extends Node implements Serializable {
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
      *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
      */
-    @Nonnull
+    @NonNull
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
         if (c == null) {
@@ -526,7 +526,7 @@ public abstract class Slave extends Node implements Serializable {
         }
     }
     
-    private void reportLauncherCreateError(@Nonnull String humanReadableMsg, @CheckForNull String exceptionDetails, @Nonnull TaskListener listener) {
+    private void reportLauncherCreateError(@NonNull String humanReadableMsg, @CheckForNull String exceptionDetails, @NonNull TaskListener listener) {
         String message = "Issue with creating launcher for agent " + name + ". " + humanReadableMsg;
         listener.error(message);
         if (LOGGER.isLoggable(Level.WARNING)) {
@@ -609,7 +609,7 @@ public abstract class Slave extends Node implements Serializable {
          * @return the filtered list
          * @since 2.12
          */
-        @Nonnull
+        @NonNull
         @Restricted(NoExternalUse.class) // intended for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
         public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
@@ -626,7 +626,7 @@ public abstract class Slave extends Node implements Serializable {
          * @return the filtered list
          * @since 2.12
          */
-        @Nonnull
+        @NonNull
         @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
@@ -641,7 +641,7 @@ public abstract class Slave extends Node implements Serializable {
          * @return the filtered list
          * @since 2.12
          */
-        @Nonnull
+        @NonNull
         @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {

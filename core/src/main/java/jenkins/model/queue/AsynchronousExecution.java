@@ -35,7 +35,7 @@ import hudson.model.ResourceActivity;
 import hudson.model.ResourceController;
 import hudson.model.ResourceList;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.annotation.concurrent.GuardedBy;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -112,7 +112,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
      * after releasing any problematic locks.
      */
     @Restricted(NoExternalUse.class)
-    public synchronized final void setExecutorWithoutCompleting(@Nonnull Executor executor) {
+    public synchronized final void setExecutorWithoutCompleting(@NonNull Executor executor) {
         assert this.executor == null;
         this.executor = executor;
     }

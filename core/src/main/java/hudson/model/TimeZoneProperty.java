@@ -4,7 +4,7 @@ import hudson.Extension;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.IOException;
 import java.util.TimeZone;
@@ -52,7 +52,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
     @Symbol("timezone")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.TimeZoneProperty_DisplayName();

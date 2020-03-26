@@ -77,7 +77,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import java.io.File;
 import java.io.IOException;
@@ -380,8 +380,8 @@ public class SlaveComputer extends Computer {
      * Same as {@link #setChannel(InputStream, OutputStream, OutputStream, Channel.Listener)}, but for
      * {@link TaskListener}.
      */
-    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
-                           @Nonnull TaskListener taskListener,
+    public void setChannel(@NonNull InputStream in, @NonNull OutputStream out,
+                           @NonNull TaskListener taskListener,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         setChannel(in,out,taskListener.getLogger(),listener);
     }
@@ -405,7 +405,7 @@ public class SlaveComputer extends Computer {
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
      */
-    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+    public void setChannel(@NonNull InputStream in, @NonNull OutputStream out,
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
@@ -437,8 +437,8 @@ public class SlaveComputer extends Computer {
      * @since 2.127
      */
     @Restricted(Beta.class)
-    public void setChannel(@Nonnull ChannelBuilder cb,
-                           @Nonnull CommandTransport commandTransport,
+    public void setChannel(@NonNull ChannelBuilder cb,
+                           @NonNull CommandTransport commandTransport,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(cb,this);
@@ -599,7 +599,7 @@ public class SlaveComputer extends Computer {
      * @param listener Channel event listener to be attached (if not {@code null})
      * @since 1.444
      */
-    public void setChannel(@Nonnull Channel channel,
+    public void setChannel(@NonNull Channel channel,
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)

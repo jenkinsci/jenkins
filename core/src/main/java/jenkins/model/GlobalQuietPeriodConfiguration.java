@@ -29,7 +29,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 
 /**
@@ -60,7 +60,7 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
         }
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredGlobalConfigPagePermission() {
         return Jenkins.MANAGE;

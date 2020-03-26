@@ -8,7 +8,7 @@ import jenkins.model.Jenkins;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Iterator;
@@ -61,7 +61,7 @@ public abstract class ConfidentialStore {
     /**
      * Retrieves the currently active singleton instance of {@link ConfidentialStore}.
      */
-    public static @Nonnull ConfidentialStore get() {
+    public static @NonNull ConfidentialStore get() {
         if (TEST!=null) return TEST.get();
 
         Jenkins j = Jenkins.get();

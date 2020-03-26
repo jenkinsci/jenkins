@@ -69,7 +69,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -150,7 +150,7 @@ public class Maven extends Builder {
      *
      * @since 2.12
      */
-    private @Nonnull Boolean injectBuildVariables;
+    private @NonNull Boolean injectBuildVariables;
 
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";

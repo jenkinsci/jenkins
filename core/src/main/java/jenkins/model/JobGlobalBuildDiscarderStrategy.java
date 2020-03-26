@@ -30,7 +30,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 
 /**
@@ -56,7 +56,7 @@ public class JobGlobalBuildDiscarderStrategy extends GlobalBuildDiscarderStrateg
 
     @Extension @Symbol("jobBuildDiscarder")
     public static class DescriptorImpl extends GlobalBuildDiscarderStrategyDescriptor {
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.JobGlobalBuildDiscarderStrategy_displayName();

@@ -77,7 +77,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -263,7 +263,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         configure(new UpdateCenterConfiguration());
     }
 
-    UpdateCenter(@Nonnull UpdateCenterConfiguration configuration) {
+    UpdateCenter(@NonNull UpdateCenterConfiguration configuration) {
         configure(configuration);
     }
     
@@ -273,7 +273,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return Created Update center. {@link UpdateCenter} by default, but may be overridden
      * @since 2.4
      */
-    @Nonnull
+    @NonNull
     public static UpdateCenter createUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         String requiredClassName = SystemProperties.getString(UpdateCenter.class.getName()+".className", null);
         if (requiredClassName == null) {
@@ -307,7 +307,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return createDefaultUpdateCenter(config);
     }
     
-    @Nonnull
+    @NonNull
     private static UpdateCenter createDefaultUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         return config != null ? new UpdateCenter(config) : new UpdateCenter();
     }
@@ -677,7 +677,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return list of plugins
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull List<Plugin> getPluginFromAllSites(String artifactId,
+    public @NonNull List<Plugin> getPluginFromAllSites(String artifactId,
             @CheckForNull VersionNumber minVersion) {
         ArrayList<Plugin> result = new ArrayList<>();
         for (UpdateSite s : sites) {
@@ -851,7 +851,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return job.submit();
     }
 
-    private @Nonnull ConnectionCheckJob addConnectionCheckJob(@Nonnull UpdateSite site) {
+    private @NonNull ConnectionCheckJob addConnectionCheckJob(@NonNull UpdateSite site) {
         // Create a connection check job if the site was not already in the sourcesUsed set i.e. the first
         // job (in the jobs list) relating to a site must be the connection check job.
         if (sourcesUsed.add(site)) {
@@ -882,7 +882,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return new ConnectionCheckJob(site);
     }
 
-    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull String siteId) {
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@NonNull String siteId) {
         UpdateSite site = getSite(siteId);
         if (site == null) {
             return null;
@@ -890,7 +890,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return getConnectionCheckJob(site);
     }
 
-    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull UpdateSite site) {
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@NonNull UpdateSite site) {
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {
                 if (job instanceof ConnectionCheckJob && job.site != null && job.site.getId().equals(site.getId())) {
@@ -1642,7 +1642,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Enables a required plugin, provides feedback in the update center
      */
     public class EnableJob extends InstallationJob {
-        public EnableJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin, boolean dynamicLoad) {
+        public EnableJob(UpdateSite site, Authentication auth, @NonNull Plugin plugin, boolean dynamicLoad) {
             super(plugin, site, auth, dynamicLoad);
         }
         
@@ -1695,7 +1695,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * A no-op, e.g. this plugin is already installed
      */
     public class NoOpJob extends EnableJob {
-        public NoOpJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin) {
+        public NoOpJob(UpdateSite site, Authentication auth, @NonNull Plugin plugin) {
             super(site, auth, plugin, false);
         }
         @Override

@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extension point to add icon to {@code http://server/hudson/manage} page.
@@ -113,7 +113,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     /**
      * All registered instances.
      */
-    public static @Nonnull ExtensionList<ManagementLink> all() {
+    public static @NonNull ExtensionList<ManagementLink> all() {
         return ExtensionList.lookup(ManagementLink.class);
     }
 
@@ -124,7 +124,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      *
      * @return the permission required for the link to be shown on "Manage Jenkins".
      */
-    public @Nonnull Permission getRequiredPermission() {
+    public @NonNull Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
     }
 
@@ -146,7 +146,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * @since 2.226
      */
     @Restricted(NoExternalUse.class) // TODO I don't think this works
-    protected @Nonnull String getCategoryName() {
+    protected @NonNull String getCategoryName() {
         return "UNCATEGORIZED";
     }
 
@@ -156,7 +156,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * @return An enum value of {@link Category}.
      * @since 2.226
      */
-    public @Nonnull Category getCategory() {
+    public @NonNull Category getCategory() {
         try {
             return Category.valueOf(getCategoryName());
         } catch (RuntimeException e) {
@@ -209,7 +209,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
             this.label = label;
         }
 
-        public @Nonnull String getLabel() {
+        public @NonNull String getLabel() {
             return label.toString();
         }
     }

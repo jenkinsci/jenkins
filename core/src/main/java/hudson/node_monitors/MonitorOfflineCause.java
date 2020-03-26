@@ -23,7 +23,7 @@
  */
 package hudson.node_monitors;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.slaves.OfflineCause;
 
@@ -38,5 +38,5 @@ public abstract class MonitorOfflineCause extends OfflineCause {
     /**
      * Identify monitor implementation that put computer offline.
      */
-    public abstract @Nonnull Class<? extends NodeMonitor> getTrigger();
+    public abstract @NonNull Class<? extends NodeMonitor> getTrigger();
 }

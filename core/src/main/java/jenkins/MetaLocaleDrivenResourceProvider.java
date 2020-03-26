@@ -31,7 +31,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.LocaleDrivenResourceProvider;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.net.URL;
 
 /**
@@ -45,7 +45,7 @@ public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResource
 
     @Override
     @CheckForNull
-    public URL lookup(@Nonnull String s) {
+    public URL lookup(@NonNull String s) {
         for (PluginLocaleDrivenResourceProvider provider : ExtensionList.lookup(PluginLocaleDrivenResourceProvider.class)) {
             try {
                 URL url = provider.lookup(s);
