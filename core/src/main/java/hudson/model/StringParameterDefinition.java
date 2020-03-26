@@ -48,7 +48,6 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         this.trim = trim;
     }
 
-    @NonNull
     public StringParameterDefinition(String name, String defaultValue, String description) {
         this(name, defaultValue, description, false);
     }
