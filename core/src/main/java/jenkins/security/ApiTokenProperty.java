@@ -62,7 +62,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;

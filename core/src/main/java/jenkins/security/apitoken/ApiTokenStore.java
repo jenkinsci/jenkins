@@ -35,7 +35,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
