@@ -29,7 +29,7 @@ import java.io.SequenceInputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import hudson.model.AperiodicWork;
 import hudson.util.VersionNumber;

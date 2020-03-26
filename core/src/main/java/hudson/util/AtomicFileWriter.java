@@ -26,7 +26,7 @@ package hudson.util;
 import jenkins.util.SystemProperties;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

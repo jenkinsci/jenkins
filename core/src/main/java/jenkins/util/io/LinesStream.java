@@ -36,7 +36,7 @@ import java.nio.file.Path;
 import java.util.Iterator;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Represents a stream over the lines of a text file.

@@ -5,7 +5,7 @@ import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.IOException;
 import java.util.TimeZone;
 import java.util.logging.Logger;
