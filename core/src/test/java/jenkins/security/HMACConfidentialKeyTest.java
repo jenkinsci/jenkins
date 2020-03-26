@@ -3,13 +3,9 @@ package jenkins.security;
 import java.util.Set;
 import java.util.TreeSet;
 import static org.junit.Assert.*;
-import org.junit.Rule;
 import org.junit.Test;
 
 public class HMACConfidentialKeyTest {
-
-    @Rule
-    public ConfidentialStoreRule store = new ConfidentialStoreRule();
 
     private HMACConfidentialKey key = new HMACConfidentialKey("test", 16);
 

@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import jenkins.model.Jenkins;
-import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.lang.RandomStringUtils;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -39,9 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class SecretTest {
-
-    @Rule
-    public ConfidentialStoreRule confidentialStore = new ConfidentialStoreRule();
 
     @Rule
     public MockSecretRule mockSecretRule = new MockSecretRule();

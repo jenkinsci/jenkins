@@ -12,8 +12,11 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,7 +67,10 @@ public abstract class ConfidentialStore {
     public static @Nonnull ConfidentialStore get() {
         if (TEST!=null) return TEST.get();
 
-        Jenkins j = Jenkins.get();
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            return Mock.INSTANCE;
+        }
         Lookup lookup = j.lookup;
         ConfidentialStore cs = lookup.get(ConfidentialStore.class);
         if (cs==null) {
@@ -91,10 +97,39 @@ public abstract class ConfidentialStore {
         return cs;
     }
 
-    /**
-     * Testing only. Used for testing {@link ConfidentialKey} without {@link Jenkins}
+   /**
+     * @deprecated No longer needed.
      */
+    @Deprecated
     /*package*/ static ThreadLocal<ConfidentialStore> TEST = null;
+
+    private static final class Mock extends ConfidentialStore {
+
+        static final ConfidentialStore INSTANCE = new Mock();
+
+        // Use a predictable seed to make tests more reproducible.
+        private final Random rand = new Random(1234);
+
+        private final Map<String, byte[]> data = new ConcurrentHashMap<>();
+
+        @Override
+        protected void store(ConfidentialKey key, byte[] payload) throws IOException {
+            data.put(key.getId(), payload);
+        }
+
+        @Override
+        protected byte[] load(ConfidentialKey key) throws IOException {
+            return data.get(key.getId());
+        }
+
+        @Override
+        public byte[] randomBytes(int size) {
+            byte[] random = new byte[size];
+            rand.nextBytes(random);
+            return random;
+        }
+
+    }
 
     private static final Logger LOGGER = Logger.getLogger(ConfidentialStore.class.getName());
 }
