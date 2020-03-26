@@ -16,7 +16,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
