@@ -31,7 +31,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import jenkins.util.SystemProperties;
 import java.util.Arrays;
-import jenkins.model.Jenkins;
 import hudson.Util;
 import jenkins.security.CryptoConfidentialKey;
 import org.kohsuke.stapler.Stapler;
@@ -287,11 +286,6 @@ public final class Secret implements Serializable {
      * @see #getCipher(String)
      */
     private static final String PROVIDER = SystemProperties.getString(Secret.class.getName()+".provider");
-
-    /**
-     * For testing only. Override the secret key so that we can test this class without {@link Jenkins}.
-     */
-    /*package*/ static String SECRET = null;
 
     /**
      * The key that encrypts the data on disk.

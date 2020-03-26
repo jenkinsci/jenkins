@@ -22,9 +22,6 @@ import org.junit.rules.TemporaryFolder;
 public class SecretRewriterTest {
 
     @Rule
-    public MockSecretRule mockSecretRule = new MockSecretRule();
-
-    @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
     private static final Pattern FOO_PATTERN = Pattern.compile("<foo>[{][A-Za-z0-9+/]+={0,2}[}]</foo>");
