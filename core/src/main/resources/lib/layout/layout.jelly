@@ -237,16 +237,12 @@ THE SOFTWARE.
 
           <j:if test="${!empty(it.api)}">
             <div class="page-footer__links rest_api hidden-xs">
-              <a href="api/">
-                REST API<l:svgIcon href="${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px" />
-              </a>
+              <a href="api/">REST API</a>
             </div>
           </j:if>
 
           <div class="page-footer__links page-footer__links--white jenkins_ver">
-            <a href="${h.getFooterURL()}" target="_blank">
-              Jenkins v${h.version}<l:svgIcon href="${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px" />
-            </a>
+            <a href="${h.getFooterURL()}" target="_blank">Jenkins ${h.version}</a>
           </div>
         </div>
         <j:if test="${extensionsAvailable}">
