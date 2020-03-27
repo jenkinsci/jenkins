@@ -10,7 +10,6 @@
   left: 0;
   clear: both;
   font-size: @font-size-sm;
-  text-align: right;
 }
 
 .page-footer .container-fluid {
@@ -18,14 +17,14 @@
 }
 
 .page-footer__flex-row {
-  height: 3.5rem;
+  min-height: 3.5rem;
   display: block;
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .page-footer__flex-row > * {
-  height: 100%;
   padding: 0.5rem 1.25rem;
   display: flex;
   align-items: center;
@@ -33,6 +32,7 @@
 
 .page-footer__footer-id-placeholder {
   flex: 1;
+  flex-wrap: wrap;
 }
 
 .page-footer span {
