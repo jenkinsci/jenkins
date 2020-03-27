@@ -107,9 +107,9 @@ public abstract class ConfidentialStore {
     @Deprecated
     /*package*/ static ThreadLocal<ConfidentialStore> TEST = null;
 
-    private static final class Mock extends ConfidentialStore {
+    static final class Mock extends ConfidentialStore {
 
-        static final ConfidentialStore INSTANCE = new Mock();
+        static final Mock INSTANCE = new Mock();
 
         private final SecureRandom rand;
 
@@ -125,14 +125,21 @@ public abstract class ConfidentialStore {
             rand.setSeed(new byte[] {1, 2, 3, 4});
         }
 
+        void clear() {
+            data.clear();
+        }
+
         @Override
         protected void store(ConfidentialKey key, byte[] payload) throws IOException {
+            LOGGER.fine(() -> "storing " + key.getId() + " " + hudson.Util.getDigestOf(hudson.Util.toHexString(payload)));
             data.put(key.getId(), payload);
         }
 
         @Override
         protected byte[] load(ConfidentialKey key) throws IOException {
-            return data.get(key.getId());
+            byte[] payload = data.get(key.getId());
+            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? hudson.Util.getDigestOf(hudson.Util.toHexString(payload)) : "null"));
+            return payload;
         }
 
         @Override

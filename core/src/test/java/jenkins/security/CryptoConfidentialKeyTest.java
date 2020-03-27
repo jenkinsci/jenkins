@@ -1,9 +1,13 @@
 package jenkins.security;
 
 import static org.junit.Assert.*;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class CryptoConfidentialKeyTest {
+
+    @Rule
+    public ConfidentialStoreRule store = new ConfidentialStoreRule();
 
     private CryptoConfidentialKey key = new CryptoConfidentialKey("test");
 

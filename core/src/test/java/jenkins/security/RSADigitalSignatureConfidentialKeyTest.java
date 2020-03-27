@@ -27,9 +27,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.Signature;
 import java.util.Base64;
 import static org.junit.Assert.assertTrue;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class RSADigitalSignatureConfidentialKeyTest {
+
+    @Rule
+    public ConfidentialStoreRule store = new ConfidentialStoreRule();
 
     private final RSADigitalSignatureConfidentialKey key = new RSADigitalSignatureConfidentialKey("test");
 

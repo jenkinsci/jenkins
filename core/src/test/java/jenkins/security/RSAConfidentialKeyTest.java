@@ -24,9 +24,13 @@
 package jenkins.security;
 
 import static org.junit.Assert.*;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class RSAConfidentialKeyTest {
+
+    @Rule
+    public ConfidentialStoreRule store = new ConfidentialStoreRule();
 
     private RSAConfidentialKey key = new RSAConfidentialKey("test") {};
 
