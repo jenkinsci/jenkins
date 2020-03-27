@@ -55,10 +55,8 @@ public abstract class ConfidentialStore {
      */
     protected abstract @CheckForNull byte[] load(ConfidentialKey key) throws IOException;
 
-    // TODO consider promoting to public, and offering a default implementation of randomBytes
-    SecureRandom secureRandom() {
-        return new SecureRandom();
-    }
+    // TODO consider promoting to public, and offering a default implementation of randomBytes (via the usual Util.isOverridden binary compat trick)
+    abstract SecureRandom secureRandom();
 
     /**
      * Works like {@link SecureRandom#nextBytes(byte[])}.
