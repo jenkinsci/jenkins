@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
+import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
@@ -20,6 +21,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class SecretRewriterTest {
+
+    @Rule
+    public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
