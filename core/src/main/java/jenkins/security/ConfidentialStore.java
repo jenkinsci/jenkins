@@ -10,6 +10,7 @@ import org.kohsuke.MetaInfServices;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,6 +54,11 @@ public abstract class ConfidentialStore {
      *      null the data has not been previously persisted, or if the data was tampered.
      */
     protected abstract @CheckForNull byte[] load(ConfidentialKey key) throws IOException;
+
+    // TODO consider promoting to public, and offering a default implementation of randomBytes
+    SecureRandom secureRandom() {
+        return new SecureRandom();
+    }
 
     /**
      * Works like {@link SecureRandom#nextBytes(byte[])}.
@@ -107,10 +113,19 @@ public abstract class ConfidentialStore {
 
         static final ConfidentialStore INSTANCE = new Mock();
 
-        // Use a predictable seed to make tests more reproducible.
-        private final Random rand = new Random(1234);
+        private final SecureRandom rand;
 
         private final Map<String, byte[]> data = new ConcurrentHashMap<>();
+
+        Mock() {
+            // Use a predictable seed to make tests more reproducible.
+            try {
+                rand = SecureRandom.getInstance("SHA1PRNG");
+            } catch (NoSuchAlgorithmException x) {
+                throw new AssertionError("https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#SecureRandom", x);
+            }
+            rand.setSeed(new byte[] {1, 2, 3, 4});
+        }
 
         @Override
         protected void store(ConfidentialKey key, byte[] payload) throws IOException {
@@ -120,6 +135,11 @@ public abstract class ConfidentialStore {
         @Override
         protected byte[] load(ConfidentialKey key) throws IOException {
             return data.get(key.getId());
+        }
+
+        @Override
+        SecureRandom secureRandom() {
+            return rand;
         }
 
         @Override
