@@ -3279,7 +3279,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new IsDescendant(potentialChildRelativePath));
     }
 
-    private class IsDescendant extends SecureFileCallable<Boolean> {
+    private static class IsDescendant extends SecureFileCallable<Boolean> {
         private static final long serialVersionUID = 1L;
         private String potentialChildRelativePath;
 
