@@ -2875,17 +2875,17 @@ var notificationBar = {
     token : null,   // timer for cancelling auto-close
 
     OK : {// standard option values for typical OK notification
-        icon: "accept.png",
+        icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
         backgroundColor: "#d4edda",
         borderColor: "#c3e6cb",
         color: "#155724"
     },
     WARNING : {// likewise, for warning
-        icon: "yellow.png",
+        icon: "svg-sprite-action-symbol.svg#ic_help_outline_24px",
         backgroundColor: "#fce94f"
     },
     ERROR : {// likewise, for error
-        icon: "red.png",
+        icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
         backgroundColor: "#ef2929",
         sticky: true
     },
@@ -2936,7 +2936,7 @@ var notificationBar = {
         this.div.style.display = "block";
 
         if (options.icon)
-            text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
+            text = "<svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;'><use href='"+rootURL+"/images/material-icons/"+options.icon+"'></use></svg> <span>"+text+"</span>";
         this.div.innerHTML = text;
 
         new YAHOO.util.ColorAnim(this.div, {
