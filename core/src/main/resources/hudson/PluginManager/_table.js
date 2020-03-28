@@ -419,3 +419,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         setEnableWidgetStates();
     });
 }());
+
+Element.observe(window, "load", function() {
+    document.getElementById('filter-box').focus();
+});
