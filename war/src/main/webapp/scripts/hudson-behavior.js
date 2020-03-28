@@ -2869,14 +2869,16 @@ var layoutUpdateCallback = {
 // this control displays a single line message at the top of the page, like StackOverflow does
 // see ui-samples for more details
 var notificationBar = {
-    OPACITY : 0.8,
+    OPACITY : 1,
     DELAY : 3000,   // milliseconds to auto-close the notification
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
 
     OK : {// standard option values for typical OK notification
         icon: "accept.png",
-        backgroundColor: "#8ae234"
+        backgroundColor: "#d4edda",
+        borderColor: "#c3e6cb",
+        color: "#155724"
     },
     WARNING : {// likewise, for warning
         icon: "yellow.png",
@@ -2894,6 +2896,8 @@ var notificationBar = {
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
             this.div.style.backgroundColor="#fff";
+            this.div.style.color="#333";
+            this.div.style.borderColor="#000";
             document.body.insertBefore(this.div, document.body.firstChild);
 
             var self = this;
@@ -2914,7 +2918,9 @@ var notificationBar = {
         var self = this;
         var out = new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:0 },
-            backgroundColor: {to:"#fff"}
+            backgroundColor: {to:"#fff"},
+            color: {to:"#333"},
+            borderColor: {to:"#000"}
         }, 0.3, YAHOO.util.Easing.easeIn);
         out.onComplete.subscribe(function() {
             self.div.style.display = "none";
@@ -2935,7 +2941,9 @@ var notificationBar = {
 
         new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:this.OPACITY },
-            backgroundColor : { to: options.backgroundColor || "#fff" }
+            backgroundColor : { to: options.backgroundColor || "#fff" },
+            color: { to: options.color || "#333" },
+            borderColor : { to: options.borderColor || "#000" }
         }, 1, YAHOO.util.Easing.easeOut).animate();
 
         this.clearTimeout();
