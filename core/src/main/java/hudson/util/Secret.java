@@ -303,6 +303,9 @@ public final class Secret implements Serializable {
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
             public Secret convert(Class type, Object value) {
+                if (value == null) {
+                    return null;
+                }
                 if (value instanceof Secret) {
                     return (Secret) value;
                 }
