@@ -4560,7 +4560,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             throw new ServletException();
         Cookie cookie = new Cookie("iconSize", Functions.validateIconSize(qs));
         cookie.setMaxAge(/* ~4 mo. */9999999); // #762
-        cookie.setSecure(true);
+        cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
         rsp.addCookie(cookie);
         String ref = req.getHeader("Referer");
