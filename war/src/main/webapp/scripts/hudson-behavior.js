@@ -2873,6 +2873,9 @@ var notificationBar = {
     DELAY : 3000,   // milliseconds to auto-close the notification
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
+    defaultBackgroundColor: "#d1ecf1",
+    defaultBorderColor: "#bee5eb",
+    defaultColor: "#0C5464",
 
     OK : {// standard option values for typical OK notification
         icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
@@ -2899,9 +2902,9 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
-            this.div.style.backgroundColor="#d1ecf1";
-            this.div.style.color="#0C5464";
-            this.div.style.borderColor="#bee5eb";
+            this.div.style.backgroundColor=this.defaultBackgroundColor;
+            this.div.style.color=this.defaultColor;
+            this.div.style.borderColor=this.defaultBorderColor;
             document.body.insertBefore(this.div, document.body.firstChild);
 
             var self = this;
@@ -2922,9 +2925,9 @@ var notificationBar = {
         var self = this;
         var out = new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:0 },
-            backgroundColor: {to:"#d1ecf1"},
-            color: {to:"#0C5464"},
-            borderColor: {to:"#bee5eb"}
+            backgroundColor: {to:this.defaultBackgroundColor},
+            color: {to:this.defaultColor},
+            borderColor: {to:this.defaultBorderColor}
         }, 0.3, YAHOO.util.Easing.easeIn);
         out.onComplete.subscribe(function() {
             self.div.style.display = "none";
@@ -2945,9 +2948,9 @@ var notificationBar = {
 
         new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:this.OPACITY },
-            backgroundColor: {to: options.backgroundColor || "#d1ecf1"},
-            color: {to: options.color || "#0C5464"},
-            borderColor: {to: options.borderColor || "#bee5eb"}
+            backgroundColor: {to: options.backgroundColor || this.defaultBackgroundColor},
+            color: {to: options.color || this.defaultColor},
+            borderColor: {to: options.borderColor || this.defaultBorderColor}
         }, 1, YAHOO.util.Easing.easeOut).animate();
 
         this.clearTimeout();
