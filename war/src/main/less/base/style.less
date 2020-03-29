@@ -275,6 +275,7 @@ pre.console {
 .setting-help {
   width: 16px;
   vertical-align: middle;
+  float: right;
 }
 .setting-no-help {
   width: 16px;
@@ -295,6 +296,16 @@ pre.console {
   font-size: @font-size-xs;
   margin-top: 0;
   padding-top: 0;
+}
+
+.setting-name, .setting-main > input, .setting-main > textarea {
+  vertical-align: middle;
+  margin-top: 0;
+}
+
+.setting-main > .yui-button {
+  clear: both;
+  float: right;
 }
 
 .setting-main > .yui-button {
@@ -802,6 +813,13 @@ LABEL.attach-previous {
 
 .help-area {
   /* this marker class is used by JavaScript to locate the area to display help text. */
+}
+
+.has-help {
+  border: 1px solid transparent;
+}
+.has-help:hover {
+  border: 1px solid cyan;
 }
 
 .help-button {
