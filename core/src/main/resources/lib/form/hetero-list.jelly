@@ -83,9 +83,9 @@ THE SOFTWARE.
             <div colspan="3">
               <div class="${readOnlyMode ? '' : 'dd-handle'}">
                 <b>${descriptor.displayName}</b>
+                <f:helpLink url="${help}"/>
               </div>
             </div>
-            <f:helpLink url="${help}"/>
           </div>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
