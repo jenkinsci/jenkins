@@ -2882,11 +2882,15 @@ var notificationBar = {
     },
     WARNING : {// likewise, for warning
         icon: "svg-sprite-action-symbol.svg#ic_help_outline_24px",
-        backgroundColor: "#fce94f"
+        backgroundColor: "#fff3cd",
+        borderColor: "#ffeeba",
+        color: "#856404",
     },
     ERROR : {// likewise, for error
         icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
-        backgroundColor: "#ef2929",
+        backgroundColor: "#f8d7da",
+        borderColor: "#f5c6cb",
+        color: "#721c24",
         sticky: true
     },
 
