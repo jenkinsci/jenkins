@@ -168,7 +168,7 @@ public class UpdateSite {
      * does not exist, or is otherwise due for update.
      * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
      * @return null if no updates are necessary, or the future result
-     * @since TODO
+     * @since 2.222
      */
     public @CheckForNull Future<FormValidation> updateDirectly() {
         return updateDirectly(DownloadService.signatureCheck);
@@ -199,7 +199,7 @@ public class UpdateSite {
     /**
      * Forces an update of the data file from the configured URL, irrespective of the last time the data was retrieved.
      * @return A {@code FormValidation} indicating the if the update metadata was successfully downloaded from the configured update site
-     * @since TODO
+     * @since 2.222
      * @throws IOException if there was an error downloading or saving the file.
      */
     public @Nonnull FormValidation updateDirectlyNow() throws IOException {
@@ -1023,7 +1023,7 @@ public class UpdateSite {
 
         /**
          * Date when this plugin was released.
-         * @since TODO
+         * @since 2.224
          */
         @Exported
         public final Date releaseTimestamp;
@@ -1325,7 +1325,7 @@ public class UpdateSite {
         /**
          * Get the list of incompatible dependencies (if there are any, as determined by isNeededDependenciesCompatibleWithInstalledVersion)
          *
-         * @since TODO
+         * @since 2.203
          */
         @Restricted(NoExternalUse.class) // table.jelly
         @SuppressWarnings("unchecked")

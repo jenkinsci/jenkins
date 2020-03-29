@@ -51,6 +51,11 @@ THE SOFTWARE.
   </servlet-mapping>
 
   <filter>
+    <filter-name>suspicious-request-filter</filter-name>
+    <filter-class>jenkins.security.SuspiciousRequestFilter</filter-class>
+    <async-supported>true</async-supported>
+  </filter>
+  <filter>
     <filter-name>diagnostic-name-filter</filter-name>
     <filter-class>org.kohsuke.stapler.DiagnosticThreadNameFilter</filter-class>
     <async-supported>true</async-supported>
@@ -125,7 +130,11 @@ THE SOFTWARE.
     <url-pattern>*.png</url-pattern>
   </filter-mapping>
   -->
-  
+
+  <filter-mapping>
+    <filter-name>suspicious-request-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
   <filter-mapping>
     <filter-name>diagnostic-name-filter</filter-name>
     <url-pattern>/*</url-pattern>
