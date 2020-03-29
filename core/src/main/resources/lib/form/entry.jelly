@@ -86,9 +86,7 @@ THE SOFTWARE.
       <j:otherwise>
         <div class="setting-main">
           <d:invokeBody />
-          <div class="setting-name help-sibling">
-            <f:helpLink url="${attrs.help}" featureName="${title}"/>
-          </div>
+          <f:helpLink url="${attrs.help}" featureName="${title}"/>
           <f:helpArea />
         </div>
       </j:otherwise>
