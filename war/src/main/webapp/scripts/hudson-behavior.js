@@ -2899,9 +2899,9 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
-            this.div.style.backgroundColor="#fff";
-            this.div.style.color="#333";
-            this.div.style.borderColor="#000";
+            this.div.style.backgroundColor="#d1ecf1";
+            this.div.style.color="#0C5464";
+            this.div.style.borderColor="#bee5eb";
             document.body.insertBefore(this.div, document.body.firstChild);
 
             var self = this;
@@ -2922,9 +2922,9 @@ var notificationBar = {
         var self = this;
         var out = new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:0 },
-            backgroundColor: {to:"#fff"},
-            color: {to:"#333"},
-            borderColor: {to:"#000"}
+            backgroundColor: {to:"#d1ecf1"},
+            color: {to:"#0C5464"},
+            borderColor: {to:"#bee5eb"}
         }, 0.3, YAHOO.util.Easing.easeIn);
         out.onComplete.subscribe(function() {
             self.div.style.display = "none";
@@ -2945,9 +2945,9 @@ var notificationBar = {
 
         new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:this.OPACITY },
-            backgroundColor : { to: options.backgroundColor || "#fff" },
-            color: { to: options.color || "#333" },
-            borderColor : { to: options.borderColor || "#000" }
+            backgroundColor: {to: options.backgroundColor || "#d1ecf1"},
+            color: {to: options.color || "#0C5464"},
+            borderColor: {to: options.borderColor || "#bee5eb"}
         }, 1, YAHOO.util.Easing.easeOut).animate();
 
         this.clearTimeout();
