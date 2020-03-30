@@ -31,7 +31,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import jenkins.util.SystemProperties;
 import java.util.Arrays;
-import jenkins.model.Jenkins;
 import hudson.Util;
 import jenkins.security.CryptoConfidentialKey;
 import org.kohsuke.stapler.Stapler;
@@ -289,8 +288,10 @@ public final class Secret implements Serializable {
     private static final String PROVIDER = SystemProperties.getString(Secret.class.getName()+".provider");
 
     /**
-     * For testing only. Override the secret key so that we can test this class without {@link Jenkins}.
+     * For testing only.
+     * @deprecated Normally unnecessary.
      */
+    @Deprecated
     /*package*/ static String SECRET = null;
 
     /**
@@ -303,6 +304,9 @@ public final class Secret implements Serializable {
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
             public Secret convert(Class type, Object value) {
+                if (value == null) {
+                    return null;
+                }
                 if (value instanceof Secret) {
                     return (Secret) value;
                 }

@@ -37,7 +37,7 @@ import java.io.IOException;
  */
 public class BulkChangeTest {
 
-    private class Point implements Saveable {
+    private static class Point implements Saveable {
         /**
          * Don't actually do any save, but just remember how many the actual I/O would have happened.
          */
