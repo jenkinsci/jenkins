@@ -146,7 +146,9 @@ Code reviews do NOT pursue the following goals:
 
 === Common merge process
 
-**Step 1: Maintainer checklist**. Merge process can be initiated once a pull request matches the requirements:
+==== Step 1: Maintainer checklist
+
+Merge process can be initiated once a pull request matches the requirements:
 
 * Pull request is compliant with requirements to submitters (see the link:/.github/PULL_REQUEST_TEMPLATE.md[pull request template])
 * There are at least 2 approvals for the pull request and no outstanding requests for change
@@ -161,17 +163,32 @@ Code reviews do NOT pursue the following goals:
   or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
 * It would make sense to backport the change to LTS, a Jira issue should exist and be labeled as `lts-candidate`
 
-**Step 2: Marking for merge**. Once the checklist is passed,
-a Core PR Reviewer or a Maintainer can mark the pull request for merge.
+==== Step 2: Is it a good time to merge?
+
+link:[https://jenkins.io/security/](Jenkins security updates) are coordinated with the LTS calendar, and if the weekly introduces regressions, users of that line may have to choose between security fixes, and a working Jenkins.
+For these reasons, the following changes should not be merged during the week before LTS releases (weeks 3, 7, 11, 15, etc. on the page linked above):
+
+* Changes that could be considered risky (relatively high risk of introducing regressions), as they could make users of Jenkins weekly releases choose between getting security fixes, and having a functioning Jenkins
+* Very large changes (in terms of lines changed), because the Jenkins security team needs to prepare security fixes for the weekly release line in a very short period of time.
+
+If the change is ready but it is not a good time, consider labeling the pull request with the `on-hold` label.
+If a merge is needed, please consult with the Jenkins Security officer
+
+==== Step 3: Marking for merge
+
+Once the checklist is passed, a Core PR Reviewer or a Maintainer can mark the pull request for merge.
 
 * `ready-for-merge` label is set
 * An explicit comment is added to the pull request so that other repository watchers are notified.
   Example: _Thanks to all contributors! We consider this change as ready to be merged towards the next weekly release. It may be merged after 24hours if there is no negative feedback_
 
-**Step 3: Merge!**
+==== Step 4: Merge!
+
 A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
 After that the change will be landed in the next weekly release.
 LTS Backporting, if needed, will be handled separately by the release team.
+
+Keep in mind that we set 
 
 === Exceptions
 
@@ -190,10 +207,18 @@ LTS Backporting, if needed, will be handled separately by the release team.
 
 Right now we do not have a strict policy about it.
 
+== LTS Process
+
+Jenkins also offers the link:https://jenkins.io/download/lts/[LTS Release Line].
+It is maintained by the Jenkins Release Team which coordinates link:https://jenkins.io/download/lts/#backporting-process[backporting] and release candidate testing.
+It mostly happens through the developer mailing list and through backporting pull requests labeled with link:https://github.com/jenkinsci/jenkins/labels/into-lts[into-lts].
+Other Jenkins contributors are welcome to participate in backporting and relese candidate testing.
+
 == Tools
 
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
+* link:https://github.com/jenkins-infra/backend-commit-history-parser[Toolkit for LTS backporting]
 * link:/update-since-todo.sh[Javadoc @since version updater]
 
 == Feedback
