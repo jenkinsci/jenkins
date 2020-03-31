@@ -2922,8 +2922,6 @@ var notificationBar = {
 
         this.div.className=options.alertClass || this.defaultAlertClass;
         this.div.classList.add("notif-alert-show");
-        this.div.style.height = this.div.style.lineHeight = options.height || "3.5rem";
-        this.div.style.display = "block";
 
         this.clearTimeout();
         var self = this;
