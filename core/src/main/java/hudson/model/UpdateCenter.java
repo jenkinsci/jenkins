@@ -385,6 +385,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
+        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
