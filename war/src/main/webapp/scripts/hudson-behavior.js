@@ -2874,31 +2874,19 @@ var notificationBar = {
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
     defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
-    defaultIconColor: "#2196f3",
-    defaultBackgroundColor: "#d1ecf1",
-    defaultBorderColor: "#bee5eb",
-    defaultColor: "#0C5464",
+    defaultAlertClass: "notif-alert-default",
 
     OK : {// standard option values for typical OK notification
         icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
-        iconColor: "#4caf50",
-        backgroundColor: "#d4edda",
-        borderColor: "#c3e6cb",
-        color: "#155724"
+        alertClass: "notif-alert-success",
     },
     WARNING : {// likewise, for warning
         icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
-        iconColor: "#ff9800",
-        backgroundColor: "#fff3cd",
-        borderColor: "#ffeeba",
-        color: "#856404",
+        alertClass: "notif-alert-warn",
     },
     ERROR : {// likewise, for error
         icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
-        iconColor: "#f44336",
-        backgroundColor: "#f8d7da",
-        borderColor: "#f5c6cb",
-        color: "#721c24",
+        alertClass: "notif-alert-err",
         sticky: true
     },
 
@@ -2907,11 +2895,7 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
-            this.div.style.backgroundColor=this.defaultBackgroundColor;
-            this.div.style.color=this.defaultColor;
-            this.div.style.borderColor=this.defaultBorderColor;
             document.body.insertBefore(this.div, document.body.firstChild);
-
             var self = this;
             this.div.onclick = function() {
                 self.hide();
@@ -2927,34 +2911,19 @@ var notificationBar = {
     // hide the current notification bar, if it's displayed
     hide : function () {
         this.clearTimeout();
-        var self = this;
-        var out = new YAHOO.util.ColorAnim(this.div, {
-            opacity: { to:0 },
-            backgroundColor: {to:this.defaultBackgroundColor},
-            color: {to:this.defaultColor},
-            borderColor: {to:this.defaultBorderColor}
-        }, 0.3, YAHOO.util.Easing.easeIn);
-        out.onComplete.subscribe(function() {
-            self.div.style.display = "none";
-        })
-        out.animate();
+        this.div.classList.remove("notif-alert-show");
+        this.div.classList.add("notif-alert-clear");
     },
     // show a notification bar
     show : function (text,options) {
-        options = options || {}
-
+        options = options || {};
         this.init();
+        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
+
+        this.div.className=options.alertClass || this.defaultAlertClass;
+        this.div.classList.add("notif-alert-show");
         this.div.style.height = this.div.style.lineHeight = options.height || "3.5rem";
         this.div.style.display = "block";
-
-        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;width:35px;height:35px'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
-
-        new YAHOO.util.ColorAnim(this.div, {
-            opacity: { to:this.OPACITY },
-            backgroundColor: {to: options.backgroundColor || this.defaultBackgroundColor},
-            color: {to: options.color || this.defaultColor},
-            borderColor: {to: options.borderColor || this.defaultBorderColor}
-        }, 1, YAHOO.util.Easing.easeOut).animate();
 
         this.clearTimeout();
         var self = this;
