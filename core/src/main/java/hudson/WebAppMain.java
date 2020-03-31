@@ -48,6 +48,8 @@ import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
 import jenkins.util.JenkinsJVM;
 import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
@@ -104,7 +106,8 @@ public class WebAppMain implements ServletContextListener {
      * When running java -jar with Winstone/Jetty, the default setting is set to COOKIE only.
      * When running inside Tomcat, the default setting is COOKIE+URL.
      */
-    private static final String FORCE_SESSION_TRACKING_BY_COOKIE_PROP = WebAppMain.class.getName() + ".forceSessionTrackingByCookie";
+    @Restricted(NoExternalUse.class)
+    public static final String FORCE_SESSION_TRACKING_BY_COOKIE_PROP = WebAppMain.class.getName() + ".forceSessionTrackingByCookie";
 
     private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
         @Override public synchronized void publish(LogRecord record) {

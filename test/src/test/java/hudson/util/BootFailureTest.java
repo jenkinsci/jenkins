@@ -13,9 +13,13 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import static org.junit.Assert.*;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -37,6 +41,28 @@ public class BootFailureTest {
 
     static boolean makeBootFail = true;
     static WebAppMain wa;
+
+    private static String forceSessionTrackingByCookiePreviousValue;
+
+    //TODO
+    // Required to have such system property change because the "wa.contextInitialized" is called while the context
+    // is already "started". The JavaDoc is explicit, it must be "starting". 
+    // There is no way right now to add a lifecycle listener inside the createWebServer method without full rewrite of
+    // createWebServer and _createWebServer
+    @BeforeClass
+    public static void disableSessionTrackingSetting() {
+        forceSessionTrackingByCookiePreviousValue = SystemProperties.getString(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP);
+        System.setProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP, "false");
+    }
+
+    @AfterClass
+    public static void resetSessionTrackingSetting() {
+        if (forceSessionTrackingByCookiePreviousValue == null) {
+            System.clearProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP);
+        } else {
+            System.setProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP, forceSessionTrackingByCookiePreviousValue);
+        }
+    }
 
     static class CustomRule extends JenkinsRule {
         @Override
