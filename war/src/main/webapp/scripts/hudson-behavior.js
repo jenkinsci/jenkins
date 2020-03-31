@@ -2947,7 +2947,7 @@ var notificationBar = {
         this.div.style.height = this.div.style.lineHeight = options.height || "3.5rem";
         this.div.style.display = "block";
 
-        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
+        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;width:35px;height:35px'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
 
         new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:this.OPACITY },
