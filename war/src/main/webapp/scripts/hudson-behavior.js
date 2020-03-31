@@ -2879,18 +2879,21 @@ var notificationBar = {
 
     OK : {// standard option values for typical OK notification
         icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
+        iconColor: "#4caf50",
         backgroundColor: "#d4edda",
         borderColor: "#c3e6cb",
         color: "#155724"
     },
     WARNING : {// likewise, for warning
-        icon: "svg-sprite-action-symbol.svg#ic_help_outline_24px",
+        icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
+        iconColor: "#ff9800",
         backgroundColor: "#fff3cd",
         borderColor: "#ffeeba",
         color: "#856404",
     },
     ERROR : {// likewise, for error
         icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
+        iconColor: "#f44336",
         backgroundColor: "#f8d7da",
         borderColor: "#f5c6cb",
         color: "#721c24",
@@ -2943,7 +2946,7 @@ var notificationBar = {
         this.div.style.display = "block";
 
         if (options.icon)
-            text = "<svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;'><use href='"+rootURL+"/images/material-icons/"+options.icon+"'></use></svg> <span>"+text+"</span>";
+            text = "<div style=color:"+options.iconColor+";display:inline-block><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;'><use href='"+rootURL+"/images/material-icons/"+options.icon+"'></use></svg></div><span> "+text+"</span>";
         this.div.innerHTML = text;
 
         new YAHOO.util.ColorAnim(this.div, {
