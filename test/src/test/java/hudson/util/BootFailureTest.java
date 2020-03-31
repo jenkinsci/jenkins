@@ -3,7 +3,6 @@ package hudson.util;
 import hudson.WebAppMain;
 import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
-import static hudson.util.BootFailureTest.makeBootFail;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,56 +12,34 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.junit.After;
 import static org.junit.Assert.*;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.HudsonHomeLoader;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.NoListenerConfiguration;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.WebApp;
+import org.springframework.util.Assert;
 
 /**
  *
  *
  * @author Kohsuke Kawaguchi
- */
+ */ 
 public class BootFailureTest {
     @Rule
     public TemporaryFolder tmpDir = new TemporaryFolder();
 
     static boolean makeBootFail = true;
     static WebAppMain wa;
-
-    private static String forceSessionTrackingByCookiePreviousValue;
-
-    //TODO
-    // Required to have such system property change because the "wa.contextInitialized" is called while the context
-    // is already "started". The JavaDoc is explicit, it must be "starting". 
-    // There is no way right now to add a lifecycle listener inside the createWebServer method without full rewrite of
-    // createWebServer and _createWebServer
-    @BeforeClass
-    public static void disableSessionTrackingSetting() {
-        forceSessionTrackingByCookiePreviousValue = SystemProperties.getString(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP);
-        System.setProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP, "false");
-    }
-
-    @AfterClass
-    public static void resetSessionTrackingSetting() {
-        if (forceSessionTrackingByCookiePreviousValue == null) {
-            System.clearProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP);
-        } else {
-            System.setProperty(WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP, forceSessionTrackingByCookiePreviousValue);
-        }
-    }
 
     static class CustomRule extends JenkinsRule {
         @Override
@@ -75,7 +52,6 @@ public class BootFailureTest {
         @Override
         public Hudson newHudson() throws Exception {
             localPort = 0;
-            ServletContext ws = createWebServer();
             wa = new WebAppMain() {
                 @Override
                 public WebAppMain.FileAndDescription getHomeDir(ServletContextEvent event) {
@@ -86,7 +62,26 @@ public class BootFailureTest {
                     }
                 }
             };
-            wa.contextInitialized(new ServletContextEvent(ws));
+            // Without this gymnastic, the jenkins-test-harness adds a NoListenerConfiguration
+            // that prevents us to inject our own custom WebAppMain
+            // With this approach we can make the server calls the regular contextInitialized
+            ServletContext ws = createWebServer((context, server) -> {
+                NoListenerConfiguration noListenerConfiguration = context.getBean(NoListenerConfiguration.class);
+                // future-proof
+                Assert.notNull(noListenerConfiguration);
+                if (noListenerConfiguration != null) {
+                    context.removeBean(noListenerConfiguration);
+                    context.addBean(new AbstractLifeCycle() {
+                        @Override 
+                        protected void doStart() throws Exception {
+                            // default behavior of noListenerConfiguration
+                            context.setEventListeners(null);
+                            // ensuring our custom context will received the contextInitialized event
+                            context.addEventListener(wa);
+                        }
+                    });
+                }
+            });
             wa.joinInit();
 
             Object a = WebApp.get(ws).getApp();
