@@ -2873,6 +2873,8 @@ var notificationBar = {
     DELAY : 3000,   // milliseconds to auto-close the notification
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
+    defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
+    defaultIconColor: "#2196f3",
     defaultBackgroundColor: "#d1ecf1",
     defaultBorderColor: "#bee5eb",
     defaultColor: "#0C5464",
@@ -2945,9 +2947,7 @@ var notificationBar = {
         this.div.style.height = this.div.style.lineHeight = options.height || "3.5rem";
         this.div.style.display = "block";
 
-        if (options.icon)
-            text = "<div style=color:"+options.iconColor+";display:inline-block><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;'><use href='"+rootURL+"/images/material-icons/"+options.icon+"'></use></svg></div><span> "+text+"</span>";
-        this.div.innerHTML = text;
+        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon' style='padding-bottom: 5px;'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
 
         new YAHOO.util.ColorAnim(this.div, {
             opacity: { to:this.OPACITY },
