@@ -54,6 +54,13 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         return encodeTo("/computer/" + nodePath, node.getDisplayName());
     }
 
+    /**
+     * @since TODO
+     */
+    public static String encodeTo(Label label) {
+        return encodeTo("/" + label.getUrl(), label.getName());
+    }
+
     public static String encodeTo(String url, String text) {
         return HyperlinkNote.encodeTo(url, text, ModelHyperlinkNote::new);
     }
