@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  *
  *
  * @author Kohsuke Kawaguchi
- */ 
+ */
 public class BootFailureTest {
     @Rule
     public TemporaryFolder tmpDir = new TemporaryFolder();
