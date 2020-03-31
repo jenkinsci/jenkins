@@ -28,7 +28,7 @@ l.isAdmin() {
         f.entry(title: _("Test URL"), field: "testUrl") {
             f.textbox()
         }
-        f.validateButton(title: _("Validate Proxy"),
-                method: "validateProxy", with: "testUrl,name,port,userName,password,noProxyHost")
+        f.validateButton(title:_("Validate Proxy"),
+                         method:"validateProxy", with:"testUrl,name,port,userName,secretPassword,noProxyHost")
     }
 }

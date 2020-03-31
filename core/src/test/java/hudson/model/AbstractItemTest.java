@@ -16,7 +16,7 @@ import org.jvnet.hudson.test.Issue;
 @SuppressWarnings("unchecked")
 public class AbstractItemTest {
 
-    private class StubAbstractItem extends AbstractItem {
+    private static class StubAbstractItem extends AbstractItem {
 
         protected StubAbstractItem() {
             // sending in null as parent as I don't care for my current tests
@@ -91,7 +91,7 @@ public class AbstractItemTest {
         assertEquals(displayName, i.getDisplayName());
     }
 
-    private class NameNotEditableItem extends AbstractItem {
+    private static class NameNotEditableItem extends AbstractItem {
 
         protected NameNotEditableItem(ItemGroup parent, String name){
             super(parent, name);

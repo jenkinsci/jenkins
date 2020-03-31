@@ -1,0 +1,41 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<build>
+  <actions>
+    <hudson.model.ParametersAction>
+      <safeParameters class="sorted-set"/>
+      <parameters>
+        <hudson.model.FileParameterValue>
+          <name>html.html</name>
+          <description></description>
+          <originalFileName>html.html</originalFileName>
+          <location>html.html</location>
+        </hudson.model.FileParameterValue>
+      </parameters>
+      <parameterDefinitionNames>
+        <string>html.html</string>
+      </parameterDefinitionNames>
+    </hudson.model.ParametersAction>
+    <hudson.model.CauseAction>
+      <causeBag class="linked-hash-map">
+        <entry>
+          <hudson.model.Cause_-UserIdCause>
+            <userId>admin</userId>
+          </hudson.model.Cause_-UserIdCause>
+          <int>1</int>
+        </entry>
+      </causeBag>
+    </hudson.model.CauseAction>
+  </actions>
+  <queueId>28</queueId>
+  <timestamp>1582828801817</timestamp>
+  <startTime>1582828801820</startTime>
+  <result>SUCCESS</result>
+  <duration>34</duration>
+  <charset>US-ASCII</charset>
+  <keepLog>false</keepLog>
+  <builtOn></builtOn>
+  <workspace>/.../SECURITY-1793</workspace>
+  <hudsonVersion>2.164.4-SNAPSHOT</hudsonVersion>
+  <scm class="hudson.scm.NullChangeLogParser"/>
+  <culprits class="com.google.common.collect.EmptyImmutableSortedSet"/>
+</build>

@@ -86,6 +86,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
@@ -1205,6 +1206,65 @@ public class Util {
         return createFileSet(baseDir,includes,null);
     }
 
+    private static void tryToDeleteSymlink(@Nonnull File symlink) {
+        if (!symlink.delete()) {
+            LogRecord record = new LogRecord(Level.FINE, "Failed to delete temporary symlink {0}");
+            record.setParameters(new Object[]{symlink.getAbsolutePath()});
+            LOGGER.log(record);
+        }
+    }
+
+    private static void reportAtomicFailure(@Nonnull Path pathForSymlink, @Nonnull Exception ex) {
+        LogRecord record = new LogRecord(Level.FINE, "Failed to atomically create/replace symlink {0}");
+        record.setParameters(new Object[]{pathForSymlink.toAbsolutePath().toString()});
+        record.setThrown(ex);
+        LOGGER.log(record);
+    }
+
+    /**
+     * Creates a symlink to targetPath at baseDir+symlinkPath.
+     *
+     * @param pathForSymlink
+     *      The absolute path of the symlink itself as a path object.
+     * @param fileForSymlink
+     *      The absolute path of the symlink itself as a file object.
+     * @param target
+     *      The path that the symlink should point to. Usually relative to the directory of the symlink but may instead be an absolute path.
+     * @param symlinkPath
+     *      Where to create a symlink in (relative to {@code baseDir})
+     *
+     * Returns true on success
+     */
+    @CheckReturnValue
+    private static boolean createSymlinkAtomic(@Nonnull Path pathForSymlink, @Nonnull File fileForSymlink, @Nonnull Path target, @Nonnull String symlinkPath) {
+        try {
+            File symlink = File.createTempFile("symtmp", null, fileForSymlink);
+            tryToDeleteSymlink(symlink);
+            Path tempSymlinkPath = symlink.toPath();
+            Files.createSymbolicLink(tempSymlinkPath, target);
+            try {
+                Files.move(tempSymlinkPath, pathForSymlink, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                return true;
+            } catch (
+                UnsupportedOperationException |
+                SecurityException |
+                IOException ex) {
+                // If we couldn't perform an atomic move or the setup, we fall through to another approach
+                reportAtomicFailure(pathForSymlink, ex);
+            }
+            // If we didn't return after our atomic move, then we want to clean up our symlink
+            tryToDeleteSymlink(symlink);
+        } catch (
+            SecurityException |
+            InvalidPathException |
+            UnsupportedOperationException |
+            IOException ex) {
+            // We couldn't perform an atomic move or the setup.
+            reportAtomicFailure(pathForSymlink, ex);
+        }
+        return false;
+    }
+
     /**
      * Creates a symlink to targetPath at baseDir+symlinkPath.
      * <p>
@@ -1219,16 +1279,21 @@ public class Util {
      */
     public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
+        File fileForSymlink = new File(baseDir, symlinkPath);
         try {
-            Path path = fileToPath(new File(baseDir, symlinkPath));
+            Path pathForSymlink = fileToPath(fileForSymlink);
             Path target = Paths.get(targetPath, MemoryReductionUtil.EMPTY_STRING_ARRAY);
+
+            if (createSymlinkAtomic(pathForSymlink, fileForSymlink, target, symlinkPath)) {
+                return;
+            }
 
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;
             for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
-                Files.deleteIfExists(path);
+                Files.deleteIfExists(pathForSymlink);
                 try {
-                    Files.createSymbolicLink(path, target);
+                    Files.createSymbolicLink(pathForSymlink, target);
                     break;
                 } catch (FileAlreadyExistsException fileAlreadyExistsException) {
                     if (tryNumber < maxNumberOfTries) {
@@ -1249,7 +1314,7 @@ public class Util {
                 return;
             }
             PrintStream log = listener.getLogger();
-            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
+            log.printf("ln %s %s failed%n", targetPath, fileForSymlink);
             Functions.printStackTrace(e, log);
         }
     }

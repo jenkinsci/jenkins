@@ -17,13 +17,13 @@ jobs:
         id: release-drafter
         uses: release-drafter/release-drafter@v5.6.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.JENKINS_CHANGELOG_GENERATOR_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
       - name: Generate YAML changelog draft
         id: jenkins-core-changelog-generator
         uses: jenkinsci/jenkins-core-changelog-generator@master
         env:
-          GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
+          GITHUB_AUTH: github-actions:${{ secrets.JENKINS_CHANGELOG_GENERATOR_TOKEN }}
       - name: Upload Changelog YAML
         uses: actions/upload-artifact@v1
         with:

@@ -40,6 +40,7 @@ import java.nio.file.Path;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 
+import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -251,6 +252,13 @@ public class FileParameterValue extends ParameterValue {
                     if (request.hasParameter("view")) {
                         response.serveFile(request, data, lastModified, contentLength, "plain.txt");
                     } else {
+                        String csp = SystemProperties.getString(DirectoryBrowserSupport.class.getName() + ".CSP", DirectoryBrowserSupport.DEFAULT_CSP_VALUE);
+                        if (!csp.trim().equals("")) {
+                            // allow users to prevent sending this header by setting empty system property
+                            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                                response.setHeader(header, csp);
+                            }
+                        }
                         response.serveFile(request, data, lastModified, contentLength, originalFileName);
                     }
                 } catch (InvalidPathException e) {

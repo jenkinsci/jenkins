@@ -56,7 +56,7 @@ public class ExtensionListListenerTest {
         Assert.assertEquals(1, listListener.onChangeCallCount);
     }
 
-    private class MyExtensionListListener extends ExtensionListListener {
+    private static class MyExtensionListListener extends ExtensionListListener {
         private int onChangeCallCount = 0;
         @Override
         public void onChange() {
