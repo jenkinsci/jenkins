@@ -1599,6 +1599,7 @@ table.progress-bar.red td.progress-bar-done {
     line-height: 3.5rem;
     height: 3.5rem;
     display: block;
+    will-change: opacity;
 }
 
 #notification-bar .svg-icon {
@@ -1644,11 +1645,19 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 #notification-bar.notif-alert-show {
-  -webkit-animation: fadein 1s linear 1 normal forwards;
+  -webkit-animation: fadein 350ms ease-out 1 normal forwards;
+  -moz-animation: fadein 350ms ease-out 1 normal forwards;
+  -o-animation: fadein 350ms ease-out 1 normal forwards;
+  -ms-animation: fadein 350ms ease-out 1 normal forwards;
+  animation: fadein 350ms ease-out 1 normal forwards;
 }
 
 #notification-bar.notif-alert-clear {
-  -webkit-animation: fadeout 0.7s linear 1 normal forwards;
+  -webkit-animation: fadeout 350ms ease-in 1 normal forwards;
+  -moz-animation: fadeout 350ms ease-in 1 normal forwards;
+  -o-animation: fadeout 350ms ease-in 1 normal forwards;
+  -ms-animation: fadeout 350ms ease-in 1 normal forwards;
+  animation: fadeout 350ms ease-in 1 normal forwards;
 }
 
 @-webkit-keyframes fadein{
