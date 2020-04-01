@@ -271,8 +271,6 @@ THE SOFTWARE.
       <!-- See https://www.owasp.org/index.php/HttpOnly for the discussion of this topic in OWASP -->
       <http-only>true</http-only>
     </cookie-config>
-    <!-- Managed by WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP -->
-    <!-- This should be prevent the application server to use URL rewriting for session management -->
-    <!--<tracking-mode>COOKIE</tracking-mode>-->
+    <!-- Tracking mode is managed by WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP -->
   </session-config>
 </web-app>
