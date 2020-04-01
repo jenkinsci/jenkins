@@ -21,7 +21,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
             var makeVisible = true;
 
-            var content = items[i].textContent.toLowerCase();
+            var content = items[i].innerHTML.toLowerCase();
             for (var j = 0; j < filterParts.length; j++) {
                 var part = filterParts[j];
                 if (content.indexOf(part) < 0) {
