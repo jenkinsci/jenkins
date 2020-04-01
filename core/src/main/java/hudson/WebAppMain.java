@@ -97,7 +97,7 @@ public class WebAppMain implements ServletContextListener {
      * a SecurityRealm that does not invalidate session after authentication,
      * your instance is vulnerable to session hijacking.
      * <p>
-     * The SecurityRealm should be corrected but this is an hardening in Jenkins core.
+     * The SecurityRealm should be corrected but this is a hardening in Jenkins core.
      * <p>
      * As this property is read during startup, you will not be able to change it at runtime 
      * depending on your application server (not possible with Jetty nor Tomcat)
