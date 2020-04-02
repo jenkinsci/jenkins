@@ -26,6 +26,7 @@ package hudson.model;
 import antlr.ANTLRException;
 import static hudson.Util.fixNull;
 
+import hudson.Util;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.labels.LabelExpression.And;
@@ -158,7 +159,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Relative URL from the context path, that ends with '/'.
      */
     public String getUrl() {
-        return "label/"+name+'/';
+        return "label/" + Util.rawEncode(name) + '/';
     }
 
     public String getSearchUrl() {

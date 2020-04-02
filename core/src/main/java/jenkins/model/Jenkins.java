@@ -1061,7 +1061,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Retrieve the proxy configuration.
      *
      * @return the proxy configuration
-     * @since TODO
+     * @since 2.205
      */
     @CheckForNull
     public ProxyConfiguration getProxy() {
@@ -1072,7 +1072,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Set the proxy configuration.
      * 
      * @param proxy the proxy to set
-     * @since TODO
+     * @since 2.205
      */
     public void setProxy(@CheckForNull ProxyConfiguration proxy) {
         this.proxy = proxy;
@@ -1376,7 +1376,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * If usage statistics has been disabled
      *
-     * @since TODO
+     * @since 2.226
      */
     @CheckForNull
     public Boolean isNoUsageStatistics() {
@@ -1388,7 +1388,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @return {@code true} if usage statistics should be collected.
      *                Defaults to {@code true} when {@link #noUsageStatistics} is not set.
-     * @since TODO
+     * @since 2.226
      */
     public boolean isUsageStatisticsCollected() {
         return noUsageStatistics==null || !noUsageStatistics;
@@ -1397,7 +1397,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Sets the noUsageStatistics flag
      *
-     * @since TODO
+     * @since 2.226
      */
     public void setNoUsageStatistics(Boolean noUsageStatistics) throws IOException {
         this.noUsageStatistics = noUsageStatistics;
@@ -1794,7 +1794,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets just the immediate children of {@link Jenkins} based on supplied predicate.
      *
      * @see #getAllItems(Class)
-     * @since TODO
+     * @since 2.221
      */
     public List<TopLevelItem> getItems(Predicate<TopLevelItem> pred) {
         List<TopLevelItem> viewableItems = new ArrayList<>();
@@ -2022,6 +2022,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             // non-existent
             try {
+                // For the record, this method creates temporary labels but there is a periodic task
+                // calling "trimLabels" to remove unused labels running every 5 minutes.
                 labels.putIfAbsent(expr,Label.parseExpression(expr));
             } catch (ANTLRException e) {
                 // laxly accept it as a single label atom for backward compatibility
@@ -2044,6 +2046,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             // non-existent
             LabelAtom la = new LabelAtom(name);
+            // For the record, this method creates temporary labels but there is a periodic task
+            // calling "trimLabels" to remove unused labels running every 5 minutes.
             if (labels.putIfAbsent(name, la)==null)
                 la.load();
         }
@@ -5310,7 +5314,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>This permission is disabled by default and support for it considered experimental.
      * Administrators can set the system property {@code jenkins.security.ManagePermission} to enable it.</p>
      *
-     * @since TODO
+     * @since 2.222
      */
     @Restricted(Beta.class)
     public static final Permission MANAGE = new Permission(PERMISSIONS, "Manage",

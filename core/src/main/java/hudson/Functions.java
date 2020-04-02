@@ -526,7 +526,7 @@ public class Functions {
     /**
      * Returns true if and only if the UI refresh is enabled.
      *
-     * @since TODO
+     * @since 2.222
      */
     @Restricted(DoNotUse.class)
     public static boolean isUiRefreshEnabled() {
@@ -1099,7 +1099,7 @@ public class Functions {
      *
      * @param predicate
      *      Filter the descriptors based on this predicate
-     * @since TODO
+     * @since 2.222
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigByDescriptor(Predicate<Descriptor> predicate) {
         ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
@@ -1148,7 +1148,7 @@ public class Functions {
     /**
      * Descriptors shown in the global configuration form to users with {@link Jenkins#SYSTEM_READ} permission.
      *
-     * @since TODO
+     * @since 2.222
      */
     @Restricted(NoExternalUse.class)
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassifiedReadable() {
@@ -1162,7 +1162,7 @@ public class Functions {
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
      *
-     * @since TODO
+     * @since 2.222
      */
     public static void checkAnyPermission(AccessControlled ac, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {

@@ -1307,7 +1307,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Returns a facet that blocks the deletion of the fingerprint.
      * Returns null if no such facet.
-     * @since TODO
+     * @since 2.223
      */
     public @CheckForNull FingerprintFacet getFacetBlockingDeletion() {
         for (FingerprintFacet facet : facets) {
