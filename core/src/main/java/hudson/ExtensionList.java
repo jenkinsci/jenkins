@@ -309,7 +309,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     private List<ExtensionComponent<T>> ensureLoaded() {
         if(extensions!=null)
             return extensions; // already loaded
-        if (jenkins.getInitLevel().compareTo(InitMilestone.PLUGINS_PREPARED)<0)
+        if (jenkins == null || jenkins.getInitLevel().compareTo(InitMilestone.PLUGINS_PREPARED) < 0)
             return legacyInstances; // can't perform the auto discovery until all plugins are loaded, so just make the legacy instances visible
 
         synchronized (getLoadLock()) {

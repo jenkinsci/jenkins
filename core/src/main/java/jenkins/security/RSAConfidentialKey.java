@@ -30,7 +30,6 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -79,7 +78,7 @@ public abstract class RSAConfidentialKey extends ConfidentialKey {
                 byte[] payload = load();
                 if (payload == null) {
                     KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-                    gen.initialize(2048, new SecureRandom()); // going beyond 2048 requires crypto extension
+                    gen.initialize(2048, cs.secureRandom()); // going beyond 2048 requires crypto extension
                     KeyPair keys = gen.generateKeyPair();
                     priv = (RSAPrivateKey) keys.getPrivate();
                     pub = (RSAPublicKey) keys.getPublic();

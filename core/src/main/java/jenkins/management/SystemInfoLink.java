@@ -31,8 +31,6 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.CheckForNull;
-
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -56,11 +54,18 @@ public class SystemInfoLink extends ManagementLink {
     @Nonnull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.SYSTEM_READ;
+        //This link is displayed to any user with permission to access the management menu
+        return Jenkins.READ;
     }
 
     @Override
     public String getUrlName() {
         return "systemInfo";
+    }
+
+    @Nonnull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
     }
 }

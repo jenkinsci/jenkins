@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.226</revision>
+    <revision>2.230</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -101,7 +101,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.2</remoting.version>
+    <remoting.version>4.3</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -665,6 +665,12 @@ THE SOFTWARE.
         <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <!-- release is needed for reliable cross compilation. It is supported
+        starting JDK 9, but as the only earlier version we support is 8, it would
+        be either compiled by javac from 8 or one from a newer compiler that
+        correctly handle the release flag. This will replace both source and target
+        once we drop support for JDK 8 that only recognize source and target. -->
+        <maven.compiler.release>${java.level}</maven.compiler.release>
       </properties>
       <activation>
         <jdk>11</jdk>
