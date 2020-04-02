@@ -68,7 +68,7 @@ public class ShutdownLink extends ManagementLink {
         return Jenkins.MANAGE;
     }
   
-    @Nonnull
+    @NonNull
     @Override
     public Category getCategory() {
         return Category.TOOLS;
