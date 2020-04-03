@@ -92,10 +92,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.stream.Stream;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
@@ -1015,7 +1018,18 @@ public class SlaveComputer extends Computer {
         }
 
         public Void call() {
-            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
+            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
+                Formatter dummy = new SimpleFormatter();
+                @Override
+                public synchronized void publish(LogRecord record) {
+                    // see LogRecord.writeObject for dangers of serializing non-String/null parameters
+                    if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
+                        record.setMessage(dummy.formatMessage(record));
+                        record.setParameters(null);
+                    }
+                    super.publish(record);
+                }
+            };
 
             // avoid double installation of the handler. Inbound agents can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
