@@ -1216,6 +1216,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      */
+    @Restricted(NoExternalUse.class)
     public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
         if (permissions == null || permissions.length == 0) {
             return;
