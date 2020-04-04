@@ -38,7 +38,6 @@ public abstract class ListChangesCommand extends RunRangeCommand {
 }
 
 class XML extends ListChangesCommand{
-  @Override
   public int act(List<Run<?, ?>> builds) throws IOException{
     PrintWriter w = new PrintWriter(stdout);
     w.println("<changes>");
@@ -59,7 +58,6 @@ class XML extends ListChangesCommand{
 }
 
 class CSV extends ListChangesCommand{
-  @Override
   public int act(List<Run<?, ?>> builds) throws IOException{
     for (Run<?, ?> build : builds) {
         if (build instanceof RunWithSCM) {
@@ -77,7 +75,6 @@ class CSV extends ListChangesCommand{
 }
 
 class PLAIN extends ListChangesCommand{
-  @Override
   public int act(List<Run<?, ?>> builds) throws IOException{
     for (Run<?, ?> build : builds) {
         if (build instanceof RunWithSCM) {
