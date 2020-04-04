@@ -1412,6 +1412,12 @@ TABLE.fingerprint-in-build TD {
 
 .repeated-chunk {
     border: 2px dashed transparent;
+    // border-color: red;
+    border-color: #f0f0f0;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 1.5rem;
 }
 
 .repeated-chunk.hover {
@@ -1465,6 +1471,10 @@ DIV.to-be-removed { display: none; }
   margin-left: 1rem;
   border-left: 1px solid @color-primary;
   padding-left: 1rem;
+}
+
+.dropdownList-container {
+  padding: 1rem 0 1rem 1.5rem;
 }
 
 .row-set-end { display: none; }
@@ -1555,10 +1565,16 @@ TEXTAREA.rich-editor {
     padding-left: 20px;
 }
 
-.hetero-list-container.with-drag-drop .repeated-chunk {
+.hetero-list-container.with-drag-drop .repeated-chunk,
+.repeated-container.with-drag-drop .repeated-chunk {
     padding: 0.5em;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
+    padding-left: 1.5rem;
+}
+.hetero-list-container.with-drag-drop .repeated-chunk .dd-handle,
+.repeated-container.with-drag-drop .repeated-chunk .dd-handle {
+  margin-left: -1.25rem;
 }
 
 
