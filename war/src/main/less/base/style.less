@@ -1456,6 +1456,17 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= Other form related CSS ========================= */
 
+.form-container {
+  max-width: 100%;
+}
+
+.optionalBlock-container >.form-container,
+.radioBlock-container >.form-container {
+  margin-left: 1rem;
+  border-left: 1px solid @color-primary;
+  padding-left: 1rem;
+}
+
 .row-set-end { display: none; }
 
 /* ========================= Yahoo UI style adjustments ========================= */
