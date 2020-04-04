@@ -2869,22 +2869,24 @@ var layoutUpdateCallback = {
 // this control displays a single line message at the top of the page, like StackOverflow does
 // see ui-samples for more details
 var notificationBar = {
-    OPACITY : 0.8,
+    OPACITY : 1,
     DELAY : 3000,   // milliseconds to auto-close the notification
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
+    defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
+    defaultAlertClass: "notif-alert-default",
 
     OK : {// standard option values for typical OK notification
-        icon: "accept.png",
-        backgroundColor: "#8ae234"
+        icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
+        alertClass: "notif-alert-success",
     },
     WARNING : {// likewise, for warning
-        icon: "yellow.png",
-        backgroundColor: "#fce94f"
+        icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
+        alertClass: "notif-alert-warn",
     },
     ERROR : {// likewise, for error
-        icon: "red.png",
-        backgroundColor: "#ef2929",
+        icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
+        alertClass: "notif-alert-err",
         sticky: true
     },
 
@@ -2893,9 +2895,7 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
-            this.div.style.backgroundColor="#fff";
             document.body.insertBefore(this.div, document.body.firstChild);
-
             var self = this;
             this.div.onclick = function() {
                 self.hide();
@@ -2911,32 +2911,17 @@ var notificationBar = {
     // hide the current notification bar, if it's displayed
     hide : function () {
         this.clearTimeout();
-        var self = this;
-        var out = new YAHOO.util.ColorAnim(this.div, {
-            opacity: { to:0 },
-            backgroundColor: {to:"#fff"}
-        }, 0.3, YAHOO.util.Easing.easeIn);
-        out.onComplete.subscribe(function() {
-            self.div.style.display = "none";
-        })
-        out.animate();
+        this.div.classList.remove("notif-alert-show");
+        this.div.classList.add("notif-alert-clear");
     },
     // show a notification bar
     show : function (text,options) {
-        options = options || {}
-
+        options = options || {};
         this.init();
-        this.div.style.height = this.div.style.lineHeight = options.height || "40px";
-        this.div.style.display = "block";
+        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
 
-        if (options.icon)
-            text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
-        this.div.innerHTML = text;
-
-        new YAHOO.util.ColorAnim(this.div, {
-            opacity: { to:this.OPACITY },
-            backgroundColor : { to: options.backgroundColor || "#fff" }
-        }, 1, YAHOO.util.Easing.easeOut).animate();
+        this.div.className=options.alertClass || this.defaultAlertClass;
+        this.div.classList.add("notif-alert-show");
 
         this.clearTimeout();
         var self = this;
