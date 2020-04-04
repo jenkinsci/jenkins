@@ -34,7 +34,7 @@ public abstract class ListChangesCommand extends RunRangeCommand {
 //    protected void printUsageSummary(PrintStream stderr) {
 //        TODO
 //    }
-    public abstract int act(List<Run<?, ?>> builds);
+    public abstract int act(List<Run<?, ?>> builds)throws IOException;
 }
 
 class XML extends ListChangesCommand{
