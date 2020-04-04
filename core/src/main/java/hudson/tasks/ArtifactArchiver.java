@@ -110,6 +110,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @NonNull
     private Boolean caseSensitive = true;
 
+    /**
+     * Indicate whether symbolic links should be followed or not
+     */
+    @Nonnull
+    private Boolean followSymlinks = true;
+
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
         allowEmptyArchive = false;
@@ -152,6 +158,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
         if (caseSensitive == null) {
             caseSensitive = true;
+        }
+        if (followSymlinks == null) {
+            followSymlinks = true;
         }
         return this;
     }
@@ -214,6 +223,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.caseSensitive = caseSensitive;
     }
 
+    public boolean isFollowSymlinks() {
+        return followSymlinks;
+    }
+
+    @DataBoundSetter public final void setFollowSymlinks(boolean followSymlinks) {
+        this.followSymlinks = followSymlinks;
+    }
+
     @Override
     public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         if(artifacts.length()==0) {
@@ -230,7 +247,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         try {
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
-            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
+            Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
             if (!files.isEmpty()) {
                 build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
@@ -275,12 +292,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         private final String includes, excludes;
         private final boolean defaultExcludes;
         private final boolean caseSensitive;
+        private final boolean followSymlinks;
 
-        ListFiles(String includes, String excludes, boolean defaultExcludes, boolean caseSensitive) {
+        ListFiles(String includes, String excludes, boolean defaultExcludes, boolean caseSensitive, boolean followSymlinks) {
             this.includes = includes;
             this.excludes = excludes;
             this.defaultExcludes = defaultExcludes;
             this.caseSensitive = caseSensitive;
+            this.followSymlinks = followSymlinks;
         }
 
         @Override public Map<String,String> invoke(File basedir, VirtualChannel channel) throws IOException, InterruptedException {
@@ -289,6 +308,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             FileSet fileSet = Util.createFileSet(basedir, includes, excludes);
             fileSet.setDefaultexcludes(defaultExcludes);
             fileSet.setCaseSensitive(caseSensitive);
+            fileSet.setFollowSymlinks(followSymlinks);
 
             for (String f : fileSet.getDirectoryScanner().getIncludedFiles()) {
                 f = f.replace(File.separatorChar, '/');

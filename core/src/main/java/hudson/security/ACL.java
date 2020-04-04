@@ -28,6 +28,9 @@ import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -99,13 +102,20 @@ public abstract class ACL {
         boolean failed = !hasAnyPermission(permissions);
 
         Authentication authentication = Jenkins.getAuthentication();
-        if (failed) {
-            String permissionsDisplayName = Arrays.stream(permissions)
+        if (failed) { // we know that none of the permissions are granted
+            Set<Permission> enabledPermissions = new LinkedHashSet<>();
+            for (Permission p : permissions) {
+                while (!p.enabled && p.impliedBy != null) {
+                    p = p.impliedBy;
+                }
+                enabledPermissions.add(p);
+            }
+            String permissionsDisplayName = enabledPermissions.stream()
                     .map(p -> p.group.title + "/" + p.name)
                     .collect(Collectors.joining(", "));
 
             String errorMessage;
-            if (permissions.length == 1) {
+            if (enabledPermissions.size() == 1) {
                 errorMessage = Messages.AccessDeniedException2_MissingPermission(authentication.getName(), permissionsDisplayName);
             } else {
                 errorMessage = Messages.AccessDeniedException_MissingPermissions(authentication.getName(), permissionsDisplayName);
