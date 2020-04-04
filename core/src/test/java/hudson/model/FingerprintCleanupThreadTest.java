@@ -34,9 +34,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import jenkins.model.FingerprintFacet;
+
+import static org.hamcrest.io.FileMatchers.aReadableFile;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.StringContains.containsString;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 public class FingerprintCleanupThreadTest {
 
@@ -90,6 +98,33 @@ public class FingerprintCleanupThreadTest {
         assertTrue("Should have logged IOException.", logOutput.contains("ERROR: Failed to process"));
     }
 
+    @Test
+    public void testBlockingFacetBlocksDeletion() throws IOException {
+        createFolderStructure();
+        TestTaskListener testTaskListener = new TestTaskListener();
+        Fingerprint fp = new TestFingerprint(false);
+        fp.facets.setOwner(Saveable.NOOP);
+        TestFingperprintFacet facet = new TestFingperprintFacet(fp, System.currentTimeMillis(), true);
+        fp.facets.add(facet);
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(fp);
+        cleanupThread.execute(testTaskListener);
+        String logOutput = testTaskListener.outputStream.toString();
+        assertThat(logOutput, containsString("blocked deletion of"));
+    }
+
+    @Test
+    public void testUnblockedFacetsDontBlockDeletion() throws IOException {
+        createFolderStructure();
+        TestTaskListener testTaskListener = new TestTaskListener();
+        Fingerprint fp = new TestFingerprint(false);
+        fp.facets.setOwner(Saveable.NOOP);
+        TestFingperprintFacet facet = new TestFingperprintFacet(fp, System.currentTimeMillis(), false);
+        fp.facets.add(facet);
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(fp);
+        cleanupThread.execute(testTaskListener);
+        assertThat(fpFile.toFile(), is(not(aReadableFile())));
+    }
+
     private void createFolderStructure() throws IOException {
         createTestDir();
         Path fingerprintsPath = tempDirectory.resolve(FingerprintCleanupThread.FINGERPRINTS_DIR_NAME);
@@ -141,6 +176,21 @@ public class FingerprintCleanupThreadTest {
         @Override
         protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
             return fingerprintToLoad;
+        }
+
+    }
+
+    public static final class TestFingperprintFacet extends FingerprintFacet {
+
+        private boolean deletionBlocked;
+
+        public TestFingperprintFacet(Fingerprint fingerprint, long timestamp, boolean deletionBlocked) {
+            super(fingerprint, timestamp);
+            this.deletionBlocked = deletionBlocked;
+        }
+
+        @Override public boolean isFingerprintDeletionBlocked() {
+            return deletionBlocked;
         }
 
     }
