@@ -1657,6 +1657,86 @@ table.progress-bar.red td.progress-bar-done {
     font-size: 1.75rem;
     z-index:1000;
     border-bottom: 1px solid black;
+    line-height: 3.5rem;
+    height: 3.5rem;
+    display: block;
+    will-change: opacity;
+}
+
+#notification-bar .svg-icon {
+  width: 35px;
+  height: 35px;
+  padding-bottom: 5px
+}
+
+#notification-bar.notif-alert-default {
+  background-color: @alert-default-bg-color;
+  border-color: @alert-default-border-color;
+  color: @alert-default-color;
+  .svg-icon {
+    color: @alert-default-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-success {
+  background-color: @alert-success-bg-color;
+  border-color: @alert-success-border-color;
+  color: @alert-success-color;
+  .svg-icon {
+    color: @alert-success-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-warn {
+  background-color: @alert-warn-bg-color;
+  border-color: @alert-warn-border-color;
+  color: @alert-warn-color;
+  .svg-icon {
+    color: @alert-warn-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-err {
+  background-color: @alert-err-bg-color;
+  border-color: @alert-err-border-color;
+  color: @alert-err-color;
+  .svg-icon {
+    color: @alert-err-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-show {
+  -webkit-animation: fadein 350ms ease-out 1 normal forwards;
+  -moz-animation: fadein 350ms ease-out 1 normal forwards;
+  -o-animation: fadein 350ms ease-out 1 normal forwards;
+  -ms-animation: fadein 350ms ease-out 1 normal forwards;
+  animation: fadein 350ms ease-out 1 normal forwards;
+}
+
+#notification-bar.notif-alert-clear {
+  -webkit-animation: fadeout 350ms ease-in 1 normal forwards;
+  -moz-animation: fadeout 350ms ease-in 1 normal forwards;
+  -o-animation: fadeout 350ms ease-in 1 normal forwards;
+  -ms-animation: fadeout 350ms ease-in 1 normal forwards;
+  animation: fadeout 350ms ease-in 1 normal forwards;
+}
+
+@-webkit-keyframes fadein{
+  from{
+    opacity: 0;
+  }
+  to{
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeout{
+  from{
+    opacity: 1;
+  }
+  to{
+    opacity: 0;
+  }
 }
 
 /* ========================= YUI dialog ========================= */

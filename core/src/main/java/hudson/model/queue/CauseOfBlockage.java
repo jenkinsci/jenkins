@@ -151,6 +151,16 @@ public abstract class CauseOfBlockage {
                 return Messages.Queue_AllNodesOffline(label.getName());
             }
         }
+
+        @Override
+        public void print(TaskListener listener) {
+            if (label.isEmpty()) {
+                listener.getLogger().println(Messages.Queue_LabelHasNoNodes(ModelHyperlinkNote.encodeTo(label)));
+            } else {
+                listener.getLogger().println(Messages.Queue_AllNodesOffline(ModelHyperlinkNote.encodeTo(label)));
+            }
+        }
+
     }
 
     /**
@@ -187,5 +197,11 @@ public abstract class CauseOfBlockage {
         public String getShortDescription() {
             return Messages.Queue_WaitingForNextAvailableExecutorOn(label.getName());
         }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(Messages.Queue_WaitingForNextAvailableExecutorOn(ModelHyperlinkNote.encodeTo(label)));
+        }
+
     }
 }
