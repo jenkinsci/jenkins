@@ -24,9 +24,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 
 @Restricted(NoExternalUse.class) // command implementation only
-@Extension
-abstract public class ListChangesCommand extends RunRangeCommand {
-    @Override
+//@Extension
+public abstract class ListChangesCommand extends RunRangeCommand {
     public String getShortDescription() {
         return Messages.ListChangesCommand_ShortDescription();
     }
@@ -35,9 +34,9 @@ abstract public class ListChangesCommand extends RunRangeCommand {
 //    protected void printUsageSummary(PrintStream stderr) {
 //        TODO
 //    }
-
-abstract public int act(List<Run<?, ?>> builds);
+    public abstract int act(List<Run<?, ?>> builds);
 }
+
 class XML extends ListChangesCommand{
   public int act(List<Run<?, ?>> builds){
     PrintWriter w = new PrintWriter(stdout);
