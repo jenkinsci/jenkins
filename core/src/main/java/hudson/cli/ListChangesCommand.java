@@ -35,6 +35,73 @@ public class ListChangesCommand extends RunRangeCommand {
 //        TODO
 //    }
 
+
+  public enum Format {
+    XML
+    {
+      @Override
+      public void XMLProcess(){
+        // To do
+        PrintWriter w = new PrintWriter(stdout);
+        w.println("<changes>");
+        for (Run<?, ?> build : builds) {
+            if (build instanceof RunWithSCM) {
+                w.println("<build number='" + build.getNumber() + "'>");
+                for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                    Model p = new ModelBuilder().get(cs.getClass());
+                    p.writeTo(cs, Flavor.XML.createDataWriter(cs, w));
+                }
+                w.println("</build>");
+            }
+        }
+        w.println("</changes>");
+        w.flush();
+        return 0;
+      }
+    },
+    CSV
+    {
+      @Override
+      public void CSVProcess(){
+        // To do
+        for (Run<?, ?> build : builds) {
+            if (build instanceof RunWithSCM) {
+                for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                    for (Entry e : cs) {
+                        stdout.printf("%s,%s%n",
+                                QuotedStringTokenizer.quote(e.getAuthor().getId()),
+                                QuotedStringTokenizer.quote(e.getMsg()));
+                    }
+                }
+            }
+        }
+        return 0;
+      }
+    },
+    PLAIN
+    {
+      @Override
+      public void PLAINProcess(){
+        // To do
+        for (Run<?, ?> build : builds) {
+            if (build instanceof RunWithSCM) {
+                for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                    for (Entry e : cs) {
+                        stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
+                        for (String p : e.getAffectedPaths()) {
+                            stdout.println("  " + p);
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
+      }
+    };
+    protected int act(List<Run<?, ?>> builds) throws IOException
+  }
+
+/*
     enum Format {
         XML, CSV, PLAIN
     }
@@ -43,7 +110,7 @@ public class ListChangesCommand extends RunRangeCommand {
     public Format format = Format.PLAIN;
 
     @Override
-    protected int act(List<Run<?, ?>> builds) throws IOException {
+    protected abstract int act(List<Run<?, ?>> builds) throws IOException {
         // Loading job for this CLI command requires Item.READ permission.
         // No other permission check needed.
         switch (format) {
@@ -93,6 +160,6 @@ public class ListChangesCommand extends RunRangeCommand {
         }
 
         return 0;
-    }
+    }*/
 
 }
