@@ -24,7 +24,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 
 @Restricted(NoExternalUse.class) // command implementation only
-@Extension
+//@Extension
 public abstract class ListChangesCommand extends RunRangeCommand {
     public String getShortDescription() {
         return Messages.ListChangesCommand_ShortDescription();
