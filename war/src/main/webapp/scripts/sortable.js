@@ -55,6 +55,15 @@ var Sortable = (function() {
 
         // We have a first row: assume it's the header, and make its contents clickable links
         firstRow.each(function (cell){
+            var noSort = cell.getAttribute('data-sort-disable');
+            if (noSort) {
+                //TODO the data storage should be changed
+                this.arrows.push(null);
+
+                // do not add clickable behavior on a column that is not expected to be sorted
+                // like icon columns
+                return;
+            }
             /*
              * Normally the innerHTML is dangerous, but in this case, we receive the column caption from an escaped jelly
              * and thus, the content there is already escaped.
@@ -212,7 +221,10 @@ var Sortable = (function() {
 
             // update arrow rendering
             this.arrows.each(function(e,i){
-                e.innerHTML = ((i==column) ? dir : arrowTable.none).text;
+                // to check the columns with sort disabled
+                if (e) {
+                    e.innerHTML = ((i==column) ? dir : arrowTable.none).text;
+                }
             });
         },
 
