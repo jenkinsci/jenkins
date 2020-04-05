@@ -53,7 +53,7 @@ public class DeleteNodeCommand extends DeleteItemCommand {
     @Override
     protected void tryDelete(String node_s, Jenkins jenkins) throws Exception{
         Node node = jenkins.getNode(node_s);
-        checkExists(node, node_s, "job");
+        checkExists(node, node_s, "node");
         node.toComputer().doDoDelete();
         return;
     }
