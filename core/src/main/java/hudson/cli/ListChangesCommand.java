@@ -24,7 +24,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 
 @Restricted(NoExternalUse.class) // command implementation only
-//@Extension
 public abstract class ListChangesCommand extends RunRangeCommand {
     public String getShortDescription() {
         return Messages.ListChangesCommand_ShortDescription();
@@ -97,70 +96,3 @@ class PLAIN extends ListChangesCommand{
     return 0;
   }
 }
-
-
-
-
-
-    /*enum Format {
-        XML, CSV, PLAIN
-    }
-
-    @Option(name="-format",usage="Controls how the output from this command is printed.")
-    public Format format = Format.PLAIN;
-
-
-
-    @Override
-    protected int act(List<Run<?, ?>> builds) throws IOException {
-        // Loading job for this CLI command requires Item.READ permission.
-        // No other permission check needed.
-        switch (format) {
-        case XML:
-            PrintWriter w = new PrintWriter(stdout);
-            w.println("<changes>");
-            for (Run<?, ?> build : builds) {
-                if (build instanceof RunWithSCM) {
-                    w.println("<build number='" + build.getNumber() + "'>");
-                    for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        Model p = new ModelBuilder().get(cs.getClass());
-                        p.writeTo(cs, Flavor.XML.createDataWriter(cs, w));
-                    }
-                    w.println("</build>");
-                }
-            }
-            w.println("</changes>");
-            w.flush();
-            break;
-        case CSV:
-            for (Run<?, ?> build : builds) {
-                if (build instanceof RunWithSCM) {
-                    for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
-                            stdout.printf("%s,%s%n",
-                                    QuotedStringTokenizer.quote(e.getAuthor().getId()),
-                                    QuotedStringTokenizer.quote(e.getMsg()));
-                        }
-                    }
-                }
-            }
-            break;
-        case PLAIN:
-            for (Run<?, ?> build : builds) {
-                if (build instanceof RunWithSCM) {
-                    for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
-                            stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
-                            for (String p : e.getAffectedPaths()) {
-                                stdout.println("  " + p);
-                            }
-                        }
-                    }
-                }
-            }
-            break;
-        }
-
-        return 0;
-    }
-}*/
