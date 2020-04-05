@@ -16,17 +16,19 @@
 								if (response.status === 200) {
 									// this means the root URL was configured but without the contextPath, 
 									// so different message to display
-									redirectForm.style.display = "block";
-									redirectForm.querySelectorAll('.context-message').forEach(node => node.style.display = "block");
+									redirectForm.classList.remove('reverse-proxy__hidden');
+									redirectForm.querySelectorAll('.context-message').forEach(node => 
+										node.classList.remove('reverse-proxy__hidden')
+									);
 								} else {
-									redirectForm.style.display = "block";
+									redirectForm.classList.remove('reverse-proxy__hidden');
 								}
 							}
 						});
 					} else {
 						// redirect failed. Unfortunately, according to the spec http://www.w3.org/TR/XMLHttpRequest/
 						// in case of error, we can either get 0 or a failure code
-						redirectForm.style.display = "block";
+						redirectForm.classList.remove('reverse-proxy__hidden');
 					}
 				}
 			}

@@ -23,14 +23,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <div id="redirect-error" class="alert alert-danger" style="display:none" 
+  <div id="redirect-error" class="alert alert-danger reverse-proxy__hidden"
        data-url="${rootURL}/${it.url}/test" data-context="${rootURL}">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%More Info}"/>
       <f:submit name="no" value="${%Dismiss}"/>
     </form>
     <div>${%blurb}</div>
-    <div class="context-message" style="display:none"> ${%missingContextMessage(rootURL)}</div>
+    <div class="context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</div>
   </div>
   <st:adjunct includes="hudson.diagnosis.ReverseProxySetupMonitor.resources"/>
 </j:jelly>
