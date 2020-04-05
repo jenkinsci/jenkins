@@ -53,7 +53,7 @@ public class DeleteJobCommand extends DeleteItemCommand {
     @Override
     protected void tryDelete(String job_s, Jenkins jenkins) throws Exception{
         AbstractItem job = (AbstractItem) jenkins.getItemByFullName(job_s);
-        checkExists(job, job_s);
+        checkExists(job, job_s, "job");
         job.checkPermission(AbstractItem.DELETE);
         job.delete();
         return;

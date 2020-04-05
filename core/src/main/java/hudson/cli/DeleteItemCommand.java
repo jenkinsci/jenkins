@@ -45,9 +45,9 @@ public abstract class DeleteItemCommand extends CLICommand {
 
     protected abstract void tryDelete(String job_s, Jenkins jenkins) throws Exception;
 
-    protected void checkExists(Object item, String item_s) throws Exception{
+    protected void checkExists(Object item, String item_s, String item_type) throws Exception{
         if(item == null) {
-            throw new IllegalArgumentException("No such item '" + item_s + "'");
+            throw new IllegalArgumentException("No such item " + item_type + " '" + item_s + "'");
         }
     }
 
