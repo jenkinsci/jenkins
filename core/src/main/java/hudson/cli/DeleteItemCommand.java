@@ -47,8 +47,9 @@ public abstract class DeleteItemCommand extends CLICommand {
 
     protected void checkExists(Object item, String item_s, String item_type) throws Exception{
         if(item == null) {
-            throw new IllegalArgumentException("No such item " + item_type + " '" + item_s + "'");
+            throw new IllegalArgumentException("No such " + item_type + " '" + item_s + "'");
         }
+        return;
     }
 
     protected int deleteItems(List<String> items) throws Exception {

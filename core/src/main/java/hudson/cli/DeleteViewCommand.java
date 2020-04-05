@@ -53,11 +53,19 @@ public class DeleteViewCommand extends DeleteItemCommand {
     }
 
     @Override
+    protected void checkExists(Object item, String item_s, String item_type) throws Exception {
+        if (item == null) {
+            throw new IllegalArgumentException("View name is empty");
+        }
+        return;
+    }
+
+    @Override
     protected void tryDelete(String view_s, Jenkins jenkins) throws Exception{
         ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
         View view = voh.getView(view_s);
 
-        checkExists(view, view_s);
+        checkExists(view, view_s, "view");
 
         view.checkPermission(View.DELETE);
 
