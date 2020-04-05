@@ -19,7 +19,7 @@
 	var displayWarningMessage = function(withContextMessage) {
 		redirectForm.classList.remove('reverse-proxy__hidden');
 		if (withContextMessage === true) {
-			redirectForm.querySelectorAll('.context-message').forEach(node =>
+			redirectForm.querySelectorAll('.js-context-message').forEach(node =>
 				node.classList.remove('reverse-proxy__hidden')
 			);
 		}

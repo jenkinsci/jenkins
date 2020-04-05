@@ -30,7 +30,7 @@ THE SOFTWARE.
       <f:submit name="no" value="${%Dismiss}"/>
     </form>
     <div>${%blurb}</div>
-    <div class="context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</div>
+    <div class="js-context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</div>
   </div>
   <st:adjunct includes="hudson.diagnosis.ReverseProxySetupMonitor.resources"/>
 </j:jelly>
