@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2013-5 Red Hat, Inc.
+ * Copyright (c) 2015 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,55 +25,59 @@ package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.cli.handlers.ViewOptionHandler;
-import hudson.model.ViewGroup;
-import hudson.model.View;
+import hudson.model.AbstractItem;
+import hudson.model.Node;
 import jenkins.model.Jenkins;
-
 import org.kohsuke.args4j.Argument;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.HashSet;
 
 /**
- * @author ogondza, pjanouse
- * @since 1.538
+ * CLI command, which helps delete job(s) or node(s).
+ * @author noahwc
+ * @since TODO
  */
-@Extension
-public class DeleteViewCommand extends DeleteItemCommand {
+
+public abstract class DeleteItemCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(usage="View names to delete", required=true, multiValued=true)
-    private List<String> views;
 
-    @Override
-    public String getShortDescription() {
+    protected abstract void tryDelete(String job_s, Jenkins jenkins) throws Exception;
 
-        return Messages.DeleteViewCommand_ShortDescription();
-    }
-
-    @Override
-    protected void tryDelete(String view_s, Jenkins jenkins) throws Exception{
-        ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
-        View view = voh.getView(view_s);
-
-        checkExists(view, view_s);
-
-        view.checkPermission(View.DELETE);
-
-        ViewGroup group = view.getOwner();
-        if (!group.canDelete(view)) {
-            throw new IllegalStateException(String.format("%s does not allow to delete '%s' view",
-                group.getDisplayName(),
-                view.getViewName()));
+    protected void checkExists(Object item, String item_s) throws Exception{
+        if(item == null) {
+            throw new IllegalArgumentException("No such item '" + item_s + "'");
         }
-        group.deleteView(view);
-        return;
     }
 
-    @Override
-    protected int run() throws Exception {
-        deleteItems(views);
+    protected int deleteItems(List<String> items) throws Exception {
+
+        boolean errorOccurred = false;
+        final Jenkins jenkins = Jenkins.get();
+
+        final HashSet<String> hs = new HashSet<>(items);
+
+        for (String item_s: hs) {
+
+            try {
+                tryDelete(item_s, jenkins);
+            } catch (Exception e) {
+                if(hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = item_s + ": " + e.getMessage();
+                stderr.println(errorMsg);
+                errorOccurred = true;
+                continue;
+            }
+        }
+
+        if (errorOccurred) {
+            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
+        }
         return 0;
     }
+
 }

@@ -38,7 +38,7 @@ import java.util.HashSet;
  * @since 1.618
  */
 @Extension
-public class DeleteJobCommand extends CLICommand {
+public class DeleteJobCommand extends DeleteItemCommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
@@ -51,40 +51,17 @@ public class DeleteJobCommand extends CLICommand {
     }
 
     @Override
+    protected void tryDelete(String job_s, Jenkins jenkins) throws Exception{
+        AbstractItem job = (AbstractItem) jenkins.getItemByFullName(job_s);
+        checkExists(job, job_s);
+        job.checkPermission(AbstractItem.DELETE);
+        job.delete();
+        return;
+    }
+
+    @Override
     protected int run() throws Exception {
-
-        boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.get();
-
-        final HashSet<String> hs = new HashSet<>(jobs);
-
-        for (String job_s: hs) {
-            AbstractItem job;
-
-            try {
-                job = (AbstractItem) jenkins.getItemByFullName(job_s);
-
-                if(job == null) {
-                    throw new IllegalArgumentException("No such job '" + job_s + "'");
-                }
-
-                job.checkPermission(AbstractItem.DELETE);
-                job.delete();
-            } catch (Exception e) {
-                if(hs.size() == 1) {
-                    throw e;
-                }
-
-                final String errorMsg = job_s + ": " + e.getMessage();
-                stderr.println(errorMsg);
-                errorOccurred = true;
-                continue;
-            }
-        }
-
-        if (errorOccurred) {
-            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
-        }
+        deleteItems(jobs);
         return 0;
     }
 }

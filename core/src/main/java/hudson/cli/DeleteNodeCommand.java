@@ -38,7 +38,7 @@ import java.util.List;
  * @since 1.618
  */
 @Extension
-public class DeleteNodeCommand extends CLICommand {
+public class DeleteNodeCommand extends DeleteItemCommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Names of nodes to delete", required=true, multiValued=true)
@@ -51,39 +51,16 @@ public class DeleteNodeCommand extends CLICommand {
     }
 
     @Override
+    protected void tryDelete(String node_s, Jenkins jenkins) throws Exception{
+        Node node = jenkins.getNode(node_s);
+        checkExists(node, node_s);
+        node.toComputer().doDoDelete();
+        return;
+    }
+
+    @Override
     protected int run() throws Exception {
-
-        boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.get();
-
-        final HashSet<String> hs = new HashSet<>(nodes);
-
-        for (String node_s : hs) {
-            Node node;
-
-            try {
-                node = jenkins.getNode(node_s);
-
-                if (node == null) {
-                    throw new IllegalArgumentException("No such node '" + node_s + "'");
-                }
-
-                node.toComputer().doDoDelete();
-            } catch (Exception e) {
-                if(hs.size() == 1) {
-                    throw e;
-                }
-
-                final String errorMsg = node_s + ": " + e.getMessage();
-                stderr.println(errorMsg);
-                errorOccurred = true;
-                continue;
-            }
-        }
-
-        if (errorOccurred) {
-            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
-        }
+        deleteItems(nodes);
         return 0;
     }
 }
