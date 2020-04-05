@@ -39,29 +39,33 @@ public abstract class ListChangesCommand extends RunRangeCommand {
 
 class XML extends ListChangesCommand{
   @Override
-  public int act(List<Run<?, ?>> builds)throws IOException{
-    PrintWriter w = new PrintWriter(stdout);
-    w.println("<changes>");
-    for (Run<?, ?> build : builds) {
-        if (build instanceof RunWithSCM) {
-            w.println("<build number='" + build.getNumber() + "'>");
-            for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                Model p = new ModelBuilder().get(cs.getClass());
-                p.writeTo(cs, Flavor.XML.createDataWriter(cs, w));
-            }
-            w.println("</build>");
-        }
+  public int act(List<Run<?, ?>> builds){
+    try{
+      PrintWriter w = new PrintWriter(stdout);
+      w.println("<changes>");
+      for (Run<?, ?> build : builds) {
+          if (build instanceof RunWithSCM) {
+              w.println("<build number='" + build.getNumber() + "'>");
+              for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                  Model p = new ModelBuilder().get(cs.getClass());
+                  p.writeTo(cs, Flavor.XML.createDataWriter(cs, w));
+              }
+              w.println("</build>");
+          }
+      }
+      w.println("</changes>");
+      w.flush();
+    } catch (IOException ex){
     }
-    w.println("</changes>");
-    w.flush();
     return 0;
   }
 }
 
 class CSV extends ListChangesCommand{
   @Override
-  public int act(List<Run<?, ?>> builds)throws IOException{
-    for (Run<?, ?> build : builds) {
+  public int act(List<Run<?, ?>> builds){
+    try{
+      for (Run<?, ?> build : builds) {
         if (build instanceof RunWithSCM) {
             for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
                 for (Entry e : cs) {
@@ -71,6 +75,8 @@ class CSV extends ListChangesCommand{
                 }
             }
         }
+      }
+    } catch (IOException ex){
     }
     return 0;
   }
@@ -78,18 +84,21 @@ class CSV extends ListChangesCommand{
 
 class PLAIN extends ListChangesCommand{
   @Override
-  public int act(List<Run<?, ?>> builds)throws IOException{
-    for (Run<?, ?> build : builds) {
-        if (build instanceof RunWithSCM) {
-            for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                for (Entry e : cs) {
-                    stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
-                    for (String p : e.getAffectedPaths()) {
-                        stdout.println("  " + p);
-                    }
-                }
-            }
-        }
+  public int act(List<Run<?, ?>> builds){
+    try{
+      for (Run<?, ?> build : builds) {
+          if (build instanceof RunWithSCM) {
+              for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                  for (Entry e : cs) {
+                      stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
+                      for (String p : e.getAffectedPaths()) {
+                          stdout.println("  " + p);
+                      }
+                  }
+              }
+          }
+      }
+    } catch (IOException ex){
     }
     return 0;
   }
