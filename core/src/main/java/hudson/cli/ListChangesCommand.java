@@ -64,7 +64,6 @@ class XML extends ListChangesCommand{
 class CSV extends ListChangesCommand{
   @Override
   public int act(List<Run<?, ?>> builds){
-    try{
       for (Run<?, ?> build : builds) {
         if (build instanceof RunWithSCM) {
             for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
@@ -76,8 +75,6 @@ class CSV extends ListChangesCommand{
             }
         }
       }
-    } catch (IOException ex){
-    }
     return 0;
   }
 }
@@ -85,7 +82,6 @@ class CSV extends ListChangesCommand{
 class PLAIN extends ListChangesCommand{
   @Override
   public int act(List<Run<?, ?>> builds){
-    try{
       for (Run<?, ?> build : builds) {
           if (build instanceof RunWithSCM) {
               for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
@@ -98,8 +94,6 @@ class PLAIN extends ListChangesCommand{
               }
           }
       }
-    } catch (IOException ex){
-    }
     return 0;
   }
 }
