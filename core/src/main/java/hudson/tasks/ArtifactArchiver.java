@@ -113,7 +113,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     /**
      * Indicate whether symbolic links should be followed or not
      */
-    @Nonnull
+    @NonNull
     private Boolean followSymlinks = true;
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
