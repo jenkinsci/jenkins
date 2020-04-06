@@ -301,6 +301,12 @@ public final class Secret implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Restricted(NoExternalUse.class)
+    public static final boolean AUTO_ENCRYPT_PASSWORD_CONTROL = SystemProperties.getBoolean(Secret.class.getName() + ".AUTO_ENCRYPT_PASSWORD_CONTROL", true);
+
+    @Restricted(NoExternalUse.class)
+    public static /* non-final */ boolean BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE = SystemProperties.getBoolean(Secret.class.getName() + ".BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE", true);
+
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
             public Secret convert(Class type, Object value) {
@@ -310,9 +316,23 @@ public final class Secret implements Serializable {
                 if (value instanceof Secret) {
                     return (Secret) value;
                 }
-
                 return Secret.fromString(value.toString());
             }
         }, Secret.class);
+        if (AUTO_ENCRYPT_PASSWORD_CONTROL) {
+            Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+                public String convert(Class type, Object value) {
+                    if (value == null) {
+                        return null;
+                    }
+                    Secret decrypted = Secret.decrypt(value.toString());
+                    if (decrypted == null) {
+                        return value.toString();
+                    } else {
+                        return decrypted.getPlainText();
+                    }
+                }
+            }, String.class);
+        }
     }
 }
