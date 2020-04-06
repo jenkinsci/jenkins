@@ -38,8 +38,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -81,7 +81,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return ID of the collector, never null or empty
      */
-    @Nonnull
+    @NonNull
     public String getId() {
         return getClass().getName();
     }
@@ -91,7 +91,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return display name, never null or empty
      */
-    @Nonnull
+    @NonNull
     public abstract String getDisplayName();
 
     /**
@@ -101,7 +101,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return collection start date
      */
-    @Nonnull
+    @NonNull
     public abstract LocalDate getStart();
 
     /**
@@ -111,7 +111,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return collection end date
      */
-    @Nonnull
+    @NonNull
     public abstract LocalDate getEnd();
 
     /**

@@ -27,7 +27,7 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -51,7 +51,7 @@ public class SystemInfoLink extends ManagementLink {
         return Messages.SystemInfoLink_Description();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredPermission() {
         //This link is displayed to any user with permission to access the management menu
@@ -63,7 +63,7 @@ public class SystemInfoLink extends ManagementLink {
         return "systemInfo";
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Category getCategory() {
         return Category.STATUS;

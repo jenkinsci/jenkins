@@ -95,8 +95,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
@@ -1019,7 +1019,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Deprecated
     public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
-        public BecauseOfBuildInProgress(@Nonnull AbstractBuild<?, ?> build) {
+        public BecauseOfBuildInProgress(@NonNull AbstractBuild<?, ?> build) {
             super(build);
         }
     }
@@ -1391,7 +1391,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    private PollingResult pollWithWorkspace(TaskListener listener, SCM scm, R lb, @Nonnull FilePath ws, WorkspaceList l) throws InterruptedException, IOException {
+    private PollingResult pollWithWorkspace(TaskListener listener, SCM scm, R lb, @NonNull FilePath ws, WorkspaceList l) throws InterruptedException, IOException {
         // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
         // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
         //
@@ -1922,7 +1922,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          * @param project May be specified to perform project specific validation.
          * @since 1.590
          */
-        public static @Nonnull FormValidation validateLabelExpression(String value, @CheckForNull AbstractProject<?, ?> project) {
+        public static @NonNull FormValidation validateLabelExpression(String value, @CheckForNull AbstractProject<?, ?> project) {
             if (Util.fixEmpty(value)==null)
                 return FormValidation.ok(); // nothing typed yet
             try {
@@ -2137,8 +2137,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          * @param label   the label that the project wants to restrict itself to.
          * @return the {@link FormValidation} result.
          */
-        @Nonnull
-        public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
+        @NonNull
+        public abstract FormValidation check(@NonNull AbstractProject<?, ?> project, @NonNull Label label);
     }
 
 }

@@ -39,7 +39,7 @@ import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -138,7 +138,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * @since 2.72
      */
-    public ArgumentListBuilder add(@Nonnull Iterable<String> args) {
+    public ArgumentListBuilder add(@NonNull Iterable<String> args) {
         for (String arg : args) {
             add(arg);
         }

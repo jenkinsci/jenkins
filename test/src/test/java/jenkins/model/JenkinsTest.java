@@ -85,7 +85,7 @@ import java.util.Set;
 
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Tests of the {@link Jenkins} class instance logic.

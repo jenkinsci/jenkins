@@ -10,7 +10,7 @@ import jenkins.model.Jenkins;
 import java.util.Collection;
 import java.util.concurrent.Future;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Allows extensions to be notified of events in any {@link Cloud} and to prevent
@@ -73,7 +73,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      *
      * @since 2.37
      */
-    public void onCommit(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node) {
+    public void onCommit(@NonNull NodeProvisioner.PlannedNode plannedNode, @NonNull Node node) {
         // Noop by default
     }
 
@@ -96,8 +96,8 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      *
      * @since 2.37
      */
-    public void onRollback(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node,
-                           @Nonnull Throwable t) {
+    public void onRollback(@NonNull NodeProvisioner.PlannedNode plannedNode, @NonNull Node node,
+                           @NonNull Throwable t) {
         // Noop by default
     }
 

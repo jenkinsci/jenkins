@@ -8,7 +8,7 @@ import hudson.model.Messages;
 import hudson.model.Label;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -44,7 +44,7 @@ public abstract class CauseOfBlockage {
     /**
      * Obtains a simple implementation backed by {@link Localizable}.
      */
-    public static CauseOfBlockage fromMessage(@Nonnull final Localizable l) {
+    public static CauseOfBlockage fromMessage(@NonNull final Localizable l) {
         l.getKey(); // null check
         return new CauseOfBlockage() {
             @Override
