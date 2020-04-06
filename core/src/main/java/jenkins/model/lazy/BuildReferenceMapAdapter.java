@@ -4,7 +4,7 @@ import groovy.util.MapEntry;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;

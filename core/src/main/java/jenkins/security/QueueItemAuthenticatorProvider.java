@@ -4,7 +4,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
 
-    @Nonnull
+    @NonNull
     public abstract List<QueueItemAuthenticator> getAuthenticators();
 
     public static Iterable<QueueItemAuthenticator> authenticators() {

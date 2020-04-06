@@ -25,7 +25,7 @@ package hudson.model;
 
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -147,7 +147,7 @@ public class FingerprintCleanupThreadTest {
         private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         private PrintStream logStream = new PrintStream(outputStream);
 
-        @Nonnull
+        @NonNull
         @Override
         public PrintStream getLogger() {
             return logStream;

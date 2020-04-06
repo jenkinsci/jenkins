@@ -12,7 +12,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.GET;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URL;
 

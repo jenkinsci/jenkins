@@ -6,7 +6,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.slaves.SlaveComputer;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Intercepts the new creation of {@link Channel} and tweak its configuration.
