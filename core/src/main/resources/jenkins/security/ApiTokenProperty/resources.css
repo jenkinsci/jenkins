@@ -143,6 +143,7 @@
 }
 .token-list .repeated-chunk {
     border-width: 0;
+    padding-left: 0;
 }
 .token-list .repeatable-add{
     margin: 6px 6px 3px 6px;
