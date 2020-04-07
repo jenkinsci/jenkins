@@ -32,7 +32,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,7 +84,7 @@ public final class StatusFilter extends ViewJobFilter {
         /**
          * {@inheritDoc}
          */
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.StatusFilter_DisplayName();
