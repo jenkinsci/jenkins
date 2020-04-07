@@ -49,7 +49,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -416,7 +416,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * @return The list of strings of computer names (excluding master)
      * @since 2.14
      */
-    @Nonnull
+    @NonNull
     public static List<String> getComputerNames() {
         final ArrayList<String> names = new ArrayList<>();
         for (Computer c : Jenkins.get().getComputers()) {

@@ -43,8 +43,8 @@ import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -70,7 +70,7 @@ public final class Secret implements Serializable {
     /**
      * Unencrypted secret text.
      */
-    @Nonnull
+    @NonNull
     private final String value;
     private byte[] iv;
 
@@ -104,7 +104,7 @@ public final class Secret implements Serializable {
      * Before using this method, ask yourself if you'd be better off using {@link Secret#toString(Secret)}
      * to avoid NPE.
      */
-    @Nonnull
+    @NonNull
     public String getPlainText() {
         return value;
     }
@@ -245,7 +245,7 @@ public final class Secret implements Serializable {
      * <p>
      * Useful for recovering a value from a form field.
      */
-    @Nonnull
+    @NonNull
     public static Secret fromString(@CheckForNull String data) {
         data = Util.fixNull(data);
         Secret s = decrypt(data);
@@ -258,7 +258,7 @@ public final class Secret implements Serializable {
      * To be consistent with {@link #fromString(String)}, this method doesn't distinguish
      * empty password and null password.
      */
-    @Nonnull
+    @NonNull
     public static String toString(@CheckForNull Secret s) {
         return s==null ? "" : s.value;
     }

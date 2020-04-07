@@ -41,8 +41,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Cause object base class.  This class hierarchy is used to keep track of why
@@ -76,7 +76,7 @@ public abstract class Cause {
      * Called when the cause is registered.
      * @since 1.568
      */
-    public void onAddedTo(@Nonnull Run build) {
+    public void onAddedTo(@NonNull Run build) {
         if (build instanceof AbstractBuild) {
             onAddedTo((AbstractBuild) build);
         }
@@ -95,13 +95,13 @@ public abstract class Cause {
      * this ought to be {@code transient}.
      * @since 1.568
      */
-    public void onLoad(@Nonnull Run<?,?> build) {
+    public void onLoad(@NonNull Run<?,?> build) {
         if (build instanceof AbstractBuild) {
             onLoad((AbstractBuild) build);
         }
     }
 
-    void onLoad(@Nonnull Job<?,?> job, int buildNumber) {
+    void onLoad(@NonNull Job<?,?> job, int buildNumber) {
         Run<?,?> build = job.getBuildByNumber(buildNumber);
         if (build != null) {
             onLoad(build);
@@ -160,7 +160,7 @@ public abstract class Cause {
          */
         @Deprecated
         private transient Cause upstreamCause;
-        private @Nonnull List<Cause> upstreamCauses;
+        private @NonNull List<Cause> upstreamCauses;
 
         /**
          * @deprecated since 2009-02-28
@@ -182,7 +182,7 @@ public abstract class Cause {
             }
         }
 
-        private UpstreamCause(String upstreamProject, int upstreamBuild, String upstreamUrl, @Nonnull List<Cause> upstreamCauses) {
+        private UpstreamCause(String upstreamProject, int upstreamBuild, String upstreamUrl, @NonNull List<Cause> upstreamCauses) {
             this.upstreamProject = upstreamProject;
             this.upstreamBuild = upstreamBuild;
             this.upstreamUrl = upstreamUrl;
@@ -190,7 +190,7 @@ public abstract class Cause {
         }
 
         @Override
-        public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {
+        public void onLoad(@NonNull Job<?,?> _job, int _buildNumber) {
             Item i = Jenkins.get().getItemByFullName(this.upstreamProject);
             if (!(i instanceof Job)) {
                 // cannot initialize upstream causes
@@ -229,7 +229,7 @@ public abstract class Cause {
             return Objects.hash(upstreamCauses, upstreamBuild, upstreamUrl, upstreamProject);
         }
 
-        private @Nonnull Cause trim(@Nonnull Cause c, int depth, Set<String> traversed) {
+        private @NonNull Cause trim(@NonNull Cause c, int depth, Set<String> traversed) {
             if (!(c instanceof UpstreamCause)) {
                 return c;
             }
@@ -347,7 +347,7 @@ public abstract class Cause {
             @Override public String toString() {
                 return "JENKINS-14814";
             }
-            @Override public void onLoad(@Nonnull Job<?,?> _job, int _buildNumber) {}
+            @Override public void onLoad(@NonNull Job<?,?> _job, int _buildNumber) {}
         }
 
     }
@@ -426,7 +426,7 @@ public abstract class Cause {
             return userId;
         }
         
-        @Nonnull
+        @NonNull
         private String getUserIdOrUnknown() {
             return  userId != null ? userId : User.getUnknown().getId();
         }

@@ -4,7 +4,7 @@ import hudson.scm.SCM;
 import hudson.tasks.Builder;
 import hudson.util.Secret;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.IOException;
 
 import jenkins.slaves.JnlpAgentReceiver;

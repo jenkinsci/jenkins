@@ -55,7 +55,7 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 import static java.lang.Math.abs;
-import javax.annotation.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**

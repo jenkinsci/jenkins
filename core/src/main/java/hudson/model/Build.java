@@ -43,7 +43,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import static hudson.model.Result.FAILURE;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A build of a {@link Project}.
@@ -139,7 +139,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             deprecated class here.
          */
 
-        protected Result doRun(@Nonnull BuildListener listener) throws Exception {
+        protected Result doRun(@NonNull BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return FAILURE;
             if(!preBuild(listener,project.getPublishersList()))
@@ -182,7 +182,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             return r;
         }
 
-        public void post2(@Nonnull BuildListener listener) throws IOException, InterruptedException {
+        public void post2(@NonNull BuildListener listener) throws IOException, InterruptedException {
             if (!performAllBuildSteps(listener, project.getPublishersList(), true))
                 setResult(FAILURE);
             if (!performAllBuildSteps(listener, project.getProperties(), true))
@@ -190,7 +190,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         }
 
         @Override
-        public void cleanUp(@Nonnull BuildListener listener) throws Exception {
+        public void cleanUp(@NonNull BuildListener listener) throws Exception {
             // at this point it's too late to mark the build as a failure, so ignore return value.
             try {
                 performAllBuildSteps(listener, project.getPublishersList(), false);
@@ -201,7 +201,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             super.cleanUp(listener);
         }
 
-        private boolean build(@Nonnull BuildListener listener, @Nonnull Collection<Builder> steps) throws IOException, InterruptedException {
+        private boolean build(@NonNull BuildListener listener, @NonNull Collection<Builder> steps) throws IOException, InterruptedException {
             for( BuildStep bs : steps ) {
                 if(!perform(bs,listener)) {
                     LOGGER.log(Level.FINE, "{0} : {1} failed", new Object[] {Build.this, bs});
