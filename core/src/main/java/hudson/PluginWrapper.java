@@ -1026,6 +1026,21 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return DetachedPluginsUtil.isDetachedPlugin(shortName);
     }
 
+    @Restricted(NoExternalUse.class)
+    public boolean hasImpliedDependents() {
+        if (!isDetached()) {
+            return false;
+        }
+        for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
+            for (Dependency dependency : DetachedPluginsUtil.getImpliedDependencies(p.shortName, p.getRequiredCoreVersion())) {
+                if (dependency.shortName.equals(shortName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Sort by short name.
      */
