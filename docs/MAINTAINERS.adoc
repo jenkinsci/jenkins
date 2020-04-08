@@ -74,17 +74,15 @@ We need to ensure that submitted pull requests are not only code complete,
 but also that they do not introduce undesired defects, breaking changes and technical debt.
 At the same time, we are interested to make the review process as simple as possible for contributors and maintainers.
 
-=== Code review goals
+=== Review goals
 
-There are the following code review goals:
+Pull requests review in Jenkins is not just about reviewing code and accepting them if the code is OK.
+Core maintainers are expected to ensure feasibility and compatibility of changes,
+to maintain good quality of the codebase and documentation,
+and to ensure there is a consensus between contributors.
 
-* Ensure that the pull request is _feasible_ and that it fits the Jenkins ecosystem
-* Verify _compatibility_ of the suggested changes
-* Ensure that the pull request matches the _code quality_ practices: test automation, Javadoc for newly introduced APIs, etc.
-* Ensure that the pull request contains appropriate changelog entries and, if needed, upgrade guidelines.
-* Ensure there is a _consensus_ among reviewers about all items above.
+==== Verifying Feasibility
 
-**Feasibility**.
 Reviewers are expected to look at changes critically from a "product management" point of view.
 It's not just about the code, but also whether the change makes sense in a global / holistic way, considering existing popular plugins and the way users experience Jenkins overall.
 Also, not every change needs to be merged into the core.
@@ -92,7 +90,8 @@ Many features would be better introduced as plugins which have separate release 
 We want to extend the Jenkins core and incorporate widely used functionality and extension points there,
 but we try to keep the core as minimal as possible in terms of dependencies.
 
-**Compatibility**.
+==== Ensuring Compatibility
+
 The Jenkins project has a long history of backward compatibility.
 We accept breaking changes when it is needed (security fixes, feature deprecation and removal, etc.),
 but ultimately the project's goal is retain as much compatibility as possible.
@@ -100,14 +99,35 @@ It includes both feature compatibility and binary/API compatibility which is imp
 Although we have some tools (like https://github.com/jenkins-infra/usage-in-plugins[usage-in-plugins]) for checking API usages across open-source plugins,
 there is no way to confirm external usages in 3rd-party proprietary plugins which are also a part of the ecosystem.
 
-**Code quality**.
+==== Maintaining Code quality
+
 The code doesn't have to be perfect, but we want to ensure that all new code matches basic quality standards:
 test coverage for newly added functionality and fixes,
 documentation for newly introduced APIs,
 the submitted code is readable and matches the code style in the surrounding codebase,
 etc.
 
-**Consensus**.
+==== Code style
+
+We're aware that there are existing inconsistencies in the code,
+and we do not enforce a single code style across the codebase at the moment.
+
+* New code should follow the (majority) style guide.
+  In Jenkins core we use the link:https://www.oracle.com/technetwork/java/codeconvtoc-136057.html[these Code Conventions for the Java TM Programming Language] as a default code style
+* Updates to existing code should only fix formatting on the lines affected anyway to keep the diff minimal.
+  It helps reviewers focus their attention on the specifics of the change and reduces the risk of a change from one pull request creating a conflict in another pull request.
+
+==== Maintaining documentation
+
+* Jenkins documentation is hosted on https://jenkins.io/doc/.
+  When a new user-facing change is added, we should encourage contributors to update documentation in downstream pull requests.
+* Same applies to Jenkins changelogs (link:https://jenkins.io/changelog[weekly], link:https://jenkins.io/changelog-stable/[stable]) and link:https://jenkins.io/doc/upgrade-guide/[upgrade guidelines]:
+  We have a semi-automated process which is based on pull request summaries and labels.
+  Core maintainers are expected to validate the entries as a part of the pull request review/merge process.
+  See the checklist below in the _Merge process_ section.
+
+==== Building consensus
+
 Not all changes are discussed before they submitted as pull requests.
 Developer mailing lists, Jira issues and JEPs are used for discussions,
 but sometimes the changes go straight to the pull requests.
@@ -121,7 +141,7 @@ code reviewers are expected to suggest proper channels for contributors to discu
 * If no consensus can be reached on the mailing list,
   voting at the link:https://jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision.
 
-=== Code review non-goals
+=== Review non-goals
 
 Code reviews do NOT pursue the following goals:
 
@@ -173,7 +193,6 @@ For these reasons, the following changes should not be merged during the week be
 
 If the change is ready but it is not a good time, consider labeling the pull request with the `on-hold` label.
 Make sure to add a comment explaining why it was put on hold.
-If a merge is needed, please consult with the Jenkins Security officer.
 
 ==== Step 3: Marking for merge
 
@@ -188,7 +207,6 @@ Once the checklist is passed, a Core PR Reviewer or a Maintainer can mark the pu
 A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
 After that the change will be landed in the next weekly release.
 LTS backporting, if needed, will be handled separately by the release team.
-
 
 === Exceptions
 
