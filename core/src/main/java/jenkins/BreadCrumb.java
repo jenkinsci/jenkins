@@ -29,6 +29,6 @@ public class BreadCrumb {
                 breadCrumbItem.setHasContextualMenu(isModelWithContextMenu(anc.getObject()));
             }
         }
-        return  breadCrumbItemList;
+        return breadCrumbItemList;
     }
 }

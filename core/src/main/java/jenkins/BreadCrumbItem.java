@@ -6,26 +6,24 @@ public class BreadCrumbItem {
 
     private String displayName;
     private boolean hasContextualMenu;
+    private BreadCrumb breadCrumb;
 
 
     public BreadCrumbItem getFirst() {
-        // TO-DO
-        return null;
+        return breadCrumb.generateBreadCrumbs().get(0);
     }
 
     public BreadCrumbItem getLast() {
-        // TO-DO
-        return null;
+        int sizeofBreadCrumbList = breadCrumb.generateBreadCrumbs().size();
+        return breadCrumb.generateBreadCrumbs().get(sizeofBreadCrumbList - 1);
     }
 
-    public void reNameBreadCrumb() {
-        // TO-DO
+    public void reNameBreadCrumb(int index, String name) {
+        // RenameBreadCrumb using index, for now we just want to rename the first breadcrumb
+        BreadCrumbItem breadCrumbItem= breadCrumb.generateBreadCrumbs().get(index);
+        breadCrumbItem.setDisplayName(name);
     }
 
-    public BreadCrumbItem getParentBreadCrumb() {
-        // TO-DO
-        return null;
-    }
 
     public String getDisplayName() {
         return displayName;
