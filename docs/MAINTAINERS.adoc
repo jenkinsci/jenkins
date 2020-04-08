@@ -38,7 +38,6 @@ Remoting updates in the core are subject to the process though.
 * Release Team Member
 
 **Contributors** submit pull requests to the Jenkins core and review changes submitted by others.
-They can also review and triage incoming issues in Jenkins Jira.
 There is no special preconditions to do so.
 Anyone is welcome to contribute.
 
@@ -99,7 +98,7 @@ We accept breaking changes when it is needed (security fixes, feature deprecatio
 but ultimately the project's goal is retain as much compatibility as possible.
 It includes both feature compatibility and binary/API compatibility which is important for the plugin ecosystem.
 Although we have some tools (like https://github.com/jenkins-infra/usage-in-plugins[usage-in-plugins]) for checking API usages across open-source plugins,
-there is no way to confirm external usages in 3rd-party proprietary plugins which is also a part of the ecosystem.
+there is no way to confirm external usages in 3rd-party proprietary plugins which are also a part of the ecosystem.
 
 **Code quality**.
 The code doesn't have to be perfect, but we want to ensure that all new code matches basic quality standards:
@@ -135,10 +134,10 @@ Code reviews do NOT pursue the following goals:
   Our main goal is to firstly have the code readable by other contributors.
 * Make contributors fix issues that are not related to the primary topic of the pull request
 ** Create follow-up issues instead, it is fine to reference them in comments so that the contributor might want to pick them up
-* Breakdown the commit history or squashing PRs
+* Make contributors to have atomic commit history or to squash their pull request
 ** Not every contributor is a Git expert, do not request changes in the commit history unless it is necessary
 ** Core maintainers can squash PRs during the merge.
-   If you feel this is important, add the `squash-merge-me` label
+   If you feel this is important, add the [squash-merge-me](https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me) label
 ** We want to keep pull requests focused when possible (one feature / fix per pull request),
    but we can live without it if there is no need to backport changes to the stable baseline.
 
@@ -190,7 +189,6 @@ A Core Maintainer merges the change after allowing sufficient time for comment (
 After that the change will be landed in the next weekly release.
 LTS Backporting, if needed, will be handled separately by the release team.
 
-Keep in mind that we set 
 
 === Exceptions
 
@@ -201,7 +199,7 @@ Keep in mind that we set
   Common review process is used otherwise.
 * 24 hours waiting period after adding the `ready-for-merge` label is not required for:
 //TODO(oleg_nenashev): Define "trivial" better to avoid loopholes
-** trivial changes like typo fixes or minor Javadoc improvements
+** changes that do not result in changes to the primary functionality, such as typo fixes in documentation or localization files
 ** changes which do not affect the production code: Jenkinsfile tweaks, tools inside the repo, etc. 
 ** broken master build
 
@@ -213,7 +211,7 @@ Right now we do not have a strict policy about it.
 
 Jenkins also offers the link:https://jenkins.io/download/lts/[LTS Release Line].
 It is maintained by the Jenkins Release Team which coordinates link:https://jenkins.io/download/lts/#backporting-process[backporting] and release candidate testing.
-It mostly happens through the developer mailing list and through backporting pull requests labeled with link:https://github.com/jenkinsci/jenkins/labels/into-lts[into-lts].
+It mostly happens through the developer mailing list. Backports are submitted as pull requests labeled with link:https://github.com/jenkinsci/jenkins/labels/into-lts[into-lts].
 Other Jenkins contributors are welcome to participate in backporting and relese candidate testing.
 
 == Tools
