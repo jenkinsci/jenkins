@@ -57,13 +57,13 @@ public class PluginsLink extends ManagementLink {
         return "pluginManager";
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
     }
   
-    @Nonnull
+    @NonNull
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
