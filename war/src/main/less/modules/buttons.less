@@ -129,7 +129,8 @@
 .yui-button button,
 input[type="button"],
 input[type="reset"],
-input[type="submit"] {
+input[type="submit"],
+a.yui-button {
   @button-height: 2rem;
   @button-border: 2px;
   @button-line-height: calc(@button-height - @button-border - @button-border);
@@ -150,6 +151,7 @@ input[type="submit"] {
   font-weight: bold;
   text-align: center;
   vertical-align: middle;
+  text-decoration: none;
 
   border: @button-border solid;
   border-radius: 4px;
@@ -188,7 +190,8 @@ input[type="submit"].link-button {
 .yui-button.large-button button,
 input[type="button"].large-button,
 input[type="reset"].large-button,
-input[type="submit"].large-button {
+input[type="submit"].large-button,
+a.large-button {
   @button-height: 2.5rem;
   @button-border: 2px;
   @button-line-height: calc(@button-height - @button-border - @button-border);
@@ -199,8 +202,23 @@ input[type="submit"].large-button {
   line-height: @button-line-height;
 }
 
-.yui-button a {
-  // text-decoration: none;
+a.yui-button {
+  &.primary {
+    .button-primary();
+  }
+
+  &.danger {
+    .button-danger();
+  }
+
+  &.link-button {
+    .button-link();
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 // Dropdown buttons
