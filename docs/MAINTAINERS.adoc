@@ -133,7 +133,7 @@ Code reviews do NOT pursue the following goals:
 * Enforcing a particular coding style.
   Jenkins core has a complex codebase created by many contributors, and different files have different designs.
   Our main goal is to firstly have the code readable by other contributors.
-* Make contributors to fix unrelated issues
+* Make contributors fix issues that are not related to the primary topic of the pull request
 ** Create follow-up issues instead, it is fine to reference them in comments so that the contributor might want to pick them up
 * Breakdown the commit history or squashing PRs
 ** Not every contributor is a Git expert, do not request changes in the commit history unless it is necessary
@@ -161,11 +161,11 @@ Merge process can be initiated once a pull request matches the requirements:
   (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
   This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out),
   or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
-* It would make sense to backport the change to LTS, a Jira issue should exist and be labeled as `lts-candidate`
+* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see [query](https://issues.jenkins-ci.org/issues/?filter=12146)).
 
 ==== Step 2: Is it a good time to merge?
 
-link:[https://jenkins.io/security/](Jenkins security updates) are coordinated with the LTS calendar, and if the weekly introduces regressions, users of that line may have to choose between security fixes, and a working Jenkins.
+link:[https://jenkins.io/security/](Jenkins security updates) are coordinated with the LTS calendar, and if the weekly release on the weekend before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes, and a working Jenkins.
 The Jenkins security team will usually send a "pre-announcement" to link:https://groups.google.com/forum/#!forum/jenkinsci-advisories[the advisories list] on Wednesday or Thursday the week before release, but that's not always doable.
 For these reasons, the following changes should not be merged during the week before LTS releases (weeks 3, 7, 11, 15, etc. on the page linked above):
 
@@ -173,7 +173,8 @@ For these reasons, the following changes should not be merged during the week be
 * Very large changes (in terms of lines changed), because the Jenkins security team needs to prepare security fixes for the weekly release line in a very short period of time.
 
 If the change is ready but it is not a good time, consider labeling the pull request with the `on-hold` label.
-If a merge is needed, please consult with the Jenkins Security officer
+Make sure to add a comment explaining why it was put on hold.
+If a merge is needed, please consult with the Jenkins Security officer.
 
 ==== Step 3: Marking for merge
 
