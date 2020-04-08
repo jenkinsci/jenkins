@@ -223,7 +223,28 @@ LTS backporting, if needed, will be handled separately by the release team.
 
 === Squashing pull requests OR not?
 
-Right now we do not have a strict policy about it.
+Sometimes we have pull requests which include dozens of commits including many non-substantial changes (merge commits, addressing review comments, etc.).
+We do not require contributors to spend time on cleaning it up, because core maintainers can squash PRs during the merge.
+Reviewers can add a [squash-merge-me](https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me) label during reviews to highlight that it is needed.
+
+At the same time, we do not require any pull request to be merged as a single commit.
+Multiple commits are useful in many cases.
+
+When do we merge pull requests as is?
+
+* There is only one commit with a reasonable commit message
+* There are multiple atomic commits. Each commit has a reasonable message and can be compiled on its own
+** Example:
+*** **Commit 1**: `[JENKINS-1234] - Reproduce the issue in tests`
+*** **Commit 2**: `[JENKINS-1234] - Fix the issue by updating Foo` 
+* There are multiple commit authors who expressed the desire to keep commit history as is.
+  By default we do not consider multiple authors as a blocker for squash, because GitHub now 
+  link:https://help.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors[supports co-authors]
+
+When do we squash commits?
+
+* We squash commits during when core maintainers decide to do so (`squash-merge-me` label), usually when the conditions above are not met.
+* There is no strong requirement to squash merge pull requests at the moment, so there might be deviations from the merge policy in practice.
 
 == LTS Process
 
