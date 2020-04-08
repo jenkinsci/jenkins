@@ -82,7 +82,7 @@ There are the following code review goals:
 * Ensure that the pull request is _feasible_ and that it fits the Jenkins ecosystem
 * Verify _compatibility_ of the suggested changes
 * Ensure that the pull request matches the _code quality_ practices: test automation, Javadoc for newly introduced APIs, etc.
-* Ensure that the pull request contains appropriate changelogs and, if needed, upgrade guidelines.
+* Ensure that the pull request contains appropriate changelog entries and, if needed, upgrade guidelines.
 * Ensure there is a _consensus_ among reviewers about all items above.
 
 **Feasibility**.
@@ -187,7 +187,7 @@ Once the checklist is passed, a Core PR Reviewer or a Maintainer can mark the pu
 
 A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
 After that the change will be landed in the next weekly release.
-LTS Backporting, if needed, will be handled separately by the release team.
+LTS backporting, if needed, will be handled separately by the release team.
 
 Keep in mind that we set 
 
@@ -213,7 +213,7 @@ Right now we do not have a strict policy about it.
 Jenkins also offers the link:https://jenkins.io/download/lts/[LTS Release Line].
 It is maintained by the Jenkins Release Team which coordinates link:https://jenkins.io/download/lts/#backporting-process[backporting] and release candidate testing.
 It mostly happens through the developer mailing list and through backporting pull requests labeled with link:https://github.com/jenkinsci/jenkins/labels/into-lts[into-lts].
-Other Jenkins contributors are welcome to participate in backporting and relese candidate testing.
+Other Jenkins contributors are welcome to participate in backporting and release candidate testing.
 
 == Tools
 
