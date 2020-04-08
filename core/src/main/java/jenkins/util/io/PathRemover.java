@@ -60,8 +60,8 @@ public class PathRemover {
         return new PathRemover(retryStrategy, PathChecker.ALLOW_ALL);
     }
 
-    public static PathRemover newFilteredRobustRemover(@NonNull PathChecker pathChecker, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
-        return new PathRemover(new PausingGCRetryStrategy(Math.max(maxRetries, 0), gcAfterFailedRemove, waitBetweenRetries), pathChecker);
+    public static PathRemover newFilteredRobustRemover(@NonNull PathChecker pathChecker, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries, int maxErrorsBeforeAbort) {
+        return new PathRemover(new PausingGCRetryStrategy(Math.max(maxRetries, 0), gcAfterFailedRemove, waitBetweenRetries, maxErrorsBeforeAbort), pathChecker);
     }
 
     private final RetryStrategy retryStrategy;
@@ -84,7 +84,8 @@ public class PathRemover {
 
     public void forceRemoveDirectoryContents(@NonNull Path path) throws IOException {
         for (int retryAttempt = 0; ; retryAttempt++) {
-            List<IOException> errors = tryRemoveDirectoryContents(path);
+            List<IOException> errors = new ArrayList<>();
+            tryRemoveDirectoryContents(path, errors);
             if (errors.isEmpty()) return;
             if (retryStrategy.shouldRetry(retryAttempt)) continue;
             throw new CompositeIOException(retryStrategy.failureMessage(path, retryAttempt), errors);
@@ -93,7 +94,8 @@ public class PathRemover {
 
     public void forceRemoveRecursive(@NonNull Path path) throws IOException {
         for (int retryAttempt = 0; ; retryAttempt++) {
-            List<IOException> errors = tryRemoveRecursive(path);
+            List<IOException> errors = new ArrayList<>();
+            tryRemoveRecursive(path, errors);
             if (errors.isEmpty()) return;
             if (retryStrategy.shouldRetry(retryAttempt)) continue;
             throw new CompositeIOException(retryStrategy.failureMessage(path, retryAttempt), errors);
@@ -113,6 +115,14 @@ public class PathRemover {
     public interface RetryStrategy {
         boolean shouldRetry(int retriesAttempted);
 
+        /**
+         * Whether the current deletion attempt should be aborted early based on the errors seen so far.
+         * Additional attempts may still occur according to {@link #shouldRetry} even if the current attempt is aborted.
+         */
+        default boolean shouldAbort(List<IOException> accumulatedErrors) {
+            return false;
+        }
+
         default String failureMessage(@NonNull Path fileToRemove, int retryCount) {
             StringBuilder sb = new StringBuilder()
                     .append("Unable to delete '")
@@ -130,12 +140,14 @@ public class PathRemover {
         private final int maxRetries;
         private final boolean gcAfterFailedRemove;
         private final long waitBetweenRetries;
+        private final int maxErrorsBeforeAbort;
         private final ThreadLocal<Boolean> interrupted = ThreadLocal.withInitial(() -> false);
 
-        private PausingGCRetryStrategy(int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
+        private PausingGCRetryStrategy(int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries, int maxErrorsBeforeAbort) {
             this.maxRetries = maxRetries;
             this.gcAfterFailedRemove = gcAfterFailedRemove;
             this.waitBetweenRetries = waitBetweenRetries;
+            this.maxErrorsBeforeAbort = maxErrorsBeforeAbort;
         }
 
         @SuppressFBWarnings(value = "DM_GC", justification = "Garbage collection happens only when "
@@ -162,6 +174,11 @@ public class PathRemover {
                 interrupted.set(true);
                 return false;
             }
+        }
+
+        @Override
+        public boolean shouldAbort(List<IOException> accumulatedErrors) {
+            return accumulatedErrors.size() > maxErrorsBeforeAbort;
         }
 
         @Override
@@ -209,26 +226,30 @@ public class PathRemover {
         }
     }
 
-    private List<IOException> tryRemoveRecursive(@NonNull Path path) {
+    private void tryRemoveRecursive(@NonNull Path path, List<IOException> accumulatedErrors) {
         Path normalized = path.normalize();
-        List<IOException> accumulatedErrors = Util.isSymlink(normalized) ? new ArrayList<>() :
-                tryRemoveDirectoryContents(normalized);
+        if (!Util.isSymlink(normalized)) {
+            tryRemoveDirectoryContents(normalized, accumulatedErrors);
+            if (retryStrategy.shouldAbort(accumulatedErrors)) {
+                return;
+            }
+        }
         tryRemoveFile(normalized).ifPresent(accumulatedErrors::add);
-        return accumulatedErrors;
     }
 
-    private List<IOException> tryRemoveDirectoryContents(@NonNull Path path) {
+    private void tryRemoveDirectoryContents(@NonNull Path path, List<IOException> accumulatedErrors) {
         Path normalized = path.normalize();
-        List<IOException> accumulatedErrors = new ArrayList<>();
-        if (!Files.isDirectory(normalized)) return accumulatedErrors;
+        if (!Files.isDirectory(normalized)) return;
         try (DirectoryStream<Path> children = Files.newDirectoryStream(normalized)) {
             for (Path child : children) {
-                accumulatedErrors.addAll(tryRemoveRecursive(child));
+                tryRemoveRecursive(child, accumulatedErrors);
+                if (retryStrategy.shouldAbort(accumulatedErrors)) {
+                    break;
+                }
             }
         } catch (IOException e) {
             accumulatedErrors.add(e);
         }
-        return accumulatedErrors;
     }
 
     private void removeOrMakeRemovableThenRemove(@NonNull Path path) throws IOException {

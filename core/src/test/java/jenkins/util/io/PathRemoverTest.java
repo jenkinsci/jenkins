@@ -51,10 +51,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -416,6 +421,34 @@ public class PathRemoverTest {
 
         assertTrue("Unable to delete directory: " + d1p, Files.notExists(d1p));
         assertFalse(d1.exists());
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveRecursive_AbortsAfterTooManyErrors() throws IOException {
+        assumeTrue(Functions.isWindows());
+        File dir = tmp.newFolder();
+        File subDir = new File(dir, "d1");
+        File f1 = new File(subDir, "f1");
+        File f2 = new File(subDir, "f2");
+        File f3 = new File(dir, "f3");
+        mkdirs(subDir);
+        touchWithFileName(f1, f2, f3);
+        locker.acquireLock(f1);
+        locker.acquireLock(f2);
+        // Abort if more than one error occurs, and do not retry the overall deletion.
+        PathRemover remover = PathRemover.newFilteredRobustRemover(PathRemover.PathChecker.ALLOW_ALL, 0, false, 0, 1);
+        try {
+            remover.forceRemoveRecursive(dir.toPath());
+            fail("Deletion should have failed");
+        } catch (CompositeIOException e) {
+            assertThat(e.getExceptions(), hasSize(2));
+        }
+        assertTrue(dir.exists());
+        assertTrue(subDir.exists());
+        assertTrue(f1.exists());
+        assertTrue(f2.exists());
+        assertTrue(f3.exists());
     }
 
     private static void mkdirs(File... dirs) {

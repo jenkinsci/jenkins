@@ -1708,8 +1708,24 @@ public class Util {
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 
+    /**
+     * The maximum number of errors that are permitted during a single attempt
+     * to delete a directory before that attempt is aborted.
+     * <p>
+     * Even if one deletion attempt aborts early, additional attempts may occur
+     * depending on the value of {@link DELETION_RETRIES}.
+     * <p>
+     * The purpose of this setting is to prevent the composite exceptions
+     * thrown by failed directory deletion operations from becoming extremely
+     * large. For example, in cases where Jenkins attempts to delete a large
+     * directory that it does not have permission to delete, we do not want the
+     * composite exception to contain an exception for every single file inside
+     * of that directory.
+     */
+    private static final int DELETION_MAX_ERRORS_BEFORE_ABORT = 10;
+
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
-        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+        return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES, DELETION_MAX_ERRORS_BEFORE_ABORT);
     }
 
     /**
