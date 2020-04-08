@@ -131,29 +131,27 @@ input[type="button"],
 input[type="reset"],
 input[type="submit"],
 a.yui-button {
-  @button-height: 2rem;
-  @button-border: 2px;
-  @button-line-height: calc(@button-height - @button-border - @button-border);
-
   box-sizing: border-box;
   display: inline-block;
-  padding: 0 1rem;
+  // vertical padding:
+  // 0.5rem == 8px == 32px (max-height) - 4px (borders) - 12 (line) / 2
+  padding: 0.5rem 1rem;
   margin-right: 0.25rem;
   margin-left: 0.25rem;
-  height: @button-height;
   min-width: 4.5rem;
+  max-height: 2rem;
 
   cursor: pointer;
   user-select: none;
 
   font-size: @font-size-xs;
-  line-height: @button-line-height;
+  line-height: 1;
   font-weight: bold;
   text-align: center;
   vertical-align: middle;
   text-decoration: none;
 
-  border: @button-border solid;
+  border: 2px solid;
   border-radius: 4px;
 
   transition: all 0.15s ease-in-out;
@@ -162,7 +160,32 @@ a.yui-button {
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(@focus, 0.5)
+    box-shadow: 0 0 0 0.2rem rgba(@focus, 0.5);
+  }
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  & > span {
+    display: inline-block;
+  }
+
+  line-height: 1.5rem;
+  padding: 0.125rem 1rem;
+
+  .svg-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    vertical-align: top;
+  }
+
+  .svg-icon.leading-icon {
+    margin-right: 0.25rem;
+  }
+
+  .svg-icon.trailing-icon {
+    margin-left: 0.25rem;
   }
 }
 
@@ -192,14 +215,19 @@ input[type="button"].large-button,
 input[type="reset"].large-button,
 input[type="submit"].large-button,
 a.large-button {
-  @button-height: 2.5rem;
-  @button-border: 2px;
-  @button-line-height: calc(@button-height - @button-border - @button-border);
-
+  line-height: 1.5rem;
+  // vertical padding
+  // 0.375rem == 6px == 40px (max-height) - 4px (borders) - 24 (line) / 2
+  padding: 0.375rem 1rem;
+  max-height: 2.5rem;
   min-width: 6.5rem;
-  height: @button-height;
   font-size: @font-size-sm;
-  line-height: @button-line-height;
+
+  .svg-icon {
+    vertical-align: top;
+    height: 1.5rem;
+    width: 1.5rem;
+  }
 }
 
 a.yui-button {
