@@ -1,0 +1,6 @@
+component_depth: 6
+languages:
+  - java
+exclude:
+  - /core/src/main/java/hudson/.*
+  - /cli/.*
