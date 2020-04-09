@@ -1,5 +1,3 @@
-This fork is used for educational purposes.
-
 [![][ButlerImage]][website] 
 
 # About
