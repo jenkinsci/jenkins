@@ -152,11 +152,6 @@ public abstract class Slave extends Node implements Serializable {
             new DescribableList<>(this);
 
     /**
-     * Lazily computed set of labels from {@link #label}.
-     */
-    private transient volatile Set<Label> labels;
-
-    /**
      * Removed with no replacement.
      */
     @Deprecated
