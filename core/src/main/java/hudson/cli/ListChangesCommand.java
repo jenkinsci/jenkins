@@ -22,10 +22,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @author Kohsuke Kawaguchi
  */
+
 @Restricted(NoExternalUse.class) // command implementation only
-@Extension
-public class ListChangesCommand extends RunRangeCommand {
-    @Override
+public abstract class ListChangesCommand extends RunRangeCommand {
     public String getShortDescription() {
         return Messages.ListChangesCommand_ShortDescription();
     }
@@ -34,65 +33,66 @@ public class ListChangesCommand extends RunRangeCommand {
 //    protected void printUsageSummary(PrintStream stderr) {
 //        TODO
 //    }
+    public abstract int act(List<Run<?, ?>> builds);
+}
 
-    enum Format {
-        XML, CSV, PLAIN
+class XML extends ListChangesCommand{
+  @Override
+  public int act(List<Run<?, ?>> builds){
+    try{
+      PrintWriter w = new PrintWriter(stdout);
+      w.println("<changes>");
+      for (Run<?, ?> build : builds) {
+          if (build instanceof RunWithSCM) {
+              w.println("<build number='" + build.getNumber() + "'>");
+              for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                  Model p = new ModelBuilder().get(cs.getClass());
+                  p.writeTo(cs, Flavor.XML.createDataWriter(cs, w));
+              }
+              w.println("</build>");
+          }
+      }
+      w.println("</changes>");
+      w.flush();
+    } catch (IOException ex){
     }
+    return 0;
+  }
+}
 
-    @Option(name="-format",usage="Controls how the output from this command is printed.")
-    public Format format = Format.PLAIN;
-
-    @Override
-    protected int act(List<Run<?, ?>> builds) throws IOException {
-        // Loading job for this CLI command requires Item.READ permission.
-        // No other permission check needed.
-        switch (format) {
-        case XML:
-            PrintWriter w = new PrintWriter(stdout);
-            w.println("<changes>");
-            for (Run<?, ?> build : builds) {
-                if (build instanceof RunWithSCM) {
-                    w.println("<build number='" + build.getNumber() + "'>");
-                    for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        Model p = new ModelBuilder().get(cs.getClass());
-                        p.writeTo(cs, Flavor.XML.createDataWriter(cs, w));
-                    }
-                    w.println("</build>");
+class CSV extends ListChangesCommand{
+  @Override
+  public int act(List<Run<?, ?>> builds){
+      for (Run<?, ?> build : builds) {
+        if (build instanceof RunWithSCM) {
+            for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                for (Entry e : cs) {
+                    stdout.printf("%s,%s%n",
+                            QuotedStringTokenizer.quote(e.getAuthor().getId()),
+                            QuotedStringTokenizer.quote(e.getMsg()));
                 }
             }
-            w.println("</changes>");
-            w.flush();
-            break;
-        case CSV:
-            for (Run<?, ?> build : builds) {
-                if (build instanceof RunWithSCM) {
-                    for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
-                            stdout.printf("%s,%s%n",
-                                    QuotedStringTokenizer.quote(e.getAuthor().getId()),
-                                    QuotedStringTokenizer.quote(e.getMsg()));
-                        }
-                    }
-                }
-            }
-            break;
-        case PLAIN:
-            for (Run<?, ?> build : builds) {
-                if (build instanceof RunWithSCM) {
-                    for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
-                            stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
-                            for (String p : e.getAffectedPaths()) {
-                                stdout.println("  " + p);
-                            }
-                        }
-                    }
-                }
-            }
-            break;
         }
+      }
+    return 0;
+  }
+}
 
-        return 0;
-    }
-
+class PLAIN extends ListChangesCommand{
+  @Override
+  public int act(List<Run<?, ?>> builds){
+      for (Run<?, ?> build : builds) {
+          if (build instanceof RunWithSCM) {
+              for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
+                  for (Entry e : cs) {
+                      stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
+                      for (String p : e.getAffectedPaths()) {
+                          stdout.println("  " + p);
+                      }
+                  }
+              }
+          }
+      }
+    return 0;
+  }
 }
