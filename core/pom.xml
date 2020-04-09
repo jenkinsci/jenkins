@@ -500,7 +500,7 @@ THE SOFTWARE.
     <dependency><!-- needed by Jelly -->
       <groupId>javax.servlet.jsp.jstl</groupId>
       <artifactId>javax.servlet.jsp.jstl-api</artifactId>
-      <version>1.2.1</version>
+      <version>1.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
