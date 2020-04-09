@@ -30,6 +30,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -51,6 +52,8 @@ public class CompositeIOException extends IOException {
      */
     public static final int MAX_SUPPRESSED_EXCEPTIONS = 15;
 
+    private final List<IOException> exceptions;
+
     /**
      * Construct a {@code CompositeIOException} where the given list of
      * exceptions are added as suppressed exceptions to this exception.
@@ -58,11 +61,16 @@ public class CompositeIOException extends IOException {
     public CompositeIOException(String message, @NonNull List<IOException> exceptions) {
         super(message);
         if (exceptions.size() > MAX_SUPPRESSED_EXCEPTIONS) {
-            exceptions.subList(0, MAX_SUPPRESSED_EXCEPTIONS).forEach(this::addSuppressed);
+            this.exceptions = new ArrayList<>(exceptions.subList(0, MAX_SUPPRESSED_EXCEPTIONS));
             LOGGER.log(Level.FINE, "Truncating {0} exceptions", exceptions.size() - MAX_SUPPRESSED_EXCEPTIONS);
         } else {
-            exceptions.forEach(this::addSuppressed);
+            this.exceptions = exceptions;
         }
+        this.exceptions.forEach(this::addSuppressed);
+    }
+
+    public List<IOException> getExceptions() {
+        return exceptions;
     }
 
     public CompositeIOException(String message, IOException... exceptions) {

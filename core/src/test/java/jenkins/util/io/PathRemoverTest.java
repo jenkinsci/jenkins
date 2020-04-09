@@ -121,9 +121,7 @@ public class PathRemoverTest {
             // with a composite exception, we might be hiding some other causes
             if (t instanceof CompositeIOException) {
                 CompositeIOException e = (CompositeIOException) t;
-                for (Throwable ex : e.getSuppressed()) {
-                    hierarchy.addAll(calcExceptionHierarchy(ex));
-                }
+                e.getExceptions().forEach(ex -> hierarchy.addAll(calcExceptionHierarchy(ex)));
             }
         }
         return hierarchy;
