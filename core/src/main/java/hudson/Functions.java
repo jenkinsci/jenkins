@@ -1182,6 +1182,32 @@ public class Functions {
         ac.checkAnyPermission(permissions);
     }
 
+    /**
+     * This version is so that the 'checkAnyPermission' on {@code layout.jelly}
+     * degrades gracefully if "it" is not an {@link AccessControlled} object.
+     * Otherwise it will perform no check and that problem is hard to notice.
+     */
+    @Restricted(NoExternalUse.class)
+    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+        if (permissions == null || permissions.length == 0) {
+            return;
+        }
+
+        if (object instanceof AccessControlled)
+            checkAnyPermission((AccessControlled) object, permissions);
+        else {
+            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            for(Ancestor anc : Iterators.reverse(ancs)) {
+                Object o = anc.getObject();
+                if (o instanceof AccessControlled) {
+                    checkAnyPermission((AccessControlled) o, permissions);
+                    return;
+                }
+            }
+            checkAnyPermission(Jenkins.get(), permissions);
+        }
+    }
+
     private static class Tag implements Comparable<Tag> {
         double ordinal;
         String hierarchy;
