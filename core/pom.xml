@@ -498,9 +498,9 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->
-      <groupId>javax.servlet.jsp.jstl</groupId>
-      <artifactId>javax.servlet.jsp.jstl-api</artifactId>
-      <version>1.2.2</version>
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+      <version>1.2.7</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
