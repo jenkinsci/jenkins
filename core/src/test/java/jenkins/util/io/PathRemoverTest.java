@@ -53,9 +53,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -120,7 +121,9 @@ public class PathRemoverTest {
             // with a composite exception, we might be hiding some other causes
             if (t instanceof CompositeIOException) {
                 CompositeIOException e = (CompositeIOException) t;
-                e.getExceptions().forEach(ex -> hierarchy.addAll(calcExceptionHierarchy(ex)));
+                for (Throwable ex : e.getSuppressed()) {
+                    hierarchy.addAll(calcExceptionHierarchy(ex));
+                }
             }
         }
         return hierarchy;
@@ -425,30 +428,27 @@ public class PathRemoverTest {
 
     @Test
     @Issue("JENKINS-55448")
-    public void testForceRemoveRecursive_AbortsAfterTooManyErrors() throws IOException {
+    public void testForceRemoveRecursive_TruncatesNumberOfExceptions() throws IOException {
         assumeTrue(Functions.isWindows());
+        final int lockedFiles = CompositeIOException.MAX_SUPPRESSED_EXCEPTIONS + 5;
+        final int totalFiles = lockedFiles + 5;
         File dir = tmp.newFolder();
-        File subDir = new File(dir, "d1");
-        File f1 = new File(subDir, "f1");
-        File f2 = new File(subDir, "f2");
-        File f3 = new File(dir, "f3");
-        mkdirs(subDir);
-        touchWithFileName(f1, f2, f3);
-        locker.acquireLock(f1);
-        locker.acquireLock(f2);
-        // Abort if more than one error occurs, and do not retry the overall deletion.
-        PathRemover remover = PathRemover.newFilteredRobustRemover(PathRemover.PathChecker.ALLOW_ALL, 0, false, 0, 1);
+        File[] files = new File[totalFiles];
+        for (int i = 0; i < totalFiles; i++) {
+            files[i] = new File(dir, "f" + i);
+        }
+        touchWithFileName(files);
+        for (int i = 0; i < lockedFiles; i++) {
+            locker.acquireLock(files[i]);
+        }
         try {
-            remover.forceRemoveRecursive(dir.toPath());
+            PathRemover.newSimpleRemover().forceRemoveRecursive(dir.toPath());
             fail("Deletion should have failed");
         } catch (CompositeIOException e) {
-            assertThat(e.getExceptions(), hasSize(2));
+            assertThat(e.getSuppressed(), arrayWithSize(CompositeIOException.MAX_SUPPRESSED_EXCEPTIONS));
         }
         assertTrue(dir.exists());
-        assertTrue(subDir.exists());
-        assertTrue(f1.exists());
-        assertTrue(f2.exists());
-        assertTrue(f3.exists());
+        assertThat(dir.listFiles().length, equalTo(lockedFiles));
     }
 
     private static void mkdirs(File... dirs) {

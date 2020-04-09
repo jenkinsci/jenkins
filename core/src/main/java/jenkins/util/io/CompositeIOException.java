@@ -32,23 +32,41 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Restricted(NoExternalUse.class)
 public class CompositeIOException extends IOException {
-    private final List<IOException> exceptions;
+    private static final Logger LOGGER = Logger.getLogger(CompositeIOException.class.getName());
+    /**
+     * The maximum number of exceptions that can be contained in a single
+     * {@code CompositeIOException}.
+     * <p>
+     * The number of exceptions is limited to avoid pathological cases where
+     * where a huge number of exceptions could lead to excessive memory usage.
+     * For example, if the number of exceptions was unlimited, a call to
+     * {@code Util.deleteRecursive} could fail with a
+     * {@code CompositeIOException} that contains an exception for every
+     * single file inside of the directory.
+     */
+    public static final int MAX_SUPPRESSED_EXCEPTIONS = 15;
 
+    /**
+     * Construct a {@code CompositeIOException} where the given list of
+     * exceptions are added as suppressed exceptions to this exception.
+     */
     public CompositeIOException(String message, @NonNull List<IOException> exceptions) {
         super(message);
-        this.exceptions = exceptions;
-        exceptions.forEach(this::addSuppressed);
+        if (exceptions.size() > MAX_SUPPRESSED_EXCEPTIONS) {
+            exceptions.subList(0, MAX_SUPPRESSED_EXCEPTIONS).forEach(this::addSuppressed);
+            LOGGER.log(Level.FINE, "Truncating {0} exceptions", exceptions.size() - MAX_SUPPRESSED_EXCEPTIONS);
+        } else {
+            exceptions.forEach(this::addSuppressed);
+        }
     }
 
     public CompositeIOException(String message, IOException... exceptions) {
         this(message, Arrays.asList(exceptions));
-    }
-
-    public List<IOException> getExceptions() {
-        return exceptions;
     }
 
     public UncheckedIOException asUncheckedIOException() {
