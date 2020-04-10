@@ -66,38 +66,104 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         return WebSockets.isSupported() ? "wsagents" : null;
     }
 
+    public class RequestInfo {
+        private StaplerRequest req;
+
+        RequestInfo(StaplerRequest req) {
+            this.req = req;
+        }
+        public String getAgent() {
+            return this.req.getHeader(JnlpConnectionState.CLIENT_NAME_KEY);
+        }
+        public String getSecret() {
+            return this.req.getHeader(JnlpConnectionState.SECRET_KEY);
+        }
+        public String getRemoteCapStr() {
+            return this.req.getHeader(Capability.KEY);
+        }
+        public boolean hasCompleteHeaders() {
+            return this.getAgent() == null || this.getSecret() == null || this.getRemoteCapStr() == null;
+        }
+        public void logIncompleteHeaders() {
+            LOGGER.warning(() -> "incomplete headers: " + Collections.list(this.req.getHeaderNames()));
+        }
+        public void logRecievingHeaders() {
+            LOGGER.fine(() -> "receiving headers: " + Collections.list(this.req.getHeaderNames()));
+        }
+        public void logNoSuchAgent() {
+            LOGGER.warning(() -> "no such agent " + this.getAgent());
+        }
+        public void logIncorrectSecret() {
+            LOGGER.warning(() -> "incorrect secret for " + this.getAgent());
+        }
+        public boolean doesAgentExists() {
+            return JnlpAgentReceiver.DATABASE.exists(this.getAgent());
+        }
+        public boolean isCorrectSecret() {
+            return MessageDigest.isEqual(   this.getSecret().getBytes(StandardCharsets.US_ASCII),
+                                            JnlpAgentReceiver.DATABASE.getSecretOf(this.getAgent()).getBytes(StandardCharsets.US_ASCII)
+            );
+        }
+        public void checkInvalidRequest() {
+            if (this.hasCompleteHeaders()) {
+                this.logIncompleteHeaders();
+                throw HttpResponses.errorWithoutStack(400, "This endpoint is only for use from agent.jar in WebSocket mode");
+            }
+            this.logRecievingHeaders();
+            if (!this.doesAgentExists()) {
+                this.logNoSuchAgent();
+                throw HttpResponses.errorWithoutStack(400, "no such agent");
+            }
+            if (!this.isCorrectSecret()) {
+                this.logIncorrectSecret();
+                throw HttpResponses.forbidden();
+            }
+        }
+        /*
+        public Capability getRemoteCapability() throws IOException{
+            return Capability.fromASCII(this.getRemoteCapStr());
+        }
+        public void logRecievedCapability() throws IOException{
+            try {
+            LOGGER.fine(() -> "received " + this.getRemoteCapability());
+            } catch (IOException e) {
+                throw new IOException();
+            }
+        }
+        */
+        public void logConnecting() {
+                LOGGER.fine(() -> "connecting " + this.getAgent());
+        }
+    }
     public HttpResponse doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        String agent = req.getHeader(JnlpConnectionState.CLIENT_NAME_KEY);
-        String secret = req.getHeader(JnlpConnectionState.SECRET_KEY);
-        String remoteCapabilityStr = req.getHeader(Capability.KEY);
-        if (agent == null || secret == null || remoteCapabilityStr == null) {
-            LOGGER.warning(() -> "incomplete headers: " + Collections.list(req.getHeaderNames()));
-            throw HttpResponses.errorWithoutStack(400, "This endpoint is only for use from agent.jar in WebSocket mode");
-        }
-        LOGGER.fine(() -> "receiving headers: " + Collections.list(req.getHeaderNames()));
-        if (!JnlpAgentReceiver.DATABASE.exists(agent)) {
-            LOGGER.warning(() -> "no such agent " + agent);
-            throw HttpResponses.errorWithoutStack(400, "no such agent");
-        }
-        if (!MessageDigest.isEqual(secret.getBytes(StandardCharsets.US_ASCII), JnlpAgentReceiver.DATABASE.getSecretOf(agent).getBytes(StandardCharsets.US_ASCII))) {
-            LOGGER.warning(() -> "incorrect secret for " + agent);
-            throw HttpResponses.forbidden();
-        }
+        RequestInfo info = new RequestInfo(req);
+
+        info.checkInvalidRequest();
+
         JnlpConnectionState state = new JnlpConnectionState(null, ExtensionList.lookup(JnlpAgentReceiver.class));
         state.setRemoteEndpointDescription(req.getRemoteAddr());
         state.fireBeforeProperties();
-        LOGGER.fine(() -> "connecting " + agent);
+        info.logConnecting();
         state.fireAfterProperties(ImmutableMap.of(
-            // TODO or just pass all request headers?
-            JnlpConnectionState.CLIENT_NAME_KEY, agent,
-            JnlpConnectionState.SECRET_KEY, secret
+            JnlpConnectionState.CLIENT_NAME_KEY, info.getAgent(),
+            JnlpConnectionState.SECRET_KEY, info.getSecret()
         ));
-        Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
-        LOGGER.fine(() -> "received " + remoteCapability);
+
+       // try {
+            //info.logRecievedCapability();
+            Capability remoteCapability = Capability.fromASCII(info.getRemoteCapStr());
+            LOGGER.fine(() -> "received " + remoteCapability);
+            setUpResponse(rsp);
+            return WebSockets.upgrade(new Session(state, info.getAgent(), remoteCapability/*info.getRemoteCapability()*/));
+   //     } catch (IOException e) {
+     //       throw new IOException();
+       // }
+    }
+
+    private void setUpResponse(StaplerResponse rsp) throws IOException{
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
         rsp.setHeader(Engine.REMOTING_MINIMUM_VERSION_HEADER, RemotingVersionInfo.getMinimumSupportedVersion().toString());
         rsp.setHeader(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()); // TODO figure out what this is for, if anything
-        return WebSockets.upgrade(new Session(state, agent, remoteCapability));
     }
 
     private static class Session extends WebSocketSession {
