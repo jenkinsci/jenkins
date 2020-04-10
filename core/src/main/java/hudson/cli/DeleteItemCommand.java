@@ -42,7 +42,7 @@ public abstract class DeleteItemCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 
-    protected abstract void tryDelete(String job_s, Jenkins jenkins) throws Exception;
+    protected abstract void tryDelete(String name, Jenkins jenkins) throws Exception;
 
     protected void checkExists(Object item, String item_s, String item_type) throws Exception{
         if(item == null) {
