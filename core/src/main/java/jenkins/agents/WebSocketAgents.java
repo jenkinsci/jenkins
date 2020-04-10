@@ -120,12 +120,16 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             }
         }
         /*
-        public Capability getRemoteCapability() throws IOException{
-            return Capability.fromASCII(this.getRemoteCapStr());
-        }
-        public void logRecievedCapability() throws IOException{
+        public Capability getRemoteCapability() {
             try {
-            LOGGER.fine(() -> "received " + this.getRemoteCapability());
+                return Capability.fromASCII(this.getRemoteCapStr());
+            } catch (IOException e) {
+                throw new IOException();
+            }
+        }
+        public void logRecievedCapability() throws IOException {
+            try {
+                LOGGER.fine(() -> "received " + this.getRemoteCapability());
             } catch (IOException e) {
                 throw new IOException();
             }
