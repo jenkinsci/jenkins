@@ -54,7 +54,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -193,7 +193,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Gets all the items in this collection in a read-only view.
      */
-    @Nonnull
+    @NonNull
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
 
@@ -244,7 +244,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see #rename(String)
      */
     @Exported(visibility=2,name="name")
-    @Nonnull
+    @NonNull
     public String getViewName() {
         return name;
     }
@@ -1278,7 +1278,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * <strong>NOTE: Historically this method is only ever called from a {@link StaplerRequest}</strong>
      * @return the list of instantiable {@link ViewDescriptor} instances for the current {@link StaplerRequest}
      */
-    @Nonnull
+    @NonNull
     public static List<ViewDescriptor> allInstantiable() {
         List<ViewDescriptor> r = new ArrayList<>();
         StaplerRequest request = Stapler.getCurrentRequest();

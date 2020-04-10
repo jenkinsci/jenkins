@@ -62,9 +62,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -243,7 +243,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return the {@link jenkins.model.IdStrategy} for use with {@link User} instances.
      * @since 1.566
      */
-    @Nonnull
+    @NonNull
     public static IdStrategy idStrategy() {
         Jenkins j = Jenkins.get();
         SecurityRealm realm = j.getSecurityRealm();
@@ -253,7 +253,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return realm.getUserIdStrategy();
     }
 
-    public int compareTo(@Nonnull User that) {
+    public int compareTo(@NonNull User that) {
         return idStrategy().compare(this.id, that.id);
     }
 
@@ -262,11 +262,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return id;
     }
 
-    public @Nonnull String getUrl() {
+    public @NonNull String getUrl() {
         return "user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
-    public @Nonnull String getSearchUrl() {
+    public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
@@ -274,7 +274,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * The URL of the user page.
      */
     @Exported(visibility = 999)
-    public @Nonnull String getAbsoluteUrl() {
+    public @NonNull String getAbsoluteUrl() {
         return Jenkins.get().getRootUrl() + getUrl();
     }
 
@@ -283,7 +283,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is configurable by the user.
      */
     @Exported(visibility = 999)
-    public @Nonnull String getFullName() {
+    public @NonNull String getFullName() {
         return fullName;
     }
 
@@ -320,7 +320,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Updates the user object by adding a property.
      */
-    public synchronized void addProperty(@Nonnull UserProperty p) throws IOException {
+    public synchronized void addProperty(@NonNull UserProperty p) throws IOException {
         UserProperty old = getProperty(p.getClass());
         List<UserProperty> ps = new ArrayList<>(properties);
         if (old != null)
@@ -365,7 +365,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
      * @since 1.419
      */
-    public @Nonnull Authentication impersonate() throws UsernameNotFoundException {
+    public @NonNull Authentication impersonate() throws UsernameNotFoundException {
         return this.impersonate(this.getUserDetailsForImpersonation());
     }
 
@@ -378,7 +378,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
      */
-    public @Nonnull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
+    public @NonNull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
                 Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails
         );
@@ -424,7 +424,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see #getUserDetailsForImpersonation()
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull Authentication impersonate(@Nonnull UserDetails userDetails) {
+    public @NonNull Authentication impersonate(@NonNull UserDetails userDetails) {
         return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
     }
 
@@ -446,7 +446,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * <p>
      * This is used to avoid null {@link User} instance.
      */
-    public static @Nonnull User getUnknown() {
+    public static @NonNull User getUnknown() {
         return getById(UNKNOWN_USERNAME, true);
     }
 
@@ -482,7 +482,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return An existing or created user. May be {@code null} if a user does not exist and
      * {@code create} is false.
      */
-    public static @Nullable User get(String idOrFullName, boolean create, @Nonnull Map context) {
+    public static @Nullable User get(String idOrFullName, boolean create, @NonNull Map context) {
         if (idOrFullName == null) {
             return null;
         }
@@ -502,7 +502,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return An existing or created user. May be {@code null} if a user does not exist and
      * {@code create} is false.
      */
-    private static @Nullable User getOrCreateById(@Nonnull String id, @Nonnull String fullName, boolean create) {
+    private static @Nullable User getOrCreateById(@NonNull String id, @NonNull String fullName, boolean create) {
         User u = AllUsers.get(id);
         if (u == null && (create || UserIdMapper.getInstance().isMapped(id))) {
             u = new User(id, fullName);
@@ -535,7 +535,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
      */
     @Deprecated
-    public static @Nonnull User get(String idOrFullName) {
+    public static @NonNull User get(String idOrFullName) {
         return getOrCreateByIdOrFullName(idOrFullName);
     }
 
@@ -554,7 +554,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return User instance. It will be created on-demand.
      * @since 2.91
      */
-    public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
+    public static @NonNull User getOrCreateByIdOrFullName(@NonNull String idOrFullName) {
         return get(idOrFullName, true, Collections.emptyMap());
     }
 
@@ -603,7 +603,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets all the users.
      */
-    public static @Nonnull Collection<User> getAll() {
+    public static @NonNull Collection<User> getAll() {
         final IdStrategy strategy = idStrategy();
         ArrayList<User> users = new ArrayList<>(AllUsers.values());
         users.sort((o1, o2) -> strategy.compare(o1.getId(), o2.getId()));
@@ -641,14 +641,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Returns the user name.
      */
-    public @Nonnull String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return getFullName();
     }
 
     /**
      * true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
      */
-    private boolean relatedTo(@Nonnull AbstractBuild<?, ?> b) {
+    private boolean relatedTo(@NonNull AbstractBuild<?, ?> b) {
         if (b.hasParticipant(this)) {
             return true;
         }
@@ -669,7 +669,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
-    public @Nonnull RunList getBuilds() {
+    public @NonNull RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().
                 allItems(Job.class)).filter((Predicate<Run<?, ?>>) r -> r instanceof AbstractBuild && relatedTo((AbstractBuild<?, ?>) r));
     }
@@ -679,7 +679,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @since 1.191
      */
-    public @Nonnull Set<AbstractProject<?, ?>> getProjects() {
+    public @NonNull Set<AbstractProject<?, ?>> getProjects() {
         Set<AbstractProject<?, ?>> r = new HashSet<>();
         for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class))
             if (p.hasParticipant(this))
@@ -895,7 +895,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     @Override
-    @Nonnull
+    @NonNull
     public ACL getACL() {
         ACL base = Jenkins.get().getAuthorizationStrategy().getACL(this);
         // always allow a non-anonymous user full control of himself.
@@ -920,7 +920,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return a possibly empty list
      * @since 1.498
      */
-    public @Nonnull List<String> getAuthorities() {
+    public @NonNull List<String> getAuthorities() {
         if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return Collections.emptyList();
         }
@@ -1101,7 +1101,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         public static final String REALM = "realm";
 
         @Override
-        public int compareTo(@Nonnull CanonicalIdResolver o) {
+        public int compareTo(@NonNull CanonicalIdResolver o) {
             // reverse priority order
             return Integer.compare(o.getPriority(), getPriority());
         }
@@ -1148,7 +1148,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * @since 2.93
          */
         @CheckForNull
-        public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
+        public static String resolve(@NonNull String idOrFullName, @NonNull Map<String, ?> context) {
             for (CanonicalIdResolver resolver : CanonicalIdResolver.all()) {
                 String id = resolver.resolveCanonicalId(idOrFullName, context);
                 if (id != null) {

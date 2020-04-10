@@ -54,8 +54,8 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -89,7 +89,7 @@ public final class RunIdMigrator {
      */
     private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<>());
 
-    private @Nonnull Map<String,Integer> idToNumber = EMPTY;
+    private @NonNull Map<String,Integer> idToNumber = EMPTY;
 
     public RunIdMigrator() {}
 
@@ -290,7 +290,7 @@ public final class RunIdMigrator {
      * @param id a nonnumeric ID which may be a valid {@link Run#getId}
      * @return the corresponding {@link Run#number}, or 0 if unknown
      */
-    public synchronized int findNumber(@Nonnull String id) {
+    public synchronized int findNumber(@NonNull String id) {
         Integer number = idToNumber.get(id);
         return number != null ? number : 0;
     }

@@ -36,8 +36,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.dao.DataAccessException;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -117,7 +117,7 @@ public final class UserDetailsCache {
      * @throws DataAccessException if user could not be found for a repository-specific reason
      * @throws ExecutionException if anything else went wrong in the cache lookup/retrieval
      */
-    @Nonnull
+    @NonNull
     public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, DataAccessException, ExecutionException {
         Boolean exists = existenceCache.getIfPresent(idOrFullName);
         if(exists != null && !exists) {

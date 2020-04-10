@@ -68,7 +68,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -482,7 +482,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         return user;
     }
 
-    private boolean containsOnlyAcceptableCharacters(@Nonnull String value){
+    private boolean containsOnlyAcceptableCharacters(@NonNull String value){
         if(ID_REGEX == null){
             return value.matches(DEFAULT_ID_REGEX);
         }else{
@@ -772,7 +772,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_Description();
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public Category getCategory() {
             return Category.SECURITY;

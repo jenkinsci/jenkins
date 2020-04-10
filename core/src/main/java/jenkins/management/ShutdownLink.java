@@ -26,10 +26,11 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -61,7 +62,13 @@ public class ShutdownLink extends ManagementLink {
         return true;
     }
 
-    @Nonnull
+    @NonNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.MANAGE;
+    }
+  
+    @NonNull
     @Override
     public Category getCategory() {
         return Category.TOOLS;

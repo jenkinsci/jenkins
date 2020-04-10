@@ -286,7 +286,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 }
             }
 
-            if (pluginTR.hasClassName('detached')) {
+            if (pluginTR.hasClassName('possibly-has-implied-dependents')) {
                 infoContainer.update('<div class="title">' + i18n('detached-disable') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
                 return true;
             }
@@ -318,7 +318,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 return true;
             }
             
-            if (pluginTR.hasClassName('detached')) {
+            if (pluginTR.hasClassName('possibly-has-implied-dependents')) {
                 infoContainer.update('<div class="title">' + i18n('detached-uninstall') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
                 return true;
             }

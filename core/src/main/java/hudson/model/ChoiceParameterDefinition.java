@@ -13,9 +13,9 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -38,19 +38,19 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
-    public ChoiceParameterDefinition(@Nonnull String name, @Nonnull String choices, String description) {
+    public ChoiceParameterDefinition(@NonNull String name, @NonNull String choices, String description) {
         super(name, description);
         setChoicesText(choices);
         defaultValue = null;
     }
 
-    public ChoiceParameterDefinition(@Nonnull String name, @Nonnull String[] choices, String description) {
+    public ChoiceParameterDefinition(@NonNull String name, @NonNull String[] choices, String description) {
         super(name, description);
         this.choices = new ArrayList<>(Arrays.asList(choices));
         defaultValue = null;
     }
 
-    private ChoiceParameterDefinition(@Nonnull String name, @Nonnull List<String> choices, String defaultValue, String description) {
+    private ChoiceParameterDefinition(@NonNull String name, @NonNull List<String> choices, String defaultValue, String description) {
         super(name, description);
         this.choices = choices;
         this.defaultValue = defaultValue;
@@ -174,7 +174,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         /*
          * We need this for JENKINS-26143 -- reflective creation cannot handle setChoices(Object). See that method for context.
          */
-        public ParameterDefinition newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
+        public ParameterDefinition newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
             String name = formData.getString("name");
             String desc = formData.getString("description");
             String choiceText = formData.getString("choices");

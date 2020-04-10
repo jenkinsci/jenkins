@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.thoughtworks.xstream.converters.basic.DateConverter;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Functions;
@@ -35,6 +34,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
@@ -53,8 +53,6 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
-
-    private static final DateConverter DATE_CONVERTER = new DateConverter();
 
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
@@ -118,7 +116,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
             } else {
                 if (!fp.isAlive()) {
                     FingerprintFacet deletionBlockerFacet = fp.getFacetBlockingDeletion();
-                    listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + DATE_CONVERTER.toString(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
+                    listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + new Date(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
                 }
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
