@@ -14,7 +14,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletContext;
@@ -153,14 +152,10 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     }
 
     private void preventRootUrlBeingInvalid() {
-        if (this.jenkinsUrl != null && isInvalidRootUrl(this.jenkinsUrl)) {
+        if (this.jenkinsUrl != null && !new CustomUrlValidator().isValid(this.jenkinsUrl)) {
             LOGGER.log(Level.INFO, "Invalid URL received: {0}, considered as null", this.jenkinsUrl);
             this.jenkinsUrl = null;
         }
-    }
-
-    private boolean isInvalidRootUrl(@Nullable String value) {
-        return !new CustomUrlValidator().isValid(value);
     }
 
     /**
@@ -203,7 +198,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
         if(value.startsWith("http://localhost"))
             return FormValidation.warning(Messages.Mailer_Localhost_Error());
 
-        if (!DISABLE_URL_VALIDATION && isInvalidRootUrl(value)) {
+        if (!DISABLE_URL_VALIDATION && !new CustomUrlValidator().isValid(value)) {
             return FormValidation.error(Messages.Mailer_NotHttp_Error());
         }
 
