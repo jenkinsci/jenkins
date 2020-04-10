@@ -67,8 +67,7 @@ public class CustomUrlValidator extends UrlValidator {
     );
 
     public static boolean isValidRootUrl(String url) {
-        UrlValidator validator = new CustomUrlValidator();
-        return validator.isValid(url);
+        return new CustomUrlValidator().isValid(url);
     }
 
     private CustomUrlValidator() {
