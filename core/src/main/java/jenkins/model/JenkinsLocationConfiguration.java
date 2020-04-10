@@ -8,7 +8,7 @@ import hudson.model.PersistentDescriptor;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import jenkins.util.SystemProperties;
-import jenkins.util.UrlHelper;
+import jenkins.util.CustomUrlValidator;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -160,7 +160,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     }
 
     private boolean isInvalidRootUrl(@Nullable String value) {
-        return !UrlHelper.isValidRootUrl(value);
+        return !CustomUrlValidator.isValidRootUrl(value);
     }
 
     /**

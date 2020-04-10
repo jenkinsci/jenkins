@@ -32,7 +32,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.identity.InstanceIdentityProvider;
-import jenkins.util.UrlHelper;
+import jenkins.util.CustomUrlValidator;
 import org.apache.commons.codec.binary.Base64;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -100,7 +100,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
             return FormValidation.ok(Messages.ResourceDomainConfiguration_Empty());
         }
 
-        if (!UrlHelper.isValidRootUrl(resourceRootUrlString)) {
+        if (!CustomUrlValidator.isValidRootUrl(resourceRootUrlString)) {
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
         }
 

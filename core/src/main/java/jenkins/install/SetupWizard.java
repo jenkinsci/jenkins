@@ -28,7 +28,7 @@ import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
-import jenkins.util.UrlHelper;
+import jenkins.util.CustomUrlValidator;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -53,7 +53,6 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
 import hudson.util.VersionNumber;
@@ -340,7 +339,7 @@ public class SetupWizard extends PageDecorator {
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Empty());
             return;
         }
-        if(!UrlHelper.isValidRootUrl(rootUrl)){
+        if(!CustomUrlValidator.isValidRootUrl(rootUrl)){
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Invalid());
         }
     }
