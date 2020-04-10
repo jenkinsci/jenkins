@@ -209,7 +209,7 @@ public class PluginManagerTest {
         URL res = getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi");
         File f = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi");
         FileUtils.copyURLToFile(res, f);
-        r.jenkins.pluginManager.dynamicLoad(f);
+        r.jenkins.pluginManager.dynamicLoad(f, false, null);
 
         Class c = r.jenkins.getPluginManager().uberClassLoader.loadClass("htmlpublisher.HtmlPublisher$DescriptorImpl");
         assertNotNull(r.jenkins.getDescriptorByType(c));
@@ -455,7 +455,7 @@ public class PluginManagerTest {
         assertTrue(timestamp.isFile());
         long lastMod = timestamp.lastModified();
         try {
-            r.jenkins.getPluginManager().dynamicLoad(jpi);
+            r.jenkins.getPluginManager().dynamicLoad(jpi, false, null);
             fail("should not have worked");
         } catch (RestartRequiredException x) {
             // good
@@ -516,7 +516,7 @@ public class PluginManagerTest {
     }
 
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {
-        PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
+        PluginManagerUtil.dynamicLoad(plugin, r.jenkins, false);
     }
 
     private void dynamicLoadAndDisable(String plugin) throws IOException, InterruptedException, RestartRequiredException {

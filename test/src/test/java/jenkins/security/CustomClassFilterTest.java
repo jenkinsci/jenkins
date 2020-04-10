@@ -83,7 +83,7 @@ public class CustomClassFilterTest {
         assertBlacklisted("not yet disabled via plugin", TreeStringBuilder.class, false);
         File jpi = tmp.newFile("custom-class-filter.jpi");
         FileUtils.copyURLToFile(CustomClassFilterTest.class.getResource("/plugins/custom-class-filter.jpi"), jpi);
-        r.jenkins.pluginManager.dynamicLoad(jpi);
+        r.jenkins.pluginManager.dynamicLoad(jpi, false, null);
         assertBlacklisted("enabled via plugin", ScriptException.class, false);
         assertBlacklisted("disabled via plugin", TreeStringBuilder.class, true);
     }

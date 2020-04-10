@@ -97,7 +97,7 @@ public class InstallPluginCommand extends CLICommand {
                 FileUtils.copyInputStreamToFile(stdin, f);
                 f = moveToFinalLocation(f);
                 if (dynamicLoad) {
-                    pm.dynamicLoad(f);
+                    pm.dynamicLoad(f, false, null);
                 }
                 continue;
             }
@@ -110,7 +110,7 @@ public class InstallPluginCommand extends CLICommand {
                 FileUtils.copyURLToFile(u, f); // TODO JENKINS-58248 proxy
                 f = moveToFinalLocation(f);
                 if (dynamicLoad) {
-                    pm.dynamicLoad(f);
+                    pm.dynamicLoad(f, false, null);
                 }
                 continue;
             } catch (MalformedURLException e) {
