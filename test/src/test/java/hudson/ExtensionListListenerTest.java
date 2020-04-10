@@ -51,7 +51,7 @@ public class ExtensionListListenerTest {
 
         // magiext.hpi has a TransientActionFactory @Extension impl in it. The loading of that
         // plugin should trigger onChange in the MyExtensionListListener instance.
-        PluginManagerUtil.dynamicLoad("magicext.hpi", r.jenkins);
+        PluginManagerUtil.dynamicLoad("magicext.hpi", r.jenkins, false);
 
         Assert.assertEquals(1, listListener.onChangeCallCount);
     }
