@@ -40,7 +40,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <st:adjunct includes="hudson.PluginManager._table"/>
-      
+
       <div id="filter-container">
         <div class="plugin-manager__search">
           <input
@@ -85,7 +85,7 @@ THE SOFTWARE.
                   <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}" />
                   <j:set var="installedOk"
                          value="${installJob.status.success and installJob.plugin.version==p.version}" />
-                  <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin" "${filtered == 'true' ? 'hidden hidden-by-default' : ''}" name="${p.displayName}">
+                  <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin ${filtered == 'true' ? 'hidden hidden-by-default' : ''}" name="${p.displayName}">
                     <l:isAdmin>
                       <td class="pane" align="center">
                         <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
