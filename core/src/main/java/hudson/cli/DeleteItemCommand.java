@@ -35,7 +35,6 @@ import java.util.HashSet;
 
 /**
  * CLI command, which helps delete job(s) or node(s).
- * @author noahwc
  * @since TODO
  */
 
