@@ -52,7 +52,7 @@ public class RootUrlNotSetMonitor extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
-        return loc.getUrl() == null || !CustomUrlValidator.isValidRootUrl(loc.getUrl());
+        return loc.getUrl() == null || !new CustomUrlValidator().isValid(loc.getUrl());
     }
     
     // used by jelly to determined if it's a null url or invalid one

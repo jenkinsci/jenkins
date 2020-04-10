@@ -160,7 +160,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     }
 
     private boolean isInvalidRootUrl(@Nullable String value) {
-        return !CustomUrlValidator.isValidRootUrl(value);
+        return !new CustomUrlValidator().isValid(value);
     }
 
     /**

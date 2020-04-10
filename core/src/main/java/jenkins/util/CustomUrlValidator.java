@@ -66,11 +66,7 @@ public class CustomUrlValidator extends UrlValidator {
                     "$"
     );
 
-    public static boolean isValidRootUrl(String url) {
-        return new CustomUrlValidator().isValid(url);
-    }
-
-    private CustomUrlValidator() {
+    public CustomUrlValidator() {
         super(new String[]{"http", "https"}, UrlValidator.ALLOW_LOCAL_URLS + UrlValidator.NO_FRAGMENTS);
     }
 

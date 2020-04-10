@@ -100,7 +100,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
             return FormValidation.ok(Messages.ResourceDomainConfiguration_Empty());
         }
 
-        if (!CustomUrlValidator.isValidRootUrl(resourceRootUrlString)) {
+        if (!new CustomUrlValidator().isValid(resourceRootUrlString)) {
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
         }
 

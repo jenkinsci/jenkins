@@ -339,7 +339,7 @@ public class SetupWizard extends PageDecorator {
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Empty());
             return;
         }
-        if(!CustomUrlValidator.isValidRootUrl(rootUrl)){
+        if(!new CustomUrlValidator().isValid(rootUrl)){
             errors.put("rootUrl", Messages.SetupWizard_ConfigureInstance_RootUrl_Invalid());
         }
     }
