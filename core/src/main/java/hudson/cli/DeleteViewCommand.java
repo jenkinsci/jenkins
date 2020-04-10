@@ -23,7 +23,6 @@
  */
 package hudson.cli;
 
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.cli.handlers.ViewOptionHandler;
 import hudson.model.ViewGroup;
@@ -32,15 +31,13 @@ import jenkins.model.Jenkins;
 
 import org.kohsuke.args4j.Argument;
 
-import java.util.HashSet;
 import java.util.List;
 
 /**
- * @author ogondza, pjanouse
  * @since 1.538
  */
 @Extension
-public class DeleteViewCommand extends DeleteItemCommand {
+public class DeleteViewCommand extends DeleteCommand<View> {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="View names to delete", required=true, multiValued=true)
@@ -53,7 +50,7 @@ public class DeleteViewCommand extends DeleteItemCommand {
     }
 
     @Override
-    protected void checkExists(Object item, String item_s, String item_type) throws Exception {
+    protected void checkExists(View item, String item_s, String item_type) throws Exception {
         if (item == null) {
             throw new IllegalArgumentException("View name is empty");
         }

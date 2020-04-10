@@ -23,22 +23,19 @@
  */
 package hudson.cli;
 
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
-import java.util.HashSet;
 import java.util.List;
 
 /**
  * CLI command, which deletes Jenkins nodes.
- * @author pjanouse
  * @since 1.618
  */
 @Extension
-public class DeleteNodeCommand extends DeleteItemCommand {
+public class DeleteNodeCommand extends DeleteCommand<Node> {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Names of nodes to delete", required=true, multiValued=true)

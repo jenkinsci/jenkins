@@ -23,22 +23,19 @@
  */
 package hudson.cli;
 
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
 import java.util.List;
-import java.util.HashSet;
 
 /**
  * CLI command, which deletes a job or multiple jobs.
- * @author pjanouse
  * @since 1.618
  */
 @Extension
-public class DeleteJobCommand extends DeleteItemCommand {
+public class DeleteJobCommand extends DeleteCommand<AbstractItem> {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
