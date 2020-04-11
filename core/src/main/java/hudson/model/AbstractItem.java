@@ -359,25 +359,26 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         if (!isNameEditable()) {
             throw new IOException("Trying to rename an item that does not support this operation.");
         }
-
+        
+        //sanity checked -- moved outside critical section
+        if (newName == null)
+            throw new IllegalArgumentException("New name is not given");
+        //noop? -- moved outside critical section
+        if(this.name.equals(newName))
+            return;
+        //no item exists with designated name
+        Items.verifyItemDoesNotAlreadyExist(parent, newName, this);
         // always synchronize from bigger objects first
         final ItemGroup parent = getParent();
         String oldName = this.name;
         String oldFullName = getFullName();
+        //critical s  ection -- all soft checks should be done prior
         synchronized (parent) {
             synchronized (this) {
-                // sanity check
-                if (newName == null)
-                    throw new IllegalArgumentException("New name is not given");
-
-                // noop?
-                if (this.name.equals(newName))
-                    return;
-
-                // the lookup is case insensitive, so we should not fail if this item was the “existing” one
+                
+                 // the lookup is case insensitive, so we should not fail if this item was the “existing” one
                 // to allow people to rename "Foo" to "foo", for example.
                 // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                Items.verifyItemDoesNotAlreadyExist(parent, newName, this);
 
                 File oldRoot = this.getRootDir();
 
@@ -419,25 +420,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         // so, as before the VM
                         // shuts down there might be a new job created under the
                         // old name.
-                        Copy cp = new Copy();
-                        cp.setProject(new org.apache.tools.ant.Project());
-                        cp.setTodir(newRoot);
-                        FileSet src = new FileSet();
-                        src.setDir(oldRoot);
-                        cp.addFileset(src);
-                        cp.setOverwrite(true);
-                        cp.setPreserveLastModified(true);
-                        cp.setFailOnError(false); // keep going even if
-                                                    // there's an error
-                        cp.execute();
-
-                        // try to delete as much as possible
-                        try {
-                            Util.deleteRecursive(oldRoot);
-                        } catch (IOException e) {
-                            // but ignore the error, since we expect that
-                            e.printStackTrace();
-                        }
+                        copyToNewFile(newName, oldRoot, newRoot); 
                     }
 
                     success = true;
@@ -451,6 +434,27 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
         }
         ItemListener.fireLocationChange(this, oldFullName);
+    }
+
+    protected void copyToNewFile(final String newName, final File oldRoot, final File newRoot) throws IOException {
+        Copy cp = new Copy();
+        cp.setProject(new org.apache.tools.ant.Project());
+        FileSet src = new FileSet();
+        src.setDir(oldRoot);
+        cp.addFileset(src);
+        cp.setOverwrite(true);
+        cp.setPreserveLastModified(true);
+        cp.setFailOnError(false); //keep going even if 
+                                    // there's an error
+        cp.execute();
+        
+        //try to delete as much as possible
+        try{
+                Util.deleteRecursive(oldRoot);
+        }catch (IOException e){
+            //but ignore the error, since we expect that
+            e.printStackTrace();
+        }
     }
 
 
