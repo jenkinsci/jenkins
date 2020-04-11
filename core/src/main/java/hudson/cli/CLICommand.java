@@ -251,20 +251,20 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                     new Object[] {getName(), args.size(), auth.getName(), res});
             return res;
         } catch (CmdLineException e) {
-            logAndPrintErrorWithDefaultValues(args, e);
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             printUsage(stderr, p);
             return 2;
         } catch (IllegalStateException e) {
-            logAndPrintErrorWithDefaultValues(args, e);
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 4;
         } catch (IllegalArgumentException e) {
-            logAndPrintErrorWithDefaultValues(args, e);
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 3;
         } catch (AbortException e) {
-            logAndPrintErrorWithDefaultValues(args, e);
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 5;
         } catch (AccessDeniedException e) {
-            logAndPrintErrorWithDefaultValues(args, e);
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 6;
         } catch (BadCredentialsException e) {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
@@ -274,8 +274,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                     "CLI login attempt failed: " + id, Level.INFO);
             return 7;
         } catch (Throwable e) {
-            logAndPrintError(e, "Unexpected exception occurred while performing "+getName()+" command.",
-                    "Unexpected exception occurred while performing "+getName()+" command.", Level.WARNING);
+            String errorMsg = "Unexpected exception occurred while performing " + getName() + " command.";
+            logAndPrintError(e, errorMsg, errorMsg, Level.WARNING);
             Functions.printStackTrace(e, stderr);
             return 1;
         } finally {
@@ -284,7 +284,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
     }
 
-    private void logAndPrintErrorWithDefaultValues(List<String> args, Throwable e) {
+    private void logFailedCommandAndPrintExceptionErrorMessage(List<String> args, Throwable e) {
         Authentication auth = getTransportAuthentication();
         String logMessage = String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
                 getName(), args.size(), auth != null ? auth.getName() : "<unknown>");
