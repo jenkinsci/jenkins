@@ -9,30 +9,42 @@ function checkPluginsWithoutWarnings() {
 }
 
 Behaviour.specify("#filter-box", '_table', 0, function(e) {
-      function applyFilter() {
-          var filter = e.value.toLowerCase();
-          ["TR.plugin","TR.plugin-category"].each(function(clz) {
-            var encountered = {};
-            var items = document.getElementsBySelector(clz);
-            for (var i=0; i<items.length; i++) {
-                var visible = (filter=="" || items[i].innerHTML.toLowerCase().indexOf(filter)>=0);
-                var name = items[i].cells && items[i].cells.length > 1
-                        ? items[i].cells[1].getAttribute('data-id')
-                        : items[i].getAttribute("name");
-                if (visible && name != null) {
-                    if (encountered[name]) {
-                        visible = false;
-                    }
-                    encountered[name] = true;
-                }
-                items[i].style.display = (visible ? "" : "none");
+    function applyFilter() {
+        var filter = e.value.toLowerCase().trim();
+        var filterParts = filter.split(/ +/).filter (word => word.length > 0);
+        var items = document.getElementsBySelector("TR.plugin");
+        var anyVisible = false;
+        for (var i=0; i<items.length; i++) {
+            if ((filterParts.length < 1 || filter.length < 2) && items[i].hasClassName("hidden-by-default")) {
+                items[i].addClassName("hidden");
+                continue;
             }
-          });
+            var makeVisible = true;
 
-          layoutUpdateCallback.call();
-      }
+            var content = items[i].innerHTML.toLowerCase();
+            for (var j = 0; j < filterParts.length; j++) {
+                var part = filterParts[j];
+                if (content.indexOf(part) < 0) {
+                    makeVisible = false;
+                    break;
+                }
+            }
+            if (makeVisible) {
+                items[i].removeClassName("hidden");
+                anyVisible = true;
+            } else {
+                items[i].addClassName("hidden");
+            }
+        }
+        var instructions = document.getElementById("hidden-by-default-instructions")
+        if (instructions) {
+            instructions.style.display = anyVisible ? 'none' : '';
+        }
 
-      e.onkeyup = applyFilter;
+        layoutUpdateCallback.call();
+    }
+
+    e.onkeyup = applyFilter;
 });
 
 /**
@@ -407,3 +419,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         setEnableWidgetStates();
     });
 }());
+
+Element.observe(window, "load", function() {
+    document.getElementById('filter-box').focus();
+});
