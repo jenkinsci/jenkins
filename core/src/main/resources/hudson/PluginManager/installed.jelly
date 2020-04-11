@@ -39,10 +39,19 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
         <st:adjunct includes="hudson.PluginManager._table"/>
-        <div id="filter-container">
-            ${%Filter}:
-            <input type="text" id="filter-box"/>
+      <div id="filter-container">
+        <div class="plugin-manager__search">
+          <input
+              role="searchbox"
+              class="plugin-manager__search-input"
+              type="text"
+              id="filter-box"
+              placeholder="${filtered == 'true' ? '%search' : '%filter'}" />
+          <span class="plugin-manager__icon-leading">
+            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
+          </span>
         </div>
+      </div>
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
