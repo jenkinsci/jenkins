@@ -104,206 +104,120 @@ public class CLI {
         }
     }
 
-    private enum Mode {HTTP, SSH, WEB_SOCKET}
     public static int _main(String[] _args) throws Exception {
-        List<String> args = Arrays.asList(_args);
-        PrivateKeyProvider provider = new PrivateKeyProvider();
+        CLIArgsValues argsValues = new CLIArgsValues(_args);
 
-        String url = System.getenv("JENKINS_URL");
+        while(!argsValues.args.isEmpty()) {
+          String head = argsValues.args.get(0);
 
-        if (url==null)
-            url = System.getenv("HUDSON_URL");
-        
-        boolean noKeyAuth = false;
+          if (head.equals("-version")) {
+            System.out.println("Version: "+computeVersion());
+            return 0;
+          }
 
-        // TODO perhaps allow mode to be defined by environment variable too (assuming $JENKINS_USER_ID can be used for -user)
-        Mode mode = null;
+          if (head.equals("-i") && argsValues.args.size()>=2) {
+            File f = getFileFromArguments(argsValues.args);
+            if (!f.exists()) {
+              return printAndReturn(Messages.CLI_NoSuchFileExists(f));
+            }
 
-        String user = null;
-        String auth = null;
+            argsValues.provider.readFrom(f);
+            argsValues.args = argsValues.args.subList(2, argsValues.args.size());
+          } 
 
-        String userIdEnv = System.getenv("JENKINS_USER_ID");
-        String tokenEnv = System.getenv("JENKINS_API_TOKEN");
+          if (argsValues.mode != null && (head.equals("-http") || head.equals("-ssh") || head.equals("-webSocket"))) {
+            return printAndReturn(head + " clashes with previously defined mode " + argsValues.mode);
+          }
+          
+          if (head.equals("-remoting")) {
+            return printAndReturn("-remoting mode is no longer supported");
+          }
 
-        boolean strictHostKey = false;
-
-        while(!args.isEmpty()) {
-            String head = args.get(0);
-            if (head.equals("-version")) {
-                System.out.println("Version: "+computeVersion());
-                return 0;
-            }
-            if (head.equals("-http")) {
-                if (mode != null) {
-                    printUsage("-http clashes with previously defined mode " + mode);
-                    return -1;
-                }
-                mode = Mode.HTTP;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-ssh")) {
-                if (mode != null) {
-                    printUsage("-ssh clashes with previously defined mode " + mode);
-                    return -1;
-                }
-                mode = Mode.SSH;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-webSocket")) {
-                if (mode != null) {
-                    printUsage("-webSocket clashes with previously defined mode " + mode);
-                    return -1;
-                }
-                mode = Mode.WEB_SOCKET;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-remoting")) {
-                printUsage("-remoting mode is no longer supported");
-                return -1;
-            }
-            if(head.equals("-s") && args.size()>=2) {
-                url = args.get(1);
-                args = args.subList(2,args.size());
-                continue;
-            }
-            if (head.equals("-noCertificateCheck")) {
-                LOGGER.info("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
-                SSLContext context = SSLContext.getInstance("TLS");
-                context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new SecureRandom());
-                HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
-                // bypass host name check, too.
-                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-                    @SuppressFBWarnings(value = "WEAK_HOSTNAME_VERIFIER", justification = "User set parameter to skip verifier.")
-                    public boolean verify(String s, SSLSession sslSession) {
-                        return true;
-                    }
-                });
-                args = args.subList(1,args.size());
-                continue;
-            }
-            if (head.equals("-noKeyAuth")) {
-            	noKeyAuth = true;
-            	args = args.subList(1,args.size());
-            	continue;
-            }
-            if(head.equals("-i") && args.size()>=2) {
-                File f = getFileFromArguments(args);
-                if (!f.exists()) {
-                    printUsage(Messages.CLI_NoSuchFileExists(f));
-                    return -1;
-                }
-
-                provider.readFrom(f);
-
-                args = args.subList(2,args.size());
-                continue;
-            }
-            if (head.equals("-strictHostKey")) {
-                strictHostKey = true;
-                args = args.subList(1, args.size());
-                continue;
-            }
-            if (head.equals("-user") && args.size() >= 2) {
-                user = args.get(1);
-                args = args.subList(2, args.size());
-                continue;
-            }
-            if (head.equals("-auth") && args.size() >= 2) {
-                auth = args.get(1);
-                args = args.subList(2, args.size());
-                continue;
-            }
-            if (head.equals("-logger") && args.size() >= 2) {
-                Level level = parse(args.get(1));
-                for (Handler h : Logger.getLogger("").getHandlers()) {
-                    h.setLevel(level);
-                }
-                for (Logger logger : new Logger[] {LOGGER, FullDuplexHttpStream.LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
-                    logger.setLevel(level);
-                }
-                args = args.subList(2, args.size());
-                continue;
-            }
+          if (argsValues.isValidArg(head)) {
+            argsValues.parseAndSetArgs(head, argsValues);
+          } 
+          // so we don't loop forever in case they don't provide a valid arg
+          else {
             break;
+          }
         }
 
-        if(url==null) {
-            printUsage(Messages.CLI_NoURL());
-            return -1;
+        if(argsValues.url==null) {
+          return printAndReturn(Messages.CLI_NoURL());
         }
 
-        if (auth == null) {
-            // -auth option not set
-            if (StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv)) {
-                auth = StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
-            } else if (StringUtils.isNotBlank(userIdEnv) || StringUtils.isNotBlank(tokenEnv)) {
-                printUsage(Messages.CLI_BadAuth());
-                return -1;
-            } // Otherwise, none credentials were set
-
+        if (argsValues.auth == null) {
+          // -auth option not set
+          if (argsValues.hasTokenEnvValues(argsValues.userIdEnv, argsValues.tokenEnv)) {
+            argsValues.auth = argsValues.createAuthToken(argsValues.userIdEnv, argsValues.tokenEnv);
+          } else if (StringUtils.isNotBlank(argsValues.userIdEnv) || StringUtils.isNotBlank(argsValues.tokenEnv)) {
+            return printAndReturn(Messages.CLI_BadAuth());
+          } // Otherwise, none credentials were set
         }
 
-        if (!url.endsWith("/")) {
-            url += '/';
+        if (!argsValues.url.endsWith("/")) {
+          argsValues.url += '/';
         }
 
-        if(args.isEmpty())
-            args = Arrays.asList("help"); // default to help
+        if(argsValues.args.isEmpty())
+          argsValues.args = Arrays.asList("help"); // default to help
 
-        if (mode == null) {
-            mode = Mode.HTTP;
+        if (argsValues.mode == null) {
+          argsValues.mode = CLIArgsValues.Mode.HTTP;
         }
 
-        LOGGER.log(FINE, "using connection mode {0}", mode);
+        LOGGER.log(FINE, "using connection mode {0}", argsValues.mode);
 
-        if (user != null && auth != null) {
+        if (argsValues.user != null && argsValues.auth != null) {
             LOGGER.warning("-user and -auth are mutually exclusive");
         }
 
-        if (mode == Mode.SSH) {
-            if (user == null) {
+        if (argsValues.mode == CLIArgsValues.Mode.SSH) {
+            if (argsValues.user == null) {
                 // TODO SshCliAuthenticator already autodetects the user based on public key; why cannot AsynchronousCommand.getCurrentUser do the same?
                 LOGGER.warning("-user required when using -ssh");
                 return -1;
             }
-            if (!noKeyAuth && !provider.hasKeys()) {
-                provider.readFromDefaultLocations();
+            if (!argsValues.noKeyAuth && !argsValues.provider.hasKeys()) {
+              argsValues.provider.readFromDefaultLocations();
             }
-            return SSHCLI.sshConnection(url, user, args, provider, strictHostKey);
+            return SSHCLI.sshConnection(argsValues.url, argsValues.user, argsValues.args, argsValues.provider, argsValues.strictHostKey);
         }
 
-        if (strictHostKey) {
+        if (argsValues.strictHostKey) {
             LOGGER.warning("-strictHostKey meaningful only with -ssh");
         }
 
-        if (noKeyAuth) {
+        if (argsValues.noKeyAuth) {
             LOGGER.warning("-noKeyAuth meaningful only with -ssh");
         }
 
-        if (user != null) {
+        if (argsValues.user != null) {
             LOGGER.warning("Warning: -user ignored unless using -ssh");
         }
 
         CLIConnectionFactory factory = new CLIConnectionFactory();
-        String userInfo = new URL(url).getUserInfo();
+        String userInfo = new URL(argsValues.url).getUserInfo();
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);
-        } else if (auth != null) {
-            factory = factory.basicAuth(auth.startsWith("@") ? readAuthFromFile(auth).trim() : auth);
+        } else if (argsValues.auth != null) {
+            factory = factory.basicAuth(argsValues.auth.startsWith("@") ? readAuthFromFile(argsValues.auth).trim() : argsValues.auth);
         }
 
-        if (mode == Mode.HTTP) {
-            return plainHttpConnection(url, args, factory);
+        if (argsValues.mode == CLIArgsValues.Mode.HTTP) {
+            return plainHttpConnection(argsValues.url, argsValues.args, factory);
         }
 
-        if (mode == Mode.WEB_SOCKET) {
-            return webSocketConnection(url, args, factory);
+        if (argsValues.mode == CLIArgsValues.Mode.WEB_SOCKET) {
+            return webSocketConnection(argsValues.url, argsValues.args, factory);
         }
 
         throw new AssertionError();
+    }
+
+    private static int printAndReturn(String message) {
+      printUsage(message);
+      return -1;
     }
 
     @SuppressFBWarnings(value = {"PATH_TRAVERSAL_IN", "URLCONNECTION_SSRF_FD"}, justification = "User provided values for running the program.")
@@ -507,4 +421,143 @@ public class CLI {
     static final Logger LOGGER = Logger.getLogger(CLI.class.getName());
 
     private static final int PING_INTERVAL = Integer.getInteger(CLI.class.getName() + ".pingInterval", 3_000); // JENKINS-59267
+}
+
+class CLIArgsValues {
+  List<String> args;
+
+  PrivateKeyProvider provider;
+
+  String url;
+
+  boolean noKeyAuth;
+
+  public static enum Mode {HTTP, SSH, WEB_SOCKET}
+  Mode mode;
+  
+  String user;
+  String auth;
+  
+  String userIdEnv;
+  String tokenEnv;
+  
+  boolean strictHostKey;
+
+  public CLIArgsValues(final String[] _args) {
+    args = Arrays.asList(_args);
+    provider = new PrivateKeyProvider();
+
+    url = ((System.getenv("JENKINS_URL") == null) ? System.getenv("HUDSON_URL") : System.getenv("JENKINS_URL"));
+
+    noKeyAuth = false;
+
+    mode = null;
+
+    user = null;
+    auth = null;
+
+    userIdEnv = System.getenv("JENKINS_USER_ID");
+    tokenEnv = System.getenv("JENKINS_API_TOKEN");
+    
+    strictHostKey = false;
+  }
+
+  public static Mode setMode(String head) {
+    if (head.equals("-http")) {
+      return Mode.HTTP;
+    } else if(head.equals("-ssh")) {
+      return Mode.SSH;
+    } else {
+      return Mode.WEB_SOCKET;
+    }
+  }
+
+  public boolean isValidArg(String head) {
+    if (head.equals("-http") || 
+        head.equals("-ssh") || 
+        head.equals("-webSocket") || 
+        head.equals("-s") || 
+        head.equals("-noCertificateCheck") || 
+        head.equals("-noKeyAuth") ||
+        head.equals("-strictHostKey") ||
+        head.equals("-user") ||
+        head.equals("-auth") ||
+        head.equals("-logger")) {
+          return true;
+        }
+
+    return false;
+  }
+
+  public void parseAndSetArgs(String head, CLIArgsValues argsValues) throws Exception {
+    if (head.equals("-http") || head.equals("-ssh") || head.equals("-webSocket")) {
+      argsValues.mode = CLIArgsValues.setMode(head);
+      argsValues.args = argsValues.args.subList(1, argsValues.args.size());
+    }
+    else if(head.equals("-s") && args.size()>=2) {
+      argsValues.url = argsValues.args.get(1);
+      argsValues.args = argsValues.args.subList(2, argsValues.args.size());
+    }
+    else if (head.equals("-noCertificateCheck")) {
+      argsValues.noCertificateCheck();
+      argsValues.args = argsValues.args.subList(1,argsValues.args.size());
+    }
+    else if (head.equals("-noKeyAuth")) {
+      argsValues.noKeyAuth = true;
+      argsValues.args = argsValues.args.subList(1,argsValues.args.size());
+    }
+    else if (head.equals("-strictHostKey")) {
+      argsValues.strictHostKey = true;
+      argsValues.args = argsValues.args.subList(1, argsValues.args.size());
+    }
+    else if (head.equals("-user") && args.size() >= 2) {
+      argsValues.user = argsValues.args.get(1);
+      argsValues.args = argsValues.args.subList(2, argsValues.args.size());
+    }
+    else if (head.equals("-auth") && args.size() >= 2) {
+      argsValues.auth = argsValues.args.get(1);
+      argsValues.args = argsValues.args.subList(2, argsValues.args.size());
+    }
+    else if (head.equals("-logger") && args.size() >= 2) {
+      Level level = parse(args.get(1));
+      setHandlerLevel(level);
+      setLoggerLevel(level);
+
+      argsValues.args = argsValues.args.subList(2, args.size());
+    }
+  }
+
+  public Boolean hasTokenEnvValues(String userIdEnv, String tokenEnv) {
+    return StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv);
+  }
+
+  public String createAuthToken(String userIdEnv, String tokenEnv) {
+    return StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
+  }
+
+  private void noCertificateCheck() throws Exception {
+    CLI.LOGGER.info("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
+    SSLContext context = SSLContext.getInstance("TLS");
+    context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new SecureRandom());
+    HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+    // bypass host name check, too.
+    HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+      @SuppressFBWarnings(value = "WEAK_HOSTNAME_VERIFIER", justification = "User set parameter to skip verifier.")
+      public boolean verify(String s, SSLSession sslSession) {
+          return true;
+      }
+    });
+  }
+
+  private void setHandlerLevel(Level level) {
+    for (Handler h : Logger.getLogger("").getHandlers()) {
+      h.setLevel(level);
+    }
+  }
+
+  private void setLoggerLevel(Level level) {
+    for (Logger logger : new Logger[] {CLI.LOGGER, FullDuplexHttpStream.LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
+      logger.setLevel(level);
+    }
+  }
 }
