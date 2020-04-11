@@ -234,7 +234,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         // add options from the authenticator
         SecurityContext sc = null;
         Authentication old = null;
-        Authentication auth = null;
+        Authentication auth;
         try {
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
@@ -270,12 +270,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
             String id = UUID.randomUUID().toString();
-            logAndPrintError(e, "Bad Credentials. Search the server log for " + id + " for more details.", "CLI login attempt failed: " + id, Level.INFO);
+            logAndPrintError(e, "Bad Credentials. Search the server log for " + id + " for more details.",
+                    "CLI login attempt failed: " + id, Level.INFO);
             return 7;
         } catch (Throwable e) {
-            logAndPrintError(e, String.format("Unexpected exception occurred while performing %s command.",
-                    getName()), String.format("Unexpected exception occurred while performing %s command.",
-                    getName()), Level.WARNING);
+            logAndPrintError(e, "Unexpected exception occurred while performing "+getName()+" command.",
+                    "Unexpected exception occurred while performing "+getName()+" command.", Level.WARNING);
             Functions.printStackTrace(e, stderr);
             return 1;
         } finally {
@@ -286,12 +286,10 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     private void logAndPrintErrorWithDefaultValues(List<String> args, Throwable e) {
         Authentication auth = getTransportAuthentication();
-        String errorMessage = e.getMessage();
         String logMessage = String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
                 getName(), args.size(), auth != null ? auth.getName() : "<unknown>");
-        Level logLevel = Level.FINE;
 
-        logAndPrintError(e, errorMessage, logMessage, logLevel);
+        logAndPrintError(e, e.getMessage(), logMessage, Level.FINE);
     }
 
     private void logAndPrintError(Throwable e, String errorMessage, String logMessage, Level logLevel) {
