@@ -289,7 +289,8 @@ public class NodeProvisioner {
                                     boolean changed = false;
                                     for (Iterator<PlannedNode> iterator = repl.iterator(); iterator.hasNext(); ) {
                                         PlannedNode p = iterator.next();
-                                        if (p == f) {
+                                        boolean compareNodes = p.equals(f);
+                                        if (compareNodes) {
                                             iterator.remove();
                                             changed = true;
                                             break;
@@ -305,39 +306,9 @@ public class NodeProvisioner {
                             plannedCapacitySnapshot += f.numExecutors;
                         }
                     }
-
-                    float plannedCapacity = plannedCapacitySnapshot;
-                    plannedCapacitiesEMA.update(plannedCapacity);
-
-                    final LoadStatistics.LoadStatisticsSnapshot snapshot = stat.computeSnapshot();
-
-                    int availableSnapshot = snapshot.getAvailableExecutors();
-                    int queueLengthSnapshot = snapshot.getQueueLength();
-
-                    if (queueLengthSnapshot <= availableSnapshot) {
-                        LOGGER.log(Level.FINER,
-                                "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
-                                new Object[]{queueLengthSnapshot, availableSnapshot});
-                        provisioningState = null;
-                    } else {
-                        provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);
-                    }
+                    updateProvisioningState(plannedCapacitySnapshot);
             });
 
-            if (provisioningState != null) {
-                List<Strategy> strategies = Jenkins.get().getExtensionList(Strategy.class);
-                for (Strategy strategy : strategies.isEmpty()
-                        ? Collections.<Strategy>singletonList(new StandardStrategyImpl())
-                        : strategies) {
-                    LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
-                            new Object[]{strategy, provisioningState});
-                    if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(provisioningState)) {
-                        LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
-                                strategy);
-                        break;
-                    }
-                }
-            }
         } finally {
             provisioningLock.unlock();
         }
@@ -345,6 +316,46 @@ public class NodeProvisioner {
             LOGGER.finer(() -> "ran update on " + label + " in " + (System.nanoTime() - start) / 1_000_000 + "ms");
         }
     }
+
+    private void updateProvisioningState(int plannedCapacitySnapshot){
+        float plannedCapacity = plannedCapacitySnapshot;
+        plannedCapacitiesEMA.update(plannedCapacity);
+
+        final LoadStatistics.LoadStatisticsSnapshot snapshot = stat.computeSnapshot();
+
+        int availableSnapshot = snapshot.getAvailableExecutors();
+        int queueLengthSnapshot = snapshot.getQueueLength();
+
+        if (queueLengthSnapshot <= availableSnapshot) {
+            LOGGER.log(Level.FINER,
+                    "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
+                    new Object[]{queueLengthSnapshot, availableSnapshot});
+            provisioningState = null;
+        } else {
+            provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);
+        }
+
+        updateStrategy();
+
+    }
+
+    private void updateStrategy(){
+        if (provisioningState != null) {
+            List<Strategy> strategies = Jenkins.get().getExtensionList(Strategy.class);
+            for (Strategy strategy : strategies.isEmpty()
+                    ? Collections.<Strategy>singletonList(new StandardStrategyImpl())
+                    : strategies) {
+                LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
+                        new Object[]{strategy, provisioningState});
+                if (StrategyDecision.PROVISIONING_COMPLETED == strategy.apply(provisioningState)) {
+                    LOGGER.log(Level.FINER, "Provisioning strategy {0} declared provisioning complete",
+                            strategy);
+                    break;
+                }
+            }
+        }
+    }
+
 
 
     /**
