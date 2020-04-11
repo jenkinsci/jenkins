@@ -20,7 +20,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * A UserProperty that allows a user to specify a time zone for displaying time.
  */
 @Restricted(NoExternalUse.class)
-public class TimeZoneProperty extends UserProperty implements Saveable {
+public class TimeZoneProperty extends UserProperty {
     /**
      * Time Zone ID defined by the user.
      * {@code null} means that the time zone is not defined.
@@ -37,11 +37,6 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
 
     private TimeZoneProperty() {
         this(null);
-    }
-
-    @Override
-    public void save() throws IOException {
-        user.save();
     }
 
     public void setTimeZoneName(@CheckForNull String timeZoneName) {
