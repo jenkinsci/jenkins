@@ -66,50 +66,50 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         return WebSockets.isSupported() ? "wsagents" : null;
     }
 
-    public class RequestInfo {
+    private class RequestInfo {
         private StaplerRequest req;
 
         RequestInfo(StaplerRequest req) {
             this.req = req;
         }
-        public String getAgent() {
+        private String getAgent() {
             return this.req.getHeader(JnlpConnectionState.CLIENT_NAME_KEY);
         }
-        public String getSecret() {
+        private String getSecret() {
             return this.req.getHeader(JnlpConnectionState.SECRET_KEY);
         }
-        public String getRemoteCapStr() {
+        private String getRemoteCapStr() {
             return this.req.getHeader(Capability.KEY);
         }
-        public boolean hasCompleteHeaders() {
+        private boolean hasCompleteHeaders() {
             return this.getAgent() == null || this.getSecret() == null || this.getRemoteCapStr() == null;
         }
-        public void logIncompleteHeaders() {
+        private void logIncompleteHeaders() {
             LOGGER.warning(() -> "incomplete headers: " + Collections.list(this.req.getHeaderNames()));
         }
-        public void logRecievingHeaders() {
+        private void logReceivingHeaders() {
             LOGGER.fine(() -> "receiving headers: " + Collections.list(this.req.getHeaderNames()));
         }
-        public void logNoSuchAgent() {
+        private void logNoSuchAgent() {
             LOGGER.warning(() -> "no such agent " + this.getAgent());
         }
-        public void logIncorrectSecret() {
+        private void logIncorrectSecret() {
             LOGGER.warning(() -> "incorrect secret for " + this.getAgent());
         }
-        public boolean doesAgentExists() {
+        private boolean doesAgentExists() {
             return JnlpAgentReceiver.DATABASE.exists(this.getAgent());
         }
-        public boolean isCorrectSecret() {
+        private boolean isCorrectSecret() {
             return MessageDigest.isEqual(   this.getSecret().getBytes(StandardCharsets.US_ASCII),
                                             JnlpAgentReceiver.DATABASE.getSecretOf(this.getAgent()).getBytes(StandardCharsets.US_ASCII)
             );
         }
-        public void checkInvalidRequest() {
+        private void checkInvalidRequest() {
             if (this.hasCompleteHeaders()) {
                 this.logIncompleteHeaders();
                 throw HttpResponses.errorWithoutStack(400, "This endpoint is only for use from agent.jar in WebSocket mode");
             }
-            this.logRecievingHeaders();
+            this.logReceivingHeaders();
             if (!this.doesAgentExists()) {
                 this.logNoSuchAgent();
                 throw HttpResponses.errorWithoutStack(400, "no such agent");
@@ -120,15 +120,17 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             }
         }
 
-        public Capability getRemoteCapability() throws IOException{
+        private Capability getRemoteCapability() throws IOException{
             return Capability.fromASCII(this.getRemoteCapStr());
         }
-        public void logReceivedCapability() throws IOException{
+
+        private void logReceivedCapability() throws IOException{
             Capability remoteCapability = this.getRemoteCapability();
-                LOGGER.fine(() ->  "received " + remoteCapability);
+            LOGGER.fine(() ->  "received " + remoteCapability);
         }
-        public void logConnecting() {
-                LOGGER.fine(() -> "connecting " + this.getAgent());
+
+        private void logConnecting() {
+            LOGGER.fine(() -> "connecting " + this.getAgent());
         }
     }
     public HttpResponse doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
