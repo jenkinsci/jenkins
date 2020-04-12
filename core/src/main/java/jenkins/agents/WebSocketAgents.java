@@ -119,31 +119,21 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
                 throw HttpResponses.forbidden();
             }
         }
-        /*
-        public Capability getRemoteCapability() {
-            try {
-                return Capability.fromASCII(this.getRemoteCapStr());
-            } catch (IOException e) {
-                throw new IOException();
-            }
+
+        public Capability getRemoteCapability() throws IOException{
+            return Capability.fromASCII(this.getRemoteCapStr());
         }
-        public void logRecievedCapability() throws IOException {
-            try {
-                LOGGER.fine(() -> "received " + this.getRemoteCapability());
-            } catch (IOException e) {
-                throw new IOException();
-            }
+        public void logReceivedCapability() throws IOException{
+            Capability remoteCapability = this.getRemoteCapability();
+                LOGGER.fine(() ->  "received " + remoteCapability);
         }
-        */
         public void logConnecting() {
                 LOGGER.fine(() -> "connecting " + this.getAgent());
         }
     }
     public HttpResponse doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
         RequestInfo info = new RequestInfo(req);
-
         info.checkInvalidRequest();
-
         JnlpConnectionState state = new JnlpConnectionState(null, ExtensionList.lookup(JnlpAgentReceiver.class));
         state.setRemoteEndpointDescription(req.getRemoteAddr());
         state.fireBeforeProperties();
@@ -152,16 +142,9 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             JnlpConnectionState.CLIENT_NAME_KEY, info.getAgent(),
             JnlpConnectionState.SECRET_KEY, info.getSecret()
         ));
-
-       // try {
-            //info.logRecievedCapability();
-            Capability remoteCapability = Capability.fromASCII(info.getRemoteCapStr());
-            LOGGER.fine(() -> "received " + remoteCapability);
-            setUpResponse(rsp);
-            return WebSockets.upgrade(new Session(state, info.getAgent(), remoteCapability/*info.getRemoteCapability()*/));
-   //     } catch (IOException e) {
-     //       throw new IOException();
-       // }
+        info.logReceivedCapability();
+        setUpResponse(rsp);
+        return WebSockets.upgrade(new Session(state, info.getAgent(), info.getRemoteCapability()));
     }
 
     private void setUpResponse(StaplerResponse rsp) throws IOException{
