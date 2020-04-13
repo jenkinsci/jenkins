@@ -32,7 +32,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -47,31 +47,31 @@ import java.util.TreeMap;
 @Extension
 @Restricted(NoExternalUse.class)
 public class SecuritySystemProperties extends Telemetry {
-    @Nonnull
+    @NonNull
     @Override
     public String getId() {
         return "security-system-properties";
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getStart() {
         return LocalDate.of(2018, 9, 1);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getEnd() {
         return LocalDate.of(2018, 12, 1);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public String getDisplayName() {
         return "Use of Security-related Java system properties";
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public JSONObject createContent() {
         Map<String, String> security = new TreeMap<>();

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import static org.hamcrest.Matchers.is;
+import java.util.logging.SimpleFormatter;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,8 +97,10 @@ public class LogRecorderManagerTest {
         assertFalse(ch.call(new Log(Level.FINER, "ns3", "not displayed")));
         assertTrue(ch.call(new Log(Level.INFO, "ns4", "msg #4")));
         assertFalse(ch.call(new Log(Level.FINE, "ns4", "not displayed")));
+        assertTrue(ch.call(new Log(Level.INFO, "other", "msg #5 {0,number,0.0} {1,number,0.0} ''OK?''", new Object[] {1.0, 2.0})));
         List<LogRecord> recs = c.getLogRecords();
-        assertEquals(show(recs), 4, recs.size());
+        assertEquals(show(recs), 5, recs.size());
+        assertEquals("msg #5 1.0 2.0 'OK?'", new SimpleFormatter().formatMessage(recs.get(0)));
         recs = r1.getSlaveLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 2, recs.size());
@@ -152,14 +155,23 @@ public class LogRecorderManagerTest {
         private final Level level;
         private final String logger;
         private final String message;
+        private final Object[] params;
         Log(Level level, String logger, String message) {
+            this(level, logger, message, null);
+        }
+        Log(Level level, String logger, String message, Object[] params) {
             this.level = level;
             this.logger = logger;
             this.message = message;
+            this.params = params;
         }
         @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
-            log.log(level, message);
+            if (params != null) {
+                log.log(level, message, params);
+            } else {
+                log.log(level, message);
+            }
             return log.isLoggable(level);
         }
     }

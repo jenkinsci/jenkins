@@ -26,6 +26,7 @@ package hudson.model;
 import antlr.ANTLRException;
 import static hudson.Util.fixNull;
 
+import hudson.Util;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.labels.LabelExpression.And;
@@ -74,7 +75,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Group of {@link Node}s.
@@ -88,19 +89,19 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Display name of this label.
      */
-    @Nonnull
+    @NonNull
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
-    @Nonnull
+    @NonNull
     public transient final LoadStatistics loadStatistics;
-    @Nonnull
+    @NonNull
     public transient final NodeProvisioner nodeProvisioner;
 
-    public Label(@Nonnull String name) {
+    public Label(@NonNull String name) {
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0,0) {
@@ -144,7 +145,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
-    @Nonnull
+    @NonNull
     public String getDisplayName() {
         return name;
     }
@@ -158,7 +159,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Relative URL from the context path, that ends with '/'.
      */
     public String getUrl() {
-        return "label/"+name+'/';
+        return "label/" + Util.rawEncode(name) + '/';
     }
 
     public String getSearchUrl() {

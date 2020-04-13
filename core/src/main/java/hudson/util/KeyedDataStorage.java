@@ -31,8 +31,8 @@ import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Convenient base class for implementing data storage.
@@ -107,7 +107,7 @@ public abstract class KeyedDataStorage<T,P> {
      *      Additional parameters needed to create a new data object. Can be null.
      * @throws IOException Loading error
      */
-    public @Nonnull T getOrCreate(String key, P createParams) throws IOException {
+    public @NonNull T getOrCreate(String key, P createParams) throws IOException {
         return get(key,true,createParams);
     }
 
@@ -126,7 +126,7 @@ public abstract class KeyedDataStorage<T,P> {
      * @return Item with the specified {@code key}
      * @throws IOException Loading error
      */
-    protected @CheckForNull T get(@Nonnull String key, boolean createIfNotExist, P createParams) throws IOException {
+    protected @CheckForNull T get(@NonNull String key, boolean createIfNotExist, P createParams) throws IOException {
         while(true) {
             totalQuery.incrementAndGet();
             Object value = core.get(key);
@@ -219,7 +219,7 @@ public abstract class KeyedDataStorage<T,P> {
      *      {@link IOException} (or any other exception) and that will be
      *      propagated to the caller.
      */
-    protected abstract @Nonnull T create(@Nonnull String key, @Nonnull P createParams) throws IOException;
+    protected abstract @NonNull T create(@NonNull String key, @NonNull P createParams) throws IOException;
 
     public void resetPerformanceStats() {
         totalQuery.set(0);

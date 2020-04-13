@@ -29,7 +29,7 @@ import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.Sid;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
@@ -43,7 +43,7 @@ import static java.util.logging.Level.FINER;
 public abstract class SidACL extends ACL {
 
     @Override
-    public boolean hasPermission(@Nonnull Authentication a, Permission permission) {
+    public boolean hasPermission(@NonNull Authentication a, Permission permission) {
         if(a==SYSTEM) {
             if(LOGGER.isLoggable(FINE))
                 LOGGER.fine("hasPermission("+a+","+permission+")=>SYSTEM user has full access");
@@ -65,7 +65,7 @@ public abstract class SidACL extends ACL {
      *      true or false if {@link #hasPermission(Sid, Permission)} returns it.
      *      Otherwise null, indicating that this ACL doesn't have any entry for it.
      */
-    protected Boolean _hasPermission(@Nonnull Authentication a, Permission permission) {
+    protected Boolean _hasPermission(@NonNull Authentication a, Permission permission) {
         // ACL entries for this principal takes precedence
         Boolean b = hasPermission(new PrincipalSid(a),permission);
         if(LOGGER.isLoggable(FINER))

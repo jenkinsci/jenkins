@@ -39,9 +39,10 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.258</stapler.version>
+    <stapler.version>1.259</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
+    <hamcrest.version>2.2</hamcrest.version>
   </properties>
 
   <dependencyManagement>
@@ -80,7 +81,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>crypto-util</artifactId>
-      <version>1.1</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
@@ -191,8 +192,14 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>${hamcrest.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
-      <version>1.3</version>
+      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -893,6 +900,17 @@ THE SOFTWARE.
       <properties>
         <!-- In the default profile we always fail the build if there SpotBugs errors -->
         <findbugs.failOnError>true</findbugs.failOnError>
+      </properties>
+    </profile>
+    <profile>
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
       </properties>
     </profile>
   </profiles>

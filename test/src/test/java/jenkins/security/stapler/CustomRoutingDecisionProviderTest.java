@@ -35,8 +35,8 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -52,7 +52,7 @@ public class CustomRoutingDecisionProviderTest {
     @TestExtension("customRoutingWhitelistProvider")
     public static class XxxBlacklister extends RoutingDecisionProvider {
         @Override
-        public Decision decide(@Nonnull String signature) {
+        public Decision decide(@NonNull String signature) {
             if (signature.contains("xxx")) {
                 return Decision.REJECTED;
             }

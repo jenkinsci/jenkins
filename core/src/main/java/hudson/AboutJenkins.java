@@ -4,7 +4,7 @@ import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import java.net.URL;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -41,9 +41,15 @@ public class AboutJenkins extends ManagementLink {
         return AboutJenkins.class.getResource("/META-INF/licenses.xml");
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.SYSTEM_READ;
+        return Jenkins.READ;
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
     }
 }

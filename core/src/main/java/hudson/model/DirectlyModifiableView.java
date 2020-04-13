@@ -26,7 +26,7 @@ package hudson.model;
 
 import java.io.IOException;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.HttpResponse;
@@ -48,7 +48,7 @@ public interface DirectlyModifiableView {
      * @throws IOException Removal failed.
      * @throws IllegalArgumentException View rejected to remove an item.
      */
-    boolean remove(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
+    boolean remove(@NonNull TopLevelItem item) throws IOException, IllegalArgumentException;
 
     /**
      * Add item to this view.
@@ -56,7 +56,7 @@ public interface DirectlyModifiableView {
      * @throws IOException Adding failed.
      * @throws IllegalArgumentException View rejected to add an item.
      */
-    void add(@Nonnull TopLevelItem item) throws IOException, IllegalArgumentException;
+    void add(@NonNull TopLevelItem item) throws IOException, IllegalArgumentException;
 
     /**
      * Handle addJobToView web method.

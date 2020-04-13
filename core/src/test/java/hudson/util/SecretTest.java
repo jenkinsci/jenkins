@@ -43,9 +43,6 @@ public class SecretTest {
     @Rule
     public ConfidentialStoreRule confidentialStore = new ConfidentialStoreRule();
 
-    @Rule
-    public MockSecretRule mockSecretRule = new MockSecretRule();
-
     private static final Pattern ENCRYPTED_VALUE_PATTERN = Pattern.compile("\\{?[A-Za-z0-9+/]+={0,2}}?");
 
     @Test

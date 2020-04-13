@@ -73,7 +73,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponse;
@@ -204,7 +204,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * This bridge method is to maintain binary compatibility with {@link TopLevelItem#getParent()}.
      */
     @WithBridgeMethods(value=Jenkins.class,castRequired=true)
-    @Override public @Nonnull ItemGroup getParent() {
+    @Override public @NonNull ItemGroup getParent() {
         if (parent == null) {
             throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + name + "]");
         }
@@ -273,7 +273,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * {@link FormValidation#error} with a message explaining the problem.
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull FormValidation doCheckNewName(@QueryParameter String newName) {
+    public @NonNull FormValidation doCheckNewName(@QueryParameter String newName) {
 
         if (!isNameEditable()) {
             return FormValidation.error("Trying to rename an item that does not support this operation.");
@@ -307,7 +307,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Check new name for job
      * @param newName - New name for job.
      */
-    private void checkIfNameIsUsed(@Nonnull String newName) throws Failure {
+    private void checkIfNameIsUsed(@NonNull String newName) throws Failure {
         try {
             Item item = getParent().getItem(newName);
             if (item != null) {
@@ -345,7 +345,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @since 2.110
      * @see Job#checkRename
      */
-    protected void checkRename(@Nonnull String newName) throws Failure {
+    protected void checkRename(@NonNull String newName) throws Failure {
 
     }
 
@@ -673,7 +673,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     public void delete( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         try {
-            doDoDelete(req,rsp);
+            delete();
+            rsp.setStatus(204);
         } catch (InterruptedException e) {
             // TODO: allow this in Stapler
             throw new ServletException(e);

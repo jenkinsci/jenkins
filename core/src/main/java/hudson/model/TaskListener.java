@@ -36,7 +36,7 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Formatter;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -70,7 +70,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * This writer will receive the output of the build
      */
-    @Nonnull
+    @NonNull
     PrintStream getLogger();
 
     /**
@@ -79,7 +79,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
      * @return by default, UTF-8
      */
     @Restricted(ProtectedExternally.class)
-    @Nonnull
+    @NonNull
     default Charset getCharset() {
         return StandardCharsets.UTF_8;
     }
@@ -122,7 +122,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
      * @return
      *      A writer to receive details of the error.
      */
-    @Nonnull
+    @NonNull
     default PrintWriter error(String msg) {
         return _error("ERROR: ", msg);
     }
@@ -130,7 +130,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * {@link Formatter#format(String, Object[])} version of {@link #error(String)}.
      */
-    @Nonnull
+    @NonNull
     default PrintWriter error(String format, Object... args) {
         return error(String.format(format,args));
     }
@@ -141,7 +141,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
      * @return
      *      A writer to receive details of the error.
      */
-    @Nonnull
+    @NonNull
     default PrintWriter fatalError(String msg) {
         return _error("FATAL: ", msg);
     }
@@ -149,7 +149,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
     /**
      * {@link Formatter#format(String, Object[])} version of {@link #fatalError(String)}.
      */
-    @Nonnull
+    @NonNull
     default PrintWriter fatalError(String format, Object... args) {
         return fatalError(String.format(format, args));
     }

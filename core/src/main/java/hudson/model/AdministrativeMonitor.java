@@ -118,8 +118,12 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     public void disable(boolean value) throws IOException {
         AbstractCIBase jenkins = Jenkins.get();
         Set<String> set = jenkins.getDisabledAdministrativeMonitors();
-        if(value)   set.add(id);
-        else        set.remove(id);
+        if (value) {
+            set.add(id);
+        } else {
+            set.remove(id);
+        }
+        jenkins.setDisabledAdministrativeMonitors(set);
         jenkins.save();
     }
 
