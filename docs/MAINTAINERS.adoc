@@ -27,8 +27,6 @@ Remoting updates in the core are subject to the process though.
 === Communication channels
 
 * link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
-* Chat: N/A, to be created
-* Office hours: N/A, to be created
 
 === Roles
 
@@ -128,7 +126,7 @@ and we do not enforce a single code style across the codebase at the moment.
 
 ==== Building consensus
 
-Not all changes are discussed before they submitted as pull requests.
+Not all changes are discussed before they are submitted as pull requests.
 Developer mailing lists, Jira issues and JEPs are used for discussions,
 but sometimes the changes go straight to the pull requests.
 And we are fine with that, especially for small patches.
@@ -243,7 +241,7 @@ When do we merge pull requests as is?
 
 When do we squash commits?
 
-* We squash commits during when core maintainers decide to do so (`squash-merge-me` label), usually when the conditions above are not met.
+* We squash commits when core maintainers decide to do so (`squash-merge-me` label), usually when the conditions above are not met.
 * There is no strong requirement to squash merge pull requests at the moment, so there might be deviations from the merge policy in practice.
 
 == LTS Process
