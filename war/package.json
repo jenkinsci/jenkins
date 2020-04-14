@@ -47,7 +47,7 @@
     "babel-loader": "^8.0.6",
     "bootstrap": "3.3.5",
     "jenkins-js-modules": "^1.5.0",
-    "jquery": "2.1.4",
+    "jquery": "3.5.0",
     "stylelint": "^13.0.0",
     "window-handle": "^1.0.0"
   },
