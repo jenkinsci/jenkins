@@ -28,6 +28,6 @@ public class FormValidationTest {
         // executable at system PATH despite git exec existing at the path.
         FormValidation actual = FormValidation.validateExecutable("git");
         String failMessage = "There's no such executable git in PATH:";
-        assertThat(actual.equals(FormValidation.error(failMessage)), is(false));
+        assertThat(actual, not(is(FormValidation.error(failMessage))));
     }
 }
