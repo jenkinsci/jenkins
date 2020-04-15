@@ -36,7 +36,7 @@ THE SOFTWARE.
       The text of the apply button.
     </s:attribute>
 
-    <s:attribute name="isLarge">
+    <s:attribute name="large">
         Set to "true" to enable the large variant of the button
     </s:attribute>
   </s:documentation>
@@ -44,6 +44,6 @@ THE SOFTWARE.
   <input type="hidden" name="core:apply" value="" />
   <input type="button"
          value="${attrs.value ?: '%Apply'}"
-         class="apply-button applyButton ${attrs.isLarge ? 'large-button' : ''}"
+         class="apply-button applyButton ${attrs.large ? 'large-button' : ''}"
          name="Apply"/><!-- applyButton is legacy -->
 </j:jelly>
