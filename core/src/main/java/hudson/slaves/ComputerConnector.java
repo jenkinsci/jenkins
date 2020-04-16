@@ -28,7 +28,7 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Factory of {@link ComputerLauncher}.
@@ -49,7 +49,7 @@ public abstract class ComputerConnector extends AbstractDescribableImpl<Computer
      * @param listener
      *      If 
      */
-    public abstract ComputerLauncher launch(@Nonnull String host, TaskListener listener) throws IOException, InterruptedException;
+    public abstract ComputerLauncher launch(@NonNull String host, TaskListener listener) throws IOException, InterruptedException;
 
     @Override
     public ComputerConnectorDescriptor getDescriptor() {

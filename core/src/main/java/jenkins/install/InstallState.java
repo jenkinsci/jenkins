@@ -23,8 +23,8 @@
  */
 package jenkins.install;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -232,7 +232,7 @@ public class InstallState implements ExtensionPoint {
      */
     private final String name;
 
-    public InstallState(@Nonnull String name, boolean isSetupComplete) {
+    public InstallState(@NonNull String name, boolean isSetupComplete) {
         this.name = name;
         this.isSetupComplete = isSetupComplete;
     }
@@ -303,7 +303,7 @@ public class InstallState implements ExtensionPoint {
      * @return
      */
     @CheckForNull
-    public static InstallState valueOf(@Nonnull String name) {
+    public static InstallState valueOf(@NonNull String name) {
         for (InstallState state : all()) {
             if (name.equals(state.name)) {
                 return state;

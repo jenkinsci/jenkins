@@ -40,7 +40,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Common part between {@link Shell} and {@link BatchFile}.
@@ -158,7 +158,7 @@ public abstract class CommandInterpreter extends Builder {
     /**
      * Creates a script file in a temporary name in the specified directory.
      */
-    public FilePath createScriptFile(@Nonnull FilePath dir) throws IOException, InterruptedException {
+    public FilePath createScriptFile(@NonNull FilePath dir) throws IOException, InterruptedException {
         return dir.createTextTempFile("jenkins", getFileExtension(), getContents(), false);
     }
 

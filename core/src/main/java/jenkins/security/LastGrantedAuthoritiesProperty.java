@@ -15,7 +15,7 @@ import org.acegisecurity.userdetails.UserDetails;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,7 +69,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     /**
      * Persist the information with the new {@link UserDetails}.
      */
-    public void update(@Nonnull Authentication auth) throws IOException {
+    public void update(@NonNull Authentication auth) throws IOException {
         List<String> roles = new ArrayList<>();
         for (GrantedAuthority ga : auth.getAuthorities()) {
             roles.add(ga.getAuthority());
@@ -99,7 +99,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     @Extension
     public static class SecurityListenerImpl extends SecurityListener {
         @Override
-        protected void loggedIn(@Nonnull String username) {
+        protected void loggedIn(@NonNull String username) {
             try {
                 // user should have been created but may not have been saved for some realms
                 // but as this is a callback of a successful login we can safely create the user.
@@ -116,7 +116,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         }
 
         @Override
-        protected void failedToLogIn(@Nonnull String username) {
+        protected void failedToLogIn(@NonNull String username) {
             // while this initially seemed like a good idea to avoid allowing wrong impersonation for too long,
             // doing this means a malicious user can break the impersonation capability
             // just by failing to login. See ApiTokenFilter that does the following, which seems better:

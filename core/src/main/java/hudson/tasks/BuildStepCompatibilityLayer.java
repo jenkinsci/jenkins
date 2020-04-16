@@ -42,7 +42,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.tasks.SimpleBuildStep;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
@@ -92,7 +92,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return null;
     }
 
-    @Nonnull
+    @NonNull
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(project);

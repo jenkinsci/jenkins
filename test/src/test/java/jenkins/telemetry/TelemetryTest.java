@@ -18,8 +18,8 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -94,25 +94,25 @@ public class TelemetryTest {
     @TestExtension
     public static class EmptyTelemetry extends Telemetry {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "empty";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String getId() {
             return "empty";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getStart() {
             return LocalDate.MIN;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getEnd() {
             return LocalDate.MAX;
@@ -127,31 +127,31 @@ public class TelemetryTest {
     @TestExtension
     public static class DisabledFutureTelemetry extends Telemetry {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getId() {
             return "future";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "future";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getStart() {
             return LocalDate.now().plus(1, ChronoUnit.DAYS);
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getEnd() {
             return LocalDate.MAX;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public JSONObject createContent() {
             return new JSONObject();
@@ -161,31 +161,31 @@ public class TelemetryTest {
     @TestExtension
     public static class DisabledPastTelemetry extends Telemetry {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getId() {
             return "past";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "past";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getStart() {
             return LocalDate.MIN;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getEnd() {
             return LocalDate.now().minus(1, ChronoUnit.DAYS);
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public JSONObject createContent() {
             return new JSONObject();
@@ -195,31 +195,31 @@ public class TelemetryTest {
     @TestExtension
     public static class TestTelemetry extends Telemetry {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getId() {
             return "test-data";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "test-data";
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getStart() {
             return LocalDate.MIN;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public LocalDate getEnd() {
             return LocalDate.MAX;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public JSONObject createContent() {
             return new JSONObject();

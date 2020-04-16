@@ -57,7 +57,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
