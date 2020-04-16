@@ -104,11 +104,10 @@ THE SOFTWARE.
                         <div class="plugin-manager__categories">
                           <j:forEach var="label" items="${p.categories}">
                             <j:if test="${!it.isMetaLabel(label)}">
-                              <span class="plugin-manager__category-label">
-                                <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}">
-                                  ${app.updateCenter.getCategoryDisplayName(label)}
-                                </a>
-                              </span>
+                              <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
+                                 class="plugin-manager__category-label">
+                                ${app.updateCenter.getCategoryDisplayName(label)}
+                              </a>
                             </j:if>
                           </j:forEach>
                         </div>
