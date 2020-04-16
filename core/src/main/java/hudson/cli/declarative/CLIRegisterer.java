@@ -45,7 +45,7 @@ import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.CmdLineException;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -97,7 +97,7 @@ public class CLIRegisterer extends ExtensionFinder {
         return null;
     }
 
-    private List<ExtensionComponent<CLICommand>> discover(@Nonnull final Jenkins jenkins) {
+    private List<ExtensionComponent<CLICommand>> discover(@NonNull final Jenkins jenkins) {
         LOGGER.fine("Listing up @CLIMethod");
         List<ExtensionComponent<CLICommand>> r = new ArrayList<>();
 

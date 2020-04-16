@@ -23,9 +23,6 @@ import org.junit.rules.TemporaryFolder;
 public class SecretRewriterTest {
 
     @Rule
-    public MockSecretRule mockSecretRule = new MockSecretRule();
-
-    @Rule
     public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
 
     @Rule

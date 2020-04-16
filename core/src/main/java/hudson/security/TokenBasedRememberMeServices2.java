@@ -41,8 +41,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -288,7 +288,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     /**
      * @return the decoded base64 of the cookie or {@code null} if the value was not correctly encoded
      */
-    private @CheckForNull String decodeCookieBase64(@Nonnull String base64EncodedValue){
+    private @CheckForNull String decodeCookieBase64(@NonNull String base64EncodedValue){
         StringBuilder base64EncodedValueBuilder = new StringBuilder(base64EncodedValue);
         for (int j = 0; j < base64EncodedValueBuilder.length() % 4; j++) {
             base64EncodedValueBuilder.append("=");

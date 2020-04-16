@@ -30,7 +30,7 @@ import org.apache.tools.ant.ExtensionPoint;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,13 +47,13 @@ public abstract class UserSeedChangeListener extends ExtensionPoint {
      * Called after a seed was changed but before the user is saved.
      * @param user The target user
      */
-    public abstract void onUserSeedRenewed(@Nonnull User user);
+    public abstract void onUserSeedRenewed(@NonNull User user);
 
     /**
      * Will notify all the registered listeners about the event
      * @param user The target user
      */
-    public static void fireUserSeedRenewed(@Nonnull User user) {
+    public static void fireUserSeedRenewed(@NonNull User user) {
         for (UserSeedChangeListener l : all()) {
             try {
                 l.onUserSeedRenewed(user);

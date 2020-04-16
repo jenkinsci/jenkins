@@ -64,8 +64,8 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Base class for Hudson CLI.
@@ -461,11 +461,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Define the encoding for the command.
      * @since 2.54
      */
-    public void setClientCharset(@Nonnull Charset encoding) {
+    public void setClientCharset(@NonNull Charset encoding) {
         this.encoding = encoding;
     }
 
-    protected @Nonnull Charset getClientCharset() throws IOException, InterruptedException {
+    protected @NonNull Charset getClientCharset() throws IOException, InterruptedException {
         if (encoding != null) {
             return encoding;
         }

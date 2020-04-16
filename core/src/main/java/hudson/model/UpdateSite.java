@@ -62,9 +62,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
@@ -169,7 +169,7 @@ public class UpdateSite {
      * does not exist, or is otherwise due for update.
      * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
      * @return null if no updates are necessary, or the future result
-     * @since TODO
+     * @since 2.222
      */
     public @CheckForNull Future<FormValidation> updateDirectly() {
         return updateDirectly(DownloadService.signatureCheck);
@@ -200,15 +200,15 @@ public class UpdateSite {
     /**
      * Forces an update of the data file from the configured URL, irrespective of the last time the data was retrieved.
      * @return A {@code FormValidation} indicating the if the update metadata was successfully downloaded from the configured update site
-     * @since TODO
+     * @since 2.222
      * @throws IOException if there was an error downloading or saving the file.
      */
-    public @Nonnull FormValidation updateDirectlyNow() throws IOException {
+    public @NonNull FormValidation updateDirectlyNow() throws IOException {
         return updateDirectlyNow(DownloadService.signatureCheck);
     }
 
     @Restricted(NoExternalUse.class)
-    public @Nonnull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
+    public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
     
@@ -274,7 +274,7 @@ public class UpdateSite {
      * @deprecated use {@link #getJsonSignatureValidator(String)} instead.
      */
     @Deprecated
-    @Nonnull
+    @NonNull
     protected JSONSignatureValidator getJsonSignatureValidator() {
         return getJsonSignatureValidator(null);
     }
@@ -287,7 +287,7 @@ public class UpdateSite {
      * @return the signature validator.
      * @since 2.21
      */
-    @Nonnull
+    @NonNull
     protected JSONSignatureValidator getJsonSignatureValidator(@CheckForNull String name) {
         if (name == null) {
             name = signatureValidatorPrefix + " '" + id + "'";
@@ -768,7 +768,7 @@ public class UpdateSite {
         /**
          * Regular expression pattern for this version range that matches all included version numbers.
          */
-        @Nonnull
+        @NonNull
         private final Pattern pattern;
 
         public WarningVersionRange(JSONObject o) {
@@ -810,7 +810,7 @@ public class UpdateSite {
         /**
          * The type classifier for this warning.
          */
-        @Nonnull
+        @NonNull
         public /* final */ Type type;
 
         /**
@@ -820,7 +820,7 @@ public class UpdateSite {
          * possibly with a unique suffix (e.g. artifactId) if either applies to multiple components.</p>
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String id;
 
         /**
@@ -831,14 +831,14 @@ public class UpdateSite {
          * </ul>
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String component;
 
         /**
          * A short, English language explanation for this warning.
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String message;
 
         /**
@@ -846,7 +846,7 @@ public class UpdateSite {
          * only, so
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String url;
 
         /**
@@ -855,7 +855,7 @@ public class UpdateSite {
          * If this list is empty, all versions of the component are considered to be affected by this warning.
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final List<WarningVersionRange> versionRanges;
 
         /**
@@ -909,7 +909,7 @@ public class UpdateSite {
             return id.hashCode();
         }
 
-        public boolean isPluginWarning(@Nonnull String pluginName) {
+        public boolean isPluginWarning(@NonNull String pluginName) {
             return type == Type.PLUGIN && pluginName.equals(this.component);
         }
 
@@ -946,7 +946,7 @@ public class UpdateSite {
             }
         }
 
-        public boolean isRelevantToVersion(@Nonnull VersionNumber version) {
+        public boolean isRelevantToVersion(@NonNull VersionNumber version) {
             if (this.versionRanges.isEmpty()) {
                 // no version ranges specified, so all versions are affected
                 return true;
@@ -1034,7 +1034,7 @@ public class UpdateSite {
 
         /**
          * Date when this plugin was released.
-         * @since TODO
+         * @since 2.224
          */
         @Exported
         public final Date releaseTimestamp;
@@ -1354,7 +1354,7 @@ public class UpdateSite {
         /**
          * Get the list of incompatible dependencies (if there are any, as determined by isNeededDependenciesCompatibleWithInstalledVersion)
          *
-         * @since TODO
+         * @since 2.203
          */
         @Restricted(NoExternalUse.class) // table.jelly
         @SuppressWarnings("unchecked")

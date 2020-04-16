@@ -47,7 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extensible property of {@link Node}.
@@ -166,7 +166,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *
      * @since 1.489
      */
-    public void buildEnvVars(@Nonnull EnvVars env, @Nonnull TaskListener listener) throws IOException,InterruptedException {
+    public void buildEnvVars(@NonNull EnvVars env, @NonNull TaskListener listener) throws IOException,InterruptedException {
         // default is no-op
     }
 

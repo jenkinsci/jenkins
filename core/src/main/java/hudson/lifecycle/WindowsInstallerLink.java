@@ -53,7 +53,7 @@ import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -102,7 +102,7 @@ public class WindowsInstallerLink extends ManagementLink {
     }
 
 
-    @Nonnull
+    @NonNull
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
@@ -127,7 +127,7 @@ public class WindowsInstallerLink extends ManagementLink {
             sendError("Installation is already complete",req,rsp);
             return;
         }
-        if(!DotNet.isInstalled(2,0)) {
+        if(!DotNet.isInstalled(4,0) && !DotNet.isInstalled(2,0)) {
             sendError(".NET Framework 2.0 or later is required for this feature",req,rsp);
             return;
         }

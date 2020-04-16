@@ -41,7 +41,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Objects;
@@ -83,7 +83,7 @@ public class UserSeedProperty extends UserProperty {
         this.renewSeedInternal();
     }
 
-    public @Nonnull String getSeed() {
+    public @NonNull String getSeed() {
         return seed;
     }
 
@@ -107,7 +107,7 @@ public class UserSeedProperty extends UserProperty {
     @Extension
     @Symbol("userSeed")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
-        public @Nonnull String getDisplayName() {
+        public @NonNull String getDisplayName() {
             return Messages.UserSeedProperty_DisplayName();
         }
 
@@ -117,12 +117,12 @@ public class UserSeedProperty extends UserProperty {
 
         // only for jelly
         @Restricted(DoNotUse.class)
-        public boolean isCurrentUser(@Nonnull User target) {
+        public boolean isCurrentUser(@NonNull User target) {
             return Objects.equals(User.current(), target);
         }
 
         @RequirePOST
-        public synchronized HttpResponse doRenewSessionSeed(@AncestorInPath @Nonnull User u) throws IOException {
+        public synchronized HttpResponse doRenewSessionSeed(@AncestorInPath @NonNull User u) throws IOException {
             u.checkPermission(Jenkins.ADMINISTER);
 
             if (DISABLE_USER_SEED) {

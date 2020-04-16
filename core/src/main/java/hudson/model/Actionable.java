@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -72,7 +72,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *             May still be called for compatibility reasons from subclasses predating {@link TransientActionFactory}.
      */
     @Deprecated
-    @Nonnull
+    @NonNull
     public List<Action> getActions() {
         //this double checked synchronization is only safe if the field 'actions' is volatile
         if (actions == null) {
@@ -92,7 +92,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 1.548
      */
     @Exported(name="actions")
-    @Nonnull
+    @NonNull
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
@@ -132,7 +132,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return an unmodifiable, possible empty list
      * @see #getAction(Class)
      */
-    @Nonnull
+    @NonNull
     public <T extends Action> List<T> getActions(Class<T> type) {
         List<T> _actions = Util.filter(getActions(), type);
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
@@ -148,7 +148,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public void addAction(@Nonnull Action a) {
+    public void addAction(@NonNull Action a) {
         if(a==null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
@@ -172,7 +172,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public void replaceAction(@Nonnull Action a) {
+    public void replaceAction(@NonNull Action a) {
         addOrReplaceAction(a);
     }
 
@@ -191,7 +191,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public boolean addOrReplaceAction(@Nonnull Action a) {
+    public boolean addOrReplaceAction(@NonNull Action a) {
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
@@ -250,7 +250,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public boolean removeActions(@Nonnull Class<? extends Action> clazz) {
+    public boolean removeActions(@NonNull Class<? extends Action> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
         }
@@ -282,7 +282,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public boolean replaceActions(@Nonnull Class<? extends Action> clazz, @Nonnull Action a) {
+    public boolean replaceActions(@NonNull Class<? extends Action> clazz, @NonNull Action a) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
         }

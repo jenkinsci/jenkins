@@ -27,7 +27,7 @@ package jenkins.util.io;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
@@ -37,7 +37,7 @@ import java.util.List;
 public class CompositeIOException extends IOException {
     private final List<IOException> exceptions;
 
-    public CompositeIOException(String message, @Nonnull List<IOException> exceptions) {
+    public CompositeIOException(String message, @NonNull List<IOException> exceptions) {
         super(message);
         this.exceptions = exceptions;
         exceptions.forEach(this::addSuppressed);
