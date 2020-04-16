@@ -47,7 +47,9 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
     (function() {
         var instructionsTd = document.getElementById("hidden-by-default-instructions-td");
-        instructionsTd.innerText = instructionsTd.getAttribute("data-loaded-text");
+        if (instructionsTd) { // only on Available tab
+            instructionsTd.innerText = instructionsTd.getAttribute("data-loaded-text");
+        }
         applyFilter();
     }());
 });
