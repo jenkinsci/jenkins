@@ -77,8 +77,8 @@ THE SOFTWARE.
                 <j:set var="cache" value="${it.createCache()}"/>
                 <j:if test="${filtered == 'true'}">
                   <tr id="hidden-by-default-instructions">
-                    <td class="pane" colspan="5" align="center">
-                      ${%Use the search field above to search for available plugins.}
+                    <td class="pane" colspan="5" align="center" id="hidden-by-default-instructions-td" data-loaded-text="${%instructions}">
+                      ${%loading}
                     </td>
                   </tr>
                 </j:if>

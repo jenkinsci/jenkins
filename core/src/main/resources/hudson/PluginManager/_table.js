@@ -46,6 +46,8 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
     e.onkeyup = applyFilter;
 
     (function() {
+        var instructionsTd = document.getElementById("hidden-by-default-instructions-td");
+        instructionsTd.innerText = instructionsTd.getAttribute("data-loaded-text");
         applyFilter();
     }());
 });
