@@ -43,7 +43,7 @@ public class CompositeIOException extends IOException {
      * {@code CompositeIOException}.
      * <p>
      * The number of exceptions is limited to avoid pathological cases where
-     * where a huge number of exceptions could lead to excessive memory usage.
+     * a huge number of exceptions could lead to excessive memory usage.
      * For example, if the number of exceptions was unlimited, a call to
      * {@code Util.deleteRecursive} could fail with a
      * {@code CompositeIOException} that contains an exception for every
@@ -58,15 +58,13 @@ public class CompositeIOException extends IOException {
      * exceptions are added as suppressed exceptions to the new exception.
      * <p>
      * If the given list of exceptions is longer than {@link #EXCEPTION_LIMIT},
-     * the list will be truncated to that length, and an exception whose message
-     * contains the number of exceptions that were removed will be added as a
-     * suppressed exception to the new exception.
+     * the list will be truncated to that length, and a message indicating the
+     * number of discarded exceptions will be appended to the original message.
      */
     public CompositeIOException(String message, @NonNull List<IOException> exceptions) {
-        super(message);
+        super(message + getDiscardedExceptionsMessage(exceptions));
         if (exceptions.size() > EXCEPTION_LIMIT) {
             this.exceptions = new ArrayList<>(exceptions.subList(0, EXCEPTION_LIMIT));
-            this.exceptions.add(new ExceptionLimitReached(exceptions.size() - EXCEPTION_LIMIT));
         } else {
             this.exceptions = exceptions;
         }
@@ -88,21 +86,11 @@ public class CompositeIOException extends IOException {
         return new UncheckedIOException(this);
     }
 
-    /**
-     * An exception with no stack trace used to inform users that not all
-     * exceptions are being reported.
-     */
-    private static class ExceptionLimitReached extends IOException {
-        private static final long serialVersionUID = 1L;
-
-        public ExceptionLimitReached(int truncated) {
-            super(truncated + " additional exceptions were thrown");
-        }
-
-        @Override
-        public Throwable fillInStackTrace() {
-            // Do not create a strack trace for this exception.
-            return this;
+    private static String getDiscardedExceptionsMessage(List<IOException> exceptions) {
+        if (exceptions.size() > EXCEPTION_LIMIT) {
+            return " (Discarded " + (exceptions.size() - EXCEPTION_LIMIT) + " additional exceptions)";
+        } else {
+            return "";
         }
     }
 }

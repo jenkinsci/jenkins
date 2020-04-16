@@ -55,6 +55,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
@@ -444,9 +445,8 @@ public class PathRemoverTest {
             PathRemover.newSimpleRemover().forceRemoveRecursive(dir.toPath());
             fail("Deletion should have failed");
         } catch (CompositeIOException e) {
-            assertThat(e.getSuppressed(), arrayWithSize(maxExceptions + 1));
-            assertThat(e.getSuppressed()[maxExceptions].getMessage(),
-                    containsString((lockedFiles + 1 - maxExceptions) + " additional exceptions"));
+            assertThat(e.getSuppressed(), arrayWithSize(maxExceptions));
+            assertThat(e.getMessage(), endsWith("(Discarded" + (lockedFiles + 1 - maxExceptions) + " additional exceptions)"));
         }
         assertTrue(dir.exists());
         assertThat(dir.listFiles().length, equalTo(lockedFiles));
