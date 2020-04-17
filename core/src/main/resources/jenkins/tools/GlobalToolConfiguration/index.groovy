@@ -7,7 +7,7 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
+l.layout(permission:app.ADMINISTER, title:my.displayName) {
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))

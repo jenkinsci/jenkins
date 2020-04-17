@@ -36,7 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 import org.jenkinsci.Symbol;
@@ -90,7 +90,10 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
                         ws.deleteRecursive();
-                        WorkspaceList.tempDir(ws).deleteRecursive();
+                        FilePath tempDir = WorkspaceList.tempDir(ws);
+                        if (tempDir != null) {
+                            tempDir.deleteRecursive();
+                        }
                     } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
@@ -99,7 +102,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         }
     }
 
-    private boolean shouldBeDeleted(@Nonnull TopLevelItem item, FilePath dir, @Nonnull Node n) throws IOException, InterruptedException {
+    private boolean shouldBeDeleted(@NonNull TopLevelItem item, FilePath dir, @NonNull Node n) throws IOException, InterruptedException {
         // TODO: the use of remoting is not optimal.
         // One remoting can execute "exists", "lastModified", and "delete" all at once.
         // (Could even invert master loop so that one FileCallable takes care of all known items.)

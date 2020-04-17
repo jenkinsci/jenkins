@@ -101,7 +101,7 @@ public class LoadStatisticsTest {
         assertThat(LoadStatistics.isModern(LoadStatistics.class), is(false));
     }
 
-    private class Modern extends LoadStatistics {
+    private static class Modern extends LoadStatistics {
 
         protected Modern(int initialOnlineExecutors, int initialBusyExecutors) {
             super(initialOnlineExecutors, initialBusyExecutors);

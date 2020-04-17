@@ -18,17 +18,8 @@
     min-height: 2.5rem;
     font-size: 1rem;
     line-height: 1.5;
-    font-family: Roboto, Helvetica, Arial, sans-serif;
     padding: 0 1.25rem;
     background-color: #F8F8F8;
-}
-
-/*
-  Revert the font change to the options menu.
-  It's used all over the application and having Roboto may make it clash with other UI elements
-*/
-#breadcrumb-menu {
-    font-family: Helvetica, Arial, sans-serif;
 }
 
 #breadcrumbs {
@@ -49,8 +40,7 @@
     min-height: 2.5rem;
 }
 
-#breadcrumbs LI A,
-.breadcrumbs__auto-refresh {
+#breadcrumbs LI A {
     display: inline-block;
     display: inline-flex;
     align-items: center;
@@ -63,8 +53,7 @@
 }
 
 
-#breadcrumbs LI A, #breadcrumbs LI A:link, #breadcrumbs LI A:visited,
-.breadcrumbs__auto-refresh:link, .breadcrumbs__auto-refresh:visited {
+#breadcrumbs LI A, #breadcrumbs LI A:link, #breadcrumbs LI A:visited {
     /* is this still needed? */
     max-width: 1330px;
 
@@ -79,25 +68,19 @@
     color: #4d545d;
 }
 
-#breadcrumbs LI A:hover, #breadcrumbs LI A:focus,
-.breadcrumbs__auto-refresh:hover, .breadcrumbs__auto-refresh:focus {
+#breadcrumbs LI A:hover, #breadcrumbs LI A:focus {
     /* TODO: change hover state
        add it in the LI element so that it applies to the menuSeparator */
     text-decoration: underline;
     outline-color: #3FB3F7;
 }
 
-#breadcrumbs LI A:active, .breadcrumbs__auto-refresh:active {
+#breadcrumbs LI A:active {
     background-color: #C8CEC2;
 }
 
 #breadcrumbs LI A {
     cursor: pointer;
-}
-
-.breadcrumbs__auto-refresh {
-    text-transform: lowercase;
-    margin-left: 1.5rem;
 }
 
 #breadcrumbs LI.children, #breadcrumbs LI.separator {/* '>' separator between two items */
@@ -142,4 +125,9 @@
 
 A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */
     padding-right: 16px;
+}
+
+#breadcrumb-menu .header {
+  font-weight: bold;
+  font-size: 0.875rem;
 }

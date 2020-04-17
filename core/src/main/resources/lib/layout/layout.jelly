@@ -34,8 +34,7 @@ THE SOFTWARE.
       Title of the HTML page. Rendered into &lt;title> tag.
     </st:attribute>
     <st:attribute name="norefresh">
-      If non-null and not "false", auto refresh is disabled on this page.
-      This is necessary for pages that include forms.
+      Deprecated: Used to disable auto refresh for a page. The feature has been removed.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
       specify path that starts from "/" for loading additional CSS stylesheet.
@@ -85,7 +84,6 @@ THE SOFTWARE.
 
 <j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
 <j:set var="_" value="${request.getSession()}"/>
-<j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
 <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
 <j:if test="${request.servletPath=='/' || request.servletPath==''}">
   ${h.advertiseHeaders(response)}
@@ -97,7 +95,7 @@ THE SOFTWARE.
 </j:if>
 <x:doctype name="html" />
 <html class="${h.isUiRefreshEnabled() ? 'ui-refresh' : ''}">
-  <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+  <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
     ${h.checkAnyPermission(it, permissions)}
 
@@ -161,7 +159,6 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
-    <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/jsbundles/ui-refresh-overrides.css" type="text/css" />
 
     <l:hasPermission permission="${app.READ}">
@@ -233,23 +230,33 @@ THE SOFTWARE.
     </div>
 
     <j:if test="${layoutType!='full-screen'}">
-    <footer>
+    <footer class="page-footer">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-6" id="footer"></div>
-          <div class="col-md-18">
-            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="long"/></span>
-            <j:if test="${!empty(it.api)}">
-               <span class="rest_api"><a href="api/">REST API</a></span>
-            </j:if>
-            <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
-            <j:if test="${extensionsAvailable}">
-            <j:forEach var="pd" items="${h.pageDecorators}">
-              <st:include it="${pd}" page="footer.jelly" optional="true" />
-            </j:forEach>
-            </j:if>
+        <div class="page-footer__flex-row">
+          <div class="page-footer__footer-id-placeholder" id="footer"></div>
+
+          <div class="page-footer__timestamp hidden-xs hidden-sm">
+            <span class="page-footer__generated">
+              ${%Page generated}:
+              <span class="page-footer__generated-timestamp"><i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="long"/></span>
+            </span>
+          </div>
+
+          <j:if test="${!empty(it.api)}">
+            <div class="page-footer__links rest_api hidden-xs">
+              <a href="api/">REST API</a>
+            </div>
+          </j:if>
+
+          <div class="page-footer__links page-footer__links--white jenkins_ver">
+            <a href="${h.getFooterURL()}" target="_blank">Jenkins ${h.version}</a>
           </div>
         </div>
+        <j:if test="${extensionsAvailable}">
+          <j:forEach var="pd" items="${h.pageDecorators}">
+            <st:include it="${pd}" page="footer.jelly" optional="true" />
+          </j:forEach>
+        </j:if>
       </div>
     </footer>
     </j:if>

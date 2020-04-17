@@ -6,7 +6,7 @@ import jenkins.FilePathFilter;
 import jenkins.ReflectiveFilePathFilter;
 import jenkins.security.ChannelConfigurator;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.inject.Inject;
 import java.io.File;
 

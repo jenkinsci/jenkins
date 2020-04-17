@@ -74,8 +74,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Like {@link BuildTrigger} but defined on the downstream project.
@@ -181,7 +181,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
     }
 
-    @Override public void start(@Nonnull Job project, boolean newInstance) {
+    @Override public void start(@NonNull Job project, boolean newInstance) {
         super.start(project, newInstance);
         RunListenerImpl.get().invalidateCache();
     }
@@ -270,7 +270,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             }
         }
 
-        @Override public void onCompleted(@Nonnull Run r, @Nonnull TaskListener listener) {
+        @Override public void onCompleted(@NonNull Run r, @NonNull TaskListener listener) {
             Collection<ReverseBuildTrigger> triggers;
             synchronized (this) {
                 if (upstream2Trigger == null) {

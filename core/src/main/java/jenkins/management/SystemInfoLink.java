@@ -27,11 +27,9 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-
-import javax.annotation.CheckForNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -53,14 +51,21 @@ public class SystemInfoLink extends ManagementLink {
         return Messages.SystemInfoLink_Description();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.SYSTEM_READ;
+        //This link is displayed to any user with permission to access the management menu
+        return Jenkins.READ;
     }
 
     @Override
     public String getUrlName() {
         return "systemInfo";
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
     }
 }

@@ -3,9 +3,9 @@ package hudson.model;
 import hudson.Extension;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.IOException;
 import java.util.TimeZone;
 import java.util.logging.Logger;
@@ -20,7 +20,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * A UserProperty that allows a user to specify a time zone for displaying time.
  */
 @Restricted(NoExternalUse.class)
-public class TimeZoneProperty extends UserProperty implements Saveable {
+public class TimeZoneProperty extends UserProperty {
     /**
      * Time Zone ID defined by the user.
      * {@code null} means that the time zone is not defined.
@@ -39,11 +39,6 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
         this(null);
     }
 
-    @Override
-    public void save() throws IOException {
-        user.save();
-    }
-
     public void setTimeZoneName(@CheckForNull String timeZoneName) {
         this.timeZoneName = timeZoneName;
     }
@@ -52,7 +47,7 @@ public class TimeZoneProperty extends UserProperty implements Saveable {
     @Symbol("timezone")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.TimeZoneProperty_DisplayName();

@@ -85,9 +85,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -113,8 +114,8 @@ public class Util {
      * Creates a filtered sublist.
      * @since 1.176
      */
-    @Nonnull
-    public static <T> List<T> filter( @Nonnull Iterable<?> base, @Nonnull Class<T> type ) {
+    @NonNull
+    public static <T> List<T> filter( @NonNull Iterable<?> base, @NonNull Class<T> type ) {
         List<T> r = new ArrayList<>();
         for (Object i : base) {
             if(type.isInstance(i))
@@ -126,8 +127,8 @@ public class Util {
     /**
      * Creates a filtered sublist.
      */
-    @Nonnull
-    public static <T> List<T> filter( @Nonnull List<?> base, @Nonnull Class<T> type ) {
+    @NonNull
+    public static <T> List<T> filter( @NonNull List<?> base, @NonNull Class<T> type ) {
         return filter((Iterable)base,type);
     }
 
@@ -144,7 +145,7 @@ public class Util {
      *
      */
     @Nullable
-    public static String replaceMacro( @CheckForNull String s, @Nonnull Map<String,String> properties) {
+    public static String replaceMacro( @CheckForNull String s, @NonNull Map<String,String> properties) {
         return replaceMacro(s, new VariableResolver.ByMap<>(properties));
     }
 
@@ -155,7 +156,7 @@ public class Util {
      * Unlike shell, undefined variables are left as-is (this behavior is the same as Ant.)
      */
     @Nullable
-    public static String replaceMacro(@CheckForNull String s, @Nonnull VariableResolver<String> resolver) {
+    public static String replaceMacro(@CheckForNull String s, @NonNull VariableResolver<String> resolver) {
     	if (s == null) {
     		return null;
     	}
@@ -196,9 +197,9 @@ public class Util {
      * instead to specify the charset to use for decoding (preferably
      * {@link java.nio.charset.StandardCharsets#UTF_8}).
      */
-    @Nonnull
+    @NonNull
     @Deprecated
-    public static String loadFile(@Nonnull File logfile) throws IOException {
+    public static String loadFile(@NonNull File logfile) throws IOException {
         return loadFile(logfile, Charset.defaultCharset());
     }
 
@@ -211,8 +212,8 @@ public class Util {
      * @return The entire text content of {@code logfile}.
      * @throws IOException If an error occurs while reading the file.
      */
-    @Nonnull
-    public static String loadFile(@Nonnull File logfile, @Nonnull Charset charset) throws IOException {
+    @NonNull
+    public static String loadFile(@NonNull File logfile, @NonNull Charset charset) throws IOException {
         // Note: Until charset handling is resolved (e.g. by implementing
         // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), this method
         // must be able to handle character encoding errors. As reported at
@@ -245,7 +246,7 @@ public class Util {
      * @throws IOException
      *      if the operation fails.
      */
-    public static void deleteContentsRecursive(@Nonnull File file) throws IOException {
+    public static void deleteContentsRecursive(@NonNull File file) throws IOException {
         deleteContentsRecursive(fileToPath(file), PathRemover.PathChecker.ALLOW_ALL);
     }
 
@@ -256,7 +257,7 @@ public class Util {
      * @throws IOException if the operation fails
      */
     @Restricted(NoExternalUse.class)
-    public static void deleteContentsRecursive(@Nonnull Path path, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+    public static void deleteContentsRecursive(@NonNull Path path, @NonNull PathRemover.PathChecker pathChecker) throws IOException {
         newPathRemover(pathChecker).forceRemoveDirectoryContents(path);
     }
 
@@ -267,7 +268,7 @@ public class Util {
      * @param f a file to delete
      * @throws IOException if it exists but could not be successfully deleted
      */
-    public static void deleteFile(@Nonnull File f) throws IOException {
+    public static void deleteFile(@NonNull File f) throws IOException {
         newPathRemover(PathRemover.PathChecker.ALLOW_ALL).forceRemoveFile(fileToPath(f));
     }
 
@@ -279,7 +280,7 @@ public class Util {
      * @throws IOException
      * if the operation fails.
      */
-    public static void deleteRecursive(@Nonnull File dir) throws IOException {
+    public static void deleteRecursive(@NonNull File dir) throws IOException {
         deleteRecursive(fileToPath(dir), PathRemover.PathChecker.ALLOW_ALL);
     }
 
@@ -290,7 +291,7 @@ public class Util {
      * @throws IOException if the operation fails
      */
     @Restricted(NoExternalUse.class)
-    public static void deleteRecursive(@Nonnull Path dir, @Nonnull PathRemover.PathChecker pathChecker) throws IOException {
+    public static void deleteRecursive(@NonNull Path dir, @NonNull PathRemover.PathChecker pathChecker) throws IOException {
         newPathRemover(pathChecker).forceRemoveRecursive(dir);
     }
 
@@ -314,12 +315,12 @@ public class Util {
      * considers <a href="https://en.wikipedia.org/wiki/NTFS_junction_point">NTFS junction points</a> as symbolic
      * links.
      */
-    public static boolean isSymlink(@Nonnull File file) throws IOException {
+    public static boolean isSymlink(@NonNull File file) throws IOException {
         return isSymlink(fileToPath(file));
     }
 
     @Restricted(NoExternalUse.class)
-    public static boolean isSymlink(@Nonnull Path path) {
+    public static boolean isSymlink(@NonNull Path path) {
         /*
          *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
          *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
@@ -411,14 +412,14 @@ public class Util {
      * On Windows, error messages for IOException aren't very helpful.
      * This method generates additional user-friendly error message to the listener
      */
-    public static void displayIOException(@Nonnull IOException e, @Nonnull TaskListener listener ) {
+    public static void displayIOException(@NonNull IOException e, @NonNull TaskListener listener ) {
         String msg = getWin32ErrorMessage(e);
         if(msg!=null)
             listener.getLogger().println(msg);
     }
 
     @CheckForNull
-    public static String getWin32ErrorMessage(@Nonnull IOException e) {
+    public static String getWin32ErrorMessage(@NonNull IOException e) {
         return getWin32ErrorMessage((Throwable)e);
     }
 
@@ -468,7 +469,7 @@ public class Util {
     /**
      * Guesses the current host name.
      */
-    @Nonnull
+    @NonNull
     public static String getHostName() {
         try {
             return InetAddress.getLocalHost().getHostName();
@@ -481,7 +482,7 @@ public class Util {
      * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)}
      */
     @Deprecated
-    public static void copyStream(@Nonnull InputStream in,@Nonnull OutputStream out) throws IOException {
+    public static void copyStream(@NonNull InputStream in,@NonNull OutputStream out) throws IOException {
         IOUtils.copy(in, out);
     }
 
@@ -489,7 +490,7 @@ public class Util {
      * @deprecated Use {@link IOUtils#copy(Reader, Writer)}
      */
     @Deprecated
-    public static void copyStream(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
+    public static void copyStream(@NonNull Reader in, @NonNull Writer out) throws IOException {
         IOUtils.copy(in, out);
     }
 
@@ -497,7 +498,7 @@ public class Util {
      * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)} in a {@code try}-with-resources block
      */
     @Deprecated
-    public static void copyStreamAndClose(@Nonnull InputStream in, @Nonnull OutputStream out) throws IOException {
+    public static void copyStreamAndClose(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
         try (InputStream _in = in; OutputStream _out = out) { // make sure both are closed, and use Throwable.addSuppressed
             IOUtils.copy(_in, _out);
         }
@@ -507,7 +508,7 @@ public class Util {
      * @deprecated Use {@link IOUtils#copy(Reader, Writer)} in a {@code try}-with-resources block
      */
     @Deprecated
-    public static void copyStreamAndClose(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
+    public static void copyStreamAndClose(@NonNull Reader in, @NonNull Writer out) throws IOException {
         try (Reader _in = in; Writer _out = out) {
             IOUtils.copy(_in, _out);
         }
@@ -523,21 +524,21 @@ public class Util {
      * @since 1.145
      * @see QuotedStringTokenizer
      */
-    @Nonnull
-    public static String[] tokenize(@Nonnull String s, @CheckForNull String delimiter) {
+    @NonNull
+    public static String[] tokenize(@NonNull String s, @CheckForNull String delimiter) {
         return QuotedStringTokenizer.tokenize(s,delimiter);
     }
 
-    @Nonnull
-    public static String[] tokenize(@Nonnull String s) {
+    @NonNull
+    public static String[] tokenize(@NonNull String s) {
         return tokenize(s," \t\n\r\f");
     }
 
     /**
      * Converts the map format of the environment variables to the K=V format in the array.
      */
-    @Nonnull
-    public static String[] mapToEnv(@Nonnull Map<String,String> m) {
+    @NonNull
+    public static String[] mapToEnv(@NonNull Map<String,String> m) {
         String[] r = new String[m.size()];
         int idx=0;
 
@@ -547,7 +548,7 @@ public class Util {
         return r;
     }
 
-    public static int min(int x, @Nonnull int... values) {
+    public static int min(int x, @NonNull int... values) {
         for (int i : values) {
             if(i<x)
                 x=i;
@@ -560,8 +561,8 @@ public class Util {
         return fixEmpty(v);
     }
 
-    @Nonnull
-    public static String removeTrailingSlash(@Nonnull String s) {
+    @NonNull
+    public static String removeTrailingSlash(@NonNull String s) {
         if(s.endsWith("/")) return s.substring(0,s.length()-1);
         else                return s;
     }
@@ -597,8 +598,8 @@ public class Util {
      *      32-char wide string
      * @see DigestUtils#md5Hex(InputStream)
      */
-    @Nonnull
-    public static String getDigestOf(@Nonnull InputStream source) throws IOException {
+    @NonNull
+    public static String getDigestOf(@NonNull InputStream source) throws IOException {
         try {
             MessageDigest md5 = getMd5();
             DigestInputStream in = new DigestInputStream(source, md5);
@@ -628,8 +629,8 @@ public class Util {
         return MessageDigest.getInstance("MD5");
     }
 
-    @Nonnull
-    public static String getDigestOf(@Nonnull String text) {
+    @NonNull
+    public static String getDigestOf(@NonNull String text) {
         try {
             return getDigestOf(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
         } catch (IOException e) {
@@ -644,8 +645,8 @@ public class Util {
      * @throws IOException in case reading fails
      * @since 1.525
      */
-    @Nonnull
-    public static String getDigestOf(@Nonnull File file) throws IOException {
+    @NonNull
+    public static String getDigestOf(@NonNull File file) throws IOException {
         // Note: getDigestOf() closes the input stream.
         return getDigestOf(Files.newInputStream(fileToPath(file)));
     }
@@ -654,8 +655,8 @@ public class Util {
      * Converts a string into 128-bit AES key.
      * @since 1.308
      */
-    @Nonnull
-    public static SecretKey toAes128Key(@Nonnull String s) {
+    @NonNull
+    public static SecretKey toAes128Key(@NonNull String s) {
         try {
             // turn secretKey into 256 bit hash
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -669,8 +670,8 @@ public class Util {
         }
     }
 
-    @Nonnull
-    public static String toHexString(@Nonnull byte[] data, int start, int len) {
+    @NonNull
+    public static String toHexString(@NonNull byte[] data, int start, int len) {
         StringBuilder buf = new StringBuilder();
         for( int i=0; i<len; i++ ) {
             int b = data[start+i]&0xFF;
@@ -680,13 +681,13 @@ public class Util {
         return buf.toString();
     }
 
-    @Nonnull
-    public static String toHexString(@Nonnull byte[] bytes) {
+    @NonNull
+    public static String toHexString(@NonNull byte[] bytes) {
         return toHexString(bytes,0,bytes.length);
     }
 
-    @Nonnull
-    public static byte[] fromHexString(@Nonnull String data) {
+    @NonNull
+    public static byte[] fromHexString(@NonNull String data) {
         if (data.length() % 2 != 0)
             throw new IllegalArgumentException("data must have an even number of hexadecimal digits");
         byte[] r = new byte[data.length() / 2];
@@ -702,7 +703,7 @@ public class Util {
      * @param duration
      *      number of milliseconds.
      */
-    @Nonnull
+    @NonNull
     @SuppressFBWarnings(value = "ICAST_IDIV_CAST_TO_DOUBLE", justification = "We want to truncate here.")
     public static String getTimeSpanString(long duration) {
         // Break the duration up in to units.
@@ -750,11 +751,11 @@ public class Util {
      * So 13 minutes and 43 seconds returns just "13 minutes", but 3 minutes
      * and 43 seconds is "3 minutes 43 seconds".
      */
-    @Nonnull
+    @NonNull
     private static String makeTimeSpanString(long bigUnit,
-                                             @Nonnull String bigLabel,
+                                             @NonNull String bigLabel,
                                              long smallUnit,
-                                             @Nonnull String smallLabel) {
+                                             @NonNull String smallLabel) {
         String text = bigLabel;
         if (bigUnit < 10)
             text += ' ' + smallLabel;
@@ -768,7 +769,7 @@ public class Util {
      * @deprecated Actually identical to {@link #getTimeSpanString}, does not add {@code ago}.
      */
     @Deprecated
-    @Nonnull
+    @NonNull
     public static String getPastTimeString(long duration) {
         return getTimeSpanString(duration);
     }
@@ -782,9 +783,9 @@ public class Util {
      *   See {@link Messages#Util_year(Object)} for an example.
      *   Deprecated since 2009-06-24, remove method after 2009-12-24.
      */
-    @Nonnull
+    @NonNull
     @Deprecated
-    public static String combine(long n, @Nonnull String suffix) {
+    public static String combine(long n, @NonNull String suffix) {
         String s = Long.toString(n)+' '+suffix;
         if(n!=1)
         	// Just adding an 's' won't work in most natural languages, even English has exception to the rule (e.g. copy/copies).
@@ -795,8 +796,8 @@ public class Util {
     /**
      * Create a sub-list by only picking up instances of the specified type.
      */
-    @Nonnull
-    public static <T> List<T> createSubList(@Nonnull Collection<?> source, @Nonnull Class<T> type ) {
+    @NonNull
+    public static <T> List<T> createSubList(@NonNull Collection<?> source, @NonNull Class<T> type ) {
         List<T> r = new ArrayList<>();
         for (Object item : source) {
             if(type.isInstance(item))
@@ -814,8 +815,8 @@ public class Util {
      * {@link #rawEncode(String)} should generally be used instead, though be careful to pass only
      * a single path component to that method (it will encode /, but this method does not).
      */
-    @Nonnull
-    public static String encode(@Nonnull String s) {
+    @NonNull
+    public static String encode(@NonNull String s) {
         try {
             boolean escaped = false;
 
@@ -872,8 +873,8 @@ public class Util {
      * single path component used in constructing a URL.
      * Method name inspired by PHP's rawurlencode.
      */
-    @Nonnull
-    public static String rawEncode(@Nonnull String s) {
+    @NonNull
+    public static String rawEncode(@NonNull String s) {
         boolean escaped = false;
         StringBuilder out = null;
         CharsetEncoder enc = null;
@@ -982,8 +983,8 @@ public class Util {
         return buf.toString();
     }
 
-    @Nonnull
-    public static String xmlEscape(@Nonnull String text) {
+    @NonNull
+    public static String xmlEscape(@NonNull String text) {
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
@@ -1007,14 +1008,14 @@ public class Util {
      * exists is unlike the POSIX {@code touch} utility which merely
      * updates the file's access and/or modification time.
      */
-    public static void touch(@Nonnull File file) throws IOException {
+    public static void touch(@NonNull File file) throws IOException {
         Files.newOutputStream(fileToPath(file)).close();
     }
 
     /**
      * Copies a single file by using Ant.
      */
-    public static void copyFile(@Nonnull File src, @Nonnull File dst) throws BuildException {
+    public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
         cp.setProject(new org.apache.tools.ant.Project());
         cp.setTofile(dst);
@@ -1026,7 +1027,7 @@ public class Util {
     /**
      * Convert null to "".
      */
-    @Nonnull
+    @NonNull
     public static String fixNull(@CheckForNull String s) {
         return fixNull(s, "");
     }
@@ -1036,8 +1037,8 @@ public class Util {
      * @param defaultValue Default value. It may be immutable or not, depending on the implementation.
      * @since 2.144
      */
-    @Nonnull
-    public static <T> T fixNull(@CheckForNull T s, @Nonnull T defaultValue) {
+    @NonNull
+    public static <T> T fixNull(@CheckForNull T s, @NonNull T defaultValue) {
         return s != null ? s : defaultValue;
     }
 
@@ -1070,7 +1071,7 @@ public class Util {
      *     {@code l} if l is not {@code null}.
      *     An empty <b>immutable list</b> if l is {@code null}.
      */
-    @Nonnull
+    @NonNull
     public static <T> List<T> fixNull(@CheckForNull List<T> l) {
         return fixNull(l, Collections.emptyList());
     }
@@ -1084,7 +1085,7 @@ public class Util {
      *     {@code l} if l is not {@code null}.
      *     An empty <b>immutable set</b> if l is {@code null}.
      */
-    @Nonnull
+    @NonNull
     public static <T> Set<T> fixNull(@CheckForNull Set<T> l) {
         return fixNull(l, Collections.emptySet());
     }
@@ -1098,7 +1099,7 @@ public class Util {
      *     {@code l} if l is not {@code null}.
      *     An empty <b>immutable set</b> if l is {@code null}.
      */
-    @Nonnull
+    @NonNull
     public static <T> Collection<T> fixNull(@CheckForNull Collection<T> l) {
         return fixNull(l, Collections.emptySet());
     }
@@ -1112,7 +1113,7 @@ public class Util {
      *     {@code l} if l is not {@code null}.
      *     An empty <b>immutable set</b> if l is {@code null}.
      */
-    @Nonnull
+    @NonNull
     public static <T> Iterable<T> fixNull(@CheckForNull Iterable<T> l) {
         return fixNull(l, Collections.emptySet());
     }
@@ -1120,8 +1121,8 @@ public class Util {
     /**
      * Cuts all the leading path portion and get just the file name.
      */
-    @Nonnull
-    public static String getFileName(@Nonnull String filePath) {
+    @NonNull
+    public static String getFileName(@NonNull String filePath) {
         int idx = filePath.lastIndexOf('\\');
         if(idx>=0)
             return getFileName(filePath.substring(idx+1));
@@ -1134,8 +1135,8 @@ public class Util {
     /**
      * Concatenate multiple strings by inserting a separator.
      */
-    @Nonnull
-    public static String join(@Nonnull Collection<?> strings, @Nonnull String separator) {
+    @NonNull
+    public static String join(@NonNull Collection<?> strings, @NonNull String separator) {
         StringBuilder buf = new StringBuilder();
         boolean first=true;
         for (Object s : strings) {
@@ -1149,8 +1150,8 @@ public class Util {
     /**
      * Combines all the given collections into a single list.
      */
-    @Nonnull
-    public static <T> List<T> join(@Nonnull Collection<? extends T>... items) {
+    @NonNull
+    public static <T> List<T> join(@NonNull Collection<? extends T>... items) {
         int size = 0;
         for (Collection<? extends T> item : items)
             size += item.size();
@@ -1177,8 +1178,8 @@ public class Util {
      *      Can be null.
      * @since 1.172
      */
-    @Nonnull
-    public static FileSet createFileSet(@Nonnull File baseDir, @Nonnull String includes, @CheckForNull String excludes) {
+    @NonNull
+    public static FileSet createFileSet(@NonNull File baseDir, @NonNull String includes, @CheckForNull String excludes) {
         FileSet fs = new FileSet();
         fs.setDir(baseDir);
         fs.setProject(new Project());
@@ -1200,9 +1201,68 @@ public class Util {
         return fs;
     }
 
-    @Nonnull
-    public static FileSet createFileSet(@Nonnull File baseDir, @Nonnull String includes) {
+    @NonNull
+    public static FileSet createFileSet(@NonNull File baseDir, @NonNull String includes) {
         return createFileSet(baseDir,includes,null);
+    }
+
+    private static void tryToDeleteSymlink(@NonNull File symlink) {
+        if (!symlink.delete()) {
+            LogRecord record = new LogRecord(Level.FINE, "Failed to delete temporary symlink {0}");
+            record.setParameters(new Object[]{symlink.getAbsolutePath()});
+            LOGGER.log(record);
+        }
+    }
+
+    private static void reportAtomicFailure(@NonNull Path pathForSymlink, @NonNull Exception ex) {
+        LogRecord record = new LogRecord(Level.FINE, "Failed to atomically create/replace symlink {0}");
+        record.setParameters(new Object[]{pathForSymlink.toAbsolutePath().toString()});
+        record.setThrown(ex);
+        LOGGER.log(record);
+    }
+
+    /**
+     * Creates a symlink to targetPath at baseDir+symlinkPath.
+     *
+     * @param pathForSymlink
+     *      The absolute path of the symlink itself as a path object.
+     * @param fileForSymlink
+     *      The absolute path of the symlink itself as a file object.
+     * @param target
+     *      The path that the symlink should point to. Usually relative to the directory of the symlink but may instead be an absolute path.
+     * @param symlinkPath
+     *      Where to create a symlink in (relative to {@code baseDir})
+     *
+     * Returns true on success
+     */
+    @CheckReturnValue
+    private static boolean createSymlinkAtomic(@NonNull Path pathForSymlink, @NonNull File fileForSymlink, @NonNull Path target, @NonNull String symlinkPath) {
+        try {
+            File symlink = File.createTempFile("symtmp", null, fileForSymlink);
+            tryToDeleteSymlink(symlink);
+            Path tempSymlinkPath = symlink.toPath();
+            Files.createSymbolicLink(tempSymlinkPath, target);
+            try {
+                Files.move(tempSymlinkPath, pathForSymlink, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                return true;
+            } catch (
+                UnsupportedOperationException |
+                SecurityException |
+                IOException ex) {
+                // If we couldn't perform an atomic move or the setup, we fall through to another approach
+                reportAtomicFailure(pathForSymlink, ex);
+            }
+            // If we didn't return after our atomic move, then we want to clean up our symlink
+            tryToDeleteSymlink(symlink);
+        } catch (
+            SecurityException |
+            InvalidPathException |
+            UnsupportedOperationException |
+            IOException ex) {
+            // We couldn't perform an atomic move or the setup.
+            reportAtomicFailure(pathForSymlink, ex);
+        }
+        return false;
     }
 
     /**
@@ -1217,18 +1277,23 @@ public class Util {
      * @param symlinkPath
      *      Where to create a symlink in (relative to {@code baseDir})
      */
-    public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
-            @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
+    public static void createSymlink(@NonNull File baseDir, @NonNull String targetPath,
+            @NonNull String symlinkPath, @NonNull TaskListener listener) throws InterruptedException {
+        File fileForSymlink = new File(baseDir, symlinkPath);
         try {
-            Path path = fileToPath(new File(baseDir, symlinkPath));
+            Path pathForSymlink = fileToPath(fileForSymlink);
             Path target = Paths.get(targetPath, MemoryReductionUtil.EMPTY_STRING_ARRAY);
+
+            if (createSymlinkAtomic(pathForSymlink, fileForSymlink, target, symlinkPath)) {
+                return;
+            }
 
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;
             for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
-                Files.deleteIfExists(path);
+                Files.deleteIfExists(pathForSymlink);
                 try {
-                    Files.createSymbolicLink(path, target);
+                    Files.createSymbolicLink(pathForSymlink, target);
                     break;
                 } catch (FileAlreadyExistsException fileAlreadyExistsException) {
                     if (tryNumber < maxNumberOfTries) {
@@ -1249,7 +1314,7 @@ public class Util {
                 return;
             }
             PrintStream log = listener.getLogger();
-            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
+            log.printf("ln %s %s failed%n", targetPath, fileForSymlink);
             Functions.printStackTrace(e, log);
         }
     }
@@ -1277,7 +1342,7 @@ public class Util {
      *      if the specified file is not a symlink.
      */
     @CheckForNull
-    public static File resolveSymlinkToFile(@Nonnull File link) throws InterruptedException, IOException {
+    public static File resolveSymlinkToFile(@NonNull File link) throws InterruptedException, IOException {
         String target = resolveSymlink(link);
         if (target==null)   return null;
 
@@ -1298,7 +1363,7 @@ public class Util {
      *      The relative path is meant to be resolved from the location of the symlink.
      */
     @CheckForNull
-    public static String resolveSymlink(@Nonnull File link) throws IOException {
+    public static String resolveSymlink(@NonNull File link) throws IOException {
         try {
             Path path = fileToPath(link);
             return Files.readSymbolicLink(path).toString();
@@ -1340,8 +1405,8 @@ public class Util {
      * Wraps with the error icon and the CSS class to render error message.
      * @since 1.173
      */
-    @Nonnull
-    public static String wrapToErrorSpan(@Nonnull String s) {
+    @NonNull
+    public static String wrapToErrorSpan(@NonNull String s) {
         s = "<span class=error style='display:inline-block'>"+s+"</span>";
         return s;
     }
@@ -1370,11 +1435,11 @@ public class Util {
      * Checks if the method defined on the base type with the given arguments
      * is overridden in the given derived type.
      */
-    public static boolean isOverridden(@Nonnull Class base, @Nonnull Class derived, @Nonnull String methodName, @Nonnull Class... types) {
+    public static boolean isOverridden(@NonNull Class base, @NonNull Class derived, @NonNull String methodName, @NonNull Class... types) {
         return !getMethod(base, methodName, types).equals(getMethod(derived, methodName, types));
     }
 
-    private static Method getMethod(@Nonnull Class clazz, @Nonnull String methodName, @Nonnull Class... types) {
+    private static Method getMethod(@NonNull Class clazz, @NonNull String methodName, @NonNull Class... types) {
         Method res = null;
         try {
             res = clazz.getDeclaredMethod(methodName, types);
@@ -1405,8 +1470,8 @@ public class Util {
      * @param ext
      *      For example, ".zip"
      */
-    @Nonnull
-    public static File changeExtension(@Nonnull File dst, @Nonnull String ext) {
+    @NonNull
+    public static File changeExtension(@NonNull File dst, @NonNull String ext) {
         String p = dst.getPath();
         int pos = p.lastIndexOf('.');
         if (pos<0)  return new File(p+ext);
@@ -1434,7 +1499,7 @@ public class Util {
     @Deprecated
     @RestrictedSince("1.651.2 / 2.TODO")
     @Restricted(NoExternalUse.class)
-    public static boolean isAbsoluteUri(@Nonnull String uri) {
+    public static boolean isAbsoluteUri(@NonNull String uri) {
         int idx = uri.indexOf(':');
         if (idx<0)  return false;   // no ':'. can't be absolute
 
@@ -1446,7 +1511,7 @@ public class Util {
      * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
      * @since 2.3 / 1.651.2
      */
-    public static boolean isSafeToRedirectTo(@Nonnull String uri) {
+    public static boolean isSafeToRedirectTo(@NonNull String uri) {
         return !isAbsoluteUri(uri) && !uri.startsWith("//");
     }
 
@@ -1454,7 +1519,7 @@ public class Util {
      * Works like {@link String#indexOf(int)} but 'not found' is returned as s.length(), not -1.
      * This enables more straight-forward comparison.
      */
-    private static int _indexOf(@Nonnull String s, char ch) {
+    private static int _indexOf(@NonNull String s, char ch) {
         int idx = s.indexOf(ch);
         if (idx<0)  return s.length();
         return idx;
@@ -1464,8 +1529,8 @@ public class Util {
      * Loads a key/value pair string as {@link Properties}
      * @since 1.392
      */
-    @Nonnull
-    public static Properties loadProperties(@Nonnull String properties) throws IOException {
+    @NonNull
+    public static Properties loadProperties(@NonNull String properties) throws IOException {
         Properties p = new Properties();
         p.load(new StringReader(properties));
         return p;
@@ -1481,8 +1546,8 @@ public class Util {
      * @since 2.19, but TODO update once un-restricted
      */
     @Restricted(NoExternalUse.class)
-    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger, 
-            @Nonnull String closeableName, @Nonnull String closeableOwner) {
+    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @NonNull Logger logger, 
+            @NonNull String closeableName, @NonNull String closeableOwner) {
         if (toClose == null) {
             return;
         }
@@ -1533,7 +1598,7 @@ public class Util {
      * @throws IOException if {@code f.toPath()} throws {@link InvalidPathException}.
      */
     @Restricted(NoExternalUse.class)
-    public static @Nonnull Path fileToPath(@Nonnull File file) throws IOException {
+    public static @NonNull Path fileToPath(@NonNull File file) throws IOException {
         try {
             return file.toPath();
         } catch (InvalidPathException e) {
@@ -1547,7 +1612,7 @@ public class Util {
      * even if there are only 3 hours between. As well as "10am" to "2pm" both on the same day, returns 0.
      */
     @Restricted(NoExternalUse.class)
-    public static long daysBetween(@Nonnull Date a, @Nonnull Date b){
+    public static long daysBetween(@NonNull Date a, @NonNull Date b){
         LocalDate aLocal = a.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate bLocal = b.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         return ChronoUnit.DAYS.between(aLocal, bLocal);
@@ -1558,7 +1623,7 @@ public class Util {
      * @see #daysBetween(Date, Date)
      */
     @Restricted(NoExternalUse.class)
-    public static long daysElapsedSince(@Nonnull Date date){
+    public static long daysElapsedSince(@NonNull Date date){
         return Math.max(0, daysBetween(date, new Date()));
     }
     
@@ -1567,7 +1632,7 @@ public class Util {
      * Useful for an ancestor we know is inside the URL to ease readability
      */
     @Restricted(NoExternalUse.class)
-    public static @Nonnull <T> T getNearestAncestorOfTypeOrThrow(@Nonnull StaplerRequest request, @Nonnull Class<T> clazz) {
+    public static @NonNull <T> T getNearestAncestorOfTypeOrThrow(@NonNull StaplerRequest request, @NonNull Class<T> clazz) {
         T t = request.findAncestorObject(clazz);
         if (t == null) {
             throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
@@ -1643,7 +1708,7 @@ public class Util {
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 
-    private static PathRemover newPathRemover(@Nonnull PathRemover.PathChecker pathChecker) {
+    private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
 
