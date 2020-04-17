@@ -926,7 +926,7 @@ public abstract class Launcher {
             	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
             
             if (!ps.quiet) {
-                maskedPrintCommandLine(jobCmd, ps.masks, ps.pwd);
+                maskedPrintCommandLine(Arrays.asList(jobCmd), ps.masks, ps.pwd);
             }
 
             return new LocalProc(jobCmd, Util.mapToEnv(jobEnv),
