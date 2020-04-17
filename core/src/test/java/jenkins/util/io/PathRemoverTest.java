@@ -446,7 +446,7 @@ public class PathRemoverTest {
             fail("Deletion should have failed");
         } catch (CompositeIOException e) {
             assertThat(e.getSuppressed(), arrayWithSize(maxExceptions));
-            assertThat(e.getMessage(), endsWith("(Discarded" + (lockedFiles + 1 - maxExceptions) + " additional exceptions)"));
+            assertThat(e.getMessage(), endsWith("(Discarded " + (lockedFiles + 1 - maxExceptions) + " additional exceptions)"));
         }
         assertTrue(dir.exists());
         assertThat(dir.listFiles().length, equalTo(lockedFiles));
