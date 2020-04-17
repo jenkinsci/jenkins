@@ -918,16 +918,16 @@ public abstract class Launcher {
 
         @Override
         public Proc launch(ProcStarter ps) throws IOException {
-            if (!ps.quiet) {
-                maskedPrintCommandLine(ps.commands, ps.masks, ps.pwd);
-            }
-
             EnvVars jobEnv = inherit(ps.envs);
 
             // replace variables in command line
             String[] jobCmd = new String[ps.commands.size()];
             for ( int idx = 0 ; idx < jobCmd.length; idx++ )
             	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
+            
+            if (!ps.quiet) {
+                maskedPrintCommandLine(jobCmd, ps.masks, ps.pwd);
+            }
 
             return new LocalProc(jobCmd, Util.mapToEnv(jobEnv),
                     ps.reverseStdin ?LocalProc.SELFPUMP_INPUT:ps.stdin,
