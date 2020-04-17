@@ -2198,7 +2198,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Returns the enabled and activated administrative monitors.
+     * Returns the enabled and activated administrative monitors accessible to the current user.
+     *
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
@@ -2207,7 +2208,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         return administrativeMonitors.stream().filter(m -> {
             try {
-                return m.isEnabled() && m.isActivated() && Jenkins.get().hasPermission(m.getRequiredPermission());
+                return Jenkins.get().hasPermission(m.getRequiredPermission()) && m.isEnabled() && m.isActivated();
             } catch (Throwable x) {
                 LOGGER.log(Level.WARNING, null, x);
                 return false;
