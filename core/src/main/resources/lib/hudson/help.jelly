@@ -27,5 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <a href="${href}">
-  <l:icon class="icon-help icon-sm" xmlns:l="/lib/layout"/>
+  <l:svgIcon xmlns:l="/lib/layout"
+             class="icon-help"
+             tooltip="${altText}"
+             href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_24px" />
 </a>

@@ -46,11 +46,15 @@ THE SOFTWARE.
                         <th>${%NumDaysSinceLastUse}</th>
                         <th title="${%HasFreshToken_tooltip}">
                             ${%HasFreshToken}
-                            <l:icon class="icon-help icon-sm"/>
+                            <l:svgIcon class="icon-help"
+                                       tooltip="${altText}"
+                                       href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_24px" />
                         </th>
                         <th title="${%HasMoreRecentlyUsedToken_tooltip}">
                             ${%HasMoreRecentlyUsedToken}
-                            <l:icon class="icon-help icon-sm"/>
+                            <l:svgIcon class="icon-help"
+                                       tooltip="${altText}"
+                                       href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_24px" />
                         </th>
                     </tr>
                     <j:choose>
