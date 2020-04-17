@@ -410,6 +410,9 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
+          <configuration>
+            <maxHeap>768</maxHeap>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
