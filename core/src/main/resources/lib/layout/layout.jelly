@@ -95,7 +95,7 @@ THE SOFTWARE.
 </j:if>
 <x:doctype name="html" />
 <html class="${h.isUiRefreshEnabled() ? 'ui-refresh' : ''}">
-  <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+  <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
     ${h.checkPermission(it,permission)}
     ${h.checkAnyPermission(it, permissions)}
 

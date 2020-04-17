@@ -28,7 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.slaves.WorkspaceList;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Allows to access a workspace as an alternative to online build node.

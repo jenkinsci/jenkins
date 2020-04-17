@@ -34,7 +34,7 @@ import org.kohsuke.stapler.Stapler;
 import org.springframework.dao.DataAccessException;
 import test.security.realm.InMemorySecurityRealm;
 
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;

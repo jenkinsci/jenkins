@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.230</revision>
+    <revision>2.233</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -421,6 +421,35 @@ THE SOFTWARE.
             <maxHeap>768</maxHeap>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.1.1</version>
+          <configuration>
+             <consoleOutput>true</consoleOutput>
+             <failsOnError>true</failsOnError>
+             <!-- define here because checkstyle and multi module is a PITA -->
+             <checkstyleRules>
+               <module name="Checker">
+                 <module name="TreeWalker">
+                   <module name="IllegalImport">
+                     <!-- prevent the use of jsr-305 annotations -->
+                     <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
+                   </module>
+                 </module>
+               </module>
+             </checkstyleRules>
+           </configuration>
+           <executions>
+             <execution>
+               <id>validate</id>
+               <phase>validate</phase>
+               <goals>
+                 <goal>check</goal>
+               </goals>
+             </execution>
+           </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -508,7 +537,10 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
-
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
       </plugin>
     </plugins>
 

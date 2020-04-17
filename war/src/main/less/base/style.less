@@ -196,7 +196,8 @@ a.tip:hover span {
 }
 
 .call-to-action {
-  display: inline-block;
+  display: table;
+  margin-bottom: 5px;
   padding: 10px;
   background-color: #cdf0f2;
   border-left: 4px solid #577baa;
@@ -411,6 +412,11 @@ pre.console {
   border-bottom: 1px #090 solid;
   font-weight: bold;
   font-size: @font-size-xs;
+}
+
+.jenkins-not-applicable {
+  color: darkgrey;
+  font-style: italic;
 }
 
 #jenkins .task-link {
@@ -2183,5 +2189,13 @@ body.no-sticker #bottom-sticker {
 /* -------------------------------------- */
 
 .tr {
-    margin-top: 0.4em;
+  margin-top: 0.4em;
 }
+
+/* -------------- Unclassified ---------- */
+
+.spacer {
+  height: 2em;
+}
+
+/* -------------------------------------- */

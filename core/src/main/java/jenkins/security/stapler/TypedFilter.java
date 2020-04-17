@@ -13,7 +13,7 @@ import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.interceptor.InterceptorAnnotation;
 import org.kohsuke.stapler.lang.FieldRef;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -49,7 +49,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
         return SKIP_TYPE_CHECK || isStaplerRelevantCached(clazz);
     }
 
-    private static boolean isStaplerRelevantCached(@Nonnull Class<?> clazz) {
+    private static boolean isStaplerRelevantCached(@NonNull Class<?> clazz) {
         if (staplerCache.containsKey(clazz)) {
             return staplerCache.get(clazz);
         }
@@ -60,11 +60,11 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
     }
 
     @Restricted(NoExternalUse.class)
-    public static boolean isStaplerRelevant(@Nonnull Class<?> clazz) {
+    public static boolean isStaplerRelevant(@NonNull Class<?> clazz) {
         return isSpecificClassStaplerRelevant(clazz) || isSuperTypesStaplerRelevant(clazz);
     }
 
-    private static boolean isSuperTypesStaplerRelevant(@Nonnull Class<?> clazz) {
+    private static boolean isSuperTypesStaplerRelevant(@NonNull Class<?> clazz) {
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null && isStaplerRelevantCached(superclass)) {
             return true;
@@ -77,7 +77,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
         return false;
     }
 
-    private static boolean isSpecificClassStaplerRelevant(@Nonnull Class<?> clazz) {
+    private static boolean isSpecificClassStaplerRelevant(@NonNull Class<?> clazz) {
         if (clazz.isAnnotationPresent(StaplerAccessibleType.class)) {
             return true;
         }
@@ -102,7 +102,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
         return false;
     }
 
-    private static boolean isRoutableMethod(@Nonnull Method m) {
+    private static boolean isRoutableMethod(@NonNull Method m) {
         for (Annotation a : m.getDeclaredAnnotations()) {
             if (WebMethodConstants.WEB_METHOD_ANNOTATION_NAMES.contains(a.annotationType().getName())) {
                 return true;
@@ -131,7 +131,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
     }
 
     @Override
-    public boolean keep(@Nonnull FieldRef fieldRef) {
+    public boolean keep(@NonNull FieldRef fieldRef) {
 
         if (fieldRef.getAnnotation(StaplerNotDispatchable.class) != null) {
             // explicitly marked as an invalid field
@@ -188,7 +188,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
     }
 
     @Override
-    public boolean keep(@Nonnull Function function) {
+    public boolean keep(@NonNull Function function) {
 
         if (function.getAnnotation(StaplerNotDispatchable.class) != null) {
             // explicitly marked as an invalid getter

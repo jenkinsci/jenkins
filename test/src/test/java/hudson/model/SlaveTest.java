@@ -43,8 +43,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -153,7 +153,7 @@ public class SlaveTest {
         assertJnlpJarUrlFails(slave, "./../foo/bar");
     }
 
-    private void assertJnlpJarUrlFails(@Nonnull Slave slave, @Nonnull String url) throws Exception {
+    private void assertJnlpJarUrlFails(@NonNull Slave slave, @NonNull String url) throws Exception {
         // Raw access to API
         Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
         try {
@@ -165,7 +165,7 @@ public class SlaveTest {
         fail("Expected the MalformedURLException for " + url);
     }
 
-    private void assertJnlpJarUrlIsAllowed(@Nonnull Slave slave, @Nonnull String url) throws Exception {
+    private void assertJnlpJarUrlIsAllowed(@NonNull Slave slave, @NonNull String url) throws Exception {
         // Raw access to API
         Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
         assertNotNull(jnlpJar.getURL());
@@ -240,12 +240,12 @@ public class SlaveTest {
         }
 
         @Override
-        public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
+        public boolean filterType(@NonNull Class<?> contextClass, @NonNull Descriptor descriptor) {
             return !descriptors.contains(descriptor);
         }
 
         @Override
-        public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
+        public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
             return !descriptors.contains(descriptor);
         }
     }

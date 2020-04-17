@@ -24,7 +24,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Expose the data needed for /whoAmI, so it can be exposed by Api.
@@ -70,7 +70,7 @@ public class WhoAmI implements UnprotectedRootAction {
         return auth().toString();
     }
 
-    private @Nonnull Authentication auth() {
+    private @NonNull Authentication auth() {
         return Jenkins.getAuthentication();
     }
 
@@ -88,7 +88,7 @@ public class WhoAmI implements UnprotectedRootAction {
 
     // Used by Jelly
     @Restricted(NoExternalUse.class)
-    public boolean isHeaderDangerous(@Nonnull String name) {
+    public boolean isHeaderDangerous(@NonNull String name) {
         return dangerousHeaders.contains(name.toLowerCase(Locale.ENGLISH));
     }
 

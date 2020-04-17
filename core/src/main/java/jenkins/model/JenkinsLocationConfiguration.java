@@ -14,7 +14,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletContext;
@@ -26,8 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.Util.fixNull;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Stores the location of Jenkins (e-mail address and the HTTP URL.)
@@ -64,7 +64,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     // just to suppress warnings
     private transient String charset,useSsl;
 
-    public static @Nonnull JenkinsLocationConfiguration get() {
+    public static @NonNull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().getInstance(JenkinsLocationConfiguration.class);
     }
     
@@ -72,7 +72,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      * Gets local configuration. For explanation when it could die, see {@link #get()}
      */
     @Restricted(NoExternalUse.class)
-    public static @Nonnull JenkinsLocationConfiguration getOrDie(){
+    public static @NonNull JenkinsLocationConfiguration getOrDie(){
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         if (config == null) {
             throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is not fully loaded at this time.");
@@ -113,7 +113,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      * Gets the service administrator e-mail address.
      * @return Admin address or &quot;address not configured&quot; stub
      */
-    public @Nonnull String getAdminAddress() {
+    public @NonNull String getAdminAddress() {
         String v = adminAddress;
         if(v==null)     v = Messages.Mailer_Address_Not_Configured();
         return v;
