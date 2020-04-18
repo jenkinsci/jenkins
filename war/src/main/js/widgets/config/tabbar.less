@@ -148,29 +148,6 @@
           right:0;
           z-index:2;
         }
-        .yui-button.primary{
-          button{
-            background:@middle-blue;
-            border-color:@dark-blue;
-          }
-        }
-        .yui-button.yui-button-disabled{
-          button{
-            background:@light-background;
-            border-color:@solid-border;
-            color:@solid-border;
-          }
-        }
-
-        .yui-button{
-          margin-right:10px;
-          
-          button{
-            padding:5px 20px;
-            background:@pale-blue;
-            border-color:@line-blue;
-          }
-        }
       }
 
       .section-header{
@@ -207,8 +184,7 @@
         textarea.setting-input {
           display:block;
         }
-        
-        .yui-button button,
+
         input[type='email'].setting-input,
         input[type='password'].setting-input,
         input[type='text'].setting-input{
@@ -217,15 +193,7 @@
           padding:0 5px;
           .border-radius(@radius);
         }
-        .yui-button button{
-          padding:0 10px;
-          box-sizing:content-box;
-        }
-        
-        .yui-button button.hetero-list-add{
-          padding-right:25px;
-        }
-        
+
         select:not([multiple]){
           height:@input-line-height;
           line-height:@input-line-height;
@@ -320,6 +288,8 @@
           line-height: 12px !important;
           display: inline-block;
           font-size: 8px;
+          min-width: 0;
+          min-height: 0;
         }
 
         button:focus,
