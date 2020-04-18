@@ -76,12 +76,12 @@ THE SOFTWARE.
           <j:out value="${possiblyEscapedTitle}" />
           <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>
-        <j:if test="${attrs.help!=null}">
-          <f:helpArea />
-        </j:if>
         <div class="setting-main">
           <d:invokeBody />
         </div>
+        <j:if test="${attrs.help!=null}">
+          <f:helpArea />
+        </j:if>
       </j:when>
       <j:otherwise>
         <div class="setting-main">
