@@ -32,11 +32,11 @@ THE SOFTWARE.
     <st:attribute name="tooltip">
       The tooltip to display
     </st:attribute>
-    <st:attribute name="icon_size">
+    <st:attribute name="iconSize">
       Icon size, available are: small, medium, large, xlarge 
     </st:attribute>
   </st:documentation>
   <a href="${href}">
-    <l:helpIcon icon_size="${icon_size}" class="icon-help" tooltip="${tooltip}"/>
+    <l:helpIcon iconSize="${iconSize}" class="icon-help" tooltip="${tooltip}"/>
   </a>
 </j:jelly>

@@ -6,7 +6,7 @@
     The help link is rendered as an SVG with an (?) icon.
     
     @since TODO
-    <st:attribute name="icon_size">
+    <st:attribute name="iconSize">
       Icon size, available are: small, medium, large, xlarge
     </st:attribute>
     <st:attribute name="tooltip">
@@ -16,8 +16,8 @@
       Class name to apply
     </st:attribute>
   </st:documentation>
-  <j:if test="${attrs.icon_size != null}">
-    <j:set var="iconSize" value="icon-${icon_size}"/>
+  <j:if test="${attrs.iconSize != null}">
+    <j:set var="iconSize" value="icon-${iconSize}"/>
   </j:if>
   <l:svgIcon tooltip="${tooltip}"
              class="${class} ${iconSize}"
