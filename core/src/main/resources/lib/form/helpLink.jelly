@@ -56,9 +56,7 @@ THE SOFTWARE.
       <j:set var="altText" value="${attrs.featureName != null ? '%Help for feature:' + ' ' + attrs.featureName : '%[Help]'}" />
       <td class="setting-help">
         <a href="#" class="help-button" helpURL="${rootURL}${attrs.url}">
-          <l:svgIcon class="icon-help"
-                     tooltip="${altText}"
-                     href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_24px" />
+          <f:helpIcon class="icon-help" tooltip="${altText}"/>
         </a>
       </td>
     </j:when>

@@ -22,13 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  (?) icon linked to the specified @href
--->
-<?jelly escape-by-default='true'?>
-<a href="${href}">
-  <l:svgIcon xmlns:l="/lib/layout"
-             class="icon-help"
-             tooltip="${altText}"
-             href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_24px" />
-</a>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation>
+    Icon linked to the specified @href
+
+    <st:attribute name="href" use="required">
+      Destination of the help icon's link
+    </st:attribute>
+    <st:attribute name="tooltip">
+      The tooltip to display
+    </st:attribute>
+    <st:attribute name="icon_size">
+      Icon size, available are: small, medium, large, xlarge 
+    </st:attribute>
+  </st:documentation>
+  <a href="${href}">
+    <f:helpIcon icon_size="${icon_size}" class="icon-help" tooltip="${tooltip}"/>
+  </a>
+</j:jelly>
