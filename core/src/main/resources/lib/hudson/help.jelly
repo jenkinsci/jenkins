@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Icon linked to the specified @href
 
@@ -37,6 +37,6 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <a href="${href}">
-    <f:helpIcon icon_size="${icon_size}" class="icon-help" tooltip="${tooltip}"/>
+    <l:helpIcon icon_size="${icon_size}" class="icon-help" tooltip="${tooltip}"/>
   </a>
 </j:jelly>
