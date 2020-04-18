@@ -264,6 +264,14 @@ pre.console {
 
 .form-group {
   margin-bottom: 1rem;
+
+  &:after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+ }
 }
 
 .setting-leftspace {
