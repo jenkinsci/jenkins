@@ -103,7 +103,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             loggers = new ArrayList<>();
         }
 
-        if (!targets.isEmpty()) {
+        if (targets != null && !targets.isEmpty()) {
             loggers.addAll(targets.getView());
         }
         if (!loggers.isEmpty()) {
