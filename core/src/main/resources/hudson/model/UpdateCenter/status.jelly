@@ -1,0 +1,80 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Seiji Sogabe, Yahoo! Inc., Alan Harder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  This page shows the status of the plugin installation
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <h1>${%Installing Plugins/Upgrades}</h1>
+    <script><![CDATA[
+      function submitScheduleForm(el) {
+          var form = document.getElementById("scheduleRestart");
+          form.action = el.checked ? "safeRestart" : "cancelRestart";
+          crumb.appendToForm(form);
+          form.submit();
+      }
+    ]]></script>
+    <st:include page="body.jelly" />
+
+    <script><![CDATA[
+      function refresh() {
+          window.setTimeout(function() {
+              new Ajax.Request("./body", {
+                  onSuccess: function(rsp) {
+                      var div = document.createElement('div');
+                      div.innerHTML = rsp.responseText;
+
+                      var rows = div.children[0].rows;
+                      for(var i=0; i<rows.length; i++ ) {
+                        var row = rows[i];
+                        var target = document.getElementById(row.id);
+                        if(target==null) {
+                          document.getElementById("log").appendChild(row);
+                        } else {
+                          var tcell = target.cells[1];
+                          var scell = row.cells[1];
+                          if(scell.id!=tcell.id) {
+                            tcell.innerHTML = scell.innerHTML;
+                            tcell.id = scell.id;
+                          }
+                        }
+                      }
+                      var scheduleDiv = document.getElementById('scheduleRestartBlock');
+                      scheduleDiv.innerHTML = div.lastChild.innerHTML;
+                      refresh();
+                  }
+              });
+          }, 5000);
+      }
+      window.scrollTo(0,10000);
+      refresh();
+    ]]></script>
+  </l:main-panel>
+</l:layout>
+</j:jelly>
