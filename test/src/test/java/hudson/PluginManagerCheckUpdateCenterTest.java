@@ -113,7 +113,7 @@ public class PluginManagerCheckUpdateCenterTest {
         List<HtmlElement> elements = page.getElementById("bottom-sticker")
                 .getElementsByTagName("a")
                 .stream()
-                .filter(link -> link.getAttribute("href").equals("checkUpdatesServer"))
+                .filter(link -> link.getAttribute("href").contains("checkUpdatesServer"))
                 .collect(Collectors.toList());
         assertEquals(1, elements.size());
         return (HtmlAnchor) elements.get(0);
@@ -140,7 +140,7 @@ public class PluginManagerCheckUpdateCenterTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        HtmlPage p = wc.goTo("pluginManager");
+        HtmlPage p = wc.goTo("updateCenter");
         Page pageAfterClick = HtmlElementUtil.click(getCheckNow(p));
         String page = pageAfterClick.getWebResponse().getContentAsString();
 
