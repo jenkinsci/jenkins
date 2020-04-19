@@ -27,7 +27,7 @@ public class PluginManagerOverrideTest {
 
         // Verify we can load untouched resources
         JenkinsRule.WebClient client = j.createWebClient();
-        assertEquals(200, client.goTo("self/pluginManager/available").getWebResponse().getStatusCode());
+        assertEquals(200, client.goTo("self/pluginManager/advanced").getWebResponse().getStatusCode());
 
         // Verify new view loads
         HtmlPage p = j.createWebClient().goTo("self/pluginManager/newview");
