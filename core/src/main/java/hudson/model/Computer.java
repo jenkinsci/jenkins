@@ -92,8 +92,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 
 import java.io.File;
@@ -118,9 +118,9 @@ import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -275,7 +275,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
-    public void addAction(@Nonnull Action a) {
+    public void addAction(@NonNull Action a) {
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
@@ -290,7 +290,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #getLogDir()
      * @see #relocateOldLogs()
      */
-    public @Nonnull File getLogFile() {
+    public @NonNull File getLogFile() {
         return new File(getLogDir(),"slave.log");
     }
 
@@ -301,7 +301,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @since 1.613
      */
-    protected @Nonnull File getLogDir() {
+    protected @NonNull File getLogDir() {
         File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
         try {
             IOUtils.mkdirs(dir);
@@ -563,7 +563,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns {@link Node#getNodeName() the name of the node}.
      */
-    public @Nonnull String getName() {
+    public @NonNull String getName() {
         return nodeName != null ? nodeName : "";
     }
 
@@ -763,7 +763,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @Exported
-    @Override public @Nonnull String getDisplayName() {
+    @Override public @NonNull String getDisplayName() {
         return nodeName;
     }
 
@@ -1074,7 +1074,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Restricted(DoNotUse.class)
     @Exported
-    public @Nonnull String getDescription() {
+    public @NonNull String getDescription() {
         Node node = getNode();
         return (node != null) ? node.getNodeDescription() : "";
     }
@@ -1197,7 +1197,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see ProcStarter#envs(Map)
      * @since 1.489
      */
-    public @Nonnull EnvVars buildEnvironment(@Nonnull TaskListener listener) throws IOException, InterruptedException {
+    public @NonNull EnvVars buildEnvironment(@NonNull TaskListener listener) throws IOException, InterruptedException {
         EnvVars env = new EnvVars();
 
         Node node = getNode();
@@ -1383,7 +1383,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Retrieve the RSS feed for the last build for each project executed in this computer.
      * Only the information from {@link AbstractProject} is displayed since there isn't a proper API to gather
      * information about the node where the builds are executed for other sorts of projects such as Pipeline
-     * @since TODO
+     * @since 2.215
      */
     @Restricted(DoNotUse.class)
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -1626,7 +1626,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
      * @see hudson.model.Node#isAcceptingTasks()
      */
-    @OverridingMethodsMustInvokeSuper
+    @OverrideMustInvoke
     public boolean isAcceptingTasks() {
         final Node node = getNode();
         return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());
@@ -1698,31 +1698,31 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Restricted(NoExternalUse.class)
     public static class DisplayExecutor implements ModelObject {
 
-        @Nonnull
+        @NonNull
         private final String displayName;
-        @Nonnull
+        @NonNull
         private final String url;
-        @Nonnull
+        @NonNull
         private final Executor executor;
 
-        public DisplayExecutor(@Nonnull String displayName, @Nonnull String url, @Nonnull Executor executor) {
+        public DisplayExecutor(@NonNull String displayName, @NonNull String url, @NonNull Executor executor) {
             this.displayName = displayName;
             this.url = url;
             this.executor = executor;
         }
 
         @Override
-        @Nonnull
+        @NonNull
         public String getDisplayName() {
             return displayName;
         }
 
-        @Nonnull
+        @NonNull
         public String getUrl() {
             return url;
         }
 
-        @Nonnull
+        @NonNull
         public Executor getExecutor() {
             return executor;
         }

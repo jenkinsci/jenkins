@@ -27,6 +27,8 @@ package hudson;
 
 import hudson.model.Slave;
 import hudson.security.*;
+
+import java.text.SimpleDateFormat;
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
@@ -130,7 +132,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -164,8 +166,8 @@ import hudson.util.RunList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -219,8 +221,34 @@ public class Functions {
         return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
     }
 
+    @Restricted(NoExternalUse.class)
+    public static String iso8601DateTime(Date date) {
+        return Util.XS_DATETIME_FORMATTER.format(date);
+    }
+
+    /**
+     * Returns a localized string for the specified date, not including time.
+     * @param date
+     * @return
+     */
+    @Restricted(NoExternalUse.class)
+    public static String localDate(Date date) {
+        return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+    }
+
     public static String rfc822Date(Calendar cal) {
         return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+    }
+
+    /**
+     * Returns a human-readable string describing the time difference between now and the specified date.
+     *
+     * @param date
+     * @return
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getTimeSpanString(Date date) {
+        return Util.getTimeSpanString(Math.abs(date.getTime() - new Date().getTime()));
     }
 
     /**
@@ -498,7 +526,7 @@ public class Functions {
     /**
      * Returns true if and only if the UI refresh is enabled.
      *
-     * @since TODO
+     * @since 2.222
      */
     @Restricted(DoNotUse.class)
     public static boolean isUiRefreshEnabled() {
@@ -1071,7 +1099,7 @@ public class Functions {
      *
      * @param predicate
      *      Filter the descriptors based on this predicate
-     * @since TODO
+     * @since 2.222
      */
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigByDescriptor(Predicate<Descriptor> predicate) {
         ExtensionList<Descriptor> exts = ExtensionList.lookup(Descriptor.class);
@@ -1120,7 +1148,7 @@ public class Functions {
     /**
      * Descriptors shown in the global configuration form to users with {@link Jenkins#SYSTEM_READ} permission.
      *
-     * @since TODO
+     * @since 2.222
      */
     @Restricted(NoExternalUse.class)
     public static Collection<Descriptor> getSortedDescriptorsForGlobalConfigUnclassifiedReadable() {
@@ -1134,7 +1162,7 @@ public class Functions {
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
      *
-     * @since TODO
+     * @since 2.222
      */
     public static void checkAnyPermission(AccessControlled ac, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
@@ -1142,6 +1170,31 @@ public class Functions {
         }
 
         ac.checkAnyPermission(permissions);
+    }
+
+    /**
+     * This version is so that the 'checkAnyPermission' on {@code layout.jelly}
+     * degrades gracefully if "it" is not an {@link AccessControlled} object.
+     * Otherwise it will perform no check and that problem is hard to notice.
+     */
+    public static void checkAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+        if (permissions == null || permissions.length == 0) {
+            return;
+        }
+
+        if (object instanceof AccessControlled)
+            checkAnyPermission((AccessControlled) object, permissions);
+        else {
+            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            for(Ancestor anc : Iterators.reverse(ancs)) {
+                Object o = anc.getObject();
+                if (o instanceof AccessControlled) {
+                    checkAnyPermission((AccessControlled) o, permissions);
+                    return;
+                }
+            }
+            checkAnyPermission(Jenkins.get(), permissions);
+        }
     }
 
     private static class Tag implements Comparable<Tag> {
@@ -1575,7 +1628,7 @@ public class Functions {
      *      otherwise, the method returns a default
      *      &quot;No exception details&quot; string.
      */
-    public static @Nonnull String printThrowable(@CheckForNull Throwable t) {
+    public static @NonNull String printThrowable(@CheckForNull Throwable t) {
         if (t == null) {
             return Messages.Functions_NoExceptionDetails();
         }
@@ -1583,7 +1636,7 @@ public class Functions {
         doPrintStackTrace(s, t, null, "", new HashSet<>());
         return s.toString();
     }
-    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix, @Nonnull Set<Throwable> encountered) {
+    private static void doPrintStackTrace(@NonNull StringBuilder s, @NonNull Throwable t, @CheckForNull Throwable higher, @NonNull String prefix, @NonNull Set<Throwable> encountered) {
         if (!encountered.add(t)) {
             s.append("<cycle to ").append(t).append(">\n");
             return;
@@ -1636,7 +1689,7 @@ public class Functions {
      * @param pw the log
      * @since 2.43
      */
-    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintWriter pw) {
+    public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintWriter pw) {
         pw.println(printThrowable(t).trim());
     }
 
@@ -1646,7 +1699,7 @@ public class Functions {
      * @param ps the log
      * @since 2.43
      */
-    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintStream ps) {
+    public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintStream ps) {
         ps.println(printThrowable(t).trim());
     }
 

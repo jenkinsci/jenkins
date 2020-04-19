@@ -49,7 +49,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
@@ -178,9 +178,9 @@ public class TransientActionFactoryTest {
             return Actionable.class;
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public Collection<? extends Action> createFor(@Nonnull Actionable target) {
+        public Collection<? extends Action> createFor(@NonNull Actionable target) {
             return Collections.singleton(new MyProminentProjectAction());
         }
     }

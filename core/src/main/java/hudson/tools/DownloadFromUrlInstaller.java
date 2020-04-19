@@ -157,10 +157,12 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
 
             if (toolInstallerList != null) {
                 ToolInstallerEntry[] entryList = toolInstallerList.list;
-                ToolInstallerEntry sampleEntry = entryList[0];
-                if (sampleEntry != null) {
-                    if (sampleEntry.id != null && sampleEntry.name != null && sampleEntry.url != null) {
-                        return true;
+                if (entryList != null) {
+                    ToolInstallerEntry sampleEntry = entryList[0];
+                    if (sampleEntry != null) {
+                        if (sampleEntry.id != null && sampleEntry.name != null && sampleEntry.url != null) {
+                            return true;
+                        }
                     }
                 }
             }

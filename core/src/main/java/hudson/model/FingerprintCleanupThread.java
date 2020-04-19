@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Functions;
+import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -33,6 +34,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
@@ -107,11 +109,15 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     private boolean check(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = loadFingerprint(fingerprintFile);
-            if (fp == null || !fp.isAlive()) {
+            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null) ) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
                 return true;
             } else {
+                if (!fp.isAlive()) {
+                    FingerprintFacet deletionBlockerFacet = fp.getFacetBlockingDeletion();
+                    listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + new Date(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
+                }
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
                 fp = getFingerprint(fp);

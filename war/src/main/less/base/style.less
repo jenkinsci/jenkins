@@ -22,6 +22,9 @@
  * THE SOFTWARE.
  */
 
+@import '../abstracts/font.less';
+@import '../abstracts/colors.less';
+
 /* task */
 
 #tasks {
@@ -31,7 +34,6 @@
 
 #tasks .task {
   margin-bottom: 4px;
-  font-size: 14px;
   max-width: 325px;
   overflow: hidden;
   white-space: nowrap;
@@ -44,34 +46,25 @@
   margin-bottom: 20px;
 }
 
-/* Fonts etc */
-
-body, table, form, input, td, th, p, textarea, select
-{
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  line-height:1.4em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Panel */
+@media (min-width: 1600px) {
+  body#jenkins.j-hide-left #main-panel {
+    max-width: 75%;
+  }
 }
-
-@media (min-width:1600px){
-  body#jenkins.j-hide-left #main-panel{max-width:75%}
-  body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:14px;}
-}
-@media (min-width:2000px){
-  body#jenkins.j-hide-left #main-panel{max-width:85%}
-  body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:15px;}
-}
-body, table, form, td, th, p
-{
-  color: #333;
+@media (min-width: 2000px) {
+  body#jenkins.j-hide-left #main-panel {
+    max-width: 85%;
+  }
 }
 
 form {
   margin: 0;
+}
+
+input, textarea, select {
+  color: @text-color;
+  font-family: inherit;
 }
 
 td {
@@ -203,7 +196,8 @@ a.tip:hover span {
 }
 
 .call-to-action {
-  display: inline-block;
+  display: table;
+  margin-bottom: 5px;
   padding: 10px;
   background-color: #cdf0f2;
   border-left: 4px solid #577baa;
@@ -299,7 +293,7 @@ pre.console {
 }
 
 .setting-description {
-  font-size: 0.8em;
+  font-size: @font-size-xs;
   margin-top: 0;
   padding-top: 0;
 }
@@ -389,7 +383,12 @@ pre.console {
   display: block;
   border-bottom: 1px #090 solid;
   font-weight: bold;
-  font-size: 12pt;
+  font-size: @font-size-xs;
+}
+
+.jenkins-not-applicable {
+  color: darkgrey;
+  font-style: italic;
 }
 
 #jenkins .task-link {
@@ -420,6 +419,10 @@ pre.console {
 
 #side-panel .pane-frame:hover, #side-panel .pane-frame.mouseover {
   border: solid 1px #cecece;
+}
+
+#side-panel .pane-content td.pane {
+  font-size: @font-size-xs;
 }
 
 .pane-header, .pane-footer {
@@ -617,7 +620,10 @@ div.behavior-loading {
     left:0; right:0;
     width:100%;
     height:100%;
-    background-color: #e4e4e4; text-align: center; font-size: 300%;
+    background-color: #e4e4e4;
+    text-align: center;
+    // TODO: use a display font, maybe 3rem
+    font-size: 300%;
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
@@ -955,14 +961,13 @@ table.parameters > tbody:hover {
     position: absolute;
     padding: 0px 4px;
     cursor: pointer;
-    top: 7px;
+    top: 4px;
     right: 6px;
     opacity: 0.5;
 }
 #buildHistoryPage .build-search-row .clear:hover {
     background-color: #d3d3d3;
     border: 1px solid #bbb;
-    top: 6px;
     padding-right: 3px;
     border-top-right-radius: 2px;
 }
@@ -1036,7 +1041,7 @@ table.parameters > tbody:hover {
 }
 
 .build-row-cell {
-  font-size: 12px;
+  font-size: @font-size-xs;
 }
 
 .build-row-cell .pane.build-name {
@@ -1184,7 +1189,7 @@ table.parameters > tbody:hover {
 
 /* ========================= directory tree ========================= */
 .parentPath {
-  font-size: 1.2em;
+  font-size: @font-size-base;
   font-weight: bold;
 }
 
@@ -1237,7 +1242,7 @@ TABLE.fileList TD.fileSize {
 }
 .test-trend-caption {
   text-align: center;
-  font-size: 1.2em;
+  font-size: @font-size-base;
   font-weight: bold;
 }
 
@@ -1263,7 +1268,7 @@ table.sortable span.sortarrow {
 }
 
 .fingerprint-summary-header {
-  font-size: 1.2em;
+  font-size: @font-size-base;
   vertical-align: middle;
 }
 
@@ -1287,17 +1292,6 @@ TABLE.fingerprint-in-build TD {
 
 #plugins tr.already-upgraded {
   background-color: #e8eeee;
-}
-
-#plugins input.uninstall {
-  font-size: 11px;
-  padding: 3px 5px;
-  border-radius: 1px;
-  font-family: Helvetica, Arial, sans-serif;
-  font-weight: bold;
-  background-color: #4b758b;
-  color: #eee;
-  border: 1px solid #5788a1;
 }
 
 #plugins tr.has-dependents input.uninstall {
@@ -1366,7 +1360,7 @@ TABLE.fingerprint-in-build TD {
     background-color: #337ab7;
     display: inline-block;
     padding: .2em .6em .3em;
-    font-size: 75%;
+    font-size: @font-size-xs;
     font-weight: 700;
     line-height: 1;
     color: #fff;
@@ -1459,7 +1453,7 @@ DIV.yahooTree td {
 }
 
 #jenkins .yuimenuitem {
-    font-size: 12px;
+    font-size: @font-size-xs;
     padding: 3px;
 }
 
@@ -1546,6 +1540,16 @@ TEXTAREA.rich-editor {
     color: #FF0000;
 }
 
+#pluginsAdv {
+  padding: 0.5rem;
+}
+
+#pluginsAdv section {
+  &:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }
+}
+
 /* ========================= progress bar ========================= */
 
 table.progress-bar {
@@ -1585,15 +1589,95 @@ table.progress-bar.red td.progress-bar-done {
     position:fixed;
     text-align:center;
     left:0px;
-    font-size: 2em;
+    font-size: 1.75rem;
     z-index:1000;
     border-bottom: 1px solid black;
+    line-height: 3.5rem;
+    height: 3.5rem;
+    display: block;
+    will-change: opacity;
+}
+
+#notification-bar .svg-icon {
+  width: 35px;
+  height: 35px;
+  padding-bottom: 5px
+}
+
+#notification-bar.notif-alert-default {
+  background-color: @alert-default-bg-color;
+  border-color: @alert-default-border-color;
+  color: @alert-default-color;
+  .svg-icon {
+    color: @alert-default-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-success {
+  background-color: @alert-success-bg-color;
+  border-color: @alert-success-border-color;
+  color: @alert-success-color;
+  .svg-icon {
+    color: @alert-success-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-warn {
+  background-color: @alert-warn-bg-color;
+  border-color: @alert-warn-border-color;
+  color: @alert-warn-color;
+  .svg-icon {
+    color: @alert-warn-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-err {
+  background-color: @alert-err-bg-color;
+  border-color: @alert-err-border-color;
+  color: @alert-err-color;
+  .svg-icon {
+    color: @alert-err-icon-color;
+  }
+}
+
+#notification-bar.notif-alert-show {
+  -webkit-animation: fadein 350ms ease-out 1 normal forwards;
+  -moz-animation: fadein 350ms ease-out 1 normal forwards;
+  -o-animation: fadein 350ms ease-out 1 normal forwards;
+  -ms-animation: fadein 350ms ease-out 1 normal forwards;
+  animation: fadein 350ms ease-out 1 normal forwards;
+}
+
+#notification-bar.notif-alert-clear {
+  -webkit-animation: fadeout 350ms ease-in 1 normal forwards;
+  -moz-animation: fadeout 350ms ease-in 1 normal forwards;
+  -o-animation: fadeout 350ms ease-in 1 normal forwards;
+  -ms-animation: fadeout 350ms ease-in 1 normal forwards;
+  animation: fadeout 350ms ease-in 1 normal forwards;
+}
+
+@-webkit-keyframes fadein{
+  from{
+    opacity: 0;
+  }
+  to{
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeout{
+  from{
+    opacity: 1;
+  }
+  to{
+    opacity: 0;
+  }
 }
 
 /* ========================= YUI dialog ========================= */
 
 .dialog .hd {
-    font-size: 12px !important;
+    font-size: @font-size-xs !important;
 }
 /* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
  to the latest YUI will fix this? */
@@ -1635,7 +1719,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    font-size: 70%;
+    font-size: @font-size-xs;
 }
 
 .logrecord-metadata-new {
@@ -1698,135 +1782,12 @@ select.select-ajax-pending {
     margin-top: 6px;
 }
 
-#bottom-sticker .yui-button {
-    margin-right: 20px;
-}
-
-/* This level of nesting is technically unnecessary, but to override the
- * default Yahoo styles. */
-#jenkins .yui-button {
-  border-width: 0;
-  border-style: none;
-  border-color: transparent;
-  background: none;
-  text-decoration: none;
-}
-
-#jenkins .yui-button .first-child {
-    border-width: 0;
-    border-style: none;
-    border-color: transparent;
-}
-#jenkins .yui-button .btn,
-#jenkins .yui-button button {
-  font-size: 12px;
-  padding: 3px 20px;
-  *border: 0;
-  border-radius: 1px;
-
-  border: 1px solid #cccccc;
-  background-color: #e0e0e0;
-  font-family: Helvetica, Arial, sans-serif;
-
-  color: #505050;
-  font-weight: bold;
-}
-
-#jenkins .yui-button .hetero-list-add {
-    padding-right: 35px;
-}
-
-#jenkins .yui-button .btn:hover,
-#jenkins .yui-button button:hover,
-#jenkins .yui-button .hover
-{
-    background-color: #d0d0d0;
-    border: 1px solid #c0c0c0;
-}
-
-#jenkins .yui-button .btn:active,
-#jenkins .yui-button button:active,
-#jenkins .yui-button .active {
-    background-color: #bbb;
-    box-shadow: inset 0px 1px 6px 2px #929292;
-    border: 1px solid #bbb;
-}
-
-#jenkins .yui-button .btn.disabled,
-#jenkins .yui-button button[disabled],
-#jenkins .yui-button button[disabled]:hover,
-#jenkins .yui-button button[disabled]:active,
-#jenkins .yui-button .disabled {
-    background-color: #e5e5e5;
-    color: #999;
-    border: 1px solid #d2d2d2;
-}
-
-/* Color overrides */
-#jenkins .yui-button.primary .btn,
-#jenkins .yui-button.primary button {
-    background-color: #4b758b;
-    color: #eee;
-    border: 1px solid #5788a1;
-}
-#jenkins .yui-button.primary .btn:hover,
-#jenkins .yui-button.primary button:hover,
-#jenkins .yui-button.primary .hover
-{
-    background-color: #3f6275;
-    border: 1px solid #5788a1;
-}
-#jenkins .yui-button.primary .btn:active,
-#jenkins .yui-button.primary button:active,
-#jenkins .yui-button.primary .active
-{
-    background-color: #33505f;
-    border: 1px solid #3f6275;
-    box-shadow: inset 0px 1px 6px 2px #1b2b33;
-}
-
-#jenkins .yui-button.primary button:disabled,
-#jenkins .yui-button.primary .disabled
-{
-    background-color: #adc6d3;
-    color: #fff;
-    border: 1px solid #a2becd;
-}
-
-#jenkins .yui-button.danger button {
-    background-color: #d24939;
-    color: #eee;
-    border: 1px solid #be3a2b;
-}
-
-#jenkins .yui-button.danger button:hover,
-#jenkins .yui-button.danger .hover
-{
-    background-color: #a23225;
-    border: 1px solid #942e22;
-}
-
-#jenkins .yui-button.danger button:active,
-#jenkins .yui-button.danger .active
-{
-    background-color: #942e22;
-    border: 1px solid #6b2118;
-    box-shadow: inset 0px 1px 6px 2px #79251b;
-}
-
-#jenkins .yui-button.danger button:disabled,
-#jenkins .yui-button.danger .disabled
-{
-    background-color: #e5958c;
-    color: #f8f8f8;
-    border: 1px solid #e39280;
-}
-
 .i18n {
     display: none;
 }
 
 .alert {
+    font-size: @font-size-sm;
     padding: 15px;
     margin-bottom: 20px;
     border: 1px solid transparent;
@@ -1972,15 +1933,14 @@ body.no-sticker #bottom-sticker {
 }
 
 .manage-option dl dt {
-    font-size: 16px;
-    line-height: 24px;
+    font-size: @font-size-base;
 }
 
 .manage-option dl dd {
     margin-left: 0;
     line-height: 20px;
     color: #333;
-    font-size: 14px;
+    font-size: @font-size-sm;
 }
 
 .manage-option a {
@@ -2033,6 +1993,15 @@ body.no-sticker #bottom-sticker {
   /* default fill fallback */
   fill: #111;
   fill: currentColor;
+}
+
+/* -------------------------------------- */
+
+
+/* -------------- Unclassified ---------- */
+
+.spacer {
+  height: 2em;
 }
 
 /* -------------------------------------- */

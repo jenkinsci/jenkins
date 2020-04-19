@@ -42,8 +42,8 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -136,7 +136,7 @@ public class ZipExtractionInstallerTest {
         assertThat(lastRequest.getResponseText(), containsString(Messages.ZipExtractionInstaller_malformed_url()));
     }
     
-    private class SpyingJavaScriptEngine extends JavaScriptEngine {
+    private static class SpyingJavaScriptEngine extends JavaScriptEngine {
         private List<XMLHttpRequest> storedRequests = new ArrayList<>();
         private String urlToMatch;
         private HttpMethod method;
@@ -166,7 +166,7 @@ public class ZipExtractionInstallerTest {
             return super.callFunction(page, function, scope, thisObject, args);
         }
         
-        @Nonnull
+        @NonNull
         public XMLHttpRequest getLastRequest() {
             if (storedRequests.isEmpty()) {
                 fail("There is no available requests for the proposed url/method");

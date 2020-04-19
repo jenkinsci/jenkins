@@ -22,7 +22,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,7 +98,7 @@ public class CloudTest {
             return Cloud.class;
         }
 
-        @Nonnull @Override public Collection<? extends Action> createFor(@Nonnull Cloud target) {
+        @NonNull @Override public Collection<? extends Action> createFor(@NonNull Cloud target) {
             return Arrays.asList(new TaskCloudAction(), new ReportingCloudAction());
         }
     }

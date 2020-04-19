@@ -70,7 +70,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -424,12 +424,12 @@ public class HudsonPrivateSecurityRealmTest {
         private List<String> createdUsers = new ArrayList<String>();
 
         @Override
-        protected void loggedIn(@Nonnull String username) {
+        protected void loggedIn(@NonNull String username) {
             loggedInUsernames.add(username);
         }
 
         @Override
-        protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
+        protected void userCreated(@NonNull String username) { createdUsers.add(username); }
     }
 
     @Issue("SECURITY-786")

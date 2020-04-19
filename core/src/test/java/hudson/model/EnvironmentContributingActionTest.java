@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 
 public class EnvironmentContributingActionTest {
-    class OverrideRun extends InvisibleAction implements EnvironmentContributingAction {
+    static class OverrideRun extends InvisibleAction implements EnvironmentContributingAction {
         private boolean wasCalled = false;
 
         @Override
@@ -24,7 +24,7 @@ public class EnvironmentContributingActionTest {
         }
     }
 
-    class OverrideAbstractBuild extends InvisibleAction implements EnvironmentContributingAction {
+    static class OverrideAbstractBuild extends InvisibleAction implements EnvironmentContributingAction {
         private boolean wasCalled = false;
 
         @Override
@@ -38,7 +38,7 @@ public class EnvironmentContributingActionTest {
         }
     }
 
-    class OverrideBoth extends InvisibleAction implements EnvironmentContributingAction {
+    static class OverrideBoth extends InvisibleAction implements EnvironmentContributingAction {
         private boolean wasCalledAbstractBuild = false;
         private boolean wasCalledRun = false;
 
