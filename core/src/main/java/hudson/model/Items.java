@@ -48,8 +48,8 @@ import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.function.Predicate;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
@@ -222,7 +222,7 @@ public class Items {
     /**
      * Does the opposite of {@link #toNameList(Collection)}.
      */
-    public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
+    public static <T extends Item> List<T> fromNameList(ItemGroup context, @NonNull String list, @NonNull Class<T> type) {
         final Jenkins jenkins = Jenkins.get();
         
         List<T> r = new ArrayList<>();
@@ -677,7 +677,7 @@ public class Items {
      * @throws IllegalArgumentException if there is already something there, which you were supposed to know about
      * @throws Failure if there is already something there but you should not be told details
      */
-    static void verifyItemDoesNotAlreadyExist(@Nonnull ItemGroup<?> parent, @Nonnull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
+    static void verifyItemDoesNotAlreadyExist(@NonNull ItemGroup<?> parent, @NonNull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
         Item existing;
         try (ACLContext ctxt = ACL.as(ACL.SYSTEM)) {
             existing = parent.getItem(newName);

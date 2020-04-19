@@ -38,7 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
@@ -224,7 +224,7 @@ public abstract class ProgressiveRendering {
      * on the same monitor such as {@code this}.
      * @return any JSON data you like
      */
-    protected abstract @Nonnull JSON data();
+    protected abstract @NonNull JSON data();
 
     /**
      * Indicate what portion of the work has been done.

@@ -31,7 +31,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -55,25 +55,25 @@ public class UserLanguages extends Telemetry {
     private static final Map<String, AtomicLong> requestsByLanguage = new ConcurrentSkipListMap<>();
     private static Logger LOGGER = Logger.getLogger(UserLanguages.class.getName());
 
-    @Nonnull
+    @NonNull
     @Override
     public String getId() {
         return UserLanguages.class.getName();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public String getDisplayName() {
         return "Browser languages";
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getStart() {
         return LocalDate.of(2018, 10, 1);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getEnd() {
         return LocalDate.of(2019, 1, 1);

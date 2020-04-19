@@ -13,7 +13,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.stream.Stream;
 
 @Issue("SECURITY-400")

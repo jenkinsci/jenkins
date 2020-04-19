@@ -26,7 +26,7 @@ package jenkins.telemetry.impl.java11;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +54,7 @@ public class MissingClassEvents {
      * @return the occurrences stored for this throwable. 1 the fist time it's stored. &gt; 1 for successive stores of the
      * same <strong>stack trace</strong>. 0 if we already stored MAX_EVENTS_PER_SEND (100) events for a single send.
      */
-    public long put(String name, @Nonnull Throwable t) {
+    public long put(String name, @NonNull Throwable t) {
         // A final object to pass it to the function
         final AtomicLong occurrences = new AtomicLong();
 
@@ -92,7 +92,7 @@ public class MissingClassEvents {
      */
 
     @VisibleForTesting
-    /* package */ synchronized @Nonnull ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
+    /* package */ synchronized @NonNull ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> getEventsAndClean() {
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> currentEvents = events;
         events = new ConcurrentHashMap<>(MAX_EVENTS_PER_SEND);
         return currentEvents;

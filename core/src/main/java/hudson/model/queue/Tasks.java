@@ -26,11 +26,11 @@ package hudson.model.queue;
 import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.acegisecurity.Authentication;
 
 import java.util.Collection;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
 
@@ -56,7 +56,7 @@ public class Tasks {
 
     /** deprecated call {@link SubTask#getOwnerTask} directly */
     @Deprecated
-    public static @Nonnull Task getOwnerTaskOf(@Nonnull SubTask t) {
+    public static @NonNull Task getOwnerTaskOf(@NonNull SubTask t) {
         return t.getOwnerTask();
     }
 
@@ -68,7 +68,7 @@ public class Tasks {
      * @since 2.55
      */
     @CheckForNull
-    public static hudson.model.Item getItemOf(@Nonnull SubTask t) {
+    public static hudson.model.Item getItemOf(@NonNull SubTask t) {
         Queue.Task p = t.getOwnerTask();
         while (!(p instanceof hudson.model.Item)) {
             Queue.Task o = p.getOwnerTask();
@@ -82,14 +82,14 @@ public class Tasks {
 
     /** @deprecated call {@link Task#getDefaultAuthentication()} directly */
     @Deprecated
-    @Nonnull
+    @NonNull
     public static Authentication getDefaultAuthenticationOf(Task t) {
         return t.getDefaultAuthentication();
     }
 
     /** @deprecated call {@link Task#getDefaultAuthentication(Item)} directly */
     @Deprecated
-    @Nonnull
+    @NonNull
     public static Authentication getDefaultAuthenticationOf(Task t, Item item) {
         return t.getDefaultAuthentication(item);
     }
@@ -102,7 +102,7 @@ public class Tasks {
      * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication()}
      * @since 1.560
      */
-    public static @Nonnull Authentication getAuthenticationOf(@Nonnull Task t) {
+    public static @NonNull Authentication getAuthenticationOf(@NonNull Task t) {
         for (QueueItemAuthenticator qia : QueueItemAuthenticatorProvider.authenticators()) {
             Authentication a = qia.authenticate(t);
             if (a != null) {
