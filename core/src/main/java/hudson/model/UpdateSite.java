@@ -46,6 +46,7 @@ import java.net.URLEncoder;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -383,6 +384,16 @@ public class UpdateSite {
             if(p.getInstalled()==null)
                 r.add(p);
         }
+        r.sort(new Comparator<Plugin>() {
+            @Override
+            public int compare(Plugin plugin, Plugin t1) {
+                final int pop = plugin.popularity.compareTo(t1.popularity);
+                if (pop != 0) {
+                    return -pop; // highest popularity first
+                }
+                return plugin.getDisplayName().compareTo(plugin.getDisplayName());
+            }
+        });
         return r;
     }
 
@@ -1028,6 +1039,14 @@ public class UpdateSite {
         @Exported
         public final Date releaseTimestamp;
 
+        /**
+         * Popularity of this plugin.
+         *
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        public final Double popularity;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -1046,6 +1065,16 @@ public class UpdateSite {
                     LOGGER.log(Level.FINE, "Failed to parse releaseTimestamp for " + title + " from " + sourceId, ex);
                 }
             }
+            final String popularityFromJson = get(o, "popularity");
+            Double popularity = 0.0;
+            if (popularityFromJson != null) {
+                try {
+                    popularity = Double.parseDouble(popularityFromJson);
+                } catch (NumberFormatException nfe) {
+                    LOGGER.log(Level.FINE, "Failed to parse popularity: '" + popularityFromJson + "' for plugin " + this.title);
+                }
+            }
+            this.popularity = popularity;
             this.releaseTimestamp = date;
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             JSONArray ja = o.getJSONArray("dependencies");
