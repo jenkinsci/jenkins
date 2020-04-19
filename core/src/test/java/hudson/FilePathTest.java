@@ -54,7 +54,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.*;
@@ -293,7 +299,7 @@ public class FilePathTest {
     }
 
     @Issue("JENKINS-6494")
-    @Test public void getParent() throws Exception {
+    @Test public void getParent() {
         FilePath fp = new FilePath((VirtualChannel)null, "/abc/def");
         assertEquals("/abc", (fp = fp.getParent()).getRemote());
         assertEquals("/", (fp = fp.getParent()).getRemote());
@@ -491,7 +497,7 @@ public class FilePathTest {
     }
 
     @Issue("JENKINS-13649")
-    @Test public void multiSegmentRelativePaths() throws Exception {
+    @Test public void multiSegmentRelativePaths() {
         VirtualChannel d = Mockito.mock(VirtualChannel.class);
         FilePath winPath = new FilePath(d, "c:\\app\\jenkins\\workspace");
         FilePath nixPath = new FilePath(d, "/opt/jenkins/workspace");
