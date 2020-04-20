@@ -63,7 +63,7 @@ THE SOFTWARE.
           <table id="plugins" class="sortable pane bigtable stripped-odd">
             <tr>
               <l:isAdmin>
-                <th initialSortDir="${isUpdates?null:'down'}"
+                <th initialSortDir="${isUpdates?null:'up'}"
                     tooltip="${%Check to install the plugin}"
                     width="32">${%Install}</th>
               </l:isAdmin>
