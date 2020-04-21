@@ -41,7 +41,9 @@ THE SOFTWARE.
   <div id="redirect-error" class="alert alert-danger" style="display:none">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%More Info}"/>
-      <f:submit name="no" value="${%Dismiss}"/>
+      <l:isAdmin>
+        <f:submit name="no" value="${%Dismiss}"/>
+      </l:isAdmin>
     </form>
     ${%blurb}
   </div>

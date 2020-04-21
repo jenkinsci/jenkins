@@ -24,6 +24,7 @@
 package hudson.diagnosis;
 
 import hudson.model.AdministrativeMonitor;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import org.jenkinsci.Symbol;
@@ -59,12 +60,18 @@ public class TooManyJobsButNoView extends AdministrativeMonitor {
      */
     @RequirePOST
     public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if(req.hasParameter("no")) {
             disable(true);
             rsp.sendRedirect(req.getContextPath()+"/manage");
         } else {
             rsp.sendRedirect(req.getContextPath()+"/newView");
         }
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 
     public static final int THRESHOLD = 16;

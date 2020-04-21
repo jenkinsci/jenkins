@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.PluginWrapper;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.UpdateSite;
+import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -160,6 +161,11 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
     public boolean hasApplicableHiddenWarnings() {
         UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
         return getActiveWarnings().size() < configuration.getApplicableWarnings().size();
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 
     @Override

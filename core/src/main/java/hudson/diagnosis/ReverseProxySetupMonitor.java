@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
+import hudson.security.Permission;
 import jenkins.security.stapler.StaplerDispatchable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpRedirect;
@@ -84,12 +85,18 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
         }
     }
 
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
+    }
+
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if(no!=null) { // dismiss
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             disable(true);
             // of course the irony is that this redirect won't work
             return HttpResponses.redirectViaContextPath("/manage");
