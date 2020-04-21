@@ -48,6 +48,8 @@ import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
 import jenkins.util.JenkinsJVM;
 import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
@@ -58,6 +60,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletResponse;
+import javax.servlet.SessionTrackingMode;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
@@ -65,6 +68,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,6 +86,28 @@ public class WebAppMain implements ServletContextListener {
 
     // use RingBufferLogHandler class name to configure for backward compatibility
     private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
+
+    /**
+     * System property name to force the session tracking by cookie.
+     * This prevents Tomcat to use the URL tracking in addition to the cookie by default.
+     * This could be useful for instances that requires to have
+     * the {@link jenkins.security.SuspiciousRequestFilter#allowSemicolonsInPath} turned off.
+     * <p>
+     * If you allow semicolon in URL and the session to be tracked by URL and you have
+     * a SecurityRealm that does not invalidate session after authentication,
+     * your instance is vulnerable to session hijacking.
+     * <p>
+     * The SecurityRealm should be corrected but this is a hardening in Jenkins core.
+     * <p>
+     * As this property is read during startup, you will not be able to change it at runtime 
+     * depending on your application server (not possible with Jetty nor Tomcat)
+     * <p>
+     * When running hpi:run, the default tracking is COOKIE+URL.
+     * When running java -jar with Winstone/Jetty, the default setting is set to COOKIE only.
+     * When running inside Tomcat, the default setting is COOKIE+URL.
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String FORCE_SESSION_TRACKING_BY_COOKIE_PROP = WebAppMain.class.getName() + ".forceSessionTrackingByCookie";
 
     private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
         @Override public synchronized void publish(LogRecord record) {
@@ -223,6 +249,9 @@ public class WebAppMain implements ServletContextListener {
             installExpressionFactory(event);
 
             context.setAttribute(APP,new HudsonIsLoading());
+            if (SystemProperties.getBoolean(FORCE_SESSION_TRACKING_BY_COOKIE_PROP, true)) {
+                context.setSessionTrackingModes(EnumSet.of(SessionTrackingMode.COOKIE));
+            }
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
