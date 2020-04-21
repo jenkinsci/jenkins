@@ -126,7 +126,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Number of executors of this node.
      */
-    private int numExecutors = 2;
+    private int numExecutors = 1;
 
     /**
      * Job allocation strategy.
