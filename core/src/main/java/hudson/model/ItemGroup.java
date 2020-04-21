@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.model.listeners.ItemListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.io.File;
 import java.util.List;
