@@ -41,12 +41,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public abstract class RunListProgressiveRendering extends ProgressiveRendering {
 
-    /**
-     * Since we cannot predict how many runs there will be, just show an ever-growing progress bar.
-     * The first increment will be sized as if this many runs will be in the total,
-     * but then like Zeno’s paradox we will never seem to finish until we actually do.
-     */
-    private static final double MAX_LIKELY_RUNS = 20;
+    private static final double MAX_RUNS = 100;
     private final List<JSONObject> results = new ArrayList<>();
     private Iterable<? extends Run<?,?>> builds;
 
@@ -56,7 +51,7 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
     }
 
     @Override protected void compute() throws Exception {
-        double decay = 1;
+        double runs = 0;
         for (Run<?,?> build : builds) {
             if (canceled()) {
                 return;
@@ -66,8 +61,11 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
             synchronized (this) {
                 results.add(element);
             }
-            decay *= (1 - 1 / MAX_LIKELY_RUNS);
-            progress(1 - decay);
+            progress(runs / MAX_RUNS);
+            runs++;
+            if (runs >= MAX_RUNS) {
+                break;
+            }
         }
     }
 
