@@ -54,6 +54,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
+import jenkins.agents.AgentComputerUtil;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
@@ -1067,11 +1068,11 @@ public class SlaveComputer extends Computer {
      *
      * @return null if the calling thread doesn't have any trace of where its master is.
      * @since 1.362
-     * @deprecated Use {@link SlaveComputerUtil#getChannelToMaster()} instead.
+     * @deprecated Use {@link AgentComputerUtil#getChannelToMaster()} instead.
      */
     @Deprecated
     public static VirtualChannel getChannelToMaster() {
-        return SlaveComputerUtil.getChannelToMaster();
+        return AgentComputerUtil.getChannelToMaster();
     }
 
     /**

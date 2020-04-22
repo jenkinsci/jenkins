@@ -33,7 +33,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.SlaveComputerUtil;
+import jenkins.agents.AgentComputerUtil;
 import hudson.util.ProcessKillingVeto.VetoCause;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
@@ -193,7 +193,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ final List<ProcessKiller> getKillers() throws InterruptedException {
         if (killers==null)
             try {
-                VirtualChannel channelToMaster = SlaveComputerUtil.getChannelToMaster();
+                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
                 if (channelToMaster!=null) {
                     killers = channelToMaster.call(new ListAll());
                 } else {
@@ -288,7 +288,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             // Quick check, does anything exist to check against
             if (!skipVetoes) {
                 try {
-                    VirtualChannel channelToMaster = SlaveComputerUtil.getChannelToMaster();
+                    VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
                     if (channelToMaster!=null) {
                         CheckVetoes vetoCheck = new CheckVetoes(this);
                         causeMessage = channelToMaster.call(vetoCheck);
@@ -429,7 +429,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         // Check for the existance of vetoers if I don't know already
         if (vetoersExist == null) {
             try {
-                VirtualChannel channelToMaster = SlaveComputerUtil.getChannelToMaster();
+                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
                 if (channelToMaster != null) {
                     vetoersExist = channelToMaster.call(new DoVetoersExist());
                 }
