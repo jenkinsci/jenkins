@@ -1067,17 +1067,11 @@ public class SlaveComputer extends Computer {
      *
      * @return null if the calling thread doesn't have any trace of where its master is.
      * @since 1.362
+     * @deprecated Use {@link SlaveComputerUtil#getChannelToMaster()} instead.
      */
+    @Deprecated
     public static VirtualChannel getChannelToMaster() {
-        if (Jenkins.getInstanceOrNull()!=null) // check if calling thread is on master or on slave
-            return FilePath.localChannel;
-
-        // if this method is called from within the agent computation thread, this should work
-        Channel c = Channel.current();
-        if (c!=null && Boolean.TRUE.equals(c.getProperty("slave")))
-            return c;
-
-        return null;
+        return SlaveComputerUtil.getChannelToMaster();
     }
 
     /**
