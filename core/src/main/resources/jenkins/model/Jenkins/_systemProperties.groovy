@@ -1,5 +1,6 @@
 package jenkins.model.Jenkins
 
+import hudson.PluginWrapper
 import jenkins.model.Jenkins
 import jenkins.util.SystemProperties
 
@@ -18,9 +19,8 @@ static def refForVersion() {
     return 'master'
 }
 
-static def pluginForClassName(String className) {
-    // TODO this probably doesn't work but right now SystemProperties is @Restricted anyway
-    def clazz = Class.forName(className)
+static PluginWrapper pluginForClassName(String className) {
+    def clazz = Jenkins.get().getPluginManager().uberClassLoader.loadClass(className)
     def plugin = Jenkins.get().getPluginManager().whichPlugin(clazz)
 }
 
@@ -70,15 +70,23 @@ table(class:'pane sortable bigtable') {
                 text(entry.value.lastAccessValue)
             }
             td(class:'pane') {
-                for (def ste : entry.value.accessingCode) {
-                    def plugin = pluginForClassName(ste.className)
-                    if (plugin == null) {
-                        a(href:urlForCoreClass(ste.className, ste.lineNumber)) {
-                            text(ste.className)
+                ul(style:'margin:0;padding:0;') {
+                    li(style:'list-style-type: none;') {
+                        for (def ste : entry.value.accessingCode) {
+                            PluginWrapper plugin = pluginForClassName(ste.className)
+                            if (plugin == null) {
+                                text("Jenkins (core): ")
+                                a(href:urlForCoreClass(ste.className, ste.lineNumber)) {
+                                    text(ste.className)
+                                }
+                            } else {
+                                a(href:plugin.url) {
+                                    text(plugin.displayName)
+                                }
+                                // TODO add source code linking for plugins
+                                text(": " + ste.className)
+                            }
                         }
-                    } else {
-                        // TODO add source code linking for plugins
-                        text(ste.className)
                     }
                 }
             }
