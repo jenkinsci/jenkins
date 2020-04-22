@@ -32,13 +32,18 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.slaves.ComputerListener;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
@@ -83,6 +88,67 @@ public class SystemProperties {
     private interface Handler {
         @CheckForNull
         String getString(String key);
+    }
+
+    public static class Access {
+        public final Instant lastAccessTime;
+        public final long accessCount;
+        public final String lastAccessValue;
+        public final Set<StackTraceElement> accessingCode = new HashSet<>();
+
+        private Access(Instant lastAccessTime, String lastAccessValue, long accessCount) {
+            this.lastAccessTime = lastAccessTime;
+            this.lastAccessValue = lastAccessValue;
+            this.accessCount = accessCount;
+        }
+
+        private Access accessedBy(StackTraceElement ste) {
+            if (ste != null) {
+                accessingCode.add(ste);
+            }
+            return this;
+        }
+
+        private static Access replacing(Access access, String value) {
+            final Instant now = Instant.now();
+            final StackTraceElement caller = findAccessingCall();
+            if (access == null) {
+                return new Access(now, value, 1).accessedBy(caller);
+            }
+            return new Access(now, value, access.accessCount + 1).accessedBy(caller);
+        }
+
+        @Override
+        public String toString() {
+            return "Access[lastAccessTime=" + lastAccessTime.toString() +
+                    ";lastAccessValue=" + lastAccessValue +
+                    ";accessCount=" + accessCount +
+                    ";accessingCode=" + accessingCode.stream().map(Objects::toString).collect(Collectors.joining(",")) + "]";
+        }
+    }
+
+    private static final Map<String, Access> accesses = new ConcurrentHashMap<>();
+
+    private static String recordingAccess(String property, String value) {
+        accesses.compute(property, (k, v) -> Access.replacing(v, value));
+        return value;
+    }
+
+    public static Map<String, Access> getAccesses() {
+        return new HashMap<>(accesses);
+    }
+
+    private static StackTraceElement findAccessingCall() {
+        Exception e = new Exception();
+        StackTraceElement firstOutsideThisClass = null;
+        for (StackTraceElement ste : e.getStackTrace()) {
+            if (ste.getClassName().startsWith(SystemProperties.class.getName())) {
+                firstOutsideThisClass = null;
+            } else if (firstOutsideThisClass == null) {
+                firstOutsideThisClass = ste;
+            }
+        }
+        return firstOutsideThisClass;
     }
 
     private static final Handler NULL_HANDLER = key -> null;
@@ -188,7 +254,7 @@ public class SystemProperties {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
             }
-            return value;
+            return recordingAccess(key, value);
         }
         
         value = handler.getString(key);
@@ -196,13 +262,13 @@ public class SystemProperties {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
             }
-            return value;
+            return recordingAccess(key, value);
         }
         
         if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.log(Level.CONFIG, "Property (not found): {0}", key);
         }
-        return null;
+        return recordingAccess(key, null);
     }
 
     /**
@@ -242,7 +308,7 @@ public class SystemProperties {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (system): {0} => {1}", new Object[] {key, value});
             }
-            return value;
+            return recordingAccess(key, value);
         } 
         
         value = handler.getString(key);
@@ -250,14 +316,14 @@ public class SystemProperties {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (context): {0} => {1}", new Object[]{key, value});
             }
-            return value;
+            return recordingAccess(key, value);
         }
         
         value = def;
         if (LOGGER.isLoggable(logLevel)) {
             LOGGER.log(logLevel, "Property (default): {0} => {1}", new Object[] {key, value});
         }
-        return value;
+        return recordingAccess(key, value);
     }
 
     /**
@@ -293,12 +359,9 @@ public class SystemProperties {
       * @return  the {@code boolean} value of the system property.
       */
     public static boolean getBoolean(String name, boolean def) {
-        String v = getString(name);
+        String v = getString(name, Boolean.toString(def));
        
-        if (v != null) {
-            return Boolean.parseBoolean(v);
-        }
-        return def;
+        return Boolean.parseBoolean(v);
     }
 
     /**
@@ -365,7 +428,7 @@ public class SystemProperties {
       *          Result may be {@code null} only if the default value is {@code null}.
       */
     public static Integer getInteger(String name, Integer def, Level logLevel) {
-        String v = getString(name);
+        String v = getString(name, def == null ? null : def.toString());
        
         if (v != null) {
             try {
@@ -429,7 +492,7 @@ public class SystemProperties {
       *          Result may be {@code null} only if the default value is {@code null}.
       */
     public static Long getLong(String name, Long def, Level logLevel) {
-        String v = getString(name);
+        String v = getString(name, def == null ? null : def.toString());
        
         if (v != null) {
             try {
