@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2020, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,29 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.Shell
-f=namespace(lib.FormTagLib)
+package jenkins.tasks.filters;
 
-f.entry(title:_("Command"),description:_("description",rootURL)) {
-    f.textarea(name: "command", value: instance?.command, class: "fixed-width", 'codemirror-mode': 'shell', 'codemirror-config': "mode: 'text/x-sh'")
-}
+import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
-f.advanced() {
-    f.entry(title:_("Exit code to set build unstable"), field: "unstableReturn") {
-        f.number(clazz:"positive-number", value: instance?.unstableReturn, min:1, max:255, step:1)
-    }
+import java.util.Collections;
+import java.util.List;
 
-    if(instance?.configuredLocalRules || descriptor.applicableLocalRules){
-        f.entry(title: _("filterRules")) {
-            f.hetero_list(
-                    name: "configuredLocalRules",
-                    hasHeader: true,
-                    oneEach: true,
-                    disableDragAndDrop: true,
-                    descriptors: descriptor.applicableLocalRules,
-                    items: instance?.configuredLocalRules,
-                    addCaption: _("addFilterRule")
-            )
-        }
+/**
+ * Builder step that wants to integrate local environment filter rules should implement this interface
+ *
+ * @since TODO
+ */
+@Restricted(Beta.class)
+public interface EnvVarsFilterableBuilder {
+    /**
+     * The order is respected for the execution. Local rules will be executed before the global ones.
+     * At least it will be the initial ordering, but rules are free to rearranged the order of the next rules.<p>
+     *
+     * This method is called only once per step to create the {@link EnvVarsFilterRuleContext}.
+     *
+     * The default implementation returns an empty list; this allows build steps to support global rules.
+     */
+    @NonNull
+    default List<EnvVarsFilterLocalRule> buildEnvVarsFilterRules() {
+        return Collections.emptyList();
     }
 }
