@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
 
 public class ItemGroupMixInTest {
 
@@ -207,4 +208,62 @@ public class ItemGroupMixInTest {
         assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
     }
 
+  @Issue("JENKINS-61956")
+  @Test
+  public void copy_checkGoodName() throws Failure, IOException {
+    final String goodName = "calvin-jenkins";
+    final String badName = "calvin@jenkins";
+
+    Project goodProject = r.jenkins.createProject(FreeStyleProject.class, goodName);
+
+    try {
+      r.jenkins.copy(goodProject, badName);
+      fail("@ is an unsafe character therefore copying to a project named " + badName + " should have failed");
+    } catch (Failure x) {
+      assertEquals(x.getMessage(), Messages.Hudson_UnsafeChar("@"));
+    }
+  }
+
+  @Issue("JENKINS-61956")
+  @Test
+  public void createProject_checkGoodName() throws Failure, IOException {
+    final String badName = "calvin@jenkins";
+
+    try {
+      r.jenkins.createProject(MockFolder.class, badName);
+      fail("@ is an unsafe character therefore creating a folder named " + badName + " should have failed");
+    } catch (Failure x) {
+      assertEquals(x.getMessage(), Messages.Hudson_UnsafeChar("@"));
+    }
+  }
+
+  @Issue("JENKINS-61956")
+  @Test
+  public void createProjectFromXML_checkGoodName() throws Failure, IOException {
+    final String badName = "calvin@jenkins";
+
+    final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+            "<!DOCTYPE project[\n" +
+            "  <!ENTITY foo SYSTEM \"file:///\">\n" +
+            "]>\n" +
+            "<project>\n" +
+            "  <actions/>\n" +
+            "  <description>&foo;</description>\n" +
+            "  <keepDependencies>false</keepDependencies>\n" +
+            "  <properties/>\n" +
+            "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
+            "  <canRoam>true</canRoam>\n" +
+            "  <triggers/>\n" +
+            "  <builders/>\n" +
+            "  <publishers/>\n" +
+            "  <buildWrappers/>\n" +
+            "</project>";
+
+    try {
+      r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes()));
+      fail("@ is an unsafe character therefore creating a project named " + badName + " should have failed");
+    } catch (Failure x) {
+      assertEquals(x.getMessage(), Messages.Hudson_UnsafeChar("@"));
+    }
+  }
 }
