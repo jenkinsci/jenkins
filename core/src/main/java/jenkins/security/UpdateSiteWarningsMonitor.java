@@ -142,6 +142,7 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public HttpResponse doForward(@QueryParameter String fix, @QueryParameter String configure) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (fix != null) {
             return HttpResponses.redirectViaContextPath("pluginManager");
         }
