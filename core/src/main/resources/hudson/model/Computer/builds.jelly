@@ -36,7 +36,7 @@ THE SOFTWARE.
       </p>
 
       <st:include page="control.jelly" it="${it.timeline}" />
-      <div style="height:2em"/><!-- spacer -->
+      <div class="spacer" />
 
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

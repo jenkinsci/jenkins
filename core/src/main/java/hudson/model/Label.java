@@ -26,6 +26,7 @@ package hudson.model;
 import antlr.ANTLRException;
 import static hudson.Util.fixNull;
 
+import hudson.Util;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.labels.LabelExpression.And;
@@ -57,7 +58,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,13 +66,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Group of {@link Node}s.
@@ -86,19 +88,19 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Display name of this label.
      */
-    @Nonnull
+    @NonNull
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
-    @Nonnull
+    @NonNull
     public transient final LoadStatistics loadStatistics;
-    @Nonnull
+    @NonNull
     public transient final NodeProvisioner nodeProvisioner;
 
-    public Label(@Nonnull String name) {
+    public Label(@NonNull String name) {
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0,0) {
@@ -142,7 +144,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
-    @Nonnull
+    @NonNull
     public String getDisplayName() {
         return name;
     }
@@ -156,7 +158,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Relative URL from the context path, that ends with '/'.
      */
     public String getUrl() {
-        return "label/"+name+'/';
+        return "label/" + Util.rawEncode(name) + '/';
     }
 
     public String getSearchUrl() {
@@ -388,13 +390,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     @Exported
     public List<AbstractProject> getTiedJobs() {
-        List<AbstractProject> r = new ArrayList<>();
-        for (AbstractProject<?,?> p : Jenkins.get().allItems(AbstractProject.class)) {
-            if(p instanceof TopLevelItem && this.equals(p.getAssignedLabel()))
-                r.add(p);
-        }
-        r.sort(Items.BY_FULL_NAME);
-        return r;
+        return StreamSupport.stream(Jenkins.get().allItems(AbstractProject.class,
+                i -> i instanceof TopLevelItem && this.equals(i.getAssignedLabel())).spliterator(),
+                true)
+                .sorted(Items.BY_FULL_NAME).collect(Collectors.toList());
     }
 
     /**

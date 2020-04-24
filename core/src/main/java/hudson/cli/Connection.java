@@ -23,10 +23,10 @@
  */
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.remoting.SocketChannelStream;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -55,6 +55,7 @@ import java.security.Signature;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
@@ -113,6 +114,8 @@ public class Connection {
     /**
      * Receives an object sent by {@link #writeObject(Object)}
      */
+    // TODO JENKINS-60562 remove this class
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Not used. We should just remove it. Class is deprecated.")
     public <T> T readObject() throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStreamEx(in,
                 getClass().getClassLoader(), ClassFilter.DEFAULT);
@@ -120,11 +123,11 @@ public class Connection {
     }
 
     public void writeKey(Key key) throws IOException {
-        writeUTF(new String(Base64.encodeBase64(key.getEncoded())));
+        writeUTF(Base64.getEncoder().encodeToString(key.getEncoded()));
     }
 
     public X509EncodedKeySpec readKey() throws IOException {
-        byte[] otherHalf = Base64.decodeBase64(readUTF()); // for historical reasons, we don't use readByteArray()
+        byte[] otherHalf = Base64.getDecoder().decode(readUTF()); // for historical reasons, we don't use readByteArray()
         return new X509EncodedKeySpec(otherHalf);
     }
 
@@ -194,14 +197,18 @@ public class Connection {
      */
     public Connection encryptConnection(SecretKey sessionKey, String algorithm) throws IOException, GeneralSecurityException {
         Cipher cout = Cipher.getInstance(algorithm);
-        cout.init(Cipher.ENCRYPT_MODE, sessionKey, new IvParameterSpec(sessionKey.getEncoded()));
+        cout.init(Cipher.ENCRYPT_MODE, sessionKey, createIv(sessionKey));
         CipherOutputStream o = new CipherOutputStream(out, cout);
 
         Cipher cin = Cipher.getInstance(algorithm);
-        cin.init(Cipher.DECRYPT_MODE, sessionKey, new IvParameterSpec(sessionKey.getEncoded()));
+        cin.init(Cipher.DECRYPT_MODE, sessionKey, createIv(sessionKey));
         CipherInputStream i = new CipherInputStream(in, cin);
 
         return new Connection(i,o);
+    }
+
+    private IvParameterSpec createIv(SecretKey sessionKey) {
+        return new IvParameterSpec(sessionKey.getEncoded());
     }
 
     /**

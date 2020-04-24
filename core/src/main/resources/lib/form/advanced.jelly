@@ -47,7 +47,7 @@ THE SOFTWARE.
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
               <j:set var="id" value="${h.generateId()}"/>
               <span style="display: none" id="${id}">
-                <l:icon class="icon-notepad icon-md" style="vertical-align: baseline" tooltip="${%customizedFields}"/>
+                <l:icon class="icon-notepad icon-md" tooltip="${%customizedFields}"/>
               </span>
               <st:nbsp />
 	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->

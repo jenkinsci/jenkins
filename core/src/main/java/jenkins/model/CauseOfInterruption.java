@@ -33,8 +33,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.Serializable;
 import java.util.Collections;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Records why an {@linkplain Executor#interrupt() executor is interrupted}.
@@ -77,14 +77,14 @@ public abstract class CauseOfInterruption implements Serializable {
      */
     public static final class UserInterruption extends CauseOfInterruption {
         
-        @Nonnull
+        @NonNull
         private final String user;
 
-        public UserInterruption(@Nonnull User user) {
+        public UserInterruption(@NonNull User user) {
             this.user = user.getId();
         }
 
-        public UserInterruption(@Nonnull String userId) {
+        public UserInterruption(@NonNull String userId) {
             this.user = userId;
         }
 
@@ -93,7 +93,7 @@ public abstract class CauseOfInterruption implements Serializable {
          * @return User ID
          * @since 2.31
          */
-        @Nonnull
+        @NonNull
         public String getUserId() {
             return user;
         }
@@ -103,7 +103,7 @@ public abstract class CauseOfInterruption implements Serializable {
          * @return User instance if it can be located.
          *         Result of {@link User#getUnknown()} otherwise
          */
-        @Nonnull
+        @NonNull
         public User getUser() {
             final User userInstance = getUserOrNull();
             return userInstance != null ? userInstance : User.getUnknown();

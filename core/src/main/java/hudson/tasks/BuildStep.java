@@ -49,7 +49,7 @@ import java.util.WeakHashMap;
 import jenkins.security.QueueItemAuthenticator;
 import org.acegisecurity.Authentication;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -157,7 +157,7 @@ public interface BuildStep {
      * @return
      *      can be empty but never null.
      */
-    @Nonnull
+    @NonNull
     Collection<? extends Action> getProjectActions(AbstractProject<?,?> project);
 
 

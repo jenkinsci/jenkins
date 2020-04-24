@@ -1,6 +1,6 @@
 package hudson.util;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +59,7 @@ public class SequentialExecutionQueue implements Executor {
     }
 
 
-    public synchronized void execute(@Nonnull Runnable item) {
+    public synchronized void execute(@NonNull Runnable item) {
         QueueEntry e = entries.get(item);
         if(e==null) {
             e = new QueueEntry(item);

@@ -34,7 +34,7 @@ import hudson.slaves.OfflineCause;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;

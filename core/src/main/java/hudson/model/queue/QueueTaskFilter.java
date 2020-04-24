@@ -33,7 +33,7 @@ import hudson.model.ResourceList;
 
 import java.io.IOException;
 import java.util.Collection;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Base class for defining filter {@link hudson.model.Queue.Task}.

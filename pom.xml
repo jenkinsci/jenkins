@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.52</version>
+    <version>1.55</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.218</revision>
+    <revision>2.234</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -101,7 +101,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.0</remoting.version>
+    <remoting.version>4.3</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -407,6 +407,42 @@ THE SOFTWARE.
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
         </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <configuration>
+            <maxHeap>768</maxHeap>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.1.1</version>
+          <configuration>
+             <consoleOutput>true</consoleOutput>
+             <failsOnError>true</failsOnError>
+             <!-- define here because checkstyle and multi module is a PITA -->
+             <checkstyleRules>
+               <module name="Checker">
+                 <module name="TreeWalker">
+                   <module name="IllegalImport">
+                     <!-- prevent the use of jsr-305 annotations -->
+                     <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
+                   </module>
+                 </module>
+               </module>
+             </checkstyleRules>
+           </configuration>
+           <executions>
+             <execution>
+               <id>validate</id>
+               <phase>validate</phase>
+               <goals>
+                 <goal>check</goal>
+               </goals>
+             </execution>
+           </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -494,7 +530,10 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
-
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
       </plugin>
     </plugins>
 
@@ -651,6 +690,12 @@ THE SOFTWARE.
         <!-- TODO: https://issues.jenkins-ci.org/browse/JENKINS-53788 (JDK11 issue on CI) -->
         <doclint>none</doclint>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <!-- release is needed for reliable cross compilation. It is supported
+        starting JDK 9, but as the only earlier version we support is 8, it would
+        be either compiled by javac from 8 or one from a newer compiler that
+        correctly handle the release flag. This will replace both source and target
+        once we drop support for JDK 8 that only recognize source and target. -->
+        <maven.compiler.release>${java.level}</maven.compiler.release>
       </properties>
       <activation>
         <jdk>11</jdk>

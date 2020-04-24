@@ -24,23 +24,41 @@ THE SOFTWARE.
 
 <!-- tag file used by both signup.jelly and addUser.jelly -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    <st:attribute name="it" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
+      Context where the page is loaded.
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Title of the HTML page. Rendered in the page content inside a &lt;h1>.
+    </st:attribute>
+    <st:attribute name="action" use="required">
+      The method to call from within the HudsonPrivateSecurityRealm.
+    </st:attribute>
+    <st:attribute name="captcha" use="optional">
+      Determines if the tag will include the captcha.
+    </st:attribute>
+    <st:attribute name="data" use="optional" type="hudson.security.HudsonPrivateSecurityRealm.SignupInfo">
+      The wrapper for the data provided by the user and the error message(s) if any. Is null on first form display.
+    </st:attribute>
+  </st:documentation>
+
   <h1>${title}</h1>
-  <div style="margin: 2em;">
+  <div class="form-content">
     <j:if test="${data.errorMessage!=null}">
-      <div class="error" style="margin-bottom:1em">
+      <div class="error">
         ${data.errorMessage}
       </div>
     </j:if>
     <j:forEach var="error" items="${data.errors}">
-      <div class="error" style="margin-bottom:1em">
+      <div class="error">
         ${error.value}
       </div>
     </j:forEach>
       <table>
         <tr>
           <td>${%Username}:</td>
-          <td><input type="text" name="username" id="username" value="${data.username}" /></td>
+          <td><input type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" /></td>
         </tr>
         <tr>
           <td>${%Password}:</td>
@@ -55,17 +73,17 @@ THE SOFTWARE.
           <td><input type="text" name="fullname" value="${data.fullname}" /></td>
         </tr>
         <j:if test="${it.mailerPluginPresent}">
-        <tr>
-          <td>${%E-mail address}:</td>
-          <td><input type="text" name="email" value="${data.email}" /></td>
-        </tr>
+          <tr>
+            <td>${%E-mail address}:</td>
+            <td><input type="text" name="email" value="${data.email}" /></td>
+          </tr>
         </j:if>
         <j:if test="${captcha}">
           <tr>
             <td>${%Enter text as shown}:</td>
             <td>
               <input type="text" name="captcha" autocomplete="off" /><br />
-              <img src="${rootURL}/securityRealm/captcha" alt="[${%captcha}]"/>
+              <img src="${rootURL}/securityRealm/captcha" alt="[${%captcha}]" />
             </td>
           </tr>
         </j:if>

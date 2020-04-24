@@ -29,6 +29,7 @@ import static org.hamcrest.CoreMatchers.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -165,7 +166,7 @@ public class ArgumentListBuilderTest {
         assertThat("The mask array was incorrect", array, is(builder.toMaskArray()));
     }
     
-    private static final Map<String, String> KEY_VALUES = new HashMap<String, String>() {{
+    private static final Map<String, String> KEY_VALUES = new LinkedHashMap<String, String>() {{
         put("key1", "value1");
         put("key2", "value2");
         put("key3", "value3");

@@ -51,7 +51,7 @@ import java.text.ParseException;
 import java.util.List;
 
 import static hudson.Util.fixEmpty;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 public class Hudson extends Jenkins {
 

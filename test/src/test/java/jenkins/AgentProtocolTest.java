@@ -26,7 +26,7 @@ package jenkins;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import static org.junit.Assert.fail;
@@ -51,7 +51,7 @@ public class AgentProtocolTest {
     @LocalData
     @Issue("JENKINS-45841")
     public void testShouldNotOverrideUserConfiguration() throws Exception {
-        assertEnabled("JNLP-connect", "JNLP3-connect");
+        assertEnabled("JNLP-connect");
         assertDisabled("JNLP2-connect", "JNLP4-connect");
         assertProtocols(true, "System protocols should be always enabled", "Ping");
     }

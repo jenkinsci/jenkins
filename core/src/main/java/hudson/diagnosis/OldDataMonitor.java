@@ -53,8 +53,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
@@ -86,7 +86,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @throws IllegalStateException Monitor not found.
      *              It should never happen since the monitor is located in the core.
      */
-    @Nonnull
+    @NonNull
     static OldDataMonitor get(Jenkins j) throws IllegalStateException {
         return ExtensionList.lookupSingleton(OldDataMonitor.class);
     }
@@ -440,6 +440,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     @Extension @Symbol("oldData")
     public static class ManagementLinkImpl extends ManagementLink {
+        @NonNull
+        @Override
+        public Category getCategory() {
+            return Category.TROUBLESHOOTING;
+        }
+
         @Override
         public String getIconFileName() {
             return "document.png";

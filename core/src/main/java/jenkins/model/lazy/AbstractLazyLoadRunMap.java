@@ -39,7 +39,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
@@ -91,7 +91,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     /**
      * Used in {@link #all()} to quickly determine if we've already loaded everything.
      */
-    private boolean fullyLoaded;
+    private volatile boolean fullyLoaded;
 
     /**
      * Currently visible index.

@@ -65,6 +65,7 @@ import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -74,10 +75,10 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,10 +92,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.stream.Stream;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
@@ -170,7 +174,7 @@ public class SlaveComputer extends Computer {
     }
 
     @Override
-    @OverridingMethodsMustInvokeSuper
+    @OverrideMustInvoke
     public boolean isAcceptingTasks() {
         // our boolean flag is an override on any additional programmatic reasons why this agent might not be
         // accepting tasks.
@@ -379,8 +383,8 @@ public class SlaveComputer extends Computer {
      * Same as {@link #setChannel(InputStream, OutputStream, OutputStream, Channel.Listener)}, but for
      * {@link TaskListener}.
      */
-    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
-                           @Nonnull TaskListener taskListener,
+    public void setChannel(@NonNull InputStream in, @NonNull OutputStream out,
+                           @NonNull TaskListener taskListener,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         setChannel(in,out,taskListener.getLogger(),listener);
     }
@@ -404,7 +408,7 @@ public class SlaveComputer extends Computer {
      *      By the time this method is called, the cause of the termination is reported to the user,
      *      so the implementation of the listener doesn't need to do that again.
      */
-    public void setChannel(@Nonnull InputStream in, @Nonnull OutputStream out,
+    public void setChannel(@NonNull InputStream in, @NonNull OutputStream out,
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         ChannelBuilder cb = new ChannelBuilder(nodeName,threadPoolForRemoting)
@@ -436,8 +440,8 @@ public class SlaveComputer extends Computer {
      * @since 2.127
      */
     @Restricted(Beta.class)
-    public void setChannel(@Nonnull ChannelBuilder cb,
-                           @Nonnull CommandTransport commandTransport,
+    public void setChannel(@NonNull ChannelBuilder cb,
+                           @NonNull CommandTransport commandTransport,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(cb,this);
@@ -598,7 +602,7 @@ public class SlaveComputer extends Computer {
      * @param listener Channel event listener to be attached (if not {@code null})
      * @since 1.444
      */
-    public void setChannel(@Nonnull Channel channel,
+    public void setChannel(@NonNull Channel channel,
                            @CheckForNull OutputStream launchLog,
                            @CheckForNull Channel.Listener listener) throws IOException, InterruptedException {
         if(this.channel!=null)
@@ -810,6 +814,24 @@ public class SlaveComputer extends Computer {
         return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
     }
 
+    class LowPermissionResponse {
+        @WebMethod(name="slave-agent.jnlp")
+        public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
+            return SlaveComputer.this.doSlaveAgentJnlp(req, res);
+        }
+    }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            if (!Jenkins.get().hasPermission(Jenkins.READ)) {
+                return new LowPermissionResponse();
+            }
+        }
+        return this;
+    }
+
     @Override
     protected void kill() {
         super.kill();
@@ -996,7 +1018,18 @@ public class SlaveComputer extends Computer {
         }
 
         public Void call() {
-            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
+            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
+                Formatter dummy = new SimpleFormatter();
+                @Override
+                public synchronized void publish(LogRecord record) {
+                    // see LogRecord.writeObject for dangers of serializing non-String/null parameters
+                    if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
+                        record.setMessage(dummy.formatMessage(record));
+                        record.setParameters(null);
+                    }
+                    super.publish(record);
+                }
+            };
 
             // avoid double installation of the handler. Inbound agents can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,

@@ -1,4 +1,5 @@
 /* Copyright 2004, 2005, 2006 Acegi Technology Pty Limited
+ * Copyright (c) 2020 CloudBees, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,8 +123,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
 		} catch (ServletException ex) {
-			if (ex.getRootCause() instanceof AuthenticationException
-					|| ex.getRootCause() instanceof AccessDeniedException) {
+			if (ex.getRootCause() instanceof AuthenticationException || ex.getRootCause() instanceof AccessDeniedException) {
 				handleException(request, response, chain, (AcegiSecurityException) ex.getRootCause());
 			}
 			else {
@@ -235,4 +235,5 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
     public void destroy() {
     }
+
 }

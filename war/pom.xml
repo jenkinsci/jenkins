@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -40,6 +39,7 @@ THE SOFTWARE.
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
     <contextPath>/jenkins</contextPath><!-- context path during test -->
+    <host>localhost</host><!-- HTTP listener host/interface -->
     <port>8080</port><!-- HTTP listener port -->
     <node.version>12.14.1</node.version>
     <yarn.version>1.21.1</yarn.version>
@@ -81,6 +81,10 @@ THE SOFTWARE.
           <artifactId>metainf-services</artifactId>
           <groupId>org.kohsuke.metainf-services</groupId>
         </exclusion>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -99,7 +103,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.6</version>
+      <version>5.9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -110,12 +114,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.7</version>
+      <version>1.8</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>slave-installer</artifactId>
-      <version>1.6</version>
+      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -360,7 +364,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.68</version>
+                  <version>1.71</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -466,7 +470,8 @@ THE SOFTWARE.
           -->
           <reload>manual</reload>
           <httpConnector>
-              <port>${port}</port>
+            <host>${host}</host>
+            <port>${port}</port>
           </httpConnector>
           <loginServices>
             <loginService implementation="org.eclipse.jetty.security.HashLoginService">
@@ -487,6 +492,11 @@ THE SOFTWARE.
             <systemProperty>
               <!-- show the stapler evaluation during execution -->
               <name>stapler.trace</name>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
+              <!-- show the full stack trace on errors (the oops page) -->
+              <name>jenkins.model.Jenkins.SHOW_STACK_TRACE</name>
               <value>true</value>
             </systemProperty>
             <systemProperty>
@@ -515,11 +525,6 @@ THE SOFTWARE.
             </systemProperty>
             <systemProperty>
               <name>hudson.Main.development</name>
-              <value>true</value>
-            </systemProperty>
-            <systemProperty>
-              <!-- this adds 3 sec to the shutdown, and most likely pointless, too -->
-              <name>hudson.DNSMultiCast.disabled</name>
               <value>true</value>
             </systemProperty>
           </systemProperties>
