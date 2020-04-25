@@ -111,7 +111,7 @@ function ConfigTableMetaData(configForm, configTable) {
 }
 
 ConfigTableMetaData.prototype.getTopRows = function() {
-    var topRows = this.configTableBody.children('tr, .tr');
+    var topRows = this.configTableBody.find('tr, .tr');
     topRows.addClass('config-table-top-row');
     return topRows;
 };
