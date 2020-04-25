@@ -30,7 +30,7 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -52,7 +52,7 @@ public class CliLink extends ManagementLink {
         return Messages.CliLink_Description();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.MANAGE;
@@ -61,5 +61,11 @@ public class CliLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "cli";
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.TOOLS;
     }
 }

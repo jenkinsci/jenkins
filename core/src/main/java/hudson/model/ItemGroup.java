@@ -25,14 +25,13 @@ package hudson.model;
 
 import hudson.model.listeners.ItemListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.io.File;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.acegisecurity.AccessDeniedException;
 
 /**
@@ -62,7 +61,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     /**
      * Gets all the items in this collection in a read-only view
      * that matches supplied Predicate
-     * @since TODO
+     * @since 2.221
      */
      default Collection<T> getItems(Predicate<T> pred) {
          return getItemsStream(pred)
@@ -71,7 +70,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
 
     /**
      * Gets a read-only stream of all the items in this collection
-     * @since TODO
+     * @since 2.221
      */
     default Stream<T> getItemsStream() {
         return getItems().stream();
@@ -80,7 +79,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     /**
      * Gets a read-only stream of all the items in this collection
      * that matches supplied Predicate
-     * @since TODO
+     * @since 2.221
      */
     default Stream<T> getItemsStream(Predicate<T> pred) {
         return getItemsStream().filter(pred);
@@ -132,7 +131,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
 
     /**
      * Similar to {@link #getAllItems(Class)} with additional predicate filtering
-     * @since TODO
+     * @since 2.221
      */
     default <T extends Item> List<T> getAllItems(Class<T> type, Predicate<T> pred) {
         return Items.getAllItems(this, type, pred);
@@ -150,7 +149,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     /**
      * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
      * and filter them by the given type and given predicate
-     * @since TODO
+     * @since 2.221
      */
     default <T extends Item> Iterable<T> allItems(Class<T> type, Predicate<T> pred) {
         return Items.allItems(this, type, pred);

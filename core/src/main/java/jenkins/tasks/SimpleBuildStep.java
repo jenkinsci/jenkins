@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
@@ -81,8 +81,8 @@ public interface SimpleBuildStep extends BuildStep {
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
      */
-    void perform(@Nonnull Run<?,?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
-                 @Nonnull TaskListener listener) throws InterruptedException, IOException;
+    void perform(@NonNull Run<?,?> run, @NonNull FilePath workspace, @NonNull Launcher launcher,
+                 @NonNull TaskListener listener) throws InterruptedException, IOException;
 
     /**
      * Marker for explicitly added build actions (as {@link Run#addAction}) which should imply a transient project
@@ -112,9 +112,9 @@ public interface SimpleBuildStep extends BuildStep {
             return Job.class;
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public Collection<? extends Action> createFor(@Nonnull Job j) {
+        public Collection<? extends Action> createFor(@NonNull Job j) {
             List<Action> actions = new LinkedList<>();
             Run r = j.getLastSuccessfulBuild();
             if (r != null) {

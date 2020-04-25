@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
-import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
 import hudson.XmlFile;
@@ -81,9 +80,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
 import java.util.IdentityHashMap;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Metadata about a configurable instance.
@@ -310,7 +309,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Historically some implementations returned null as a way of hiding the descriptor from the UI,
      * but this is generally managed by an explicit method such as {@code isEnabled} or {@code isApplicable}.
      */
-    @Nonnull
+    @NonNull
     public String getDisplayName() {
         return clazz.getSimpleName();
     }
@@ -466,7 +465,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Used by Jelly to abstract away the handling of global.jelly vs config.jelly databinding difference.
      */
-    public @CheckForNull PropertyType getPropertyType(@Nonnull Object instance, @Nonnull String field) {
+    public @CheckForNull PropertyType getPropertyType(@NonNull Object instance, @NonNull String field) {
         // in global.jelly, instance==descriptor
         return instance==this ? getGlobalPropertyType(field) : getPropertyType(field);
     }
@@ -476,7 +475,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * @throws AssertionError in case the field cannot be found
      * @since 1.492
      */
-    public @Nonnull PropertyType getPropertyTypeOrDie(@Nonnull Object instance, @Nonnull String field) {
+    public @NonNull PropertyType getPropertyTypeOrDie(@NonNull Object instance, @NonNull String field) {
         PropertyType propertyType = getPropertyType(instance, field);
         if (propertyType != null) {
             return propertyType;
@@ -571,7 +570,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      Signals a problem in the submitted form.
      * @since 1.145
      */
-    public T newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
+    public T newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
@@ -828,7 +827,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @since 2.0, used to be in {@link GlobalConfiguration} before that.
      */
-    public @Nonnull GlobalConfigurationCategory getCategory() {
+    public @NonNull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
     }
 
@@ -839,9 +838,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Override to return something different if appropriate. The only currently supported alternative return value is {@link Jenkins#MANAGE}.
      *
      * @return Permission required to globally configure this descriptor.
-     * @since TODO
+     * @since 2.222
      */
-    public @Nonnull
+    public @NonNull
     Permission getRequiredGlobalConfigPagePermission() {
         return Jenkins.ADMINISTER;
     }

@@ -25,7 +25,7 @@ package jenkins.security;
 
 import org.acegisecurity.userdetails.UserDetails;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -56,27 +56,27 @@ public abstract class SpySecurityListener extends SecurityListener {
     }
     
     @Override
-    protected void authenticated(@Nonnull UserDetails details) {
+    protected void authenticated(@NonNull UserDetails details) {
         this.authenticatedCalls.add(details);
     }
     
     @Override
-    protected void failedToAuthenticate(@Nonnull String username) {
+    protected void failedToAuthenticate(@NonNull String username) {
         this.failedToAuthenticateCalls.add(username);
     }
     
     @Override
-    protected void loggedIn(@Nonnull String username) {
+    protected void loggedIn(@NonNull String username) {
         this.loggedInCalls.add(username);
     }
     
     @Override
-    protected void failedToLogIn(@Nonnull String username) {
+    protected void failedToLogIn(@NonNull String username) {
         this.failedToLogInCalls.add(username);
     }
     
     @Override
-    protected void loggedOut(@Nonnull String username) {
+    protected void loggedOut(@NonNull String username) {
         this.loggedOutCalls.add(username);
     
     }

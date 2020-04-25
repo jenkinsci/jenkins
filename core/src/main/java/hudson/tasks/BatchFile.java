@@ -38,7 +38,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.ObjectStreamException;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Executes commands by using Windows batch file.

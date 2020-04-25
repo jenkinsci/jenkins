@@ -31,7 +31,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -99,7 +99,7 @@ public class ApiSEC1704Test {
         }
 
         @ExportedBean
-        class CustomData {
+        static class CustomData {
             private String secret;
             CustomData(String secret){
                 this.secret = secret;

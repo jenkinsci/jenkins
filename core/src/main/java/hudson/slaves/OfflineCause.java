@@ -33,8 +33,8 @@ import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.Date;
@@ -70,7 +70,7 @@ public abstract class OfflineCause {
      *
      * @since 1.612
      */
-    public final @Nonnull Date getTime() {
+    public final @NonNull Date getTime() {
         return new Date(timestamp);
     }
 

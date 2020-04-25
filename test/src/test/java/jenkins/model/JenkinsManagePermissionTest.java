@@ -22,7 +22,6 @@ import hudson.cli.DisablePluginCommand;
 import hudson.model.Descriptor;
 import hudson.model.MyView;
 import hudson.model.View;
-import hudson.model.labels.LabelAtom;
 import hudson.tasks.Shell;
 
 import static org.hamcrest.Matchers.containsString;
@@ -30,7 +29,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
@@ -177,6 +176,21 @@ public class JenkinsManagePermissionTest {
         HtmlPage updated = j.submit(form);
         assertThat("User with Jenkins.MANAGE permission should be able to update global configuration",
                 updated.getWebResponse(), hasResponseCode(HttpURLConnection.HTTP_OK));
+    }
+
+    @Issue("JENKINS-61457")
+    @Test
+    public void managePermissionCanChangeUsageStatistics() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                                                   .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().toEveryone());
+
+        boolean previousValue = j.jenkins.isUsageStatisticsCollected();
+        HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
+        form.getInputByName("_.usageStatisticsCollected").setChecked(!previousValue);
+        j.submit(form);
+
+        assertThat("Can set UsageStatistics", j.jenkins.isUsageStatisticsCollected(), not(previousValue));
     }
 
     private String getShell() {
