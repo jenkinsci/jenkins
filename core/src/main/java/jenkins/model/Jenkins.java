@@ -37,7 +37,6 @@ import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
-import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.AgentProtocol;
 import jenkins.diagnostics.URICheckEncodingMonitor;
@@ -2223,16 +2222,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Returns the enabled and activated administrative monitors.
+     * Returns the enabled and activated administrative monitors accessible to the current user.
+     *
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
-        if (!Jenkins.get().hasPermission(ADMINISTER)) {
+        if (!Jenkins.get().hasPermission(SYSTEM_READ)) {
             return Collections.emptyList();
         }
         return administrativeMonitors.stream().filter(m -> {
             try {
-                return m.isEnabled() && m.isActivated();
+                return Jenkins.get().hasPermission(m.getRequiredPermission()) && m.isEnabled() && m.isActivated();
             } catch (Throwable x) {
                 LOGGER.log(Level.WARNING, null, x);
                 return false;
@@ -2559,7 +2559,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Everything below here is admin-only, so do the check here.
      */
     public LogRecorderManager getLog() {
-        checkPermission(ADMINISTER);
+        checkPermission(SYSTEM_READ);
         return log;
     }
 

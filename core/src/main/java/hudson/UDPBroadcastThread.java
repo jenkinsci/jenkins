@@ -25,12 +25,10 @@
 package hudson;
 
 import hudson.init.Initializer;
-import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.io.IOException;
 import java.util.logging.Logger;
 
 import static hudson.init.InitMilestone.COMPLETED;

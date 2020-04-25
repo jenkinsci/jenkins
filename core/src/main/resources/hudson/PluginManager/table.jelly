@@ -48,6 +48,7 @@ THE SOFTWARE.
               class="plugin-manager__search-input"
               type="text"
               id="filter-box"
+              value="${request.getParameter('filter')}"
               placeholder="${filtered == 'true' ? '%search' : '%filter'}" />
           <span class="plugin-manager__icon-leading">
             <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
@@ -62,7 +63,7 @@ THE SOFTWARE.
           <table id="plugins" class="sortable pane bigtable stripped-odd">
             <tr>
               <l:isAdmin>
-                <th initialSortDir="${isUpdates?null:'down'}"
+                <th initialSortDir="${isUpdates?null:'up'}"
                     tooltip="${%Check to install the plugin}"
                     width="32">${%Install}</th>
               </l:isAdmin>
@@ -76,8 +77,8 @@ THE SOFTWARE.
                 <j:set var="cache" value="${it.createCache()}"/>
                 <j:if test="${filtered == 'true'}">
                   <tr id="hidden-by-default-instructions">
-                    <td class="pane" colspan="5" align="center">
-                      ${%Use the search field above to search for available plugins.}
+                    <td class="pane" colspan="5" align="center" id="hidden-by-default-instructions-td" data-loaded-text="${%instructions}">
+                      ${%loading}
                     </td>
                   </tr>
                 </j:if>
@@ -87,14 +88,13 @@ THE SOFTWARE.
                          value="${installJob.status.success and installJob.plugin.version==p.version}" />
                   <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin ${filtered == 'true' ? 'hidden hidden-by-default' : ''}" name="${p.displayName}">
                     <l:isAdmin>
-                      <td class="pane" align="center">
-                        <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
-                               checked="${installedOk ? 'checked' : null}"
-                               disabled="${installedOk ? 'disabled' : null}"
-                               data-compat-warning="${!p.isCompatible(cache)}" />
+                      <td class="pane" align="center" data="${isUpdates ? null : it.unscientific(p.popularity)}">
+                          <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
+                                 checked="${installedOk ? 'checked' : null}"
+                                 disabled="${installedOk ? 'disabled' : null}"
+                                 data-compat-warning="${!p.isCompatible(cache)}" />
                       </td>
                     </l:isAdmin>
-
                     <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                       <div>
                         <a href="${p.wiki}" target="_blank"><st:out value="${p.displayName}"/></a>
@@ -103,9 +103,10 @@ THE SOFTWARE.
                         <div class="plugin-manager__categories">
                           <j:forEach var="label" items="${p.categories}">
                             <j:if test="${!it.isMetaLabel(label)}">
-                              <span class="plugin-manager__category-label">
+                              <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
+                                 class="plugin-manager__category-label">
                                 ${app.updateCenter.getCategoryDisplayName(label)}
-                              </span>
+                              </a>
                             </j:if>
                           </j:forEach>
                         </div>

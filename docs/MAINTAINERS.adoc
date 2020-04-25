@@ -155,7 +155,7 @@ Code reviews do NOT pursue the following goals:
 * Make contributors to have atomic commit history or to squash their pull request
 ** Not every contributor is a Git expert, do not request changes in the commit history unless it is necessary
 ** Core maintainers can squash PRs during the merge.
-   If you feel this is important, add the [squash-merge-me](https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me) label
+   If you feel this is important, add the link:https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me[squash-merge-me] label
 ** We want to keep pull requests focused when possible (one feature / fix per pull request),
    but we can live without it if there is no need to backport changes to the stable baseline.
 
@@ -178,7 +178,7 @@ Merge process can be initiated once a pull request matches the requirements:
   (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
   This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out),
   or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
-* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see [query](https://issues.jenkins-ci.org/issues/?filter=12146)).
+* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see link:https://issues.jenkins-ci.org/issues/?filter=12146[this Jira query]).
 
 ==== Step 2: Is it a good time to merge?
 
@@ -223,7 +223,7 @@ LTS backporting, if needed, will be handled separately by the release team.
 
 Sometimes we have pull requests which include dozens of commits including many non-substantial changes (merge commits, addressing review comments, etc.).
 We do not require contributors to spend time on cleaning it up, because core maintainers can squash PRs during the merge.
-Reviewers can add a [squash-merge-me](https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me) label during reviews to highlight that it is needed.
+Reviewers can add a link:https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me[squash-merge-me] label during reviews to highlight that it is needed.
 
 At the same time, we do not require any pull request to be merged as a single commit.
 Multiple commits are useful in many cases.
