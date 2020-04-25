@@ -25,6 +25,7 @@
  */
 package hudson;
 
+import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.security.*;
 
@@ -2058,6 +2059,10 @@ public class Functions {
             if (req != null) {
                 Item item = req.findAncestorObject(Item.class);
                 if (item != null && !item.hasPermission(Item.CONFIGURE)) {
+                    return "********";
+                }
+                Computer computer = req.findAncestorObject(Computer.class);
+                if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
                     return "********";
                 }
             }
