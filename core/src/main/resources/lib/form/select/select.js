@@ -6,15 +6,7 @@ function updateListBox(listBox,url,config) {
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
 
-    function getValidationAreaElement() {
-        if (listBox.classList.contains('credentials-select')) {
-            return listBox.parentElement.parentElement.parentElement.nextElementSibling;
-        }
-
-        return listBox.parentElement.nextElementSibling;
-    }
-
-    var status = getValidationAreaElement();
+    var status = listBox.closest('.setting-main').nextElementSibling;
     if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }

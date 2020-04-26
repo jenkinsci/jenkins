@@ -262,6 +262,8 @@ THE SOFTWARE.
     <!-- SVG sprite polyfill for IE 11.
          Loaded at the end in order to not make modern browsers wait for it. This causes a flash-of-no-icons on IE 11  -->
     <script src="${resURL}/scripts/svgxuse.min.js" type="text/javascript" async="true" />
+    <!-- closest polyfill for IE 11 -->
+    <script src="${resURL}/scripts/closest.js" type="text/javascript" async="true" />
   </body>
 </html>
 </l:view>
