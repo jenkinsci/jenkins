@@ -143,6 +143,9 @@ THE SOFTWARE.
     <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
+    <!-- closest polyfill for IE 11 -->
+    <script src="${resURL}/scripts/closest.js" type="text/javascript" />
+    
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
@@ -262,8 +265,6 @@ THE SOFTWARE.
     <!-- SVG sprite polyfill for IE 11.
          Loaded at the end in order to not make modern browsers wait for it. This causes a flash-of-no-icons on IE 11  -->
     <script src="${resURL}/scripts/svgxuse.min.js" type="text/javascript" async="true" />
-    <!-- closest polyfill for IE 11 -->
-    <script src="${resURL}/scripts/closest.js" type="text/javascript" async="true" />
   </body>
 </html>
 </l:view>
