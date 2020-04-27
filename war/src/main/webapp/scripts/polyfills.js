@@ -16,3 +16,5 @@ if (!Element.prototype.closest) {
         return null;
     };
 }
+
+// end closest / matches polyfill

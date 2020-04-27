@@ -144,7 +144,7 @@ THE SOFTWARE.
     <!--l:yui module="editor" suffix="-beta" /-->
 
     <!-- closest polyfill for IE 11 -->
-    <script src="${resURL}/scripts/closest.js" type="text/javascript" />
+    <script src="${resURL}/scripts/polyfills.js" type="text/javascript" />
     
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
