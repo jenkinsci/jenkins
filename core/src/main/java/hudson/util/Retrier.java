@@ -3,8 +3,8 @@ package hudson.util;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
@@ -122,7 +122,7 @@ public class Retrier <V>{
          * @param attempts number of attempts
          * @return this builder
          */
-        public @Nonnull Builder<V> withAttempts(int attempts) {
+        public @NonNull Builder<V> withAttempts(int attempts) {
             this.attempts = attempts;
             return this;
         }
@@ -132,7 +132,7 @@ public class Retrier <V>{
          * @param millis milliseconds to wait
          * @return this builder
          */
-        public @Nonnull Builder<V> withDelay(long millis) {
+        public @NonNull Builder<V> withDelay(long millis) {
             this.delay = millis;
             return this;
         }
@@ -144,7 +144,7 @@ public class Retrier <V>{
          * @param exceptions exceptions that indicate that the action was failed.
          * @return this builder
          */
-        public @Nonnull Builder<V> withDuringActionExceptions(@CheckForNull Class<?>[] exceptions) {
+        public @NonNull Builder<V> withDuringActionExceptions(@CheckForNull Class<?>[] exceptions) {
             this.duringActionExceptions = exceptions != null ? Arrays.copyOf(exceptions, exceptions.length) : null;
             return this;
         }
@@ -155,7 +155,7 @@ public class Retrier <V>{
          * @param exceptionListener the listener to call to
          * @return this builder
          */
-        public @Nonnull Builder<V> withDuringActionExceptionListener(@Nonnull BiFunction<Integer, Exception, V>  exceptionListener) {
+        public @NonNull Builder<V> withDuringActionExceptionListener(@NonNull BiFunction<Integer, Exception, V>  exceptionListener) {
             this.duringActionExceptionListener = exceptionListener;
             return this;
         }
@@ -167,7 +167,7 @@ public class Retrier <V>{
          * @param action name of the action to perform, for messages purposes.
          */
         
-        public Builder(@Nonnull Callable<V> callable, @Nonnull BiPredicate<Integer, V> checkResult, @Nonnull String action) {
+        public Builder(@NonNull Callable<V> callable, @NonNull BiPredicate<Integer, V> checkResult, @NonNull String action) {
             this.callable = callable;
             this.action = action;
             this.checkResult = checkResult;
@@ -177,7 +177,7 @@ public class Retrier <V>{
          * Create a Retrier object with the specification set in this builder.
          * @return the retrier
          */
-        public @Nonnull Retrier<V> build() {
+        public @NonNull Retrier<V> build() {
             return new Retrier<>(this);
         }
     }

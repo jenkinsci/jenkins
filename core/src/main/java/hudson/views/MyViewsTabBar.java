@@ -32,7 +32,7 @@ import hudson.model.View;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.MyViewsProperty;
@@ -77,10 +77,10 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
      * @return the sorted views
      * @since 2.37
      */
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // invoked from stapler view
-    public List<View> sort(@Nonnull List<? extends View> views) {
+    public List<View> sort(@NonNull List<? extends View> views) {
         List<View> result = new ArrayList<>(views);
         result.sort(new Comparator<View>() {
             @Override

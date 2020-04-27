@@ -41,8 +41,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -62,7 +62,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     private static final Logger LOGGER = Logger.getLogger(LazyBuildMixIn.class.getName());
 
     @SuppressWarnings("deprecation") // [JENKINS-15156] builds accessed before onLoad or onCreatedFromScratch called
-    private @Nonnull RunMap<RunT> builds = new RunMap<>();
+    private @NonNull RunMap<RunT> builds = new RunMap<>();
 
     /**
      * Initializes this mixin.
@@ -77,7 +77,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
      * Normally should not be called as such.
      * Note that the initial value is replaced during {@link #onCreatedFromScratch} or {@link #onLoad}.
      */
-    public final @Nonnull RunMap<RunT> getRunMap() {
+    public final @NonNull RunMap<RunT> getRunMap() {
         return builds;
     }
 

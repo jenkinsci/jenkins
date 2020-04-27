@@ -28,8 +28,8 @@ import hudson.ExtensionPoint;
 import hudson.model.Item;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extension point for various decisions about SCM operations for {@link Item} instances.
@@ -43,12 +43,12 @@ public abstract class SCMDecisionHandler implements ExtensionPoint {
      *
      * @param item The item.
      */
-    public abstract boolean shouldPoll(@Nonnull Item item);
+    public abstract boolean shouldPoll(@NonNull Item item);
 
     /**
      * All registered {@link SCMDecisionHandler}s
      */
-    @Nonnull
+    @NonNull
     public static ExtensionList<SCMDecisionHandler> all() {
         return ExtensionList.lookup(SCMDecisionHandler.class);
     }
@@ -59,7 +59,7 @@ public abstract class SCMDecisionHandler implements ExtensionPoint {
      * @return the first veto or {@code null} if there are no vetos
      */
     @CheckForNull
-    public static SCMDecisionHandler firstShouldPollVeto(@Nonnull Item item) {
+    public static SCMDecisionHandler firstShouldPollVeto(@NonNull Item item) {
         for (SCMDecisionHandler handler : all()) {
             if (!handler.shouldPoll(item)) {
                 return handler;
@@ -73,8 +73,8 @@ public abstract class SCMDecisionHandler implements ExtensionPoint {
      * @param item the item
      * @return the {@link SCMDecisionHandler} instances vetoing the polling of the specified item.
      */
-    @Nonnull
-    public static List<SCMDecisionHandler> listShouldPollVetos(@Nonnull Item item) {
+    @NonNull
+    public static List<SCMDecisionHandler> listShouldPollVetos(@NonNull Item item) {
         List<SCMDecisionHandler> result = new ArrayList<>();
         for (SCMDecisionHandler handler : all()) {
             if (!handler.shouldPoll(item)) {

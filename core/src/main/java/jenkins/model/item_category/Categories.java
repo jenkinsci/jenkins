@@ -33,8 +33,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -69,7 +69,7 @@ public class Categories implements HttpResponse, Serializable {
     }
 
     @CheckForNull
-    public Category getItem(@Nonnull String id) {
+    public Category getItem(@NonNull String id) {
         for (Category category : items) {
             if (category.getId().equals(id)) {
                 return category;

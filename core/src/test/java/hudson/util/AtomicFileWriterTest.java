@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -22,9 +22,9 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -86,7 +86,7 @@ public class AtomicFileWriterTest {
     }
 
     @Test
-    public void createFile() throws Exception {
+    public void createFile() {
         // Verify the file we created exists
         assertTrue(Files.exists(afw.getTemporaryPath()));
     }
@@ -163,7 +163,7 @@ public class AtomicFileWriterTest {
 
     @Issue("JENKINS-48407")
     @Test
-    public void checkPermissionsRespectUmask() throws IOException, InterruptedException {
+    public void checkPermissionsRespectUmask() throws IOException {
 
         final File newFile = tmp.newFile();
         boolean posixSupported = isPosixSupported(newFile);

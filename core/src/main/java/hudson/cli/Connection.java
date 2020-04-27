@@ -27,7 +27,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.remoting.SocketChannelStream;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -56,6 +55,7 @@ import java.security.Signature;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
@@ -123,11 +123,11 @@ public class Connection {
     }
 
     public void writeKey(Key key) throws IOException {
-        writeUTF(new String(Base64.encodeBase64(key.getEncoded())));
+        writeUTF(Base64.getEncoder().encodeToString(key.getEncoded()));
     }
 
     public X509EncodedKeySpec readKey() throws IOException {
-        byte[] otherHalf = Base64.decodeBase64(readUTF()); // for historical reasons, we don't use readByteArray()
+        byte[] otherHalf = Base64.getDecoder().decode(readUTF()); // for historical reasons, we don't use readByteArray()
         return new X509EncodedKeySpec(otherHalf);
     }
 

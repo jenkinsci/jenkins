@@ -24,7 +24,6 @@
 package jenkins.management;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.PageDecorator;
@@ -38,8 +37,6 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,11 +88,9 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
     /**
      * Whether the administrative monitors notifier should be shown.
      * @return true iff the administrative monitors notifier should be shown.
-     * @throws IOException
-     * @throws ServletException
      */
-    public boolean shouldDisplay() throws IOException, ServletException {
-        if (!Functions.hasPermission(Jenkins.ADMINISTER)) {
+    public boolean shouldDisplay() {
+        if (!Jenkins.get().hasPermission(Jenkins.SYSTEM_READ)) {
             return false;
         }
 
