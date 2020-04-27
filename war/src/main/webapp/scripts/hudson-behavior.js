@@ -447,8 +447,13 @@ var tooltip;
 //========================================================
 // using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
+    var settingMain = e.closest('.setting-main')
+    if (!settingMain) {
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        return;
+    }
     // find the validation-error-area
-    e.targetElement = e.closest('.setting-main').nextElementSibling;
+    e.targetElement = settingMain.nextElementSibling;
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
@@ -515,8 +520,13 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
+    var settingMain = e.closest('.setting-main')
+    if (!settingMain) {
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        return;
+    }
     // find the validation-error-area
-    e.targetElement = e.closest('.setting-main').nextElementSibling;
+    e.targetElement = settingMain.nextElementSibling;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;

@@ -6,7 +6,12 @@ function updateListBox(listBox,url,config) {
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
 
-    var status = listBox.closest('.setting-main').nextElementSibling;
+    var settingMain = listBox.closest('.setting-main')
+    if (!settingMain) {
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        return;
+    }
+    var status = settingMain.closest('.setting-main').nextElementSibling;
     if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }
