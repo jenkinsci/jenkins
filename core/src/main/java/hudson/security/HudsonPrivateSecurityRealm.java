@@ -30,6 +30,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
@@ -61,6 +62,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -916,6 +918,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
+        }
+
+        public FormValidation doCheckAllowsSignup(@QueryParameter boolean value) {
+            if (value) {
+                return FormValidation.warning(Messages.HudsonPrivateSecurityRealm_SignupWarning());
+            }
+            return FormValidation.ok();
         }
     }
 
