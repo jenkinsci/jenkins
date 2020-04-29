@@ -26,7 +26,9 @@ Remoting updates in the core are subject to the process though.
 
 === Communication channels
 
-* link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
+* Mailing list: link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
+* Chat for runtime Jenkins release coordination: `#jenkins-release` on Freenode IRC
+** All async communications should go to the developer mailing list
 
 === Roles
 
