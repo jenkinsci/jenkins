@@ -1185,13 +1185,11 @@ public class Functions {
         if (object instanceof AccessControlled)
             return hasAnyPermission((AccessControlled) object, permissions);
         else {
-            List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
-            for (Ancestor anc : Iterators.reverse(ancs)) {
-                Object o = anc.getObject();
-                if (o instanceof AccessControlled) {
-                    return hasAnyPermission((AccessControlled) o, permissions);
-                }
+            AccessControlled ac = Stapler.getCurrentRequest().findAncestorObject(AccessControlled.class);
+            if (ac != null) {
+                return hasAnyPermission(ac, permissions);
             }
+            
             return hasAnyPermission(Jenkins.get(), permissions);
         }
     }
