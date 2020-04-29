@@ -41,7 +41,7 @@ THE SOFTWARE.
           <td width="32">
             <l:icon class="icon-clipboard icon-lg"/>
           </td>
-          <td style="padding-left:2em"><a href="${href}">${name}</a></td>
+          <td><a href="${href}">${name}</a></td>
           <td width="32">
             <d:invokeBody />
           </td>
@@ -51,9 +51,9 @@ THE SOFTWARE.
 
     <table id="logRecorders" class="sortable pane bigtable">
       <tr>
-        <th width="32">S</th>
+        <th class="minimum-width" data-sort-disable="true" />
         <th initialSortDir="down">${%Name}</th>
-        <th width="32"/>
+        <th class="minimum-width" data-sort-disable="true" />
       </tr>
       <local:row href="all" name="${%All Jenkins Logs}" />
       <j:forEach var="lr" items="${it.logRecorders.values()}">
