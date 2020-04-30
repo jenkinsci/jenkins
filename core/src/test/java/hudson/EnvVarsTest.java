@@ -28,9 +28,9 @@ import hudson.EnvVars.OverrideOrderCalculator;
 import java.util.*;
 
 import com.google.common.collect.Sets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -116,7 +116,7 @@ public class EnvVarsTest {
 
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
-        assertEquals(Arrays.asList("PATH"), order);
+        assertEquals(Collections.singletonList("PATH"), order);
     }
 
     @Test
