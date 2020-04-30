@@ -14,6 +14,7 @@ import java.net.URL;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -130,7 +131,8 @@ public class TooManyJobsButNoViewTest {
     private void verifyMonitor(JenkinsRule.WebClient wc) throws IOException, SAXException {
         HtmlPage p = wc.goTo("manage");
         DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
-        assertThat(adminMonitorDiv.getTextContent(), containsString("There appears to be a large number of jobs"));
+        assertThat(adminMonitorDiv, is(notNullValue()));
+        assertThat(adminMonitorDiv.getTextContent(), is(notNullValue()));
     }
     
 }
