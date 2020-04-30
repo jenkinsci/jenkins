@@ -557,6 +557,11 @@ th.pane {
 
 /* bigtable */
 
+/* For non-full screen table */
+.bigtable.width-auto {
+  width: auto;
+}
+
 .bigtable tr {
   border: 1px solid #bbb;
   padding: 3px 4px 3px 4px;
@@ -575,6 +580,11 @@ table.bigtable.pane > tbody > tr > td:last-child {
   background-color: #f0f0f0;
   padding: 6px 4px;
   white-space: nowrap;
+  text-align: left;
+
+  &.minimum-width {
+    width: 1px;
+  }
 }
 
 .bigtable td {
@@ -2103,3 +2113,4 @@ body.no-sticker #bottom-sticker {
 }
 
 /* -------------------------------------- */
+
