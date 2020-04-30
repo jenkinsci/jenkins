@@ -51,8 +51,12 @@ public class TooManyJobsButNoView extends AdministrativeMonitor {
     }
 
     public boolean isActivated() {
-        Jenkins h = Jenkins.get();
-        return h.getViews().size()==1 && h.getItemMap().size()> THRESHOLD;
+        Jenkins j = Jenkins.get();
+        if (j.hasPermission(Jenkins.ADMINISTER)) {
+            return j.getViews().size() == 1 && j.getItemMap().size() > THRESHOLD;
+        }
+        // SystemRead
+        return j.getViews().size() == 1 && j.getItems().size() > THRESHOLD;
     }
 
     /**
