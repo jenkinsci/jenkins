@@ -85,7 +85,7 @@ THE SOFTWARE.
     <d:invokeBody />
   </j:scope>
 
-  <j:if test="${href != 'newDomain' and attrs.permission==null or h.hasPermission(it,attrs.permission)}">
+  <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
     <j:choose>
       <j:when test="${parentTagContext!=null}">
         <j:if test="${isCurrent or hasMatchingChild}">
