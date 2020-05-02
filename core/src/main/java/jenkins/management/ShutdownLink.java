@@ -68,6 +68,8 @@ public class ShutdownLink extends ManagementLink {
 
     @POST
     public synchronized void doPrepare(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+        Jenkins.get().checkPermission(Jenkins.MANAGE);
+
         JSONObject submittedForm = req.getSubmittedForm();
         String inputReason = submittedForm.getString("shutdownReason");
         String shutdownReason = inputReason.isEmpty() ? null : inputReason;
@@ -77,6 +79,8 @@ public class ShutdownLink extends ManagementLink {
 
     @POST
     public synchronized void doCancel(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.MANAGE);
+
         LOGGER.log(Level.FINE, "Shutdown cancel requested");
         Jenkins.get().doCancelQuietDown().generateResponse(req, rsp, null);
     }
