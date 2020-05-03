@@ -1720,7 +1720,7 @@ public class Functions {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("since TODO")
+    @RestrictedSince("2.173")
     public static String toCCStatus(Item i) {
         return "Unknown";
     }
