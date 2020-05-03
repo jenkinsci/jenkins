@@ -26,8 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 
-  <l:layout permission="${app.ADMINISTER}" norefresh="true" type="one-column" title="${%about(app.VERSION)}">
-
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column" title="${%about(app.VERSION)}">
     <l:main-panel>
     <div class="container-fluid">
       <div class="row">
@@ -56,7 +55,7 @@ THE SOFTWARE.
           <ul>
             <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- TODO sort -->
             <li>
-              <a href="${rootURL}/pluginManager/plugin/${p.shortName}/thirdPartyLicenses">
+              <a href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
                 <j:choose>
                   <j:when test="${p.active}">
                     ${p.displayName}

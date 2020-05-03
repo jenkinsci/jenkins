@@ -30,6 +30,8 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
@@ -57,6 +59,12 @@ public class ConsoleLink extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.RUN_SCRIPTS;
+        return Jenkins.ADMINISTER;
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.TOOLS;
     }
 }

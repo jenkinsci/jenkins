@@ -1,6 +1,7 @@
 package jenkins.model.GlobalCloudConfiguration
 
 import hudson.slaves.Cloud
+import jenkins.model.Jenkins
 
 
 def f = namespace(lib.FormTagLib)
@@ -40,12 +41,10 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
             }
             st.adjunct(includes: "lib.form.confirm")
         } else {
-            p {
-                _("There are no cloud implementations for dynamically allocated agents installed.")
-                a(href: rootURL + "/pluginManager/available") {
-                    _("Go to plugin manager.")
-                }
-            }
+            String label = Jenkins.get().updateCenter.getCategoryDisplayName("cloud")
+
+            p(_("There are no cloud implementations for dynamically allocated agents installed. "))
+            a(href: rootURL + "/pluginManager/available?filter=" + URLEncoder.encode(label, "UTF-8"), _("Go to plugin manager."))
         }
     }
 }

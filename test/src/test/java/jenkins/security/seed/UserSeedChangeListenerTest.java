@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.net.URL;
 
@@ -88,7 +88,7 @@ public class UserSeedChangeListenerTest {
         boolean userWasNull;
         
         @Override 
-        public void onUserSeedRenewed(@Nonnull User user) {
+        public void onUserSeedRenewed(@NonNull User user) {
             if (user == null) {
                 userWasNull = true; 
             }

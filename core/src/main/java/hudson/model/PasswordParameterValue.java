@@ -29,14 +29,14 @@ import hudson.util.VariableResolver;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Locale;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class PasswordParameterValue extends ParameterValue {
 
-    @Nonnull
+    @NonNull
     private final Secret value;
 
     // kept for backward compatibility
@@ -71,7 +71,7 @@ public class PasswordParameterValue extends ParameterValue {
         return true;
     }
 
-    @Nonnull
+    @NonNull
     public Secret getValue() {
         return value;
     }

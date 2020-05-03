@@ -12,7 +12,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
@@ -52,7 +53,6 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
 import hudson.util.VersionNumber;
@@ -133,7 +133,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
                     // require a crumb issuer
-                    jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
+                    jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
     
                     // set master -> slave security:
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)

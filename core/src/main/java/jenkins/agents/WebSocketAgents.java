@@ -30,17 +30,16 @@ import hudson.ExtensionList;
 import hudson.model.Computer;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
-import hudson.remoting.AbstractByteArrayCommandTransport;
+import hudson.remoting.AbstractByteBufferCommandTransport;
 import hudson.remoting.Capability;
-import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.ChunkHeader;
 import hudson.remoting.Engine;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,7 +105,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         private final JnlpConnectionState state;
         private final String agent;
         private final Capability remoteCapability;
-        private AbstractByteArrayCommandTransport.ByteArrayReceiver receiver;
+        private Transport transport;
 
         Session(JnlpConnectionState state, String agent, Capability remoteCapability) {
             this.state = state;
@@ -119,7 +118,8 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             Computer.threadPoolForRemoting.submit(() -> {
                 LOGGER.fine(() -> "setting up channel for " + agent);
                 state.fireBeforeChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting));
-                state.fireAfterChannel(state.getChannelBuilder().build(new Transport()));
+                transport = new Transport();
+                state.fireAfterChannel(state.getChannelBuilder().build(transport));
                 LOGGER.fine(() -> "set up channel for " + agent);
                 return null;
             });
@@ -128,10 +128,10 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         @Override
         protected void binary(byte[] payload, int offset, int len) {
             LOGGER.finest(() -> "reading block of length " + len + " from " + agent);
-            if (offset == 0 && len == payload.length) {
-                receiver.handle(payload);
-            } else {
-                receiver.handle(Arrays.copyOfRange(payload, offset, offset + len));
+            try {
+                transport.receive(ByteBuffer.wrap(payload, offset, len));
+            } catch (IOException | InterruptedException e) {
+                error(e);
             }
         }
 
@@ -139,7 +139,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         protected void closed(int statusCode, String reason) {
             LOGGER.finest(() -> "closed " + statusCode + " " + reason);
             IOException x = new ClosedChannelException();
-            receiver.terminate(x);
+            transport.terminate(x);
             state.fireChannelClosed(x);
             state.fireAfterDisconnect();
         }
@@ -149,22 +149,13 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             LOGGER.log(Level.WARNING, null, cause);
         }
 
-        class Transport extends AbstractByteArrayCommandTransport {
+        class Transport extends AbstractByteBufferCommandTransport {
 
             @Override
-            public void setup(AbstractByteArrayCommandTransport.ByteArrayReceiver bar) {
-                receiver = bar;
-            }
-
-            @Override
-            public void writeBlock(Channel chnl, byte[] bytes) throws IOException {
-                LOGGER.finest(() -> "writing block of length " + bytes.length + " to " + agent);
-                try {
-                    sendBinary(ByteBuffer.wrap(bytes)).get();
-                } catch (Exception x) {
-                    x.printStackTrace();
-                    throw new IOException(x);
-                }
+            protected void write(ByteBuffer header, ByteBuffer data) throws IOException {
+                LOGGER.finest(() -> "sending message of length " + ChunkHeader.length(ChunkHeader.peek(header)));
+                sendBinary(header, false);
+                sendBinary(data, true);
             }
 
             @Override
@@ -183,7 +174,6 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
                 LOGGER.finest(() -> "closeRead");
                 close();
             }
-
         }
 
     }

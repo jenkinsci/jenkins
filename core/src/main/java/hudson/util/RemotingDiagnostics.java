@@ -41,7 +41,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -107,7 +107,7 @@ public final class RemotingDiagnostics {
     /**
      * Executes Groovy script remotely.
      */
-    public static String executeGroovy(String script, @Nonnull VirtualChannel channel) throws IOException, InterruptedException {
+    public static String executeGroovy(String script, @NonNull VirtualChannel channel) throws IOException, InterruptedException {
         return channel.call(new Script(script));
     }
 
@@ -196,7 +196,7 @@ public final class RemotingDiagnostics {
 
         @WebMethod(name="heapdump.hprof")
         public void doHeapDump(StaplerRequest req, StaplerResponse rsp) throws IOException, InterruptedException {
-            owner.checkPermission(Jenkins.RUN_SCRIPTS);
+            owner.checkPermission(Jenkins.ADMINISTER);
             rsp.setContentType("application/octet-stream");
 
             FilePath dump = obtain();

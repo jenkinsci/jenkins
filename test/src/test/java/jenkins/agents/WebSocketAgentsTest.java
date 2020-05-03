@@ -35,6 +35,7 @@ import hudson.slaves.SlaveComputer;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.io.File;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,6 +100,7 @@ public class WebSocketAgentsTest {
             ).stdout(System.out).start());
             r.waitOnline(s);
             assertEquals("response", s.getChannel().call(new DummyTask()));
+            assertNotNull(s.getChannel().call(new FatTask()));
             FreeStyleProject p = r.createFreeStyleProject();
             p.setAssignedNode(s);
             p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
@@ -119,6 +121,20 @@ public class WebSocketAgentsTest {
         @Override
         public String call() {
             return "response";
+        }
+    }
+
+    private static class FatTask extends SlaveToMasterCallable<String, RuntimeException> {
+        private byte[] payload;
+
+        private FatTask() {
+            payload = new byte[1024 * 1024];
+            new Random().nextBytes(payload);
+        }
+
+        @Override
+        public String call() {
+            return new String(payload);
         }
     }
 

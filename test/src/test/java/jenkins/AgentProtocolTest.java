@@ -26,7 +26,7 @@ package jenkins;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import static org.junit.Assert.fail;

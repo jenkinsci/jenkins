@@ -39,8 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -87,7 +87,7 @@ public class SystemProperties {
 
     private static final Handler NULL_HANDLER = key -> null;
 
-    private static @Nonnull Handler handler = NULL_HANDLER;
+    private static @NonNull Handler handler = NULL_HANDLER;
 
     // declared in WEB-INF/web.xml
     public static final class Listener implements ServletContextListener, OnMaster {
@@ -183,26 +183,7 @@ public class SystemProperties {
      */
     @CheckForNull
     public static String getString(String key) {
-        String value = System.getProperty(key); // keep passing on any exceptions
-        if (value != null) {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
-            }
-            return value;
-        }
-        
-        value = handler.getString(key);
-        if (value != null) {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
-            }
-            return value;
-        }
-        
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "Property (not found): {0}", key);
-        }
-        return null;
+        return getString(key, null);
     }
 
     /**

@@ -3,7 +3,9 @@
 # This script is a developer tool, to be used by maintainers
 # to update '@since TODO' entries with actual Jenkins release versions.
 
-set -euo pipefail
+set -o errexit
+set -o nounset
+set -o pipefail
 
 me="$( basename "$0" )"
 
@@ -19,7 +21,7 @@ do
     lineSha=$( git blame --porcelain -L "$line,$line" "$file" | head -1 | cut -d ' ' -f 1 )
     echo -e "\tfirst sha: $lineSha"
 
-    firstTag=$( git tag --sort=creatordate --contains "$lineSha" | head -1 )
+    firstTag=$( git tag --sort=creatordate --contains "$lineSha" 'jenkins-*' | head -1 )
 
     if [[ -n $firstTag ]]; then
         echo -e "\tfirst tag was $firstTag"
@@ -28,6 +30,6 @@ do
         sed -i.bak "$sedExpr" "$file"
         rm -f "$file.bak"
     else
-        echo -e "\tNot updating file, no tag found. Normal if the associated PR/commit is not merged and released yet"
+        echo -e "\tNot updating file, no tag found. Normal if the associated PR/commit is not merged and released yet; otherwise make sure to fetch tags from jenkinsci/jenkins"
     fi
 done

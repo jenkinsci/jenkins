@@ -46,7 +46,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -67,8 +67,8 @@ import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import java.util.Collection;
 import static java.util.logging.Level.*;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
@@ -85,7 +85,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @ExportedBean
 public class Executor extends Thread implements ModelObject {
-    protected final @Nonnull Computer owner;
+    protected final @NonNull Computer owner;
     private final Queue queue;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private static final int DEFAULT_ESTIMATED_DURATION = -1;
@@ -142,7 +142,7 @@ public class Executor extends Thread implements ModelObject {
     @GuardedBy("lock")
     private final List<CauseOfInterruption> causes = new Vector<>();
 
-    public Executor(@Nonnull Computer owner, int n) {
+    public Executor(@NonNull Computer owner, int n) {
         super("Executor #"+n+" for "+owner.getDisplayName());
         this.owner = owner;
         this.queue = Jenkins.get().getQueue();
@@ -534,7 +534,7 @@ public class Executor extends Thread implements ModelObject {
      * @return Unmodifiable collection of causes of interruption.
      * @since  1.617    
      */
-    public @Nonnull Collection<CauseOfInterruption> getCausesOfInterruption() {
+    public @NonNull Collection<CauseOfInterruption> getCausesOfInterruption() {
         return Collections.unmodifiableCollection(causes);
     }
 
@@ -857,7 +857,7 @@ public class Executor extends Thread implements ModelObject {
      * @param runExtId
      *      if not null, the externalizable id ({@link Run#getExternalizableId()})
      *      of the build the user expects to interrupt
-     * @since TODO
+     * @since 2.209
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
@@ -897,7 +897,7 @@ public class Executor extends Thread implements ModelObject {
         }
     }
 
-    public @Nonnull Computer getOwner() {
+    public @NonNull Computer getOwner() {
         return owner;
     }
 

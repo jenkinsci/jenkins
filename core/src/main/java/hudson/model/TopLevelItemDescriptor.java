@@ -40,8 +40,8 @@ import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -145,7 +145,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      *
      * @since 2.0
      */
-    @Nonnull
+    @NonNull
     public String getDescription() {
         Stapler stapler = Stapler.getCurrent();
         if (stapler != null) {
@@ -177,7 +177,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      *
      * @since 2.0
      */
-    @Nonnull
+    @NonNull
     public String getCategoryId() {
         return ItemCategory.UncategorizedCategory.ID;
     }

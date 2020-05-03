@@ -4,7 +4,7 @@ import hudson.WebAppMain;
 import jenkins.util.groovy.GroovyHookScript;
 import org.kohsuke.stapler.WebApp;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.ServletContext;
 import java.io.BufferedReader;
 import java.io.File;

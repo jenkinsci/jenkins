@@ -51,7 +51,7 @@ THE SOFTWARE.
       <tr>
         <td class="pane" colspan="2" style="white-space: normal;">
           ${%Jenkins is going to shut down. No further builds will be performed.}
-          <j:if test="${h.hasPermission(app.ADMINISTER)}">
+          <j:if test="${h.hasPermission(app.MANAGE)}">
             <f:link href="${rootURL}/cancelQuietDown" post="true">(${%cancel})</f:link>
           </j:if>
         </td>
@@ -101,7 +101,7 @@ THE SOFTWARE.
     </j:choose>
   </l:pane>
   <!-- schedule updates only for the full page reload -->
-  <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
+  <j:if test="${ajax==null and h.hasPermission(app.READ)}">
     <script defer="defer">
       refreshPart('buildQueue',"${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue");
     </script>

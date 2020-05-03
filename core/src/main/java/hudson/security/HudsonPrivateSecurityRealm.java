@@ -30,6 +30,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
@@ -61,6 +62,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -68,7 +70,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -251,7 +253,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     private User _doCreateAccount(StaplerRequest req, StaplerResponse rsp, String formView) throws ServletException, IOException {
         if(!allowsSignup())
-            throw HttpResponses.error(SC_UNAUTHORIZED,new Exception("User sign up is prohibited"));
+            throw HttpResponses.errorWithoutStack(SC_UNAUTHORIZED, "User sign up is prohibited");
 
         boolean firstUser = !hasSomeUser();
         User u = createAccount(req, rsp, enableCaptcha, formView);
@@ -482,7 +484,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         return user;
     }
 
-    private boolean containsOnlyAcceptableCharacters(@Nonnull String value){
+    private boolean containsOnlyAcceptableCharacters(@NonNull String value){
         if(ID_REGEX == null){
             return value.matches(DEFAULT_ID_REGEX);
         }else{
@@ -771,6 +773,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public String getDescription() {
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_Description();
         }
+
+        @NonNull
+        @Override
+        public Category getCategory() {
+            return Category.SECURITY;
+        }
     }
 
     /**
@@ -910,6 +918,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
+        }
+
+        public FormValidation doCheckAllowsSignup(@QueryParameter boolean value) {
+            if (value) {
+                return FormValidation.warning(Messages.HudsonPrivateSecurityRealm_SignupWarning());
+            }
+            return FormValidation.ok();
         }
     }
 

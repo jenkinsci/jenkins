@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -175,7 +175,7 @@ public class ApiTokenPropertyTest {
         assertEquals("foo", triggeredBy.getUserId());
     }
 
-    @Nonnull
+    @NonNull
     private WebClient createClientForUser(final String id) throws Exception {
         User u = User.getById(id, true);
         

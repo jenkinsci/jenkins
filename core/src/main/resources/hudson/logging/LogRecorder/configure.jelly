@@ -27,9 +27,16 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout norefresh="true">
+<l:layout permission="${app.ADMINISTER}" title="${%Configure Log Recorder}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
+    <h1>${%Configure log recorder} <t:help iconSize="large" href="https://jenkins.io/redirect/log-recorders" /></h1>
+    <p>
+      ${%Enter the name of the logger you want to enable}.
+    </p>
+    <div class="alert alert-warning">
+      ${%fine_warning}
+    </div>
     <f:form method="post" name="config" action="configSubmit">
       <j:set var="instance" value="${it}" />
       <f:entry title="${%Name}" help="/help/LogRecorder/name.html">
