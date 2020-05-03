@@ -47,8 +47,10 @@ THE SOFTWARE.
           <h2>${it.oSDescription} agent, version ${it.slaveVersion}</h2>
 
           <j:forEach var="instance" items="${it.systemInfoExtensions}">
-            <h1>${instance.displayName}</h1>
-            <st:include page="systemInfo" from="${instance}"/>
+            <l:hasPermission permission="${instance.requiredPermission}">
+              <h1>${instance.displayName}</h1>
+              <st:include page="systemInfo" from="${instance}"/>
+            </l:hasPermission>
           </j:forEach>
         </j:when>
         <j:otherwise>
