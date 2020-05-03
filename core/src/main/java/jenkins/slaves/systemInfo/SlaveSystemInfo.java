@@ -31,6 +31,7 @@ public abstract class SlaveSystemInfo implements ExtensionPoint {
     /**
      * Returns the permission required for user to see this system info extension on the "System Information" page for the Agent
      *
+     * By default {@link Computer#CONNECT}, but {@link Computer#EXTENDED_READ} is also supported.
      *
      * @return the permission required for the extension to be shown on "System Information".
      */
