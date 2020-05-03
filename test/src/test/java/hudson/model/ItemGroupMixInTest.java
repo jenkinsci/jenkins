@@ -216,12 +216,8 @@ public class ItemGroupMixInTest {
 
     Project goodProject = r.jenkins.createProject(FreeStyleProject.class, goodName);
 
-    try {
-      r.jenkins.copy(goodProject, badName);
-      fail("@ is an unsafe character therefore copying to a project named " + badName + " should have failed");
-    } catch (Failure x) {
-      assertEquals(x.getMessage(), Messages.Hudson_UnsafeChar("@"));
-    }
+    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.copy(goodProject, badName); });
+    assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
   @Issue("JENKINS-61956")
@@ -229,12 +225,8 @@ public class ItemGroupMixInTest {
   public void createProject_checkGoodName() throws Failure, IOException {
     final String badName = "calvin@jenkins";
 
-    try {
-      r.jenkins.createProject(MockFolder.class, badName);
-      fail("@ is an unsafe character therefore creating a folder named " + badName + " should have failed");
-    } catch (Failure x) {
-      assertEquals(x.getMessage(), Messages.Hudson_UnsafeChar("@"));
-    }
+    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.createProject(MockFolder.class, badName); });
+    assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
   @Issue("JENKINS-61956")
@@ -259,11 +251,9 @@ public class ItemGroupMixInTest {
             "  <buildWrappers/>\n" +
             "</project>";
 
-    try {
+    Failure exception = assertThrows(Failure.class, () -> {
       r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes()));
-      fail("@ is an unsafe character therefore creating a project named " + badName + " should have failed");
-    } catch (Failure x) {
-      assertEquals(x.getMessage(), Messages.Hudson_UnsafeChar("@"));
-    }
+    });
+    assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 }
