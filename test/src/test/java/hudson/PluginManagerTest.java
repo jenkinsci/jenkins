@@ -645,10 +645,9 @@ public class PluginManagerTest {
         final PluginWrapper iconShim = pm.getPlugin("icon-shim");
         Objects.requireNonNull(iconShim);
         assertTrue(iconShim.isDeprecated());
-        Set<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
+        List<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
         assertEquals(1, deprecations.size());
-        List<UpdateSite.Deprecation> deprecationList = new ArrayList<>(deprecations);
-        assertEquals("https://jenkins.io/deprecations/icon-shim/", deprecationList.get(0).url);
+        assertEquals("https://jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
         assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin", iconShim.getInfo().wiki);
 
         final PluginWrapper tokenMacro = pm.getPlugin("token-macro");
@@ -656,16 +655,14 @@ public class PluginManagerTest {
         assertTrue(tokenMacro.isDeprecated());
         deprecations = tokenMacro.getDeprecations();
         assertEquals(1, deprecations.size());
-        deprecationList = new ArrayList<>(deprecations);
-        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", deprecationList.get(0).url);
+        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", deprecations.get(0).url);
 
         final PluginWrapper variant = pm.getPlugin("variant");
         Objects.requireNonNull(variant);
         assertTrue(variant.isDeprecated());
         deprecations = variant.getDeprecations();
         assertEquals(1, deprecations.size());
-        deprecationList = new ArrayList<>(deprecations);
-        assertEquals("https://jenkins.io/deprecations/variant/", deprecationList.get(0).url);
+        assertEquals("https://jenkins.io/deprecations/variant/", deprecations.get(0).url);
         assertNull(variant.getInfo());
     }
 }
