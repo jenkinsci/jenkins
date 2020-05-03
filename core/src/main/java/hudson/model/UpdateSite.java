@@ -1042,7 +1042,7 @@ public class UpdateSite {
         /**
          * Popularity of this plugin.
          *
-         * @since TODO
+         * @since 2.233
          */
         @Restricted(NoExternalUse.class)
         public final Double popularity;
