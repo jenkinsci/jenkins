@@ -365,12 +365,18 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
-     * Is this plugin labeled deprecated?
-     * @return {@code true} when plugin contains deprecated in categories, otherwise {@code false}.
+     * Is this plugin deprecated?
+     *
+     * @return {@code true} if and only if an update site reports deprecations for this plugin.
      * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public boolean isDeprecated() {
-        return getInfo().isDeprecated();
+        /*
+        While better handled in UpdateSite.Plugin that only exists for plugins actively being published.
+        We have no good model for plugin metadata from update sites for plugins not being published.
+         */
+        return !getDeprecations().isEmpty();
     }
 
     @ExportedBean
@@ -562,8 +568,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Returns a one-line descriptive name of this plugin.
+     *
+     * @deprecated For most purposes, use {@link #getDisplayName()}.
      */
     @Exported
+    @Deprecated
     public String getLongName() {
         String name = manifest.getMainAttributes().getValue("Long-Name");
         if(name!=null)      return name;
@@ -1291,6 +1300,20 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @Restricted(DoNotUse.class) // Jelly
     public List<UpdateSite.Warning> getActiveWarnings() {
         return ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class).getActivePluginWarningsByPlugin().getOrDefault(this, Collections.emptyList());
+    }
+
+    @Restricted(NoExternalUse.class)
+    public Set<UpdateSite.Deprecation> getDeprecations() {
+        /* Would be much nicer to go through getInfoFromAllSites but that only works for currently published plugins */
+        Set<UpdateSite.Deprecation> deprecations = new HashSet<>();
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
+            for (Map.Entry<String, UpdateSite.Deprecation> entry : site.getData().getDeprecations().entrySet()) {
+                if (entry.getKey().equals(this.shortName)) {
+                    deprecations.add(entry.getValue());
+                }
+            }
+        }
+        return deprecations;
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());

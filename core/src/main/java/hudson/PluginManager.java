@@ -2239,7 +2239,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
-     * {@link AdministrativeMonitor} that checks if there are any plugins that is deprecated.
+     * {@link AdministrativeMonitor} that checks if there are any plugins that are deprecated.
+     *
+     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     @Symbol("pluginDeprecation")
@@ -2251,22 +2253,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return Messages.PluginManager_PluginDeprecationMonitor_DisplayName();
         }
 
-        private transient volatile boolean isActive = false;
-
-        private transient volatile List<PluginWrapper> deprecatedPlugins;
-
         public boolean isActivated() {
-            if (deprecatedPlugins == null) {
-                deprecatedPlugins = Jenkins.get().getPluginManager().getPlugins().stream()
-                    .filter(PluginWrapper::isDeprecated)
-                    .collect(Collectors.toList());
-                isActive = !deprecatedPlugins.isEmpty();
-            }
-            return isActive;
+            return !getDeprecatedPlugins().isEmpty();
         }
 
         public List<PluginWrapper> getDeprecatedPlugins() {
-            return deprecatedPlugins;
+            return Jenkins.get().getPluginManager().getPlugins().stream()
+                    .filter(PluginWrapper::isDeprecated)
+                    .collect(Collectors.toList());
         }
     }
 

@@ -49,10 +49,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -557,6 +560,13 @@ public class UpdateSite {
         private final Set<Warning> warnings = new HashSet<>();
 
         /**
+         * Mapping of plugin IDs to deprecation notices
+         *
+         * @since TODO
+         */
+        private final Map<String, Deprecation> deprecations = new HashMap<>();
+
+        /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
          * the network connection is up. Null to skip the check.
          */
@@ -582,6 +592,19 @@ public class UpdateSite {
                 }
             }
 
+            JSONObject deprecations = o.optJSONObject("deprecations");
+            if (deprecations != null) {
+                for (Iterator it = deprecations.keys(); it.hasNext(); ) {
+                    try {
+                        String pluginId = it.next().toString();
+                        String referenceUrl = deprecations.getString(pluginId);
+                        this.deprecations.put(pluginId, new Deprecation(referenceUrl));
+                    } catch (JSONException ex) {
+                        LOGGER.log(Level.WARNING, "Failed to parse JSON for deprecation", ex);
+                    }
+                }
+            }
+
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
@@ -594,6 +617,14 @@ public class UpdateSite {
                     }
                 }
                 plugins.put(Util.intern(e.getKey()), p);
+
+                // compatibility with update sites that have no separate 'deprecated' top-level entry.
+                // Also do this even if there are deprecations to potentially allow limiting the top-level entry to overridden URLs.
+                if (Arrays.asList(p.categories).contains("deprecated")) {
+                    if (!this.deprecations.containsKey(p.name)) {
+                        this.deprecations.put(p.name, new Deprecation(p.wiki));
+                    }
+                }
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -607,6 +638,16 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
             return this.warnings;
+        }
+
+        /**
+         * Returns the deprecations provided by the update site
+         * @return the deprecations provided by the update site
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        public Map<String, Deprecation> getDeprecations() {
+            return this.deprecations;
         }
 
         /**
@@ -788,6 +829,32 @@ public class UpdateSite {
 
         public boolean includes(VersionNumber number) {
             return pattern.matcher(number.toString()).matches();
+        }
+    }
+
+    /**
+     * Represents a deprecation of a certain component. Jenkins project policy determines exactly what it means.
+     *
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class Deprecation {
+        public final String url;
+        public Deprecation(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Deprecation that = (Deprecation) o;
+            return Objects.equals(url, that.url);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url);
         }
     }
 
@@ -1099,7 +1166,15 @@ public class UpdateSite {
 
         }
 
+        @Restricted(NoExternalUse.class)
+        public boolean isDeprecated() {
+            return getDeprecation() != null;
+        }
 
+        @Restricted(NoExternalUse.class)
+        public UpdateSite.Deprecation getDeprecation() {
+            return Jenkins.get().getUpdateCenter().getSite(sourceId).getData().getDeprecations().get(this.name);
+        }
 
         public String getDisplayName() {
             String displayName;
@@ -1412,15 +1487,6 @@ public class UpdateSite {
             }
 
             return warnings;
-        }
-
-        /**
-         * Is this plugin labeled deprecated?
-         * @return {@code true} when plugin contains deprecated in categories, otherwise {@code false}.
-         * @since TODO
-         */
-        public boolean isDeprecated() {
-            return categories != null && Arrays.asList(categories).contains("deprecated");
         }
 
         /**
