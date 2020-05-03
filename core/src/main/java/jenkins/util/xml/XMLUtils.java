@@ -37,7 +37,7 @@ import javax.xml.xpath.XPathFactory;
 
 /**
   * Utilities useful when working with various XML types.
-  * @since 1.596.1 and 1.600, unrestricted since TODO
+  * @since 1.596.1 and 1.600, unrestricted since 2.179
  */
 public final class XMLUtils {
 

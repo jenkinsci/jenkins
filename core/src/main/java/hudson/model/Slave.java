@@ -159,7 +159,7 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
