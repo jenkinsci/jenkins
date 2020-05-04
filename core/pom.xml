@@ -43,7 +43,7 @@ THE SOFTWARE.
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
     <hamcrest.version>2.2</hamcrest.version>
-    <junit.jupiter.version>5.5.2</junit.jupiter.version>
+    <junit.jupiter.version>5.6.2</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
