@@ -2280,7 +2280,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean isMetaLabel(String label) {
-        return "adopt-this-plugin".equals(label);
+        return "adopt-this-plugin".equals(label) || "deprecated".equals(label);
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly
