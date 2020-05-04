@@ -59,7 +59,8 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.7</version>
+        <!-- JENKINS-61937: 1.10.6 and 1.10.7 cause hpi:run failures in plugins on JDK 8 -->
+        <version>1.10.5</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
