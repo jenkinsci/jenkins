@@ -598,9 +598,13 @@ public class UpdateSite {
                     try {
                         String pluginId = it.next().toString();
                         JSONObject entry = deprecations.getJSONObject(pluginId); // additional level of indirection to support future extensibility
-                        String referenceUrl = entry.getString("url");
-                        this.deprecations.put(pluginId, new Deprecation(referenceUrl));
-                    } catch (JSONException ex) {
+                        if (entry != null) {
+                            String referenceUrl = entry.getString("url");
+                            if (referenceUrl != null) {
+                                this.deprecations.put(pluginId, new Deprecation(referenceUrl));
+                            }
+                        }
+                    } catch (RuntimeException ex) {
                         LOGGER.log(Level.WARNING, "Failed to parse JSON for deprecation", ex);
                     }
                 }
