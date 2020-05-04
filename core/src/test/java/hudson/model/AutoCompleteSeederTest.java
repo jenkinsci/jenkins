@@ -24,63 +24,48 @@
 
 package hudson.model;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Arrays;
-import java.util.Collection;
-import org.junit.runners.Parameterized;
-import org.junit.runner.RunWith;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import hudson.model.AbstractProject.AbstractProjectDescriptor.AutoCompleteSeeder;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  *
  * @author dty
  */
-@RunWith(Parameterized.class)
 public class AutoCompleteSeederTest {
 
-    public static class TestData {
-        private String seed;
-        private List<String> expected;
-        
-        public TestData(String seed, String... expected) {
-            this.seed = seed;
-            this.expected = Arrays.asList(expected);
-        }
-    }
-    
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList( new Object[][] {
-                    { new TestData("", "") },
-                    { new TestData("\"", "") },
-                    { new TestData("\"\"", "") },
-                    { new TestData("freebsd", "freebsd") },
-                    { new TestData(" freebsd", "freebsd") },
-                    { new TestData("freebsd ", "") },
-                    { new TestData("freebsd 6", "6") },
-                    { new TestData("\"freebsd", "freebsd") },
-                    { new TestData("\"freebsd ", "freebsd ") },
-                    { new TestData("\"freebsd\"", "") },
-                    { new TestData("\"freebsd\" ", "") },
-                    { new TestData("\"freebsd 6", "freebsd 6") },
-                    { new TestData("\"freebsd 6\"", "") },
-               });
+    static Stream<Arguments> localParameters()
+    {
+        return Stream.of(
+                Arguments.of("", Collections.singletonList("")),
+                Arguments.of("\"", Collections.singletonList("")),
+                Arguments.of("\"\"", Collections.singletonList("")),
+                Arguments.of("freebsd", Collections.singletonList("freebsd")),
+                Arguments.of(" freebsd", Collections.singletonList("freebsd")),
+                Arguments.of("freebsd ", Collections.singletonList("")),
+                Arguments.of("freebsd 6", Collections.singletonList("6")),
+                Arguments.of("\"freebsd", Collections.singletonList("freebsd")),
+                Arguments.of("\"freebsd ", Collections.singletonList("freebsd ")),
+                Arguments.of("\"freebsd\"", Collections.singletonList("")),
+                Arguments.of("\"freebsd\" ", Collections.singletonList("")),
+                Arguments.of("\"freebsd 6", Collections.singletonList("freebsd 6")),
+                Arguments.of("\"freebsd 6\"", Collections.singletonList(""))
+        );
     }
 
-    private String seed;
-    private List<String> expected;
-
-    public AutoCompleteSeederTest(TestData dataSet) {
-        this.seed = dataSet.seed;
-        this.expected = dataSet.expected;
-    }
-
-    @Test
-    public void testAutoCompleteSeeds() throws Exception {
-        AutoCompleteSeeder seeder = new AbstractProject.AbstractProjectDescriptor.AutoCompleteSeeder(seed);
+    @ParameterizedTest( name = "{index}" )
+    @MethodSource( "localParameters" )
+    public void testAutoCompleteSeeds(String underTest, List<String> expected) {
+        AutoCompleteSeeder seeder = new AbstractProject.AbstractProjectDescriptor.AutoCompleteSeeder(underTest);
         assertEquals(expected, seeder.getSeeds());
-
     }
 }
