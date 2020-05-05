@@ -325,6 +325,15 @@ function findFollowingTR(node, className, nodeClass) {
 
     // then next TR that matches the CSS
     do {
+        // Supports plugins with custom variants of <f:entry> that call
+        // findFollowingTR(element, 'validation-error-area') and haven't migrated
+        // to use querySelector
+        if (className === 'validation-error-area') {
+            var queryChildren = tr.getElementsByClassName(className);
+            if (queryChildren && (isTR(queryChildren[0]) || Element.hasClassName(queryChildren[0], className) ))
+                return queryChildren[0];
+        }
+
         tr = $(tr).next();
     } while (tr != null && (!isTR(tr) || !Element.hasClassName(tr,className)));
 

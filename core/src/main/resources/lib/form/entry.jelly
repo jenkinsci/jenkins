@@ -78,7 +78,7 @@ THE SOFTWARE.
         </div>
         <!-- Needs to have a .tr class otherwise custom uses of findFollowing
              findFollowingTR(listBox, "validation-error-area") will break -->
-        <div class="setting-main tr">
+        <div class="setting-main">
           <d:invokeBody />
         </div>
         <!-- used to display the form validation error -->
@@ -93,7 +93,7 @@ THE SOFTWARE.
         </j:if>
       </j:when>
       <j:otherwise>
-        <div class="setting-main tr">
+        <div class="setting-main">
           <d:invokeBody />
           <f:helpLink url="${attrs.help}" featureName="${title}"/>
           <!-- used to display the form validation error -->
