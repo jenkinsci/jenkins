@@ -74,7 +74,6 @@ public class ActionableTest {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Issue("JENKINS-39555")
     @Test
     public void testExtensionOverrides() {

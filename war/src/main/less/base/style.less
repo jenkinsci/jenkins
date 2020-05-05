@@ -779,6 +779,24 @@ LABEL.attach-previous {
   /* this marker class is used by JavaScript to locate the area to display help text. */
 }
 
+.help-button {
+  margin-left: 2px;
+  margin-right: 2ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+.setting-help .help-button {
+  margin: 0;
+}
+.icon-help,
+.svg-icon.icon-help {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+img.icon-help {
+  vertical-align: text-top;
+}
 
 /* ====================== project view tab bar ===================================== */
 #viewList {
@@ -1635,21 +1653,23 @@ table.progress-bar.red td.progress-bar-done {
   animation: fadeout 350ms ease-in 1 normal forwards;
 }
 
-@-webkit-keyframes fadein{
+@keyframes fadein{
   from{
     opacity: 0;
   }
   to{
     opacity: 1;
+    visibility: visible;
   }
 }
 
-@-webkit-keyframes fadeout{
+@keyframes fadeout{
   from{
     opacity: 1;
   }
   to{
     opacity: 0;
+    visibility: hidden;
   }
 }
 
