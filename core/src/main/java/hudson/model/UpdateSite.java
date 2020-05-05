@@ -625,9 +625,11 @@ public class UpdateSite {
 
                 // compatibility with update sites that have no separate 'deprecated' top-level entry.
                 // Also do this even if there are deprecations to potentially allow limiting the top-level entry to overridden URLs.
-                if (Arrays.asList(p.categories).contains("deprecated")) {
-                    if (!this.deprecations.containsKey(p.name)) {
-                        this.deprecations.put(p.name, new Deprecation(p.wiki));
+                if (p.categories != null) {
+                    if (Arrays.asList(p.categories).contains("deprecated")) {
+                        if (!this.deprecations.containsKey(p.name)) {
+                            this.deprecations.put(p.name, new Deprecation(p.wiki));
+                        }
                     }
                 }
             }
