@@ -1,7 +1,6 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +39,9 @@ public abstract class DeleteCommand<T> extends CLICommand {
 
     protected abstract void tryDelete(String name, Jenkins jenkins) throws Exception;
 
-    protected void checkExists(T item, String item_s, String item_type) throws Exception{
-        if(item == null) {
-            throw new IllegalArgumentException("No such " + item_type + " '" + item_s + "'");
+    protected void checkExists(T itemObject, String itemName, String itemType) throws Exception{
+        if(itemObject == null) {
+            throw new IllegalArgumentException("No such " + itemType + " '" + itemName + "'");
         }
         return;
     }
@@ -52,18 +51,18 @@ public abstract class DeleteCommand<T> extends CLICommand {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.get();
 
-        final HashSet<String> hs = new HashSet<>(items);
+        final HashSet<String> uniqueNames = new HashSet<>(items);
 
-        for (String item_s: hs) {
+        for (String itemName: uniqueNames) {
 
             try {
-                tryDelete(item_s, jenkins);
+                tryDelete(itemName, jenkins);
             } catch (Exception e) {
-                if(hs.size() == 1) {
+                if(uniqueNames.size() == 1) {
                     throw e;
                 }
 
-                final String errorMsg = item_s + ": " + e.getMessage();
+                final String errorMsg = itemName + ": " + e.getMessage();
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;
