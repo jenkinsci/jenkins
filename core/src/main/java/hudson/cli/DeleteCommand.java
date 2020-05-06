@@ -3,6 +3,9 @@ package hudson.cli;
 import hudson.AbortException;
 import jenkins.model.Jenkins;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.util.List;
 import java.util.HashSet;
 
@@ -13,6 +16,7 @@ import java.util.HashSet;
 
 public abstract class DeleteCommand<T> extends CLICommand {
 
+    @Restricted(NoExternalUse.class)
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 
     protected abstract void tryDelete(String name, Jenkins jenkins) throws Exception;
