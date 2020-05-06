@@ -48,16 +48,16 @@ public class DeleteNodeCommand extends DeleteCommand<Node> {
     }
 
     @Override
-    protected void tryDelete(String node_s, Jenkins jenkins) throws Exception{
-        Node node = jenkins.getNode(node_s);
-        checkExists(node, node_s, "node");
+    protected void tryDelete(String nodeName, Jenkins jenkins) throws Exception{
+        Node node = jenkins.getNode(nodeName);
+        checkExists(node, nodeName, "node");
         node.toComputer().doDoDelete();
         return;
     }
 
     @Override
     protected int run() throws Exception {
-        deleteItems(nodes);
+        deleteElements(nodes);
         return 0;
     }
 }

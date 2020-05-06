@@ -48,9 +48,9 @@ public class DeleteJobCommand extends DeleteCommand<AbstractItem> {
     }
 
     @Override
-    protected void tryDelete(String job_s, Jenkins jenkins) throws Exception{
-        AbstractItem job = (AbstractItem) jenkins.getItemByFullName(job_s);
-        checkExists(job, job_s, "job");
+    protected void tryDelete(String jobName, Jenkins jenkins) throws Exception{
+        AbstractItem job = (AbstractItem) jenkins.getItemByFullName(jobName);
+        checkExists(job, jobName, "job");
         job.checkPermission(AbstractItem.DELETE);
         job.delete();
         return;
@@ -58,7 +58,7 @@ public class DeleteJobCommand extends DeleteCommand<AbstractItem> {
 
     @Override
     protected int run() throws Exception {
-        deleteItems(jobs);
+        deleteElements(jobs);
         return 0;
     }
 }
