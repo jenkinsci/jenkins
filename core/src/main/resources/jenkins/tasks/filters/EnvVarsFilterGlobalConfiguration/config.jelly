@@ -33,7 +33,6 @@ THE SOFTWARE.
                             <f:hetero-list name="rules"
                                            hasHeader="true"
                                            oneEach="true"
-                                           disableDragAndDrop="true"
                                            descriptors="${instance.allGlobalRules}"
                                            items="${instance.allActivatedGlobalRules}"
                                            addCaption="${%addRule}"/>
