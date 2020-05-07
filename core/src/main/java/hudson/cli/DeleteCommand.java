@@ -14,9 +14,9 @@ import java.util.HashSet;
  * @since TODO
  */
 
+@Restricted(NoExternalUse.class)
 public abstract class DeleteCommand<T> extends CLICommand {
 
-    @Restricted(NoExternalUse.class)
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 
     protected abstract void tryDelete(String name, Jenkins jenkins) throws Exception;
