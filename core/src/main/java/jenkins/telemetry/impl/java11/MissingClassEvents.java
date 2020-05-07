@@ -26,7 +26,6 @@ package jenkins.telemetry.impl.java11;
 
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +47,8 @@ public class MissingClassEvents {
 
     /**
      * List of all events registered on this execution, to avoid printing an event more than once in the log. This map
-     * is not limited. On every Jenkins restart is cleaned because it's not persisted, so the CNFE is printed again.
+     * is not limited. On every Jenkins restart is cleaned because it's not persisted, so the CNFE is printed again. The
+     * key is the class name not found to quickly look for it on every CNFE thrown.
      */
     private ConcurrentHashMap<String, MissingClassEvent> eventsOnThisExecution = new ConcurrentHashMap<>(MAX_EVENTS_PER_SEND);
     /**
@@ -112,7 +112,6 @@ public class MissingClassEvents {
     /**
      * Returns true if the class name was already registered previously, during the current execution of this Jenkins
      * instance.
-     * @ param t the throwable to check
      * @param className the class name to check
      * @return true if it was already registered
      */

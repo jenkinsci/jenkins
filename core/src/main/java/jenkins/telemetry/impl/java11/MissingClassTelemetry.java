@@ -109,7 +109,7 @@ public class MissingClassTelemetry extends Telemetry {
             {"net.bull.javamelody.FilterContext", "isMojarraAvailable"}, // JENKINS-60725
             {"hudson.remoting.RemoteClassLoader$ClassLoaderProxy", "fetch3"}, // JENKINS-61521
             //Don't add "java.base/" before sun.reflect.generics.factory.CoreReflectionFactory
-            {"sun.reflect.generics.factory.CoreReflectionFactory", "makeNamedType"} // JENKINS-61920
+            {"sun.reflect.generics.factory.CoreReflectionFactory", "makeNamedType"}, // JENKINS-61920
             
     };
 
