@@ -68,7 +68,7 @@ public class ParametersTest {
 
         element = DomNodeUtil.selectSingleNode(form, "//div[input/@value='boolean']");
         assertNotNull(element);
-        assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling().getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
+        assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode().getNextSibling().getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
         Object o = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
