@@ -321,20 +321,9 @@ THE SOFTWARE.
         <version>1.19</version>
     </dependency>
     <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.4.4</version>
-      <exclusions>
-        <exclusion><!-- using a patched version -->
-          <groupId>javax.activation</groupId>
-          <artifactId>activation</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>activation</artifactId>
-      <version>1.1.1-hudson-1</version>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>jakarta.mail</artifactId>
+      <version>1.6.5</version>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>

@@ -52,10 +52,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ApiTokenPropertyConfiguration.class)
@@ -108,6 +108,7 @@ public class ApiTokenStatsTest {
             lastUsage = stats.getLastUseDate();
             assertNotNull(lastUsage);
             // to avoid flaky test in case the test is run at midnight, normally it's 0 
+            
             assertThat(stats.getNumDaysUse(), lessThanOrEqualTo(1L));
         }
         
@@ -164,7 +165,7 @@ public class ApiTokenStatsTest {
     }
     
     @Test
-    public void testResilientIfFileDoesNotExist() throws Exception {
+    public void testResilientIfFileDoesNotExist() {
         ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
         assertNotNull(tokenStats);
     }
@@ -193,7 +194,7 @@ public class ApiTokenStatsTest {
             String content = FileUtils.readFileToString(statsFile.getFile(), Charset.defaultCharset());
             // now there are multiple times the same id in the file with different stats
             String newContentWithDuplicatedId = content.replace(ID_1, ID_2).replace(ID_3, ID_2);
-            FileUtils.write(statsFile.getFile(), newContentWithDuplicatedId);
+            FileUtils.write(statsFile.getFile(), newContentWithDuplicatedId, Charset.defaultCharset());
         }
         
         {

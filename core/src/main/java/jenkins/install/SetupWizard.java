@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.seed.UserSeedProperty;
@@ -93,7 +94,13 @@ public class SetupWizard extends PageDecorator {
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
-    
+
+    @NonNull
+    @Override
+    public String getDisplayName() {
+        return Messages.SetupWizard_DisplayName();
+    }
+
     /**
      * Initialize the setup wizard, this will process any current state initializations
      */
