@@ -32,7 +32,6 @@ THE SOFTWARE.
                         <f:entry title="${%globalRules}">
                             <f:hetero-list name="rules"
                                            hasHeader="true"
-                                           oneEach="true"
                                            descriptors="${instance.allGlobalRules}"
                                            items="${instance.allActivatedGlobalRules}"
                                            addCaption="${%addRule}"/>
