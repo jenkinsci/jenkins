@@ -243,7 +243,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * This flag is checked in {@code config.jelly} before displaying the
      * Java Web Start button.
      * @return {@code true} if Java Web Start button should be displayed.
-     * @since FIXME
+     * @since 2.153
      */
     @Restricted(NoExternalUse.class) // Jelly use
     public boolean isJavaWebStartSupported() {

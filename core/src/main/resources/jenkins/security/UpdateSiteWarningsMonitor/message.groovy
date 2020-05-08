@@ -25,6 +25,7 @@
 package jenkins.security.UpdateSiteWarningsMonitor
 
 def f = namespace(lib.FormTagLib)
+def l = namespace(lib.LayoutTagLib)
 
 def listWarnings(warnings) {
     warnings.each { warning ->
@@ -39,11 +40,13 @@ def pluginWarnings = my.activePluginWarningsByPlugin
 
 div(class: "alert alert-danger", role: "alert") {
 
-    form(method: "post", action: "${rootURL}/${my.url}/forward") {
-        if (!pluginWarnings.isEmpty()) {
-            f.submit(name: 'fix', value: _("pluginManager.link"))
+    l.isAdmin() {
+        form(method: "post", action: "${rootURL}/${my.url}/forward") {
+            if (!pluginWarnings.isEmpty()) {
+                f.submit(name: 'fix', value: _("pluginManager.link"))
+            }
+            f.submit(name: 'configure', value: _("configureSecurity.link"))
         }
-        f.submit(name: 'configure', value: _("configureSecurity.link"))
     }
 
     text(_("blurb"))

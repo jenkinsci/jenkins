@@ -5,7 +5,7 @@
 
     The help link is rendered as an SVG with an (?) icon.
     
-    @since TODO
+    @since 2.234
     <st:attribute name="iconSize">
       Icon size, available are: small, medium, large, xlarge
     </st:attribute>

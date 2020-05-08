@@ -32,6 +32,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.security.ACLContext;
+import hudson.security.Permission;
 import hudson.util.VersionNumber;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -1110,6 +1111,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             UpdateSite cs = Jenkins.get().getUpdateCenter().getCoreSource();
             if (cs!=null)   return cs.getData();
             return null;
+        }
+
+        @Override
+        public Permission getRequiredPermission() {
+            return Jenkins.SYSTEM_READ;
         }
     }
 
