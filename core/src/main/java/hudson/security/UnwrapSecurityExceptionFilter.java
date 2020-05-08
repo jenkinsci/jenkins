@@ -51,7 +51,14 @@ public class UnwrapSecurityExceptionFilter implements Filter {
             chain.doFilter(request,response);
         } catch (ServletException e) {
             Throwable t = e.getRootCause();
-            if (t instanceof JellyTagException) {
+            if (t != null && !(t instanceof JellyTagException)) {
+                if (t instanceof ServletException) {
+                    t = ((ServletException) t).getRootCause();
+                } else {
+                    t = t.getCause();
+                }
+            }
+            if (t != null && t instanceof JellyTagException) {
                 JellyTagException jte = (JellyTagException) t;
                 Throwable cause = jte.getCause();
                 if (cause instanceof AcegiSecurityException) {

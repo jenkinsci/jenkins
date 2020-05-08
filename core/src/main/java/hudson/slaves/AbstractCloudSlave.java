@@ -52,7 +52,7 @@ public abstract class AbstractCloudSlave extends Slave {
 
     /**
      * Use {@link #AbstractCloudSlave(java.lang.String, java.lang.String, hudson.slaves.ComputerLauncher)}
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -64,7 +64,7 @@ public abstract class AbstractCloudSlave extends Slave {
 
     /**
      * Use {@link #AbstractCloudSlave(java.lang.String, java.lang.String, hudson.slaves.ComputerLauncher)}
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors,

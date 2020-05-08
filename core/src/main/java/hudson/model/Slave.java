@@ -126,7 +126,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Number of executors of this node.
      */
-    private int numExecutors = 2;
+    private int numExecutors = 1;
 
     /**
      * Job allocation strategy.
@@ -152,11 +152,6 @@ public abstract class Slave extends Node implements Serializable {
             new DescribableList<>(this);
 
     /**
-     * Lazily computed set of labels from {@link #label}.
-     */
-    private transient volatile Set<Label> labels;
-
-    /**
      * Removed with no replacement.
      */
     @Deprecated
@@ -164,7 +159,7 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,

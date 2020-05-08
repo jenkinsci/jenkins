@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
-import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
 import hudson.XmlFile;

@@ -271,5 +271,6 @@ THE SOFTWARE.
       <!-- See https://www.owasp.org/index.php/HttpOnly for the discussion of this topic in OWASP -->
       <http-only>true</http-only>
     </cookie-config>
+    <!-- Tracking mode is managed by WebAppMain.FORCE_SESSION_TRACKING_BY_COOKIE_PROP -->
   </session-config>
 </web-app>

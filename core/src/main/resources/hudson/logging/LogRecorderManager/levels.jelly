@@ -26,15 +26,15 @@ THE SOFTWARE.
   Show form to adjust log levels
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="Log Levels">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1>
       ${%Logger Configuration}
-      <t:help href="${%url}" />
+      <t:help iconSize="large" tooltip="${%Additional information on log levels}" href="${%url}" />
     </h1>
-    <table class="sortable pane bigtable" style="width:auto" id="logLevels">
+    <table class="sortable pane bigtable width-auto" id="logLevels">
       <tr>
         <th>${%Name}</th>
         <th>${%Level}</th>
@@ -51,25 +51,27 @@ THE SOFTWARE.
       </j:forEach>
     </table>
     <p>${%defaultLoggerMsg}</p>
-    <h2>${%Adjust Levels}</h2>
-    <form action="configLogger" method="post" name="configLogger">
-      ${%Name}: <input type="text" name="name" width="40" />
-      ${%Level}:
-      <select name="level">
-        <option>inherit</option>
-        <option>off</option>
-        <option>severe</option>
-        <option>warning</option>
-        <option>info</option>
-        <option>config</option>
-        <option>fine</option>
-        <option>finer</option>
-        <option>finest</option>
-        <option>all</option>
-      </select>
-      <st:nbsp/>
-      <f:submit />
-    </form>
+    <l:isAdmin>
+      <h2>${%Adjust Levels}</h2>
+      <form action="configLogger" method="post" name="configLogger">
+        ${%Name}: <input type="text" name="name" width="40" />
+        ${%Level}:
+        <select name="level">
+          <option>inherit</option>
+          <option>off</option>
+          <option>severe</option>
+          <option>warning</option>
+          <option>info</option>
+          <option>config</option>
+          <option>fine</option>
+          <option>finer</option>
+          <option>finest</option>
+          <option>all</option>
+        </select>
+        <st:nbsp/>
+        <f:submit />
+      </form>
+    </l:isAdmin>
   </l:main-panel>
 </l:layout>
 </j:jelly>

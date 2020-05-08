@@ -33,11 +33,8 @@ import hudson.slaves.RetentionStrategy;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -94,7 +91,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     /**
      * Get the disabled administrative monitors
      *
-     * @since TODO
+     * @since 2.230
      */
     public Set<String> getDisabledAdministrativeMonitors(){
         synchronized (this.disabledAdministrativeMonitors) {
@@ -105,7 +102,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     /**
      * Set the disabled administrative monitors
      *
-     * @since TODO
+     * @since 2.230
      */
     public void setDisabledAdministrativeMonitors(Set<String> disabledAdministrativeMonitors) {
         synchronized (this.disabledAdministrativeMonitors) {

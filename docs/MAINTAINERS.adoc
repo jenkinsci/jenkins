@@ -1,0 +1,272 @@
+:toc:
+:toclevels: 3
+
+= Documentation for core maintainers
+
+toc::[]
+
+Jenkins core is a central component of the project which serves millions of users, and it is critical to maintain it in a good shape.
+We want to ensure quality of the integrated changes and continuity of the project,
+and hence the Jenkins core pull request review and merge process is more sophisticated than for the majority of plugins.
+
+== Scope of the document
+
+This document applies to the following components:
+
+* Jenkins core
+* Jenkins modules
+* Libraries included into the Jenkins core
+* Core components like Winstone, Executable WAR, etc.
+
+Jenkins Remoting library is not in the scope for this document,
+because it is handled as a sub-project with independent maintainer team.
+Remoting updates in the core are subject to the process though.
+
+== Team
+
+=== Communication channels
+
+* Mailing list: link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
+* Chat for runtime Jenkins release coordination: `#jenkins-release` on Freenode IRC
+** All async communications should go to the developer mailing list
+
+=== Roles
+
+* Contributor
+* Core Pull Request Reviewer
+* Core Maintainer
+* Release Team Member
+
+**Contributors** submit pull requests to the Jenkins core and review changes submitted by others.
+There is no special preconditions to do so.
+Anyone is welcome to contribute.
+
+**Core Pull Request Reviewers** is the next step for contributors who are interested to review Jenkins pull requests on a regular basis.
+They get https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization[Triage permissions] so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
+Their main responsibility is to triage and review the incoming pull requests,
+and to guide newcomer contributors who are not familiar with the project's processes.
+GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
+
+**Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
+Their responsibility is to perform pull request reviews on a regular basis and to merge ready pull requests towards the weekly releases (`master` branch).
+They are also responsible to monitor the weekly release status and to perform triage of critical issues.
+GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
+
+**Release Team Members** are responsible for Jenkins weekly and LTS releases.
+Led by the link:https://jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:https://jenkins.io/download/lts/[Stable release line].
+Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines.
+
+=== Ladder
+
+* **Contributors**. Anyone can participate.
+  There is no precondition except having a GitHub account, just submit pull requests or comment in existing ones!
+* **Core Pull Request Reviewers** can be nominated by contributors in the link:https://groups.google.com/d/forum/jenkinsci-dev[developer mailing list]. 
+Self-nomination is fine.
+Decision is made by a consensus in the mailing list or via voting at the link:https://jenkins.io/project/governance-meeting/[governance meeting].
+* **Core Maintainers** - same process as for Core PR reviewers.
+  All nominees must also sign an link:https://github.com/jenkinsci/infra-cla/[Individual Contributor License Agreement] before getting the permission in GitHub repositories.
+* **Release Team Members** are assigned by the Jenkins Release officer
+
+== Pull request review process
+
+Jenkins core is a mission-critical part of the ecosystem.
+We need to ensure that submitted pull requests are not only code complete,
+but also that they do not introduce undesired defects, breaking changes and technical debt.
+At the same time, we are interested to make the review process as simple as possible for contributors and maintainers.
+
+=== Review goals
+
+Pull requests review in Jenkins is not just about reviewing code and accepting them if the code is OK.
+Core maintainers are expected to ensure feasibility and compatibility of changes,
+to maintain good quality of the codebase and documentation,
+and to ensure there is a consensus between contributors.
+
+==== Verifying Feasibility
+
+Reviewers are expected to look at changes critically from a "product management" point of view.
+It's not just about the code, but also whether the change makes sense in a global / holistic way, considering existing popular plugins and the way users experience Jenkins overall.
+Also, not every change needs to be merged into the core.
+Many features would be better introduced as plugins which have separate release cycles and allow delivering changes faster.
+We want to extend the Jenkins core and incorporate widely used functionality and extension points there,
+but we try to keep the core as minimal as possible in terms of dependencies.
+
+==== Ensuring Compatibility
+
+The Jenkins project has a long history of backward compatibility.
+We accept breaking changes when it is needed (security fixes, feature deprecation and removal, etc.),
+but ultimately the project's goal is retain as much compatibility as possible.
+It includes both feature compatibility and binary/API compatibility which is important for the plugin ecosystem.
+Although we have some tools (like https://github.com/jenkins-infra/usage-in-plugins[usage-in-plugins]) for checking API usages across open-source plugins,
+there is no way to confirm external usages in 3rd-party proprietary plugins which are also a part of the ecosystem.
+
+==== Maintaining Code quality
+
+The code doesn't have to be perfect, but we want to ensure that all new code matches basic quality standards:
+test coverage for newly added functionality and fixes,
+documentation for newly introduced APIs,
+the submitted code is readable and matches the code style in the surrounding codebase,
+etc.
+
+==== Code style
+
+We're aware that there are existing inconsistencies in the code,
+and we do not enforce a single code style across the codebase at the moment.
+
+* New code should follow the (majority) style guide.
+  In Jenkins core we use the link:https://www.oracle.com/technetwork/java/codeconvtoc-136057.html[these Code Conventions for the Java TM Programming Language] as a default code style
+* Updates to existing code should only fix formatting on the lines affected anyway to keep the diff minimal.
+  It helps reviewers focus their attention on the specifics of the change and reduces the risk of a change from one pull request creating a conflict in another pull request.
+
+==== Maintaining documentation
+
+* Jenkins documentation is hosted on https://jenkins.io/doc/.
+  When a new user-facing change is added, we should encourage contributors to update documentation in downstream pull requests.
+* Same applies to Jenkins changelogs (link:https://jenkins.io/changelog[weekly], link:https://jenkins.io/changelog-stable/[stable]) and link:https://jenkins.io/doc/upgrade-guide/[upgrade guidelines]:
+  We have a semi-automated process which is based on pull request summaries and labels.
+  Core maintainers are expected to validate the entries as a part of the pull request review/merge process.
+  See the checklist below in the _Merge process_ section.
+
+==== Building consensus
+
+Not all changes are discussed before they are submitted as pull requests.
+Developer mailing lists, Jira issues and JEPs are used for discussions,
+but sometimes the changes go straight to the pull requests.
+And we are fine with that, especially for small patches.
+Pull requests often become a venue to discuss feasibility, underlying technical decisions and design.
+We are fine with that as well.
+If there is no consensus about the feasibility and implementation,
+code reviewers are expected to suggest proper channels for contributors to discuss their contribution.
+
+* A discussion in the link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List] is the default way to go
+* If no consensus can be reached on the mailing list,
+  voting at the link:https://jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision.
+
+=== Review non-goals
+
+Code reviews do NOT pursue the following goals:
+
+* Accepting/merging any pull request. 
+  Not everything is going to be merged, and reviewers are expected to focus on the Jenkins ecosystem integrity first.
+  We guide contributors and help them to get their changes integrated, but it needs cooperation on both sides.
+  It is **fine** to close invalid and inactive pull requests if there is no activity by a submitter or other contributors.
+* Enforcing a particular coding style.
+  Jenkins core has a complex codebase created by many contributors, and different files have different designs.
+  Our main goal is to firstly have the code readable by other contributors.
+* Make contributors fix issues that are not related to the primary topic of the pull request
+** Create follow-up issues instead, it is fine to reference them in comments so that the contributor might want to pick them up
+* Make contributors to have atomic commit history or to squash their pull request
+** Not every contributor is a Git expert, do not request changes in the commit history unless it is necessary
+** Core maintainers can squash PRs during the merge.
+   If you feel this is important, add the link:https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me[squash-merge-me] label
+** We want to keep pull requests focused when possible (one feature / fix per pull request),
+   but we can live without it if there is no need to backport changes to the stable baseline.
+
+== Merge process
+
+=== Common merge process
+
+==== Step 1: Maintainer checklist
+
+Merge process can be initiated once a pull request matches the requirements:
+
+* Pull request is compliant with requirements to submitters (see the link:/.github/PULL_REQUEST_TEMPLATE.md[pull request template])
+* There are at least 2 approvals for the pull request and no outstanding requests for change
+* Conversations in the pull request are over OR it is explicit that a reviewer does not block the change (often indicated by line comments attached to an approving PR review, or by using the term "nit", from "nit-picking")
+* Changelog entries in the PR title and/or _Proposed changelog entries_ are correct and reflect the current, final state of the PR
+* Proper changelog labels are set so that the changelog can be generated automatically.
+ List of labels we use for changelog generation is available link:https://github.com/jenkinsci/.github/blob/master/.github/release-drafter.yml[here].
+* If the change needs administrators to be aware of it when upgrading, the `upgrade-guide-needed` label is present
+  and there is a `Proposed upgrade guidelines` section in the PR title
+  (link:https://github.com/jenkinsci/jenkins/pull/4387[example]).
+  This is usually the case when a data migration occurs, a feature has been removed, a significant behavior change is introduced (including when there is a way to opt out),
+  or in general when we expect at least a large minority of admins to benefit from knowing about the change, e.g. to apply a new option.
+* If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see link:https://issues.jenkins-ci.org/issues/?filter=12146[this Jira query]).
+
+==== Step 2: Is it a good time to merge?
+
+link:[https://jenkins.io/security/](Jenkins security updates) are coordinated with the LTS calendar, and if the weekly release on the weekend before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes, and a working Jenkins.
+The Jenkins security team will usually send a "pre-announcement" to link:https://groups.google.com/forum/#!forum/jenkinsci-advisories[the advisories list] on Wednesday or Thursday the week before release, but that's not always doable.
+For these reasons, the following changes should not be merged during the week before LTS releases (weeks 3, 7, 11, 15, etc. on the page linked above):
+
+* Changes that could be considered risky (relatively high risk of introducing regressions), as they could make users of Jenkins weekly releases choose between getting security fixes, and having a functioning Jenkins
+* Very large changes (in terms of lines changed), because the Jenkins security team needs to prepare security fixes for the weekly release line in a very short period of time.
+
+If the change is ready but it is not a good time, consider labeling the pull request with the `on-hold` label.
+Make sure to add a comment explaining why it was put on hold.
+
+==== Step 3: Marking for merge
+
+Once the checklist is passed, a Core PR Reviewer or a Maintainer can mark the pull request for merge.
+
+* `ready-for-merge` label is set
+* An explicit comment is added to the pull request so that other repository watchers are notified.
+  Example: _Thanks to all contributors! We consider this change as ready to be merged towards the next weekly release. It may be merged after 24hours if there is no negative feedback_
+
+==== Step 4: Merge!
+
+A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
+After that the change will be landed in the next weekly release.
+LTS backporting, if needed, will be handled separately by the release team.
+
+=== Exceptions
+
+* Jenkins Security Team uses a different process for security issue fixes.
+  They are reviewed and integrated by the Security team in private repositories.
+  Security hardening and enhancements go through the standard process.
+* Release Team members are permitted to bypass the review/merge process if and only if a change is needed to unblock the security release.
+  Common review process is used otherwise.
+* 24 hours waiting period after adding the `ready-for-merge` label is not required for:
+//TODO(oleg_nenashev): Define "trivial" better to avoid loopholes
+** changes that do not result in changes to the primary functionality, such as typo fixes in documentation or localization files
+** changes which do not affect the production code: Jenkinsfile tweaks, tools inside the repo, etc. 
+** broken master build
+
+=== Squashing pull requests OR not?
+
+Sometimes we have pull requests which include dozens of commits including many non-substantial changes (merge commits, addressing review comments, etc.).
+We do not require contributors to spend time on cleaning it up, because core maintainers can squash PRs during the merge.
+Reviewers can add a link:https://github.com/jenkinsci/jenkins/pulls?q=is%3Aopen+is%3Apr+label%3Asquash-merge-me[squash-merge-me] label during reviews to highlight that it is needed.
+
+At the same time, we do not require any pull request to be merged as a single commit.
+Multiple commits are useful in many cases.
+
+When do we merge pull requests as is?
+
+* There is only one commit with a reasonable commit message
+* There are multiple atomic commits. Each commit has a reasonable message and can be compiled on its own
+** Example:
+*** **Commit 1**: `[JENKINS-1234] - Reproduce the issue in tests`
+*** **Commit 2**: `[JENKINS-1234] - Fix the issue by updating Foo` 
+* There are multiple commit authors who expressed the desire to keep commit history as is.
+  By default we do not consider multiple authors as a blocker for squash, because GitHub now 
+  link:https://help.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors[supports co-authors]
+
+When do we squash commits?
+
+* We squash commits when core maintainers decide to do so (`squash-merge-me` label), usually when the conditions above are not met.
+* There is no strong requirement to squash merge pull requests at the moment, so there might be deviations from the merge policy in practice.
+
+== LTS Process
+
+Jenkins also offers the link:https://jenkins.io/download/lts/[LTS Release Line].
+It is maintained by the Jenkins Release Team which coordinates link:https://jenkins.io/download/lts/#backporting-process[backporting] and release candidate testing.
+Any Jenkins contributors are welcome to participate in backporting and release candidate testing.
+
+* Backporting discussions happen through the developer mailing list.
+* Backports are submitted as pull requests with the link:https://github.com/jenkinsci/jenkins/labels/into-lts[into-lts] label.
+* Release candidate testing is announced in the developer mailing list.
+  Discovered issues should be submitted to Jenkins Jira and then referenced in the release candidate testing thread.
+
+== Tools
+
+* link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
+* link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
+* link:https://github.com/jenkins-infra/backend-commit-history-parser[Toolkit for LTS backporting]
+* link:/update-since-todo.sh[Javadoc @since version updater]
+
+== Feedback
+
+The process documented in this document is not set in stone.
+If you see any issues or want to suggest improvements,
+just submit a pull request or contact us in the communication channels referenced above.
+Any feedback will be appreciated!

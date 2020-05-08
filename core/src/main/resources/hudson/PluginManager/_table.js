@@ -43,8 +43,15 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
         layoutUpdateCallback.call();
     }
-
     e.onkeyup = applyFilter;
+
+    (function() {
+        var instructionsTd = document.getElementById("hidden-by-default-instructions-td");
+        if (instructionsTd) { // only on Available tab
+            instructionsTd.innerText = instructionsTd.getAttribute("data-loaded-text");
+        }
+        applyFilter();
+    }());
 });
 
 /**
