@@ -35,7 +35,7 @@ THE SOFTWARE.
       <l:task href="${rootURL}/${it.url}delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete Agent}"/>
 
       <j:choose>
-        <j:when test="${app.hasPermission(it.CONFIGURE)}">
+        <j:when test="${it.hasPermission(it.CONFIGURE)}">
           <j:set var="configureComputerTitle" value="${%Configure}"/>
         </j:when>
         <j:otherwise>
