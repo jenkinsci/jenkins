@@ -27,7 +27,7 @@ package hudson.model;
 import java.io.File;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

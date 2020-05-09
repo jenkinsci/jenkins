@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.CoreMatchers.*;
 import org.junit.After;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assume.*;
 import org.junit.Before;
 import org.junit.Test;

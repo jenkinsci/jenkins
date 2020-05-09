@@ -25,7 +25,7 @@
 package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 

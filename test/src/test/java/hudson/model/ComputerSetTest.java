@@ -27,7 +27,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
