@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
 import static org.hamcrest.Matchers.containsString;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.LoggerRule;

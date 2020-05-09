@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import org.apache.commons.io.Charsets;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

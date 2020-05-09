@@ -13,7 +13,7 @@ import hudson.model.User;
 import javax.servlet.http.HttpServletResponse;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Rule;
