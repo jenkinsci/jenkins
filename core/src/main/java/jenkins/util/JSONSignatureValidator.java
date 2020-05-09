@@ -1,7 +1,9 @@
 package jenkins.util;
 
+import hudson.Util;
 import hudson.util.FormValidation;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -9,8 +11,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
@@ -156,17 +156,13 @@ public class JSONSignatureValidator {
      */
     private FormValidation checkSpecificSignature(JSONObject json, JSONObject signatureJson, MessageDigest digest, String digestEntry, Signature signature, String signatureEntry, String digestName) throws IOException {
         // this is for computing a digest to check sanity
-        DigestOutputStream dos = new DigestOutputStream(new NullOutputStream(), digest);
+        final ByteArrayOutputStream check = new ByteArrayOutputStream();
+        DigestOutputStream dos = new DigestOutputStream(check, digest);
         SignatureOutputStream sos = new SignatureOutputStream(signature);
 
         String providedDigest = signatureJson.optString(digestEntry, null);
         if (providedDigest == null) {
             return FormValidation.warning("No '" + digestEntry + "' found");
-        }
-
-        String providedSignature = signatureJson.optString(signatureEntry, null);
-        if (providedSignature == null) {
-            return FormValidation.warning("No '" + signatureEntry + "' found");
         }
 
         // until JENKINS-11110 fix, UC used to serve invalid digest (and therefore unverifiable signature)
@@ -184,18 +180,27 @@ public class JSONSignatureValidator {
         //
         // Jenkins should ignore "digest"/"signature" pair. Accepting it creates a vulnerability that allows
         // the attacker to inject a fragment at the end of the json.
-        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos), Charsets.UTF_8)).close();
+        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos), StandardCharsets.UTF_8)).close();
 
         // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
         // (which is more likely than someone tampering with update center), we can tell
 
-        if (!digestMatches(digest.digest(), providedDigest)) {
-            String msg = digestName + " digest mismatch: expected=" + providedDigest + " in '" + name + "'";
+        final byte[] computedDigest = digest.digest();
+        if (!digestMatches(computedDigest, providedDigest)) {
+            // This log statement can be a bit misleading since the comparison function accepts both hex and b64, so the output can be different formats
+            String msg = digestName + " digest mismatch: provided=" + providedDigest + " computed=" + Util.toHexString(computedDigest) + " in '" + name + "'";
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.severe(msg);
-                LOGGER.severe(json.toString(2));
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, check.toString(StandardCharsets.UTF_8.name()));
+                }
             }
             return FormValidation.error(msg);
+        }
+
+        String providedSignature = signatureJson.optString(signatureEntry, null);
+        if (providedSignature == null) {
+            return FormValidation.warning("No '" + signatureEntry + "' found");
         }
 
         if (!verifySignature(signature, providedSignature)) {
