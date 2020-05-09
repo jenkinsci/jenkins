@@ -101,7 +101,9 @@ var Behaviour = (function() {
                                 //console.log('deprecated:' + selector + ' on ' + list.length + ' elements');
                                 list._each(sheet[selector]);
                             }
-                          } catch (e) {}
+                          } catch (e) {
+                              console.error(e)
+                          }
                         });
                     }
                 });
@@ -113,7 +115,9 @@ var Behaviour = (function() {
                         //console.log(registration.id + ':' + registration.selector + ' @' + registration.priority + ' on ' + list.length + ' elements');
                         list._each(registration.behavior);
                     }
-                  } catch (e) {}
+                  } catch (e) {
+                      console.error(e)
+                  }
                 });
             }
         });
