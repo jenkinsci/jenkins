@@ -30,6 +30,15 @@ THE SOFTWARE.
 
   <l:layout norefresh="true" type="one-column" permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
 
+    <j:choose>
+      <j:when test="${it.hasPermission(it.CONFIGURE)}">
+        <j:set var="readOnlyMode" value="false" />
+      </j:when>
+      <j:otherwise>
+        <j:set var="readOnlyMode" value="true" />
+      </j:otherwise>
+    </j:choose>
+
     <l:js src="jsbundles/config-scrollspy.js" />
     <l:css src="jsbundles/config-scrollspy.css" />
 
