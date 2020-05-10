@@ -11,7 +11,12 @@ function updateListBox(listBox,url,config) {
         console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
         return;
     }
-    var status = settingMain.closest('.setting-main').nextElementSibling;
+
+    var status = settingMain.nextElementSibling;
+    if (!status) {
+        console.warn("Couldn't find the expected status element", settingMain)
+        return;
+    }
     if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }

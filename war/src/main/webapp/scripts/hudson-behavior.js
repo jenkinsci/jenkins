@@ -46,6 +46,7 @@ function TryEach(fn) {
         try {
             fn(name);
         } catch (e) {
+            console.error(e);
         }
     }
 }
