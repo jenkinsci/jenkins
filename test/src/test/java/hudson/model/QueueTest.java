@@ -1174,7 +1174,7 @@ public class QueueTest {
 
         q.maintain();
         r.waitUntilNoActivityUpTo(10000);
-        Assert.assertThat(tasks, everyItem(hasProperty("owner", equalTo(Jenkins.get().toComputer()))));
+        assertThat(tasks, everyItem(hasProperty("owner", equalTo(Jenkins.get().toComputer()))));
     }
 
     @Test
@@ -1193,7 +1193,7 @@ public class QueueTest {
 
         q.maintain();
         r.waitUntilNoActivityUpTo(10000);
-        Assert.assertThat(tasks, everyItem(hasProperty("owner", not(equalTo(Jenkins.get().toComputer())))));
+        assertThat(tasks, everyItem(hasProperty("owner", not(equalTo(Jenkins.get().toComputer())))));
     }
 
     @Test
