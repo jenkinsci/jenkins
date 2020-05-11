@@ -30,7 +30,7 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${it.EXTENDED_READ}" title="${%title(it.displayName)}">
     <j:choose>
-      <j:when test="${app.hasPermission(it.CONFIGURE)}">
+      <j:when test="${it.hasPermission(it.CONFIGURE)}">
         <j:set var="readOnlyMode" value="false" />
       </j:when>
       <j:otherwise>
