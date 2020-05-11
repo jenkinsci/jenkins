@@ -29,14 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${it.EXTENDED_READ}" title="${%title(it.displayName)}">
-    <j:choose>
-      <j:when test="${it.hasPermission(it.CONFIGURE)}">
-        <j:set var="readOnlyMode" value="false" />
-      </j:when>
-      <j:otherwise>
-        <j:set var="readOnlyMode" value="true" />
-      </j:otherwise>
-    </j:choose>
+    <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">

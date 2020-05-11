@@ -93,14 +93,7 @@ THE SOFTWARE.
     <d:invokeBody />
   </j:scope>
   <j:if test="${attrs.permission != null}">
-    <j:choose>
-      <j:when test="${h.hasPermission(it, attrs.permission)}">
-        <j:set var="hasPermission" value="true" />
-      </j:when>
-      <j:otherwise>
-        <j:set var="hasPermission" value="false" />
-      </j:otherwise>
-    </j:choose>
+    <j:set var="hasPermission" value="${h.hasPermission(it, attrs.permission)}" />
   </j:if>
 
   <j:if test="${attrs.permissions != null}">
