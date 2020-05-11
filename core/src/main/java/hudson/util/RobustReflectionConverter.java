@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static java.util.logging.Level.FINE;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import net.jcip.annotations.GuardedBy;
@@ -371,8 +373,9 @@ public class RobustReflectionConverter implements Converter {
             // one.
             try {
                 OldDataMonitor.report((Saveable) result, (ArrayList<Throwable>) context.get("ReadError"));
-            } catch (Throwable ignored) {
-                // it should be already reported
+            } catch (Throwable t) {
+                // it should be already reported, but we report with INFO just in case
+                LOGGER.log(Level.INFO, "There was a problem reporting unmarshalling field errors", t);
             }
             context.put("ReadError", null);
         }
