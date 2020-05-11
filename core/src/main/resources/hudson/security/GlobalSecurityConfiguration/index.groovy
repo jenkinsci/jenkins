@@ -17,7 +17,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
             l.icon(class: 'icon-secure icon-xlg')
             text(my.displayName)
         }
-        set("readOnlyMode", !h.hasPermission(app.ADMINISTER))
+        set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()
         div(class:"behavior-loading", _("LOADING"))

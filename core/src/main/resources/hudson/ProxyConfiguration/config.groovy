@@ -3,7 +3,7 @@ package hudson.ProxyConfiguration
 def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 
-set("readOnlyMode", !h.hasPermission(app.ADMINISTER))
+set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
 f.entry(title:_("Server"),field:"name") {
     f.textbox()
