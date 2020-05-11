@@ -46,10 +46,16 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
 
     private Secret defaultValue;
 
-    @DataBoundConstructor
+    @Deprecated
     public PasswordParameterDefinition(String name, String defaultValue, String description) {
         super(name, description);
         this.defaultValue = Secret.fromString(defaultValue);
+    }
+
+    @DataBoundConstructor
+    public PasswordParameterDefinition(String name, Secret defaultValueAsSecret, String description) {
+        super(name, description);
+        this.defaultValue = defaultValueAsSecret;
     }
 
     @Override
