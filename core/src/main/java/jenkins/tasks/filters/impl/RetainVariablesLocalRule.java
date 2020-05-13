@@ -183,17 +183,6 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
             return FormValidation.ok(Messages.RetainVariablesLocalRule_CharacteristicEnvVarsFormValidationOK());
         }
 
-        @Restricted(NoExternalUse.class)
-        public FormValidation doCheckProcessVariablesHandling(@QueryParameter ProcessVariablesHandling value) {
-            switch (value) {
-                case RESET:
-                    return FormValidation.ok(Messages.RetainVariablesLocalRule_ProcessVariablesFormValidationOK());
-                case REMOVE:
-                    return FormValidation.warningWithMarkup(Messages.RetainVariablesLocalRule_ProcessVariablesFormValidationWarning());
-            }
-            return FormValidation.ok();
-        }
-
         @Override
         public @NonNull String getDisplayName() {
             return Messages.RetainVariablesLocalRule_DisplayName();
