@@ -18,7 +18,7 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,7 +37,7 @@ import javax.xml.xpath.XPathFactory;
 
 /**
   * Utilities useful when working with various XML types.
-  * @since 1.596.1 and 1.600, unrestricted since TODO
+  * @since 1.596.1 and 1.600, unrestricted since 2.179
  */
 public final class XMLUtils {
 
@@ -55,7 +55,7 @@ public final class XMLUtils {
      *               {@link SAXSource} in order to be able to prevent XXE attacks.
      * @param out The Result of transforming the {@code source}.
      */
-    public static void safeTransform(@Nonnull Source source, @Nonnull Result out) throws TransformerException,
+    public static void safeTransform(@NonNull Source source, @NonNull Result out) throws TransformerException,
             SAXException {
 
         InputSource src = SAXSource.sourceToInputSource(source);
@@ -110,7 +110,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the steam.
      * @since 2.0
      */
-    public static @Nonnull Document parse(@Nonnull Reader stream) throws SAXException, IOException {
+    public static @NonNull Document parse(@NonNull Reader stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
 
         try {
@@ -132,7 +132,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the file.
      * @since 2.0
      */
-    public static @Nonnull Document parse(@Nonnull File file, @Nonnull String encoding) throws SAXException, IOException {
+    public static @NonNull Document parse(@NonNull File file, @NonNull String encoding) throws SAXException, IOException {
         if (!file.exists() || !file.isFile()) {
             throw new IllegalArgumentException(String.format("File %s does not exist or is not a 'normal' file.", file.getAbsolutePath()));
         }
@@ -159,7 +159,7 @@ public final class XMLUtils {
      * @throws XPathExpressionException Invalid XPath expression.
      * @since 2.0
      */
-    public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file) throws IOException, SAXException, XPathExpressionException {
+    public static @NonNull String getValue(@NonNull String xpath, @NonNull File file) throws IOException, SAXException, XPathExpressionException {
         return getValue(xpath, file, Charset.defaultCharset().toString());
     }
 
@@ -175,7 +175,7 @@ public final class XMLUtils {
      * @throws XPathExpressionException Invalid XPath expression.
      * @since 2.0
      */
-    public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file, @Nonnull String fileDataEncoding) throws IOException, SAXException, XPathExpressionException {
+    public static @NonNull String getValue(@NonNull String xpath, @NonNull File file, @NonNull String fileDataEncoding) throws IOException, SAXException, XPathExpressionException {
         Document document = parse(file, fileDataEncoding);
         return getValue(xpath, document);
     }

@@ -36,8 +36,8 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -106,23 +106,24 @@ public class MissingClassTelemetry extends Telemetry {
             //hundreds when a job is created
             {"org.codehaus.groovy.control.ClassNodeResolver", "tryAsLoaderClassOrScript"},
             {"org.kohsuke.stapler.RequestImpl$TypePair", "convertJSON"},
-            {"net.bull.javamelody.FilterContext", "isMojarraAvailable"} // JENKINS-60725
+            {"net.bull.javamelody.FilterContext", "isMojarraAvailable"}, // JENKINS-60725
+            {"hudson.remoting.RemoteClassLoader$ClassLoaderProxy", "fetch3"} // JENKINS-61521
             
     };
 
-    @Nonnull
+    @NonNull
     @Override
     public String getDisplayName() {
         return "Missing classes related with Java updates";
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getStart() {
         return START;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public LocalDate getEnd() {
         return END;
@@ -174,7 +175,7 @@ public class MissingClassTelemetry extends Telemetry {
      * gather another window of events.
      * @return the map of missed classes events gathered along this window of telemetry
      */
-    @Nonnull
+    @NonNull
     private JSONArray formatEventsAndInitialize() {
         // Save the current events and clean for next (not this one) telemetry send
         ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> toReport = MissingClassTelemetry.events.getEventsAndClean();
@@ -193,8 +194,8 @@ public class MissingClassTelemetry extends Telemetry {
      * @param events events collected in this telemetry window.
      * @return the events formatted in a map.
      */
-    @Nonnull
-    private JSONArray formatEvents(@Nonnull ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> events) {
+    @NonNull
+    private JSONArray formatEvents(@NonNull ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> events) {
         JSONArray jsonEvents = new JSONArray();
 
         events.forEach((stackTrace, event) -> {
@@ -215,7 +216,7 @@ public class MissingClassTelemetry extends Telemetry {
      * The current time in the same way as other telemetry implementations.
      * @return the UTC time formatted with the pattern yyyy-MM-dd'T'HH:mm'Z'
      */
-    @Nonnull
+    @NonNull
     static String clientDateString() {
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
@@ -230,7 +231,7 @@ public class MissingClassTelemetry extends Telemetry {
      * @param name the name of the class
      * @param e the throwable to report if needed
      */
-    public static void reportException(@Nonnull String name, @Nonnull Throwable e) {
+    public static void reportException(@NonNull String name, @NonNull Throwable e) {
         if (enabled()) {
             //ClassDefFoundError uses / instead of .
             name = name.replace('/', '.').trim();
@@ -250,7 +251,7 @@ public class MissingClassTelemetry extends Telemetry {
      * @param throwable The exception thrown
      * @return true if in the stack trace there is an ignored method / class.
      */
-    private static boolean calledFromIgnoredPlace(@Nonnull Throwable throwable) {
+    private static boolean calledFromIgnoredPlace(@NonNull Throwable throwable) {
         for(String[] ignoredPlace : IGNORED_PLACES) {
             if (calledFrom(throwable, ignoredPlace[0], ignoredPlace[1])) {
                 return true;
@@ -266,7 +267,7 @@ public class MissingClassTelemetry extends Telemetry {
      * @param method method where the throwable was thrown in the clazz
      * @return true if the method of the clazz has thrown the throwable
      */
-    private static boolean calledFrom (@Nonnull Throwable throwable, @Nonnull String clazz, @Nonnull String method){
+    private static boolean calledFrom (@NonNull Throwable throwable, @NonNull String clazz, @NonNull String method){
         StackTraceElement[] trace = throwable.getStackTrace();
         for (StackTraceElement el : trace) {
             //If the exception has the class and method searched, it's called from there
@@ -284,7 +285,7 @@ public class MissingClassTelemetry extends Telemetry {
      * {@link #reportExceptionInside(Throwable)}
      * @param e the exception to report if needed
      */
-    private static void reportException(@Nonnull Throwable e) {
+    private static void reportException(@NonNull Throwable e) {
         if (enabled()) {
             String name = e.getMessage();
 
@@ -296,7 +297,7 @@ public class MissingClassTelemetry extends Telemetry {
         }
     }
 
-    private static boolean isFromMovedPackage(@Nonnull String clazz) {
+    private static boolean isFromMovedPackage(@NonNull String clazz) {
         for (String movedPackage : MOVED_PACKAGES) {
             if (clazz.startsWith(movedPackage)) {
                 return true;
@@ -310,7 +311,7 @@ public class MissingClassTelemetry extends Telemetry {
      * classes.
      * @param e the exception to look into
      */
-    public static void reportExceptionInside(@Nonnull Throwable e) {
+    public static void reportExceptionInside(@NonNull Throwable e) {
         if (enabled()) {
             // Use a Set with equity based on == instead of equal to find cycles
             Set<Throwable> exceptionsReviewed = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -325,7 +326,7 @@ public class MissingClassTelemetry extends Telemetry {
      * @param exceptionsReviewed the set of already reviewed exceptions
      * @return true if a exception was reported
      */
-    private static boolean reportExceptionInside(@Nonnull Throwable e, @Nonnull Set<Throwable> exceptionsReviewed) {
+    private static boolean reportExceptionInside(@NonNull Throwable e, @NonNull Set<Throwable> exceptionsReviewed) {
         if (exceptionsReviewed.contains(e)) {
             LOGGER.log(Level.WARNING, CIRCULAR_REFERENCE, e);
             // Don't go deeper, we already did

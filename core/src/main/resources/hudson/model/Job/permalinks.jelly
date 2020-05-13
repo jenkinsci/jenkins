@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <!-- display permalinks of the page -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <h2 class="permalinks-header">${%Permalinks}</h2>
   <ul class="permalinks-list">
     <j:set var="job" value="${it}" />

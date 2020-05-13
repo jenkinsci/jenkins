@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -78,7 +78,7 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
      * @param target an actionable object
      * @return a possible empty set of actions (typically either using {@link Collections#emptySet} or {@link Collections#singleton})
      */
-    public abstract @Nonnull Collection<? extends Action> createFor(@Nonnull T target);
+    public abstract @NonNull Collection<? extends Action> createFor(@NonNull T target);
 
     /** @see <a href="http://stackoverflow.com/a/24336841/12916">no pairs/tuples in Java</a> */
     private static class CacheKey {

@@ -33,7 +33,7 @@ import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.util.ArgumentListBuilder;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -102,7 +102,7 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      *      contextual decoration.
      * @since 1.632
      */
-    public OutputStream decorateLogger(@Nonnull Computer computer, OutputStream logger) throws IOException, InterruptedException {
+    public OutputStream decorateLogger(@NonNull Computer computer, OutputStream logger) throws IOException, InterruptedException {
         return logger;      // by default no-op
     }
 

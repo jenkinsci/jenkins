@@ -39,8 +39,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extension point to add icon to {@code http://server/hudson/manage} page.
@@ -113,7 +113,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     /**
      * All registered instances.
      */
-    public static @Nonnull ExtensionList<ManagementLink> all() {
+    public static @NonNull ExtensionList<ManagementLink> all() {
         return ExtensionList.lookup(ManagementLink.class);
     }
 
@@ -124,7 +124,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      *
      * @return the permission required for the link to be shown on "Manage Jenkins".
      */
-    public @Nonnull Permission getRequiredPermission() {
+    public @NonNull Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
     }
 
@@ -146,7 +146,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * @since 2.226
      */
     @Restricted(NoExternalUse.class) // TODO I don't think this works
-    protected @Nonnull String getCategoryName() {
+    protected @NonNull String getCategoryName() {
         return "UNCATEGORIZED";
     }
 
@@ -156,7 +156,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * @return An enum value of {@link Category}.
      * @since 2.226
      */
-    public @Nonnull Category getCategory() {
+    public @NonNull Category getCategory() {
         try {
             return Category.valueOf(getCategoryName());
         } catch (RuntimeException e) {
@@ -171,12 +171,36 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * @since 2.226
      */
     public enum Category {
+        /**
+         * Configuration pages that don't fit into a more specific section.
+         */
         CONFIGURATION(Messages._ManagementLink_Category_CONFIGURATION()),
+        /**
+         * Security related options. Useful for plugins providing security related {@code ManagementLink}s (e.g. security realms).
+         * Use {@link Category#STATUS} instead if the feature is informational.
+         */
         SECURITY(Messages._ManagementLink_Category_SECURITY()),
+        /**
+         * Status information about the Jenkins instance, such as log messages, load statistics, or general information.
+         */
         STATUS(Messages._ManagementLink_Category_STATUS()),
+        /**
+         * Troubleshooting utilities. This overlaps some with status information, but the difference is that status
+         * always applies, while troubleshooting only matters when things go wrong.
+         */
         TROUBLESHOOTING(Messages._ManagementLink_Category_TROUBLESHOOTING()),
+        /**
+         * Tools are specifically tools for administrators, such as the Jenkins CLI and Script Console, as well as specific stand-alone administrative features ({@link jenkins.management.ShutdownLink}, {@link jenkins.management.ReloadLink}).
+         * This has nothing to do with build tools or tool installers.
+         */
         TOOLS(Messages._ManagementLink_Category_TOOLS()),
+        /**
+         * Anything that doesn't fit into any of the other categories. Expected to be necessary only very rarely.
+         */
         MISC(Messages._ManagementLink_Category_MISC()),
+        /**
+         * The default category for uncategorized items. Do not explicitly specify this category for your {@code ManagementLink}.
+         */
         UNCATEGORIZED(Messages._ManagementLink_Category_UNCATEGORIZED());
 
         private Localizable label;
@@ -185,7 +209,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
             this.label = label;
         }
 
-        public @Nonnull String getLabel() {
+        public @NonNull String getLabel() {
             return label.toString();
         }
     }

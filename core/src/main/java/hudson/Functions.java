@@ -132,7 +132,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -166,8 +166,9 @@ import hudson.util.RunList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import java.util.stream.Collectors;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -1628,7 +1629,7 @@ public class Functions {
      *      otherwise, the method returns a default
      *      &quot;No exception details&quot; string.
      */
-    public static @Nonnull String printThrowable(@CheckForNull Throwable t) {
+    public static @NonNull String printThrowable(@CheckForNull Throwable t) {
         if (t == null) {
             return Messages.Functions_NoExceptionDetails();
         }
@@ -1636,7 +1637,7 @@ public class Functions {
         doPrintStackTrace(s, t, null, "", new HashSet<>());
         return s.toString();
     }
-    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix, @Nonnull Set<Throwable> encountered) {
+    private static void doPrintStackTrace(@NonNull StringBuilder s, @NonNull Throwable t, @CheckForNull Throwable higher, @NonNull String prefix, @NonNull Set<Throwable> encountered) {
         if (!encountered.add(t)) {
             s.append("<cycle to ").append(t).append(">\n");
             return;
@@ -1689,7 +1690,7 @@ public class Functions {
      * @param pw the log
      * @since 2.43
      */
-    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintWriter pw) {
+    public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintWriter pw) {
         pw.println(printThrowable(t).trim());
     }
 
@@ -1699,7 +1700,7 @@ public class Functions {
      * @param ps the log
      * @since 2.43
      */
-    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintStream ps) {
+    public static void printStackTrace(@CheckForNull Throwable t, @NonNull PrintStream ps) {
         ps.println(printThrowable(t).trim());
     }
 
@@ -1720,7 +1721,7 @@ public class Functions {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("since TODO")
+    @RestrictedSince("2.173")
     public static String toCCStatus(Item i) {
         return "Unknown";
     }
@@ -2013,21 +2014,66 @@ public class Functions {
      * Used by {@code <f:password/>} so that we send an encrypted value to the client.
      */
     public String getPasswordValue(Object o) {
-        if (o==null)    return null;
-        if (o instanceof Secret) {
-            StaplerRequest req = Stapler.getCurrentRequest();
+        if (o == null) {
+            return null;
+        }
+
+        /*
+         Return plain value if it's the default value for PasswordParameterDefinition.
+         This needs to work even when the user doesn't have CONFIGURE permission
+         */
+        if (o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
+            return o.toString();
+        }
+
+        /* Mask from Extended Read */
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (o instanceof Secret || Secret.BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE) {
             if (req != null) {
                 Item item = req.findAncestorObject(Item.class);
                 if (item != null && !item.hasPermission(Item.CONFIGURE)) {
                     return "********";
                 }
             }
+        }
+
+        /* Return encrypted value if it's a Secret */
+        if (o instanceof Secret) {
             return ((Secret) o).getEncryptedValue();
         }
-        if (getIsUnitTest() && !o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
-            throw new SecurityException("attempted to render plaintext ‘" + o + "’ in password field; use a getter of type Secret instead");
+
+        /* Log a warning if we're in development mode (core or plugin): There's an f:password backed by a non-Secret */
+        if (req != null && (Boolean.getBoolean("hudson.hpi.run") || Boolean.getBoolean("hudson.Main.development"))) {
+            LOGGER.log(Level.WARNING, () -> "<f:password/> form control in " + getJellyViewsInformationForCurrentRequest() +
+                    " is not backed by hudson.util.Secret. Learn more: https://jenkins.io/redirect/hudson.util.Secret");
         }
-        return o.toString();
+
+        /* Return plain value if it's not a Secret and the escape hatch is set */
+        if (!Secret.AUTO_ENCRYPT_PASSWORD_CONTROL) {
+            return o.toString();
+        }
+
+        /* Make it a Secret and return its encrypted value */
+        return Secret.fromString(o.toString()).getEncryptedValue();
+    }
+
+    private String getJellyViewsInformationForCurrentRequest() {
+        final Thread thread = Thread.currentThread();
+        String threadName = thread.getName();
+
+        // try to simplify based on org.kohsuke.stapler.jelly.JellyViewScript
+        // Views are expected to contain a slash and a period, neither as the first char, and the last slash before the first period: Class/view.jelly
+        // Nested classes use slashes, so we do not expect period before: Class/Nested/view.jelly
+        String views = Arrays.stream(threadName.split(" ")).filter(part -> {
+            int slash = part.lastIndexOf("/");
+            int firstPeriod = part.indexOf(".");
+            return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
+        }).collect(Collectors.joining(" "));
+        if (StringUtils.isBlank(views)) {
+            // fallback to full thread name if there are no apparent views
+            return threadName;
+        }
+        return views;
     }
 
     public List filterDescriptors(Object context, Iterable descriptors) {

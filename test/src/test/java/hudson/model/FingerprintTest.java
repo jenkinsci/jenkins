@@ -41,8 +41,8 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,7 +55,12 @@ import org.jvnet.hudson.test.SecuredMockFolder;
 import org.jvnet.hudson.test.WorkspaceCopyFileBuilder;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -295,8 +300,8 @@ public class FingerprintTest {
         }
     }
     
-    @Nonnull
-    private Fingerprint getFingerprint(@CheckForNull Run<?, ?> run, @Nonnull String filename) {
+    @NonNull
+    private Fingerprint getFingerprint(@CheckForNull Run<?, ?> run, @NonNull String filename) {
         assertNotNull("Input run is null", run);
         Fingerprinter.FingerprintAction action = run.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull("Fingerprint action has not been created in " + run, action);
@@ -306,13 +311,13 @@ public class FingerprintTest {
         return fp;
     }
     
-    @Nonnull
+    @NonNull
     private FreeStyleProject createAndRunProjectWithPublisher(String projectName, String fpFileName) 
             throws Exception {
         return createAndRunProjectWithPublisher(null, projectName, fpFileName);
     }
     
-    @Nonnull
+    @NonNull
     private FreeStyleProject createAndRunProjectWithPublisher(@CheckForNull MockFolder folder, 
             String projectName, String fpFileName) throws Exception {
         final FreeStyleProject project;
@@ -329,11 +334,11 @@ public class FingerprintTest {
         return project;
     }
     
-    private void setupProjectMatrixAuthStrategy(@Nonnull Permission ... permissions) {
+    private void setupProjectMatrixAuthStrategy(@NonNull Permission ... permissions) {
         setupProjectMatrixAuthStrategy(true, permissions);
     }
     
-    private void setupProjectMatrixAuthStrategy(boolean inheritFromFolders, @Nonnull Permission ... permissions) {
+    private void setupProjectMatrixAuthStrategy(boolean inheritFromFolders, @NonNull Permission ... permissions) {
         ProjectMatrixAuthorizationStrategy str = inheritFromFolders 
                 ? new ProjectMatrixAuthorizationStrategy()
                 : new NoInheritanceProjectMatrixAuthorizationStrategy();
@@ -343,7 +348,7 @@ public class FingerprintTest {
         rule.jenkins.setAuthorizationStrategy(str);
     }
     //TODO: could be reworked to support multiple assignments
-    private void setJobPermissionsOnce(Job<?,?> job, String username, @Nonnull Permission ... s)
+    private void setJobPermissionsOnce(Job<?,?> job, String username, @NonNull Permission ... s)
             throws IOException {
         assertThat("Cannot assign the property twice", job.getProperty(AuthorizationMatrixProperty.class), nullValue());
         

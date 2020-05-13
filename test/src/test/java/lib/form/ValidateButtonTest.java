@@ -41,7 +41,7 @@ import hudson.Extension;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

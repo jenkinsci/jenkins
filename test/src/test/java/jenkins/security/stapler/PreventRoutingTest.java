@@ -32,8 +32,8 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.List;
 
 public class PreventRoutingTest extends StaplerAbstractTest {
@@ -102,7 +102,7 @@ public class PreventRoutingTest extends StaplerAbstractTest {
         }
     }
     
-    private static void notStaplerGetter(@Nonnull Object o){
+    private static void notStaplerGetter(@NonNull Object o){
         StaplerRequest req = Stapler.getCurrentRequest();
         if (req != null) {
             List<Ancestor> ancestors = req.getAncestors();

@@ -32,7 +32,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * List of configured {@link ArtifactManagerFactory}s.
@@ -41,7 +41,7 @@ import javax.annotation.Nonnull;
 @Extension @Symbol("artifactManager")
 public class ArtifactManagerConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     
-    public static @Nonnull ArtifactManagerConfiguration get() {
+    public static @NonNull ArtifactManagerConfiguration get() {
         return GlobalConfiguration.all().getInstance(ArtifactManagerConfiguration.class);
     }
 

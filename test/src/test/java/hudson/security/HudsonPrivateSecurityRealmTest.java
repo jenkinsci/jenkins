@@ -53,7 +53,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -70,7 +76,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -424,12 +430,12 @@ public class HudsonPrivateSecurityRealmTest {
         private List<String> createdUsers = new ArrayList<String>();
 
         @Override
-        protected void loggedIn(@Nonnull String username) {
+        protected void loggedIn(@NonNull String username) {
             loggedInUsernames.add(username);
         }
 
         @Override
-        protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
+        protected void userCreated(@NonNull String username) { createdUsers.add(username); }
     }
 
     @Issue("SECURITY-786")
