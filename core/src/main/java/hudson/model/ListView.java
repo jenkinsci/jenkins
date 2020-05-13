@@ -219,18 +219,19 @@ public class ListView extends View implements DirectlyModifiableView {
 
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
 
-        Collection<ViewJobFilter> jobFilters = getJobFilters();
         if (recurse) {
-            items.addAll(parent.getAllItems(TopLevelItem.class, item -> {
-                String itemName = item.getRelativeNameFrom(parent);
-                if (names.contains(itemName)) {
-                    return true;
-                }
-                if (includePattern != null) {
-                    return includePattern.matcher(itemName).matches();
-                }
-                return false;
-            }));
+            if (!names.isEmpty() || includePattern != null) {
+                items.addAll(parent.getAllItems(TopLevelItem.class, item -> {
+                    String itemName = item.getRelativeNameFrom(parent);
+                    if (names.contains(itemName)) {
+                        return true;
+                    }
+                    if (includePattern != null) {
+                        return includePattern.matcher(itemName).matches();
+                    }
+                    return false;
+                }));
+            }
         } else {
             for (String name : names) {
                 try {
@@ -250,6 +251,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
+        Collection<ViewJobFilter> jobFilters = getJobFilters();
         if (!jobFilters.isEmpty()) {
             List<TopLevelItem> candidates = recurse ? parent.getAllItems(TopLevelItem.class) : new ArrayList<>(parent.getItems());
             // check the filters
