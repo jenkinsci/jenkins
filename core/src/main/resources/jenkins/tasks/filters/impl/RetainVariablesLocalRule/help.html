@@ -8,9 +8,9 @@
         <li>If the environment variable originates from Jenkins configuration, such as <code>JOB_URL</code>,
             it will not be passed to the build step unless specified here.</li>
         <li>If the environment variable originates from outside Jenkins, such as <code>PATH</code>,
-            the behavior depends on the option <em>Retain process environment variables</em>:
-            If that option is checked, the original value will be passed to the build step, discarding any modifications inside Jenkins.
-            If that option is unchecked, the variable will not be passed to the build step.
+            the behavior depends on the option <em>Process environment variables handling</em>:
+            If that option is set to <em>Retain</em>, the original value will be passed to the build step, discarding any modifications inside Jenkins.
+            If that option is set to <em>Remove</em>, the variable will not be passed to the build step.
         </li>
     </ul>
     <p>
@@ -24,7 +24,7 @@
         </tr>
         <tr>
             <th>
-                <em>Retain process environment variables</em> checked
+                <em>Process environment variables handling:</em> reset
             </th>
             <td>
                 Variable is reset to original value
@@ -35,7 +35,7 @@
         </tr>
         <tr>
             <th>
-                <em>Retain process environment variables</em> unchecked
+                <em>Process environment variables handling:</em> removed
             </th>
             <td>
                 Variable is removed

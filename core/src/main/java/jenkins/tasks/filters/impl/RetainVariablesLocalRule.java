@@ -33,6 +33,7 @@ import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import jenkins.tasks.filters.EnvVarsFilterableBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
+import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -60,7 +61,7 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
      */
     private String variables = "";
     private boolean retainCharacteristicEnvVars = true;
-    private boolean retainProcessVariables = true;
+    private ProcessVariablesHandling processVariablesHandling = ProcessVariablesHandling.RESET;
 
     @DataBoundConstructor
     public RetainVariablesLocalRule() {
@@ -128,13 +129,16 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
                     variablesRemoved.add(variableName);
                     iterator.remove();
                 } else {
-                    if (retainProcessVariables) {
-                        if (!systemValue.equals(variableValue)) {
-                            variablesReset.add(variableName);
-                        }
-                    } else {
-                        variablesRemoved.add(variableName);
-                        iterator.remove();
+                    switch (processVariablesHandling) {
+                        case RESET:
+                            if (!systemValue.equals(variableValue)) {
+                                variablesReset.add(variableName);
+                            }
+                            break;
+                        case REMOVE:
+                            variablesRemoved.add(variableName);
+                            iterator.remove();
+                            break;
                     }
                 }
             }
@@ -150,13 +154,13 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
         }
     }
 
-    public boolean isRetainProcessVariables() {
-        return retainProcessVariables;
+    public ProcessVariablesHandling getProcessVariablesHandling() {
+        return processVariablesHandling;
     }
 
     @DataBoundSetter
-    public void setRetainProcessVariables(boolean retainProcessVariables) {
-        this.retainProcessVariables = retainProcessVariables;
+    public void setProcessVariablesHandling(ProcessVariablesHandling processVariablesHandling) {
+        this.processVariablesHandling = processVariablesHandling;
     }
 
     // the ordinal is used to sort the rules in term of execution, the smaller value first
@@ -180,11 +184,14 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
         }
 
         @Restricted(NoExternalUse.class)
-        public FormValidation doCheckRetainProcessVariables(@QueryParameter boolean value) {
-            if (!value) {
-                return FormValidation.warningWithMarkup(Messages.RetainVariablesLocalRule_ProcessVariablesFormValidationWarning());
+        public FormValidation doCheckProcessVariablesHandling(@QueryParameter ProcessVariablesHandling value) {
+            switch (value) {
+                case RESET:
+                    return FormValidation.ok(Messages.RetainVariablesLocalRule_ProcessVariablesFormValidationOK());
+                case REMOVE:
+                    return FormValidation.warningWithMarkup(Messages.RetainVariablesLocalRule_ProcessVariablesFormValidationWarning());
             }
-            return FormValidation.ok(Messages.RetainVariablesLocalRule_ProcessVariablesFormValidationOK());
+            return FormValidation.ok();
         }
 
         @Override
@@ -195,6 +202,21 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
         @Override
         public boolean isApplicable(@NonNull Class<? extends EnvVarsFilterableBuilder> builderClass) {
             return true;
+        }
+    }
+
+    public enum ProcessVariablesHandling {
+        RESET(Messages._RetainVariablesLocalRule_RESET_DisplayName()),
+        REMOVE(Messages._RetainVariablesLocalRule_REMOVE_DisplayName());
+
+        private final Localizable localizable;
+
+        ProcessVariablesHandling(Localizable localizable) {
+            this.localizable = localizable;
+        }
+
+        public String getDisplayName() {
+            return localizable.toString();
         }
     }
 }

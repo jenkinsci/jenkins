@@ -31,7 +31,9 @@ THE SOFTWARE.
     <f:entry field="retainCharacteristicEnvVars" title="${%retainCharacteristicEnvVarsLabel}">
         <f:checkbox default="true" />
     </f:entry>
-    <f:entry field="retainProcessVariables" title="${%retainProcessVariablesLabel}">
-        <f:checkbox default="true" />
+    <f:entry title="${%retainProcessVariablesLabel}">
+        <f:enum field="processVariablesHandling" default="RESET">
+            ${it.displayName}
+        </f:enum>
     </f:entry>
 </j:jelly>

@@ -262,7 +262,7 @@ public class RetainVariablesLocalRuleTest {
         RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
         localRule.setVariables("path"); // seems to work without but may be env dependent
         localRule.setRetainCharacteristicEnvVars(false);
-        localRule.setRetainProcessVariables(false);
+        localRule.setProcessVariablesHandling(RetainVariablesLocalRule.ProcessVariablesHandling.REMOVE);
         filteredShell.setConfiguredLocalRules(Collections.singletonList(localRule));
         p.getBuildersList().add(filteredShell);
 
