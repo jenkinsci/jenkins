@@ -31,7 +31,7 @@ import hudson.model.User;
 import java.io.ByteArrayInputStream;
 import jenkins.model.Jenkins;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

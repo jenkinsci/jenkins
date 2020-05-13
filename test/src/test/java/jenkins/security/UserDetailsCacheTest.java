@@ -33,7 +33,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for {@link UserDetailsCache}.
