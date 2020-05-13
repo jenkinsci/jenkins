@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests without a running Jenkins for Java11 Telemetry of ClassNotFoundException.
