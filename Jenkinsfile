@@ -5,6 +5,13 @@
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
  */
 
+/*
+
+ I want to submit a request to allow users to lock jenkins jobs while they are being edited. the lock could automatically expire 10 minutes after the
+ most recent change to the config etc.
+
+*/
+
 def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
 
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
