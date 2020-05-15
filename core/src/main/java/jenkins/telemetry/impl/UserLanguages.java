@@ -24,6 +24,7 @@
 package jenkins.telemetry.impl;
 
 import hudson.Extension;
+import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.PluginServletFilter;
 import jenkins.telemetry.Telemetry;
@@ -94,7 +95,7 @@ public class UserLanguages extends Telemetry {
         return payload;
     }
 
-    @Initializer
+    @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
     public static void setUpFilter() {
         Filter filter = new AcceptLanguageFilter();
         if (!PluginServletFilter.hasFilter(filter)) {
