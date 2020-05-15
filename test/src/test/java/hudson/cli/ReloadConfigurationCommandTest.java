@@ -64,7 +64,10 @@ public class ReloadConfigurationCommandTest {
         ReloadConfigurationCommand cmd = new ReloadConfigurationCommand();
         cmd.setTransportAuth(User.get("user").impersonate()); // TODO https://github.com/jenkinsci/jenkins-test-harness/pull/53 use CLICommandInvoker.asUser
         command = new CLICommandInvoker(j, cmd);
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.MANAGE).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toAuthenticated()
+                .grant(Jenkins.MANAGE).everywhere().toAuthenticated()
+        );
     }
 
     @Test
@@ -74,7 +77,7 @@ public class ReloadConfigurationCommandTest {
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Overall/Manage permission"));
+        assertThat(result.stderr(), containsString("user is missing the Overall/Administer permission"));
     }
 
     @Test
