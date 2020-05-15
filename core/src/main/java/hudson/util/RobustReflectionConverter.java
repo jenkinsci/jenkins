@@ -376,11 +376,13 @@ public class RobustReflectionConverter implements Converter {
             } catch (Throwable t) {
                 // it should be already reported, but we report with INFO just in case
                 StringBuilder message = new StringBuilder("There was a problem reporting unmarshalling field errors");
+                Level level = Level.WARNING;
                 if (t instanceof IllegalStateException && t.getMessage().contains("Expected 1 instance of " + OldDataMonitor.class.getName())) {
                     message.append(". Make sure this code is executed after InitMilestone.EXTENSIONS_AUGMENTED stage, for example in Plugin#postInitialize instead of Plugin#start");
+                    level = Level.INFO; // it was reported when getting the singleton for OldDataMonitor
                 }
                 // it should be already reported, but we report with INFO just in case
-                LOGGER.log(Level.INFO, message.toString(), t);
+                LOGGER.log(level, message.toString(), t);
             }
             context.put("ReadError", null);
         }
