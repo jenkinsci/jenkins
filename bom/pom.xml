@@ -413,9 +413,9 @@ THE SOFTWARE.
         <version>1.1-jenkins-20111212</version>
       </dependency>
       <dependency>
-        <groupId>javax.servlet.jsp.jstl</groupId>
-        <artifactId>javax.servlet.jsp.jstl-api</artifactId>
-        <version>1.2.1</version>
+        <groupId>jakarta.servlet.jsp.jstl</groupId>
+        <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+        <version>1.2.7</version>
       </dependency>
       <dependency>
         <groupId>jaxen</groupId>
@@ -434,7 +434,7 @@ THE SOFTWARE.
         <artifactId>spring-core</artifactId>
         <version>${spring.version}</version>
       </dependency>
-      <dependency><!-- Jenkins core doesn't use it but HUDSON-3811 requires us to put it. -->
+      <dependency><!-- Jenkins core doesn't use it but JENKINS-3881 requires us to put it. -->
         <groupId>org.springframework</groupId>
         <artifactId>spring-aop</artifactId>
         <version>${spring.version}</version>
