@@ -31,7 +31,6 @@ THE SOFTWARE.
     <version>${revision}${changelist}</version>
   </parent>
 
-  <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-bom</artifactId>
   <packaging>pom</packaging>
 
@@ -52,7 +51,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
-        <version>3.1.11</version>
+        <version>4.0.1</version>
       </dependency>
       <dependency>
         <groupId>net.jcip</groupId>
@@ -62,7 +61,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.7</version>
+        <version>1.10.8</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>

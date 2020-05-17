@@ -31,7 +31,10 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import hudson.util.StreamTaskListener;
 import org.junit.Rule;

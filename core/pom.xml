@@ -447,9 +447,9 @@ THE SOFTWARE.
       <artifactId>powermock-api-mockito2</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>javax.servlet.jsp.jstl</groupId>
-      <artifactId>javax.servlet.jsp.jstl-api</artifactId>
+    <dependency><!-- needed by Jelly -->
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -34,7 +34,6 @@ import java.util.logging.Logger;
  * Use {@link Secret} instead.
  *
  * @author Kohsuke Kawaguchi
- * @see Protector
  */
 public class Scrambler {
     private static final Logger LOGGER = Logger.getLogger(Scrambler.class.getName());

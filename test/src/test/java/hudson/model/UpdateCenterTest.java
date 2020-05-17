@@ -33,7 +33,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Date;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import org.junit.Test;
 

@@ -11,7 +11,7 @@ function checkPluginsWithoutWarnings() {
 Behaviour.specify("#filter-box", '_table', 0, function(e) {
     function applyFilter() {
         var filter = e.value.toLowerCase().trim();
-        var filterParts = filter.split(/ +/).filter (word => word.length > 0);
+        var filterParts = filter.split(/ +/).filter (function(word) { return word.length > 0; });
         var items = document.getElementsBySelector("TR.plugin");
         var anyVisible = false;
         for (var i=0; i<items.length; i++) {

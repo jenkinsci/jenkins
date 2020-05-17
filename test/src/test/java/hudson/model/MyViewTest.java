@@ -35,7 +35,9 @@ import org.acegisecurity.context.SecurityContextHolder;
 import static org.hamcrest.Matchers.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import org.jvnet.hudson.test.LoggerRule;
 

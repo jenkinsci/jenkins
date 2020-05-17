@@ -49,7 +49,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;

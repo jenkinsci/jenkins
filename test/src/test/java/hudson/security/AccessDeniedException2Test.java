@@ -26,7 +26,9 @@ package hudson.security;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import java.net.HttpURLConnection;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import jenkins.model.Jenkins;

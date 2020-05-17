@@ -2,8 +2,6 @@
 
 # About
 
-[![Weekly Release](https://img.shields.io/badge/dynamic/json.svg?url=https://updates.jenkins.io/update-center.actual.json&label=Weekly%20Release&query=$.core.version&color=green)](https://jenkins.io/changelog/)
-[![LTS Release](https://img.shields.io/badge/dynamic/json.svg?url=https://updates.jenkins.io/stable/update-center.actual.json&label=LTS%20Release&query=$.core.version&color=orange)](https://jenkins.io/changelog-stable/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 
 In a nutshell, Jenkins is the leading open-source automation server. 
