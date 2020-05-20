@@ -34,6 +34,9 @@ THE SOFTWARE.
     <st:attribute name="name">
       Optional attribute to create a JSON object from this section.
     </st:attribute>
+    <st:attribute name="icon">
+      An optional URL to an icon to put before the name in the section header.
+    </st:attribute>
   </st:documentation>
 
   <st:adjunct includes="lib.form.section_" />
@@ -41,6 +44,9 @@ THE SOFTWARE.
     <j:if test="${attrs.title!=null}">
       <f:block>
         <div class="section-header">
+          <j:if test="${attrs.icon!=null}">
+            <img src="${icon}"/>
+          </j:if>
           ${title}
         </div>
       </f:block>
