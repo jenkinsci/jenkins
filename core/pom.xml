@@ -595,12 +595,6 @@ THE SOFTWARE.
       <version>2.2.1</version>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>org.jenkins-ci.main</groupId>
-          <artifactId>jenkins-test-harness</artifactId>
-          <version>2.63</version>
-          <scope>test</scope>
-      </dependency>
   </dependencies>
 
   <build>
