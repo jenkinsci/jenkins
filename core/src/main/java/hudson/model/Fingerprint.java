@@ -34,13 +34,10 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.BulkChange;
 import hudson.Extension;
 import hudson.model.listeners.ItemListener;
-import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.util.AtomicFileWriter;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
 import hudson.util.PersistedList;
@@ -56,7 +53,6 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +62,6 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -928,6 +923,15 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Gets the MD5 byte array.
+     *
+     * @since TODO
+     */
+    public @NonNull byte[] getMd5sum() {
+        return md5sum;
+    }
+
+    /**
      * Gets the timestamp when this record is created.
      */
     @Exported
@@ -1194,6 +1198,15 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Returns the persisted facets.
+     *
+     * @since TODO
+     */
+    public @NonNull PersistedList<FingerprintFacet> getPersistedFacets() {
+        return facets;
+    }
+
+    /**
      * Sorts {@link FingerprintFacet}s by their timestamps.
      * @return Sorted list of {@link FingerprintFacet}s 
      */
@@ -1234,74 +1247,19 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * Save the settings to a file.
+     * Save the Fingerprint in the Fingerprint Storage
      * @throws IOException Save error
      */
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))   return;
-
-        long start=0;
-        if(logger.isLoggable(Level.FINE))
-            start = System.currentTimeMillis();
-
-        File file = getFingerprintFile(md5sum);
-        save(file);
-        SaveableListener.fireOnChange(this, getConfigFile(file));
-
-        if(logger.isLoggable(Level.FINE))
-            logger.fine("Saving fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
+        FingerprintStorage.get().save(this);
     }
 
+    /**
+     * Save the Fingerprint in the given file locally
+     * @throws IOException Save error
+     */
     void save(File file) throws IOException {
-        if (facets.isEmpty()) {
-            file.getParentFile().mkdirs();
-            // JENKINS-16301: fast path for the common case.
-            AtomicFileWriter afw = new AtomicFileWriter(file);
-            try (PrintWriter w = new PrintWriter((afw))) {
-                w.println("<?xml version='1.1' encoding='UTF-8'?>");
-                w.println("<fingerprint>");
-                w.print("  <timestamp>");
-                w.print(DATE_CONVERTER.toString(timestamp));
-                w.println("</timestamp>");
-                if (original != null) {
-                    w.println("  <original>");
-                    w.print("    <name>");
-                    w.print(Util.xmlEscape(original.name));
-                    w.println("</name>");
-                    w.print("    <number>");
-                    w.print(original.number);
-                    w.println("</number>");
-                    w.println("  </original>");
-                }
-                w.print("  <md5sum>");
-                w.print(Util.toHexString(md5sum));
-                w.println("</md5sum>");
-                w.print("  <fileName>");
-                w.print(Util.xmlEscape(fileName));
-                w.println("</fileName>");
-                w.println("  <usages>");
-                for (Map.Entry<String,RangeSet> e : usages.entrySet()) {
-                    w.println("    <entry>");
-                    w.print("      <string>");
-                    w.print(Util.xmlEscape(e.getKey()));
-                    w.println("</string>");
-                    w.print("      <ranges>");
-                    w.print(RangeSet.ConverterImpl.serialize(e.getValue()));
-                    w.println("</ranges>");
-                    w.println("    </entry>");
-                }
-                w.println("  </usages>");
-                w.println("  <facets/>");
-                w.print("</fingerprint>");
-                w.flush();
-                afw.commit();
-            } finally {
-                afw.abort();
-            }
-        } else {
-            // Slower fallback that can persist facets.
-            getConfigFile(file).write(this);
-        }
+        FileFingerprintStorage.save(this, file);
     }
 
     /**
@@ -1350,14 +1308,14 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * The file we save our configuration.
      */
-    private static @NonNull XmlFile getConfigFile(@NonNull File file) {
+    public static @NonNull XmlFile getConfigFile(@NonNull File file) {
         return new XmlFile(XSTREAM,file);
     }
 
     /**
      * Determines the file name from md5sum.
      */
-    private static @NonNull File getFingerprintFile(@NonNull byte[] md5sum) {
+    public static @NonNull File getFingerprintFile(@NonNull byte[] md5sum) {
         assert md5sum.length==16;
         return new File( Jenkins.get().getRootDir(),
             "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
@@ -1369,54 +1327,12 @@ public class Fingerprint implements ModelObject, Saveable {
      * malformed.
      */
     /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
-        return load(getFingerprintFile(md5sum));
+        return FingerprintStorage.get().load(md5sum);
     }
     /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
-        XmlFile configFile = getConfigFile(file);
-        if(!configFile.exists())
-            return null;
-
-        long start=0;
-        if(logger.isLoggable(Level.FINE))
-            start = System.currentTimeMillis();
-
-        try {
-            Object loaded = configFile.read();
-            if (!(loaded instanceof Fingerprint)) {
-                throw new IOException("Unexpected Fingerprint type. Expected " + Fingerprint.class + " or subclass but got "
-                        + (loaded != null ? loaded.getClass() : "null"));
-            }
-            Fingerprint f = (Fingerprint) loaded;
-            if(logger.isLoggable(Level.FINE))
-                logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
-            if (f.facets==null)
-                f.facets = new PersistedList<>(f);
-            for (FingerprintFacet facet : f.facets)
-                facet._setOwner(f);
-            return f;
-        } catch (IOException e) {
-            if(file.exists() && file.length()==0) {
-                // Despite the use of AtomicFile, there are reports indicating that people often see
-                // empty XML file, presumably either due to file system corruption (perhaps by sudden
-                // power loss, etc.) or abnormal program termination.
-                // generally we don't want to wipe out user data just because we can't load it,
-                // but if the file size is 0, which is what's reported in HUDSON-2012, then it seems
-                // like recovering it silently by deleting the file is not a bad idea.
-                logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
-                file.delete();
-                return null;
-            }
-            String parseError = messageOfParseException(e);
-            if (parseError != null) {
-                logger.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
-                file.delete();
-                return null;
-            }
-            logger.log(Level.WARNING, "Failed to load "+configFile,e);
-            throw e;
-        }
+        return FileFingerprintStorage.load(file);
     }
-    private static String messageOfParseException(Throwable t) {
+    static String messageOfParseException(Throwable t) {
         if (t instanceof XmlPullParserException || t instanceof EOFException) {
             return t.getMessage();
         }
