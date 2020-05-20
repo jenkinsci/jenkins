@@ -39,6 +39,7 @@ import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -46,6 +47,7 @@ import org.junit.rules.TemporaryFolder;
 public class FingerprintTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @Rule public JenkinsRule j = new JenkinsRule();
     
     @Test public void rangeSet() {
         RangeSet rs = new RangeSet();
