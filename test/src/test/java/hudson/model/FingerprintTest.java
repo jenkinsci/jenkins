@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -43,10 +44,12 @@ import java.util.Map;
 import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Before;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.CreateFileBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.Issue;
@@ -71,15 +74,63 @@ import static org.hamcrest.Matchers.nullValue;
  * @author Oleg Nenashev
  */
 public class FingerprintTest {
+
+    private static final byte[] SOME_MD5 = toByteArray(Util.getDigestOf("whatever"));
+
+    private static byte[] toByteArray(String md5sum) {
+        byte[] data = new byte[16];
+        for( int i=0; i<md5sum.length(); i+=2 )
+            data[i/2] = (byte)Integer.parseInt(md5sum.substring(i,i+2),16);
+        return data;
+    }
     
     @Rule
     public JenkinsRule rule = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
     
     @Before
     public void setupRealm() {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
     }
-    
+
+    @Test
+    public void roundTrip() throws Exception {
+        Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff&more.jar", SOME_MD5);
+        f.addWithoutSaving("some", 1);
+        f.addWithoutSaving("some", 2);
+        f.addWithoutSaving("some", 3);
+        f.addWithoutSaving("some", 10);
+        f.addWithoutSaving("other", 6);
+        File xml = new File(new File(tmp.getRoot(), "dir"), "fp.xml");
+        f.save(xml);
+        Fingerprint f2 = Fingerprint.load(xml);
+        assertNotNull(f2);
+        assertEquals(f.toString(), f2.toString());
+        f.facets.setOwner(Saveable.NOOP);
+        f.facets.add(new TestFacet(f, 123, "val"));
+        f.save(xml);
+        //System.out.println(FileUtils.readFileToString(xml));
+        f2 = Fingerprint.load(xml);
+        assertEquals(f.toString(), f2.toString());
+        assertEquals(1, f2.facets.size());
+        TestFacet facet = (TestFacet) f2.facets.get(0);
+        assertEquals(f2, facet.getFingerprint());
+    }
+
+    public static final class TestFacet extends FingerprintFacet {
+        final String property;
+        public TestFacet(Fingerprint fingerprint, long timestamp, String property) {
+            super(fingerprint, timestamp);
+            this.property = property;
+        }
+        @Override public String toString() {
+            return "TestFacet[" + property + "@" + getTimestamp() + "]";
+        }
+    }
+
+
     @Test
     public void shouldCreateFingerprintsForWorkspace() throws Exception {
         FreeStyleProject project = rule.createFreeStyleProject();

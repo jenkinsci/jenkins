@@ -234,46 +234,6 @@ public class FingerprintTest {
         assertNotNull(fp.getUsages());
     }
 
-    @Test public void roundTrip() throws Exception {
-        Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff&more.jar", SOME_MD5);
-        f.addWithoutSaving("some", 1);
-        f.addWithoutSaving("some", 2);
-        f.addWithoutSaving("some", 3);
-        f.addWithoutSaving("some", 10);
-        f.addWithoutSaving("other", 6);
-        File xml = new File(new File(tmp.getRoot(), "dir"), "fp.xml");
-        f.save(xml);
-        Fingerprint f2 = Fingerprint.load(xml);
-        assertNotNull(f2);
-        assertEquals(f.toString(), f2.toString());
-        f.facets.setOwner(Saveable.NOOP);
-        f.facets.add(new TestFacet(f, 123, "val"));
-        f.save(xml);
-        //System.out.println(FileUtils.readFileToString(xml));
-        f2 = Fingerprint.load(xml);
-        assertEquals(f.toString(), f2.toString());
-        assertEquals(1, f2.facets.size());
-        TestFacet facet = (TestFacet) f2.facets.get(0);
-        assertEquals(f2, facet.getFingerprint());
-    }
-    private static byte[] toByteArray(String md5sum) {
-        byte[] data = new byte[16];
-        for( int i=0; i<md5sum.length(); i+=2 )
-            data[i/2] = (byte)Integer.parseInt(md5sum.substring(i,i+2),16);
-        return data;
-    }
-    private static final byte[] SOME_MD5 = toByteArray(Util.getDigestOf("whatever"));
-    public static final class TestFacet extends FingerprintFacet {
-        final String property;
-        public TestFacet(Fingerprint fingerprint, long timestamp, String property) {
-            super(fingerprint, timestamp);
-            this.property = property;
-        }
-        @Override public String toString() {
-            return "TestFacet[" + property + "@" + getTimestamp() + "]";
-        }
-    }
-
     @Test public void fromString() throws Exception {
         //
         // Single
