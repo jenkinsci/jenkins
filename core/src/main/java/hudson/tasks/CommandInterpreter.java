@@ -78,6 +78,10 @@ public abstract class CommandInterpreter extends Builder {
         return false;
     }
 
+    //To support plugins for pipeline. 
+    public boolean perform(Run<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
+        //Code
+    }
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
         FilePath ws = build.getWorkspace();
         if (ws == null) {
