@@ -923,12 +923,15 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * Gets the MD5 byte array.
+     * Converts md5 hash string to byte array.
      *
      * @since TODO
      */
-    public @NonNull byte[] getMd5sum() {
-        return md5sum;
+    public static byte[] toByteArray(String md5sum) {
+        byte[] data = new byte[16];
+        for( int i=0; i<md5sum.length(); i+=2 )
+            data[i/2] = (byte)Integer.parseInt(md5sum.substring(i,i+2),16);
+        return data;
     }
 
     /**

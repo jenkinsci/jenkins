@@ -106,7 +106,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();
 
-        File file = Fingerprint.getFingerprintFile(fp.getMd5sum());
+        File file = Fingerprint.getFingerprintFile(Fingerprint.toByteArray(fp.getHashString()));
         save(fp, file);
         SaveableListener.fireOnChange(fp, Fingerprint.getConfigFile(file));
 
