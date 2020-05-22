@@ -241,7 +241,11 @@ public class CLI {
             return -1;
         }
 
-        if (auth == null) {
+        if (auth != null && bearer != null) {
+            LOGGER.warning("-auth and -bearer are mutually exclusive");
+        }
+
+        if (auth == null && bearer == null) {
             // -auth option not set
             if (StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv)) {
                 auth = StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
