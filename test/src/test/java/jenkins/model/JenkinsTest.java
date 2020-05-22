@@ -719,7 +719,7 @@ public class JenkinsTest {
         WebClient wc = j.createWebClient().login("admin");
         wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'pwned'"), HttpMethod.POST));
         //Assert that the script's contents was the first INFO log from jenkins.model.Jenkins
-	assertTrue(lr.getMessages().get(0).contains("1|admin|ScriptConsole|cHJpbnQgJ3B3bmVkJw=="));
+        assertTrue(lr.getMessages().get(0).contains("1|admin|ScriptConsole|cHJpbnQgJ3B3bmVkJw=="));
     }
 
 }
