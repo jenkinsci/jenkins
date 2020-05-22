@@ -82,8 +82,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.LoggerRule;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
@@ -704,4 +706,20 @@ public class JenkinsTest {
     public void jobCreatedByInitializerIsRetained() {
         assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
     }
+
+    @Test
+    @Issue("JENKINS-62397")
+    public void testScriptConsoleLogging() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        //Create logging listener
+        LoggerRule lr = new LoggerRule();
+        lr.record("jenkins.model.Jenkins",Level.INFO);
+        lr.capture(1);
+        //Send script
+        WebClient wc = j.createWebClient().login("admin");
+        wc.getPage(new WebRequest(wc.createCrumbedUrl("scriptText?script=print 'pwned'"), HttpMethod.POST));
+        //Assert that the script's contents was the first INFO log from jenkins.model.Jenkins
+	assertTrue(lr.getMessages().get(0).contains("1|admin|ScriptConsole|cHJpbnQgJ3B3bmVkJw=="));
+    }
+
 }
