@@ -449,7 +449,7 @@ public abstract class Slave extends Node implements Serializable {
             return res;
         }
 
-        /** Useful for {@code JenkinsRule.createSlave}, {@code ./mvnw jetty:run}, etc. */
+        /** Useful for {@code JenkinsRule.createSlave}, {@code mvn jetty:run}, etc. */
         private @CheckForNull URL findExecutableJar(File notActuallyJAR, Class<?> mainClass) throws IOException {
             if (notActuallyJAR.getName().equals("classes")) {
                 File[] siblings = notActuallyJAR.getParentFile().listFiles();

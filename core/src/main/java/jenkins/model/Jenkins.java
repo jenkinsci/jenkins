@@ -3961,7 +3961,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
-                result &= configureDescriptor(req, json, d);
+                result &= configureDescriptor(req,json,d);
+
             save();
             updateComputerList();
             if (result)
@@ -5354,7 +5355,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
-     * (such as when Jenkins is run with {@code ./mvnw jetty:run})
+     * (such as when Jenkins is run with {@code mvn jetty:run})
      */
     public @CheckForNull static VersionNumber getVersion() {
         return toVersion(VERSION);
@@ -5365,7 +5366,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #doConfigSubmit(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}.
      * <p>
      * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
-     * (such as when Jenkins is run with {@code ./mvnw jetty:run})
+     * (such as when Jenkins is run with {@code mvn jetty:run})
      * @since 2.0
      */
     @Restricted(NoExternalUse.class)
@@ -5375,7 +5376,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Parses a version string into {@link VersionNumber}, or null if it's not parseable as a version number
-     * (such as when Jenkins is run with {@code ./mvnw jetty:run})
+     * (such as when Jenkins is run with {@code mvn jetty:run})
      */
     private static @CheckForNull VersionNumber toVersion(@CheckForNull String versionString) {
         if (versionString == null) {
