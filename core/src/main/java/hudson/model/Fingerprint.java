@@ -1255,7 +1255,8 @@ public class Fingerprint implements ModelObject, Saveable {
      * @throws IOException Save error
      */
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this)) return;
+        if(BulkChange.contains(this))
+            return;
 
         long start=0;
         if(logger.isLoggable(Level.FINE))
@@ -1340,7 +1341,16 @@ public class Fingerprint implements ModelObject, Saveable {
      * malformed.
      */
     /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
-        return FingerprintStorage.get().load(md5sum);
+        long start=0;
+        if(logger.isLoggable(Level.FINE))
+            start = System.currentTimeMillis();
+
+        Fingerprint loaded = FingerprintStorage.get().load(md5sum);
+
+        if(logger.isLoggable(Level.FINE))
+            logger.fine("Loading fingerprint took "+(System.currentTimeMillis()-start)+"ms");
+
+        return loaded;
     }
     /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         return FileFingerprintStorage.load(file);

@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
-    private static final Logger logger = Logger.getLogger(Fingerprint.class.getName());
+    private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
 
     public @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
@@ -56,10 +56,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
         if(!configFile.exists())
             return null;
 
-        long start=0;
-        if(logger.isLoggable(Level.FINE))
-            start = System.currentTimeMillis();
-
         try {
             Object loaded = configFile.read();
             if (!(loaded instanceof Fingerprint)) {
@@ -67,8 +63,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
                         + (loaded != null ? loaded.getClass() : "null"));
             }
             Fingerprint f = (Fingerprint) loaded;
-            if(logger.isLoggable(Level.FINE))
-                logger.fine("Loading fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
             if (f.facets==null)
                 f.facets = new PersistedList<>(f);
             for (FingerprintFacet facet : f.facets)
