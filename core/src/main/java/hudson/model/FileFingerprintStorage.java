@@ -24,7 +24,6 @@
 package hudson.model;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
-import hudson.BulkChange;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
@@ -99,19 +98,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     public synchronized void save(Fingerprint fp) throws IOException {
-        if(BulkChange.contains(fp))
-            return;
-
-        long start=0;
-        if(logger.isLoggable(Level.FINE))
-            start = System.currentTimeMillis();
-
         File file = Fingerprint.getFingerprintFile(Fingerprint.toByteArray(fp.getHashString()));
         save(fp, file);
         SaveableListener.fireOnChange(fp, Fingerprint.getConfigFile(file));
-
-        if(logger.isLoggable(Level.FINE))
-            logger.fine("Saving fingerprint "+file+" took "+(System.currentTimeMillis()-start)+"ms");
     }
 
     static void save(Fingerprint fp, File file) throws IOException {

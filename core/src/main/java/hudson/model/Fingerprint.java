@@ -32,6 +32,7 @@ import com.thoughtworks.xstream.converters.basic.DateConverter;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.Extension;
@@ -1254,7 +1255,16 @@ public class Fingerprint implements ModelObject, Saveable {
      * @throws IOException Save error
      */
     public synchronized void save() throws IOException {
+        if(BulkChange.contains(this)) return;
+
+        long start=0;
+        if(logger.isLoggable(Level.FINE))
+            start = System.currentTimeMillis();
+
         FingerprintStorage.get().save(this);
+
+        if(logger.isLoggable(Level.FINE))
+            logger.fine("Saving fingerprint took "+(System.currentTimeMillis()-start)+"ms");
     }
 
     /**
