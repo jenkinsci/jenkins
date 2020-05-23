@@ -222,8 +222,8 @@ public class Main {
     public static boolean isUnitTest = false;
 
     /**
-     * Set to true if we are running inside {@code mvn jetty:run}.
-     * This is also set if running inside {@code mvn hpi:run} since plugins parent POM 2.30.
+     * Set to true if we are running inside {@code ./mvnw jetty:run}.
+     * This is also set if running inside {@code ./mvnw hpi:run} since plugins parent POM 2.30.
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
     public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName() + ".development");

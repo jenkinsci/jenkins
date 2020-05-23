@@ -11,8 +11,6 @@ This page provides information about contributing code to the Jenkins core codeb
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
   * Java Development Kit (JDK) 11 or 8.
     In the Jenkins project we usually use [Eclipse Adoptium](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
-  * Apache Maven 3.8.1 or above. You can [download Maven here].
-    In the Jenkins project we usually use the most recent Maven release.
   * Any IDE which supports importing Maven projects.
   * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
     * Frontend tasks are run using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
@@ -31,7 +29,7 @@ You can read a description of the [building and debugging process here].
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
 ```sh
-mvn -am -pl war,bom -DskipTests -Dspotbugs.skip -Dspotless.check.skip clean install
+./mvnw -am -pl war,bom -DskipTests -Dspotbugs.skip -Dspotless.check.skip clean install
 ```
 
 The WAR file will be created in `war/target/jenkins.war`.
@@ -43,7 +41,7 @@ and then attach IDE Debugger to it.
 To launch a development instance, after the above command, run:
 
 ```sh
-mvn -pl war jetty:run
+./mvnw -pl war jetty:run
 ```
 
 (Beware that `maven-plugin` builds will not work in this mode, due to class loading conflicts.)
@@ -54,7 +52,7 @@ To work on the `war` module frontend assets, two processes are needed at the sam
 
 On one terminal, start a development server that will not process frontend assets:
 ```sh
-mvn -pl war jetty:run -Dskip.yarn
+./mvnw -pl war jetty:run -Dskip.yarn
 ```
 
 On another terminal, move to the war folder and start a [webpack](https://webpack.js.org/) dev server:

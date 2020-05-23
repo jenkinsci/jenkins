@@ -46,7 +46,7 @@ public class InitStrategy {
         List<File> r = new ArrayList<>();
 
         // the ordering makes sure that during the debugging we get proper precedence among duplicates.
-        // for example, while doing "mvn jpi:run" or "mvn hpi:run" on a plugin that's bundled with Jenkins, we want to the
+        // for example, while doing "./mvnw jpi:run" or "./mvnw hpi:run" on a plugin that's bundled with Jenkins, we want to the
         // *.jpl file to override the bundled jpi/hpi file.
         getBundledPluginsFromProperty(r);
 
@@ -70,7 +70,7 @@ public class InitStrategy {
     /**
      * Lists up additional bundled plugins from the system property {@code hudson.bundled.plugins}.
      * Since 1.480 glob syntax is supported.
-     * For use in {@code mvn jetty:run}.
+     * For use in {@code ./mvnw jetty:run}.
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
     protected void getBundledPluginsFromProperty(final List<File> r) {
