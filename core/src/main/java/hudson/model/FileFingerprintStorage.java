@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Extension
+@Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
     private static final Logger logger = Logger.getLogger(Fingerprint.class.getName());
