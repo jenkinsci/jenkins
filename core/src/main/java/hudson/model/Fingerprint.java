@@ -1211,6 +1211,15 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Sets the persisted facets.
+     *
+     * @since TODO
+     */
+    public @NonNull void setPersistedFacets(PersistedList<FingerprintFacet> facets) {
+        this.facets = facets;
+    }
+
+    /**
      * Sorts {@link FingerprintFacet}s by their timestamps.
      * @return Sorted list of {@link FingerprintFacet}s 
      */
