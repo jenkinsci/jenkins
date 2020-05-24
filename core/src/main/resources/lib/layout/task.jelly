@@ -56,6 +56,14 @@ THE SOFTWARE.
 
       This is useful for showing links to restricted pages, as showing
       them to unprivileged users don't make sense.
+      
+      If both permission and permissions is set, then permissions will be used
+    </st:attribute>
+    <st:attribute name="permissions">
+      If specified, the link will be only displayed when the current user has
+      one or more of the specified permissions against the "it" object.
+
+      If both permission and permissions is set, then permissions will be used
     </st:attribute>
     <st:attribute name="post" type="boolean">
       If true, send a POST rather than a GET request.
@@ -84,8 +92,19 @@ THE SOFTWARE.
     <j:set var="parentTagContext" value="${context.parent}"/>
     <d:invokeBody />
   </j:scope>
+  <j:if test="${attrs.permission != null}">
+    <j:set var="hasPermission" value="${h.hasPermission(it, attrs.permission)}" />
+  </j:if>
 
-  <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
+  <j:if test="${attrs.permissions != null}">
+    <j:set var="hasPermission" value="${h.hasAnyPermission(it, attrs.permissions)}" />
+  </j:if>
+
+  <j:if test="${attrs.permission == null and attrs.permissions == null}">
+    <j:set var="hasPermission" value="true" />
+  </j:if>
+
+  <j:if test="${hasPermission}">
     <j:choose>
       <j:when test="${parentTagContext!=null}">
         <j:if test="${isCurrent or hasMatchingChild}">
