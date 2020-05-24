@@ -28,6 +28,10 @@ import hudson.ExtensionPoint;
 
 import java.io.IOException;
 
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.Restricted;
+
+@Restricted(Beta.class)
 public abstract class FingerprintStorage implements ExtensionPoint {
 
     static FingerprintStorage get(){
