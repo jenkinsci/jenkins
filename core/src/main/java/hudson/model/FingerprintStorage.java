@@ -31,6 +31,11 @@ import java.io.IOException;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
 
+/**
+ * Pluggable fingerprint storage API for fingerprints.
+ *
+ * @author Sumit Sarin
+ */
 @Restricted(Beta.class)
 public abstract class FingerprintStorage implements ExtensionPoint {
 

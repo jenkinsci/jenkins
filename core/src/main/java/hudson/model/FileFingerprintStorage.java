@@ -41,6 +41,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Default file system storage implementation for fingerprints.
+ *
+ * @author Sumit Sarin
+ */
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
