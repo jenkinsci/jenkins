@@ -28,6 +28,9 @@ Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
 # Contributing to Jenkins
 Follow the [contributing guidelines](CONTRIBUTING.md) if you want to propose a change in the Jenkins core.
 
+# Maintainers guidelines
+Documentation for Jenkins core maintainers are in the [maintainers guidelines](docs/MAINTAINERS.adoc).
+
 # News and Website
 All information about Jenkins can be found on our [website]. Follow us on Twitter [@jenkinsci].
 
