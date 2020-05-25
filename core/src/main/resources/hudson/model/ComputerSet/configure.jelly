@@ -40,12 +40,12 @@ THE SOFTWARE.
                           descriptors="${it.nodeMonitorDescriptors}"
                           instances="${it.nonIgnoredMonitors}" />
 
-        <j:if test="${h.hasPermission(app.MANAGE)}">
+        <l:hasAdministerOrManage>
           <f:bottomButtonBar>
             <f:submit value="${%OK}" />
             <f:apply />
           </f:bottomButtonBar>
-        </j:if>
+        </l:hasAdministerOrManage>
       </f:form>
       <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
