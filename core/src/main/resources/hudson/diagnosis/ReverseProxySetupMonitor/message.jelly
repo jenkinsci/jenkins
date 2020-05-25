@@ -22,12 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
   <div id="redirect-error" class="alert alert-danger reverse-proxy__hidden"
        data-url="${rootURL}/${it.url}/test" data-context="${rootURL}">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%More Info}"/>
-      <f:submit name="no" value="${%Dismiss}"/>
+      <l:isAdmin>
+        <f:submit name="no" value="${%Dismiss}"/>
+      </l:isAdmin>
     </form>
     <div>${%blurb}</div>
     <div class="js-context-message reverse-proxy__hidden">${%missingContextMessage(rootURL)}</div>

@@ -31,7 +31,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runner.RunWith;
 import hudson.model.AbstractProject.AbstractProjectDescriptor.AutoCompleteSeeder;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *

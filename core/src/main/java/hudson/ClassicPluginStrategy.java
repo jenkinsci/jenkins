@@ -271,8 +271,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * @see DetachedPluginsUtil#getImpliedDependencies(String, String)
+     *
+     * @deprecated since 2.163
      */
-    @Deprecated // since TODO
+    @Deprecated
     @NonNull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         return DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion);

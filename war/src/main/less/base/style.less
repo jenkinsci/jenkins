@@ -25,21 +25,6 @@
 @import '../abstracts/font.less';
 @import '../abstracts/colors.less';
 
-/* task */
-
-#tasks {
-  margin-bottom: 20px;
-  display: inline-block;
-}
-
-#tasks .task {
-  margin-bottom: 4px;
-  max-width: 325px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
 /* buildQueue */
 
 #buildQueue {
@@ -445,22 +430,6 @@ pre.console {
 .jenkins-not-applicable {
   color: darkgrey;
   font-style: italic;
-}
-
-#jenkins .task-link {
-    text-decoration: none;
-}
-
-#jenkins .task-link:hover {
-    text-decoration: underline;
-}
-
-.task {
-  white-space: nowrap;
-}
-
-.subtasks {
-  padding-left: 1em;
 }
 
 .main-table {
@@ -1761,21 +1730,23 @@ table.progress-bar.red td.progress-bar-done {
   animation: fadeout 350ms ease-in 1 normal forwards;
 }
 
-@-webkit-keyframes fadein{
+@keyframes fadein{
   from{
     opacity: 0;
   }
   to{
     opacity: 1;
+    visibility: visible;
   }
 }
 
-@-webkit-keyframes fadeout{
+@keyframes fadeout{
   from{
     opacity: 1;
   }
   to{
     opacity: 0;
+    visibility: hidden;
   }
 }
 
