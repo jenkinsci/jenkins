@@ -682,4 +682,63 @@ public class PasswordTest {
             return "stringPassword";
         }
     }
+
+    @Test
+    public void computerExtendedReadNoSecretsRevealed() throws Exception {
+        Computer computer = j.jenkins.getComputers()[0];
+        computer.addAction(new SecuredAction());
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        final String ADMIN = "admin";
+        final String READONLY = "readonly";
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                // full access
+                .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
+
+                // Extended access
+                .grant(Computer.EXTENDED_READ).everywhere().to(READONLY)
+                .grant(Jenkins.READ).everywhere().to(READONLY)
+
+        );
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        {
+            wc.login(READONLY);
+            HtmlPage page = wc.goTo("computer/(master)/secured/");
+
+            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            assertThat(value, is("********"));
+        }
+
+        {
+            wc.login(ADMIN);
+            HtmlPage page = wc.goTo("computer/(master)/secured/");
+
+            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            assertThat(Secret.fromString(value).getPlainText(), is("abcdefgh"));
+        }
+    }
+
+
+    public static class SecuredAction implements Action {
+
+        public final Secret secret = Secret.fromString("abcdefgh");
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Secured";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "secured";
+        }
+    }
 }

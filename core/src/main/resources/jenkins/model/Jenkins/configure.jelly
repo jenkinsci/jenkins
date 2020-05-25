@@ -54,9 +54,9 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
 
-      <l:isAdmin>
+      <l:hasPermission permission="${app.SYSTEM_READ}">
         <st:include page="_cloud-note.jelly"/>
-      </l:isAdmin>
+      </l:hasPermission>
 
       <l:hasAdministerOrManage>
         <f:bottomButtonBar>

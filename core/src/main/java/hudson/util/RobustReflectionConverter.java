@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static java.util.logging.Level.FINE;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import net.jcip.annotations.GuardedBy;
@@ -365,7 +367,23 @@ public class RobustReflectionConverter implements Converter {
 
         // Report any class/field errors in Saveable objects
         if (context.get("ReadError") != null && context.get("Saveable") == result) {
-            OldDataMonitor.report((Saveable)result, (ArrayList<Throwable>)context.get("ReadError"));
+            // Avoid any error in OldDataMonitor to be catastrophic. See JENKINS-62231 and JENKINS-59582
+            // The root cause is the OldDataMonitor extension is not ready before a plugin triggers an error, for 
+            // example when trying to load a field that was created by a new version and you downgrade to the previous
+            // one.
+            try {
+                OldDataMonitor.report((Saveable) result, (ArrayList<Throwable>) context.get("ReadError"));
+            } catch (Throwable t) {
+                // it should be already reported, but we report with INFO just in case
+                StringBuilder message = new StringBuilder("There was a problem reporting unmarshalling field errors");
+                Level level = Level.WARNING;
+                if (t instanceof IllegalStateException && t.getMessage().contains("Expected 1 instance of " + OldDataMonitor.class.getName())) {
+                    message.append(". Make sure this code is executed after InitMilestone.EXTENSIONS_AUGMENTED stage, for example in Plugin#postInitialize instead of Plugin#start");
+                    level = Level.INFO; // it was reported when getting the singleton for OldDataMonitor
+                }
+                // it should be already reported, but we report with INFO just in case
+                LOGGER.log(level, message.toString(), t);
+            }
             context.put("ReadError", null);
         }
         return result;
