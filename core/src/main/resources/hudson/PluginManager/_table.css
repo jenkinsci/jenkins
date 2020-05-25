@@ -76,3 +76,7 @@ time {
 .hidden {
     display: none;
 }
+
+#plugins tr.unavailable {
+  background-color: #f4f4f4;
+}
