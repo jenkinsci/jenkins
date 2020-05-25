@@ -24,10 +24,12 @@
 
 package jenkins.management;
 
+import com.google.common.collect.Sets;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -53,9 +55,8 @@ public class SystemInfoLink extends ManagementLink {
 
     @NonNull
     @Override
-    public Permission getRequiredPermission() {
-        //This link is displayed to any user with permission to access the management menu
-        return Jenkins.READ;
+    public Set<Permission> getRequiredPermissions() {
+        return Sets.newHashSet(Jenkins.MANAGE, Jenkins.SYSTEM_READ);
     }
 
     @Override

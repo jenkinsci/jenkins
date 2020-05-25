@@ -4749,7 +4749,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (link.getIconFileName() == null) {
                 continue;
             }
-            if (!Jenkins.get().hasPermission(link.getRequiredPermission())) {
+            if (!Jenkins.get().hasAnyPermission(link.getRequiredPermissions().toArray(new Permission[0]))) {
                 continue;
             }
             byCategory.computeIfAbsent(link.getCategory(), c -> new ArrayList<>()).add(link);

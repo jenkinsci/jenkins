@@ -35,10 +35,7 @@ import org.jenkinsci.Symbol;
 @Extension(ordinal=100) @Symbol("manageJenkins")
 public class ManageJenkinsAction implements RootAction {
     public String getIconFileName() {
-        if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
-            return "gear2.png";
-        else
-            return null;
+        return "gear2.png";
     }
 
     public String getDisplayName() {

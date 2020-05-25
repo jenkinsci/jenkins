@@ -24,9 +24,11 @@
 
 package jenkins.management;
 
+import com.google.common.collect.Sets;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -54,8 +56,8 @@ public class ConfigureLink extends ManagementLink {
 
     @NonNull
     @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.READ;
+    public Set<Permission> getRequiredPermissions() {
+        return Sets.newHashSet(Jenkins.MANAGE, Jenkins.SYSTEM_READ);
     }
 
     @Override

@@ -23,11 +23,13 @@
  */
 package hudson.model;
 
+import com.google.common.collect.Sets;
 import hudson.ExtensionPoint;
 import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.security.Permission;
+import java.util.Set;
 import jenkins.model.Jenkins;
 
 import java.util.List;
@@ -126,6 +128,17 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      */
     public @NonNull Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
+    }
+
+    /**
+     * Returns the set of possible permissions required for user to see this management link on the "Manage Jenkins" page ({@link ManageJenkinsAction}).
+     * The user only needs one of the permissions to see the link.
+     *
+     * @since TODO
+     * @return the set of permission(s) required for the link to be shown on "Manage Jenkins".
+     */
+    public @NonNull Set<Permission> getRequiredPermissions() {
+        return Sets.newHashSet(getRequiredPermission());
     }
 
     /**
