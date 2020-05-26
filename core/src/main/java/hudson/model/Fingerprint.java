@@ -1206,7 +1206,7 @@ public class Fingerprint implements ModelObject, Saveable {
      *
      * @since TODO
      */
-    public @NonNull PersistedList<FingerprintFacet> getPersistedFacets() {
+    public PersistedList<FingerprintFacet> getPersistedFacets() {
         return facets;
     }
 
