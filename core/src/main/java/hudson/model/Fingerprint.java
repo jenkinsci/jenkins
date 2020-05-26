@@ -1355,6 +1355,7 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         Fingerprint loaded = FingerprintStorage.get().load(md5sum);
+        initFacets(loaded);
 
         if(logger.isLoggable(Level.FINE))
             logger.fine("Loading fingerprint took "+(System.currentTimeMillis()-start)+"ms");
@@ -1362,7 +1363,10 @@ public class Fingerprint implements ModelObject, Saveable {
         return loaded;
     }
     /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
-        return FileFingerprintStorage.load(file);
+        Fingerprint fingerprint = FileFingerprintStorage.load(file);
+        initFacets(fingerprint);
+
+        return fingerprint;
     }
     static String messageOfParseException(Throwable t) {
         if (t instanceof XmlPullParserException || t instanceof EOFException) {
@@ -1374,6 +1378,16 @@ public class Fingerprint implements ModelObject, Saveable {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Performs Initialization of facets on a new loaded Fingerprint.
+     */
+    private static void initFacets(Fingerprint fingerprint){
+        if (fingerprint.facets==null)
+            fingerprint.facets = new PersistedList<>(fingerprint);
+        for (FingerprintFacet facet : fingerprint.facets)
+            facet._setOwner(fingerprint);
     }
 
     @Override public String toString() {

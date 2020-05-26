@@ -68,10 +68,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
                         + (loaded != null ? loaded.getClass() : "null"));
             }
             Fingerprint f = (Fingerprint) loaded;
-            if (f.facets==null)
-                f.facets = new PersistedList<>(f);
-            for (FingerprintFacet facet : f.facets)
-                facet._setOwner(f);
             return f;
         } catch (IOException e) {
             if(file.exists() && file.length()==0) {
