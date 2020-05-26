@@ -39,7 +39,11 @@ public class ManageJenkinsAction implements RootAction {
     }
 
     public String getDisplayName() {
-        return Messages.ManageJenkinsAction_DisplayName();
+        if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.ADMINISTER)) {
+            return Messages.ManageJenkinsAction_DisplayName();
+        } else {
+            return Messages.ManageJenkinsAction_ReadOnlyDisplayName();
+        }
     }
 
     public String getUrlName() {
