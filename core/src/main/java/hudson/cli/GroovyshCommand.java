@@ -33,6 +33,8 @@ import org.codehaus.groovy.tools.shell.Shell;
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.PrintStream;
 import java.io.InputStream;
 import java.io.BufferedInputStream;
@@ -75,6 +77,9 @@ public class GroovyshCommand extends CLICommand {
         }
 
         Groovysh shell = createShell(stdin, stdout, stderr);
+
+        LOGGER.log(Level.INFO, "Administrative Groovy script shell spawned");
+
         return shell.run(commandLine.toString());
     }
 
@@ -111,5 +116,5 @@ public class GroovyshCommand extends CLICommand {
         shell.getImports().add("hudson.model.*");
         return shell;
     }
-
+    private static final Logger LOGGER = Logger.getLogger(GroovyshCommand.class.getName());
 }

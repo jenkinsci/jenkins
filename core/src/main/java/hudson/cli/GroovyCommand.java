@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Executes the specified groovy script.
@@ -68,6 +70,7 @@ public class GroovyCommand extends CLICommand {
         binding.setProperty("stderr",stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
+        LOGGER.log(Level.INFO, "Administrative Groovy script executed via CLI");
         groovy.run(loadScript(),"RemoteClass",remaining.toArray(new String[0]));
         return 0;
     }
@@ -84,5 +87,6 @@ public class GroovyCommand extends CLICommand {
         checkChannel();
         return null; // never called
     }
+    private static final Logger LOGGER = Logger.getLogger(GroovyshCommand.class.getName());
 }
 
