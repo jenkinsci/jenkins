@@ -562,4 +562,29 @@ public class FunctionsTest {
             return this;
         }
     }
+
+    @Test
+    @PrepareForTest(Stapler.class)
+    @Issue("JENKINS-62419")
+    public void testLocaleForItalian() throws Exception {
+        String contextPath = "/jenkins";
+        StaplerRequest req = createMockRequest(contextPath);
+        mockStatic(Stapler.class);
+        when(req.getLocale()).thenReturn(Locale.ITALIAN);
+        String localeDisplayLanguage = Functions.getLocale(req);
+        assertEquals("italiano", localeDisplayLanguage);
+    }
+
+    @Test
+    @PrepareForTest(Stapler.class)
+    @Issue("JENKINS-62419")
+    public void testLocaleForEnglish() throws Exception {
+        String contextPath = "/jenkins";
+        StaplerRequest req = createMockRequest(contextPath);
+        mockStatic(Stapler.class);
+        when(req.getLocale()).thenReturn(Locale.ENGLISH);
+        String localeDisplayLanguage = Functions.getLocale(req);
+        assertEquals("English", localeDisplayLanguage);
+    }
+
 }
