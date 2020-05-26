@@ -28,7 +28,10 @@ import hudson.ExtensionPoint;
 
 import java.io.IOException;
 
+import jenkins.util.SystemProperties;
+
 import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.Restricted;
 
 /**
@@ -39,8 +42,12 @@ import org.kohsuke.accmod.Restricted;
 @Restricted(Beta.class)
 public abstract class FingerprintStorage implements ExtensionPoint {
 
+    @Restricted(NoExternalUse.class)
+    private static final String fingerprintStorageEngine = SystemProperties.getString("FingerprintStorageEngine",
+            "hudson.model.FileFingerprintStorage");
+
     static FingerprintStorage get(){
-        return ExtensionList.lookup(FingerprintStorage.class).get(0);
+        return ExtensionList.lookup(FingerprintStorage.class).getDynamic(fingerprintStorageEngine);
     }
 
     public abstract void save(Fingerprint fp) throws IOException;
