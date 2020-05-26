@@ -19,7 +19,7 @@
     font-size: 1rem;
     line-height: 1.5;
     padding: 0 1.25rem;
-    background-color: #F8F8F8;
+    background-color: var(--breadcrumbs-bg);
 }
 
 #breadcrumbs {
@@ -65,7 +65,7 @@
 
     display: inline-block;
     display: inline-flex;
-    color: #4d545d;
+    color: var(--breadcrumbs-color--visited);
 }
 
 #breadcrumbs LI A:hover, #breadcrumbs LI A:focus {

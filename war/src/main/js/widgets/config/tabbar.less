@@ -37,13 +37,13 @@
   .showTabs,
   .noTabs {
     position: absolute;
-    border-radius: @radius;
+    border-radius: var(--radius);
     right: 5px;
     top: 5px;
     cursor: pointer;
     color: @solid-border;
     text-shadow: @brightest 0 1px 2px;
-    font-size: @font-size-sm;
+    font-size: var(--font-size-sm);
     padding: 3px 7px;
     display:none;
   }
@@ -208,7 +208,7 @@
         p,
         .help,
         .setting-description {
-          font-size: @font-size-base;
+          font-size: var(--font-size-base);
         }
       }
       td[colspan="4"]:empty{
@@ -282,8 +282,8 @@
           padding: 0 !important;
           margin: 0 !important;
           .border-radius-top(0) !important;
-          background-color: @danger;
-          color: @light-background;
+          background-color: var(--danger);
+          color: var(--light-background);
           border: 1px solid @danger-line;
           line-height: 12px !important;
           display: inline-block;

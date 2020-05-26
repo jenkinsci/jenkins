@@ -2,11 +2,11 @@
 @import '../abstracts/colors.less';
 
 .page-footer {
-  background-color: @breadcrumbs-bg;
-  border-top: 1px solid @breadcrumbs-border;
+  background-color: var(--breadcrumbs-bg);
+  border-top: 1px solid var(--breadcrumbs-border);
   width: 100%;
   clear: both;
-  font-size: @font-size-sm;
+  font-size: var(--font-size-sm);
 }
 
 .page-footer .container-fluid {
@@ -37,7 +37,7 @@
 }
 
 .page-footer__generated {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
   font-weight: bold;
 }
 
@@ -49,11 +49,7 @@
 
 .page-footer__links {
   &:not(:last-child) {
-    border-right: 1px solid @breadcrumbs-bg;
-  }
-
-  &--white {
-    background: @white;
+    border-right: 1px solid var(--breadcrumbs-bg);
   }
 }
 
@@ -62,17 +58,17 @@
   &:visited {
     font-weight: 600;
     text-decoration: none;
-    color: @text-color;
+    color: var(--text-color);
   }
 
   &:focus,
   &:hover {
-    color: @text-color-primary;
+    color: var(--text-color-primary);
     text-decoration: underline;
   }
 
   &:active {
-    color: @text-color-primary-accent;
+    color: var(--text-color-primary-accent);
     text-decoration: underline;
   }
 }

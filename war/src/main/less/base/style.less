@@ -48,7 +48,8 @@ form {
 }
 
 input, textarea, select {
-  color: @text-color;
+  color: var(--text-color);
+  background-color: var(--input-color);
   font-family: inherit;
 }
 
@@ -130,12 +131,12 @@ dt {
 
 a:link {
   text-decoration: underline;
-  color: #204A87;
+  color: var(--link-color);
 }
 
 a:visited {
   text-decoration: underline;
-  color: #5c3566;
+  color: var(--link-visited-color);
 }
 
 a.lowkey:link {
@@ -269,7 +270,7 @@ pre.console {
 .setting-input {
   width: 100%;
   border-radius: 3px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   padding: 6px;
   box-sizing: border-box;
@@ -278,7 +279,7 @@ pre.console {
 }
 
 .setting-description {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
   margin-top: 0;
   padding-top: 0;
 }
@@ -300,7 +301,7 @@ pre.console {
 .tabBar .tab a {
   position: relative;
   display: block;
-  border: solid 1px #f0f0f0;
+  border: solid 1px var(--tab-bar-border-color);
   border-bottom: none;
   text-decoration: none;
   color: #999;
@@ -309,25 +310,25 @@ pre.console {
   border-top-right-radius: 5px;
 }
 .tabBar .tab a:hover {
-  background: #eee;
+  background: var(--tab-bar-background-color--hover);
 }
 .tabBar .tab a.addTab {
   font-weight: bold;
-  color: #0460d1;
-  border: 1px solid #d8efff;
+  color: var(--tab-bar-add-text-color);
+  border: 1px solid var(--tab-bar-add-border-color);
   border-bottom: none;
 }
 .tabBar .tab a.addTab:hover {
-  background: #d8efff;
+  background: var(--tab-bar-add-background-color--hover);
 }
 .tabBar .tab [type=radio] {
   display: none;
 }
 .tabBar [type=radio]:checked ~ a {
-  border: solid 1px #f0f0f0;
+  border: solid 1px var(--tab-bar-border-color--checked);
   border-bottom: none;
-  background: #eee;
-  color: #000;
+  background: var(--tab-bar-background--checked);
+  color: var(--tab-bar-text-color--checked);
   font-weight: bold;
   z-index: 2;
 }
@@ -368,7 +369,7 @@ pre.console {
   display: block;
   border-bottom: 1px #090 solid;
   font-weight: bold;
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
 }
 
 .jenkins-not-applicable {
@@ -382,7 +383,7 @@ pre.console {
 /* pane */
 
 .pane-frame {
-  border: solid 1px #f0f0f0;
+  border: solid 1px var(--pane-border-color);
   border-radius: 4px;
 }
 
@@ -391,16 +392,16 @@ pre.console {
 }
 
 #side-panel .pane-content td.pane {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
 }
 
 .pane-header, .pane-footer {
   padding: 8px 0px;
-  background-color: #eee;
-  border: solid 1px #f3f3f3;
+  background-color: var(--pane-header-color);
+  border: solid 1px var(--pane-header-border-color);
   border-left: none;
   border-right: none;
-  color: #3b3b3b;
+  color: var(--pane-text-color);
 }
 .pane-header {
   border-top: none;
@@ -430,14 +431,14 @@ td.pane {
 }
 
 table.stripped tr:nth-of-type(even) {
-  background: #fbfbfb;
+  background: var(--even-row-color);
 }
 
 table.stripped-even tr:nth-child(even) {
-  background: #fbfbfb;
+  background: var(--even-row-color);
 }
 table.stripped-odd tr:nth-child(odd) {
-  background: #fbfbfb;
+  background: var(--even-row-color);
 }
 table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
   background: #e8e8e8 !important;
@@ -490,7 +491,7 @@ table.bigtable.pane > tbody > tr > td:last-child {
 .bigtable th {
   font-weight: bold;
   border: none;
-  background-color: #f0f0f0;
+  background-color: var(--bigtable-header-color);
   padding: 6px 4px;
   white-space: nowrap;
   text-align: left;
@@ -850,7 +851,7 @@ img.icon-help {
 }
 
 #projectstatus .header {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--project-status-border-bottom-color);
 }
 #projectstatus th {
   text-align: left;
@@ -972,7 +973,7 @@ table.parameters > tbody:hover {
     width: 100%;
     padding-left: 5px;
     padding-right: 20px;
-}
+} 
 #buildHistoryPage .build-search-row table {
     width: 100%;
 }
@@ -1038,7 +1039,7 @@ table.parameters > tbody:hover {
 }
 
 .build-row-cell {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
 }
 
 .build-row-cell .pane.build-name {
@@ -1186,7 +1187,7 @@ table.parameters > tbody:hover {
 
 /* ========================= directory tree ========================= */
 .parentPath {
-  font-size: @font-size-base;
+  font-size: var(--font-size-base);
   font-weight: bold;
 }
 
@@ -1239,7 +1240,7 @@ TABLE.fileList TD.fileSize {
 }
 .test-trend-caption {
   text-align: center;
-  font-size: @font-size-base;
+  font-size: var(--font-size-base);
   font-weight: bold;
 }
 
@@ -1248,11 +1249,9 @@ TABLE.fileList TD.fileSize {
 /* ========================= sortable table ========================= */
 table.sortable a.sortheader {
   text-decoration: none;
-  color: black;
   display: block;
 }
 table.sortable span.sortarrow {
-  color: black;
   text-decoration: none;
 }
 
@@ -1265,7 +1264,7 @@ table.sortable span.sortarrow {
 }
 
 .fingerprint-summary-header {
-  font-size: @font-size-base;
+  font-size: var(--font-size-base);
   vertical-align: middle;
 }
 
@@ -1357,7 +1356,7 @@ TABLE.fingerprint-in-build TD {
     background-color: #337ab7;
     display: inline-block;
     padding: .2em .6em .3em;
-    font-size: @font-size-xs;
+    font-size: var(--font-size-xs);
     font-weight: 700;
     line-height: 1;
     color: #fff;
@@ -1450,7 +1449,7 @@ DIV.yahooTree td {
 }
 
 #jenkins .yuimenuitem {
-    font-size: @font-size-xs;
+    font-size: var(--font-size-xs);
     padding: 3px;
 }
 
@@ -1602,38 +1601,38 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 #notification-bar.notif-alert-default {
-  background-color: @alert-default-bg-color;
-  border-color: @alert-default-border-color;
-  color: @alert-default-color;
+  background-color: var(--alert-default-bg-color);
+  border-color: var(--alert-default-border-color);
+  color: var(--alert-default-color);
   .svg-icon {
-    color: @alert-default-icon-color;
+    color: var(--alert-default-icon-color);
   }
 }
 
 #notification-bar.notif-alert-success {
-  background-color: @alert-success-bg-color;
-  border-color: @alert-success-border-color;
-  color: @alert-success-color;
+  background-color: var(--alert-success-bg-color);
+  border-color: var(--alert-success-border-color);
+  color: var(--alert-success-color);
   .svg-icon {
-    color: @alert-success-icon-color;
+    color: var(--alert-success-icon-color);
   }
 }
 
 #notification-bar.notif-alert-warn {
-  background-color: @alert-warn-bg-color;
-  border-color: @alert-warn-border-color;
-  color: @alert-warn-color;
+  background-color: var(--alert-warn-bg-color);
+  border-color: var(--alert-warn-border-color);
+  color: var(--alert-warn-color);
   .svg-icon {
-    color: @alert-warn-icon-color;
+    color: var(--alert-warn-icon-color);
   }
 }
 
 #notification-bar.notif-alert-err {
-  background-color: @alert-err-bg-color;
-  border-color: @alert-err-border-color;
-  color: @alert-err-color;
+  background-color: var(--alert-err-bg-color);
+  border-color: var(--alert-err-border-color);
+  color: var(--alert-err-color);
   .svg-icon {
-    color: @alert-err-icon-color;
+    color: var(--alert-err-icon-color);
   }
 }
 
@@ -1676,7 +1675,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= YUI dialog ========================= */
 
 .dialog .hd {
-    font-size: @font-size-xs !important;
+    font-size: var(--font-size-xs) !important;
 }
 /* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
  to the latest YUI will fix this? */
@@ -1718,7 +1717,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    font-size: @font-size-xs;
+    font-size: var(--font-size-xs);
 }
 
 .logrecord-metadata-new {
@@ -1786,7 +1785,7 @@ select.select-ajax-pending {
 }
 
 .alert {
-    font-size: @font-size-sm;
+    font-size: var(--font-size-sm);
     padding: 15px;
     margin-bottom: 20px;
     border: 1px solid transparent;
@@ -1932,14 +1931,14 @@ body.no-sticker #bottom-sticker {
 }
 
 .manage-option dl dt {
-    font-size: @font-size-base;
+    font-size: var(--font-size-base);
 }
 
 .manage-option dl dd {
     margin-left: 0;
     line-height: 20px;
     color: #333;
-    font-size: @font-size-sm;
+    font-size: var(--font-size-sm);
 }
 
 .manage-option a {

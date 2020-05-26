@@ -19,7 +19,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   position: relative;
-  font-size: @font-size-sm;
+  font-size: var(--font-size-sm);
   font-weight: 500;
 }
 .task.disabled {
@@ -44,7 +44,7 @@
 }
 .task-link:link,
 .task-link:visited {
-  color: @text-color;
+  color: var(--text-color);
   text-decoration: none;
 
   &:hover,
@@ -60,7 +60,7 @@
     outline: 0;
     // Use a box-shadow instead of an outline or a border because the alternatives
     // are hidden behind the parent container
-    box-shadow: inset 0 0 0 3px @focus;
+    box-shadow: inset 0 0 0 3px var(--focus);
   }
 }
 .task-link--active {
@@ -72,7 +72,7 @@
     left: 0;
     height: 100%;
     content: '';
-    border-left: 4px solid @primary;
+    border-left: 4px solid var(--primary);
   }
 }
 .task-link--active:link,

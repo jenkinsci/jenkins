@@ -59,7 +59,7 @@
     background-color: #f9f9f9;
 
     p.description {
-      font-size: @font-size-base;
+      font-size: var(--font-size-base);
       margin-top: 0;
     }
 
@@ -68,7 +68,7 @@
       padding-left: 58px;
 
       /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
-      font-family: @font-family-sans !important;
+      font-family: var(--font-family-sans) !important;
 
       input[type=radio] {
         display: none;
@@ -94,7 +94,7 @@
     .input-help {
       color: #666;
       font-style: italic;
-      font-size: @font-size-sm;
+      font-size: var(--font-size-sm);
       padding-top: 2px;
     }
 
@@ -318,7 +318,7 @@
 
     label {
       display: block;
-      font-size: @font-size-base;
+      font-size: var(--font-size-base);
       font-weight: bold;
       color: #000;
       padding-bottom: 5px;
