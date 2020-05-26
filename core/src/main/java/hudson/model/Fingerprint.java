@@ -1255,8 +1255,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @throws IOException Save error
      */
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this))
-            return;
+        if(BulkChange.contains(this)) return;
 
         long start=0;
         if(logger.isLoggable(Level.FINE))
