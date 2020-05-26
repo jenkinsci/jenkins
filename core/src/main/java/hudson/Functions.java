@@ -2224,4 +2224,14 @@ public class Functions {
             return true;
         }
     }
+
+    /**
+     * Get Locale Display Language depending on the Request's Locale
+     * @param request @{@link HttpServletRequest}
+     * @return @{@link String} Locale Display Language
+     */
+    public static String getLocale(HttpServletRequest request){
+        return request.getLocale().getDisplayLanguage(request.getLocale());
+    }
+
 }
