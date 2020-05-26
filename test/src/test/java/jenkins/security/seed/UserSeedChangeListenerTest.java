@@ -31,13 +31,13 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.net.URL;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class UserSeedChangeListenerTest {
 
@@ -88,7 +88,7 @@ public class UserSeedChangeListenerTest {
         boolean userWasNull;
         
         @Override 
-        public void onUserSeedRenewed(@Nonnull User user) {
+        public void onUserSeedRenewed(@NonNull User user) {
             if (user == null) {
                 userWasNull = true; 
             }

@@ -34,7 +34,10 @@ import jenkins.model.Jenkins;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.lang.RandomStringUtils;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -42,9 +45,6 @@ public class SecretTest {
 
     @Rule
     public ConfidentialStoreRule confidentialStore = new ConfidentialStoreRule();
-
-    @Rule
-    public MockSecretRule mockSecretRule = new MockSecretRule();
 
     private static final Pattern ENCRYPTED_VALUE_PATTERN = Pattern.compile("\\{?[A-Za-z0-9+/]+={0,2}}?");
 

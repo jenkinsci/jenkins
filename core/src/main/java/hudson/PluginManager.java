@@ -105,8 +105,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -126,6 +126,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -134,6 +135,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -209,29 +211,29 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private enum PMConstructor {
         JENKINS {
             @Override
-            @Nonnull 
-            PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
-                                   @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
+            @NonNull 
+            PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
+                                   @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(Jenkins.class).newInstance(jenkins);
             }
         },
         SC_FILE {
             @Override
-            @Nonnull PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
-                                            @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
+            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
+                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(ServletContext.class, File.class).newInstance(jenkins.servletContext, jenkins.getRootDir());
             }
         },
         FILE {
             @Override
-            @Nonnull PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
-                                            @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
+            @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
+                                            @NonNull Jenkins jenkins) throws ReflectiveOperationException {
                 return klass.getConstructor(File.class).newInstance(jenkins.getRootDir());
             }
         };
 
-        final @CheckForNull PluginManager create(@Nonnull Class<? extends PluginManager> klass,
-                                                 @Nonnull Jenkins jenkins) throws ReflectiveOperationException {
+        final @CheckForNull PluginManager create(@NonNull Class<? extends PluginManager> klass,
+                                                 @NonNull Jenkins jenkins) throws ReflectiveOperationException {
             try {
                 return doCreate(klass, jenkins);
             } catch(NoSuchMethodException e) {
@@ -240,8 +242,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
-        abstract @Nonnull PluginManager doCreate(@Nonnull Class<? extends PluginManager> klass,
-                                                 @Nonnull Jenkins jenkins) throws ReflectiveOperationException;
+        abstract @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
+                                                 @NonNull Jenkins jenkins) throws ReflectiveOperationException;
     }
 
     /**
@@ -251,7 +253,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return Plugin manager to use. If no custom class is configured or in case of any error, the default
      * {@link LocalPluginManager} is returned.
      */
-    public static @Nonnull PluginManager createDefault(@Nonnull Jenkins jenkins) {
+    public static @NonNull PluginManager createDefault(@NonNull Jenkins jenkins) {
         String pmClassName = SystemProperties.getString(CUSTOM_PLUGIN_MANAGER);
         if (!StringUtils.isBlank(pmClassName)) {
             LOGGER.log(FINE, String.format("Use of custom plugin manager [%s] requested.", pmClassName));
@@ -371,7 +373,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     public Api getApi() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         return new Api(this);
     }
 
@@ -624,13 +626,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
-    protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath) {
+    protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath) {
         return loadPluginsFromWar(fromPath, null);
     }
 
     //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
     @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
-    protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath, @CheckForNull FilenameFilter filter) {
+    protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath, @CheckForNull FilenameFilter filter) {
         Set<String> names = new HashSet();
 
         ServletContext context = Jenkins.get().servletContext;
@@ -819,12 +821,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
-    private String normalisePluginName(@Nonnull String name) {
+    private String normalisePluginName(@NonNull String name) {
         // Normalise the name by stripping off the file extension (if present)...
         return name.replace(".jpi", "").replace(".hpi", "");
     }
 
-    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File dir, @Nonnull String pluginId) {
+    private @CheckForNull VersionNumber getPluginVersion(@NonNull File dir, @NonNull String pluginId) {
         VersionNumber version = getPluginVersion(new File(dir, pluginId + ".jpi"));
         if (version == null) {
             version = getPluginVersion(new File(dir, pluginId + ".hpi"));
@@ -832,7 +834,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return version;
     }
 
-    private @CheckForNull VersionNumber getPluginVersion(@Nonnull File pluginFile) {
+    private @CheckForNull VersionNumber getPluginVersion(@NonNull File pluginFile) {
         if (!pluginFile.exists()) {
             return null;
         }
@@ -843,7 +845,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
     }
 
-    private @CheckForNull VersionNumber getPluginVersion(@Nonnull URL pluginURL) {
+    private @CheckForNull VersionNumber getPluginVersion(@NonNull URL pluginURL) {
         Manifest manifest = parsePluginManifest(pluginURL);
         if (manifest == null) {
             return null;
@@ -1102,8 +1104,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return Input stream, which allows to retrieve manifest. This stream must be closed outside
      * @throws IOException Operation error
      */
-    @Nonnull
-    /*package*/ static InputStream getBundledJpiManifestStream(@Nonnull URL url) throws IOException {
+    @NonNull
+    /*package*/ static InputStream getBundledJpiManifestStream(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
@@ -1142,8 +1144,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return Modification date
      * @throws IOException Operation error
      */
-    @Nonnull
-    /*package*/ static long getModificationDate(@Nonnull URL url) throws IOException {
+    @NonNull
+    /*package*/ static long getModificationDate(@NonNull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         
         // It prevents file descriptor leak if the URL references a file within JAR
@@ -1492,11 +1494,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @since 2.0
      */
     @Restricted(NoExternalUse.class)
-    public List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad) {
+    public List<Future<UpdateCenter.UpdateCenterJob>> install(@NonNull Collection<String> plugins, boolean dynamicLoad) {
         return install(plugins, dynamicLoad, null);
     }
 
-    private List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad, @CheckForNull UUID correlationId) {
+    private List<Future<UpdateCenter.UpdateCenterJob>> install(@NonNull Collection<String> plugins, boolean dynamicLoad, @CheckForNull UUID correlationId) {
         List<Future<UpdateCenter.UpdateCenterJob>> installJobs = new ArrayList<>();
 
         LOGGER.log(INFO, "Starting installation of a batch of {0} plugins plus their dependencies", plugins.size());
@@ -1703,7 +1705,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
 
         // We'll check the update servers with a try-retry mechanism. The retrier is built with a builder
         Retrier<FormValidation> updateServerRetrier = new Retrier.Builder<>(
@@ -1958,7 +1960,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return the list of results for every plugin and their dependent plugins.
      * @throws IOException see {@link PluginWrapper#disable()}
      */
-    public @Nonnull List<PluginWrapper.PluginDisableResult> disablePlugins(@Nonnull PluginWrapper.PluginDisableStrategy strategy, @Nonnull List<String> plugins) throws IOException {
+    public @NonNull List<PluginWrapper.PluginDisableResult> disablePlugins(@NonNull PluginWrapper.PluginDisableStrategy strategy, @NonNull List<String> plugins) throws IOException {
         // Where we store the results of each plugin disablement
         List<PluginWrapper.PluginDisableResult> results = new ArrayList<>(plugins.size());
 
@@ -2236,13 +2238,45 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     }
 
+    @Restricted(DoNotUse.class)
+    public String unscientific(double d) {
+        return String.format(Locale.US, "%15.4f", d);
+    }
+
     @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         }
         return this;
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean isMetaLabel(String label) {
+        return "adopt-this-plugin".equals(label);
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean hasAdoptThisPluginLabel(UpdateSite.Plugin plugin) {
+        final String[] categories = plugin.categories;
+        if (categories == null) {
+            return false;
+        }
+        return Arrays.asList(categories).contains("adopt-this-plugin");
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean hasAdoptThisPluginLabel(PluginWrapper plugin) {
+        final UpdateSite.Plugin pluginMeta = Jenkins.get().getUpdateCenter().getPlugin(plugin.getShortName());
+        if (pluginMeta == null) {
+            return false;
+        }
+        final String[] categories = pluginMeta.categories;
+        if (categories == null) {
+            return false;
+        }
+        return Arrays.asList(categories).contains("adopt-this-plugin");
     }
 
     /**

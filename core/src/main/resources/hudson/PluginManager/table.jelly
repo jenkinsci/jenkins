@@ -22,37 +22,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Shared between index.jelly and available.jelly
-
-  Attributes:
-     list: variable to contain List<Plugin>
-     page: page name to be passed to local:tabBar
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
-    <l:header>
-      <script type="text/javascript">
-      <![CDATA[
-        function flip(item) {
-          var nodes = document.getElementsByName(item.name);
-          for (var i = 0; i < nodes.length; ++i) {
-            if(nodes[i].nodeName == "INPUT") {
-              nodes[i].checked = item.checked;
-            }
-          }
-        }
-        ]]>
-      </script>
-    </l:header>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:documentation>
+    <!-- Shared between PluginManager/index.jelly and PluginManager/available.jelly -->
+    <st:attribute name="list">
+      Variable to contain List of Plugin
+    </st:attribute>
+    <st:attribute name="page">
+      Page name to be passed to local:tabBar; 'updates' or 'available'.
+    </st:attribute>
+    <st:attribute name="filtered">
+      If true, will hide all rows by default, and only the filter field will show them.
+    </st:attribute>
+  </st:documentation>
+  <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <st:adjunct includes="hudson.PluginManager._table"/>
-      
+
       <div id="filter-container">
-        ${%Filter}:
-        <input type="text" id="filter-box"/>
+        <div class="plugin-manager__search">
+          <input
+              role="searchbox"
+              class="plugin-manager__search-input"
+              type="text"
+              id="filter-box"
+              value="${request.getParameter('filter')}"
+              placeholder="${filtered == 'true' ? '%search' : '%filter'}" />
+          <span class="plugin-manager__icon-leading">
+            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
+          </span>
+        </div>
       </div>
 
       <form method="post" action="install">
@@ -61,43 +62,55 @@ THE SOFTWARE.
         <div class="pane-frame">
           <table id="plugins" class="sortable pane bigtable stripped-odd">
             <tr>
-              <th initialSortDir="${isUpdates?null:'down'}"
-                  tooltip="${%Check to install the plugin}${isUpdates?'':'&lt;br/&gt;'+'%Click this heading to sort by category'}"
-                  width="32" onclick="showhideCategories(this,1)">${%Install}</th>
-              <th initialSortDir="${isUpdates?'down':null}"
-                  onclick="showhideCategories(this,0)">${%Name}</th>
-              <th onclick="showhideCategories(this,0)">${%Version}</th>
+              <l:isAdmin>
+                <th initialSortDir="${isUpdates?null:'up'}"
+                    tooltip="${%Check to install the plugin}"
+                    width="32">${%Install}</th>
+              </l:isAdmin>
+              <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
+              <th>${%Version}</th>
+              <th>${%Released}</th>
               <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
             </tr>
             <j:choose>
               <j:when test="${!empty(list)}">
-                <j:set var="lastCat" value="" />
                 <j:set var="cache" value="${it.createCache()}"/>
+                <j:if test="${filtered == 'true'}">
+                  <tr id="hidden-by-default-instructions">
+                    <td class="pane" colspan="5" align="center" id="hidden-by-default-instructions-td" data-loaded-text="${%instructions}">
+                      ${%loading}
+                    </td>
+                  </tr>
+                </j:if>
                 <j:forEach var="p" items="${list}">
-                  <j:if test="${!isUpdates}">
-                    <j:set var="thisCat" value="${p.category}" />
-                    <j:set var="p" value="${p.plugin}" />
-                    <j:if test="${thisCat != lastCat}">
-                      <tr class="plugin-category" name="${thisCat}">
-                        <td class="pane" colspan="4" onclick="showhideCategory(this)">${thisCat}</td>
-                      </tr>
-                    </j:if>
-                    <j:set var="lastCat" value="${thisCat}" />
-                  </j:if>
                   <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}" />
                   <j:set var="installedOk"
                          value="${installJob.status.success and installJob.plugin.version==p.version}" />
-                  <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin" name="${p.displayName}">
-                    <td class="pane" align="center" data="${thisCat}_">
-                      <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
-                             checked="${installedOk ? 'checked' : null}"
-                             disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"
-                             data-compat-warning="${!p.isCompatible(cache)}" />
-                    </td>
+                  <tr class="${installJob!=null ? 'already-upgraded' : ''} plugin ${filtered == 'true' ? 'hidden hidden-by-default' : ''}" name="${p.displayName}">
+                    <l:isAdmin>
+                      <td class="pane" align="center" data="${isUpdates ? null : it.unscientific(p.popularity)}">
+                          <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
+                                 checked="${installedOk ? 'checked' : null}"
+                                 disabled="${installedOk ? 'disabled' : null}"
+                                 data-compat-warning="${!p.isCompatible(cache)}" />
+                      </td>
+                    </l:isAdmin>
                     <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                       <div>
                         <a href="${p.wiki}" target="_blank"><st:out value="${p.displayName}"/></a>
                       </div>
+                      <j:if test="${!p.categories.isEmpty()}">
+                        <div class="plugin-manager__categories">
+                          <j:forEach var="label" items="${p.categories}">
+                            <j:if test="${!it.isMetaLabel(label)}">
+                              <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
+                                 class="plugin-manager__category-label">
+                                ${app.updateCenter.getCategoryDisplayName(label)}
+                              </a>
+                            </j:if>
+                          </j:forEach>
+                        </div>
+                      </j:if>
                       <j:if test="${p.excerpt!=null}">
                         <div class="excerpt"><j:out value="${p.excerpt}" /></div>
                       </j:if>
@@ -118,6 +131,9 @@ THE SOFTWARE.
                       </j:if>
                       <j:if test="${p.isForNewerJava()}">
                         <div class="alert alert-danger">${%javaWarning(p.minimumJavaVersion)}</div>
+                      </j:if>
+                      <j:if test="${p.fixesSecurityVulnerabilities()}">
+                        <div class="alert alert-warning">${%Applying this update will address security vulnerabilities in the currently installed version.}</div>
                       </j:if>
                       <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
                         <div class="alert alert-danger">${%depCompatWarning}
@@ -144,8 +160,20 @@ THE SOFTWARE.
                           </ul>
                         </div>
                       </j:if>
+                      <j:if test="${it.hasAdoptThisPluginLabel(p)}">
+                        <div class="alert alert-warning">
+                          ${%adoptThisPlugin}
+                        </div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
+                    <td class="pane" data="${p.releaseTimestamp.time}">
+                      <j:if test="${p.releaseTimestamp != null}">
+                        <time datetime="${h.iso8601DateTime(p.releaseTimestamp)}" tooltip="${h.localDate(p.releaseTimestamp)}">
+                          ${%ago(h.getTimeSpanString(p.releaseTimestamp))}
+                        </time>
+                      </j:if>
+                    </td>
                     <j:if test="${isUpdates}">
                       <td class="pane">
                         <j:choose><j:when test="${p.installed.active}">
@@ -162,7 +190,7 @@ THE SOFTWARE.
               </j:when>
               <j:otherwise>
                 <tr>
-                  <td colspan="4" align="center">
+                  <td colspan="5" align="center">
                     <div style="padding:1em">
                       ${%No updates}
                     </div>
@@ -175,13 +203,15 @@ THE SOFTWARE.
 
         <div id="bottom-sticker" >
           <div class="bottom-sticker-inner">
-            <j:if test="${!empty(list)}">
-              <j:if test="${!isUpdates}">
-                <f:submit value="${%Install without restart}" name="dynamicLoad" />
-                <span style="margin-left:2em;"></span>
+            <l:isAdmin>
+              <j:if test="${!empty(list)}">
+                <j:if test="${!isUpdates}">
+                  <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                  <span style="margin-left:2em;"></span>
+                </j:if>
+                <f:submit value="${%Download now and install after restart}" />
               </j:if>
-              <f:submit value="${%Download now and install after restart}" />
-            </j:if>
+            </l:isAdmin>
             <st:include page="check.jelly"/>
             </div>
           </div>

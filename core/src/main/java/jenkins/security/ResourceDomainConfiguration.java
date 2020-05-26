@@ -33,7 +33,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.UrlHelper;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -52,9 +51,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
 
@@ -160,7 +160,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
                     // URL points to a Jenkins instance
                     RSAPublicKey publicKey = InstanceIdentityProvider.RSA.getPublicKey();
                     if (publicKey != null) {
-                        String identity = Base64.encodeBase64String(publicKey.getEncoded());
+                        String identity = Base64.getEncoder().encodeToString(publicKey.getEncoded());
                         if (identity.equals(identityHeader)) {
                             return FormValidation.ok(Messages.ResourceDomainConfiguration_ThisJenkins());
                         }

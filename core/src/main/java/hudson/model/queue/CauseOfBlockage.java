@@ -8,7 +8,7 @@ import hudson.model.Messages;
 import hudson.model.Label;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -44,7 +44,7 @@ public abstract class CauseOfBlockage {
     /**
      * Obtains a simple implementation backed by {@link Localizable}.
      */
-    public static CauseOfBlockage fromMessage(@Nonnull final Localizable l) {
+    public static CauseOfBlockage fromMessage(@NonNull final Localizable l) {
         l.getKey(); // null check
         return new CauseOfBlockage() {
             @Override
@@ -151,6 +151,16 @@ public abstract class CauseOfBlockage {
                 return Messages.Queue_AllNodesOffline(label.getName());
             }
         }
+
+        @Override
+        public void print(TaskListener listener) {
+            if (label.isEmpty()) {
+                listener.getLogger().println(Messages.Queue_LabelHasNoNodes(ModelHyperlinkNote.encodeTo(label)));
+            } else {
+                listener.getLogger().println(Messages.Queue_AllNodesOffline(ModelHyperlinkNote.encodeTo(label)));
+            }
+        }
+
     }
 
     /**
@@ -187,5 +197,11 @@ public abstract class CauseOfBlockage {
         public String getShortDescription() {
             return Messages.Queue_WaitingForNextAvailableExecutorOn(label.getName());
         }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(Messages.Queue_WaitingForNextAvailableExecutorOn(ModelHyperlinkNote.encodeTo(label)));
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 package hudson.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.*;
 import java.io.File;
 import java.io.IOException;

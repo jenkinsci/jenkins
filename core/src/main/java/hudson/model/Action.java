@@ -25,7 +25,7 @@ package hudson.model;
 
 import hudson.Functions;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}

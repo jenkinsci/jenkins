@@ -2,7 +2,8 @@
 @import (css) '../fonts/icomoon/css/icomoon.css';
 @import (css) '../fonts/google-fonts/roboto/css/roboto.css';
 
-.bootstrap-3 * {
+.bootstrap-3 *,
+.bootstrap-3 [class*='col-'] {
     // simple reset
     margin: initial;
     padding: initial;
@@ -17,13 +18,7 @@
     z-index: 1000;
     background: rgba(0,0,0,.2);
     text-align: initial;
-    font-family: sans-serif;
-
-
-    table, form, input, td, th, p, textarea, select,h1,h2,h3,h4,h5{
-      font-family:'roboto',sans-serif;
-    }
-
+    font-size: 13px;
 
     input,password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
         &::-ms-clear { width : 0; height: 0; }
@@ -71,7 +66,6 @@
         position: relative;
         margin: 0 auto;
         max-width:992px;
-        font-family:'roboto',sans-serif;
     }
 
     .modal-content {
@@ -396,7 +390,7 @@
 
                     input[type=checkbox] {
                         float: left;
-                        margin: 2px -18px;
+                        margin: 3px -18px;
                         vertical-align: middle;
                     }
 
@@ -433,7 +427,7 @@
 						height: 11px;
 						content: '';
 						left: 2px;
-						top: 2px;
+						top: 3px;
 						background: @badge-color;
 						border-radius: 4px;
 					}
@@ -443,7 +437,7 @@
 						font: 15px FontAwesome;
 						text-indent: 0;
 						position: absolute;
-						top: 0;
+						top: 1px;
 						left: 1px;
 						width: 14px;
 						height: 14px;
@@ -458,6 +452,7 @@
 						width: 16px;
 						height: 16px;
 						font-size: 17px;
+                        line-height: 17px;
 						left: 0px;
 						top: -1px;
 					}
@@ -483,8 +478,8 @@
 								content: '\f0d9';
 								font: 15px FontAwesome;
 								display: inline-block;
-								width: 13px; 
-								height: 13px; 
+								width: 13px;
+								height: 13px;
 								margin: -4px -2px 0px 1px;
 								vertical-align: middle;
 							}
@@ -721,6 +716,7 @@
             &:before { // pending
                 font-family: FontAwesome;
                 font-size: 17px;
+                line-height: 17px;
                 content: '\f10c';
                 color: rgba(0,0,0,.1);
                 position: absolute;
@@ -950,4 +946,16 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 
 .bootstrap-3 {
     @import (less) '../../../node_modules/bootstrap/less/bootstrap.less';
+}
+
+.bootstrap-3 [class*='col-'] {
+    // simple reset
+    margin: initial;
+    padding: initial;
+}
+
+.bootstrap-3 .categories,
+.bootstrap-3 .plugins {
+    padding-left: 0;
+    padding-right: 0;
 }

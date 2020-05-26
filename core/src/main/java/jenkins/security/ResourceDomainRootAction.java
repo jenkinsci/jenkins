@@ -42,9 +42,9 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -143,7 +143,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         }
     }
 
-    public String getRedirectUrl(@Nonnull Token token, @Nonnull String restOfPath) {
+    public String getRedirectUrl(@NonNull Token token, @NonNull String restOfPath) {
         String resourceRootUrl = getResourceRootUrl();
         if (!restOfPath.startsWith("/")) {
             // Unsure whether this can happen -- just be safe here
@@ -165,7 +165,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
      * @return a token that can be used to redirect users to the {@link ResourceDomainRootAction}.
      */
     @CheckForNull
-    public Token getToken(@Nonnull DirectoryBrowserSupport dbs, @Nonnull StaplerRequest req) {
+    public Token getToken(@NonNull DirectoryBrowserSupport dbs, @NonNull StaplerRequest req) {
         // This is the "restOfPath" of the DirectoryBrowserSupport, i.e. the directory/file/pattern "inside" the DBS.
         final String dbsFile = req.getOriginalRestOfPath();
 
@@ -195,7 +195,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private final String authenticationName;
         private final String browserUrl;
 
-        InternalResourceRequest(@Nonnull String browserUrl, @Nonnull String authenticationName) {
+        InternalResourceRequest(@NonNull String browserUrl, @NonNull String authenticationName) {
             this.browserUrl = browserUrl;
             this.authenticationName = authenticationName;
         }
@@ -268,7 +268,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private Instant timestamp;
 
         @VisibleForTesting
-        Token (@Nonnull String path, @Nullable String username, @Nonnull Instant timestamp) {
+        Token (@NonNull String path, @Nullable String username, @NonNull Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;

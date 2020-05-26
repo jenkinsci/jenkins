@@ -19,8 +19,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Convenient base implementation for {@link Permalink}s that satisfy
@@ -130,7 +130,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         return b;
     }
 
-    private static @Nonnull Map<String, Integer> cacheFor(@Nonnull File buildDir) {
+    private static @NonNull Map<String, Integer> cacheFor(@NonNull File buildDir) {
         synchronized (caches) {
             Map<String, Integer> cache = caches.get(buildDir);
             if (cache == null) {
@@ -141,7 +141,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         }
     }
 
-    private static @Nonnull Map<String, Integer> load(@Nonnull File buildDir) {
+    private static @NonNull Map<String, Integer> load(@NonNull File buildDir) {
         Map<String, Integer> cache = new TreeMap<>();
         File storage = storageFor(buildDir);
         if (storage.isFile()) {
@@ -165,14 +165,14 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         return cache;
     }
 
-    static @Nonnull File storageFor(@Nonnull File buildDir) {
+    static @NonNull File storageFor(@NonNull File buildDir) {
         return new File(buildDir, "permalinks");
     }
 
     /**
      * Remembers the value 'n' in the cache for future {@link #resolve(Job)}.
      */
-    protected void updateCache(@Nonnull Job<?,?> job, @CheckForNull Run<?,?> b) {
+    protected void updateCache(@NonNull Job<?,?> job, @CheckForNull Run<?,?> b) {
         File buildDir = job.getBuildDir();
         Map<String, Integer> cache = cacheFor(buildDir);
         synchronized (cache) {
@@ -218,7 +218,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
          * See if the new build matches any of the peephole permalink.
          */
         @Override
-        public void onCompleted(Run<?,?> run, @Nonnull TaskListener listener) {
+        public void onCompleted(Run<?,?> run, @NonNull TaskListener listener) {
             Job<?, ?> j = run.getParent();
             for (PeepholePermalink pp : Util.filter(j.getPermalinks(), PeepholePermalink.class)) {
                 if (pp.apply(run)) {

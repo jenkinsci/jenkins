@@ -1,3 +1,5 @@
+@import '../../../less/abstracts/font.less';
+
 #add-item-panel {
 
   form > .header {
@@ -37,38 +39,6 @@
         min-width: auto;
         margin-right: 0px;
       }
-
-      button[type=submit] {
-        padding: 5px 20px;
-        background-color: rgb(204, 221, 238);
-        border-color: rgb(102, 153, 204);
-        border-radius: 3px;
-        border-width: 1px;
-        border-style: solid;
-        color: rgb(80, 80, 80);
-        font-weight: bold;
-        font-size: 12px;
-        line-height: 27px;
-      }
-
-      button[type=submit]:hover:not(.disabled), button[type=submit]:focus:not(.disabled) {
-        background-color: rgb(68, 119, 136);
-        border-color: rgb(51, 85, 102);
-        color: rgb(238, 238, 238);
-        cursor: pointer;
-      }
-
-      button[type=submit]:active:not(.disabled){        
-        box-shadow: inset 0px 1px 6px 2px #1b2b33;
-      }
-
-      button[type=submit].disabled {
-        background-color: #ccc;
-        border-color: #aaa;
-        color: rgb(140, 140, 140);
-        cursor: auto;
-        opacity: 0.75;
-      }
     }
   }
 
@@ -77,9 +47,6 @@
 
     label {
       position: relative;
-      display: block;
-      font-size: 22px;
-      font-weight: bold;
       padding-bottom: 10px;
     }
   }
@@ -92,7 +59,7 @@
     background-color: #f9f9f9;
 
     p.description {
-      font-size: 16px;
+      font-size: @font-size-base;
       margin-top: 0;
     }
 
@@ -101,7 +68,7 @@
       padding-left: 58px;
 
       /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
-      font-family: Helvetica, Arial, sans-serif !important;
+      font-family: @font-family-sans !important;
 
       input[type=radio] {
         display: none;
@@ -127,7 +94,7 @@
     .input-help {
       color: #666;
       font-style: italic;
-      font-size: 13px;
+      font-size: @font-size-sm;
       padding-top: 2px;
     }
 
@@ -243,7 +210,6 @@
   }
 
   input {
-    font-size: 1.5em;
     background-color: #fff;
     padding: 5px 10px;
     border: 1px solid #999;
@@ -352,7 +318,7 @@
 
     label {
       display: block;
-      font-size: 1.1em;
+      font-size: @font-size-base;
       font-weight: bold;
       color: #000;
       padding-bottom: 5px;

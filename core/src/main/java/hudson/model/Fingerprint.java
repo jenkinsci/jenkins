@@ -71,8 +71,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.xmlpull.v1.XmlPullParserException;
@@ -112,7 +112,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * @return A name of the job
          */
         @Exported
-        @Nonnull
+        @NonNull
         public String getName() {
             return name;
         }
@@ -159,7 +159,7 @@ public class Fingerprint implements ModelObject, Saveable {
          * @return A build number
          */
         @Exported
-        @Nonnull
+        @NonNull
         public int getNumber() {
             return number;
         }
@@ -851,7 +851,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Time when the fingerprint has been captured.
      */
-    private final @Nonnull Date timestamp;
+    private final @NonNull Date timestamp;
 
     /**
      * Null if this fingerprint is for a file that's
@@ -875,12 +875,12 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     private transient volatile List<FingerprintFacet> transientFacets = null;
 
-    public Fingerprint(@CheckForNull Run build, @Nonnull String fileName, @Nonnull byte[] md5sum) throws IOException {
+    public Fingerprint(@CheckForNull Run build, @NonNull String fileName, @NonNull byte[] md5sum) throws IOException {
         this(build==null ? null : new BuildPtr(build), fileName, md5sum);
         save();
     }
 
-    Fingerprint(@CheckForNull BuildPtr original, @Nonnull String fileName, @Nonnull byte[] md5sum) {
+    Fingerprint(@CheckForNull BuildPtr original, @NonNull String fileName, @NonNull byte[] md5sum) {
         this.original = original;
         this.md5sum = md5sum;
         this.fileName = fileName;
@@ -907,7 +907,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return null;
     }
 
-    public @Nonnull String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return fileName;
     }
 
@@ -915,7 +915,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * The file name (like "foo.jar" without path).
      */
     @Exported
-    public @Nonnull String getFileName() {
+    public @NonNull String getFileName() {
         return fileName;
     }
 
@@ -923,7 +923,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Gets the MD5 hash string.
      */
     @Exported(name="hash")
-    public @Nonnull String getHashString() {
+    public @NonNull String getHashString() {
         return Util.toHexString(md5sum);
     }
 
@@ -931,7 +931,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Gets the timestamp when this record is created.
      */
     @Exported
-    public @Nonnull Date getTimestamp() {
+    public @NonNull Date getTimestamp() {
         return timestamp;
     }
 
@@ -941,7 +941,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return
      *      string like "3 minutes" "1 day" etc.
      */
-    public @Nonnull String getTimestampString() {
+    public @NonNull String getTimestampString() {
         long duration = System.currentTimeMillis()-timestamp.getTime();
         return Util.getTimeSpanString(duration);
     }
@@ -953,7 +953,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * These builds of this job has used this file.
      * @return may be empty but not null.
      */
-    public @Nonnull RangeSet getRangeSet(String jobFullName) {
+    public @NonNull RangeSet getRangeSet(String jobFullName) {
         RangeSet r = usages.get(jobFullName);
         if(r==null) r = new RangeSet();
         return r;
@@ -966,7 +966,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Gets the sorted list of job names where this jar is used.
      */
-    public @Nonnull List<String> getJobs() {
+    public @NonNull List<String> getJobs() {
         List<String> r = new ArrayList<>(usages.keySet());
         Collections.sort(r);
         return r;
@@ -991,7 +991,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
     // this is for remote API
     @Exported(name="usage")
-    public @Nonnull List<RangeItem> _getUsages() {
+    public @NonNull List<RangeItem> _getUsages() {
         List<RangeItem> r = new ArrayList<>();
         final Jenkins instance = Jenkins.get();
         for (Entry<String, RangeSet> e : usages.entrySet()) {
@@ -1007,7 +1007,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @deprecated Use {@link #addFor(hudson.model.Run)}
      */
     @Deprecated
-    public synchronized void add(@Nonnull AbstractBuild b) throws IOException {
+    public synchronized void add(@NonNull AbstractBuild b) throws IOException {
         addFor(b);
     }
 
@@ -1016,14 +1016,14 @@ public class Fingerprint implements ModelObject, Saveable {
      * @param b {@link Run} to be referenced in {@link #usages}
      * @since 1.577
      */
-    public synchronized void addFor(@Nonnull Run b) throws IOException {
+    public synchronized void addFor(@NonNull Run b) throws IOException {
         add(b.getParent().getFullName(), b.getNumber());
     }
 
     /**
      * Records that a build of a job has used this file.
      */
-    public synchronized void add(@Nonnull String jobFullName, int n) throws IOException {
+    public synchronized void add(@NonNull String jobFullName, int n) throws IOException {
         addWithoutSaving(jobFullName, n);
         save();
     }
@@ -1036,7 +1036,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return this;
     }
 
-    void addWithoutSaving(@Nonnull String jobFullName, int n) {
+    void addWithoutSaving(@NonNull String jobFullName, int n) {
         synchronized(usages) { // TODO why not synchronized (this) like some, though not all, other accesses?
             RangeSet r = usages.get(jobFullName);
             if(r==null) {
@@ -1155,7 +1155,7 @@ public class Fingerprint implements ModelObject, Saveable {
      *
      * @since 1.421
      */
-    public @Nonnull Collection<FingerprintFacet> getFacets() {
+    public @NonNull Collection<FingerprintFacet> getFacets() {
         if (transientFacets==null) {
             List<FingerprintFacet> transientFacets = new ArrayList<>();
             for (TransientFingerprintFacetFactory fff : TransientFingerprintFacetFactory.all()) {
@@ -1197,7 +1197,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Sorts {@link FingerprintFacet}s by their timestamps.
      * @return Sorted list of {@link FingerprintFacet}s 
      */
-    public @Nonnull Collection<FingerprintFacet> getSortedFacets() {
+    public @NonNull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
         r.sort(new Comparator<FingerprintFacet>() {
             public int compare(FingerprintFacet o1, FingerprintFacet o2) {
@@ -1226,7 +1226,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Returns the actions contributed from {@link #getFacets()}
      */
-    public @Nonnull List<Action> getActions() {
+    public @NonNull List<Action> getActions() {
         List<Action> r = new ArrayList<>();
         for (FingerprintFacet ff : getFacets())
             ff.createActions(r);
@@ -1305,6 +1305,19 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Returns a facet that blocks the deletion of the fingerprint.
+     * Returns null if no such facet.
+     * @since 2.223
+     */
+    public @CheckForNull FingerprintFacet getFacetBlockingDeletion() {
+        for (FingerprintFacet facet : facets) {
+            if (facet.isFingerprintDeletionBlocked())
+                return facet;
+        }
+        return null;
+    }
+
+    /**
      * Update references to a renamed job in the fingerprint
      */
     public synchronized void rename(String oldName, String newName) throws IOException {
@@ -1337,14 +1350,14 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * The file we save our configuration.
      */
-    private static @Nonnull XmlFile getConfigFile(@Nonnull File file) {
+    private static @NonNull XmlFile getConfigFile(@NonNull File file) {
         return new XmlFile(XSTREAM,file);
     }
 
     /**
      * Determines the file name from md5sum.
      */
-    private static @Nonnull File getFingerprintFile(@Nonnull byte[] md5sum) {
+    private static @NonNull File getFingerprintFile(@NonNull byte[] md5sum) {
         assert md5sum.length==16;
         return new File( Jenkins.get().getRootDir(),
             "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
@@ -1355,10 +1368,10 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
      * malformed.
      */
-    /*package*/ static @CheckForNull Fingerprint load(@Nonnull byte[] md5sum) throws IOException {
+    /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
         return load(getFingerprintFile(md5sum));
     }
-    /*package*/ static @CheckForNull Fingerprint load(@Nonnull File file) throws IOException {
+    /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
         if(!configFile.exists())
             return null;
@@ -1425,7 +1438,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @param fullName Full name of the job
      * @return {@code true} if the user can discover the item
      */
-    private static boolean canDiscoverItem(@Nonnull final String fullName) {
+    private static boolean canDiscoverItem(@NonNull final String fullName) {
         final Jenkins jenkins = Jenkins.get();
 
         // Fast check to avoid security context switches
@@ -1477,7 +1490,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return the XStream instance
      * @since 1.655
      */
-    @Nonnull
+    @NonNull
     public static XStream2 getXStream() {
         return XSTREAM;
     }

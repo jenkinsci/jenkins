@@ -26,7 +26,13 @@ package hudson.security;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import java.net.HttpURLConnection;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import jenkins.model.Jenkins;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,4 +64,21 @@ public class AccessDeniedException2Test {
         }
     }
 
+    @Test
+    @Issue("JENKINS-61905")
+    public void redirectPermissionErrorsToLogin() throws Exception {
+        JenkinsRule.DummySecurityRealm realm = r.createDummySecurityRealm();
+        r.jenkins.setSecurityRealm(realm);
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toEveryone());
+        JenkinsRule.WebClient wc = r.createWebClient();
+        wc.setRedirectEnabled(true);
+        wc.setThrowExceptionOnFailingStatusCode(false);
+        final HtmlPage configure = wc.goTo("configure");
+        Assert.assertTrue(configure.getUrl().getPath().contains("login"));
+        Assert.assertTrue(configure.getUrl().getQuery().startsWith("from"));
+
+        final HtmlPage configureSecurity = wc.goTo("configureSecurity/");
+        Assert.assertTrue(configureSecurity.getUrl().getPath().contains("login"));
+        Assert.assertTrue(configureSecurity.getUrl().getQuery().startsWith("from"));
+    }
 }

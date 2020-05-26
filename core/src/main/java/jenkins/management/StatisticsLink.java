@@ -30,7 +30,7 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -52,7 +52,7 @@ public class StatisticsLink extends ManagementLink {
         return Messages.StatisticsLink_Description();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredPermission() {
         return Jenkins.MANAGE;
@@ -61,5 +61,11 @@ public class StatisticsLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "load-statistics";
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.STATUS;
     }
 }

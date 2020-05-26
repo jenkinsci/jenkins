@@ -1,12 +1,28 @@
+@white: #fff;
+@black: #333;
+
+@primary: #0587d4;
+@secondary: #4D545D;
+@success: #138347;
+@danger: #CC0003;
+@warning: #EA6B19;
+@focus: #3FB3F7;
+
+// State colors
+@primary-hover: #0B6AA2;
+@primary-active: #095683;
+@danger-hover: #EB383B;
+@danger-active: #B50003;
+
 // Page header colors
-@logo-bg: white;
-@brand-link-color: #4d545d;
-@header-link-color: white;
+@logo-bg: @white;
+@brand-link-color: @secondary;
+@header-link-color: @white;
 @header-link-color-active: #f5f5f5;
-@header-link-outline: #3FB3F7;
+@header-link-outline: @focus;
 @search-input-color: @brand-link-color;
-@search-background: white;
-@search-box-completion-bg: #0587d4;
+@search-background: @white;
+@search-box-completion-bg: @primary;
 @search-box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
 
 // Header classic colors
@@ -15,11 +31,11 @@
 @header-link-bg-classic-active: lighten(@header-bg-classic, 20%);
 
 // Header new UI colors
-@header-bg-v2: #0587d4;
-@brand-link-color-hover-v2: #0B6AA2;
-@brand-link-color-active-v2: #095683;
-@header-link-bg-hover-v2: #0B6AA2;
-@header-link-bg-active-v2: #095683;
+@header-bg-v2: @primary;
+@brand-link-color-hover-v2: @primary-hover;
+@brand-link-color-active-v2: @primary-active;
+@header-link-bg-hover-v2: @primary-hover;
+@header-link-bg-active-v2: @primary-active;
 
 // Header dimensions
 @header-item-border-radius: 4px;
@@ -27,3 +43,42 @@
 // Breadcrumbs and footer
 @breadcrumbs-bg: #f8f8f8;
 @breadcrumbs-border: #EAEFF2;
+
+// Monitor / bell-alert new colors
+@monitor-bg-v2: #f8d7da;
+@monitor-color-v2: #721c24;
+
+// Alert banners
+@alert-default-icon-color: #2196f3;
+@alert-default-bg-color: #d1ecf1;
+@alert-default-border-color: #bee5eb;
+@alert-default-color: #0C5464;
+
+@alert-success-icon-color: #4caf50;
+@alert-success-bg-color: #d4edda;
+@alert-success-border-color: #c3e6cb;
+@alert-success-color: @success;
+
+@alert-warn-icon-color: #ff9800;
+@alert-warn-bg-color: #fff3cd;
+@alert-warn-border-color: #ffeeba;
+@alert-warn-color: #856404;
+
+@alert-err-icon-color: #f44336;
+@alert-err-bg-color: #f8d7da;
+@alert-err-border-color: #f5c6cb;
+@alert-err-color: #721c24;
+
+// Typography
+@text-color: @black;
+@text-color-primary: @primary;
+@text-color-primary-accent: @primary-active;
+@text-color-grey-light: #747C82;
+@text-inactive: @text-color-grey-light;
+
+// Buttons
+@btn-primary-bg: @primary-hover;
+@btn-primary-bg-hover: @primary;
+@btn-primary-bg-active: @primary-active;
+@btn-secondary-color: @secondary;
+@btn-secondary-border: #9BA7AF;

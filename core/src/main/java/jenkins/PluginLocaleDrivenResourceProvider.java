@@ -25,8 +25,8 @@ package jenkins;
 
 import hudson.ExtensionPoint;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.net.URL;
 
 /**
@@ -44,5 +44,5 @@ public interface PluginLocaleDrivenResourceProvider extends ExtensionPoint {
      * @return URL to the localized resource, or {@code null} if inapplicable.
      */
     @CheckForNull
-    URL lookup(@Nonnull String s);
+    URL lookup(@NonNull String s);
 }

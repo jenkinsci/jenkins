@@ -41,6 +41,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 
 import jenkins.model.GlobalConfigurationCategory;
@@ -91,6 +92,12 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     public boolean isDisableRememberMe() {
         return Jenkins.get().isDisableRememberMe();
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.SECURITY;
     }
 
     @POST
@@ -182,7 +189,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
+        return Jenkins.SYSTEM_READ;
     }
 
     @Restricted(NoExternalUse.class)

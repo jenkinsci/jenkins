@@ -35,8 +35,8 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -101,14 +101,14 @@ public abstract class FederatedLoginService implements ExtensionPoint {
      * The object is bound to /federatedLoginService/URLNAME/. The url name needs to be unique among all
      * {@link FederatedLoginService}s.
      */
-    @Nonnull
+    @NonNull
     public abstract String getUrlName();
 
     /**
      * Returns your implementation of {@link FederatedLoginServiceUserProperty} that stores
      * opaque identifiers.
      */
-    @Nonnull
+    @NonNull
     public abstract Class<? extends FederatedLoginServiceUserProperty> getUserPropertyClass();
 
     /**
@@ -121,7 +121,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *
          * @return must not be null.
          */
-        @Nonnull
+        @NonNull
         public abstract String getIdentifier();
 
         /**
@@ -184,7 +184,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
         @SuppressWarnings("ACL.impersonate")
-        @Nonnull
+        @NonNull
         public User signin() throws UnclaimedIdentityException {
             User u = locateUser();
             if (u!=null) {
