@@ -4510,7 +4510,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             try {
-                LOGGER.log(Level.INFO, req.getRemoteAddr() + "|" + Jenkins.getAuthentication().getName() + "|ScriptConsole|" + Base64.getEncoder().encodeToString(text.getBytes()));
+                LOGGER.log(Level.INFO, "Administrative Groovy script by " + Jenkins.getAuthentication().getName() + " from " + req.getRemoteAddr() + ": (base64) " + Base64.getEncoder().encodeToString(text.getBytes()));
                 req.setAttribute("output",
                         RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {
