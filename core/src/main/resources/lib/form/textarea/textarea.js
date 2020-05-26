@@ -51,8 +51,8 @@ Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e
             var text = "";
             //Textarea object will be null if the text area is disabled.
             if (textarea == null) {
-                textarea = e.parentNode.getElementsByTagName("pre")[0];
-                text = textarea.innerText;
+                textarea = e.parentNode.getElementsByClassName("jenkins-readonly")[0];
+                text = textarea != null ? textarea.innerText : "";
             } else {
                 text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
             }
