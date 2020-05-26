@@ -145,6 +145,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -2257,10 +2258,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return !getDeprecatedPlugins().isEmpty();
         }
 
-        public List<PluginWrapper> getDeprecatedPlugins() {
+        public Map<PluginWrapper, String> getDeprecatedPlugins() {
             return Jenkins.get().getPluginManager().getPlugins().stream()
                     .filter(PluginWrapper::isDeprecated)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
         }
     }
 

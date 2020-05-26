@@ -27,15 +27,8 @@ THE SOFTWARE.
   <div class="alert alert-warning">
     <dl>
       <dt>${%DeprecatedPlugins}</dt>
-      <j:forEach var="p" items="${it.getDeprecatedPlugins()}">
-        <j:choose>
-          <j:when test="${p.url != null and p.url.matches('(?i)^https?.+$')}">
-            <dd><a href="${p.url}" target="_blank">${p.displayName}</a></dd>
-          </j:when>
-          <j:otherwise>
-            <dd>${p.displayName}}</dd>
-          </j:otherwise>
-        </j:choose>
+      <j:forEach var="e" items="${it.getDeprecatedPlugins()}">
+        <dd><a href="${e.value}" target="_blank">${e.key.displayName}</a></dd>
       </j:forEach>
     </dl>
     <p>${%DeprecatedPluginsDescription}</p>
