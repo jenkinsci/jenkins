@@ -388,7 +388,7 @@ pre.console {
 }
 
 #side-panel .pane-frame:hover, #side-panel .pane-frame.mouseover {
-  border: solid 1px #cecece;
+  border: solid 1px var(--side-panel-border-color--hover);
 }
 
 #side-panel .pane-content td.pane {
@@ -441,7 +441,7 @@ table.stripped-odd tr:nth-child(odd) {
   background: var(--even-row-color);
 }
 table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
-  background: #e8e8e8 !important;
+  background: var(--table-stripped-background-color--hover) !important;
 }
 
 div.pane-header {
@@ -891,7 +891,7 @@ table.parameters .setting-description {
 }
 
 table.parameters > tbody:hover {
-  background-color: #f0f0f0;
+  background-color: var(--table-parameters-background-color--hover);
 }
 
 /* ============================ health report hover ========================== */
@@ -1060,13 +1060,13 @@ table.parameters > tbody:hover {
 
 .pane.build-name a,
 .pane.build-name a:visited {
-  color: black;
+  color: var(--pane-link-color);
   text-decoration: underline;
 }
 
 .pane.build-details a,
 .pane.build-details a:visited {
-  color: black;
+  color: var(--pane-link-color--visited);
   opacity: 0.6;
   text-decoration: none;
 }
@@ -1460,7 +1460,32 @@ DIV.yahooTree td {
 
 #jenkins .yuimenu .bd {
     border: 1px solid #ccc;
-    box-shadow: 0px 3px 10px #bbb;
+    box-shadow: var(--menu-box-shadow);
+}
+
+#jenkins.yui-skin-sam {
+  .yui-menu ul {
+    border-color: var(--input-border);
+  }
+
+  .yuimenuitem-selected {
+    background-color: var(--menu-selected-color);
+  }
+
+  .yuimenuitemlabel {
+    color: var(--menu-text-color);
+
+    &:visited {
+      color: var(--menu-text-color);
+    }
+  }
+
+  .yuimenu {
+    .bd {
+      border-color: var(--input-border);
+      background-color: var(--menu-background-color);
+    }
+  }
 }
 
 #jenkins .yui-menu-shadow {
