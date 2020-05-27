@@ -428,7 +428,7 @@
 						content: '';
 						left: 2px;
 						top: 3px;
-						background: var(--badge-color);
+						background: @badge-color;
 						border-radius: 4px;
 					}
 					.website-link:after {
@@ -442,13 +442,13 @@
 						width: 14px;
 						height: 14px;
 						border-radius: 2px;
-						color: var(--badge-background);
+						color: @badge-background;
 					}
 					.website-link:hover:before,.website-link:focus:before {
 						background: #fff;
 					}
 					.website-link:hover:after,.website-link:focus:after {
-						color: var(--link-color);
+						color: @link-color;
 						width: 16px;
 						height: 16px;
 						font-size: 17px;
@@ -460,7 +460,7 @@
 						position: absolute;
 						top: 0;
 						right: 0;
-						color: var(--badge-color);
+						color: @badge-color;
 						border: 0;
 						text-decoration: none;
 						padding: 5px 13px;
@@ -470,8 +470,8 @@
 						.badge {
 							margin-left: 7px;
 							padding-left: 9px;
-							background: var(--badge-background);
-							color: var(--badge-color);
+							background: @badge-background;
+							color: @badge-color;
 							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
 						
 							&:after {
@@ -489,7 +489,7 @@
 							outline: none;
 							
 							.badge {
-								background: var(--badge-color);
+								background: @badge-color;
 								color: #fff;
 							}
 							outline: none;
@@ -517,8 +517,8 @@
 						.badge {
 							padding: 4px 8px;
 							margin: 5px 3px 0 0;
-							background: var(--badge-background);
-							color: var(--badge-color);
+							background: @badge-background;
+							color: @badge-color;
 							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
 							
 							&:after {
@@ -528,7 +528,7 @@
 							
 							&:hover, &:active, &:focus {
 								color: #fff;
-								background: var(--link-color);
+								background: @link-color;
 								text-decoration: none;
 							}
 						}
@@ -880,14 +880,14 @@
 
 body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
     .plugin-setup-wizard();
-  --fb-loader-color: #E6E6E6;
 }
 
+@fb-loader-color: #E6E6E6;
 
 .loader,
 .loader:before,
 .loader:after {
-    background: var(--fb-loader-color);
+    background: @fb-loader-color;
     -webkit-animation: fb-loader 1s infinite ease-in-out;
     animation: fb-loader 1s infinite ease-in-out;
     width: 7px;
@@ -923,11 +923,11 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
     0%,
     80%,
     100% {
-        box-shadow: 0 0 --var(fb-loader-color);
+        box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
     40% {
-        box-shadow: 0 -2em --var(fb-loader-color);
+        box-shadow: 0 -2em @fb-loader-color;
         height: 5em;
     }
 }
@@ -935,11 +935,11 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
     0%,
     80%,
     100% {
-        box-shadow: 0 0 --var(fb-loader-color);
+        box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
     40% {
-        box-shadow: 0 -2em --var(fb-loader-color);
+        box-shadow: 0 -2em @fb-loader-color;
         height: 5em;
     }
 }
