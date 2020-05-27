@@ -49,7 +49,7 @@
 }
 
 #breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
-  background-color: var(--breadcrumbs-background-color--hover);
+  background-color: #e0e4dc;
 }
 
 
@@ -100,7 +100,7 @@
 }
 
 #breadcrumbs LI.children:hover {
-    background-image: var(--menu-selector-right-background-image--hover);
+    background-image: url(menu_right_arrow.png);
 }
 
 #breadcrumbs LI.separator:last-child {/* separators are for in-between only */
@@ -109,7 +109,7 @@
 
 #menuSelector {/* used for showing 'v' on the right of the anchor */
     background-color:transparent;
-    background-image: var(--menu-selector-down-background-image);
+    background-image: url(menu_down_arrow.png);
     background-position: center center;
     background-repeat: no-repeat;
     width: 15px;
