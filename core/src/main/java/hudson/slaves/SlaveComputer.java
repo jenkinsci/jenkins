@@ -283,7 +283,7 @@ public class SlaveComputer extends Computer {
             logger.fine("Forcing a reconnect on "+getName());
 
         closeChannel();
-        Exception threadInfo = new Exception();
+        Throwable threadInfo = new Throwable("launched here");
         return lastConnectActivity = Computer.threadPoolForRemoting.submit(() -> {
             // do this on another thread so that the lengthy launch operation
             // (which is typical) won't block UI thread.
