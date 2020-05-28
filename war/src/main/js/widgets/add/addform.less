@@ -4,9 +4,9 @@
 
   form > .header {
     position: relative;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--input-border);
     border-bottom: none;
-    background: #eeeeee;
+    background: var(--add-item-categories-bg-color);
     -webkit-border-top-left-radius: 3px;
     -moz-border-top-left-radius: 3px;
     border-top-left-radius: 3px;
@@ -18,9 +18,9 @@
 
   form > .footer {
     position: relative;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--input-border);
     border-top: none;
-    background: #eeeeee;
+    background: var(--add-item-categories-bg-color);
     height: 110px;
 
     .btn-decorator {
@@ -29,8 +29,8 @@
       padding: 20px 30px;
       width: auto;
       border-top-right-radius: 10px;
-      border: 1px solid #aaccbb;
-      background: rgba(245, 249, 239, 0.75);
+      border: 1px solid var(--add-item-btn-decorator-border-color);
+      background: var(--add-item-btn-decorator-color);
       text-align: center;
       z-index: 10;
 
@@ -53,10 +53,10 @@
 
   .item-copy {
     position: relative;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--input-border);
     border-top: none;
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: var(--add-item-categories-bg-color);
 
     p.description {
       font-size: var(--font-size-base);
@@ -116,7 +116,7 @@
     top: 10px;
     height: 48px;
     width: 48px;
-    background: #ffffff;
+    background: var(--input-color);
     border: 1px solid #6699cc;
     border-radius: 50%;
     opacity: .9;
@@ -210,19 +210,17 @@
   }
 
   input {
-    background-color: #fff;
     padding: 5px 10px;
-    border: 1px solid #999;
     width: 50%;
     min-width: 300px;
   }
 
   .categories {
-    border: 1px solid #cccccc;
-    background-color: #f9f9f9;
+    border: 1px solid var(--input-border);
+    background-color: var(--add-item-categories-main-bg-color);
 
     .category {
-      border-bottom: 1px solid #cccccc;
+      border-bottom: 1px solid var(--input-border);
       padding: 10px;
 
       .header {
@@ -276,8 +274,8 @@
 .j-item-options {
 
   li:hover, li:focus {
-    border-color: #cccccc;
-    background: rgba(255, 255, 255, 0.65);
+    border-color: var(--input-border);
+    background: var(--add-item-categories-bg-color--hover);
     outline: 0;
   }
 
@@ -320,7 +318,7 @@
       display: block;
       font-size: var(--font-size-base);
       font-weight: bold;
-      color: #000;
+      color: var(--text-color);
       padding-bottom: 5px;
       cursor: pointer;
 
