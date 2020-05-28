@@ -239,7 +239,7 @@ THE SOFTWARE.
         <div class="page-footer__flex-row">
           <div class="page-footer__footer-id-placeholder" id="footer"></div>
 
-          <div class="page-footer__generated">
+          <div class="page-footer__generated hidden-xs hidden-sm">
             <span>${h.getLocale(request)}</span>
           </div>
 
