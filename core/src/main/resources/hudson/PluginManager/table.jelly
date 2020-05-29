@@ -72,8 +72,9 @@ THE SOFTWARE.
               <th>${%Released}</th>
               <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
             </tr>
+            <j:set var="unavailableList" value="${app.updateCenter.pluginsWithUnavailableUpdates}"/>
             <j:choose>
-              <j:when test="${!empty(list)}">
+              <j:when test="${!empty(list) or (isUpdates and !empty(unavailableList))}">
                 <j:set var="cache" value="${it.createCache()}"/>
                 <j:if test="${filtered == 'true'}">
                   <tr id="hidden-by-default-instructions">
@@ -194,7 +195,7 @@ THE SOFTWARE.
                 </j:forEach>
                 <j:if test="${isUpdates}">
                   <!-- TODO this might be nicer by going through the root list element and populating it in index.jelly -->
-                  <j:forEach var="p" items="${app.updateCenter.pluginsWithUnavailableUpdates}">
+                  <j:forEach var="p" items="${unavailableList}">
                     <j:if test="${!list.contains(p)}"><!-- only show entries for plugins not already in the real updates list -->
                       <tr class="unavailable">
                         <l:isAdmin>
