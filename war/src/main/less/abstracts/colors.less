@@ -1,5 +1,6 @@
 :root {
-  --white: #fff;
+  --white: #ffffff;
+  --very-light-grey: #f0f0f0;
   --black: #333;
 
   // branding
@@ -18,6 +19,10 @@
 
   // Background colors
   --background: var(--white);
+  
+  // Borders
+  --line-green: #acb;
+  --medium-translucent: #bfffffff;
 
   // Page header colors
   --logo-bg: var(--white);
@@ -94,11 +99,15 @@
   --btn-secondary-border: #9ba7af;
   --btn-text-color: var(--white);
 
+  // Help area
+  --help-area-bg-color: var(--very-light-grey);
+  --configure-job-help-area-bg-color: var(--medium-translucent);
+
   // Table
   --even-row-color: #fbfbfb;
-  --bigtable-header-color: #f0f0f0;
+  --bigtable-header-color: var(--very-light-grey);
   --project-status-border-bottom-color: #ddd;
-  --table-parameters-bg-color--hover: #f0f0f0;
+  --table-parameters-bg-color--hover: var(--very-light-grey);
   --table-stripped-bg-color--hover: #e8e8e8;
 
   // Link
@@ -111,16 +120,16 @@
   // Pane
   --pane-header-color: #eee;
   --pane-header-border-color: #f3f3f3;
-  --pane-border-color: #f0f0f0;
+  --pane-border-color: var(--very-light-grey);
   --pane-text-color: #3b3b3b;
   --pane-link-color: black;
   --pane-link-color--visited: black;
 
   // TabBar
-  --tab-bar-border-color: #f0f0f0;
+  --tab-bar-border-color: var(--very-light-grey);
   --tab-bar-text-color: #999;
   --tab-bar-bg--checked: #eee;
-  --tab-bar-border-color--checked: #f0f0f0;
+  --tab-bar-border-color--checked: var(--very-light-grey);
   --tab-bar-text-color--checked: #000;
   --tab-bar-bg-color--hover: #eee;
   --tab-bar-add-text-color: #0460d1;
@@ -149,10 +158,13 @@
   --manage-option-bg-color--hover: #fafafa;
   --manage-option-border-color: var(--input-border);
 
-  // Add form widget
-  --add-item-categories-bg-color: #eee;
-  --add-item-categories-main-bg-color: #f9f9f9;
-  --add-item-categories-bg-color--hover: #a5ffffff;
+  // Add form widget / configure job
+  --light-bg-color: #eee;
+  --bright-bg-color: #f9f9f9;
+  --brightest-bg-color: var(--white);
+  --light-bg-color--hover: #a5ffffff;
   --add-item-btn-decorator-border-color: #acb;
-  --add-item-btn-decorator-color: #bff5f9ef;
+  --add-item-btn-decorator-bg-color: #bff5f9ef;
+  --configure-job-bottom-sticker-bg-color: #bff5f9ef;
+  --configure-job-bottom-sticker-border-color: var(--line-green);
 }
