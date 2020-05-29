@@ -1386,7 +1386,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @return {@code true} if usage statistics should be collected.
      *                Defaults to {@code true} when {@link #noUsageStatistics} is not set.
-     * @since 2.226
      */
     public boolean isUsageStatisticsCollected() {
         return noUsageStatistics==null || !noUsageStatistics;
@@ -1395,7 +1394,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Sets the noUsageStatistics flag
      *
-     * @since 2.226
      */
     public void setNoUsageStatistics(Boolean noUsageStatistics) throws IOException {
         this.noUsageStatistics = noUsageStatistics;
@@ -2559,7 +2557,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Everything below here is admin-only, so do the check here.
      */
     public LogRecorderManager getLog() {
-        checkPermission(ADMINISTER);
+        checkPermission(SYSTEM_READ);
         return log;
     }
 
@@ -4125,7 +4123,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
-        checkPermission(ADMINISTER);
+        checkPermission(MANAGE);
         LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread

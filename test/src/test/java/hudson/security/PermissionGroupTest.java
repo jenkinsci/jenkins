@@ -26,7 +26,7 @@ package hudson.security;
 import hudson.model.Hudson;
 import hudson.model.Messages;
 import jenkins.model.Jenkins;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Email;

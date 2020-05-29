@@ -45,7 +45,11 @@ import java.util.Collections;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import net.sf.json.JSONObject;

@@ -13,7 +13,6 @@ import org.jvnet.hudson.test.Issue;
 /**
  * @author kingfai
  */
-@SuppressWarnings("unchecked")
 public class AbstractItemTest {
 
     private static class StubAbstractItem extends AbstractItem {

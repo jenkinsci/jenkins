@@ -30,6 +30,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
@@ -61,6 +62,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -82,6 +84,8 @@ import javax.servlet.http.HttpSession;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
@@ -712,16 +716,37 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     throw new FormException("Stapler request is missing in the call", "staplerRequest");
                 }
                 String pwd = Util.fixEmpty(req.getParameter("user.password"));
-                String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
+                String pwd2 = Util.fixEmpty(req.getParameter("user.password2"));
 
-                if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
-                    throw new FormException("Please confirm the password by typing it twice","user.password2");
+                if (pwd == null || pwd2 == null) {
+                    // one of the fields is empty
+                    throw new FormException("Please confirm the password by typing it twice", "user.password2");
+                }
 
+                // will be null if it wasn't encrypted
                 String data = Protector.unprotect(pwd);
-                if(data!=null) {
+                String data2 = Protector.unprotect(pwd2);
+
+                if ((data == null) != (data2 == null)) {
+                    // Require that both values are protected or unprotected; do not allow user to change just one text field
+                    throw new FormException("Please confirm the password by typing it twice", "user.password2");
+                }
+
+                if (data != null /* && data2 != null */ && !MessageDigest.isEqual(data.getBytes(StandardCharsets.UTF_8), data2.getBytes(StandardCharsets.UTF_8))) {
+                    // passwords are different encrypted values
+                    throw new FormException("Please confirm the password by typing it twice", "user.password2");
+                }
+
+                if (data == null /* && data2 == null */ && !pwd.equals(pwd2)) {
+                    // passwords are different plain values
+                    throw new FormException("Please confirm the password by typing it twice","user.password2");
+                }
+
+                if (data != null) {
                     String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
-                    if(data.startsWith(prefix))
+                    if (data.startsWith(prefix)) {
                         return Details.fromHashedPassword(data.substring(prefix.length()));
+                    }
                 }
 
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
@@ -916,6 +941,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
+        }
+
+        public FormValidation doCheckAllowsSignup(@QueryParameter boolean value) {
+            if (value) {
+                return FormValidation.warning(Messages.HudsonPrivateSecurityRealm_SignupWarning());
+            }
+            return FormValidation.ok();
         }
     }
 

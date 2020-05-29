@@ -90,7 +90,6 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
         out.print(prefix);
         out.println(msg);
 
-        // annotate(new HudsonExceptionNote()) if and when this is made to do something
         Charset charset = getCharset();
         return new PrintWriter(charset != null ? new OutputStreamWriter(out, charset) : new OutputStreamWriter(out), true);
     }

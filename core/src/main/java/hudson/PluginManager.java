@@ -135,6 +135,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -2239,7 +2240,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(DoNotUse.class)
     public String unscientific(double d) {
-        return String.format("%.4f", d);
+        return String.format(Locale.US, "%15.4f", d);
     }
 
     @Override

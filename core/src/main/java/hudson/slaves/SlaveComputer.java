@@ -54,6 +54,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
+import jenkins.agents.AgentComputerUtil;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
@@ -1019,12 +1020,12 @@ public class SlaveComputer extends Computer {
 
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
-                Formatter dummy = new SimpleFormatter();
+                ThreadLocal<Formatter> dummy = ThreadLocal.withInitial(() -> new SimpleFormatter());
                 @Override
-                public synchronized void publish(LogRecord record) {
+                public /* not synchronized */ void publish(LogRecord record) {
                     // see LogRecord.writeObject for dangers of serializing non-String/null parameters
                     if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
-                        record.setMessage(dummy.formatMessage(record));
+                        record.setMessage(dummy.get().formatMessage(record));
                         record.setParameters(null);
                     }
                     super.publish(record);
@@ -1067,17 +1068,11 @@ public class SlaveComputer extends Computer {
      *
      * @return null if the calling thread doesn't have any trace of where its master is.
      * @since 1.362
+     * @deprecated Use {@link AgentComputerUtil#getChannelToMaster()} instead.
      */
+    @Deprecated
     public static VirtualChannel getChannelToMaster() {
-        if (Jenkins.getInstanceOrNull()!=null) // check if calling thread is on master or on slave
-            return FilePath.localChannel;
-
-        // if this method is called from within the agent computation thread, this should work
-        Channel c = Channel.current();
-        if (c!=null && Boolean.TRUE.equals(c.getProperty("slave")))
-            return c;
-
-        return null;
+        return AgentComputerUtil.getChannelToMaster();
     }
 
     /**
