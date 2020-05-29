@@ -203,6 +203,7 @@ THE SOFTWARE.
                         <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                           <div>
                             <a href="${p.wiki}" target="_blank"><st:out value="${p.displayName}"/></a>
+                            <span class="unavailable-label">${%unavailable}</span>
                           </div>
                           <j:if test="${!p.categories.isEmpty()}">
                             <div class="plugin-manager__categories">
@@ -221,7 +222,7 @@ THE SOFTWARE.
                           </j:if>
                           <j:if test="${it.hasLatestVersionNewerThanOffered(p)}">
                             <div class="alert alert-info">
-                              ${%newerVersionEntry(p.latest)}
+                              ${%newerVersionEntry(p.wiki)}
                             </div>
                           </j:if>
                         </td>

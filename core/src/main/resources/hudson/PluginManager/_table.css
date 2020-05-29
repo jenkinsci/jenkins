@@ -80,3 +80,19 @@ time {
 #plugins tr.unavailable {
   background-color: #f4f4f4;
 }
+tr.unavailable span.unavailable-label {
+    display: inline-block;
+    border: 1px solid #666;
+    background-color: #fcc;
+    color: #333;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0 0.5rem;
+    margin: 0.25rem 0.5rem;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    text-transform: uppercase;
+}
