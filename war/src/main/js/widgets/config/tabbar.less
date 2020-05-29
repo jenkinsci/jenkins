@@ -10,7 +10,7 @@
   border-bottom:none;
   background:var(--light-bg-color);
   min-height:2.5em;
-  .border-radius-top(@radius);
+  .border-radius-top(@border-radius);
   z-index:5;
 
   nav:before, nav:after {
@@ -37,7 +37,7 @@
   .showTabs,
   .noTabs {
     position: absolute;
-    border-radius: var(@radius);
+    border-radius: var(@border-radius);
     right: 5px;
     top: 5px;
     cursor: pointer;
@@ -101,7 +101,7 @@
     padding:10px;
     border-top:none;
     background:var(--bright-bg-color);
-    .border-radius-bottom(@radius);
+    .border-radius-bottom(@border-radius);
 
     .showTabs{
       display:block;
@@ -192,7 +192,7 @@
           height:var(--input-line-height);
           line-height:var(--input-line-height);
           padding:0 5px;
-          .border-radius(@radius);
+          .border-radius(@border-radius);
         }
 
         select:not([multiple]){
