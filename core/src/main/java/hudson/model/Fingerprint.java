@@ -1339,7 +1339,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
      * malformed.
      */
-    /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
+    public static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
         long start=0;
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();
