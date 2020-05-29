@@ -46,7 +46,8 @@ time {
 
     font-size: 1rem;
     line-height: 1.5;
-    color: #4d545d;
+    color: #333;
+    color: var(--text-color);
 
     border-radius: 4px;
     border: 1px solid grey;
