@@ -67,7 +67,7 @@
     display: inline-block;
     display: inline-flex;
     color: #4d545d;
-    color: var(--breadcrumbs-color--visited);
+    color: var(--breadcrumbs-text-color);
 }
 
 #breadcrumbs LI A:hover, #breadcrumbs LI A:focus {
