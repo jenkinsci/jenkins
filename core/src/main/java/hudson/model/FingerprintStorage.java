@@ -45,7 +45,7 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     /**
      * Returns the configured FingerprintStorage for the instance.
      */
-    FingerprintStorage get(){
+    static FingerprintStorage get(){
         String fingerprintStorageEngine = SystemProperties.getString("FingerprintStorageEngine",
                 "hudson.model.FileFingerprintStorage");
         return ExtensionList.lookup(FingerprintStorage.class).getDynamic(fingerprintStorageEngine);
