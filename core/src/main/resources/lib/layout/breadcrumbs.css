@@ -51,6 +51,7 @@
 
 #breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
   background-color: #e0e4dc;
+  background-color: var(--breadcrumbs-item-bg-color--hover);
 }
 
 
@@ -109,6 +110,7 @@
 
 #breadcrumbs LI.children:hover:after {
     border-left-color: #4d545d;
+    border-left-color: var(--breadcrumbs-text-color);
 }
 
 #breadcrumbs LI.separator:last-child {/* separators are for in-between only */
@@ -131,6 +133,7 @@
     /* Down arrow */
     content: "";
     border-top: 0.30em solid #4d545d;
+    border-top: 0.30em solid var(--breadcrumbs-text-color);
     border-left: 0.30em solid transparent;
     border-right: 0.30em solid transparent;
     border-bottom: 0;
