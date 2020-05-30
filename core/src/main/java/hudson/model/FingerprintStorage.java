@@ -42,15 +42,23 @@ import org.kohsuke.accmod.Restricted;
 @Restricted(Beta.class)
 public abstract class FingerprintStorage implements ExtensionPoint {
 
-    private static final String fingerprintStorageEngine = SystemProperties.getString("FingerprintStorageEngine",
-            "hudson.model.FileFingerprintStorage");
-
-    static FingerprintStorage get(){
+    /**
+     * Returns the configured FingerprintStorage for the instance.
+     */
+    FingerprintStorage get(){
+        String fingerprintStorageEngine = SystemProperties.getString("FingerprintStorageEngine",
+                "hudson.model.FileFingerprintStorage");
         return ExtensionList.lookup(FingerprintStorage.class).getDynamic(fingerprintStorageEngine);
     }
 
+    /**
+     * Saves the given Fingerprint in the storage.
+     */
     public abstract void save(Fingerprint fp) throws IOException;
 
+    /**
+     * Returns the Fingerprint with the given MD5.
+     */
     public abstract Fingerprint load(byte[] md5sum) throws IOException;
 
 }
