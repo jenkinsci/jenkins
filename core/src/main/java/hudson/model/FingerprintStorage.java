@@ -42,7 +42,6 @@ import org.kohsuke.accmod.Restricted;
 @Restricted(Beta.class)
 public abstract class FingerprintStorage implements ExtensionPoint {
 
-    @Restricted(NoExternalUse.class)
     private static final String fingerprintStorageEngine = SystemProperties.getString("FingerprintStorageEngine",
             "hudson.model.FileFingerprintStorage");
 
