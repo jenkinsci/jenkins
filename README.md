@@ -2,8 +2,6 @@
 
 # About
 
-[![Weekly Release](https://img.shields.io/badge/dynamic/json.svg?url=https://updates.jenkins.io/update-center.actual.json&label=Weekly%20Release&query=$.core.version&color=green)](https://jenkins.io/changelog/)
-[![LTS Release](https://img.shields.io/badge/dynamic/json.svg?url=https://updates.jenkins.io/stable/update-center.actual.json&label=LTS%20Release&query=$.core.version&color=orange)](https://jenkins.io/changelog-stable/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 
 In a nutshell, Jenkins is the leading open-source automation server. 
@@ -29,6 +27,9 @@ Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
 
 # Contributing to Jenkins
 Follow the [contributing guidelines](CONTRIBUTING.md) if you want to propose a change in the Jenkins core.
+
+# Maintainers guidelines
+Documentation for Jenkins core maintainers is in the [maintainers guidelines](docs/MAINTAINERS.adoc).
 
 # News and Website
 All information about Jenkins can be found on our [website]. Follow us on Twitter [@jenkinsci].

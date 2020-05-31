@@ -184,7 +184,7 @@ Merge process can be initiated once a pull request matches the requirements:
 
 ==== Step 2: Is it a good time to merge?
 
-link:[https://jenkins.io/security/](Jenkins security updates) are coordinated with the LTS calendar, and if the weekly release on the weekend before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes, and a working Jenkins.
+link:https://jenkins.io/security/[Jenkins security updates] are coordinated with the LTS calendar and if the weekly release on the weekend before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes and a working Jenkins.
 The Jenkins security team will usually send a "pre-announcement" to link:https://groups.google.com/forum/#!forum/jenkinsci-advisories[the advisories list] on Wednesday or Thursday the week before release, but that's not always doable.
 For these reasons, the following changes should not be merged during the week before LTS releases (weeks 3, 7, 11, 15, etc. on the page linked above):
 
