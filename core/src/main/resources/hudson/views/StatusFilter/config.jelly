@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+Copyright (c) 2020, Autodesk, Inc., Raihaan Shouhell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,12 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout permission="${app.READ}">
-    <st:include page="sidepanel.jelly" it="${app}"/>
-    <l:main-panel>
-      <h1>
-        <l:icon class="icon-terminal icon-xlg"/>
-        ${%Jenkins CLI}
-      </h1>
-      <p>
-        ${%blurb(rootURL)}
-      </p>
-      <j:set var="commandArgs" value="help"/>
-      <st:include page="example.jelly"/>
-
-      <h2>${%Available Commands}</h2>
-      <table>
-        <j:forEach items="${h.getCLICommands()}" var="command">
-          <tr>
-            <td><a href="command/${command.name}">${command.name}</a></td>
-            <td>${command.shortDescription}</td>
-          </tr>
-        </j:forEach>
-      </table>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:entry title="${%Status Filter}" help="/help/view-config/statusFilter.html">
+        <select name="statusFilter" class="setting-input">
+            <f:option value="1" selected="${it.statusFilter==true}">${%Enabled jobs only}</f:option>
+            <f:option value="2" selected="${it.statusFilter==false}">${%Disabled jobs only}</f:option>
+        </select>
+    </f:entry>
 </j:jelly>
