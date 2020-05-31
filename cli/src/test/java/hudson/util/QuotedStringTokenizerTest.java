@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import com.sun.xml.internal.bind.v2.runtime.output.StAXExStreamWriterOutput;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
