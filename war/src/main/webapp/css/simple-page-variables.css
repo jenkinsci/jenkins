@@ -1,0 +1,13 @@
+:root {
+    --background: #ffffff;
+    --background-medium: (--background);
+    --btn-primary-bg: #0b6aa2;
+    --btn-primary-bg-focus: #2171ce;
+    --btn-text-color: white;
+    --danger-color: #C4000A;
+    --input-form-border: rgba(74,74,74,0.25);
+    --input-color: var(--background);
+    --checkbox-border: rgba(73, 73, 73, 0.5);
+    --box-shadow: rgba(0, 0, 0, 0.2);
+    --text-color: #4A4A4A;
+}
