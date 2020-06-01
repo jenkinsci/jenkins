@@ -1258,6 +1258,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Save the Fingerprint in the given file locally
      * @throws IOException Save error
      */
+    @Deprecated
     void save(File file) throws IOException {
         FileFingerprintStorage.save(this, file);
     }
