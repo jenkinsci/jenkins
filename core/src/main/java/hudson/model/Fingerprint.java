@@ -1127,7 +1127,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
         if (modified) {
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Saving trimmed {0}", getFingerprintFile(md5sum));
+                logger.log(Level.FINE, "Saving trimmed Fingerprint ", md5sum);
             }
             save();
         }
@@ -1307,22 +1307,6 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * The file we save our configuration.
-     */
-    public static @NonNull XmlFile getConfigFile(@NonNull File file) {
-        return new XmlFile(XSTREAM,file);
-    }
-
-    /**
-     * Determines the file name from md5sum.
-     */
-    public static @NonNull File getFingerprintFile(@NonNull byte[] md5sum) {
-        assert md5sum.length==16;
-        return new File( Jenkins.get().getRootDir(),
-            "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
-    }
-
-    /**
      * Loads a {@link Fingerprint} from a file in the image.
      * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
      * malformed.
@@ -1364,8 +1348,6 @@ public class Fingerprint implements ModelObject, Saveable {
     private static void initFacets(Fingerprint fingerprint){
         if (fingerprint==null) return;
 
-        if (fingerprint.facets==null)
-            fingerprint.facets = new PersistedList<>(fingerprint);
         for (FingerprintFacet facet : fingerprint.facets)
             facet._setOwner(fingerprint);
     }

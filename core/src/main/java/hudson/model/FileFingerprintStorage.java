@@ -34,6 +34,7 @@ import jenkins.model.FingerprintFacet;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
@@ -57,11 +58,11 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private static final DateConverter DATE_CONVERTER = new DateConverter();
 
     public @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
-        return load(Fingerprint.getFingerprintFile(md5sum));
+        return load(getFingerprintFile(md5sum));
     }
 
     static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
-        XmlFile configFile = Fingerprint.getConfigFile(file);
+        XmlFile configFile = getConfigFile(file);
         if(!configFile.exists())
             return null;
 
@@ -97,9 +98,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     public synchronized void save(Fingerprint fp) throws IOException {
-        File file = Fingerprint.getFingerprintFile(fp.getHashString().getBytes());
+        File file = getFingerprintFile(fp.getHashString().getBytes());
         save(fp, file);
-        SaveableListener.fireOnChange(fp, Fingerprint.getConfigFile(file));
+        SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
 
     static void save(Fingerprint fp, File file) throws IOException {
@@ -151,8 +152,24 @@ public class FileFingerprintStorage extends FingerprintStorage {
             }
         } else {
             // Slower fallback that can persist facets.
-            Fingerprint.getConfigFile(file).write(fp);
+            getConfigFile(file).write(fp);
         }
+    }
+
+    /**
+     * The file we save our configuration.
+     */
+    public static @NonNull XmlFile getConfigFile(@NonNull File file) {
+        return new XmlFile(Fingerprint.getXStream(), file);
+    }
+
+    /**
+     * Determines the file name from md5sum.
+     */
+    public static @NonNull File getFingerprintFile(@NonNull byte[] md5sum) {
+        assert md5sum.length==16;
+        return new File( Jenkins.get().getRootDir(),
+                "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
     }
 
 }
