@@ -34,6 +34,9 @@ import jenkins.model.FingerprintFacet;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -46,6 +49,7 @@ import java.util.logging.Logger;
  *
  * @author Sumit Sarin
  */
+@Restricted(Beta.class)
 @Extension
 public class FileFingerprintStorage extends FingerprintStorage {
 
