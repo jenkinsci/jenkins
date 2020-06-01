@@ -89,13 +89,14 @@ public class HyperlinkNoteTest {
     	FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.waitUntilNoActivity();
         HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
+        System.out.println("Before:\n"+rsp.getWebResponse().getContentAsString()+"\n\n");
         //This would fail if job name has `'`
         try {
         	assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
         } catch(Exception enfe) {
         	String str = "str->\n";
+			str += rsp.getWebResponse().getContentAsString()+"\n\n";
         	for(HtmlAnchor ha: rsp.getAnchors()) {
-        		str += rsp.toString()+"\n\n";
         		str += "getNameAttribute: " + ha.getNameAttribute() + " getTextContent: " + ha.getTextContent() + "\n";
         	}
         	throw new Exception(str);
