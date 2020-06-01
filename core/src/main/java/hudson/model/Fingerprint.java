@@ -1371,7 +1371,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * Performs Initialization of facets on a new loaded Fingerprint.
+     * Performs Initialization of facets on a newly loaded Fingerprint.
      */
     private static void initFacets(Fingerprint fingerprint){
         if (fingerprint==null) return;
