@@ -83,21 +83,22 @@ public class HyperlinkNoteTest {
     
     @Test
     public void textWithSingleQuote() throws Exception {
-        FreeStyleProject upstream = r.createFreeStyleProject("upstream");
-        r.createFreeStyleProject("d0wnstr3'am");
-        upstream.getPublishersList().add(new BuildTrigger("d0wnstr3'am", Result.SUCCESS));
-        FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
+    	FreeStyleProject upstream = r.createFreeStyleProject("upstream");
+    	r.createFreeStyleProject("d0wnstr3'am");
+    	upstream.getPublishersList().add(new BuildTrigger("d0wnstr3'am", Result.SUCCESS));
+    	FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.waitUntilNoActivity();
         HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
         //This would fail if job name has `'`
         try {
-            assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
-        } catch(ElementNotFoundException enfe) {
-            String str = "";
-            for(HtmlAnchor ha: rsp.getAnchors()) {
-                str += "getNameAttribute: " + ha.getNameAttribute() + " getTextContent: " + ha.getTextContent();
-            }
-            throw new Exception(str);
+        	assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
+        } catch(Exception enfe) {
+        	String str = "str->\n";
+        	for(HtmlAnchor ha: rsp.getAnchors()) {
+        		str += rsp.toString()+"\n\n";
+        		str += "getNameAttribute: " + ha.getNameAttribute() + " getTextContent: " + ha.getTextContent() + "\n";
+        	}
+        	throw new Exception(str);
         }
     }
 
