@@ -29,8 +29,6 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
-import hudson.util.PersistedList;
-import jenkins.model.FingerprintFacet;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -98,7 +96,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     public synchronized void save(Fingerprint fp) throws IOException {
-        File file = getFingerprintFile(fp.getHashString().getBytes());
+        File file = getFingerprintFile(Util.fromHexString(fp.getHashString()));
         save(fp, file);
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }

@@ -29,9 +29,7 @@ import hudson.ExtensionPoint;
 import java.io.IOException;
 
 import jenkins.util.SystemProperties;
-
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.Restricted;
 
 /**

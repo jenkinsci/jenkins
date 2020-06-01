@@ -34,7 +34,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.BulkChange;
 import hudson.Util;
-import hudson.XmlFile;
 import hudson.Extension;
 import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
