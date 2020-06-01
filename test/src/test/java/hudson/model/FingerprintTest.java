@@ -75,7 +75,7 @@ import static org.hamcrest.Matchers.nullValue;
  */
 public class FingerprintTest {
 
-    private static final byte[] SOME_MD5 = Fingerprint.toByteArray(Util.getDigestOf("whatever"));
+    private static final byte[] SOME_MD5 = Util.getDigestOf("whatever").getBytes();
     
     @Rule
     public JenkinsRule rule = new JenkinsRule();

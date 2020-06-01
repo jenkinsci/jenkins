@@ -97,7 +97,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     public synchronized void save(Fingerprint fp) throws IOException {
-        File file = Fingerprint.getFingerprintFile(Fingerprint.toByteArray(fp.getHashString()));
+        File file = Fingerprint.getFingerprintFile(fp.getHashString().getBytes());
         save(fp, file);
         SaveableListener.fireOnChange(fp, Fingerprint.getConfigFile(file));
     }
