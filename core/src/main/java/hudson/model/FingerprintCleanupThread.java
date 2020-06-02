@@ -130,7 +130,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
-        return Fingerprint.load(fingerprintFile);
+        return FileFingerprintStorage.load(fingerprintFile);
     }
 
     protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {

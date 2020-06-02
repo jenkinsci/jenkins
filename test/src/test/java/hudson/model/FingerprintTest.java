@@ -176,7 +176,7 @@ public class FingerprintTest {
         XmlFile f = new XmlFile(new File(rule.jenkins.getRootDir(), "foo.xml"));
         f.write("Hello, world!");
         try {
-            Fingerprint.load(f.getFile());
+            FileFingerprintStorage.load(f.getFile());
         } catch (IOException ex) {
             assertThat(ex.getMessage(), containsString("Unexpected Fingerprint type"));
             return;

@@ -1325,6 +1325,11 @@ public class Fingerprint implements ModelObject, Saveable {
 
         return loaded;
     }
+
+    /**
+     * @deprecated as of TODO
+     */
+    @Deprecated
     /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         Fingerprint fingerprint = FileFingerprintStorage.load(file);
         initFacets(fingerprint);

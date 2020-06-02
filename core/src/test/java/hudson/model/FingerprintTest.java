@@ -224,11 +224,11 @@ public class FingerprintTest {
                 + "timestamp=2013-05-21 19:20:03.534 UTC,"
                 + "usages={stuff=[304,306),[307,324),[328,330), stuff/test:stuff=[2,67),[72,77),[84,223),[228,229),[232,268)},"
                 + "facets=[]]",
-                Fingerprint.load(new File(FingerprintTest.class.getResource("fingerprint.xml").toURI())).toString());
+                FileFingerprintStorage.load(new File(FingerprintTest.class.getResource("fingerprint.xml").toURI())).toString());
     }
 
     @Test public void loadFingerprintWithoutUsages() throws Exception {
-        Fingerprint fp = Fingerprint.load(new File(FingerprintTest.class.getResource("fingerprintWithoutUsages.xml").toURI()));
+        Fingerprint fp = FileFingerprintStorage.load(new File(FingerprintTest.class.getResource("fingerprintWithoutUsages.xml").toURI()));
         assertNotNull(fp);
         assertEquals("test:jenkinsfile-example-1.0-SNAPSHOT.jar", fp.getFileName());
         assertNotNull(fp.getUsages());
