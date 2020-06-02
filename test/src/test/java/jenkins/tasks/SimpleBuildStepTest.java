@@ -41,7 +41,7 @@ public class SimpleBuildStepTest {
             // FIXME: Should this test any other envvars? Or Parameters?
         }
 
-        @TestExtension("jenkins29144")
+        @TestExtension("builderReceivesEnvVars")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
             @Override
