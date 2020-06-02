@@ -48,7 +48,8 @@ form {
 }
 
 input, textarea, select {
-  color: @text-color;
+  color: var(--text-color);
+  background-color: var(--input-color);
   font-family: inherit;
 }
 
@@ -130,12 +131,12 @@ dt {
 
 a:link {
   text-decoration: underline;
-  color: #204A87;
+  color: var(--link-color);
 }
 
 a:visited {
   text-decoration: underline;
-  color: #5c3566;
+  color: var(--link-visited-color);
 }
 
 a.lowkey:link {
@@ -184,8 +185,9 @@ a.tip:hover span {
   display: table;
   margin-bottom: 5px;
   padding: 10px;
-  background-color: #cdf0f2;
+  background-color: var(--alert-info-bg-color-call-out);
   border-left: 4px solid #577baa;
+  color: var(--alert-info-color-call-out);
 }
 
 .call-to-action a, .call-to-action a:visited {
@@ -269,7 +271,7 @@ pre.console {
 .setting-input {
   width: 100%;
   border-radius: 3px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   padding: 6px;
   box-sizing: border-box;
@@ -278,7 +280,7 @@ pre.console {
 }
 
 .setting-description {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
   margin-top: 0;
   padding-top: 0;
 }
@@ -300,7 +302,7 @@ pre.console {
 .tabBar .tab a {
   position: relative;
   display: block;
-  border: solid 1px #f0f0f0;
+  border: solid 1px var(--tab-bar-border-color);
   border-bottom: none;
   text-decoration: none;
   color: #999;
@@ -309,25 +311,25 @@ pre.console {
   border-top-right-radius: 5px;
 }
 .tabBar .tab a:hover {
-  background: #eee;
+  background: var(--tab-bar-bg-color--hover);
 }
 .tabBar .tab a.addTab {
   font-weight: bold;
-  color: #0460d1;
-  border: 1px solid #d8efff;
+  color: var(--tab-bar-add-text-color);
+  border: 1px solid var(--tab-bar-add-border-color);
   border-bottom: none;
 }
 .tabBar .tab a.addTab:hover {
-  background: #d8efff;
+  background: var(--tab-bar-add-bg-color--hover);
 }
 .tabBar .tab [type=radio] {
   display: none;
 }
 .tabBar [type=radio]:checked ~ a {
-  border: solid 1px #f0f0f0;
+  border: solid 1px var(--tab-bar-border-color--checked);
   border-bottom: none;
-  background: #eee;
-  color: #000;
+  background: var(--tab-bar-bg--checked);
+  color: var(--tab-bar-text-color--checked);
   font-weight: bold;
   z-index: 2;
 }
@@ -368,7 +370,7 @@ pre.console {
   display: block;
   border-bottom: 1px #090 solid;
   font-weight: bold;
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
 }
 
 .jenkins-not-applicable {
@@ -382,25 +384,25 @@ pre.console {
 /* pane */
 
 .pane-frame {
-  border: solid 1px #f0f0f0;
+  border: solid 1px var(--pane-border-color);
   border-radius: 4px;
 }
 
 #side-panel .pane-frame:hover, #side-panel .pane-frame.mouseover {
-  border: solid 1px #cecece;
+  border: solid 1px var(--panel-border-color--hover);
 }
 
 #side-panel .pane-content td.pane {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
 }
 
 .pane-header, .pane-footer {
   padding: 8px 0px;
-  background-color: #eee;
-  border: solid 1px #f3f3f3;
+  background-color: var(--pane-header-color);
+  border: solid 1px var(--pane-header-border-color);
   border-left: none;
   border-right: none;
-  color: #3b3b3b;
+  color: var(--pane-text-color);
 }
 .pane-header {
   border-top: none;
@@ -430,17 +432,17 @@ td.pane {
 }
 
 table.stripped tr:nth-of-type(even) {
-  background: #fbfbfb;
+  background: var(--even-row-color);
 }
 
 table.stripped-even tr:nth-child(even) {
-  background: #fbfbfb;
+  background: var(--even-row-color);
 }
 table.stripped-odd tr:nth-child(odd) {
-  background: #fbfbfb;
+  background: var(--even-row-color);
 }
 table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
-  background: #e8e8e8 !important;
+  background: var(--table-stripped-bg-color--hover) !important;
 }
 
 div.pane-header {
@@ -490,7 +492,7 @@ table.bigtable.pane > tbody > tr > td:last-child {
 .bigtable th {
   font-weight: bold;
   border: none;
-  background-color: #f0f0f0;
+  background-color: var(--bigtable-header-color);
   padding: 6px 4px;
   white-space: nowrap;
   text-align: left;
@@ -670,13 +672,8 @@ LABEL.attach-previous {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
 }
 .bottom-sticker-inner {
-    background: white;
+    background: var(--background);
     padding: 1em 0;
-}
-.bottom-sticker-edge {
-    height:16px;
-    background-image: url("../../images/bottom-sticker-top-edge.png");
-    background-repeat: repeat-x;
 }
 
 .top-sticker, #top-sticker {
@@ -735,7 +732,7 @@ LABEL.attach-previous {
 }
 
 .info {
-    color: black;
+    color: var(--text-color);
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
@@ -764,7 +761,7 @@ LABEL.attach-previous {
 .help {
   display: none;  /* hidden until loaded */
   border: solid #bbb 1px;
-  background-color: #f0f0f0;
+  background-color: var(--help-area-bg-color);
   padding: 1em;
   margin-bottom: 1em;
   word-break: break-word;
@@ -850,7 +847,7 @@ img.icon-help {
 }
 
 #projectstatus .header {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--project-status-border-bottom-color);
 }
 #projectstatus th {
   text-align: left;
@@ -890,7 +887,7 @@ table.parameters .setting-description {
 }
 
 table.parameters > tbody:hover {
-  background-color: #f0f0f0;
+  background-color: var(--table-parameters-bg-color--hover);
 }
 
 /* ============================ health report hover ========================== */
@@ -1038,7 +1035,7 @@ table.parameters > tbody:hover {
 }
 
 .build-row-cell {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
 }
 
 .build-row-cell .pane.build-name {
@@ -1059,13 +1056,13 @@ table.parameters > tbody:hover {
 
 .pane.build-name a,
 .pane.build-name a:visited {
-  color: black;
+  color: var(--pane-link-color);
   text-decoration: underline;
 }
 
 .pane.build-details a,
 .pane.build-details a:visited {
-  color: black;
+  color: var(--pane-link-color--visited);
   opacity: 0.6;
   text-decoration: none;
 }
@@ -1186,7 +1183,7 @@ table.parameters > tbody:hover {
 
 /* ========================= directory tree ========================= */
 .parentPath {
-  font-size: @font-size-base;
+  font-size: var(--font-size-base);
   font-weight: bold;
 }
 
@@ -1239,7 +1236,7 @@ TABLE.fileList TD.fileSize {
 }
 .test-trend-caption {
   text-align: center;
-  font-size: @font-size-base;
+  font-size: var(--font-size-base);
   font-weight: bold;
 }
 
@@ -1248,11 +1245,9 @@ TABLE.fileList TD.fileSize {
 /* ========================= sortable table ========================= */
 table.sortable a.sortheader {
   text-decoration: none;
-  color: black;
   display: block;
 }
 table.sortable span.sortarrow {
-  color: black;
   text-decoration: none;
 }
 
@@ -1265,7 +1260,7 @@ table.sortable span.sortarrow {
 }
 
 .fingerprint-summary-header {
-  font-size: @font-size-base;
+  font-size: var(--font-size-base);
   vertical-align: middle;
 }
 
@@ -1288,7 +1283,7 @@ TABLE.fingerprint-in-build TD {
 }
 
 #plugins tr.already-upgraded {
-  background-color: #e8eeee;
+  background-color: var(--plugin-manager-bg-color-already-upgraded);
 }
 
 #plugins tr.has-dependents input.uninstall {
@@ -1357,7 +1352,7 @@ TABLE.fingerprint-in-build TD {
     background-color: #337ab7;
     display: inline-block;
     padding: .2em .6em .3em;
-    font-size: @font-size-xs;
+    font-size: var(--font-size-xs);
     font-weight: 700;
     line-height: 1;
     color: #fff;
@@ -1416,57 +1411,6 @@ DIV.to-be-removed { display: none; }
 /* ========================= Other form related CSS ========================= */
 
 .row-set-end { display: none; }
-
-/* ========================= Yahoo UI style adjustments ========================= */
-.ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
-  color: inherit;
-}
-
-DIV.yahooTree td {
-  vertical-align: middle;
-}
-
-.yui-tt {
-  border: 1px solid black !important;
-  background-color: #FFFFFF !important;
-  padding: 2px !important;
-  font-family: inherit !important;
-  color: inherit !important;
-}
-
-.yui-skin-sam .yui-tt .bd {
-  border: none !important;
-  background-color: #FFF !important;
-}
-
-.yuimenu LI .yui-menu-tooltip {
-  color: #A6A6A6;
-}
-
-.yuimenu LI.yui-menuitem-tooltip {
-  border-bottom: 1px solid #808080;
-  padding-bottom: 3px;
-  margin-bottom: 1em;
-}
-
-#jenkins .yuimenuitem {
-    font-size: @font-size-xs;
-    padding: 3px;
-}
-
-#jenkins .yuimenuitem,
-#jenkins .yuimenuitemlabel {
-    cursor: pointer;
-}
-
-#jenkins .yuimenu .bd {
-    border: 1px solid #ccc;
-    box-shadow: 0px 3px 10px #bbb;
-}
-
-#jenkins .yui-menu-shadow {
-    display: none;
-}
 
 /* ========================= resizable text area ========================= */
 
@@ -1602,38 +1546,38 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 #notification-bar.notif-alert-default {
-  background-color: @alert-default-bg-color;
-  border-color: @alert-default-border-color;
-  color: @alert-default-color;
+  background-color: var(--alert-default-bg-color);
+  border-color: var(--alert-default-border-color);
+  color: var(--alert-default-color);
   .svg-icon {
-    color: @alert-default-icon-color;
+    color: var(--alert-default-icon-color);
   }
 }
 
 #notification-bar.notif-alert-success {
-  background-color: @alert-success-bg-color;
-  border-color: @alert-success-border-color;
-  color: @alert-success-color;
+  background-color: var(--alert-success-bg-color);
+  border-color: var(--alert-success-border-color);
+  color: var(--alert-success-color);
   .svg-icon {
-    color: @alert-success-icon-color;
+    color: var(--alert-success-icon-color);
   }
 }
 
 #notification-bar.notif-alert-warn {
-  background-color: @alert-warn-bg-color;
-  border-color: @alert-warn-border-color;
-  color: @alert-warn-color;
+  background-color: var(--alert-warn-bg-color);
+  border-color: var(--alert-warn-border-color);
+  color: var(--alert-warn-color);
   .svg-icon {
-    color: @alert-warn-icon-color;
+    color: var(--alert-warn-icon-color);
   }
 }
 
 #notification-bar.notif-alert-err {
-  background-color: @alert-err-bg-color;
-  border-color: @alert-err-border-color;
-  color: @alert-err-color;
+  background-color: var(--alert-err-bg-color);
+  border-color: var(--alert-err-border-color);
+  color: var(--alert-err-color);
   .svg-icon {
-    color: @alert-err-icon-color;
+    color: var(--alert-err-icon-color);
   }
 }
 
@@ -1676,7 +1620,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= YUI dialog ========================= */
 
 .dialog .hd {
-    font-size: @font-size-xs !important;
+    font-size: var(--font-size-xs) !important;
 }
 /* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
  to the latest YUI will fix this? */
@@ -1711,14 +1655,14 @@ table.progress-bar.red td.progress-bar-done {
     text-align:left;
 }
 .textarea-preview {
-    background-color: #F0F0F0;
+    background-color: var(--very-light-grey);
     padding: 0.5em;
 }
 
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    font-size: @font-size-xs;
+    font-size: var(--font-size-xs);
 }
 
 .logrecord-metadata-new {
@@ -1786,7 +1730,7 @@ select.select-ajax-pending {
 }
 
 .alert {
-    font-size: @font-size-sm;
+    font-size: var(--font-size-sm);
     padding: 15px;
     margin-bottom: 20px;
     border: 1px solid transparent;
@@ -1794,13 +1738,9 @@ select.select-ajax-pending {
 }
 
 .alert-info {
-    color: #31708f;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
-}
-
-.alert-info p {
-    color: #31708f;
+  color: var(--alert-info-color-call-out);
+  background-color: var(--alert-info-bg-color-call-out);
+  border-color: #bce8f1;
 }
 
 .alert-warning {
@@ -1920,9 +1860,9 @@ body.no-sticker #bottom-sticker {
 }
 
 .manage-option:hover {
-    border: 1px solid #ccc;
+    border: 1px solid var(--manage-option-border-color);
     border-radius: 3px;
-    background-color: #fafafa;
+    background-color: var(--manage-option-bg-color--hover);
 }
 
 .manage-option dl {
@@ -1932,14 +1872,14 @@ body.no-sticker #bottom-sticker {
 }
 
 .manage-option dl dt {
-    font-size: @font-size-base;
+    font-size: var(--font-size-base);
 }
 
 .manage-option dl dd {
     margin-left: 0;
     line-height: 20px;
-    color: #333;
-    font-size: @font-size-sm;
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
 }
 
 .manage-option a {
@@ -1947,7 +1887,7 @@ body.no-sticker #bottom-sticker {
     padding: 8px;
     margin: 0;
     text-decoration: none !important;
-    color: #000;
+    color: var(--text-color);
     outline: 0;
 }
 

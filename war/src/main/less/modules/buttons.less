@@ -1,77 +1,77 @@
 @import '../abstracts/colors.less';
 @import '../abstracts/font.less';
 
-// Button variant mixins
+// Button: variant mixins
 
 .button-danger() {
-  color: @white;
-  background-color: @danger;
-  border-color: @danger;
+  color: var(--btn-text-color);
+  background-color: var(--danger);
+  border-color: var(--danger);
 
   &:hover,
   &:focus {
-    color: @white;
-    background-color: @danger-hover;
-    border-color: @danger-hover;
+    color: var(--btn-text-color);
+    background-color: var(--danger-hover);
+    border-color: var(--danger-hover);
   }
 
   &:active {
-    color: @white;
-    background-color: @danger-active;
-    border-color: @danger-active;
+    color: var(--btn-text-color);
+    background-color: var(--danger-active);
+    border-color: var(--danger-active);
   }
 }
 
 .button-primary() {
-  color: @white;
-  background-color: @btn-primary-bg;
-  border-color: @btn-primary-bg;
+  color: var(--btn-text-color);
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
 
   &:hover,
   &:focus {
-    color: @white;
-    background-color: @btn-primary-bg-hover;
-    border-color: @btn-primary-bg-hover;
+    color: var(--btn-text-color);
+    background-color: var(--btn-primary-bg-hover);
+    border-color: var(--btn-primary-bg-hover);
   }
 
   &:active {
-    color: @white;
-    background-color: @btn-primary-bg-active;
-    border-color: @btn-primary-bg-active;
+    color: var(--btn-text-color);
+    background-color: var(--btn-primary-bg-active);
+    border-color: var(--btn-primary-bg-active);
   }
 }
 
 .button-secondary() {
-  color: @btn-secondary-color;
-  border-color: @btn-secondary-border;
-  background-color: @white;
+  color: var(--btn-secondary-color);
+  border-color: var(--btn-secondary-border);
+  background-color: var(--btn-secondary-bg);
 
   &:hover,
   &:focus {
-    color: @primary-hover;
-    border-color: @primary-hover;
+    color: var(--primary-hover);
+    border-color: var(--primary-hover);
   }
 
   &:active {
-    color: @primary-active;
-    border-color: @primary-active;
+    color: var(--primary-active);
+    border-color: var(--primary-active);
   }
 }
 
 .button-link {
-  color: @primary;
+  color: var(--primary);
   background-color: transparent;
   border-color: transparent;
 
   &:hover,
   &:focus {
-    color: @primary-hover;
+    color: var(--primary-hover);
     background-color: #f8f8f8;
     border-color: #f8f8f8;
   }
 
   &:active {
-    color: @primary-active;
+    color: var(--primary-active);
     background-color: #EAEFF2;
     border-color: #EAEFF2;
   }
@@ -110,7 +110,7 @@ a.yui-button:visited {
 
   cursor: pointer;
   user-select: none;
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
   line-height: 1rem;
   font-weight: bold;
   text-align: center;
@@ -126,7 +126,7 @@ a.yui-button:visited {
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(@focus, 0.5);
+    box-shadow: 0 0 0 0.2rem --var(focus); // TODO come back to this
   }
 
   display: inline-flex;
@@ -186,7 +186,7 @@ a.yui-button.large-button {
   padding: 0.5rem 1rem;
   min-width: 6.5rem;
   min-height: 2.5rem;
-  font-size: @font-size-sm;
+  font-size: var(--font-size-sm);
   line-height: 1.25rem;
 
   .svg-icon,
