@@ -5,23 +5,19 @@
   border-radius: 0;
   border-left: none;
   border-right: none;
-
-  // &:hover,
-  // &.mouseover {
-  //   border: solid 1px #cecece;
-  // }
 }
 
 #side-panel .pane-header {
-  font-size: @font-size-sm;
+  font-size: var(--font-size-sm);
   display: inline-flex;
 }
 #side-panel .pane-footer {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
 }
 #side-panel .pane-header,
 #side-panel .pane-footer {
-  background-color: #EAEFF2;
+  color: var(--link-dark-color);
+  background-color: var(--panel-header-bg-color);
   border-radius: 0;
   padding: 0.5rem 1.25rem;
 }
@@ -40,10 +36,11 @@
 }
 
 #side-panel .pane-content {
+  font-size: var(--font-size-xs);
 }
 
 #side-panel .pane-content .pane {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
   padding: 0.5rem 0.25rem;
 
   &:first-child {
@@ -63,7 +60,7 @@
   // padding: 0.25rem 0.75rem;
 
   &:not(:first-child) {
-    border-top: 1px solid #EAEFF2;
+    border-top: 1px solid var(--panel-border-color);
   }
 }
 
@@ -72,17 +69,17 @@
 #side-panel .pane-content a {
   &:link,
   &:visited {
-    color: @text-color;
+    color: var(--link-dark-color);
   }
 
   &:focus,
   &:hover {
-    color: @text-color-primary;
+    color: var(--link-dark-color--hover);
     text-decoration: underline;
   }
 
   &:active {
-    color: @text-color-primary-accent;
+    color: var(--link-dark-color--active);
     text-decoration: underline;
   }
 }
@@ -95,7 +92,7 @@
  * Build Queue
  */
 #buildQueue {
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 /**
@@ -116,10 +113,10 @@
   padding: 3px 4px 3px 4px;
 }
 .build-row.model-link-active {
-  background: #e8e8e8 !important;
+  background: var(--very-light-grey) !important;
 }
 .build-row-cell {
-  font-size: @font-size-xs;
+  font-size: var(--font-size-xs);
   // padding-left: 1.25rem;
   // padding-right: 1.25rem;
 }
@@ -200,7 +197,7 @@
   top: 19px;
   bottom: 3px;
   left: 14px;
-  border-left: 1px solid #cdcdcd;
+  border-left: 1px solid var(--panel-border-color--hover);
 }
 .build-row-cell .pane.build-name .display-name {
   margin-left: 20px;
