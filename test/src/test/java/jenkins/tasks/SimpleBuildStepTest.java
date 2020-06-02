@@ -4,10 +4,11 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
-import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Run;
 import hudson.model.Slave;
+import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -28,7 +29,8 @@ public class SimpleBuildStepTest {
         public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull EnvVars env, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
             // Check that the environment we get includes values from the slave
             Assert.assertEquals("JENKINS-29144", env.get("TICKET"));
-            // FIXME: Should this test any other envvars? Or Parameters?
+            // And that parameters appear too
+            Assert.assertEquals("WORLD", env.get("HELLO"));
         }
 
         @TestExtension("builderReceivesEnvVars")
@@ -50,12 +52,13 @@ public class SimpleBuildStepTest {
     @Test
     public void builderReceivesEnvVars() throws Exception {
         final FreeStyleProject p = this.r.createFreeStyleProject("JENKINS-29144");
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("HELLO", "WORLD")));
         final Slave slave = r.createOnlineSlave(null, new EnvVars("TICKET", "JENKINS-29144"));
         r.jenkins.addNode(slave);
         p.setAssignedNode(slave);
         final Builder bs = new StepThatGetsEnvironmentContents();
         p.getBuildersList().add(bs);
-        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        r.buildAndAssertSuccess(p);
     }
 
 }
