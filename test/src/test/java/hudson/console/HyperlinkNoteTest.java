@@ -45,7 +45,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HyperlinkNoteTest {
 
@@ -81,28 +81,19 @@ public class HyperlinkNoteTest {
                 containsString(">" + noteTextSanitized + "</a>")));
     }
     
+    
     @Test
     public void textWithSingleQuote() throws Exception {
-    	FreeStyleProject upstream = r.createFreeStyleProject("upstream");
-    	r.createFreeStyleProject("d0wnstr3'am");
-    	upstream.getPublishersList().add(new BuildTrigger("d0wnstr3'am", Result.SUCCESS));
-    	FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
+        FreeStyleProject upstream = r.createFreeStyleProject("upstream");
+        r.createFreeStyleProject("d0wnstr3'am");
+        upstream.getPublishersList().add(new BuildTrigger("d0wnstr3'am", Result.SUCCESS));
+        FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.waitUntilNoActivity();
         HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
-        System.out.println("Before:\n"+rsp.getWebResponse().getContentAsString()+"\n\n");
-        //This would fail if job name has `'`
-        try {
-        	assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
-        } catch(Exception enfe) {
-        	String str = "str->\n";
-			str += rsp.getWebResponse().getContentAsString()+"\n\n";
-        	for(HtmlAnchor ha: rsp.getAnchors()) {
-        		str += "getNameAttribute: " + ha.getNameAttribute() + " getTextContent: " + ha.getTextContent() + "\n";
-        	}
-        	throw new Exception(str);
-        }
+        assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
     }
 
+    
     private static String annotate(String text) throws IOException {
         StringWriter writer = new StringWriter();
         try (ConsoleAnnotationOutputStream out = new ConsoleAnnotationOutputStream(writer, null, null, StandardCharsets.UTF_8)) {
