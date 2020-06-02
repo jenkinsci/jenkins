@@ -107,11 +107,12 @@ public interface SimpleBuildStep extends BuildStep {
         // If this is called, this must be an implementer of the previous API, in which case we call that, discarding
         // the environment we were given.
         // But for that to work, that API method must have been implemented.
-        if (!Util.isOverridden(SimpleBuildStep.class, this.getClass(),
+        if (Util.isOverridden(SimpleBuildStep.class, this.getClass(),
                 "perform", Run.class, FilePath.class, Launcher.class, TaskListener.class)) {
+            this.perform(run, workspace, launcher, listener);
+        } else {
             throw new AbstractMethodError();
         }
-        this.perform(run, workspace, launcher, listener);
     }
 
     /**
