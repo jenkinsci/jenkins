@@ -14,6 +14,7 @@
 
 #side-panel .pane-header {
   font-size: @font-size-sm;
+  display: inline-flex;
 }
 #side-panel .pane-footer {
   font-size: @font-size-xs;
@@ -27,6 +28,15 @@
 
 #side-panel .pane-header {
   font-weight: bold;
+}
+#side-panel .pane-header-title {
+  display: inline-block;
+  flex: 1;
+}
+#side-panel .pane-header .expand,
+#side-panel .pane-header .collapse {
+  margin-left: auto;
+  padding-left: 0.5rem;
 }
 
 #side-panel .pane-content {

@@ -881,6 +881,9 @@ table.parameters > tbody:hover {
 .healthReport a {
     text-decoration: none;
 }
+#side-panel .healthReport a {
+  height: 100%;
+}
 
 .healthReport div.healthReportDetails {
     display: none;
@@ -933,6 +936,16 @@ table.parameters > tbody:hover {
 #buildHistory .build-rss-links {
   float: right;
 }
+#buildHistory .build-rss-links a {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.5rem;
+}
+#buildHistory .build-rss-all-icon,
+#buildHistory .build-rss-failed-icon {
+  margin-right: 0.25rem;
+}
+
 
 #buildHistoryPage {
   position: relative;
