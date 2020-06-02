@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.Util;
 import hudson.model.Fingerprint.RangeSet;
 import java.io.File;
+
+import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.model.FingerprintFacet;
 
 import static org.hamcrest.CoreMatchers.equalTo;

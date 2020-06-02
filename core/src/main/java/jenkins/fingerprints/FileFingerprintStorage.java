@@ -21,12 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins.fingerprints;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.Fingerprint;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
 
@@ -35,7 +36,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -59,7 +62,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
         return load(getFingerprintFile(md5sum));
     }
 
-    static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
+    public static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
         if(!configFile.exists())
             return null;
@@ -84,7 +87,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 file.delete();
                 return null;
             }
-            String parseError = Fingerprint.messageOfParseException(e);
+            String parseError = messageOfParseException(e);
             if (parseError != null) {
                 logger.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
                 file.delete();
@@ -101,7 +104,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
 
-    static void save(Fingerprint fp, File file) throws IOException {
+    public static void save(Fingerprint fp, File file) throws IOException {
         if (fp.getPersistedFacets().isEmpty()) {
             file.getParentFile().mkdirs();
             // JENKINS-16301: fast path for the common case.
@@ -116,10 +119,10 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 if (fp.getOriginal() != null) {
                     w.println("  <original>");
                     w.print("    <name>");
-                    w.print(Util.xmlEscape(fp.getOriginal().name));
+                    w.print(Util.xmlEscape(fp.getOriginal().getName()));
                     w.println("</name>");
                     w.print("    <number>");
-                    w.print(fp.getOriginal().number);
+                    w.print(fp.getOriginal().getNumber());
                     w.println("</number>");
                     w.println("  </original>");
                 }
@@ -170,4 +173,17 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
     }
 
+    static String messageOfParseException(Throwable t) {
+        if (t instanceof XmlPullParserException || t instanceof EOFException) {
+            return t.getMessage();
+        }
+        Throwable t2 = t.getCause();
+        if (t2 != null) {
+            return messageOfParseException(t2);
+        } else {
+            return null;
+        }
+    }
+
 }
+

@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Functions;
+import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;

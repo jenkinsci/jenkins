@@ -44,6 +44,9 @@ import hudson.util.PersistedList;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import java.io.EOFException;
+
+import jenkins.fingerprints.FileFingerprintStorage;
+import jenkins.fingerprints.FingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
@@ -769,7 +772,7 @@ public class Fingerprint implements ModelObject, Saveable {
             return rs;
         }
 
-        static final class ConverterImpl implements Converter {
+        public static final class ConverterImpl implements Converter {
             private final Converter collectionConv; // used to convert ArrayList in it
 
             public ConverterImpl(Converter collectionConv) {
@@ -785,7 +788,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 writer.setValue(serialize(src));
             }
 
-            static String serialize(RangeSet src) {
+            public static String serialize(RangeSet src) {
                 StringBuilder buf = new StringBuilder(src.ranges.size()*10);
                 for (Range r : src.ranges) {
                     if(buf.length()>0)  buf.append(',');
@@ -1336,6 +1339,11 @@ public class Fingerprint implements ModelObject, Saveable {
 
         return fingerprint;
     }
+
+    /**
+     * @deprecated as of TODO
+     */
+    @Deprecated
     static String messageOfParseException(Throwable t) {
         if (t instanceof XmlPullParserException || t instanceof EOFException) {
             return t.getMessage();

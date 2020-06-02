@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.junit.Rule;

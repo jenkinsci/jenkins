@@ -21,13 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins.fingerprints;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
 import java.io.IOException;
 
+import hudson.model.Fingerprint;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
@@ -45,7 +46,7 @@ public abstract class FingerprintStorage implements ExtensionPoint {
      */
     public static FingerprintStorage get(){
         String fingerprintStorageEngine = SystemProperties.getString("FingerprintStorageEngine",
-                "hudson.model.FileFingerprintStorage");
+                "jenkins.fingerprints.FileFingerprintStorage");
         return ExtensionList.lookup(FingerprintStorage.class).getDynamic(fingerprintStorageEngine);
     }
 
