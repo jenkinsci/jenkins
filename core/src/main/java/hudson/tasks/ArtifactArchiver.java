@@ -248,8 +248,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
             String artifacts = this.artifacts;
-            if (build instanceof AbstractBuild) // no expansion in pipelines
+            if (build instanceof AbstractBuild) { // no expansion in pipelines
                 artifacts = environment.expand(artifacts);
+            }
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
             if (!files.isEmpty()) {

@@ -176,8 +176,9 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             
             if(targets.length()!=0) {
                 String expandedTargets = targets;
-                if (build instanceof AbstractBuild) // no expansion for pipelines
+                if (build instanceof AbstractBuild) { // no expansion for pipelines
                     expandedTargets = environment.expand(expandedTargets);
+                }
                 record(build, workspace, listener, record, expandedTargets);
             }
 
