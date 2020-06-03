@@ -58,10 +58,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
 
+    /**
+     * Load the Fingerprint with the given unique id.
+     */
     public @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
         return load(getFingerprintFile(id));
     }
 
+    /**
+     * Load the Fingerprint stored inside the given file.
+     */
     public static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
         if(!configFile.exists())
@@ -98,6 +104,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
         }
     }
 
+    /**
+     * Saves the given Fingerprint in local XML-based database.
+     */
     public synchronized void save(Fingerprint fp) throws IOException {
         File file = getFingerprintFile(fp.getHashString());
         save(fp, file);
@@ -106,6 +115,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
 
+    /**
+     * Saves the given Fingerprint as XML inside file.
+     */
     public static void save(Fingerprint fp, File file) throws IOException {
         if (fp.getPersistedFacets().isEmpty()) {
             file.getParentFile().mkdirs();
@@ -187,6 +199,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
         }
     }
 
+    /**
+     * Used to serialize the range sets (builds) of the fingerprint.
+     */
     private static String serialize(Fingerprint.RangeSet src) {
         StringBuilder buf = new StringBuilder(src.getRanges().size()*10);
         for (Fingerprint.Range r : src.getRanges()) {
