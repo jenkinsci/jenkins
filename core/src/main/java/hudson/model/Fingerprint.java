@@ -43,7 +43,6 @@ import hudson.util.Iterators;
 import hudson.util.PersistedList;
 import hudson.util.RunList;
 import hudson.util.XStream2;
-import java.io.EOFException;
 
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
@@ -73,7 +72,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * A file being tracked by Jenkins.
