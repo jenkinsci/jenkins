@@ -128,6 +128,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                     w.println("</number>");
                     w.println("  </original>");
                 }
+                // TODO(oleg_nenashev): Consider renaming the field: https://issues.jenkins-ci.org/browse/JENKINS-25808
                 w.print("  <md5sum>");
                 w.print(fp.getHashString());
                 w.println("</md5sum>");
