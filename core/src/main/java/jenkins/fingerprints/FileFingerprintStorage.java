@@ -101,6 +101,8 @@ public class FileFingerprintStorage extends FingerprintStorage {
     public synchronized void save(Fingerprint fp) throws IOException {
         File file = getFingerprintFile(fp.getHashString());
         save(fp, file);
+        // TODO(oleg_nenashev): Consider generalizing SaveableListener and invoking it for all storage implementations.
+        //  https://issues.jenkins-ci.org/browse/JENKINS-62543
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
 
