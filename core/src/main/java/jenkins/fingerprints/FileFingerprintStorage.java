@@ -142,7 +142,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                     w.print(Util.xmlEscape(e.getKey()));
                     w.println("</string>");
                     w.print("      <ranges>");
-                    w.print(Fingerprint.RangeSet.ConverterImpl.serialize(e.getValue()));
+                    w.print(serialize(e.getValue()));
                     w.println("</ranges>");
                     w.println("    </entry>");
                 }
@@ -185,6 +185,18 @@ public class FileFingerprintStorage extends FingerprintStorage {
         } else {
             return null;
         }
+    }
+
+    public static String serialize(Fingerprint.RangeSet src) {
+        StringBuilder buf = new StringBuilder(src.getRanges().size()*10);
+        for (Fingerprint.Range r : src.getRanges()) {
+            if(buf.length()>0)  buf.append(',');
+            if(r.isSingle())
+                buf.append(r.getStart());
+            else
+                buf.append(r.getStart()).append('-').append(r.getEnd()-1);
+        }
+        return buf.toString();
     }
 
 }
