@@ -187,7 +187,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
         }
     }
 
-    public static String serialize(Fingerprint.RangeSet src) {
+    private static String serialize(Fingerprint.RangeSet src) {
         StringBuilder buf = new StringBuilder(src.getRanges().size()*10);
         for (Fingerprint.Range r : src.getRanges()) {
             if(buf.length()>0)  buf.append(',');
