@@ -203,7 +203,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 "fingerprints/"+id.substring(0,2)+'/'+id.substring(2,4)+'/'+id.substring(4)+".xml");
     }
 
-    static String messageOfParseException(Throwable t) {
+    private static String messageOfParseException(Throwable t) {
         if (t instanceof XmlPullParserException || t instanceof EOFException) {
             return t.getMessage();
         }
