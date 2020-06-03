@@ -56,8 +56,8 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     public abstract void save(Fingerprint fp) throws IOException;
 
     /**
-     * Returns the Fingerprint with the given MD5.
+     * Returns the Fingerprint with the given unique ID.
      */
-    public abstract Fingerprint load(byte[] md5sum) throws IOException;
+    public abstract Fingerprint load(String id) throws IOException;
 
 }

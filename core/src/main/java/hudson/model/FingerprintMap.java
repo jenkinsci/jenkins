@@ -94,7 +94,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
     }
 
     protected @CheckForNull Fingerprint load(@NonNull String key) throws IOException {
-        return Fingerprint.load(toByteArray(key));
+        return Fingerprint.load(key);
     }
 
 static class FingerprintParams {

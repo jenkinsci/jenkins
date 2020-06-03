@@ -76,7 +76,7 @@ import static org.hamcrest.Matchers.nullValue;
  */
 public class FingerprintTest {
 
-    private static final byte[] SOME_MD5 = Util.fromHexString(Util.getDigestOf("whatever"));
+    private static final String SOME_MD5 = Util.getDigestOf("whatever");
 
     @Rule
     public JenkinsRule rule = new JenkinsRule();
@@ -92,7 +92,7 @@ public class FingerprintTest {
     @Test
     public void roundTrip() throws Exception {
         Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff&more.jar",
-                SOME_MD5);
+                Util.fromHexString(SOME_MD5));
         f.addWithoutSaving("some", 1);
         f.addWithoutSaving("some", 2);
         f.addWithoutSaving("some", 3);

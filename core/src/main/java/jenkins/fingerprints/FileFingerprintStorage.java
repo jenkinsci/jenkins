@@ -58,8 +58,8 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
 
-    public @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
-        return load(getFingerprintFile(md5sum));
+    public @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
+        return load(getFingerprintFile(id));
     }
 
     public static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
@@ -99,7 +99,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     public synchronized void save(Fingerprint fp) throws IOException {
-        File file = getFingerprintFile(Util.fromHexString(fp.getHashString()));
+        File file = getFingerprintFile(fp.getHashString());
         save(fp, file);
         SaveableListener.fireOnChange(fp, getConfigFile(file));
     }
@@ -165,12 +165,11 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     /**
-     * Determines the file name from md5sum.
+     * Determines the file name from unique id (md5sum).
      */
-    public static @NonNull File getFingerprintFile(@NonNull byte[] md5sum) {
-        assert md5sum.length==16;
+    public static @NonNull File getFingerprintFile(@NonNull String id) {
         return new File( Jenkins.get().getRootDir(),
-                "fingerprints/"+ Util.toHexString(md5sum,0,1)+'/'+Util.toHexString(md5sum,1,1)+'/'+Util.toHexString(md5sum,2,md5sum.length-2)+".xml");
+                "fingerprints/"+id.substring(0,2)+'/'+id.substring(2,4)+'/'+id.substring(4)+".xml");
     }
 
     static String messageOfParseException(Throwable t) {

@@ -1311,22 +1311,30 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * Loads a {@link Fingerprint} from a file in the image.
+     * Loads a {@link Fingerprint} from the Storage with the given unique id.
      * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
      * malformed.
      */
-    public static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
+    public static @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
         long start=0;
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();
 
-        Fingerprint loaded = FingerprintStorage.get().load(md5sum);
+        Fingerprint loaded = FingerprintStorage.get().load(id);
         initFacets(loaded);
 
         if(logger.isLoggable(Level.FINE))
             logger.fine("Loading fingerprint took "+(System.currentTimeMillis()-start)+"ms");
 
         return loaded;
+    }
+
+    /**
+     * @deprecated as of TODO
+     */
+    @Deprecated
+    /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
+        return load(Util.toHexString(md5sum));
     }
 
     /**
