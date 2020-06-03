@@ -1349,22 +1349,6 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * @deprecated as of TODO
-     */
-    @Deprecated
-    static String messageOfParseException(Throwable t) {
-        if (t instanceof XmlPullParserException || t instanceof EOFException) {
-            return t.getMessage();
-        }
-        Throwable t2 = t.getCause();
-        if (t2 != null) {
-            return messageOfParseException(t2);
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Performs Initialization of facets on a newly loaded Fingerprint.
      */
     private static void initFacets(Fingerprint fingerprint){
