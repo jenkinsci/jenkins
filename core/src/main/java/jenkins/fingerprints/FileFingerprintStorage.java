@@ -173,6 +173,22 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     /**
+     * Deletes the Fingerprint with the given unique ID.
+     */
+    public void delete(String id) {
+        File file = getFingerprintFile(id);
+        file.delete();
+
+        File inner = new File(Jenkins.get().getRootDir(), "fingerprints/"+id.substring(0,2)+"/"+id.substring(2,4));
+        String[] inner_files = inner.list();
+        if (inner_files!=null && inner_files.length==0) inner.delete();
+
+        File outer = new File(Jenkins.get().getRootDir(), "fingerprints/"+id.substring(0,2));
+        String[] outer_files = outer.list();
+        if (outer_files!=null && outer_files.length==0) outer.delete();
+    }
+
+    /**
      * The file we save our configuration.
      */
     public static @NonNull XmlFile getConfigFile(@NonNull File file) {
