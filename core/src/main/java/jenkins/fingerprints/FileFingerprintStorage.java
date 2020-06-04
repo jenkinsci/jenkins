@@ -70,8 +70,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
      */
     public static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {
         XmlFile configFile = getConfigFile(file);
-        if(!configFile.exists())
+        if(!configFile.exists()) {
             return null;
+        }
 
         try {
             Object loaded = configFile.read();
@@ -179,11 +180,11 @@ public class FileFingerprintStorage extends FingerprintStorage {
         File file = getFingerprintFile(id);
         file.delete();
 
-        File inner = new File(Jenkins.get().getRootDir(), "fingerprints/"+id.substring(0,2)+"/"+id.substring(2,4));
+        File inner = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2) + "/" + id.substring(2,4));
         String[] inner_files = inner.list();
         if (inner_files!=null && inner_files.length==0) inner.delete();
 
-        File outer = new File(Jenkins.get().getRootDir(), "fingerprints/"+id.substring(0,2));
+        File outer = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2));
         String[] outer_files = outer.list();
         if (outer_files!=null && outer_files.length==0) outer.delete();
     }
@@ -200,7 +201,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
      */
     private static @NonNull File getFingerprintFile(@NonNull String id) {
         return new File( Jenkins.get().getRootDir(),
-                "fingerprints/"+id.substring(0,2)+'/'+id.substring(2,4)+'/'+id.substring(4)+".xml");
+                "fingerprints/" + id.substring(0,2) + '/' + id.substring(2,4) + '/' + id.substring(4) + ".xml");
     }
 
     private static String messageOfParseException(Throwable t) {
@@ -219,13 +220,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
      * Used to serialize the range sets (builds) of the fingerprint.
      */
     private static String serialize(Fingerprint.RangeSet src) {
-        StringBuilder buf = new StringBuilder(src.getRanges().size()*10);
+        StringBuilder buf = new StringBuilder(src.getRanges().size() * 10);
         for (Fingerprint.Range r : src.getRanges()) {
-            if(buf.length()>0)  buf.append(',');
-            if(r.isSingle())
+            if(buf.length() > 0) {
+                buf.append(',');
+            }
+            if(r.isSingle()) {
                 buf.append(r.getStart());
-            else
-                buf.append(r.getStart()).append('-').append(r.getEnd()-1);
+            } else {
+                buf.append(r.getStart()).append('-').append(r.getEnd() - 1);
+            }
         }
         return buf.toString();
     }

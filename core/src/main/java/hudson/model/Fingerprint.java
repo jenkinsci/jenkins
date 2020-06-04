@@ -1254,7 +1254,7 @@ public class Fingerprint implements ModelObject, Saveable {
         FingerprintStorage.get().save(this);
 
         if(logger.isLoggable(Level.FINE))
-            logger.fine("Saving fingerprint "+getHashString()+" took "+(System.currentTimeMillis()-start)+"ms");
+            logger.fine("Saving fingerprint " + getHashString() + " took " + (System.currentTimeMillis() - start) + "ms");
     }
 
     /**
@@ -1317,14 +1317,16 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public static @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
         long start=0;
-        if(logger.isLoggable(Level.FINE))
+        if(logger.isLoggable(Level.FINE)) {
             start = System.currentTimeMillis();
+        }
 
         Fingerprint loaded = FingerprintStorage.get().load(id);
         initFacets(loaded);
 
-        if(logger.isLoggable(Level.FINE))
-            logger.fine("Loading fingerprint took "+(System.currentTimeMillis()-start)+"ms");
+        if(logger.isLoggable(Level.FINE)) {
+            logger.fine("Loading fingerprint took " + (System.currentTimeMillis() - start) + "ms");
+        }
 
         return loaded;
     }
@@ -1361,10 +1363,13 @@ public class Fingerprint implements ModelObject, Saveable {
      * Performs Initialization of facets on a newly loaded Fingerprint.
      */
     private static void initFacets(@CheckForNull Fingerprint fingerprint){
-        if (fingerprint==null) return;
+        if (fingerprint==null) {
+            return;
+        }
 
-        for (FingerprintFacet facet : fingerprint.facets)
+        for (FingerprintFacet facet : fingerprint.facets) {
             facet._setOwner(fingerprint);
+        }
     }
 
     @Override public String toString() {
