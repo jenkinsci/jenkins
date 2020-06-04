@@ -41,11 +41,11 @@ THE SOFTWARE.
       RSS link
     -->
     <span class="build-rss-links">
-        <a class="build-rss-all-icon" href="${it.baseUrl}/rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Atom feed" height="16" width="16"/></a>
+        <a class="build-rss-all-icon" href="${it.baseUrl}/rssAll"><img src="${imagesURL}/feed-icon-14x14.png" border="0" alt="Atom feed" height="16" width="16"/></a>
         <st:nbsp/>
         <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">Atom feed ${%for all}</a>
         <st:nbsp/>
-        <a class="build-rss-failed-icon" href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Atom feed" height="16" width="16"/></a>
+        <a class="build-rss-failed-icon" href="${it.baseUrl}/rssFailed"><img src="${imagesURL}/feed-icon-14x14.png" border="0" alt="Atom feed" height="16" width="16"/></a>
         <st:nbsp/>
         <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">Atom feed ${%for failures}</a>
     </span>
