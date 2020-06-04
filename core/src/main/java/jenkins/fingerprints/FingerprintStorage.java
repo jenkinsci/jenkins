@@ -63,6 +63,6 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     /**
      * Deletes the Fingerprint with the given unique ID.
      */
-    public abstract void delete(String id);
+    public abstract void delete(String id) throws IOException;
 
 }

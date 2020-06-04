@@ -1357,14 +1357,14 @@ public class Fingerprint implements ModelObject, Saveable {
      *
      * @since TODO
      */
-    public static void delete(@NonNull String id) {
+    public static void delete(@NonNull String id) throws IOException {
         FingerprintStorage.get().delete(id);
     }
 
     /**
      * Performs Initialization of facets on a newly loaded Fingerprint.
      */
-    private static void initFacets(@CheckForNull Fingerprint fingerprint){
+    private static void initFacets(@CheckForNull Fingerprint fingerprint) {
         if (fingerprint == null) {
             return;
         }
