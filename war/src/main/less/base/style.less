@@ -185,8 +185,9 @@ a.tip:hover span {
   display: table;
   margin-bottom: 5px;
   padding: 10px;
-  background-color: #cdf0f2;
+  background-color: var(--alert-info-bg-color-call-out);
   border-left: 4px solid #577baa;
+  color: var(--alert-info-color-call-out);
 }
 
 .call-to-action a, .call-to-action a:visited {
@@ -1814,13 +1815,9 @@ select.select-ajax-pending {
 }
 
 .alert-info {
-    color: #31708f;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
-}
-
-.alert-info p {
-    color: #31708f;
+  color: var(--alert-info-color-call-out);
+  background-color: var(--alert-info-bg-color-call-out);
+  border-color: #bce8f1;
 }
 
 .alert-warning {
