@@ -30,19 +30,13 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
 
-                f.entry(title:_("Security Realm")) {
-                    div(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
-                    }
+                div(style:"width:100%") {
+                    f.descriptorRadioList(title:_("Security Realm"), varName:"realm", instance:app.securityRealm, descriptors: h.filterDescriptors(app, SecurityRealm.all()))
                 }
             }
 
-            f.section(title:_("Authorization")) {
-                f.entry(title:_("Strategy")) {
-                    div(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
-                    }
-                }
+            div(style:"width:100%") {
+                f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
             }
 
             f.section(title: _("Markup Formatter")) {
