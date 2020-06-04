@@ -6,7 +6,7 @@ const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
 const CopyPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin: CleanPlugin } = require('clean-webpack-plugin');
 
-module.exports = {
+module.exports = (env, argv) => ({
   mode: 'development',
   entry: {
     "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
@@ -35,6 +35,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
   },
+  devtool: argv.mode === 'production' ? 'source-map' : 'inline-cheap-module-source-map',
   plugins: [
     new FixStyleOnlyEntriesPlugin(),
     new MiniCSSExtractPlugin({
@@ -59,10 +60,16 @@ module.exports = {
         test: /\.(css|less)$/,
         use: [
           'style-loader',
-          MiniCSSExtractPlugin.loader,
+          {
+            loader: MiniCSSExtractPlugin.loader,
+            options: {
+              sourceMap: true
+            }
+          },
           {
             loader: 'css-loader',
             options: {
+              sourceMap: true,
               url: (url, resourcePath) => {
                 // ignore the URLS on the base styles as they are picked
                 // from the src/main/webapp/images dir
@@ -74,8 +81,18 @@ module.exports = {
               }
             }
           },
-          'postcss-loader',
-          'less-loader'
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: true
+            }
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              sourceMap: true
+            }
+          }
         ]
       },
       {
@@ -138,4 +155,4 @@ module.exports = {
       handlebars: 'handlebars/runtime',
     },
   },
-}
+});

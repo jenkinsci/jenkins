@@ -11,6 +11,7 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
+  background-color: var(--background);
 }
 
 html {
@@ -51,11 +52,11 @@ html {
 #breadcrumbBar,
 #footer-container,
 .top-sticker-inner {
-  background-color: @breadcrumbs-bg;
+  background-color: var(--breadcrumbs-bg);
 }
 
 .top-sticker-inner {
-  border-bottom: 1px solid @breadcrumbs-border;
+  border-bottom: 1px solid --var(breadcrumbs-border);
 }
 
 /* -------------------------------------- */
@@ -74,7 +75,8 @@ html {
 #side-panel {
   padding: 15px 15px 40px 15px;
   width: 320px;
-  border-right: 1px solid #EAEFF2;
+  flex-shrink: 0;
+  border-right: 1px solid var(--panel-border-color);
 }
 
 #main-panel {

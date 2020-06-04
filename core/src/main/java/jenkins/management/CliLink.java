@@ -55,7 +55,7 @@ public class CliLink extends ManagementLink {
     @NonNull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.MANAGE;
+        return Jenkins.READ;
     }
 
     @Override

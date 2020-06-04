@@ -736,6 +736,7 @@ var jenkinsRules = {
         ac.generateRequest = function(query) {
             return "?value=" + query;
         };
+        ac.autoHighlight = false;
         ac.prehighlightClassName = "yui-ac-prehighlight";
         ac.animSpeed = 0;
         ac.formatResult = ac.formatEscapedResult;
