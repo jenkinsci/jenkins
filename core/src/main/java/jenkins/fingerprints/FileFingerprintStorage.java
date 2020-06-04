@@ -188,7 +188,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
         File inner = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2) + "/" + id.substring(2,4));
         String[] inner_files = inner.list();
-        if (inner_files!=null && inner_files.length==0) {
+        if (inner_files != null && inner_files.length == 0) {
             if (!inner.delete()){
                 throw new IOException("Error occurred in deleting inner directory of Fingerprint " + id);
             }
@@ -196,7 +196,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
         File outer = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2));
         String[] outer_files = outer.list();
-        if (outer_files!=null && outer_files.length==0) {
+        if (outer_files != null && outer_files.length == 0) {
             if (!outer.delete()){
                 throw new IOException("Error occurred in deleting outer directory of Fingerprint " + id);
             }
