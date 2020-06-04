@@ -191,14 +191,14 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * The file we save our configuration.
      */
-    public static @NonNull XmlFile getConfigFile(@NonNull File file) {
+    private static @NonNull XmlFile getConfigFile(@NonNull File file) {
         return new XmlFile(Fingerprint.getXStream(), file);
     }
 
     /**
      * Determines the file name from unique id (md5sum).
      */
-    public static @NonNull File getFingerprintFile(@NonNull String id) {
+    private static @NonNull File getFingerprintFile(@NonNull String id) {
         return new File( Jenkins.get().getRootDir(),
                 "fingerprints/"+id.substring(0,2)+'/'+id.substring(2,4)+'/'+id.substring(4)+".xml");
     }
