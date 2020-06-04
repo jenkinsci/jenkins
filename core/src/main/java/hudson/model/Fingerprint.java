@@ -1349,6 +1349,15 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
+     * Deletes the {@link Fingerprint} in the Storage with the given unique id.
+     *
+     * @since TODO
+     */
+    public static void delete(@NonNull String id) {
+        FingerprintStorage.get().delete(id);
+    }
+
+    /**
      * Performs Initialization of facets on a newly loaded Fingerprint.
      */
     private static void initFacets(@CheckForNull Fingerprint fingerprint){
