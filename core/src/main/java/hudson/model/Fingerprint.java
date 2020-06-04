@@ -1243,9 +1243,11 @@ public class Fingerprint implements ModelObject, Saveable {
      * @throws IOException Save error
      */
     public synchronized void save() throws IOException {
-        if(BulkChange.contains(this)) return;
+        if(BulkChange.contains(this)) {
+            return;
+        }
 
-        long start=0;
+        long start = 0;
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();
 
@@ -1363,7 +1365,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Performs Initialization of facets on a newly loaded Fingerprint.
      */
     private static void initFacets(@CheckForNull Fingerprint fingerprint){
-        if (fingerprint==null) {
+        if (fingerprint == null) {
             return;
         }
 

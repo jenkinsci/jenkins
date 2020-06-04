@@ -100,7 +100,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 file.delete();
                 return null;
             }
-            logger.log(Level.WARNING, "Failed to load "+configFile,e);
+            logger.log(Level.WARNING, "Failed to load " + configFile, e);
             throw e;
         }
     }
