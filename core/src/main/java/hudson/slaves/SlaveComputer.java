@@ -1020,12 +1020,12 @@ public class SlaveComputer extends Computer {
 
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
-                Formatter dummy = new SimpleFormatter();
+                ThreadLocal<Formatter> dummy = ThreadLocal.withInitial(() -> new SimpleFormatter());
                 @Override
-                public synchronized void publish(LogRecord record) {
+                public /* not synchronized */ void publish(LogRecord record) {
                     // see LogRecord.writeObject for dangers of serializing non-String/null parameters
                     if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
-                        record.setMessage(dummy.formatMessage(record));
+                        record.setMessage(dummy.get().formatMessage(record));
                         record.setParameters(null);
                     }
                     super.publish(record);
