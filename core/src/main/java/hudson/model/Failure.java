@@ -28,7 +28,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
@@ -67,8 +67,8 @@ public class Failure extends RuntimeException implements HttpResponse {
         if(pre)
             req.setAttribute("pre",true);
         if (node instanceof AbstractItem) // Maintain ancestors
-            rsp.forward(Jenkins.getInstance(), ((AbstractItem)node).getUrl() + "error", req);
+            rsp.forward(Jenkins.get(), ((AbstractItem)node).getUrl() + "error", req);
         else
-            rsp.forward(node instanceof AbstractModelObject ? node : Jenkins.getInstance() ,"error", req);
+            rsp.forward(node instanceof AbstractModelObject ? node : Jenkins.get() ,"error", req);
     }
 }

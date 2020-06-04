@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+
+  <h2>Canceling the build of an item in the Queue</h2>
+  <p>
+    To programmatically cancel the build of an item in the Queue, post to <a href="../cancelItem">this URL</a>.
+    The id of the item to cancel is expected to be passed as a query parameter named <code>id</code>.
+
+    Response will be:
+    <ul>
+      <li> 204 if the run tied with the given id was successfully cancelled</li>
+      <li> 422 if the provided id does not exist or match an item that cannot be cancelled</li>
+      <li> 500 if the provided id exists but Jenkins could not cancel the run</li>
+    </ul>
+  </p>
+
+</j:jelly>

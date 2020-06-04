@@ -1,7 +1,6 @@
 package hudson.cli;
 
-import org.apache.commons.codec.binary.Base64;
-
+import java.util.Base64;
 
 /**
  * Fluent-API to instantiate {@link CLI}.
@@ -34,7 +33,14 @@ public class CLIConnectionFactory {
      * Cf. {@code BasicHeaderApiTokenAuthenticator}.
      */
     public CLIConnectionFactory basicAuth(String userInfo) {
-        return authorization("Basic " + new String(Base64.encodeBase64((userInfo).getBytes())));
+        return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes()));
     }
 
+    /**
+     * Convenience method to call {@link #authorization} with the HTTP bearer authentication.
+     * Cf. {@code BasicHeaderApiTokenAuthenticator}.
+     */
+    public CLIConnectionFactory bearerAuth(String bearerToken) {
+        return authorization("Bearer " + bearerToken);
+    }
 }

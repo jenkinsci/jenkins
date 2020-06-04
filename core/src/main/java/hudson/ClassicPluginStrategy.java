@@ -54,7 +54,7 @@ import org.apache.tools.zip.ZipExtraField;
 import org.apache.tools.zip.ZipOutputStream;
 import org.jenkinsci.bytecode.Transformer;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -271,9 +271,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * @see DetachedPluginsUtil#getImpliedDependencies(String, String)
+     *
+     * @deprecated since 2.163
      */
-    @Deprecated // since TODO
-    @Nonnull
+    @Deprecated
+    @NonNull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         return DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion);
     }
@@ -289,7 +291,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         if (atts != null) {
             String usePluginFirstClassLoader = atts.getValue( "PluginFirstClassLoader" );
-            if (Boolean.valueOf( usePluginFirstClassLoader )) {
+            if (Boolean.parseBoolean( usePluginFirstClassLoader )) {
                 PluginFirstClassLoader classLoader = new PluginFirstClassLoader();
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );
@@ -329,8 +331,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             finders = hudson.getExtensionList(ExtensionFinder.class);
         }
 
-        /**
-         * See {@link ExtensionFinder#scout(Class, Hudson)} for the dead lock issue and what this does.
+        /*
+         * See ExtensionFinder#scout(Class, Hudson) for the dead lock issue and what this does.
          */
         if (LOGGER.isLoggable(Level.FINER))
             LOGGER.log(Level.FINER, "Scout-loading ExtensionList: "+type, new Throwable());
@@ -431,6 +433,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return null;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Administrator action installing a plugin, which could do far worse.")
     private static File resolve(File base, String relative) {
         File rel = new File(relative);
         if(rel.isAbsolute())

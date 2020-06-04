@@ -47,7 +47,7 @@ function safeRedirector(url) {
     window.setTimeout(function() {
         const statusChecker = arguments.callee;
         Fetch.get(url, function(error, status) {
-            if(status === 503 || status === 0) {
+            if((status >= 502 && status <= 504) || status === 0) {
                 window.setTimeout(statusChecker, timeout)
             } else {
                 window.location.replace(url);
@@ -58,3 +58,6 @@ function safeRedirector(url) {
         })
     }, timeout);
 }
+
+const rootUrl = document.head.getAttribute("data-rooturl");
+safeRedirector(rootUrl + '/');

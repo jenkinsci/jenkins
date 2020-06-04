@@ -28,7 +28,7 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.Locale;
 
 public class RunParameterValue extends ParameterValue {
@@ -100,7 +100,7 @@ public class RunParameterValue extends ParameterValue {
     public void buildEnvironment(Run<?,?> build, EnvVars env) {
         Run run = getRun();
         
-        String value = (null == run) ? "UNKNOWN" : Jenkins.getInstance().getRootUrl() + run.getUrl();
+        String value = (null == run) ? "UNKNOWN" : Jenkins.get().getRootUrl() + run.getUrl();
         env.put(name, value);
 
         env.put(name + ".jobName", getJobName());   // undocumented, left for backward compatibility

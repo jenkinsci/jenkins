@@ -26,12 +26,15 @@ package jenkins.model;
 import jenkins.util.SystemProperties;
 import hudson.model.Hudson;
 
-
+/**
+ * @deprecated use {@link SystemProperties} directly
+ */
+@Deprecated
 public class Configuration {
 
     public static boolean getBooleanConfigParameter(String name, boolean defaultValue) {
         String value = getStringConfigParameter(name,null);
-        return (value==null)?defaultValue:Boolean.valueOf(value);
+        return (value==null)?defaultValue:Boolean.parseBoolean(value);
     }
 
     public static String getStringConfigParameter(String name, String defaultValue) {

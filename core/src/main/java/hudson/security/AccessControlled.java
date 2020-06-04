@@ -23,7 +23,7 @@
  */
 package hudson.security;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 
@@ -38,27 +38,47 @@ public interface AccessControlled {
      *
      * @return never null.
      */
-    @Nonnull ACL getACL();
+    @NonNull ACL getACL();
 
     /**
      * Convenient short-cut for {@code getACL().checkPermission(permission)}
      */
-    default void checkPermission(@Nonnull Permission permission) throws AccessDeniedException {
+    default void checkPermission(@NonNull Permission permission) throws AccessDeniedException {
         getACL().checkPermission(permission);
+    }
+
+    /**
+     * Convenient short-cut for {@code getACL().checkAnyPermission(permission)}
+     * @see ACL#checkAnyPermission(Permission...)
+     *
+     * @since 2.222
+     */
+    default void checkAnyPermission(@NonNull Permission... permission) throws AccessDeniedException {
+        getACL().checkAnyPermission(permission);
     }
 
     /**
      * Convenient short-cut for {@code getACL().hasPermission(permission)}
      */
-    default boolean hasPermission(@Nonnull Permission permission) {
+    default boolean hasPermission(@NonNull Permission permission) {
         return getACL().hasPermission(permission);
+    }
+
+    /**
+     * Convenient short-cut for {@code getACL().hasAnyPermission(permission)}
+     * @see ACL#hasAnyPermission(Permission...)
+     *
+     * @since 2.222
+     */
+    default boolean hasAnyPermission(@NonNull Permission... permission) {
+        return getACL().hasAnyPermission(permission);
     }
 
     /**
      * Convenient short-cut for {@code getACL().hasPermission(a, permission)}
      * @since 2.92
      */
-    default boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+    default boolean hasPermission(@NonNull Authentication a, @NonNull Permission permission) {
         if (a == ACL.SYSTEM) {
             return true;
         }

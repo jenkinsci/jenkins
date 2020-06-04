@@ -26,80 +26,90 @@ THE SOFTWARE.
   List of available new plugins
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
-  <st:include page="sidepanel.jelly"/>
-  <l:main-panel>
-    <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager" />
-    <div class="pane-frame">
-      <table id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
-        <tr style="border-top:none; white-space: normal">
-          <td>
-            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
-              <h1>${%HTTP Proxy Configuration}</h1>
-              <f:form method="post" action="proxyConfigure" name="proxyConfigure">
-                <j:scope>
-                  <j:set var="instance" value="${app.proxy}"/>
-                  <j:set var="descriptor" value="${it.proxyDescriptor}"/>
-                  <st:include from="${descriptor}" page="${descriptor.configPage}" />
-                </j:scope>
-                <f:block>
-                  <f:submit />
-                </f:block>
-              </f:form>
-            </l:hasPermission>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}">
+        <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}" />
+        <st:include page="sidepanel.jelly"/>
+        <l:main-panel>
+            <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
+            <div class="pane-frame">
+                <div id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
+                    <section>
+                        <h2>${%HTTP Proxy Configuration}</h2>
+                        <f:form method="post" action="proxyConfigure" name="proxyConfigure">
+                            <j:scope>
+                                <j:set var="instance" value="${app.proxy}"/>
+                                <j:set var="descriptor" value="${it.proxyDescriptor}"/>
+                                <st:include from="${descriptor}" page="${descriptor.configPage}"/>
+                            </j:scope>
+                          <l:isAdmin>
+                            <f:block>
+                                <f:submit/>
+                            </f:block>
+                          </l:isAdmin>
+                        </f:form>
+                    </section>
 
-            <l:hasPermission permission="${app.pluginManager.UPLOAD_PLUGINS}">
-              <h1>${%Upload Plugin}</h1>
-              <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
-                <f:block>
-                  <div style="margin-bottom: 1em;">
-                    ${%uploadtext}
-                  </div>
-                </f:block>
-                <f:block>
-                  <!-- @size is for other browsers, @style is for IE -->
-                  ${%File}: <input type="file" name="name" class="setting-input" style="width:80%" size='40' />
-                </f:block>
-                <f:block>
-                  <f:submit value="${%Upload}" />
-                </f:block>
-              </f:form>
-            </l:hasPermission>
-            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
-              <h1>${%Update Site}</h1>
-              <f:form method="post" action="siteConfigure" name="siteConfigure">
-                <f:entry title="${%URL}" >
-                  <f:textbox name="site" value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}" />
-                </f:entry>
-                <f:block>
-                  <f:submit />
-                </f:block>
-              </f:form>
-              <j:set var="hasNonDefault" value="${false}"/>
-              <j:forEach var="site" items="${app.updateCenter.sites}">
-                <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
-                  <j:set var="hasNonDefault" value="${true}"/>
-                </j:if>
-              </j:forEach>
-              <j:if test="${hasNonDefault}">
-                <h2>${%Other Sites}</h2>
-                <ul>
-                  <j:forEach var="site" items="${app.updateCenter.sites}">
-                    <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
-                      <li>${site.url}</li>
+                  <l:isAdmin>
+                    <section>
+                        <h2>${%Upload Plugin}</h2>
+                        <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
+                            <f:block>
+                                <div style="margin-bottom: 1em;">
+                                    ${%uploadtext}
+                                </div>
+                            </f:block>
+                            <f:block>
+                                <!-- @size is for other browsers, @style is for IE -->
+                                ${%File}:
+                                <input type="file" name="name" class="setting-input" style="width:80%" size='40'/>
+                            </f:block>
+                            <f:block>
+                                <f:submit value="${%Upload}"/>
+                            </f:block>
+                        </f:form>
+                    </section>
+                  </l:isAdmin>
+
+                    <section>
+                        <h2>${%Update Site}</h2>
+                        <f:form method="post" action="siteConfigure" name="siteConfigure">
+                            <f:entry title="${%URL}">
+                                <f:textbox name="site"
+                                           value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"/>
+                            </f:entry>
+                          <l:isAdmin>
+                            <f:block>
+                                <f:submit/>
+                            </f:block>
+                          </l:isAdmin>
+                        </f:form>
+                        <j:set var="hasNonDefault" value="${false}"/>
+                        <j:forEach var="site" items="${app.updateCenter.sites}">
+                            <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
+                                <j:set var="hasNonDefault" value="${true}"/>
+                            </j:if>
+                        </j:forEach>
+                    </section>
+
+                    <j:if test="${hasNonDefault}">
+                        <section>
+                            <h2 class="h4">${%Other Sites}</h2>
+                            <ul>
+                                <j:forEach var="site" items="${app.updateCenter.sites}">
+                                    <j:if test="${site.id != app.updateCenter.ID_DEFAULT}">
+                                        <li>${site.url}</li>
+                                    </j:if>
+                                </j:forEach>
+                            </ul>
+                        </section>
                     </j:if>
-                  </j:forEach>
-                </ul>
-              </j:if>
-            </l:hasPermission>
-          </td>
-        </tr>
-      </table>
-    </div>
-    <div align="right" style="margin-top:1em">
-      <st:include page="check.jelly"/>
-    </div>
-  </l:main-panel>
-</l:layout>
+                </div>
+            </div>
+            <div align="right" style="margin-top:1em">
+                <st:include page="check.jelly"/>
+            </div>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>

@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.Launcher;
@@ -59,6 +55,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * @author pjanouse
+ */
 public class OnlineNodeCommandTest {
 
     private CLICommandInvoker command;
@@ -287,7 +286,7 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = j.jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)

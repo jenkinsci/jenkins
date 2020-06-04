@@ -1,6 +1,5 @@
 package jenkins.util;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import groovy.lang.GroovyClassLoader;
@@ -9,7 +8,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
-import java.net.URLClassLoader;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;

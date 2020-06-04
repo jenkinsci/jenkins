@@ -27,11 +27,14 @@ import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Show the crumb configuration to the system config page.
@@ -41,7 +44,7 @@ import javax.annotation.Nonnull;
 @Extension(ordinal=195) @Symbol("crumb") // immediately after the security setting
 public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     @Override
-    public @Nonnull GlobalConfigurationCategory getCategory() {
+    public @NonNull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
@@ -49,14 +52,29 @@ public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.get();
-        if (json.has("csrf")) {
-            JSONObject csrf = json.getJSONObject("csrf");
-            j.setCrumbIssuer(CrumbIssuer.all().newInstanceFromRadioList(csrf, "issuer"));
+
+        if (json.has("crumbIssuer")) {
+            j.setCrumbIssuer(req.bindJSON(CrumbIssuer.class, json.getJSONObject("crumbIssuer")));
         } else {
-            j.setCrumbIssuer(null);
+            j.setCrumbIssuer(createDefaultCrumbIssuer());
         }
 
         return true;
     }
-}
 
+    @Restricted(NoExternalUse.class) // Jelly
+    public CrumbIssuer getCrumbIssuer() {
+        return Jenkins.get().getCrumbIssuer();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static CrumbIssuer createDefaultCrumbIssuer() {
+        if (DISABLE_CSRF_PROTECTION) {
+            return null;
+        }
+        return new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility", false));
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static /* non-final */ boolean DISABLE_CSRF_PROTECTION = SystemProperties.getBoolean(GlobalCrumbIssuerConfiguration.class.getName() + ".DISABLE_CSRF_PROTECTION");
+}

@@ -42,9 +42,11 @@
 # to Jenkins instead of the old name.
 
 use strict;
+use File::Basename;
 use File::Find;
+use File::Path;
 
-my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter) = (undef, undef, "./", undef, undef, undef, undef, undef, undef);
+my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter, $target) = (undef, undef, "./", undef, undef, undef, undef, undef, undef, "./");
 my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins, $countervalue) = (0, 0, 0, 0, 0, 0, 0, 1);
 ## read arguments
 foreach (@ARGV) {
@@ -64,6 +66,8 @@ foreach (@ARGV) {
     $reuse = $1;
   } elsif (/^--counter$/ || /^--counter=true$/) {
      $counter = 1;
+  } elsif (/^--target=(.*)$/) {
+     $target = $1;
   } else {
     $dir=$_;
   }
@@ -122,6 +126,7 @@ sub processFile {
    #  efile -> english file
    my $file = shift;
    my ($ofile, $efile) = ($file, $file);
+   $ofile =~ s/$dir/$target/;
    $ofile =~ s/(\.jelly)|(\.properties)/_$lang.properties/;
    $efile =~ s/(\.jelly)/.properties/;
 
@@ -199,6 +204,8 @@ sub processFile {
                   if ($counter) {
                      # add unique value for each added translation
                      print F "---TranslateMe ".$countervalue."--- ".($ekeys{$_} ? $ekeys{$_} : $_)."\n";
+                  } else {
+                     print F "\n";
                   }
                }
                $countervalue++;
@@ -367,6 +374,7 @@ sub isUtf8 {
 # Note: the license is read from the head of this file
 my $license;
 sub printLicense {
+   my $file = shift;
    if (!$license && open(F, $0)) {
       $license = "";
       my $on = 0;
@@ -378,7 +386,11 @@ sub printLicense {
       close(F);
    }
    if ($license && $license ne "") {
-      open(F, ">" . shift) || die $!;
+      my $dirname = dirname($file);
+      unless (-d $dirname) {
+         mkpath($dirname);
+      }
+      open(F, ">" . $file) || die $!;
       print F "$license\n";
       close(F);
    }
@@ -412,6 +424,7 @@ Usage: $0 --lang=xx [options] [dir]
                              order to utilize them when the same key appears
      --counter=true       -> to each translated key, unique value is added to easily identify match missing translation
                              with value in source code (default false)
+     --target=folder      -> target folder for writing files
 
    Examples:
      - Look for Spanish files with incomplete keys in the 'main' folder,

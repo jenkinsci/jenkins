@@ -27,25 +27,19 @@ import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
-import lib.layout.ConfirmationLinkTest;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
@@ -53,7 +47,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebMethod;
 import org.w3c.dom.NodeList;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * @author Kohsuke Kawaguchi

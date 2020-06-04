@@ -31,7 +31,9 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Url;
@@ -177,10 +179,10 @@ public class CronTabTest {
     }
 
     @Test public void checkSanity() throws Exception {
-        assertEquals(null, new CronTab("@hourly").checkSanity());
+        assertNull(new CronTab("@hourly").checkSanity());
         assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* * * * *", "H * * * *"), new CronTab("* * * * *").checkSanity());
         assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("*/1 * * * *", "H * * * *"), new CronTab("*/1 * * * *").checkSanity());
-        assertEquals(null, new CronTab("H H(0-2) * * *", Hash.from("stuff")).checkSanity());
+        assertNull(new CronTab("H H(0-2) * * *", Hash.from("stuff")).checkSanity());
         assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 0 * * *", "H 0 * * *"), new CronTab("* 0 * * *").checkSanity());
         assertEquals(Messages.CronTab_do_you_really_mean_every_minute_when_you("* 6,18 * * *", "H 6,18 * * *"), new CronTab("* 6,18 * * *").checkSanity());
         // dubious; could be improved:
@@ -193,8 +195,8 @@ public class CronTabTest {
         // if the user specifically asked for 3:00 AM, probably we should stick to 3:00–3:59
         assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 3 * * *", "0 3 * * *"), new CronTab("0 3 * * *").checkSanity());
         assertEquals(Messages.CronTab_spread_load_evenly_by_using_rather_than_("H 22 * * 6", "00 22 * * 6"), new CronTab("00 22 * * 6").checkSanity());
-        assertEquals(null, new CronTab("H/15 * 1 1 *").checkSanity());
-        assertEquals(null, new CronTab("0 3 H/15 * *").checkSanity());
+        assertNull(new CronTab("H/15 * 1 1 *").checkSanity());
+        assertNull(new CronTab("0 3 H/15 * *").checkSanity());
         assertEquals(Messages.CronTab_short_cycles_in_the_day_of_month_field_w(), new CronTab("0 3 H/3 * *").checkSanity());
         assertEquals(Messages.CronTab_short_cycles_in_the_day_of_month_field_w(), new CronTab("0 3 */5 * *").checkSanity());
     }
@@ -272,7 +274,7 @@ public class CronTabTest {
 
     @Test public void repeatedHash() throws Exception {
         CronTabList tabs = CronTabList.create("H * * * *\nH * * * *", Hash.from("seed"));
-        List<Integer> times = new ArrayList<Integer>();
+        List<Integer> times = new ArrayList<>();
         for (int i = 0; i < 60; i++) {
             if (tabs.check(new GregorianCalendar(2013, 3, 3, 11, i, 0))) {
                 times.add(i);
@@ -306,7 +308,7 @@ public class CronTabTest {
     @Issue("JENKINS-9283")
     @Test public void testTimezone() throws Exception {
         CronTabList tabs = CronTabList.create("TZ=Australia/Sydney\nH * * * *\nH * * * *", Hash.from("seed"));
-        List<Integer> times = new ArrayList<Integer>();
+        List<Integer> times = new ArrayList<>();
         for (int i = 0; i < 60; i++) {
             GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
             calendar.set(2013, Calendar.APRIL, 3, 11, i, 0);

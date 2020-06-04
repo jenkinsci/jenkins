@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -30,7 +30,7 @@ public class TextFileTest {
     @Test
     public void shortHead() throws Exception {
         File f = tmp.newFile();
-        FileUtils.write(f, "hello");
+        FileUtils.write(f, "hello", Charset.defaultCharset());
 
         TextFile t = new TextFile(f);
         assertEquals("hello", t.head(35));
@@ -40,7 +40,7 @@ public class TextFileTest {
     public void tail() throws Exception {
         File f = tmp.newFile();
         FileUtils.copyURLToFile(getClass().getResource("ascii.txt"), f);
-        String whole = FileUtils.readFileToString(f);
+        String whole = FileUtils.readFileToString(f, Charset.defaultCharset());
         TextFile t = new TextFile(f);
         String tailStr = whole.substring(whole.length() - 34);
         assertEquals(tailStr, t.fastTail(tailStr.length()));
@@ -49,7 +49,7 @@ public class TextFileTest {
     @Test
     public void shortTail() throws Exception {
         File f = tmp.newFile();
-        FileUtils.write(f, "hello");
+        FileUtils.write(f, "hello", Charset.defaultCharset());
 
         TextFile t = new TextFile(f);
         assertEquals("hello", t.fastTail(35));

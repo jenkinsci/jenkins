@@ -1,7 +1,6 @@
 package hudson.model;
 
 import com.google.common.base.Throwables;
-import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -26,7 +25,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Kohsuke Kawaguchi

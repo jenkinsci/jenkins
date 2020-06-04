@@ -3,10 +3,14 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -74,7 +78,11 @@ public class AssetManager implements UnprotectedRootAction {
      * look for child classloader first. But to support plugins that get split, if the child classloader
      * doesn't find it, fall back to the parent classloader.
      */
-    private URL findResource(String path) throws IOException {
+    private @CheckForNull URL findResource(@NonNull String path) throws IOException {
+        if (StringUtils.isBlank(path)) {
+            return null;
+        }
+
         try {
             if (path.contains("..")) // crude avoidance of directory traversal attack
                 throw new IllegalArgumentException(path);

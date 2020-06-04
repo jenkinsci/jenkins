@@ -42,8 +42,8 @@ import hudson.security.PermissionGroup;
 import hudson.security.AccessControlled;
 import hudson.util.Secret;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Basic configuration unit in Hudson.
@@ -140,11 +140,10 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * @param g
      *      The {@link ItemGroup} instance used as context to evaluate the relative name of this item
      * @return
-     *      The name of the current item, relative to p. Nested {@link ItemGroup}s are separated by {@code /} character.
+     *      The name of the current item, relative to {@code g}, or {@code null} if one of the
+     *      item's parents is not an {@link Item}. Nested {@link ItemGroup}s are separated by a
+     *      {@code /} character (e.g., {@code ../foo/bar}).
      * @since 1.419
-     * @return
-     *      String like "../foo/bar".
-     *      {@code null} if one of item parents is not an {@link Item}.
      */
     @Nullable
     default String getRelativeNameFrom(@CheckForNull ItemGroup g) {
@@ -159,7 +158,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * @since 1.419
      */
     @Nullable
-    default String getRelativeNameFrom(@Nonnull Item item)  {
+    default String getRelativeNameFrom(@NonNull Item item)  {
         return getRelativeNameFrom(item.getParent());
 
     }
@@ -201,7 +200,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      */
     @Deprecated
     default String getAbsoluteUrl() {
-        String r = Jenkins.getInstance().getRootUrl();
+        String r = Jenkins.get().getRootUrl();
         if(r==null)
             throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
         return Util.encode(r+getUrl());

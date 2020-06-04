@@ -1,12 +1,13 @@
 package jenkins.model.identity;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
 import org.apache.commons.codec.Charsets;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * A simple root action that exposes the public key to users so that they do not need to search for the
@@ -17,25 +18,16 @@ import org.apache.commons.codec.binary.Base64;
  */
 @Extension
 public class IdentityRootAction implements UnprotectedRootAction {
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getIconFileName() {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getDisplayName() {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getUrlName() {
         return InstanceIdentityProvider.RSA.getKeyPair() == null ? null : "instance-identity";
@@ -51,7 +43,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
         if (key == null) {
             return null;
         }
-        byte[] encoded = Base64.encodeBase64(key.getEncoded());
+        byte[] encoded = Base64.getEncoder().encode(key.getEncoded());
         int index = 0;
         StringBuilder buf = new StringBuilder(encoded.length + 20);
         while (index < encoded.length) {
@@ -70,6 +62,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      *
      * @return the fingerprint of the public key.
      */
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security. ")
     public String getFingerprint() {
         RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
         if (key == null) {
@@ -77,7 +70,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
         }
         // TODO replace with org.jenkinsci.remoting.util.KeyUtils once JENKINS-36871 changes are merged
         try {
-            MessageDigest digest = MessageDigest.getInstance("MD5");
+            MessageDigest digest = getMd5();
             digest.reset();
             byte[] bytes = digest.digest(key.getEncoded());
             StringBuilder result = new StringBuilder(Math.max(0, bytes.length * 3 - 1));
@@ -92,5 +85,11 @@ public class IdentityRootAction implements UnprotectedRootAction {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("JLS mandates MD5 support");
         }
+    }
+
+    // TODO JENKINS-60563 remove MD5 from all usages in Jenkins
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security. ")
+    private MessageDigest getMd5() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance("MD5");
     }
 }

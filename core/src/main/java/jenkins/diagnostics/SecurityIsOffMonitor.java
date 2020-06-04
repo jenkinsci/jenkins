@@ -29,7 +29,7 @@ public class SecurityIsOffMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        return !Jenkins.getInstance().isUseSecurity();
+        return !Jenkins.get().isUseSecurity();
     }
 
     /**

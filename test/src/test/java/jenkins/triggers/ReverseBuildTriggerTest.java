@@ -47,7 +47,9 @@ import org.acegisecurity.Authentication;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.ClassRule;
 
@@ -89,7 +91,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(Result.SUCCESS, bt.getThreshold());
     }
 
-    /** @see BuildTriggerTest#testDownstreamProjectSecurity */
+    /** @see BuildTriggerTest#downstreamProjectSecurity */
     @Test public void upstreamProjectSecurity() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
@@ -97,7 +99,7 @@ public class ReverseBuildTriggerTest {
                 .grant(Computer.BUILD).everywhere().to("alice", "bob")
                 .grant(Jenkins.ADMINISTER).everywhere().to("admin");
         r.jenkins.setAuthorizationStrategy(auth);
-        String upstreamName = "upstr3@m"; // do not clash with English messages!
+        String upstreamName = "upstr3am"; // do not clash with English messages!
         final FreeStyleProject upstream = r.createFreeStyleProject(upstreamName);
         String downstreamName = "d0wnstr3am";
         FreeStyleProject downstream = r.createFreeStyleProject(downstreamName);
@@ -222,7 +224,7 @@ public class ReverseBuildTriggerTest {
 
         // The reported issue was with Pipeline jobs, which calculate their dependency graphs via
         // ReverseBuildTrigger.RunListenerImpl, so an additional test may be needed downstream.
-        trigger.buildDependencyGraph(downstreamJob1, Jenkins.getInstance().getDependencyGraph());
+        trigger.buildDependencyGraph(downstreamJob1, Jenkins.get().getDependencyGraph());
     }
 
     @Issue("JENKINS-46161")

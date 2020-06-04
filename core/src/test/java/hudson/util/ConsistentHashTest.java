@@ -23,7 +23,12 @@
  */
 package hudson.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import hudson.util.CopyOnWriteMap.Hash;
 import org.junit.Test;
@@ -45,7 +50,7 @@ public class ConsistentHashTest {
      */
     @Test
     public void basic() {
-        ConsistentHash<String> hash = new ConsistentHash<String>();
+        ConsistentHash<String> hash = new ConsistentHash<>();
         hash.add("data1");
         hash.add("data2");
         hash.add("data3");
@@ -60,13 +65,13 @@ public class ConsistentHashTest {
 
         // list them up
         Iterator<String> itr = hash.list(Integer.MIN_VALUE).iterator();
-        Set<String> all = new HashSet<String>();
+        Set<String> all = new HashSet<>();
         String z = itr.next();
         all.add(z);
         assertEquals(z,x);
         all.add(itr.next());
         all.add(itr.next());
-        assertTrue(!itr.hasNext());
+        assertFalse(itr.hasNext());
         assertEquals(3,all.size());
     }
 
@@ -75,7 +80,7 @@ public class ConsistentHashTest {
      */
     @Test
     public void unevenDistribution() {
-        ConsistentHash<String> hash = new ConsistentHash<String>();
+        ConsistentHash<String> hash = new ConsistentHash<>();
         hash.add("even",10);
         hash.add("odd",100);
 
@@ -97,12 +102,12 @@ public class ConsistentHashTest {
      */
     @Test
     public void removal() {
-        ConsistentHash<Integer> hash = new ConsistentHash<Integer>();
+        ConsistentHash<Integer> hash = new ConsistentHash<>();
         for( int i=0; i<10; i++ )
             hash.add(i);
 
         // what was the mapping before the mutation?
-        Map<Integer,Integer> before = new HashMap<Integer, Integer>();
+        Map<Integer,Integer> before = new HashMap<>();
         Random r = new Random(0);
         for(int i=0; i<1000; i++) {
             int q = r.nextInt();
@@ -121,7 +126,7 @@ public class ConsistentHashTest {
 
     @Test
     public void emptyBehavior() {
-        ConsistentHash<String> hash = new ConsistentHash<String>();
+        ConsistentHash<String> hash = new ConsistentHash<>();
         assertEquals(0, hash.countAllPoints());
         assertFalse(hash.list(0).iterator().hasNext());
         assertNull(hash.lookup(0));
@@ -130,7 +135,7 @@ public class ConsistentHashTest {
 
     @Test
     public void countAllPoints() {
-        ConsistentHash<String> hash = new ConsistentHash<String>();
+        ConsistentHash<String> hash = new ConsistentHash<>();
         assertEquals(0, hash.countAllPoints());
         hash.add("foo", 10);
         assertEquals(10, hash.countAllPoints());
@@ -142,7 +147,7 @@ public class ConsistentHashTest {
 
     @Test
     public void defaultReplicationIsOneHundred() {
-        ConsistentHash<String> hash = new ConsistentHash<String>();
+        ConsistentHash<String> hash = new ConsistentHash<>();
         assertEquals(0, hash.countAllPoints());
         hash.add("foo");
         assertEquals(100, hash.countAllPoints());
@@ -150,7 +155,7 @@ public class ConsistentHashTest {
 
     @Test
     public void setCustomDefaultReplication() {
-        ConsistentHash<String> hash = new ConsistentHash<String>((ConsistentHash.Hash<String>) ConsistentHash.DEFAULT_HASH, 7);
+        ConsistentHash<String> hash = new ConsistentHash<>((ConsistentHash.Hash<String>) ConsistentHash.DEFAULT_HASH, 7);
         assertEquals(0, hash.countAllPoints());
         hash.add("foo");
         assertEquals(7, hash.countAllPoints());
@@ -166,7 +171,7 @@ public class ConsistentHashTest {
         };
 
         try {
-            ConsistentHash<String> hash = new ConsistentHash<String>(hashFunction);
+            ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
             hash.add("foo");
             fail("Didn't use custom hash function");
         } catch (RuntimeException e) {
@@ -179,14 +184,14 @@ public class ConsistentHashTest {
      */
     @Test
     public void speed() {
-        Map<String,Integer> data = new Hash<String, Integer>();
+        Map<String,Integer> data = new Hash<>();
         for (int i = 0; i < 1000; i++)
             data.put("node" + i,100);
         data.put("tail",100);
 
         long start = System.currentTimeMillis();
         for (int j=0; j<10; j++) {
-            ConsistentHash<String> b = new ConsistentHash<String>();
+            ConsistentHash<String> b = new ConsistentHash<>();
             b.addAll(data);
         }
 

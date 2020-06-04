@@ -34,7 +34,11 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import static org.junit.Assert.*;
+import java.util.logging.SimpleFormatter;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -93,8 +97,10 @@ public class LogRecorderManagerTest {
         assertFalse(ch.call(new Log(Level.FINER, "ns3", "not displayed")));
         assertTrue(ch.call(new Log(Level.INFO, "ns4", "msg #4")));
         assertFalse(ch.call(new Log(Level.FINE, "ns4", "not displayed")));
+        assertTrue(ch.call(new Log(Level.INFO, "other", "msg #5 {0,number,0.0} {1,number,0.0} ''OK?''", new Object[] {1.0, 2.0})));
         List<LogRecord> recs = c.getLogRecords();
-        assertEquals(show(recs), 4, recs.size());
+        assertEquals(show(recs), 5, recs.size());
+        assertEquals("msg #5 1.0 2.0 'OK?'", new SimpleFormatter().formatMessage(recs.get(0)));
         recs = r1.getSlaveLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 2, recs.size());
@@ -113,14 +119,23 @@ public class LogRecorderManagerTest {
         private final Level level;
         private final String logger;
         private final String message;
+        private final Object[] params;
         Log(Level level, String logger, String message) {
+            this(level, logger, message, null);
+        }
+        Log(Level level, String logger, String message, Object[] params) {
             this.level = level;
             this.logger = logger;
             this.message = message;
+            this.params = params;
         }
         @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
-            log.log(level, message);
+            if (params != null) {
+                log.log(level, message, params);
+            } else {
+                log.log(level, message);
+            }
             return log.isLoggable(level);
         }
     }

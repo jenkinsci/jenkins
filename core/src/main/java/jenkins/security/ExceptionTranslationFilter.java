@@ -1,4 +1,5 @@
 /* Copyright 2004, 2005, 2006 Acegi Technology Pty Limited
+ * Copyright (c) 2020 CloudBees, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,25 +40,26 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Handles any <code>AccessDeniedException</code> and <code>AuthenticationException</code> thrown within the
+ * Handles any {@code AccessDeniedException} and {@code AuthenticationException} thrown within the
  * filter chain.
  * <p>
  * This filter is necessary because it provides the bridge between Java exceptions and HTTP responses.
  * It is solely concerned with maintaining the user interface. This filter does not do any actual security enforcement.
  * </p>
  * <p>
- * If an {@link AuthenticationException} is detected, the filter will launch the <code>authenticationEntryPoint</code>.
+ * If an {@link AuthenticationException} is detected, the filter will launch the {@code authenticationEntryPoint}.
  * This allows common handling of authentication failures originating from any subclass of
  * {@code AbstractSecurityInterceptor}.
  * </p>
  * <p>
  * If an {@link AccessDeniedException} is detected, the filter will determine whether or not the user is an anonymous
- * user. If they are an anonymous user, the <code>authenticationEntryPoint</code> will be launched. If they are not
+ * user. If they are an anonymous user, the {@code authenticationEntryPoint} will be launched. If they are not
  * an anonymous user, the filter will delegate to the {@code AccessDeniedHandler}.
  * By default the filter will use {@code AccessDeniedHandlerImpl}.
  * </p>
@@ -65,16 +67,16 @@ import java.util.logging.Logger;
  * To use this filter, it is necessary to specify the following properties:
  * </p>
  * <ul>
- * <li><code>authenticationEntryPoint</code> indicates the handler that
+ * <li>{@code authenticationEntryPoint} indicates the handler that
  * should commence the authentication process if an
- * <code>AuthenticationException</code> is detected. Note that this may also
+ * {@code AuthenticationException} is detected. Note that this may also
  * switch the current protocol from http to https for an SSL login.</li>
- * <li><code>portResolver</code> is used to determine the "real" port that a
+ * <li>{@code portResolver} is used to determine the "real" port that a
  * request was received on.</li>
  * </ul>
  * <P>
  * <B>Do not use this class directly.</B> Instead configure
- * <code>web.xml</code> to use the {@code FilterToBeanProxy}.
+ * {@code web.xml} to use the {@code FilterToBeanProxy}.
  * </p>
  *
  * @author Ben Alex
@@ -121,8 +123,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 		catch (AuthenticationException | AccessDeniedException ex) {
 			handleException(request, response, chain, ex);
 		} catch (ServletException ex) {
-			if (ex.getRootCause() instanceof AuthenticationException
-					|| ex.getRootCause() instanceof AccessDeniedException) {
+			if (ex.getRootCause() instanceof AuthenticationException || ex.getRootCause() instanceof AccessDeniedException) {
 				handleException(request, response, chain, (AcegiSecurityException) ex.getRootCause());
 			}
 			else {
@@ -171,17 +172,17 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 	}
 
 	/**
-	 * If <code>true</code>, indicates that <code>SecurityEnforcementFilter</code> is permitted to store the target
-	 * URL and exception information in the <code>HttpSession</code> (the default).
-     * In situations where you do not wish to unnecessarily create <code>HttpSession</code>s - because the user agent
+	 * If {@code true}, indicates that {@code SecurityEnforcementFilter} is permitted to store the target
+	 * URL and exception information in the {@link HttpSession} (the default).
+     * In situations where you do not wish to unnecessarily create {@link HttpSession}s - because the user agent
      * will know the failed URL, such as with BASIC or Digest authentication - you may wish to
-	 * set this property to <code>false</code>. Remember to also set the
+	 * set this property to {@code false}. Remember to also set the
 	 * {@link org.acegisecurity.context.HttpSessionContextIntegrationFilter#allowSessionCreation}
-	 * to <code>false</code> if you set this property to <code>false</code>.
+	 * to {@code false} if you set this property to {@code false}.
 	 *
-	 * @return <code>true</code> if the <code>HttpSession</code> will be
-	 * used to store information about the failed request, <code>false</code>
-	 * if the <code>HttpSession</code> will not be used
+	 * @return {@code true} if the {@link HttpSession} will be
+	 * used to store information about the failed request, {@code false}
+	 * if the {@link HttpSession} will not be used
 	 */
 	public boolean isCreateSessionAllowed() {
 		return createSessionAllowed;
@@ -234,4 +235,5 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
 
     public void destroy() {
     }
+
 }

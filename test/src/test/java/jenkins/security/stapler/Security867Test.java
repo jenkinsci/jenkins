@@ -31,13 +31,13 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class Security867Test {
     @Rule
@@ -120,6 +120,7 @@ public class Security867Test {
     }
     
     @TestExtension
+    @StaplerViews("public")
     public static class RootAction1 implements RootAction {
         // not displayed in its own public.jelly
         public String getMyConfig() {
@@ -143,6 +144,7 @@ public class Security867Test {
     }
     
     @TestExtension
+    @StaplerViews("showConfig")
     public static class RootAction3 implements RootAction {
         // displayed in its showConfig.jelly
         public String getMyConfig() {

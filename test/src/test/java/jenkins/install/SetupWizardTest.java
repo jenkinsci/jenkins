@@ -32,21 +32,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import jenkins.AgentProtocolTest;
-import jenkins.slaves.DeprecatedAgentProtocolMonitor;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.SmokeTest;
@@ -121,17 +114,6 @@ public class SetupWizardTest {
         wc.assertFails("setupWizard/completeInstall", 403);
     }
 
-    @Test
-    @Issue("JENKINS-45841")
-    public void shouldDisableUnencryptedProtocolsByDefault() throws Exception {
-        AgentProtocolTest.assertProtocols(j.jenkins, true, 
-                "Encrypted JNLP4-protocols protocol should be enabled", "JNLP4-connect");
-        AgentProtocolTest.assertProtocols(j.jenkins, false, 
-                "Non-encrypted JNLP protocols should be disabled by default", 
-                "JNLP-connect", "JNLP2-connect");
-        AgentProtocolTest.assertMonitorNotActive(j);
-    }
-        
     private String jsonRequest(JenkinsRule.WebClient wc, String path) throws Exception {
         // Try to call the actions method to retrieve the data
         final Page res;

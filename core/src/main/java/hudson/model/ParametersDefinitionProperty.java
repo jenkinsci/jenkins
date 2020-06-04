@@ -35,8 +35,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import jenkins.model.Jenkins;
@@ -71,11 +71,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+    public ParametersDefinitionProperty(@NonNull List<ParameterDefinition> parameterDefinitions) {
         this.parameterDefinitions = parameterDefinitions != null ? parameterDefinitions : new ArrayList<>();
     }
 
-    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
+    public ParametersDefinitionProperty(@NonNull ParameterDefinition... parameterDefinitions) {
         this.parameterDefinitions = parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : new ArrayList<>();
     }
 
@@ -105,7 +105,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         return new DefinitionsAbstractList(this.parameterDefinitions);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Collection<Action> getJobActions(Job<?, ?> job) {
         return Collections.singleton(this);
@@ -158,7 +158,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             }
         }
 
-    	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
+    	WaitingItem item = Jenkins.get().getQueue().schedule(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
@@ -187,7 +187,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         if (delay==null)
             delay=new TimeDuration(TimeUnit.MILLISECONDS.convert(getJob().getQuietPeriod(), TimeUnit.SECONDS));
 
-        Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
+        Queue.Item item = Jenkins.get().getQueue().schedule2(
                 getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
         if (item != null) {
@@ -200,6 +200,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     /**
      * Gets the {@link ParameterDefinition} of the given name, if any.
      */
+    @CheckForNull
     public ParameterDefinition getParameterDefinition(String name) {
         for (ParameterDefinition pd : parameterDefinitions)
             if (pd.getName().equals(name))

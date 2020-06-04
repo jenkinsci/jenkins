@@ -55,8 +55,7 @@ public class StopBuildsCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.get();
-        final HashSet<String> names = new HashSet<>();
-        names.addAll(jobNames);
+        final HashSet<String> names = new HashSet<>(jobNames);
 
         final List<Job> jobsToStop = new ArrayList<>();
         for (final String jobName : names) {

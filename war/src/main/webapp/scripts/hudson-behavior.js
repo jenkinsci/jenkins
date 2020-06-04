@@ -495,7 +495,7 @@ function registerRegexpValidator(e,regexp,message) {
     e.onchange = function() {
         var set = oldOnchange != null ? oldOnchange.call(this) : false;
         if (this.value.match(regexp)) {
-            if (!set) this.targetElement.innerHTML = "";
+            if (!set) this.targetElement.innerHTML = "<div/>";
         } else {
             this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
             set = true;
@@ -736,6 +736,7 @@ var jenkinsRules = {
         ac.generateRequest = function(query) {
             return "?value=" + query;
         };
+        ac.autoHighlight = false;
         ac.prehighlightClassName = "yui-ac-prehighlight";
         ac.animSpeed = 0;
         ac.formatResult = ac.formatEscapedResult;
@@ -1505,8 +1506,12 @@ function expandTextArea(button,id) {
         n = n.parentNode;
     }
 
-    n.parentNode.innerHTML = 
-        "<textarea rows=8 class='setting-input' name='"+field.name+"'>"+value+"</textarea>";
+    var parent = n.parentNode;
+    parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
+    var textArea = parent.childNodes[0];
+    textArea.name = field.name;
+    textArea.innerText = value;
+
     layoutUpdateCallback.call();
 }
 
@@ -2391,31 +2396,27 @@ function createSearchBox(searchURL) {
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
     var comp  = $("search-box-completion");
-    var minW  = $("search-box-minWidth");
 
     Behaviour.addLoadEvent(function(){
-        // make sure all three components have the same font settings
-        function copyFontStyle(s,d) {
-            var ds = d.style;
-            ds.fontFamily = getStyle(s,"fontFamily");
-            ds.fontSize = getStyle(s,"fontSize");
-            ds.fontStyle = getStyle(s,"fontStyle");
-            ds.fontWeight = getStyle(s,"fontWeight");
-        }
-
-        copyFontStyle(box,sizer);
-        copyFontStyle(box,minW);
+        // copy font style of box to sizer
+        var ds = sizer.style;
+        ds.fontFamily = getStyle(box, "fontFamily");
+        ds.fontSize = getStyle(box, "fontSize");
+        ds.fontStyle = getStyle(box, "fontStyle");
+        ds.fontWeight = getStyle(box, "fontWeight");
     });
 
     // update positions and sizes of the components relevant to search
     function updatePos() {
-        function max(a,b) { if(a>b) return a; else return b; }
-
         sizer.innerHTML = box.value.escapeHTML();
-        var w = max(sizer.offsetWidth,minW.offsetWidth);
+        var cssWidth, offsetWidth = sizer.offsetWidth;
+        if (offsetWidth > 0) {
+            cssWidth = offsetWidth + "px";
+        } else { // sizer hidden on small screen, make sure resizing looks OK
+            cssWidth =  getStyle(sizer, "minWidth");
+        }
         box.style.width =
-        comp.style.width = 
-        comp.firstChild.style.width = (w+60)+"px";
+        comp.firstChild.style.minWidth = "calc(60px + " + cssWidth + ")";
 
         var pos = YAHOO.util.Dom.getXY(box);
         pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
@@ -2423,7 +2424,7 @@ function createSearchBox(searchURL) {
     }
 
     updatePos();
-    box.onkeyup = updatePos;
+    box.addEventListener("input", updatePos);
 }
 
 
@@ -2611,6 +2612,9 @@ function buildFormTree(form) {
             default:
                 p = findParent(e);
                 addProperty(p, e.name, e.value);
+                if (e.hasClassName("complex-password-field")) {
+                    addProperty(p, "$redact", shortenName(e.name));
+                }
                 break;
             }
         }
@@ -2743,152 +2747,6 @@ function loadScript(href,callback) {
     head.insertBefore( script, head.firstChild );
 }
 
-/**
- * Loads a dynamically created invisible IFRAME.
- */
-function createIframe(src,callback) {
-    var iframe = document.createElement("iframe");
-    iframe.src = src;
-    iframe.style.display = "none";
-
-    var done = false;
-    iframe.onload = iframe.onreadystatechange = function() {
-        if ( !done && (!this.readyState ||
-                this.readyState === "loaded" || this.readyState === "complete") ) {
-            done = true;
-            callback();
-        }
-    };
-
-    document.body.appendChild(iframe);
-    return iframe;
-}
-
-var downloadService = {
-    continuations: {},
-
-    download : function(id,url,info, postBack,completionHandler) {
-        var tag = {id:id,postBack:postBack,completionHandler:completionHandler,received:false};
-        this.continuations[id] = tag;
-
-        // use JSONP to download the data
-        function fallback() {
-            loadScript(url+"?id="+id+'&'+Hash.toQueryString(info));
-        }
-
-        if (window.postMessage) {
-            // try downloading the postMessage version of the data,
-            // if we don't receive postMessage (which probably means the server isn't ready with these new datasets),
-            // fallback to JSONP
-            tag.iframe = createIframe(url+".html?id="+id+'&'+Hash.toQueryString(info),function() {
-                window.setTimeout(function() {
-                    if (!tag.received)
-                        fallback();
-                },100); // bit of delay in case onload on our side fires first
-            });
-        } else {
-            // this browser doesn't support postMessage
-            fallback();
-        }
-
-        // NOTE:
-        //   the only reason we even try fallback() is in case our server accepts the submission without a signature
-        //   (which it really shouldn't)
-    },
-
-    /**
-     * Call back to postMessage
-     */
-    receiveMessage : function(ev) {
-        var self = this;
-        Object.values(this.continuations).each(function(tag) {
-            if (tag.iframe.contentWindow==ev.source) {
-                self.post(tag.id,JSON.parse(ev.data));
-            }
-        })
-    },
-
-    post : function(id,data) {
-        if (data==undefined) {
-            // default to id in data
-            data = id;
-            id = data.id;
-        }
-        var tag = this.continuations[id];
-        if (tag==undefined) {
-            console.log("Submission from update center that we don't know: "+id);
-            console.log("Likely mismatch between the registered ID vs ID in JSON");
-            return;
-        }
-        tag.received = true;
-
-        // send the payload back in the body. We used to send this in as a form submission, but that hits the form size check in Jetty.
-        new Ajax.Request(tag.postBack, {
-            contentType:"application/json",
-            encoding:"UTF-8",
-            postBody:Object.toJSON(data),
-            onSuccess: function() {
-                if(tag.completionHandler!=null)
-                    tag.completionHandler();
-                else if(downloadService.completionHandler!=null)
-                    downloadService.completionHandler();
-            }
-        });
-    }
-};
-
-// update center service. to remain compatible with earlier version of Jenkins, aliased.
-var updateCenter = downloadService;
-
-YAHOO.util.Event.addListener(window, "message", function(ev) { downloadService.receiveMessage(ev); })
-
-/*
-redirects to a page once the page is ready.
-
-    @param url
-        Specifies the URL to redirect the user.
-*/
-function applySafeRedirector(url) {
-    var i=0;
-    new PeriodicalExecuter(function() {
-      i = (i+1)%4;
-      var s = "";
-      var j=0;
-      for( j=0; j<i; j++ )
-        s+='.';
-      // put the rest of dots as hidden so that the layout doesn't change
-      // depending on the # of dots.
-      s+="<span style='visibility:hidden'>";
-      for( ; j<4; j++ )
-        s+='.';
-      s+="</span>";
-      $('progress').innerHTML = s;
-    },1);
-
-    window.setTimeout(function() {
-      var statusChecker = arguments.callee;
-        new Ajax.Request(url, {
-            method: "get",
-            onFailure: function(rsp) {
-                if(rsp.status==503 && rsp.getHeader("X-Jenkins-Interactive")==null) {
-                  // redirect as long as we are still loading
-                  window.setTimeout(statusChecker,5000);
-                } else {
-                  window.location.replace(url);
-                }
-            },
-            onSuccess: function(rsp) {
-                if(rsp.status!=200) {
-                    // if connection fails, somehow Prototype thinks it's a success
-                    window.setTimeout(statusChecker,5000);
-                } else {
-                    window.location.replace(url);
-                }
-            }
-        });
-    }, 5000);
-}
-
 // logic behind <f:validateButton />
 function safeValidateButton(yuiButton) {
     var button = yuiButton._button;
@@ -3012,22 +2870,24 @@ var layoutUpdateCallback = {
 // this control displays a single line message at the top of the page, like StackOverflow does
 // see ui-samples for more details
 var notificationBar = {
-    OPACITY : 0.8,
+    OPACITY : 1,
     DELAY : 3000,   // milliseconds to auto-close the notification
     div : null,     // the main 'notification-bar' DIV
     token : null,   // timer for cancelling auto-close
+    defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
+    defaultAlertClass: "notif-alert-default",
 
     OK : {// standard option values for typical OK notification
-        icon: "accept.png",
-        backgroundColor: "#8ae234"
+        icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
+        alertClass: "notif-alert-success",
     },
     WARNING : {// likewise, for warning
-        icon: "yellow.png",
-        backgroundColor: "#fce94f"
+        icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
+        alertClass: "notif-alert-warn",
     },
     ERROR : {// likewise, for error
-        icon: "red.png",
-        backgroundColor: "#ef2929",
+        icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
+        alertClass: "notif-alert-err",
         sticky: true
     },
 
@@ -3036,9 +2896,7 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
-            this.div.style.backgroundColor="#fff";
             document.body.insertBefore(this.div, document.body.firstChild);
-
             var self = this;
             this.div.onclick = function() {
                 self.hide();
@@ -3054,32 +2912,17 @@ var notificationBar = {
     // hide the current notification bar, if it's displayed
     hide : function () {
         this.clearTimeout();
-        var self = this;
-        var out = new YAHOO.util.ColorAnim(this.div, {
-            opacity: { to:0 },
-            backgroundColor: {to:"#fff"}
-        }, 0.3, YAHOO.util.Easing.easeIn);
-        out.onComplete.subscribe(function() {
-            self.div.style.display = "none";
-        })
-        out.animate();
+        this.div.classList.remove("notif-alert-show");
+        this.div.classList.add("notif-alert-clear");
     },
     // show a notification bar
     show : function (text,options) {
-        options = options || {}
-
+        options = options || {};
         this.init();
-        this.div.style.height = this.div.style.lineHeight = options.height || "40px";
-        this.div.style.display = "block";
+        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
 
-        if (options.icon)
-            text = "<img src='"+rootURL+"/images/24x24/"+options.icon+"'> "+text;
-        this.div.innerHTML = text;
-
-        new YAHOO.util.ColorAnim(this.div, {
-            opacity: { to:this.OPACITY },
-            backgroundColor : { to: options.backgroundColor || "#fff" }
-        }, 1, YAHOO.util.Easing.easeOut).animate();
+        this.div.className=options.alertClass || this.defaultAlertClass;
+        this.div.classList.add("notif-alert-show");
 
         this.clearTimeout();
         var self = this;

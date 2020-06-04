@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -154,12 +154,12 @@ public class AutoCompletionCandidates implements HttpResponse {
             }
         }
 
-        if (container==null || container==Jenkins.getInstance()) {
-            new Visitor("").onItemGroup(Jenkins.getInstance());
+        if (container==null || container==Jenkins.get()) {
+            new Visitor("").onItemGroup(Jenkins.get());
         } else {
             new Visitor("").onItemGroup(container);
             if (value.startsWith("/"))
-                new Visitor("/").onItemGroup(Jenkins.getInstance());
+                new Visitor("/").onItemGroup(Jenkins.get());
 
             for ( String p="../"; value.startsWith(p); p+="../") {
                 container = ((Item)container).getParent();

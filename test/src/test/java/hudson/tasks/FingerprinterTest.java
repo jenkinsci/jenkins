@@ -44,7 +44,12 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
@@ -187,7 +192,7 @@ public class FingerprinterTest {
 
         upstreamBuild.delete();
 
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
@@ -202,7 +207,7 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         j.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
         List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
@@ -262,8 +267,8 @@ public class FingerprinterTest {
         fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
             assertTrue(f.getOriginal().is(upstream));
-            assertTrue(f.getOriginal().getName().equals(renamedProject1));
-            assertFalse(f.getOriginal().getName().equals(oldUpstreamName));
+            assertEquals(f.getOriginal().getName(), renamedProject1);
+            assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
         }
          
         // Verify that usage entry in fingerprint record is changed after

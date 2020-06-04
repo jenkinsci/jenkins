@@ -1,7 +1,7 @@
 package jenkins.diagnostics;
 
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.AdministrativeMonitor;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -31,7 +31,7 @@ public class URICheckEncodingMonitor extends AdministrativeMonitor {
     }
 
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // expected is non-ASCII String
         final String expected = "\u57f7\u4e8b";
         final String value = fixEmpty(request.getParameter("value"));

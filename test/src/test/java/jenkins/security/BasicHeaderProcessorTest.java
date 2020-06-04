@@ -7,7 +7,6 @@ import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,7 +22,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi

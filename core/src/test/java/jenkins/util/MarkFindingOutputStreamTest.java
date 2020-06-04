@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
@@ -75,7 +76,7 @@ public class MarkFindingOutputStreamTest {
     }
 
     private void write(String s) throws IOException {
-        m.write(s.getBytes("UTF-8"));
+        m.write(s.getBytes(StandardCharsets.UTF_8));
     }
 
     private void writeOneByOne(String s) throws IOException {
@@ -83,7 +84,7 @@ public class MarkFindingOutputStreamTest {
             m.write(s.charAt(i));
     }
 
-    class MarkCountingOutputStream extends MarkFindingOutputStream {
+    static class MarkCountingOutputStream extends MarkFindingOutputStream {
         int count = 0;
 
         MarkCountingOutputStream(OutputStream base) {

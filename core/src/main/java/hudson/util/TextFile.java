@@ -29,7 +29,7 @@ import hudson.Util;
 import jenkins.util.io.LinesStream;
 
 import java.nio.file.Files;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -50,9 +50,9 @@ import java.nio.charset.StandardCharsets;
  */
 public class TextFile {
 
-    public final @Nonnull File file;
+    public final @NonNull File file;
 
-    public TextFile(@Nonnull File file) {
+    public TextFile(@NonNull File file) {
         this.file = file;
     }
 
@@ -86,7 +86,7 @@ public class TextFile {
      *             if the collection is not fully iterated. Use {@link #linesStream()} instead.
      */
     @Deprecated
-    public @Nonnull Iterable<String> lines() {
+    public @NonNull Iterable<String> lines() {
         try {
             return linesStream();
         } catch (IOException ex) {
@@ -98,13 +98,13 @@ public class TextFile {
      * Creates a new {@link jenkins.util.io.LinesStream} of the file.
      * <p>
      * Note: The caller is responsible for closing the returned
-     * <code>LinesStream</code>.
+     * {@code LinesStream}.
      * @throws IOException if the file cannot be converted to a
      * {@link java.nio.file.Path} or if the file cannot be opened for reading
      * @since 2.111
      */
     @CreatesObligation
-    public @Nonnull LinesStream linesStream() throws IOException {
+    public @NonNull LinesStream linesStream() throws IOException {
         return new LinesStream(Util.fileToPath(file));
     }
 
@@ -113,19 +113,20 @@ public class TextFile {
      */
     public void write(String text) throws IOException {
         file.getParentFile().mkdirs();
-        AtomicFileWriter w = new AtomicFileWriter(file);
-        try {
-            w.write(text);
-            w.commit();
-        } finally {
-            w.abort();
+        try (AtomicFileWriter w = new AtomicFileWriter(file)) {
+            try {
+                w.write(text);
+                w.commit();
+            } finally {
+                w.abort();
+            }
         }
     }
 
     /**
      * Reads the first N characters or until we hit EOF.
      */
-    public @Nonnull String head(int numChars) throws IOException {
+    public @NonNull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
         try (Reader r = new FileReader(file)) {
@@ -170,7 +171,7 @@ public class TextFile {
      * <p>
      * So all in all, this algorithm should work decently, and it works quite efficiently on a large text.
      */
-    public @Nonnull String fastTail(int numChars, Charset cs) throws IOException {
+    public @NonNull String fastTail(int numChars, Charset cs) throws IOException {
 
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             long len = raf.length();
@@ -191,7 +192,7 @@ public class TextFile {
     /**
      * Uses the platform default encoding.
      */
-    public @Nonnull String fastTail(int numChars) throws IOException {
+    public @NonNull String fastTail(int numChars) throws IOException {
         return fastTail(numChars,Charset.defaultCharset());
     }
 

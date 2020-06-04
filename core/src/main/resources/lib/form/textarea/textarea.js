@@ -11,8 +11,13 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
 
         var h = e.clientHeight || getTextareaHeight();
         var config = e.getAttribute("codemirror-config");
-        config += (config ? ", " : " ") + "onBlur: function(editor){editor.save()}";
+        if (!config) {
+            config = '';
+        }
         config = eval('({'+config+'})');
+        if (!config.onBlur) {
+            config.onBlur = function(editor) { editor.save(); };
+        }
         var codemirror = CodeMirror.fromTextArea(e,config);
         e.codemirrorObject = codemirror;
         if(typeof(codemirror.getScrollerElement) !== "function") {
@@ -43,7 +48,14 @@ Behaviour.specify("DIV.textarea-preview-container", 'textarea', 100, function (e
         showPreview.onclick = function() {
             // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
             var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
-            var text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+            var text = "";
+            //Textarea object will be null if the text area is disabled.
+            if (textarea == null) {
+                textarea = e.parentNode.getElementsByClassName("jenkins-readonly")[0];
+                text = textarea != null ? textarea.innerText : "";
+            } else {
+                text = textarea.codemirrorObject ? textarea.codemirrorObject.getValue() : textarea.value;
+            }
             var render = function(txt) {
                 $(hidePreview).show();
                 $(previewDiv).show();

@@ -92,6 +92,6 @@ public abstract class ConsoleAnnotationDescriptor extends Descriptor<ConsoleNote
      * Returns all the registered {@link ConsoleAnnotationDescriptor} descriptors.
      */
     public static DescriptorExtensionList<ConsoleNote<?>,ConsoleAnnotationDescriptor> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(ConsoleNote.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(ConsoleNote.class);
     }
 }

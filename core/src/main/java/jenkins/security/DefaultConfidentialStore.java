@@ -48,7 +48,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
     private final SecretKey masterKey;
 
     public DefaultConfidentialStore() throws IOException, InterruptedException {
-        this(new File(Jenkins.getInstance().getRootDir(),"secrets"));
+        this(new File(Jenkins.get().getRootDir(),"secrets"));
     }
 
     public DefaultConfidentialStore(File rootDir) throws IOException, InterruptedException {
@@ -138,6 +138,11 @@ public class DefaultConfidentialStore extends ConfidentialStore {
 
     private File getFileFor(ConfidentialKey key) {
         return new File(rootDir, key.getId());
+    }
+
+    @Override
+    SecureRandom secureRandom() {
+        return sr;
     }
 
     public byte[] randomBytes(int size) {

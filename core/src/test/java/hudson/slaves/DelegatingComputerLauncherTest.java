@@ -12,8 +12,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -53,7 +53,7 @@ public class DelegatingComputerLauncherTest {
     public void testRecursionAvoidance() {
         PowerMockito.mockStatic(Jenkins.class);
         Jenkins mockJenkins = mock(Jenkins.class);
-        PowerMockito.when(Jenkins.getInstance()).thenReturn(mockJenkins);
+        PowerMockito.when(Jenkins.get()).thenReturn(mockJenkins);
 
         DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> mockList =
                 mock(DescriptorExtensionList.class);

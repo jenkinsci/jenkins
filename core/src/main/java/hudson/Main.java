@@ -153,8 +153,7 @@ public class Main {
                 // run the command
                 long start = System.currentTimeMillis();
 
-                List<String> cmd = new ArrayList<>();
-                cmd.addAll(Arrays.asList(args).subList(1, args.length));
+                List<String> cmd = new ArrayList<>(Arrays.asList(args).subList(1, args.length));
                 Proc proc = new Proc.LocalProc(cmd.toArray(new String[0]),(String[])null,System.in,
                     new DualOutputStream(System.out,new EncodingStream(os)));
 
@@ -221,7 +220,8 @@ public class Main {
     public static boolean isUnitTest = false;
 
     /**
-     * Set to true if we are running inside "mvn hpi:run" or "mvn hudson-dev:run"
+     * Set to true if we are running inside {@code mvn jetty:run}.
+     * This is also set if running inside {@code mvn hpi:run} since plugins parent POM 2.30.
      */
     public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName()+".development");
 

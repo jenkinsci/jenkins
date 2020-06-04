@@ -39,7 +39,10 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -99,7 +102,7 @@ public class DescriptorTest {
             return true;
         }
         @Override public Descriptor<Builder> getDescriptor() {
-            return (Descriptor<Builder>) Jenkins.getInstance().getDescriptorByName(id);
+            return (Descriptor<Builder>) Jenkins.get().getDescriptorByName(id);
         }
     }
     private static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -172,7 +175,7 @@ public class DescriptorTest {
             return id;
         }
         @Override public Descriptor<D3> getDescriptor() {
-            return Jenkins.getInstance().getDescriptorByName(id);
+            return Jenkins.get().getDescriptorByName(id);
         }
     }
     public static class D3D extends Descriptor<D3> {
@@ -209,7 +212,7 @@ public class DescriptorTest {
         try {
             rule.executeOnServer(new Callable<Void>() {
                 @Override public Void call() throws Exception {
-                    fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.getInstance());
+                    fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.get());
                     return null;
                 }
             });

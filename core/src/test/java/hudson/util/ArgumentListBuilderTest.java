@@ -23,12 +23,17 @@
  */
 package hudson.util;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -165,7 +170,7 @@ public class ArgumentListBuilderTest {
         assertThat("The mask array was incorrect", array, is(builder.toMaskArray()));
     }
     
-    private static final Map<String, String> KEY_VALUES = new HashMap<String, String>() {{
+    private static final Map<String, String> KEY_VALUES = new LinkedHashMap<String, String>() {{
         put("key1", "value1");
         put("key2", "value2");
         put("key3", "value3");
@@ -200,9 +205,9 @@ public class ArgumentListBuilderTest {
 
     @Test
     public void addKeyValuePairsFromPropertyString() throws IOException {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("PATH", "C:\\Windows");
-        final VariableResolver<String> resolver = new VariableResolver.ByMap<String>(map);
+        final VariableResolver<String> resolver = new VariableResolver.ByMap<>(map);
 
         final String properties = "my.path=$PATH";
 
@@ -217,20 +222,18 @@ public class ArgumentListBuilderTest {
 
     @Test
     public void numberOfBackslashesInPropertiesShouldBePreservedAfterMacroExpansion() throws IOException {
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         map.put("ONE", "one\\backslash");
         map.put("TWO", "two\\\\backslashes");
         map.put("FOUR", "four\\\\\\\\backslashes");
 
-        final String properties = new StringBuilder()
-                .append("one=$ONE\n")
-                .append("two=$TWO\n")
-                .append("four=$FOUR\n")
-                .toString()
+        final String properties = "one=$ONE\n" +
+                "two=$TWO\n" +
+                "four=$FOUR\n"
         ;
 
         final String args = new ArgumentListBuilder()
-                .addKeyValuePairsFromPropertyString("", properties, new VariableResolver.ByMap<String>(map))
+                .addKeyValuePairsFromPropertyString("", properties, new VariableResolver.ByMap<>(map))
                 .toString()
         ;
 

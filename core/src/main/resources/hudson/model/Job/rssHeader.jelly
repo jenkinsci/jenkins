@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  <link rel="alternate" title="Jenkins:${it.name} (all builds)" href="rssAll" type="application/rss+xml" />
+  <link rel="alternate" title="Jenkins:${it.name} (all builds)" href="rssAll" type="application/atom+xml" />
   <link rel="alternate" title="Jenkins:${it.name} (all builds) (RSS 2.0)" href="rssAll?flavor=rss20" type="application/rss+xml" />
-  <link rel="alternate" title="Jenkins:${it.name} (failed builds)" href="rssFailed" type="application/rss+xml" />
+  <link rel="alternate" title="Jenkins:${it.name} (failed builds)" href="rssFailed" type="application/atom+xml" />
   <link rel="alternate" title="Jenkins:${it.name} (failed builds) (RSS 2.0)" href="rssFailed?flavor=rss20" type="application/rss+xml" />
 </j:jelly>

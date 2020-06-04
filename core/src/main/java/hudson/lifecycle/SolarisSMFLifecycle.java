@@ -23,6 +23,7 @@
  */
 package hudson.lifecycle;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class SolarisSMFLifecycle extends Lifecycle {
      * In SMF managed environment, just commit a suicide and the service will be restarted by SMF.
      */
     @Override
+    @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
     public void restart() throws IOException, InterruptedException {
         Jenkins jenkins = Jenkins.getInstanceOrNull(); // guard against repeated concurrent calls to restart
         try {

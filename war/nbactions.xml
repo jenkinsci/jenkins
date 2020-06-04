@@ -30,13 +30,13 @@ Ensures that NetBeans knows which goals to run when Run Project is selected.
     <action>
         <actionName>run</actionName>
         <goals>
-            <goal>hudson-dev:run</goal>
+            <goal>jetty:run</goal>
         </goals>
     </action>
     <action>
         <actionName>debug</actionName>
         <goals>
-            <goal>hudson-dev:run</goal>
+            <goal>jetty:run</goal>
         </goals>
         <properties>
             <jpda.listen>maven</jpda.listen>

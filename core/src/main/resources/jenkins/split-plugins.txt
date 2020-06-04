@@ -2,7 +2,7 @@
 
 # Columns are: plugin ID, last core release still containing the plugin's functionality, plugin version that's implied, minimum Java specification version where to install the plugin
 
-# Note that all split plugins between and including matrix-auth and jdk-tool incorrectly use the first
+# Note that all split plugins between and including matrix-auth and jaxb incorrectly use the first
 # core release without the plugin's functionality when they should use the immediately prior release.
 # Fixing these retroactively won't help, as the difference only matters to those specific versions.
 
@@ -28,3 +28,6 @@ jdk-tool 2.112 1.0
 
 # JENKINS-55681
 jaxb 2.163 2.3.0 11
+
+#JENKINS-43610 Split Trilead out from Core
+trilead-api 2.184 1.0.4

@@ -24,22 +24,16 @@
 package hudson.model;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotSame;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,7 +78,7 @@ public class FreeStyleProjectTest {
         assertEquals(1,builders.size());
         assertEquals(Shell.class,builders.get(0).getClass());
         assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
-        assertTrue(builders.get(0)!=shell);
+        assertNotSame(builders.get(0), shell);
     }
 
     /**
@@ -133,7 +127,7 @@ public class FreeStyleProjectTest {
         assertEquals(1,builders.size());
         assertEquals(Shell.class,builders.get(0).getClass());
         assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
-        assertTrue(builders.get(0)!=shell);
+        assertNotSame(builders.get(0), shell);
         System.out.println(project.getConfigFile().asString());
     }
 

@@ -45,8 +45,8 @@ public class EditDistance {
     }
 
     /**
-     * Finds the string in the <code>group</code> closest to
-     * <code>key</code> and returns it.
+     * Finds the string in the {@code group} closest to
+     * {@code key} and returns it.
      *
      * @return null if group.length==0.
      */

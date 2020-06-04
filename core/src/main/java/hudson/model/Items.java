@@ -41,15 +41,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import java.util.function.Predicate;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
@@ -153,7 +153,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s.
      */
     public static DescriptorExtensionList<TopLevelItem,TopLevelItemDescriptor> all() {
-        return Jenkins.getInstance().getDescriptorList(TopLevelItem.class);
+        return Jenkins.get().getDescriptorList(TopLevelItem.class);
     }
 
     /**
@@ -179,7 +179,7 @@ public class Items {
             acl = ((AccessControlled) c).getACL();
         } else {
             // fall back to root
-            acl = Jenkins.getInstance().getACL();
+            acl = Jenkins.get().getACL();
         }
         for (TopLevelItemDescriptor d: all()) {
             if (acl.hasCreatePermission(a, c, d) && d.isApplicableIn(c)) {
@@ -192,6 +192,7 @@ public class Items {
     /**
      * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
+    @Deprecated
     public static TopLevelItemDescriptor getDescriptor(String fqcn) {
         return Descriptor.find(all(), fqcn);
     }
@@ -221,14 +222,11 @@ public class Items {
     /**
      * Does the opposite of {@link #toNameList(Collection)}.
      */
-    public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
-        final Jenkins jenkins = Jenkins.getInstance();
+    public static <T extends Item> List<T> fromNameList(ItemGroup context, @NonNull String list, @NonNull Class<T> type) {
+        final Jenkins jenkins = Jenkins.get();
         
         List<T> r = new ArrayList<>();
-        if (jenkins == null) {
-            return r;
-        }
-        
+
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
@@ -282,8 +280,8 @@ public class Items {
      * Computes the relative name of list of items after a rename or move occurred.
      * Used to manage job references as names in plugins to support {@link hudson.model.listeners.ItemListener#onLocationChanged}.
      * <p>
-     * In a hierarchical context, when a plugin has a reference to a job as <code>../foo/bar</code> this method will
-     * handle the relative path as "foo" is renamed to "zot" to compute <code>../zot/bar</code>
+     * In a hierarchical context, when a plugin has a reference to a job as {@code ../foo/bar} this method will
+     * handle the relative path as "foo" is renamed to "zot" to compute {@code ../zot/bar}
      *
      * @param oldFullName the old full name of the item
      * @param newFullName the new full name of the item
@@ -396,26 +394,44 @@ public class Items {
      * <p>
      * If you do not need to iterate all items, or if the order of the items is not required, consider using
      * {@link #allItems(ItemGroup, Class)} instead.
+     *
+     * @param root Root node to start searching from
+     * @param type Given type of of items being searched for
+     * @return List of items matching given criteria
      * 
      * @since 1.512
      */
     public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type) {
+        return getAllItems(root ,type, t -> true);
+    }
+
+    /**
+     * Similar to {@link #getAllItems(ItemGroup, Class)} but with a predicate to pre-filter items to
+     * avoid checking ACLs unnecessarily and returning items not required by the caller
+     * @param root Root node to start searching from
+     * @param type Given type of of items being searched for
+     * @param pred Predicate condition to filter items
+     * @return List of items matching given criteria
+     *
+     * @since 2.221
+     */
+    public static <T extends Item> List<T> getAllItems(final ItemGroup root, Class<T> type, Predicate<T> pred) {
         List<T> r = new ArrayList<>();
-        getAllItems(root, type, r);
+        getAllItems(root, type, r, pred);
         return r;
     }
-    private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
-        List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems());
+    private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r, Predicate<T> pred) {
+        List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems(t -> t instanceof ItemGroup || (type.isInstance(t) && pred.test(type.cast(t)))));
         // because we add items depth first, we can use the quicker BY_NAME comparison
         items.sort(BY_NAME);
         for (Item i : items) {
-            if (type.isInstance(i)) {
+            if (type.isInstance(i) && pred.test(type.cast(i))) {
                 if (i.hasPermission(Item.READ)) {
                     r.add(type.cast(i));
                 }
             }
             if (i instanceof ItemGroup) {
-                getAllItems((ItemGroup) i, type, r);
+                getAllItems((ItemGroup) i, type, r, pred);
             }
         }
     }
@@ -437,6 +453,24 @@ public class Items {
         return allItems(Jenkins.getAuthentication(), root, type);
     }
 
+    /**
+     * Gets a read-only view of all the {@link Item}s recursively matching type and predicate
+     * in the {@link ItemGroup} tree visible to
+     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @param <T> the predicate.
+     * @return An {@link Iterable} for all items.
+     * @since 2.221
+     */
+    public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type, Predicate<T> pred) {
+        return allItems(Jenkins.getAuthentication(), root, type, pred);
+    }
 
     /**
      * Gets a read-only view all the {@link Item}s recursively in the {@link ItemGroup} tree visible to the supplied
@@ -452,7 +486,26 @@ public class Items {
      * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
-        return new AllItemsIterable<>(root, authentication, type);
+        return allItems(authentication, root, type, t -> true);
+    }
+
+    /**
+     * Gets a read-only view all the {@link Item}s recursively matching supplied type and predicate conditions
+     * in the {@link ItemGroup} tree visible to the supplied
+     * authentication without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @param pred the predicate.
+     * @return An {@link Iterable} for all items.
+     * @since 2.221
+     */
+    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
+        return new AllItemsIterable<>(root, authentication, type, pred);
     }
 
     /**
@@ -466,11 +519,11 @@ public class Items {
      */
     public static @CheckForNull <T extends Item> T findNearest(Class<T> type, String name, ItemGroup context) {
         List<String> names = new ArrayList<>();
-        for (T item: Jenkins.getInstance().allItems(type)) {
+        for (T item: Jenkins.get().allItems(type)) {
             names.add(item.getRelativeNameFrom(context));
         }
         String nearest = EditDistance.findNearest(name, names);
-        return Jenkins.getInstance().getItem(nearest, context, type);
+        return Jenkins.get().getItem(nearest, context, type);
     }
 
     /**
@@ -521,16 +574,18 @@ public class Items {
          * The type of item we want to return.
          */
         private final Class<T> type;
+        /**
+        * Predicate to filter items with
+        */
+        private final Predicate<T> pred;
 
-        private AllItemsIterable(ItemGroup root, Authentication authentication, Class<T> type) {
+        private AllItemsIterable(ItemGroup root, Authentication authentication, Class<T> type, Predicate<T> pred) {
             this.root = root;
             this.authentication = authentication;
             this.type = type;
+            this.pred = pred;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public Iterator<T> iterator() {
             return new AllItemsIterator();
@@ -557,22 +612,17 @@ public class Items {
                 stack.push(root);
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public boolean hasNext() {
                 if (next != null) {
                     return true;
                 }
+                Predicate<Item> search = t -> t instanceof ItemGroup || (type.isInstance(t) && pred.test(type.cast(t)));
                 while (true) {
                     if (delegate == null || !delegate.hasNext()) {
                         if (stack.isEmpty()) {
@@ -581,13 +631,13 @@ public class Items {
                         ItemGroup group = stack.pop();
                         // group.getItems() is responsible for performing the permission check so we will not repeat it
                         if (Jenkins.getAuthentication() == authentication) {
-                            delegate = group.getItems().iterator();
+                            delegate = group.getItems(search).iterator();
                         } else {
                             // slower path because the caller has switched authentication
                             // we need to keep the original authentication so that allItems() can be used
                             // like getAllItems() without the cost of building the entire list up front
                             try (ACLContext ctx = ACL.as(authentication)) {
-                                delegate = group.getItems().iterator();
+                                delegate = group.getItems(search).iterator();
                             }
                         }
                     }
@@ -596,7 +646,7 @@ public class Items {
                         if (item instanceof ItemGroup) {
                             stack.push((ItemGroup) item);
                         }
-                        if (type.isInstance(item)) {
+                        if (type.isInstance(item) && pred.test(type.cast(item))) {
                             next = type.cast(item);
                             return true;
                         }
@@ -604,9 +654,6 @@ public class Items {
                 }
             }
 
-            /**
-             * {@inheritDoc}
-             */
             @Override
             public T next() {
                 if (!hasNext()) {
@@ -630,7 +677,7 @@ public class Items {
      * @throws IllegalArgumentException if there is already something there, which you were supposed to know about
      * @throws Failure if there is already something there but you should not be told details
      */
-    static void verifyItemDoesNotAlreadyExist(@Nonnull ItemGroup<?> parent, @Nonnull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
+    static void verifyItemDoesNotAlreadyExist(@NonNull ItemGroup<?> parent, @NonNull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
         Item existing;
         try (ACLContext ctxt = ACL.as(ACL.SYSTEM)) {
             existing = parent.getItem(newName);

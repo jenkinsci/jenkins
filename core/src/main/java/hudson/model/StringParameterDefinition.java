@@ -25,7 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.Util;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -48,7 +48,6 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         this.trim = trim;
     }
 
-    @Nonnull
     public StringParameterDefinition(String name, String defaultValue, String description) {
         this(name, defaultValue, description, false);
     }
@@ -110,6 +109,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     @Extension @Symbol({"string","stringParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
+        @NonNull
         public String getDisplayName() {
             return Messages.StringParameterDefinition_DisplayName();
         }
@@ -132,7 +132,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
 
     public ParameterValue createValue(String str) {
         StringParameterValue value = new StringParameterValue(getName(), str, getDescription());
-        if (isTrim() && value!=null) {
+        if (isTrim()) {
             value.doTrim();
         }
         return value;

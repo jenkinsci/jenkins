@@ -35,13 +35,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Represents a stream over the lines of a text file.
  * <p>
- * Although <code>LinesStream</code> implements {@link java.lang.Iterable}, it
+ * Although {@code LinesStream} implements {@link java.lang.Iterable}, it
  * is intended to be first used to initialize a resource in a try-with-resources
  * statement and then iterated, as in:
  * <pre>
@@ -53,27 +53,27 @@ import javax.annotation.Nullable;
  * </pre>
  * This pattern ensures that the underlying file handle is closed properly.
  * <p>
- * Like {@link java.nio.file.DirectoryStream}, <code>LinesStream</code> supports
- * creating at most one <code>Iterator</code>. Invoking {@link #iterator()} to
- * obtain a second or subsequent <code>Iterator</code> throws
- * <code>IllegalStateException</code>.
+ * Like {@link java.nio.file.DirectoryStream}, {@code LinesStream} supports
+ * creating at most one {@link Iterator}. Invoking {@link #iterator()} to
+ * obtain a second or subsequent {@link Iterator} throws
+ * {@link IllegalStateException}.
  *
  * @since 2.111
  */
 @CleanupObligation
 public class LinesStream implements Closeable, Iterable<String> {
 
-    private final @Nonnull BufferedReader in;
+    private final @NonNull BufferedReader in;
     private transient @Nullable Iterator<String> iterator;
 
     /**
-     * Opens the text file at <code>path</code> for reading using charset
+     * Opens the text file at {@code path} for reading using charset
      * {@link java.nio.charset.StandardCharsets#UTF_8}.
      * @param path Path to the file to open for reading.
-     * @throws IOException if the file at <code>path</code> cannot be opened for
+     * @throws IOException if the file at {@code path} cannot be opened for
      * reading.
      */
-    public LinesStream(@Nonnull Path path) throws IOException {
+    public LinesStream(@NonNull Path path) throws IOException {
         in = Files.newBufferedReader(path); // uses UTF-8 by default
     }
 

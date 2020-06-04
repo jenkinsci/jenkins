@@ -30,6 +30,7 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -43,11 +44,33 @@ import java.util.logging.Logger;
  * @since 1.382
  */
 public abstract class AbstractCloudSlave extends Slave {
-    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
+
+    public AbstractCloudSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher)
+            throws FormException, IOException {
+        super(name, remoteFS, launcher);
+    }
+
+    /**
+     * Use {@link #AbstractCloudSlave(java.lang.String, java.lang.String, hudson.slaves.ComputerLauncher)}
+     * @deprecated since 2.184
+     */
+    @Deprecated
+    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors,
+                              Mode mode, String labelString, ComputerLauncher launcher,
+                              RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties)
+            throws FormException, IOException {
         super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties);
     }
 
-    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors, Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
+    /**
+     * Use {@link #AbstractCloudSlave(java.lang.String, java.lang.String, hudson.slaves.ComputerLauncher)}
+     * @deprecated since 2.184
+     */
+    @Deprecated
+    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors,
+                              Mode mode, String labelString, ComputerLauncher launcher,
+                              RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties)
+            throws FormException, IOException {
         super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties);
     }
 

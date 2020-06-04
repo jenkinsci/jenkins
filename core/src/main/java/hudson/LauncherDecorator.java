@@ -1,9 +1,12 @@
 package hudson;
 
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Node;
 import hudson.model.Executor;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Decorates {@link Launcher} so that one can intercept executions of commands
@@ -39,8 +42,8 @@ public abstract class LauncherDecorator implements ExtensionPoint {
      * @see Launcher#decorateFor(Node)
      * @see Launcher#decorateByPrefix(String[])
      */
-    @Nonnull
-    public abstract Launcher decorate(@Nonnull Launcher launcher, @Nonnull Node node);
+    @NonNull
+    public abstract Launcher decorate(@NonNull Launcher launcher, @NonNull Node node);
 
     /**
      * Returns all the registered {@link LauncherDecorator}s.

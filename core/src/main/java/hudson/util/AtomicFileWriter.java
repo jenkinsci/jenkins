@@ -25,8 +25,8 @@ package hudson.util;
 
 import jenkins.util.SystemProperties;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -80,7 +80,7 @@ public class AtomicFileWriter extends Writer {
      * @deprecated Use {@link #AtomicFileWriter(Path, Charset)}
      */
     @Deprecated
-    public AtomicFileWriter(@Nonnull File f, @Nullable String encoding) throws IOException {
+    public AtomicFileWriter(@NonNull File f, @Nullable String encoding) throws IOException {
         this(toPath(f), encoding == null ? Charset.defaultCharset() : Charset.forName(encoding));
     }
 
@@ -92,7 +92,7 @@ public class AtomicFileWriter extends Writer {
      * @return the path for that file
      * @see File#toPath()
      */
-    private static Path toPath(@Nonnull File file) throws IOException {
+    private static Path toPath(@NonNull File file) throws IOException {
         try {
             return file.toPath();
         } catch (InvalidPathException e) {
@@ -104,7 +104,7 @@ public class AtomicFileWriter extends Writer {
      * @param destinationPath the destination path where to write the content when committed.
      * @param charset File charset to write.
      */
-    public AtomicFileWriter(@Nonnull Path destinationPath, @Nonnull Charset charset) throws IOException {
+    public AtomicFileWriter(@NonNull Path destinationPath, @NonNull Charset charset) throws IOException {
         // See FileChannelWriter docs to understand why we do not cause a force() call on flush() from AtomicFileWriter.
         this(destinationPath, charset, false, true);
     }
@@ -119,7 +119,7 @@ public class AtomicFileWriter extends Writer {
      * @deprecated use {@link AtomicFileWriter#AtomicFileWriter(Path, Charset)}
      */
     @Deprecated
-    public AtomicFileWriter(@Nonnull Path destinationPath, @Nonnull Charset charset, boolean integrityOnFlush, boolean integrityOnClose) throws IOException {
+    public AtomicFileWriter(@NonNull Path destinationPath, @NonNull Charset charset, boolean integrityOnFlush, boolean integrityOnClose) throws IOException {
         if (charset == null) { // be extra-defensive if people don't care
             throw new IllegalArgumentException("charset is null");
         }
@@ -149,7 +149,7 @@ public class AtomicFileWriter extends Writer {
             integrityOnClose = false;
         }
 
-        core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE);
+        core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
     }
 
     @Override
@@ -189,13 +189,13 @@ public class AtomicFileWriter extends Writer {
         try {
             // Try to make an atomic move.
             Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException e) {
+        } catch (IOException moveFailed) {
             // If it falls here that can mean many things. Either that the atomic move is not supported,
             // or something wrong happened. Anyway, let's try to be over-diagnosing
-            if (e instanceof AtomicMoveNotSupportedException) {
-                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.", e);
+            if (moveFailed instanceof AtomicMoveNotSupportedException) {
+                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.", moveFailed);
             } else {
-                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.", e);
+                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.", moveFailed);
             }
 
             if (destPath.toFile().exists()) {
@@ -204,19 +204,19 @@ public class AtomicFileWriter extends Writer {
 
             try {
                 Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e1) {
-                e1.addSuppressed(e);
+            } catch (IOException replaceFailed) {
+                replaceFailed.addSuppressed(moveFailed);
                 LOGGER.log(Level.WARNING, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
                            new Path[]{tmpPath, destPath});
                 try {
                     Files.deleteIfExists(tmpPath);
-                } catch (IOException e2) {
-                    e2.addSuppressed(e1);
+                } catch (IOException deleteFailed) {
+                    replaceFailed.addSuppressed(deleteFailed);
                     LOGGER.log(Level.WARNING, "Unable to delete {0}, good bye then!", tmpPath);
-                    throw e2;
+                    throw replaceFailed;
                 }
 
-                throw e1;
+                throw replaceFailed;
             }
         }
     }

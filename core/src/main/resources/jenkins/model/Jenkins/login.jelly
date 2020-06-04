@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
+  <l:view xmlns:l="/lib/layout" contentType="text/html;charset=UTF-8">
   <!-- deactivate all caching -->
   <st:setHeader name="Expires" value="0" />
   <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
-  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
   <!-- needed for cli -->
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
     ${h.advertiseHeaders(response)}
@@ -35,14 +35,12 @@ THE SOFTWARE.
       <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
     </j:forEach>
   </j:if>
-  <!-- response contentType header -->
-  <st:contentType value="text/html;charset=UTF-8" />
   <!--
     needed to generate a session if non exists,
     without it we would add ";jsessionid=" to the url which will result in a 404
   -->
   <j:set var="_" value="${request.getSession()}"/>
-  <!-- get default/commong page variable -->
+  <!-- get default/common page variable -->
   ${h.initPageVariables(context)}
   <x:doctype name="html" />
   <!-- needed for the redirect after login -->
@@ -53,7 +51,7 @@ THE SOFTWARE.
   <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
   <!-- real deal starting here -->
   <html lang="${request.getLocale().toLanguageTag()}">
-    <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+    <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
       <title>${%signIn} [Jenkins]</title>
       <!-- we do not want bots on this page -->
       <meta name="ROBOTS" content="NOFOLLOW" />
@@ -85,6 +83,7 @@ THE SOFTWARE.
                 </j:if>
                 <div class="formRow">
                   <input
+                    aria-label="${%Username}"
                     class="${inputClass}"
                     type="text"
                     name="j_username"
@@ -96,6 +95,7 @@ THE SOFTWARE.
                 </div>
                 <div class="formRow">
                   <input
+                    aria-label="${%Password}"
                     class="${inputClass}"
                     type="password"
                     name="j_password"
@@ -159,4 +159,5 @@ THE SOFTWARE.
       </j:choose>
     </body>
   </html>
+  </l:view>
 </j:jelly>

@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -105,7 +105,7 @@ public abstract class ParameterValue implements Serializable {
     @Restricted(DoNotUse.class) // for value.jelly
     public String getFormattedDescription() {
         try {
-            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+            return Jenkins.get().getMarkupFormatter().translate(description);
         } catch (IOException e) {
             LOGGER.warning("failed to translate description using configured markup formatter");
             return "";

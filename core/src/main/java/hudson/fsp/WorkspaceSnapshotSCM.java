@@ -69,7 +69,7 @@ public class WorkspaceSnapshotSCM extends SCM {
     /**
      * {@link Exception} indicating that the resolution of the job/permalink failed.
      */
-    private final class ResolvedFailedException extends Exception {
+    private static final class ResolvedFailedException extends Exception {
         private ResolvedFailedException(String message) {
             super(message);
         }
@@ -94,7 +94,7 @@ public class WorkspaceSnapshotSCM extends SCM {
      * @return never null.
      */
     public Snapshot resolve() throws ResolvedFailedException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.get();
         AbstractProject<?,?> job = h.getItemByFullName(jobName, AbstractProject.class);
         if(job==null) {
             if(h.getItemByFullName(jobName)==null) {

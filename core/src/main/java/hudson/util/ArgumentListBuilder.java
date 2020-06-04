@@ -24,6 +24,7 @@
  */
 package hudson.util;
 
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 
@@ -38,7 +39,7 @@ import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -137,7 +138,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * @since 2.72
      */
-    public ArgumentListBuilder add(@Nonnull Iterable<String> args) {
+    public ArgumentListBuilder add(@NonNull Iterable<String> args) {
         for (String arg : args) {
             add(arg);
         }
@@ -353,7 +354,13 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
                 percent = (c == '%');
                 if (quoted) quotedArgs.append(c);
             }
-            if(i == 0 && quoted) quotedArgs.insert(0, '"'); else if (i == 0 && !quoted) quotedArgs.append('"');
+            if (i == 0) {
+                if (quoted) {
+                    quotedArgs.insert(0, '"'); 
+                } else {
+                    quotedArgs.append('"');
+                }
+            }
             if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
             
             windowsCommand.add(quotedArgs, mask.get(i));

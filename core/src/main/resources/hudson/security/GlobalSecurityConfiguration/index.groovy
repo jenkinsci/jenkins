@@ -4,7 +4,6 @@ import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
 import jenkins.AgentProtocol
-import jenkins.model.GlobalConfiguration
 import hudson.Functions
 import hudson.model.Descriptor
 
@@ -12,12 +11,13 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, cssclass:request.getParameter('decorate')) {
+l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
     l.main_panel {
         h1 {
             l.icon(class: 'icon-secure icon-xlg')
             text(my.displayName)
         }
+        set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()
         div(class:"behavior-loading", _("LOADING"))
@@ -25,14 +25,21 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             set("instance",my)
             set("descriptor", my.descriptor)
 
-            f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
+            f.section(title:_("Authentication")) {
                 f.entry() {
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
 
-                f.entry(title:_("Access Control")) {
+                f.entry(title:_("Security Realm")) {
                     table(style:"width:100%") {
                         f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
+                    }
+                }
+            }
+
+            f.section(title:_("Authorization")) {
+                f.entry(title:_("Strategy")) {
+                    table(style:"width:100%") {
                         f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
                     }
                 }
@@ -87,7 +94,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
             }
 
-            Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->
+            Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
                 f.rowSet(name:descriptor.jsonSafeClassName) {
@@ -95,13 +102,17 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 }
             }
 
-            f.bottomButtonBar {
-                f.submit(value:_("Save"))
-                f.apply()
+            l.isAdmin() {
+                f.bottomButtonBar {
+                    f.submit(value: _("Save"))
+                    f.apply()
+                }
             }
         }
 
-        st.adjunct(includes: "lib.form.confirm")
+        l.isAdmin() {
+            st.adjunct(includes: "lib.form.confirm")
+        }
     }
 }
 

@@ -38,7 +38,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.ObjectStreamException;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Executes commands by using Windows batch file.
@@ -67,7 +67,7 @@ public class BatchFile extends CommandInterpreter {
 
     @CheckForNull
     public final Integer getUnstableReturn() {
-        return new Integer(0).equals(unstableReturn) ? null : unstableReturn;
+        return Integer.valueOf(0).equals(unstableReturn) ? null : unstableReturn;
     }
 
     @DataBoundSetter

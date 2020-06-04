@@ -57,7 +57,7 @@ public class ProxyView extends View implements StaplerFallback {
     public ProxyView(String name) {
         super(name);
 
-        if (Jenkins.getInstance().getView(name) != null) {
+        if (Jenkins.get().getView(name) != null) {
             // if this is a valid global view name, let's assume the
             // user wants to show it
             proxiedViewName = name;
@@ -67,9 +67,9 @@ public class ProxyView extends View implements StaplerFallback {
     public View getProxiedView() {
         if (proxiedViewName == null) {
             // just so we avoid errors just after creation
-            return Jenkins.getInstance().getPrimaryView();
+            return Jenkins.get().getPrimaryView();
         } else {
-            return Jenkins.getInstance().getView(proxiedViewName);
+            return Jenkins.get().getView(proxiedViewName);
         }
     }
 
@@ -99,7 +99,7 @@ public class ProxyView extends View implements StaplerFallback {
     @Override
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         String proxiedViewName = req.getSubmittedForm().getString("proxiedViewName");
-        if (Jenkins.getInstance().getView(proxiedViewName) == null) {
+        if (Jenkins.get().getView(proxiedViewName) == null) {
             throw new FormException("Not an existing global view", "proxiedViewName");
         }
         this.proxiedViewName = proxiedViewName;
@@ -120,7 +120,7 @@ public class ProxyView extends View implements StaplerFallback {
         String view = Util.fixEmpty(value);
         if(view==null) return FormValidation.ok();
 
-        if(Jenkins.getInstance().getView(view)!=null)
+        if(Jenkins.get().getView(view)!=null)
             return FormValidation.ok();
         else
             return FormValidation.error(Messages.ProxyView_NoSuchViewExists(value));

@@ -33,7 +33,8 @@ import hudson.util.DescriptorList;
 import java.io.Serializable;
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -103,11 +104,15 @@ public abstract class ParameterDefinition implements
 
     private final String description;
 
-    public ParameterDefinition(String name) {
+    public ParameterDefinition(@NonNull String name) {
         this(name, null);
     }
 
-    public ParameterDefinition(String name, String description) {
+    public ParameterDefinition(@NonNull String name, String description) {
+        //Checking as pipeline does not enforce annotations
+        if (name == null) {
+            throw new IllegalArgumentException("Parameter name must be non-null");
+        }
         this.name = name;
         this.description = description;
     }
@@ -129,11 +134,13 @@ public abstract class ParameterDefinition implements
     }
     
     @Exported
+    @NonNull
     public String getName() {
         return name;
     }
 
     @Exported
+    @CheckForNull
     public String getDescription() {
         return description;
     }
@@ -142,21 +149,20 @@ public abstract class ParameterDefinition implements
      * return parameter description, applying the configured MarkupFormatter for jenkins instance.
      * @since 1.521
      */
+    @CheckForNull
     public String getFormattedDescription() {
         try {
-            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+            return Jenkins.get().getMarkupFormatter().translate(description);
         } catch (IOException e) {
             LOGGER.warning("failed to translate description using configured markup formatter");
             return "";
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
+    @NonNull
     public ParameterDescriptor getDescriptor() {
-        return (ParameterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (ParameterDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -223,7 +229,7 @@ public abstract class ParameterDefinition implements
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
-        return Jenkins.getInstance().getDescriptorList(ParameterDefinition.class);
+        return Jenkins.get().getDescriptorList(ParameterDefinition.class);
     }
 
     /**

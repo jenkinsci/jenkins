@@ -24,18 +24,13 @@
 
 package jenkins.util.io;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Functions;
-import hudson.Util;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
@@ -45,6 +40,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Functions;
+import hudson.Util;
+
 @Restricted(NoExternalUse.class)
 public class PathRemover {
 
@@ -52,23 +56,23 @@ public class PathRemover {
         return new PathRemover(ignored -> false, PathChecker.ALLOW_ALL);
     }
 
-    public static PathRemover newRemoverWithStrategy(@Nonnull RetryStrategy retryStrategy) {
+    public static PathRemover newRemoverWithStrategy(@NonNull RetryStrategy retryStrategy) {
         return new PathRemover(retryStrategy, PathChecker.ALLOW_ALL);
     }
 
-    public static PathRemover newFilteredRobustRemover(@Nonnull PathChecker pathChecker, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
-        return new PathRemover(new PausingGCRetryStrategy(maxRetries < 1 ? 1 : maxRetries, gcAfterFailedRemove, waitBetweenRetries), pathChecker);
+    public static PathRemover newFilteredRobustRemover(@NonNull PathChecker pathChecker, int maxRetries, boolean gcAfterFailedRemove, long waitBetweenRetries) {
+        return new PathRemover(new PausingGCRetryStrategy(Math.max(maxRetries, 0), gcAfterFailedRemove, waitBetweenRetries), pathChecker);
     }
 
     private final RetryStrategy retryStrategy;
     private final PathChecker pathChecker;
 
-    private PathRemover(@Nonnull RetryStrategy retryStrategy, @Nonnull PathChecker pathChecker) {
+    private PathRemover(@NonNull RetryStrategy retryStrategy, @NonNull PathChecker pathChecker) {
         this.retryStrategy = retryStrategy;
         this.pathChecker = pathChecker;
     }
 
-    public void forceRemoveFile(@Nonnull Path path) throws IOException {
+    public void forceRemoveFile(@NonNull Path path) throws IOException {
         for (int retryAttempts = 0; ; retryAttempts++) {
             Optional<IOException> maybeError = tryRemoveFile(path);
             if (!maybeError.isPresent()) return;
@@ -78,7 +82,7 @@ public class PathRemover {
         }
     }
 
-    public void forceRemoveDirectoryContents(@Nonnull Path path) throws IOException {
+    public void forceRemoveDirectoryContents(@NonNull Path path) throws IOException {
         for (int retryAttempt = 0; ; retryAttempt++) {
             List<IOException> errors = tryRemoveDirectoryContents(path);
             if (errors.isEmpty()) return;
@@ -87,7 +91,7 @@ public class PathRemover {
         }
     }
 
-    public void forceRemoveRecursive(@Nonnull Path path) throws IOException {
+    public void forceRemoveRecursive(@NonNull Path path) throws IOException {
         for (int retryAttempt = 0; ; retryAttempt++) {
             List<IOException> errors = tryRemoveRecursive(path);
             if (errors.isEmpty()) return;
@@ -99,7 +103,7 @@ public class PathRemover {
     @Restricted(NoExternalUse.class)
     @FunctionalInterface
     public interface PathChecker {
-        void check(@Nonnull Path path) throws SecurityException;
+        void check(@NonNull Path path) throws SecurityException;
 
         PathChecker ALLOW_ALL = path -> {};
     }
@@ -109,7 +113,7 @@ public class PathRemover {
     public interface RetryStrategy {
         boolean shouldRetry(int retriesAttempted);
 
-        default String failureMessage(@Nonnull Path fileToRemove, int retryCount) {
+        default String failureMessage(@NonNull Path fileToRemove, int retryCount) {
             StringBuilder sb = new StringBuilder()
                     .append("Unable to delete '")
                     .append(fileToRemove)
@@ -161,7 +165,7 @@ public class PathRemover {
         }
 
         @Override
-        public String failureMessage(@Nonnull Path fileToRemove, int retryCount) {
+        public String failureMessage(@NonNull Path fileToRemove, int retryCount) {
             StringBuilder sb = new StringBuilder();
             sb.append("Unable to delete '");
             sb.append(fileToRemove);
@@ -196,7 +200,7 @@ public class PathRemover {
         }
     }
 
-    private Optional<IOException> tryRemoveFile(@Nonnull Path path) {
+    private Optional<IOException> tryRemoveFile(@NonNull Path path) {
         try {
             removeOrMakeRemovableThenRemove(path.normalize());
             return Optional.empty();
@@ -205,7 +209,7 @@ public class PathRemover {
         }
     }
 
-    private List<IOException> tryRemoveRecursive(@Nonnull Path path) {
+    private List<IOException> tryRemoveRecursive(@NonNull Path path) {
         Path normalized = path.normalize();
         List<IOException> accumulatedErrors = Util.isSymlink(normalized) ? new ArrayList<>() :
                 tryRemoveDirectoryContents(normalized);
@@ -213,7 +217,7 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    private List<IOException> tryRemoveDirectoryContents(@Nonnull Path path) {
+    private List<IOException> tryRemoveDirectoryContents(@NonNull Path path) {
         Path normalized = path.normalize();
         List<IOException> accumulatedErrors = new ArrayList<>();
         if (!Files.isDirectory(normalized)) return accumulatedErrors;
@@ -227,7 +231,7 @@ public class PathRemover {
         return accumulatedErrors;
     }
 
-    private void removeOrMakeRemovableThenRemove(@Nonnull Path path) throws IOException {
+    private void removeOrMakeRemovableThenRemove(@NonNull Path path) throws IOException {
         pathChecker.check(path);
         try {
             Files.deleteIfExists(path);
@@ -250,7 +254,7 @@ public class PathRemover {
         }
     }
 
-    private static void makeRemovable(@Nonnull Path path) throws IOException {
+    private static void makeRemovable(@NonNull Path path) throws IOException {
         if (!Files.isWritable(path)) {
             makeWritable(path);
         }
@@ -273,7 +277,7 @@ public class PathRemover {
         }
     }
 
-    private static void makeWritable(@Nonnull Path path) throws IOException {
+    private static void makeWritable(@NonNull Path path) throws IOException {
         if (!Functions.isWindows()) {
             try {
                 PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
@@ -285,6 +289,14 @@ public class PathRemover {
             } catch (UnsupportedOperationException ignored) {
                 // PosixFileAttributes not supported, fall back to old IO.
             }
+        } else {
+          /*
+           * If on Windows a folder has a read only attribute set, the file.setWritable(true) doesn't work (JENKINS-57855)
+           */
+          DosFileAttributeView dos = Files.getFileAttributeView(path, DosFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+          if (dos != null) {
+            dos.setReadOnly(false);
+          }
         }
 
         /*

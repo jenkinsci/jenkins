@@ -36,8 +36,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import javax.servlet.ServletException;
+import java.util.regex.Pattern;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
@@ -65,6 +64,8 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public class FileParameterValue extends ParameterValue {
     private static final String FOLDER_NAME = "fileParameters";
+    private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*[\\\\/]\\.\\.[\\\\/].*");
+    private static final long serialVersionUID = -143427023159076073L;
 
     /**
      * Escape hatch for SECURITY-1074, fileParameter used to escape their expected folder.
@@ -162,7 +163,7 @@ public class FileParameterValue extends ParameterValue {
                     if (ws == null) {
                         throw new IllegalStateException("The workspace should be created when setUp method is called");
                     }
-                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && !ws.isDescendant(location)) {
+                    if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE && (PROHIBITED_DOUBLE_DOT.matcher(location).matches() || !ws.isDescendant(location))) {
                         listener.error("Rejecting file path escaping base directory with relative path: " + location);
                         // force the build to fail
                         return null;
@@ -222,39 +223,11 @@ public class FileParameterValue extends ParameterValue {
      *
      * @param request
      * @param response
-     * @throws ServletException
-     * @throws IOException
      */
-    public void doDynamic(StaplerRequest request, StaplerResponse response) throws ServletException, IOException {
-        if (("/" + originalFileName).equals(request.getRestOfPath())) {
-            AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
-            File fileParameter = getLocationUnderBuild(build);
-
-            if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE) {
-                File fileParameterFolder = getFileParameterFolderUnderBuild(build);
-
-                //TODO can be replaced by Util#isDescendant in 2.80+
-                Path child = fileParameter.getAbsoluteFile().toPath().normalize();
-                Path parent = fileParameterFolder.getAbsoluteFile().toPath().normalize();
-                if (!child.startsWith(parent)) {
-                    throw new IllegalStateException("The fileParameter tried to escape the expected folder: " + location);
-                }
-            }
-
-            if (fileParameter.isFile()) {
-                try (InputStream data = Files.newInputStream(fileParameter.toPath())) {
-                    long lastModified = fileParameter.lastModified();
-                    long contentLength = fileParameter.length();
-                    if (request.hasParameter("view")) {
-                        response.serveFile(request, data, lastModified, contentLength, "plain.txt");
-                    } else {
-                        response.serveFile(request, data, lastModified, contentLength, originalFileName);
-                    }
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
-                }
-            }
-        }
+    public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
+        AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
+        File fileParameter = getFileParameterFolderUnderBuild(build);
+        return new DirectoryBrowserSupport(build, new FilePath(fileParameter), Messages.FileParameterValue_IndexTitle(), "folder.png", false);
     }
 
     /**

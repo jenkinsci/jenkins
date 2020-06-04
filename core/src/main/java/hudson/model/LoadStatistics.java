@@ -53,7 +53,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Utilization statistics for a node or a set of nodes.
@@ -332,7 +332,7 @@ public abstract class LoadStatistics {
      */
     public LoadStatisticsSnapshot computeSnapshot() {
         if (modern) {
-            return computeSnapshot(Jenkins.getInstance().getQueue().getBuildableItems());
+            return computeSnapshot(Jenkins.get().getQueue().getBuildableItems());
         } else {
             int t = computeTotalExecutors();
             int i = computeIdleExecutors();
@@ -389,7 +389,7 @@ public abstract class LoadStatistics {
         }
 
         protected void doRun() {
-            Jenkins j = Jenkins.getInstance();
+            Jenkins j = Jenkins.get();
             List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();
 
             // update statistics on agents
@@ -527,7 +527,6 @@ public abstract class LoadStatistics {
             return queueLength;
         }
 
-        /** {@inheritDoc} */
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -564,7 +563,6 @@ public abstract class LoadStatistics {
             return true;
         }
 
-        /** {@inheritDoc} */
         @Override
         public int hashCode() {
             int result = definedExecutors;
@@ -577,19 +575,17 @@ public abstract class LoadStatistics {
             return result;
         }
 
-        /** {@inheritDoc} */
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("LoadStatisticsSnapshot{");
-            sb.append("definedExecutors=").append(definedExecutors);
-            sb.append(", onlineExecutors=").append(onlineExecutors);
-            sb.append(", connectingExecutors=").append(connectingExecutors);
-            sb.append(", busyExecutors=").append(busyExecutors);
-            sb.append(", idleExecutors=").append(idleExecutors);
-            sb.append(", availableExecutors=").append(availableExecutors);
-            sb.append(", queueLength=").append(queueLength);
-            sb.append('}');
-            return sb.toString();
+            String sb = "LoadStatisticsSnapshot{" + "definedExecutors=" + definedExecutors +
+                    ", onlineExecutors=" + onlineExecutors +
+                    ", connectingExecutors=" + connectingExecutors +
+                    ", busyExecutors=" + busyExecutors +
+                    ", idleExecutors=" + idleExecutors +
+                    ", availableExecutors=" + availableExecutors +
+                    ", queueLength=" + queueLength +
+                    '}';
+            return sb;
         }
 
         /**

@@ -27,26 +27,21 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:f="/lib/form">
-
+  <l:view xmlns:l="/lib/layout" contentType="text/html;charset=UTF-8">
     <st:setHeader name="Expires" value="0"/>
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
-    <j:new var="h" className="hudson.Functions"/><!-- instead of JSP functions -->
-    <!-- response contentType header -->
-    <st:contentType value="text/html;charset=UTF-8"/>
     <!--
     needed to generate a session if non exists,
     without it we would add ";jsessionid=" to the url which will result in a 404
   -->
     <j:set var="_" value="${request.getSession()}"/>
-    <!-- get default/commong page variable -->
-    ${h.initPageVariables(context)}
     <x:doctype name="html"/>
     <!-- in case of error we want to surround the form elements with an error hint -->
     <j:set var="inputClass" value="${data.errorMessage!=null ? 'danger' : 'normal'}"/>
     <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
     <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
     <html lang="${request.getLocale().toLanguageTag()}">
-        <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+        <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
             <title>${%Create an account! [Jenkins]}</title>
             <!-- we do not want bots on this page -->
             <meta name="ROBOTS" content="NOFOLLOW"/>
@@ -305,4 +300,5 @@ THE SOFTWARE.
             </div>
         </body>
     </html>
+  </l:view>
 </j:jelly>

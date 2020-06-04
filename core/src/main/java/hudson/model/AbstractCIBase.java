@@ -33,14 +33,11 @@ import hudson.slaves.RetentionStrategy;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import jenkins.model.Configuration;
 
@@ -89,17 +86,31 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         c.kill();
     }
 
-    /* =================================================================================================================
-    * Package-protected, but accessed API
-    * ============================================================================================================== */
+    private final Set<String> disabledAdministrativeMonitors = new HashSet<>();
 
-    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<String>();
-
-    @Restricted(NoExternalUse.class)
-    public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
-    	return disabledAdministrativeMonitors;
+    /**
+     * Get the disabled administrative monitors
+     *
+     * @since 2.230
+     */
+    public Set<String> getDisabledAdministrativeMonitors(){
+        synchronized (this.disabledAdministrativeMonitors) {
+            return new HashSet<>(disabledAdministrativeMonitors);
+        }
     }
-    
+
+    /**
+     * Set the disabled administrative monitors
+     *
+     * @since 2.230
+     */
+    public void setDisabledAdministrativeMonitors(Set<String> disabledAdministrativeMonitors) {
+        synchronized (this.disabledAdministrativeMonitors) {
+            this.disabledAdministrativeMonitors.clear();
+            this.disabledAdministrativeMonitors.addAll(disabledAdministrativeMonitors);
+        }
+    }
+
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */
@@ -131,7 +142,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
             }
         } else {
             // we always need Computer for the master as a fallback in case there's no other Computer.
-            if(n.getNumExecutors()>0 || n==Jenkins.getInstance()) {
+            if(n.getNumExecutors()>0 || n==Jenkins.get()) {
                 try {
                     c = n.createComputer();
                 } catch(RuntimeException ex) { // Just in case there is a bogus extension
@@ -192,11 +203,11 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      */
     protected void updateComputerList(final boolean automaticSlaveLaunch) {
         final Map<Node,Computer> computers = getComputerMap();
-        final Set<Computer> old = new HashSet<Computer>(computers.size());
+        final Set<Computer> old = new HashSet<>(computers.size());
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
-                Map<String,Computer> byName = new HashMap<String,Computer>();
+                Map<String,Computer> byName = new HashMap<>();
                 for (Computer c : computers.values()) {
                     old.add(c);
                     Node node = c.getNode();

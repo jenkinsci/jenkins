@@ -11,10 +11,9 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import javax.annotation.CheckForNull;
-import java.util.Arrays;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.stream.Stream;
 
 @Issue("SECURITY-400")

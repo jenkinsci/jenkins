@@ -51,7 +51,7 @@ import java.text.ParseException;
 import java.util.List;
 
 import static hudson.Util.fixEmpty;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 public class Hudson extends Jenkins {
 
@@ -74,7 +74,7 @@ public class Hudson extends Jenkins {
     @CLIResolver
     @Nullable
     public static Hudson getInstance() {
-        return (Hudson)Jenkins.getInstance();
+        return (Hudson)Jenkins.get();
     }
 
     public Hudson(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
@@ -305,7 +305,7 @@ public class Hudson extends Jenkins {
      */
     @Deprecated
     public static boolean isAdmin() {
-        return Jenkins.getInstance().getACL().hasPermission(ADMINISTER);
+        return Jenkins.get().getACL().hasPermission(ADMINISTER);
     }
 
     /**

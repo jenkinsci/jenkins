@@ -12,7 +12,7 @@ import hudson.model.Queue.Task;
 import hudson.model.queue.Tasks;
 import java.util.Calendar;
 import java.util.Collections;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.acegisecurity.Authentication;
 
 /**

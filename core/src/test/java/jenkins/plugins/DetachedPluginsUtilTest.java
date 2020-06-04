@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,12 +30,10 @@ public class DetachedPluginsUtilTest {
         final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins();
         if (JavaUtils.isRunningWithJava8OrBelow()) {
             assertEquals(0, detachedPlugins.stream()
-                    .filter(plugin -> plugin.getShortName().equals("jaxb"))
-                    .collect(Collectors.toList()).size());
+                    .filter(plugin -> plugin.getShortName().equals("jaxb")).count());
         } else if (JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerThanOrEqualTo(new VersionNumber("11.0.2"))) {
             assertEquals(1, detachedPlugins.stream()
-                    .filter(plugin -> plugin.getShortName().equals("jaxb"))
-                    .collect(Collectors.toList()).size());
+                    .filter(plugin -> plugin.getShortName().equals("jaxb")).count());
 
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPluginsSince2_161 =
                     DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("2.161"));
@@ -45,12 +44,12 @@ public class DetachedPluginsUtilTest {
     }
 
     /**
-     * Checks the format of the <code>/jenkins/split-plugins.txt</code> file has maximum 4 columns.
+     * Checks the format of the {@code /jenkins/split-plugins.txt} file has maximum 4 columns.
      */
     @Test
     public void checkSplitPluginsFileFormat() throws IOException {
-        final List<String> splitPluginsLines = IOUtils.readLines(getClass().getResourceAsStream("/jenkins/split-plugins.txt"));
-        assertTrue(!splitPluginsLines.isEmpty());
+        final List<String> splitPluginsLines = IOUtils.readLines(getClass().getResourceAsStream("/jenkins/split-plugins.txt"), StandardCharsets.UTF_8);
+        assertFalse(splitPluginsLines.isEmpty());
 
         // File is not only comments
         final List<String> linesWithoutComments = splitPluginsLines.stream()

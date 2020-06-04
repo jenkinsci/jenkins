@@ -44,7 +44,10 @@ import static hudson.cli.DisablePluginCommand.RETURN_CODE_NOT_DISABLED_DEPENDANT
 import static hudson.cli.DisablePluginCommand.RETURN_CODE_NO_SUCH_PLUGIN;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 
 public class DisablePluginCommandTest {
@@ -102,7 +105,7 @@ public class DisablePluginCommandTest {
     }
 
     /**
-     * Can disable a plugin with a mandatory dependent plugin before its dependent plugin with <i><all/i> strategy
+     * Can disable a plugin with a mandatory dependent plugin before its dependent plugin with <i>all/i> strategy
      */
     @Test
     @Issue("JENKINS-27177")

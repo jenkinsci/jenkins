@@ -44,7 +44,7 @@ import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
@@ -116,7 +116,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
 
     @Override
-    public @Nonnull GlobalConfigurationCategory getCategory() {
+    public @NonNull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
@@ -158,7 +158,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      */
     public FormValidation doCheckHome(@QueryParameter File value) {
         // this can be used to check the existence of a file on the server, so needs to be protected
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         if (value.getPath().isEmpty()) {
             return FormValidation.ok();

@@ -27,7 +27,6 @@ import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
@@ -37,7 +36,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import test.security.realm.InMemorySecurityRealm;
 
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -51,7 +49,7 @@ import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class UserSeedPropertyTest {

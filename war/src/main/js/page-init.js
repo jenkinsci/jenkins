@@ -1,9 +1,9 @@
+import $ from 'jquery';
+import jsModules from 'jenkins-js-modules';
+
 /*
  * Page initialisation tasks.
  */
-
-var $ = require('jquery-detached').getJQuery();
-var jsModules = require('jenkins-js-modules');
 
 $(function() {
     loadScripts();

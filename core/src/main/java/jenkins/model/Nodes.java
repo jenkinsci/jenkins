@@ -38,8 +38,8 @@ import java.util.concurrent.Callable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class Nodes implements Saveable {
     /**
      * The {@link Jenkins} instance that we are tracking nodes for.
      */
-    @Nonnull
+    @NonNull
     private final Jenkins jenkins;
 
     /**
@@ -82,7 +82,7 @@ public class Nodes implements Saveable {
      *                let this reference escape from a partially constructed {@link Nodes} as when we are passed the
      *                reference the {@link Jenkins} instance has not completed instantiation.
      */
-    /*package*/ Nodes(@Nonnull Jenkins jenkins) {
+    /*package*/ Nodes(@NonNull Jenkins jenkins) {
         this.jenkins = jenkins;
     }
 
@@ -91,7 +91,7 @@ public class Nodes implements Saveable {
      *
      * @return the list of nodes.
      */
-    @Nonnull
+    @NonNull
     public List<Node> getNodes() {
         return new ArrayList<>(nodes.values());
     }
@@ -102,7 +102,7 @@ public class Nodes implements Saveable {
      * @param nodes the new list of nodes.
      * @throws IOException if the new list of nodes could not be persisted.
      */
-    public void setNodes(final @Nonnull Collection<? extends Node> nodes) throws IOException {
+    public void setNodes(final @NonNull Collection<? extends Node> nodes) throws IOException {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
@@ -126,7 +126,7 @@ public class Nodes implements Saveable {
      * @param node the new node.
      * @throws IOException if the list of nodes could not be persisted.
      */
-    public void addNode(final @Nonnull Node node) throws IOException {
+    public void addNode(final @NonNull Node node) throws IOException {
         Node oldNode = nodes.get(node.getNodeName());
         if (node != oldNode) {
             // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
@@ -170,7 +170,7 @@ public class Nodes implements Saveable {
      * @param node the node to be persisted.
      * @throws IOException if the node could not be persisted.
      */
-    private void persistNode(final @Nonnull Node node)  throws IOException {
+    private void persistNode(final @NonNull Node node)  throws IOException {
         // no need for a full save() so we just do the minimum
         if (node instanceof EphemeralNode) {
             Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
@@ -192,7 +192,7 @@ public class Nodes implements Saveable {
      * @throws IOException if the node could not be persisted.
      * @since 1.634
      */
-    public boolean updateNode(final @Nonnull Node node) throws IOException {
+    public boolean updateNode(final @NonNull Node node) throws IOException {
         boolean exists;
         try {
             exists = Queue.withLock(new Callable<Boolean>() {
@@ -227,7 +227,7 @@ public class Nodes implements Saveable {
      * @return {@code true} if node was replaced.
      * @since 2.8
      */
-    public boolean replaceNode(final Node oldOne, final @Nonnull Node newOne) throws IOException {
+    public boolean replaceNode(final Node oldOne, final @NonNull Node newOne) throws IOException {
         if (oldOne == nodes.get(oldOne.getNodeName())) {
             // use the queue lock until Nodes has a way of directly modifying a single node.
             Queue.withLock(new Runnable() {
@@ -257,7 +257,7 @@ public class Nodes implements Saveable {
      * @param node the node instance to remove.
      * @throws IOException if the list of nodes could not be persisted.
      */
-    public void removeNode(final @Nonnull Node node) throws IOException {
+    public void removeNode(final @NonNull Node node) throws IOException {
         if (node == nodes.get(node.getNodeName())) {
             Queue.withLock(new Runnable() {
                 @Override
@@ -280,9 +280,6 @@ public class Nodes implements Saveable {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void save() throws IOException {
         if (BulkChange.contains(this)) {

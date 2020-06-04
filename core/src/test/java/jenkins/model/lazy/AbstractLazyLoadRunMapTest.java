@@ -24,7 +24,13 @@
 package jenkins.model.lazy;
 
 import java.io.File;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import org.junit.Before;
@@ -39,7 +45,6 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,7 +78,7 @@ public class AbstractLazyLoadRunMapTest {
             return new FakeMap(getDir()) {
                 @Override
                 protected BuildReference<Build> createReference(Build r) {
-                    return new BuildReference<Build>(Integer.toString(r.n), /* pretend referent expired */ null);
+                    return new BuildReference<>(Integer.toString(r.n), /* pretend referent expired */ null);
                 }
             };
         }
@@ -201,7 +206,7 @@ public class AbstractLazyLoadRunMapTest {
         final FakeMap m = localExpiredBuilder.add(1).add(2).make();
 
         // force index creation
-        m.entrySet();
+        assertEquals(2, m.entrySet().size());
 
         m.search(1, Direction.EXACT).asserts(1);
         assertNull(m.search(3, Direction.EXACT));
@@ -259,10 +264,9 @@ public class AbstractLazyLoadRunMapTest {
 
     @Test
     public void identity() {
-        assertTrue(a.equals(a));
-        assertTrue(!a.equals(b));
-        a.hashCode();
-        b.hashCode();
+        assertEquals(a, a);
+        assertNotEquals(a, b);
+        assertNotEquals(a.hashCode(), b.hashCode());
     }
 
     @Issue("JENKINS-15439")
@@ -285,7 +289,7 @@ public class AbstractLazyLoadRunMapTest {
     }
 
     @Issue("JENKINS-18065")
-    @Test public void all() throws Exception {
+    @Test public void all() {
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         Set<Map.Entry<Integer,Build>> entries = a.entrySet();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
@@ -399,18 +403,8 @@ public class AbstractLazyLoadRunMapTest {
             slowBuilderLoadCount.put(i, new AtomicInteger());
         }
         final FakeMap m = slowBuilder.make();
-        Future<Build> firstLoad = Timer.get().submit(new Callable<Build>() {
-            @Override
-            public Build call() throws Exception {
-                return m.getByNumber(2);
-            }
-        });
-        Future<Build> secondLoad = Timer.get().submit(new Callable<Build>() {
-            @Override
-            public Build call() throws Exception {
-                return m.getByNumber(2);
-            }
-        });
+        Future<Build> firstLoad = Timer.get().submit(() -> m.getByNumber(2));
+        Future<Build> secondLoad = Timer.get().submit(() -> m.getByNumber(2));
         slowBuilderStartSemaphores.get(2).acquire(1);
         // now one of them is inside retrieve(…); the other is waiting for the lock
         slowBuilderEndSemaphores.get(2).release(2); // allow both to proceed

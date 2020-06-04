@@ -29,15 +29,14 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.ArrayUtils;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletException;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
 /**
- * Wraps commons file-upload and handles a "multipart/form-data" form submisison
+ * Wraps commons file-upload and handles a "multipart/form-data" form submission
  * (that often includes file upload.)
  *
  * @author Kohsuke Kawaguchi

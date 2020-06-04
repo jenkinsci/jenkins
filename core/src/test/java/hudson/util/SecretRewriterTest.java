@@ -5,6 +5,8 @@ import hudson.Functions;
 import hudson.model.TaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -12,16 +14,14 @@ import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class SecretRewriterTest {
-
-    @Rule
-    public MockSecretRule mockSecretRule = new MockSecretRule();
 
     @Rule
     public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
@@ -51,16 +51,16 @@ public class SecretRewriterTest {
     private String roundtrip(String before) throws Exception {
         SecretRewriter sr = new SecretRewriter(null);
         File f = File.createTempFile("test", "xml", tmp.getRoot());
-        FileUtils.write(f, before);
+        FileUtils.write(f, before, Charset.defaultCharset());
         sr.rewrite(f, null);
         //assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
-        return FileUtils.readFileToString(f).replaceAll(System.getProperty("line.separator"), "\n").trim();
+        return FileUtils.readFileToString(f, Charset.defaultCharset()).replaceAll(System.getProperty("line.separator"), "\n").trim();
     }
 
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, HistoricalSecrets.getLegacyKey());
-        return new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))));
+        return new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes(StandardCharsets.UTF_8))));
     }
 
     private String encryptNew(String str) {
@@ -79,7 +79,6 @@ public class SecretRewriterTest {
         String o = encryptOld("Hello world");
         String n = encryptNew("Hello world");
         String payload = "<msg>" + o + "</msg>";
-        String answer = "<msg>" + n + "</msg>";
 
         // set up some directories with stuff
         File t = tmp.newFolder("t");
@@ -88,7 +87,7 @@ public class SecretRewriterTest {
             File d = new File(t, p);
             d.mkdir();
             try {
-                FileUtils.write(new File(d, "foo.xml"), payload);
+                FileUtils.write(new File(d, "foo.xml"), payload, Charset.defaultCharset());
             } catch (IOException x) {
                 assert false : x;
             }
@@ -96,7 +95,7 @@ public class SecretRewriterTest {
 
         // stuff outside
         File t2 = tmp.newFolder("t2");
-        FileUtils.write(new File(t2, "foo.xml"), payload);
+        FileUtils.write(new File(t2, "foo.xml"), payload, Charset.defaultCharset());
 
         // some recursions as well as valid symlinks
         new FilePath(t).child("c/symlink").symlinkTo("..", st);
@@ -106,11 +105,11 @@ public class SecretRewriterTest {
         assertEquals(6, sw.rewriteRecursive(t, st));
 
         for (String p : dirs) {
-            assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t, p + "/foo.xml")).trim()).matches());
+            assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t, p + "/foo.xml"), Charset.defaultCharset()).trim()).matches());
         }
 
         // t2 is only reachable by following a symlink. this should be covered, too
-        assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t2, "foo.xml")).trim()).matches());
+        assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t2, "foo.xml"), Charset.defaultCharset()).trim()).matches());
     }
 
 }

@@ -1,99 +1,87 @@
 package jenkins.model;
 
-import hudson.Functions;
-import hudson.Util;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Job;
 import hudson.model.Run;
-import java.io.File;
-import static org.junit.Assert.*;
-import org.junit.Assume;
+import java.nio.file.Files;
+import java.util.logging.Level;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class PeepholePermalinkTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(PeepholePermalink.class, Level.FINE);
 
     /**
      * Basic operation of the permalink generation.
      */
+    @Issue("JENKINS-56809")
     @Test
     public void basics() throws Exception {
-        Assume.assumeFalse("can't run on windows because we rely on symlinks", Functions.isWindows());
-
         FreeStyleProject p = j.createFreeStyleProject();
         FreeStyleBuild b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
-        File lsb = new File(p.getBuildDir(), "lastSuccessfulBuild");
-        File lfb = new File(p.getBuildDir(), "lastFailedBuild");
+        String lsb = "lastSuccessfulBuild";
+        String lfb = "lastFailedBuild";
+        String lcb = "lastCompletedBuild";
 
-        assertLink(lsb, b1);
+        assertStorage(lsb, p, b1);
+        /* TODO fix utility to also accept case that the permalink is not mentioned at all:
+        assertStorage(lfb, p, null);
+        */
+        assertStorage(lcb, p, b1);
 
         // now another build that fails
         p.getBuildersList().add(new FailureBuilder());
         FreeStyleBuild b2 = p.scheduleBuild2(0).get();
 
-        assertLink(lsb, b1);
-        assertLink(lfb, b2);
+        assertStorage(lsb, p, b1);
+        assertStorage(lfb, p, b2);
+        assertStorage(lcb, p, b2);
 
         // one more build and this time it succeeds
         p.getBuildersList().clear();
         FreeStyleBuild b3 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
-        assertLink(lsb, b3);
-        assertLink(lfb, b2);
+        assertStorage(lsb, p, b3);
+        assertStorage(lfb, p, b2);
+        assertStorage(lcb, p, b3);
 
-        // delete b3 and symlinks should update properly
+        assertEquals(b3, p.getLastSuccessfulBuild());
+        assertEquals(b2, p.getLastFailedBuild());
+        assertEquals(b3, p.getLastCompletedBuild());
+
+        // delete b3 and links should update properly
         b3.delete();
-        assertLink(lsb, b1);
-        assertLink(lfb, b2);
+        assertStorage(lsb, p, b1);
+        assertStorage(lfb, p, b2);
+        assertStorage(lcb, p, b2);
 
         b1.delete();
-        assertLink(lsb, null);
-        assertLink(lfb, b2);
+        assertStorage(lsb, p, null);
+        assertStorage(lfb, p, b2);
+        assertStorage(lcb, p, b2);
 
         b2.delete();
-        assertLink(lsb, null);
-        assertLink(lfb, null);
+        assertStorage(lsb, p, null);
+        assertStorage(lfb, p, null);
+        assertStorage(lcb, p, null);
     }
 
-    private void assertLink(File symlink, Run build) throws Exception {
-        assertEquals(build == null ? "-1" : Integer.toString(build.getNumber()), Util.resolveSymlink(symlink));
-    }
-
-    /**
-     * job/JOBNAME/lastStable and job/JOBNAME/lastSuccessful symlinks that we
-     * used to generate should still work
-     */
-    @Test
-    public void legacyCompatibility() throws Exception {
-        Assume.assumeFalse("can't run on windows because we rely on symlinks", Functions.isWindows());
-
-        FreeStyleProject p = j.createFreeStyleProject();
-        FreeStyleBuild b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-
-        for (String n : new String[] {"lastStable", "lastSuccessful"}) {
-            // test if they both point to b1
-            assertEquals(new File(p.getRootDir(), n + "/build.xml").length(), new File(b1.getRootDir(), "build.xml").length());
-        }
-    }
-
-    @Test
-    @Issue("JENKINS-19034")
-    public void rebuildBuildNumberPermalinks() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        File f = new File(p.getBuildDir(), "1");
-        // assertTrue(Util.isSymlink(f))
-        f.delete();
-        PeepholePermalink link = (PeepholePermalink) p.getPermalinks().stream().filter(l -> l instanceof PeepholePermalink).findAny().get();
-        link.updateCache(p, b);
-        assertTrue("build symlink hasn't been restored", f.exists());
+    private void assertStorage(String id, Job<?, ?> job, Run<?, ?> build) throws Exception {
+        assertThat(Files.readAllLines(PeepholePermalink.storageFor(job.getBuildDir()).toPath()),
+            hasItem(id + " " + (build == null ? -1 : build.getNumber())));
     }
 
 }

@@ -32,10 +32,10 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -87,7 +87,7 @@ public class ApiTokenStore {
     }
     
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-    public synchronized @Nonnull Collection<HashedToken> getTokenListSortedByName() {
+    public synchronized @NonNull Collection<HashedToken> getTokenListSortedByName() {
         return tokenList.stream()
                 .sorted(SORT_BY_LOWERCASED_NAME)
                 .collect(Collectors.toList());
@@ -101,7 +101,7 @@ public class ApiTokenStore {
      * Defensive approach to avoid involuntary change since the UUIDs are generated at startup only for UI
      * and so between restart they change
      */
-    public synchronized void reconfigure(@Nonnull Map<String, JSONObject> tokenStoreDataMap) {
+    public synchronized void reconfigure(@NonNull Map<String, JSONObject> tokenStoreDataMap) {
         tokenList.forEach(hashedToken -> {
             JSONObject receivedTokenData = tokenStoreDataMap.get(hashedToken.uuid);
             if (receivedTokenData == null) {
@@ -122,7 +122,7 @@ public class ApiTokenStore {
     /**
      * Remove the legacy token present and generate a new one using the given secret.
      */
-    public synchronized void regenerateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
+    public synchronized void regenerateTokenFromLegacy(@NonNull Secret newLegacyApiToken) {
         deleteAllLegacyAndGenerateNewOne(newLegacyApiToken, false);
     }
     
@@ -131,13 +131,13 @@ public class ApiTokenStore {
      * <p>
      * Otherwise, no effect.
      */
-    public synchronized void regenerateTokenFromLegacyIfRequired(@Nonnull Secret newLegacyApiToken) {
+    public synchronized void regenerateTokenFromLegacyIfRequired(@NonNull Secret newLegacyApiToken) {
         if(tokenList.stream().noneMatch(HashedToken::isLegacy)){
             deleteAllLegacyAndGenerateNewOne(newLegacyApiToken, true);
         }
     }
     
-    private void deleteAllLegacyAndGenerateNewOne(@Nonnull Secret newLegacyApiToken, boolean migrationFromExistingLegacy) {
+    private void deleteAllLegacyAndGenerateNewOne(@NonNull Secret newLegacyApiToken, boolean migrationFromExistingLegacy) {
         deleteAllLegacyTokens();
         addLegacyToken(newLegacyApiToken, migrationFromExistingLegacy);
     }
@@ -147,7 +147,7 @@ public class ApiTokenStore {
         tokenList.removeIf(HashedToken::isLegacy);
     }
     
-    private void addLegacyToken(@Nonnull Secret legacyToken, boolean migrationFromExistingLegacy) {
+    private void addLegacyToken(@NonNull Secret legacyToken, boolean migrationFromExistingLegacy) {
         String tokenUserUseNormally = Util.getDigestOf(legacyToken.getPlainText());
         
         String secretValueHashed = this.plainSecretToHashInHex(tokenUserUseNormally);
@@ -172,7 +172,7 @@ public class ApiTokenStore {
      * Create a new token with the given name and return it id and secret value. 
      * Result meant to be sent / displayed and then discarded.
      */
-    public synchronized @Nonnull TokenUuidAndPlainValue generateNewToken(@Nonnull String name) {
+    public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) {
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
@@ -190,18 +190,17 @@ public class ApiTokenStore {
         return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
     }
     
-    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-    private @Nonnull String plainSecretToHashInHex(@Nonnull String secretValueInPlainText) {
+    private @NonNull String plainSecretToHashInHex(@NonNull String secretValueInPlainText) {
         byte[] hashBytes = plainSecretToHashBytes(secretValueInPlainText);
         return Util.toHexString(hashBytes);
     }
     
-    private @Nonnull byte[] plainSecretToHashBytes(@Nonnull String secretValueInPlainText) {
+    private @NonNull byte[] plainSecretToHashBytes(@NonNull String secretValueInPlainText) {
         // ascii is sufficient for hex-format
         return hashedBytes(secretValueInPlainText.getBytes(StandardCharsets.US_ASCII));
     }
     
-    private @Nonnull byte[] hashedBytes(byte[] tokenBytes) {
+    private @NonNull byte[] hashedBytes(byte[] tokenBytes) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance(HASH_ALGORITHM);
@@ -215,7 +214,7 @@ public class ApiTokenStore {
      * Search in the store if there is a token with the same secret as the one given
      * @return {@code null} iff there is no matching token
      */
-    public synchronized @CheckForNull HashedToken findMatchingToken(@Nonnull String token) {
+    public synchronized @CheckForNull HashedToken findMatchingToken(@NonNull String token) {
         String plainToken;
         if (isLegacyToken(token)) {
             plainToken = token;
@@ -229,7 +228,7 @@ public class ApiTokenStore {
     /**
      * Determine if the given token was generated by the legacy system or the new one
      */
-    private boolean isLegacyToken(@Nonnull String token) {
+    private boolean isLegacyToken(@NonNull String token) {
         return token.length() != TOKEN_LENGTH_V2;
     }
     
@@ -238,7 +237,7 @@ public class ApiTokenStore {
      * @param token assumed the token is not a legacy one and represent the full token (version + hash)
      * @return the hash part
      */
-    private @Nonnull String getHashOfToken(@Nonnull String token) {
+    private @NonNull String getHashOfToken(@NonNull String token) {
         /*
          * Structure of the token:
          * 
@@ -252,7 +251,7 @@ public class ApiTokenStore {
      * Search in the store if there is a matching token that has the same secret.
      * @return {@code null} iff there is no matching token
      */
-    private @CheckForNull HashedToken searchMatch(@Nonnull String plainSecret) {
+    private @CheckForNull HashedToken searchMatch(@NonNull String plainSecret) {
         byte[] hashedBytes = plainSecretToHashBytes(plainSecret);
         for (HashedToken token : tokenList) {
             if (token.match(hashedBytes)) {
@@ -269,7 +268,7 @@ public class ApiTokenStore {
      * @param tokenUuid The identifier of the token, could be retrieved directly from the {@link HashedToken#getUuid()}
      * @return the revoked token corresponding to the given {@code tokenUuid} if one was found, otherwise {@code null}
      */
-    public synchronized @CheckForNull HashedToken revokeToken(@Nonnull String tokenUuid) {
+    public synchronized @CheckForNull HashedToken revokeToken(@NonNull String tokenUuid) {
         for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext(); ) {
             HashedToken token = iterator.next();
             if (token.uuid.equals(tokenUuid)) {
@@ -286,7 +285,7 @@ public class ApiTokenStore {
      * Given a token identifier and a name, the system will try to find a corresponding token and rename it
      * @return {@code true} iff the token was found and the rename was successful
      */
-    public synchronized boolean renameToken(@Nonnull String tokenUuid, @Nonnull String newName) {
+    public synchronized boolean renameToken(@NonNull String tokenUuid, @NonNull String newName) {
         for (HashedToken token : tokenList) {
             if (token.uuid.equals(tokenUuid)) {
                 token.rename(newName);
@@ -367,7 +366,7 @@ public class ApiTokenStore {
             }
         }
         
-        public static @Nonnull HashedToken buildNew(@Nonnull String name, @Nonnull HashValue value) {
+        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value) {
             HashedToken result = new HashedToken();
             result.name = name;
             result.creationDate = new Date();
@@ -377,7 +376,7 @@ public class ApiTokenStore {
             return result;
         }
     
-        public static @Nonnull HashedToken buildNewFromLegacy(@Nonnull HashValue value, boolean migrationFromExistingLegacy) {
+        public static @NonNull HashedToken buildNewFromLegacy(@NonNull HashValue value, boolean migrationFromExistingLegacy) {
             HashedToken result = new HashedToken();
             result.name = Messages.ApiTokenProperty_LegacyTokenName();
             if(migrationFromExistingLegacy){

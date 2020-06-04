@@ -58,8 +58,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @return
      *      null to avoid setting an instance of {@link JobProperty} to the target project (or just use {@link OptionalJobProperty})
      */
@@ -107,6 +105,6 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     }
 
     public static Collection<JobPropertyDescriptor> all() {
-        return (Collection) Jenkins.getInstance().getDescriptorList(JobProperty.class);
+        return (Collection) Jenkins.get().getDescriptorList(JobProperty.class);
     }
 }

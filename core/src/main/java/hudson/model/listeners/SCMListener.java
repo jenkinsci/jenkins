@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -140,12 +140,12 @@ public abstract class SCMListener implements ExtensionPoint {
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final void register() {
-        Jenkins.getInstance().getSCMListeners().add(this);
+        Jenkins.get().getSCMListeners().add(this);
     }
 
     /** @deprecated Use {@link Extension} instead. */
     @Deprecated
     public final boolean unregister() {
-        return Jenkins.getInstance().getSCMListeners().remove(this);
+        return Jenkins.get().getSCMListeners().remove(this);
     }
 }

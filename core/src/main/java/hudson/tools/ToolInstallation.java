@@ -40,8 +40,8 @@ import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -165,7 +165,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * @see EnvironmentSpecific
      * @since 1.460
      */
-    public ToolInstallation translate(@Nonnull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+    public ToolInstallation translate(@NonNull Node node, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
         ToolInstallation t = this;
         if (t instanceof NodeSpecific) {
             NodeSpecific n = (NodeSpecific) t;
@@ -241,7 +241,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Jenkins.getInstance().getDescriptorList(ToolInstallation.class);
+        return Jenkins.get().getDescriptorList(ToolInstallation.class);
     }
 
     private static final long serialVersionUID = 1L;

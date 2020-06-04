@@ -28,7 +28,7 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.slaves.WorkspaceList;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Allows to access a workspace as an alternative to online build node.
@@ -46,7 +46,7 @@ public abstract class WorkspaceBrowser implements ExtensionPoint {
     /**
      * Provide access to job's workspace
      * @param job
-     * @return <code>null</code> if this WorkspaceBrowser don't have a workspace for this job
+     * @return {@code null} if this WorkspaceBrowser don't have a workspace for this job
      */
     public abstract @CheckForNull FilePath getWorkspace(Job job);
 

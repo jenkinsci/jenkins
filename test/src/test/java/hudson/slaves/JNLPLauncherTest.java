@@ -23,7 +23,6 @@
  */
 package hudson.slaves;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
 import hudson.Util;
@@ -32,7 +31,6 @@ import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
 import hudson.remoting.Which;
-import hudson.slaves.DelegatingComputerLauncher;
 import hudson.util.ArgumentListBuilder;
 
 import jenkins.security.SlaveToMasterCallable;
@@ -47,7 +45,6 @@ import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -55,13 +52,15 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.awt.*;
+import java.util.logging.Level;
 import static org.hamcrest.Matchers.instanceOf;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -72,7 +71,9 @@ import org.jvnet.hudson.test.recipes.LocalData;
 public class JNLPLauncherTest {
     @Rule public JenkinsRule j = new JenkinsRule();
     
-    @Rule public TemporaryFolder tmpDir = new TemporaryFolder(); 
+    @Rule public TemporaryFolder tmpDir = new TemporaryFolder();
+
+    @Rule public LoggerRule logging = new LoggerRule().record(Slave.class, Level.FINE);
 
     /**
      * Starts a JNLP agent and makes sure it successfully connects to Jenkins. 
@@ -101,7 +102,7 @@ public class JNLPLauncherTest {
 
     /**
      * Tests the '-headless' option.
-     * (Although this test doesn't really assert that the agent really is running in a headless mdoe.)
+     * (Although this test doesn't really assert that the agent really is running in a headless mode.)
      */
     @Test
     public void testHeadlessLaunch() throws Exception {

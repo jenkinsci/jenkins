@@ -7,13 +7,16 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.kohsuke.MetaInfServices;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,6 +54,9 @@ public abstract class ConfidentialStore {
      */
     protected abstract @CheckForNull byte[] load(ConfidentialKey key) throws IOException;
 
+    // TODO consider promoting to public, and offering a default implementation of randomBytes (via the usual Util.isOverridden binary compat trick)
+    abstract SecureRandom secureRandom();
+
     /**
      * Works like {@link SecureRandom#nextBytes(byte[])}.
      *
@@ -61,10 +67,13 @@ public abstract class ConfidentialStore {
     /**
      * Retrieves the currently active singleton instance of {@link ConfidentialStore}.
      */
-    public static @Nonnull ConfidentialStore get() {
+    public static @NonNull ConfidentialStore get() {
         if (TEST!=null) return TEST.get();
 
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            return Mock.INSTANCE;
+        }
         Lookup lookup = j.lookup;
         ConfidentialStore cs = lookup.get(ConfidentialStore.class);
         if (cs==null) {
@@ -91,10 +100,60 @@ public abstract class ConfidentialStore {
         return cs;
     }
 
-    /**
-     * Testing only. Used for testing {@link ConfidentialKey} without {@link Jenkins}
+   /**
+     * @deprecated No longer needed.
      */
+    @Deprecated
     /*package*/ static ThreadLocal<ConfidentialStore> TEST = null;
+
+    static final class Mock extends ConfidentialStore {
+
+        static final Mock INSTANCE = new Mock();
+
+        private final SecureRandom rand;
+
+        private final Map<String, byte[]> data = new ConcurrentHashMap<>();
+
+        Mock() {
+            // Use a predictable seed to make tests more reproducible.
+            try {
+                rand = SecureRandom.getInstance("SHA1PRNG");
+            } catch (NoSuchAlgorithmException x) {
+                throw new AssertionError("https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#SecureRandom", x);
+            }
+            rand.setSeed(new byte[] {1, 2, 3, 4});
+        }
+
+        void clear() {
+            data.clear();
+        }
+
+        @Override
+        protected void store(ConfidentialKey key, byte[] payload) throws IOException {
+            LOGGER.fine(() -> "storing " + key.getId() + " " + hudson.Util.getDigestOf(hudson.Util.toHexString(payload)));
+            data.put(key.getId(), payload);
+        }
+
+        @Override
+        protected byte[] load(ConfidentialKey key) throws IOException {
+            byte[] payload = data.get(key.getId());
+            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? hudson.Util.getDigestOf(hudson.Util.toHexString(payload)) : "null"));
+            return payload;
+        }
+
+        @Override
+        SecureRandom secureRandom() {
+            return rand;
+        }
+
+        @Override
+        public byte[] randomBytes(int size) {
+            byte[] random = new byte[size];
+            rand.nextBytes(random);
+            return random;
+        }
+
+    }
 
     private static final Logger LOGGER = Logger.getLogger(ConfidentialStore.class.getName());
 }

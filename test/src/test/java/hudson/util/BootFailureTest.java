@@ -3,7 +3,6 @@ package hudson.util;
 import hudson.WebAppMain;
 import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
-import static hudson.util.BootFailureTest.makeBootFail;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,17 +13,24 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.junit.After;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.HudsonHomeLoader;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.NoListenerConfiguration;
 import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.WebApp;
+import org.springframework.util.Assert;
 
 /**
  *
@@ -48,7 +54,7 @@ public class BootFailureTest {
 
         @Override
         public Hudson newHudson() throws Exception {
-            ServletContext ws = createWebServer();
+            localPort = 0;
             wa = new WebAppMain() {
                 @Override
                 public WebAppMain.FileAndDescription getHomeDir(ServletContextEvent event) {
@@ -59,7 +65,26 @@ public class BootFailureTest {
                     }
                 }
             };
-            wa.contextInitialized(new ServletContextEvent(ws));
+            // Without this gymnastic, the jenkins-test-harness adds a NoListenerConfiguration
+            // that prevents us to inject our own custom WebAppMain
+            // With this approach we can make the server calls the regular contextInitialized
+            ServletContext ws = createWebServer((context, server) -> {
+                NoListenerConfiguration noListenerConfiguration = context.getBean(NoListenerConfiguration.class);
+                // future-proof
+                Assert.notNull(noListenerConfiguration);
+                if (noListenerConfiguration != null) {
+                    context.removeBean(noListenerConfiguration);
+                    context.addBean(new AbstractLifeCycle() {
+                        @Override 
+                        protected void doStart() throws Exception {
+                            // default behavior of noListenerConfiguration
+                            context.setEventListeners(null);
+                            // ensuring our custom context will received the contextInitialized event
+                            context.addEventListener(wa);
+                        }
+                    });
+                }
+            });
             wa.joinInit();
 
             Object a = WebApp.get(ws).getApp();

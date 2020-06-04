@@ -10,8 +10,8 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.lazy.LazyBuildMixIn.RunMixIn;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -108,7 +108,7 @@ public final class BuildReference<R> {
          * @param referent the thing to load
          * @return a reference, or null to consult the next factory
          */
-        @CheckForNull <R> Holder<R> make(@Nonnull R referent);
+        @CheckForNull <R> Holder<R> make(@NonNull R referent);
 
     }
 
@@ -131,13 +131,13 @@ public final class BuildReference<R> {
      * Default factory if none other are installed.
      * Its behavior can be controlled via the system property {@link DefaultHolderFactory#MODE_PROPERTY}:
      * <dl>
-     * <dt><code>soft</code> (default)
+     * <dt>{@code soft} (default)
      * <dd>Use {@link SoftReference}s. Builds will be kept around so long as memory pressure is not too high.
-     * <dt><code>weak</code>
+     * <dt>{@code weak}
      * <dd>Use {@link WeakReference}s. Builds will be kept only until the next full garbage collection cycle.
-     * <dt><code>strong</code>
+     * <dt>{@code strong}
      * <dd>Use strong references. Builds will still be loaded lazily, but once loaded, will not be released.
-     * <dt><code>none</code>
+     * <dt>{@code none}
      * <dd>Do not hold onto builds at all. Mainly offered as an option for the purpose of reproducing lazy-loading bugs.
      * </dl>
      */

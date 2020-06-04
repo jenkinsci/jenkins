@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -97,7 +97,7 @@ public class ApiTokenPropertyTest {
     public void security49Upgrade() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
-        String historicalInitialValue = Util.getDigestOf(Jenkins.getInstance().getSecretKey() + ":" + u.getId());
+        String historicalInitialValue = Util.getDigestOf(Jenkins.get().getSecretKey() + ":" + u.getId());
 
         // we won't accept historically used initial value as it may be compromised
         ApiTokenProperty t = new ApiTokenProperty(historicalInitialValue);
@@ -175,7 +175,7 @@ public class ApiTokenPropertyTest {
         assertEquals("foo", triggeredBy.getUserId());
     }
 
-    @Nonnull
+    @NonNull
     private WebClient createClientForUser(final String id) throws Exception {
         User u = User.getById(id, true);
         

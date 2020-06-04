@@ -20,7 +20,8 @@ import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -42,7 +43,7 @@ public class UpgradeWizardTest {
     private void setSetupWizard(SetupWizard wiz) throws Exception {
         Field f = Jenkins.class.getDeclaredField("setupWizard");
         f.setAccessible(true);
-        f.set(Jenkins.getInstance(), wiz);
+        f.set(Jenkins.get(), wiz);
     }
     
     @Before

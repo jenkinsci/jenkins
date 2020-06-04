@@ -44,7 +44,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -55,7 +55,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @Restricted(NoExternalUse.class)
 public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
@@ -82,10 +82,9 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         String textLevelOne = "plain-2";
         String pwdLevelOneA = "secret-2";
-        String pwdLevelOneB = "secret-3";
+        String pwdLevelOneB = "pre-set secret"; // set in Jelly
         ((HtmlInput) page.getElementById("text-level-one")).setValueAttribute(textLevelOne);
         ((HtmlInput) page.getElementById("pwd-level-one-a")).setValueAttribute(pwdLevelOneA);
-        ((HtmlInput) page.getElementById("pwd-level-one-b")).setValueAttribute(pwdLevelOneB);
         
         HtmlForm form = page.getFormByName("config");
         Page formSubmitPage = j.submit(form);
@@ -232,7 +231,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         }
         
         public DescriptorImpl getDescriptor() {
-            return Jenkins.getInstance().getDescriptorByType(TestDescribable.DescriptorImpl.class);
+            return Jenkins.get().getDescriptorByType(TestDescribable.DescriptorImpl.class);
         }
         
         @TestExtension({
@@ -249,9 +248,9 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         public TestDescribable testDescribable;
         
-        @RequirePOST
+        @POST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
-            Jenkins.getInstance().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
+            Jenkins.get().getDescriptorOrDie(TestDescribable.class).newInstance(req, req.getSubmittedForm());
         }
         
         @Override
@@ -275,7 +274,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         public TestDescribable testDescribable;
         
-        @RequirePOST
+        @POST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws Exception {
             req.bindJSON(TestDescribable.class, req.getSubmittedForm());
         }

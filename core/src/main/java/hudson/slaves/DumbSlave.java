@@ -34,7 +34,7 @@ import java.util.List;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Default {@link Slave} implementation for computers that do not belong to a higher level structure,
@@ -45,7 +45,7 @@ import javax.annotation.Nonnull;
 public final class DumbSlave extends Slave {
     /**
      * @deprecated as of 1.286.
-     *      Use {@link #DumbSlave(String, String, String, String, Node.Mode, String, ComputerLauncher, RetentionStrategy, List)}
+     *      Use {@link #DumbSlave(String, String, String, String, Mode, String, ComputerLauncher, RetentionStrategy, List)}
      */
     @Deprecated
     public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
@@ -62,7 +62,7 @@ public final class DumbSlave extends Slave {
     }
 
     @DataBoundConstructor
-    public DumbSlave(@Nonnull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+    public DumbSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
         super(name, remoteFS, launcher);
     }
 

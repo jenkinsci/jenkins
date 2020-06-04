@@ -33,7 +33,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.model.User;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Infers avatar image URLs for users
@@ -87,7 +87,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
      */
     public static String resolve(User u, String avatarSize) {
         String avatar = resolveOrNull(u, avatarSize);
-        return avatar != null ? avatar : Jenkins.getInstance().getRootUrl() + Functions.getResourcePath() + "/images/" + avatarSize + "/user.png";
+        return avatar != null ? avatar : Jenkins.get().getRootUrl() + Functions.getResourcePath() + "/images/" + avatarSize + "/user.png";
     }
 
     /**

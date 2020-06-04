@@ -49,7 +49,13 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -62,7 +68,7 @@ public class UtilTest {
 
     @Test
     public void testReplaceMacro() {
-        Map<String,String> m = new HashMap<String,String>();
+        Map<String,String> m = new HashMap<>();
         m.put("A","a");
         m.put("A.B","a-b");
         m.put("AA","aa");
@@ -158,6 +164,8 @@ public class UtilTest {
             " \"#%/:;<>?", "%20%22%23%25%2F%3A%3B%3C%3E%3F",
             "[\\]^`{|}~", "%5B%5C%5D%5E%60%7B%7C%7D%7E",
             "d\u00E9velopp\u00E9s", "d%C3%A9velopp%C3%A9s",
+            "Foo \uD800\uDF98 Foo", "Foo%20%F0%90%8E%98%20Foo",
+            "\u00E9 ", "%C3%A9%20"
         };
         for (int i = 0; i < data.length; i += 2) {
             assertEquals("test " + i, data[i + 1], Util.rawEncode(data[i]));

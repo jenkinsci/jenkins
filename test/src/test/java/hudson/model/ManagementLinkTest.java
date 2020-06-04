@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
@@ -55,7 +55,7 @@ public class ManagementLinkTest {
 
         for (int i=0; ; i++) {
             HtmlPage page = wc.goTo("manage");
-            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[@class='manage-option']/a[not(@onclick)]");
+            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'manage-option')]/a[not(@onclick)]");
             assertTrue(anchors.size()>=8);
             if (i==anchors.size())  return; // done
 
@@ -65,7 +65,7 @@ public class ManagementLinkTest {
 
     @Test @Issue("JENKINS-33683")
     public void invisibleLinks() throws Exception {
-        assertEquals(null, j.jenkins.getDynamic("and_fail_trying"));
+        assertNull(j.jenkins.getDynamic("and_fail_trying"));
     }
 
     @TestExtension // Intentionally hooked in all tests

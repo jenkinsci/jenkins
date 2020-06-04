@@ -28,13 +28,11 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.model.Descriptor.FormException;
 import hudson.model.View;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.ListView;
@@ -65,7 +63,7 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
      * Returns all the registered {@link ViewsTabBar} descriptors.
      */
     public static DescriptorExtensionList<ViewsTabBar, Descriptor<ViewsTabBar>> all() {
-        return Jenkins.getInstance().getDescriptorList(ViewsTabBar.class);
+        return Jenkins.get().getDescriptorList(ViewsTabBar.class);
     }
 
     @Override
@@ -80,10 +78,10 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
      * @return the sorted views
      * @since 2.37
      */
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     @SuppressWarnings("unused") // invoked from stapler view
-    public List<View> sort(@Nonnull List<? extends View> views) {
+    public List<View> sort(@NonNull List<? extends View> views) {
         List<View> result = new ArrayList<>(views);
         result.sort(new Comparator<View>() {
             @Override

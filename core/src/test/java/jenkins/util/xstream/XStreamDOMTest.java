@@ -27,8 +27,14 @@ import hudson.util.XStream2;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.xmlunit.diff.DefaultNodeMatcher;
+import org.xmlunit.diff.ElementSelectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +68,8 @@ public class XStreamDOMTest {
         Foo foo = createSomeFoo();
         String xml = xs.toXML(foo);
         System.out.println(xml);
-        assertEquals(getTestData1().trim(), xml.trim());
+        assertThat(getTestData1().trim(), isSimilarTo(xml.trim()).ignoreWhitespace()
+                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
     }
 
     private String getTestData1() throws IOException {
@@ -100,7 +107,8 @@ public class XStreamDOMTest {
 
         String xml = xs.toXML(foo);
         System.out.println(xml);
-        assertEquals(getTestData1().trim(), xml.trim());
+        assertThat(getTestData1().trim(), isSimilarTo(xml.trim()).ignoreWhitespace()
+                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
     }
 
     @Test
@@ -124,7 +132,7 @@ public class XStreamDOMTest {
     public static class Name_That_Gets_Escaped {}
 
     public static class DomInMap {
-        Map<String,XStreamDOM> values = new HashMap<String, XStreamDOM>();
+        Map<String,XStreamDOM> values = new HashMap<>();
     }
 
     @Test

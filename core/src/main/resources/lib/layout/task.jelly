@@ -56,6 +56,14 @@ THE SOFTWARE.
 
       This is useful for showing links to restricted pages, as showing
       them to unprivileged users don't make sense.
+      
+      If both permission and permissions is set, then permissions will be used
+    </st:attribute>
+    <st:attribute name="permissions">
+      If specified, the link will be only displayed when the current user has
+      one or more of the specified permissions against the "it" object.
+
+      If both permission and permissions is set, then permissions will be used
     </st:attribute>
     <st:attribute name="post" type="boolean">
       If true, send a POST rather than a GET request.
@@ -79,19 +87,31 @@ THE SOFTWARE.
     The semantics is that when one of the nested <task> matches, the parent is also considered as a match
     and thus gets a highlight.
   -->
-  <j:set var="match" value="${h.hyperlinkMatchesCurrentPage(href)}" />
+  <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(href)}" />
   <j:scope>
-    <j:set var="taskMatching" value="${context.parent}"/>
+    <j:set var="parentTagContext" value="${context.parent}"/>
     <d:invokeBody />
   </j:scope>
+  <j:if test="${attrs.permission != null}">
+    <j:set var="hasPermission" value="${h.hasPermission(it, attrs.permission)}" />
+  </j:if>
 
-  <j:if test="${attrs.permission==null or h.hasPermission(it,attrs.permission)}">
+  <j:if test="${attrs.permissions != null}">
+    <j:set var="hasPermission" value="${h.hasAnyPermission(it, attrs.permissions)}" />
+  </j:if>
+
+  <j:if test="${attrs.permission == null and attrs.permissions == null}">
+    <j:set var="hasPermission" value="true" />
+  </j:if>
+
+  <j:if test="${hasPermission}">
     <j:choose>
-      <j:when test="${taskMatching!=null}">
-        <j:if test="${match}">
-          <j:set target="${taskMatching.variables}" property="match" value="true"/>
+      <j:when test="${parentTagContext!=null}">
+        <j:if test="${isCurrent or hasMatchingChild}">
+          <j:set target="${parentTagContext.variables}" property="hasMatchingChild" value="true"/>
         </j:if>
       </j:when>
+      <j:set var="match" value="${isCurrent or hasMatchingChild}" />
 
       <!--
       The icon attribute can be an icon class spec, or can be the url of an icon image.
@@ -119,106 +139,60 @@ THE SOFTWARE.
       <j:set var="icon" value="${rootURL}${icon.startsWith('/images/') || icon.startsWith('/plugin/') ? h.resourcePath : ''}${icon}"/>
       <j:when test="${enabled==false}">
         <div class="task disabled">
-          <span>
-            <j:choose>
-              <j:when test="${iconMetadata != null}">
-                <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />
-              </j:when>
-              <j:otherwise>
-                <l:icon alt="" src="${icon}" style="width: 24px; height: 24px; margin: 2px;" />
-              </j:otherwise>
-            </j:choose>
-          </span>
-          <st:nbsp />
-
-          <span>
-            <j:choose>
-              <j:when test="${match}">
-                <b>${title}</b>
-              </j:when>
-              <j:otherwise>
-                ${title}
-              </j:otherwise>
-            </j:choose>
+          <span class="task-link-wrapper">
+            <span class="task-disabled-link">
+              <span class="task-icon-link">
+                <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+              </span>
+              <span class="task-link-text">${title}</span>
+            </span>
           </span>
         </div>
       </j:when>
+
       <j:otherwise>
-        <div class="task">
-          <j:choose>
-            <j:when test="${iconMetadata != null}">
-              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
-            </j:when>
-            <j:otherwise>
-              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
-            </j:otherwise>
-          </j:choose>
+        <div class="task ">
+          <span class="task-link-wrapper ${watch ? 'task--active' : ''}">
+            <j:choose>
+              <j:when test="${iconMetadata != null}">
+                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
+              </j:when>
+              <j:otherwise>
+                ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
+              </j:otherwise>
+            </j:choose>
 
-          <j:set var="id" value="${h.generateId()}"/>
-          <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
-              <script>
-                  function postRequest_${id}(a) {
-                      new Ajax.Request(a.href);
-                      hoverNotification('${%Done.}', a.parentNode);
-                      return false;
-                  }
-              </script>
-          </j:if>
+            <j:set var="id" value="${h.generateId()}"/>
+            <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
+                <script>
+                    function postRequest_${id}(a) {
+                        new Ajax.Request(a.href);
+                        hoverNotification('${%Done.}', a.parentNode);
+                        return false;
+                    }
+                </script>
+            </j:if>
 
-          <j:choose>
-            <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink class="task-icon-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
-                <j:choose>
-                  <j:when test="${iconMetadata != null}">
-                    <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />
-                  </j:when>
-                  <j:otherwise>
-                    <l:icon alt="" src="${icon}" style="width: 24px; height: 24px; margin: 2px;" />
-                  </j:otherwise>
-                </j:choose>
-              </l:confirmationLink>
-            </j:when>
-            <j:otherwise>
-              <a href="${href}" class="task-icon-link" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
-                <j:choose>
-                  <j:when test="${iconMetadata != null}">
-                    <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />
-                  </j:when>
-                  <j:otherwise>
-                    <l:icon alt="" src="${icon}" style="width: 24px; height: 24px; margin: 2px;" />
-                  </j:otherwise>
-                </j:choose>
-              </a>
-            </j:otherwise>
-          </j:choose>
-          <st:nbsp />
+            <j:choose>
+              <j:when test="${requiresConfirmation and not attrs.onClick}">
+                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                  <span class="task-icon-link">
+                    <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                  </span>
+                  <span>${title}</span>
+                </l:confirmationLink>
+              </j:when>
 
-          <j:choose>
-            <j:when test="${requiresConfirmation and not attrs.onClick}">
-              <l:confirmationLink class="task-link" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
-                <j:choose>
-                  <j:when test="${match}">
-                    <b>${title}</b>
-                  </j:when>
-                  <j:otherwise>
-                    ${title}
-                  </j:otherwise>
-                </j:choose>
-              </l:confirmationLink>
-            </j:when>
-            <j:otherwise>
-              <a href="${href}" class="task-link" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
-                <j:choose>
-                  <j:when test="${match}">
-                    <b>${title}</b>
-                  </j:when>
-                  <j:otherwise>
-                    ${title}
-                  </j:otherwise>
-                </j:choose>
-              </a>
-            </j:otherwise>
-          </j:choose>
+              <j:otherwise>
+                <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}" title="${title}">
+                  <span class="task-icon-link">
+                    <l:icon alt="" class="${iconMetadata != null ? iconMetadata.classSpec : ''}" src="${iconMetadata ?: icon}" />
+                  </span>
+                  <span class="task-link-text">${title}</span>
+                </a>
+              </j:otherwise>
+            </j:choose>
+          </span>
 
           <j:if test="${match}">
             <div class="subtasks">

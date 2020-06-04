@@ -38,7 +38,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import org.junit.Before;
@@ -161,7 +164,7 @@ public class RunIdMigratorTest {
     // TODO test sane recovery from various error conditions
 
     private void write(String file, String text) throws Exception {
-        FileUtils.write(new File(dir, file), text);
+        FileUtils.write(new File(dir, file), text, Charset.defaultCharset());
     }
 
     private void link(String symlink, String dest) throws Exception {
@@ -173,14 +176,14 @@ public class RunIdMigratorTest {
     }
     private static String summarize(File dir) throws Exception {
         File[] kids = dir.listFiles();
-        Map<String,String> m = new TreeMap<String,String>();
+        Map<String,String> m = new TreeMap<>();
         for (File kid : kids) {
             String notation;
             String symlink = Util.resolveSymlink(kid);
             if (symlink != null) {
                 notation = "→" + symlink;
             } else if (kid.isFile()) {
-                notation = "'" + FileUtils.readFileToString(kid) + "'";
+                notation = "'" + FileUtils.readFileToString(kid, Charset.defaultCharset()) + "'";
             } else if (kid.isDirectory()) {
                 notation = summarize(kid);
             } else {

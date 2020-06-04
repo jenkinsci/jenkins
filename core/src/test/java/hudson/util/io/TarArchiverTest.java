@@ -31,12 +31,11 @@ import hudson.model.TaskListener;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Assume;
 import static org.junit.Assume.*;
 import org.junit.Rule;
@@ -137,7 +136,7 @@ public class TarArchiverTest {
         t1.join();
     }
 
-    private class GrowingFileRunnable implements Runnable {
+    private static class GrowingFileRunnable implements Runnable {
         private boolean finish = false;
         private Exception ex = null;
         private File file;
@@ -168,6 +167,6 @@ public class TarArchiverTest {
                 throw ex;
             }
         }
-    };
+    }
 
 }

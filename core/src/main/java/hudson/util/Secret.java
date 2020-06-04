@@ -31,7 +31,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import jenkins.util.SystemProperties;
 import java.util.Arrays;
-import jenkins.model.Jenkins;
 import hudson.Util;
 import jenkins.security.CryptoConfidentialKey;
 import org.kohsuke.stapler.Stapler;
@@ -44,8 +43,8 @@ import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -71,7 +70,7 @@ public final class Secret implements Serializable {
     /**
      * Unencrypted secret text.
      */
-    @Nonnull
+    @NonNull
     private final String value;
     private byte[] iv;
 
@@ -105,7 +104,7 @@ public final class Secret implements Serializable {
      * Before using this method, ask yourself if you'd be better off using {@link Secret#toString(Secret)}
      * to avoid NPE.
      */
-    @Nonnull
+    @NonNull
     public String getPlainText() {
         return value;
     }
@@ -246,7 +245,7 @@ public final class Secret implements Serializable {
      * <p>
      * Useful for recovering a value from a form field.
      */
-    @Nonnull
+    @NonNull
     public static Secret fromString(@CheckForNull String data) {
         data = Util.fixNull(data);
         Secret s = decrypt(data);
@@ -259,7 +258,7 @@ public final class Secret implements Serializable {
      * To be consistent with {@link #fromString(String)}, this method doesn't distinguish
      * empty password and null password.
      */
-    @Nonnull
+    @NonNull
     public static String toString(@CheckForNull Secret s) {
         return s==null ? "" : s.value;
     }
@@ -289,8 +288,10 @@ public final class Secret implements Serializable {
     private static final String PROVIDER = SystemProperties.getString(Secret.class.getName()+".provider");
 
     /**
-     * For testing only. Override the secret key so that we can test this class without {@link Jenkins}.
+     * For testing only.
+     * @deprecated Normally unnecessary.
      */
+    @Deprecated
     /*package*/ static String SECRET = null;
 
     /**
@@ -300,11 +301,38 @@ public final class Secret implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Restricted(NoExternalUse.class)
+    public static final boolean AUTO_ENCRYPT_PASSWORD_CONTROL = SystemProperties.getBoolean(Secret.class.getName() + ".AUTO_ENCRYPT_PASSWORD_CONTROL", true);
+
+    @Restricted(NoExternalUse.class)
+    public static /* non-final */ boolean BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE = SystemProperties.getBoolean(Secret.class.getName() + ".BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE", true);
+
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
             public Secret convert(Class type, Object value) {
+                if (value == null) {
+                    return null;
+                }
+                if (value instanceof Secret) {
+                    return (Secret) value;
+                }
                 return Secret.fromString(value.toString());
             }
         }, Secret.class);
+        if (AUTO_ENCRYPT_PASSWORD_CONTROL) {
+            Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+                public String convert(Class type, Object value) {
+                    if (value == null) {
+                        return null;
+                    }
+                    Secret decrypted = Secret.decrypt(value.toString());
+                    if (decrypted == null) {
+                        return value.toString();
+                    } else {
+                        return decrypted.getPlainText();
+                    }
+                }
+            }, String.class);
+        }
     }
 }

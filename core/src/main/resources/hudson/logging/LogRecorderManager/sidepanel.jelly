@@ -26,15 +26,18 @@ THE SOFTWARE.
   Side panel
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <l:header />
   <l:side-panel>
     <l:tasks>
       <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
       <l:task href="${rootURL}/manage" icon="icon-gear2 icon-md" title="${%Manage Jenkins}"/>
-      <l:task href="." icon="icon-clipboard icon-md" title="${%Logger List}"/>
-      <l:task href="all" icon="icon-notepad icon-md" title="${%All Logs}"/>
-      <l:task href="new" icon="icon-new-package icon-md" title="${%New Log Recorder}"/>
+      <l:task href="." icon="icon-clipboard icon-md" title="${%Log Recorders}">
+        <l:isAdmin>
+          <l:task href="new" icon="icon-new-package icon-md" title="${%New Log Recorder}"/>
+        </l:isAdmin>
+      </l:task>
+      <l:task href="all" icon="icon-notepad icon-md" title="${%All Log Messages}"/>
       <l:task href="levels" icon="icon-gear icon-md" title="${%Log Levels}"/>
     </l:tasks>
   </l:side-panel>

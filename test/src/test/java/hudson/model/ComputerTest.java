@@ -24,9 +24,12 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -36,6 +39,7 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 
+import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
@@ -46,6 +50,7 @@ import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -56,12 +61,12 @@ public class ComputerTest {
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
-        DumbSlave delete = j.createOnlineSlave(Jenkins.getInstance().getLabelAtom("delete"));
-        DumbSlave keep = j.createOnlineSlave(Jenkins.getInstance().getLabelAtom("keep"));
+        DumbSlave delete = j.createOnlineSlave(Jenkins.get().getLabelAtom("delete"));
+        DumbSlave keep = j.createOnlineSlave(Jenkins.get().getLabelAtom("keep"));
         File logFile = delete.toComputer().getLogFile();
         assertTrue(logFile.exists());
 
-        Jenkins.getInstance().removeNode(delete);
+        Jenkins.get().removeNode(delete);
 
         assertFalse("Slave log should be deleted", logFile.exists());
         assertFalse("Slave log directory should be deleted", logFile.getParentFile().exists());
@@ -124,6 +129,20 @@ public class ComputerTest {
         assertEquals(1, c.getActions(A.class).size());
         c.addAction(new A());
         assertEquals(2, c.getActions(A.class).size());
+    }
+
+    @Test
+    public void tiedJobs() throws Exception {
+        DumbSlave s = j.createOnlineSlave();
+        Label l = s.getSelfLabel();
+        Computer c = s.toComputer();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedLabel(l);
+        FreeStyleProject p2 = j.createFreeStyleProject();
+        MockFolder f = j.createFolder("test");
+        FreeStyleProject p3 = f.createProject(FreeStyleProject.class, "project");
+        p3.setAssignedLabel(l);
+        assertThat(c.getTiedJobs(), containsInAnyOrder(p, p3));
     }
 
 }

@@ -50,7 +50,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Executes a series of commands by using a shell.
@@ -106,7 +106,7 @@ public class Shell extends CommandInterpreter {
 
     @CheckForNull
     public final Integer getUnstableReturn() {
-        return new Integer(0).equals(unstableReturn) ? null : unstableReturn;
+        return Integer.valueOf(0).equals(unstableReturn) ? null : unstableReturn;
     }
 
     @DataBoundSetter

@@ -47,24 +47,49 @@ import hudson.model.Run;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import jenkins.MasterToSlaveFileCallable;
+import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
 
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
+import org.junit.ClassRule;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class ArtifactArchiverTest {
-    
+
+    @ClassRule public static BuildWatcher buildWatcher = new BuildWatcher();
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    @Issue("JENKINS-26008")
+    public void testNoneCompression() throws Exception {
+        final FilePath.TarCompression prevCompression = StandardArtifactManager.TAR_COMPRESSION;
+        StandardArtifactManager.TAR_COMPRESSION = FilePath.TarCompression.NONE;
+        try {
+            final FreeStyleProject project = j.createFreeStyleProject();
+            project.getBuildersList().add(new CreateArtifact());
+            project.getPublishersList().add(new ArtifactArchiver("f"));
+            assertEquals(Result.SUCCESS, build(project));
+            assertTrue(project.getBuildByNumber(1).getHasArtifacts());
+        } finally {
+            StandardArtifactManager.TAR_COMPRESSION = prevCompression;
+        }
+    }
 
     @Test
     @Issue("JENKINS-3227")
@@ -138,6 +163,54 @@ public class ArtifactArchiverTest {
         assertEquals(1, kids.length);
         assertEquals("lodge", kids[0].getName());
         // do not check that it .exists() since its target has not been archived
+    }
+
+    @Issue("JENKINS-5597")
+    @Test public void notFollowSymlinks() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                FilePath dir = ws.child("dir");
+                dir.mkdirs();
+                dir.child("fizz").write("contents", null);
+                dir.child("lodge").symlinkTo("fizz", listener);
+                ws.child("linkdir").symlinkTo("dir", listener);
+                return true;
+            }
+        });
+        ArtifactArchiver aa = new ArtifactArchiver("dir/lodge, linkdir/fizz");
+        aa.setFollowSymlinks(false);
+        aa.setAllowEmptyArchive(true);
+        p.getPublishersList().add(aa);
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FilePath ws = b.getWorkspace();
+        assertNotNull(ws);
+        assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(0, artifacts.size());
+    }
+
+    @LocalData
+    @Test public void followSymlinksEnabledForOldConfig() throws Exception {
+
+        FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
+
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b),b.getResult()==Result.SUCCESS);
+        FilePath ws = b.getWorkspace();
+        assertNotNull(ws);
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(2, artifacts.size());
+        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
+        assertEquals(1, kids.length);
+        assertEquals("lodge", kids[0].getName());
+        VirtualFile[] linkkids = b.getArtifactManager().root().child("linkdir").list();
+        assertEquals(1, kids.length);
+        assertEquals("fizz", linkkids[0].getName());
     }
 
     @Issue("SECURITY-162")
@@ -312,13 +385,14 @@ public class ArtifactArchiverTest {
         p.setAssignedNode(slave);
 
         FreeStyleBuild build = p.scheduleBuild2(0).get();
+        assumeFalse(FILENAME + " should not be readable by " + System.getProperty("user.name"), new File(build.getWorkspace().child(FILENAME).getRemote()).canRead());
         j.assertBuildStatus(Result.FAILURE, build);
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
         j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
     }
 
-    @Test 
+    @Test
     @Issue("JENKINS-55049")
     public void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
@@ -345,19 +419,19 @@ public class ArtifactArchiverTest {
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(3, artifacts.size());
         artifacts.sort(Comparator.comparing(Run.Artifact::getFileName));
-        
+
         // invalid symlink => size of 0
         FreeStyleBuild.Artifact artifact = artifacts.get(0);
         assertEquals("dir/_nonexistant", artifact.relativePath);
         assertEquals(0, artifact.getFileSize());
         assertEquals("", artifact.getLength());
-    
+
         // valid symlink => same size of the target, 8
         artifact = artifacts.get(1);
         assertEquals("dir/_toExistant", artifact.relativePath);
         assertEquals(8, artifact.getFileSize());
         assertEquals("8", artifact.getLength());
-    
+
         // existant => size of 8
         artifact = artifacts.get(2);
         assertEquals("dir/existant", artifact.relativePath);

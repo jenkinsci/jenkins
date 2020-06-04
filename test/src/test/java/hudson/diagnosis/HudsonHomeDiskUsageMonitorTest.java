@@ -96,6 +96,8 @@ public class HudsonHomeDiskUsageMonitorTest {
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, p.getWebResponse().getStatusCode());
 
         wc.withBasicApiToken(administrator);
+        request = new WebRequest(new URL(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
+        request.setRequestParameters(Collections.singletonList(param));
         p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
         assertFalse(mon.isEnabled());

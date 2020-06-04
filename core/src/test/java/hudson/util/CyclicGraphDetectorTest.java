@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class CyclicGraphDetectorTest {
 
-    private class Edge {
+    private static class Edge {
         String src,dst;
 
         private Edge(String src, String dst) {
@@ -25,14 +25,14 @@ public class CyclicGraphDetectorTest {
         }
     }
 
-    private class Graph extends ArrayList<Edge> {
+    private static class Graph extends ArrayList<Edge> {
         Graph e(String src, String dst) {
             add(new Edge(src,dst));
             return this;
         }
 
         Set<String> nodes() {
-            Set<String> nodes = new LinkedHashSet<String>();
+            Set<String> nodes = new LinkedHashSet<>();
             for (Edge e : this) {
                 nodes.add(e.src);
                 nodes.add(e.dst);
@@ -41,7 +41,7 @@ public class CyclicGraphDetectorTest {
         }
 
         Set<String> edges(String from) {
-            Set<String> edges = new LinkedHashSet<String>();
+            Set<String> edges = new LinkedHashSet<>();
             for (Edge e : this) {
                 if (e.src.equals(from))
                     edges.add(e.dst);

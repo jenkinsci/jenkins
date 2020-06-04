@@ -25,7 +25,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
-import org.kohsuke.stapler.interceptor.JsonOutputFilter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.interceptor.RespondSuccess;
 import org.kohsuke.stapler.json.JsonBody;
@@ -74,7 +73,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         
         private TestAccessModifier getPrivate() {return new TestAccessModifier();}
         
-        public class TestAccessModifier {
+        public static class TestAccessModifier {
             @GET
             public String doValue() {
                 return "hello";

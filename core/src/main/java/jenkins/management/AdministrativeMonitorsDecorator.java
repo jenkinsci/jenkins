@@ -24,7 +24,6 @@
 package jenkins.management;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.PageDecorator;
@@ -38,8 +37,6 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -74,7 +71,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
     public Collection<AdministrativeMonitor> getActiveAdministrativeMonitors() {
         Collection<AdministrativeMonitor> active = new ArrayList<>();
-        for (AdministrativeMonitor am : Jenkins.getInstance().getActiveAdministrativeMonitors()) {
+        for (AdministrativeMonitor am : Jenkins.get().getActiveAdministrativeMonitors()) {
             if (am instanceof ReverseProxySetupMonitor) {
                 // TODO make reverse proxy monitor work when shown on any URL
                 continue;
@@ -91,11 +88,9 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
     /**
      * Whether the administrative monitors notifier should be shown.
      * @return true iff the administrative monitors notifier should be shown.
-     * @throws IOException
-     * @throws ServletException
      */
-    public boolean shouldDisplay() throws IOException, ServletException {
-        if (!Functions.hasPermission(Jenkins.ADMINISTER)) {
+    public boolean shouldDisplay() {
+        if (!Jenkins.get().hasPermission(Jenkins.SYSTEM_READ)) {
             return false;
         }
 
@@ -115,11 +110,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         Object o = a.getObject();
 
         // don't show while Jenkins is loading
-        if (o instanceof HudsonIsLoading) {
-            return false;
-        }
-        // … or restarting
-        if (o instanceof HudsonIsRestarting) {
+        if (o instanceof HudsonIsLoading || o instanceof HudsonIsRestarting) {
             return false;
         }
 

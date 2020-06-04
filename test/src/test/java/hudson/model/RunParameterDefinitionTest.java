@@ -25,7 +25,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import hudson.Launcher;
 import hudson.model.RunParameterDefinition.RunParameterFilter;

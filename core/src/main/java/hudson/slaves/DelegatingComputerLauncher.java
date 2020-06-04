@@ -31,8 +31,8 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -81,8 +81,8 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
          * @since 2.12
          */
         public List<Descriptor<ComputerLauncher>> applicableDescriptors(@CheckForNull Slave it,
-                                                                        @Nonnull Slave.SlaveDescriptor itDescriptor) {
-            List<Descriptor<ComputerLauncher>> r = new ArrayList<Descriptor<ComputerLauncher>>();
+                                                                        @NonNull Slave.SlaveDescriptor itDescriptor) {
+            List<Descriptor<ComputerLauncher>> r = new ArrayList<>();
             for (Descriptor<ComputerLauncher> d : itDescriptor.computerLauncherDescriptors(it)) {
                 if (DelegatingComputerLauncher.class.isAssignableFrom(d.getKlass().toJavaClass()))  continue;
                 r.add(d);
@@ -98,7 +98,7 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
         @Restricted(DoNotUse.class)
         @RestrictedSince("2.12")
         public List<Descriptor<ComputerLauncher>> getApplicableDescriptors() {
-            List<Descriptor<ComputerLauncher>> r = new ArrayList<Descriptor<ComputerLauncher>>();
+            List<Descriptor<ComputerLauncher>> r = new ArrayList<>();
             for (Descriptor<ComputerLauncher> d :
                     Jenkins.get().getDescriptorList(ComputerLauncher.class)) {
                 if (DelegatingComputerLauncher.class.isAssignableFrom(d.getKlass().toJavaClass()))  continue;

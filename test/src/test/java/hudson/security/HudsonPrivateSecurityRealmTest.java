@@ -24,7 +24,6 @@
 
 package hudson.security;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.Cookie;
@@ -48,14 +47,19 @@ import java.util.List;
 
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
-import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.seed.UserSeedProperty;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -72,7 +76,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -103,7 +107,7 @@ public class HudsonPrivateSecurityRealmTest {
         String secure = PASSWORD_ENCODER.encodePassword("hello world", null);
         assertTrue(PASSWORD_ENCODER.isPasswordValid(old,"hello world",null));
 
-        assertFalse(secure.equals(old));
+        assertNotEquals(secure, old);
     }
 
 
@@ -146,7 +150,7 @@ public class HudsonPrivateSecurityRealmTest {
         // throws FailingHttpStatusCodeException on login failure
         wc2.login("user2", "password2");
 
-        // belt and braces incase the failed login no longer throws exceptions.
+        // belt and braces in case the failed login no longer throws exceptions.
         w1 = (XmlPage) wc1.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w1, hasXPath("//name", is("user1")));
         
@@ -286,14 +290,14 @@ public class HudsonPrivateSecurityRealmTest {
         assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
 
         createFirstAccount("admin");
-        assertTrue(spySecurityListener.loggedInUsernames.get(0).equals("admin"));
+        assertEquals("admin", spySecurityListener.loggedInUsernames.get(0));
 
         createAccountByAdmin("alice");
         // no new event in such case
-        assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
+        assertEquals(true, spySecurityListener.loggedInUsernames.isEmpty());
 
         selfRegistration("bob");
-        assertTrue(spySecurityListener.loggedInUsernames.get(0).equals("bob"));
+        assertEquals("bob", spySecurityListener.loggedInUsernames.get(0));
     }
 
     @Issue("JENKINS-55307")
@@ -308,8 +312,8 @@ public class HudsonPrivateSecurityRealmTest {
 
         selfRegistration("bob");
         selfRegistration("charlie");
-        assertTrue(spySecurityListener.createdUsers.get(0).equals("bob"));
-        assertTrue(spySecurityListener.createdUsers.get(1).equals("charlie"));
+        assertEquals("bob", spySecurityListener.createdUsers.get(0));
+        assertEquals("charlie", spySecurityListener.createdUsers.get(1));
     }
 
     @Issue("JENKINS-55307")
@@ -329,8 +333,8 @@ public class HudsonPrivateSecurityRealmTest {
         u2.setFullName("Debbie User");
         u2.save();
 
-        assertTrue(spySecurityListener.createdUsers.get(0).equals("alice"));
-        assertTrue(spySecurityListener.createdUsers.get(1).equals("debbie"));
+        assertEquals("alice", spySecurityListener.createdUsers.get(0));
+        assertEquals("debbie", spySecurityListener.createdUsers.get(1));
     }
 
     @Issue("JENKINS-55307")
@@ -344,7 +348,7 @@ public class HudsonPrivateSecurityRealmTest {
 
         securityRealm.createAccountWithHashedPassword("charlie_hashed", "#jbcrypt:" + BCrypt.hashpw("charliePassword", BCrypt.gensalt()));
 
-        assertTrue(spySecurityListener.createdUsers.get(0).equals("charlie_hashed"));
+        assertEquals("charlie_hashed", spySecurityListener.createdUsers.get(0));
     }
 
     private void createFirstAccount(String login) throws Exception {
@@ -426,12 +430,12 @@ public class HudsonPrivateSecurityRealmTest {
         private List<String> createdUsers = new ArrayList<String>();
 
         @Override
-        protected void loggedIn(@Nonnull String username) {
+        protected void loggedIn(@NonNull String username) {
             loggedInUsernames.add(username);
         }
 
         @Override
-        protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
+        protected void userCreated(@NonNull String username) { createdUsers.add(username); }
     }
 
     @Issue("SECURITY-786")

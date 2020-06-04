@@ -17,7 +17,6 @@ package hudson.util.jna;
 
 import com.sun.jna.ptr.IntByReference;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.TreeMap;
@@ -28,7 +27,7 @@ import java.util.TreeSet;
  *
  * @author Kohsuke Kawaguchi
  */
-public class RegistryKey {
+public class RegistryKey implements AutoCloseable {
     /**
      * 32bit Windows key value.
      */
@@ -65,7 +64,7 @@ public class RegistryKey {
      * @throws java.io.UnsupportedEncodingException on error
      * @return String
      */
-    private static String convertBufferToString(byte[] buf) {
+    static String convertBufferToString(byte[] buf) {
         return new String(buf, 0, buf.length - 2, StandardCharsets.UTF_16LE);
     }
 
@@ -75,7 +74,7 @@ public class RegistryKey {
      * @param buf buffer
      * @return int
      */
-    private static int convertBufferToInt(byte[] buf) {
+    static int convertBufferToInt(byte[] buf) {
         return ((buf[0] & 0xff) + ((buf[1] & 0xff) << 8) + ((buf[2] & 0xff) << 16) + ((buf[3] & 0xff) << 24));
     }
 
@@ -286,6 +285,10 @@ public class RegistryKey {
         if(handle!=0)
             Advapi32.INSTANCE.RegCloseKey(handle);
         handle = 0;
+    }
+
+    public void close() {
+        dispose();
     }
 
     //
