@@ -59,6 +59,8 @@ import org.jvnet.hudson.test.SecuredMockFolder;
 import org.jvnet.hudson.test.WorkspaceCopyFileBuilder;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -343,6 +345,25 @@ public class FingerprintTest {
             assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
             assertEquals("user1 should be able to see the job in usages", 1, fingerprint._getUsages().size());
         }
+    }
+
+    @Test
+    public void shouldDeleteFingerprint() throws IOException {
+        String id = SOME_MD5;
+        Fingerprint fingerprintSaved = new Fingerprint(new Fingerprint.BuildPtr("foo", 3),
+                "stuff&more.jar", Util.fromHexString(id));
+        fingerprintSaved.save();
+
+        Fingerprint fingerprintLoaded = Fingerprint.load(id);
+        assertThat(fingerprintLoaded, is(not(nullValue())));
+
+        Fingerprint.delete(id);
+        fingerprintLoaded = Fingerprint.load(id);
+        assertThat(fingerprintLoaded, is(nullValue()));
+
+        Fingerprint.delete(id);
+        fingerprintLoaded = Fingerprint.load(id);
+        assertThat(fingerprintLoaded, is(nullValue()));
     }
     
     @NonNull
