@@ -249,4 +249,3 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
 }
-
