@@ -28,6 +28,7 @@
 @import "./simple-page-variables.css";
 
 html {
+  color: #4a4a4a;
   color: var(--text-color);
 }
 
@@ -39,28 +40,38 @@ html {
 }
 
 .simple-page form .submit input:hover {
-  background-color: var(--btn-primary-bg-focus);
+  background-color: #3fb3f7;
+  background-color: var(--focus);
   border: solid 1px;
-  border-color: var(--btn-primary-bg-focus);
+  border-color: #3fb3f7;
+  border-color: var(--focus);
 }
 
 .simple-page form .submit input {
+  background-color: #0b6aa2;
   background-color: var(--btn-primary-bg);
   border: solid 1px;
+  border-color: #0b6aa2;
   border-color: var(--btn-primary-bg);
 }
 
+.simple-page form .submit input:focus,
 .simple-page input.normal:focus {
-  border: solid 1px;
-  border-color: var(--btn-primary-bg-focus);
+    border: solid 1px;
+    border-color: #3fb3f7;
+    border-color: var(--focus);
+    outline: 0;
 }
 
  .simple-page .danger {
   border: 1px solid;
+  border-color: #c4000a;
   border-color: var(--danger-color);
+  box-shadow: 0 0 1px #c4000a;
   box-shadow: 0 0 1px var(--danger-color);
 }
 
 .simple-page .alert {
+  color: #c4000a;
   color: var(--danger-color);
 }

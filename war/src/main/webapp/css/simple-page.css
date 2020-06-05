@@ -28,7 +28,18 @@ html {
   font-family: "LatoLatinWeb", "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 18px;
+  color: #4a4a4a;
   color: var(--text-color);
+}
+
+body {
+  background: #fff;
+  background: var(--background);
+}
+
+a {
+  color: #204a87;
+  color: var(--link-color);
 }
 
 .simple-page h1 {
@@ -54,7 +65,6 @@ html {
   -webkit-justify-content: center;
   justify-content: center;
   min-height: 90vh;
-  background: var(--background);
 }
 
 .simple-page form {
@@ -71,8 +81,11 @@ html {
   font-size: 18px;
   border-radius: 3px;
   border-width: 1px;
+  border-color: rgba(74, 74, 74, 0.25);
   border-color: var(--input-form-border);
+  background-color: #fff;
   background-color: var(--background-medium);
+  color: #4a4a4a;
   color: var(--text-color);
 }
 
@@ -97,6 +110,7 @@ html {
 .simple-page form .submit input {
   border-radius: 3px;
   font-weight: bold;
+  color: #fff;
   color: var(--btn-text-color);
   cursor: pointer;
 }
