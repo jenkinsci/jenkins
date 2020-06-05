@@ -329,9 +329,9 @@ function findFollowingTR(node, className, nodeClass) {
         // Supports plugins with custom variants of <f:entry> that call
         // findFollowingTR(element, 'validation-error-area') and haven't migrated
         // to use querySelector
-        if (className === 'validation-error-area') {
+        if (className === 'validation-error-area' || className === 'help-area') {
             var queryChildren = tr.getElementsByClassName(className);
-            if (queryChildren && (isTR(queryChildren[0]) || Element.hasClassName(queryChildren[0], className) ))
+            if (queryChildren.length > 0 && (isTR(queryChildren[0]) || Element.hasClassName(queryChildren[0], className) ))
                 return queryChildren[0];
         }
 
