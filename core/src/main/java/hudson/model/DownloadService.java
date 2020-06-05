@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
@@ -205,7 +206,9 @@ public class DownloadService {
         private volatile long lastAttempt=Long.MIN_VALUE;
 
         /**
+         * Creates a new downloadable.
          *
+         * @param id The ID to use.
          * @param url
          *      URL relative to {@link UpdateCenter#getDefaultBaseUrl()}.
          *      So if this string is "foo.json", the ultimate URL will be
@@ -213,36 +216,73 @@ public class DownloadService {
          *
          *      For security and privacy reasons, we don't allow the retrieval
          *      from random locations.
+         * @param interval The interval, in milliseconds, between attempts to update this downloadable's data.
          */
-        public Downloadable(String id, String url, long interval) {
+        public Downloadable(@NonNull String id, @NonNull String url, long interval) {
             this.id = id;
             this.url = url;
             this.interval = interval;
         }
 
+        /**
+         * Creates a new downloadable.
+         * This will generate an ID based on this downloadable's class. The URL will be set to that ID, with an added
+         * {@code .json} extension, and the default interval will be used.
+         */
         public Downloadable() {
-            this.id = getClass().getName().replace('$','.');
-            this.url = this.id+".json";
+            this.id = Downloadable.idFor(this.getClass());
+            this.url = this.id + ".json";
             this.interval = DEFAULT_INTERVAL;
         }
 
         /**
-         * Uses the class name as an ID.
+         * Creates a new downloadable.
+         * This will generate an ID based on the specified class. The URL will be set to that ID, with an added
+         * {@code .json} extension, and the default interval will be used.
+         *
+         * @param clazz The class to use to generate the ID.
          */
-        public Downloadable(Class id) {
-            this(id.getName().replace('$','.'));
+        public Downloadable(@NonNull Class<?> clazz) {
+            this(Downloadable.idFor(clazz));
         }
 
-        public Downloadable(String id) {
-            this(id,id+".json");
+        /**
+         * Creates a new downloadable with a specific ID.
+         * The URL will be set to that ID, with an added {@code .json} extension, and the default interval will be used.
+         *
+         * @param id The ID to use.
+         */
+        public Downloadable(@NonNull String id) {
+            this(id, id + ".json");
         }
 
-        public Downloadable(String id, String url) {
-            this(id,url, DEFAULT_INTERVAL);
+        /**
+         * Creates a new downloadable with a specific ID and URL. The default interval will be used.
+         *
+         * @param id  The ID to use.
+         * @param url URL relative to {@link UpdateCenter#getDefaultBaseUrl()}. So if this string is "foo.json", the
+         *            ultimate URL will be something like "http://updates.jenkins-ci.org/updates/foo.json".
+         *            <p>
+         *            For security and privacy reasons, we don't allow the retrieval from random locations.
+         */
+        public Downloadable(@NonNull String id, @NonNull String url) {
+            this(id, url, DEFAULT_INTERVAL);
         }
 
         public String getId() {
             return id;
+        }
+
+        /**
+         * Generates an ID based on a class.
+         *
+         * @param clazz The class to use to generate an ID.
+         * @return The ID generated based on the specified class.
+         *
+         * @since FIXME
+         */
+        public static String idFor(@NonNull Class<?> clazz) {
+            return clazz.getName().replace('$','.');
         }
 
         /**
@@ -411,7 +451,20 @@ public class DownloadService {
         }
 
         /**
+         * Returns the {@link Downloadable} that has an ID associated with the specified class.
+         *
+         * @param clazz The class to use to determine the downloadable's ID.
+         *
+         * @since FIXME
+         */
+        public static Downloadable get(@NonNull Class<?> clazz) {
+            return Downloadable.get(Downloadable.idFor(clazz));
+        }
+
+        /**
          * Returns the {@link Downloadable} that has the given ID.
+         *
+         * @param id The ID to look for.
          */
         public static Downloadable get(String id) {
             for (Downloadable d : all()) {
