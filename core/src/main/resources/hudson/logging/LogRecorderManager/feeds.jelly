@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <!-- list of feed links -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <div align="right">
     <l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/feed-icon.svg#RSSicon" />
     <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
