@@ -279,7 +279,7 @@ public class DownloadService {
          * @param clazz The class to use to generate an ID.
          * @return The ID generated based on the specified class.
          *
-         * @since FIXME
+         * @since TODO
          */
         public static String idFor(@NonNull Class<?> clazz) {
             return clazz.getName().replace('$','.');
@@ -455,7 +455,7 @@ public class DownloadService {
          *
          * @param clazz The class to use to determine the downloadable's ID.
          *
-         * @since FIXME
+         * @since TODO
          */
         public static Downloadable get(@NonNull Class<?> clazz) {
             return Downloadable.get(Downloadable.idFor(clazz));
