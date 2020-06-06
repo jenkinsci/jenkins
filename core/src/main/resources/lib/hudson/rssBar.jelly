@@ -27,17 +27,17 @@ THE SOFTWARE.
   <div id="rss-bar">
     <a href="${rootURL}/legend" class="rss-bar-legend-link">${%Legend}</a>
     <span class="rss-bar-item">
-      <a href="rssAll"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/feed-icon.svg#RSSicon" /></a>
+      <a href="rssAll"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px" /></a>
       <st:nbsp/>
       <a href="rssAll" class="rss-bar-item-link">Atom feed ${%for all}</a>
     </span>
     <span class="rss-bar-item">
-      <a href="rssFailed" class="rss-bar-item-icon-link"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/feed-icon.svg#RSSicon" /></a>
+      <a href="rssFailed" class="rss-bar-item-icon-link"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px" /></a>
       <st:nbsp/>
       <a href="rssFailed" class="rss-bar-item-link">Atom feed ${%for failures}</a>
     </span>
     <span class="rss-bar-item">
-      <a href="rssLatest" class="rss-bar-item-icon-link" ><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/feed-icon.svg#RSSicon" /></a>
+      <a href="rssLatest" class="rss-bar-item-icon-link" ><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px" /></a>
       <st:nbsp/>
       <a href="rssLatest" class="rss-bar-item-link">Atom feed ${%for just latest builds}</a>
     </span>
