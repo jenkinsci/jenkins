@@ -23,8 +23,23 @@
  */
 package hudson.model.labels;
 
+import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.ExtensionPoint;
+import hudson.Util;
+import hudson.model.AbstractProject;
+import hudson.model.AutoCompletionCandidates;
+import hudson.model.Job;
 import hudson.model.Label;
+import hudson.model.Messages;
+import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import jenkins.model.Jenkins;
 
 /**
  * Boolean expression of labels.
@@ -210,4 +225,158 @@ public abstract class LabelExpression extends Label {
             return LabelOperatorPrecedence.IMPLIES;
         }
     }
+
+    //region Auto-Completion and Validation
+
+    /**
+     * Utility class for taking the current input value and computing a list of potential terms to match against the
+     * list of defined labels.
+     */
+    static class AutoCompleteSeeder {
+        private String source;
+
+        AutoCompleteSeeder(String source) {
+            this.source = source;
+        }
+
+        List<String> getSeeds() {
+            ArrayList<String> terms = new ArrayList<>();
+            boolean trailingQuote = source.endsWith("\"");
+            boolean leadingQuote = source.startsWith("\"");
+            boolean trailingSpace = source.endsWith(" ");
+
+            if (trailingQuote || (trailingSpace && !leadingQuote)) {
+                terms.add("");
+            } else {
+                if (leadingQuote) {
+                    int quote = source.lastIndexOf('"');
+                    if (quote == 0) {
+                        terms.add(source.substring(1));
+                    } else {
+                        terms.add("");
+                    }
+                } else {
+                    int space = source.lastIndexOf(' ');
+                    if (space > -1) {
+                        terms.add(source.substring(space+1));
+                    } else {
+                        terms.add(source);
+                    }
+                }
+            }
+
+            return terms;
+        }
+    }
+
+    /**
+     * Plugins may want to contribute additional restrictions on the use of specific labels for specific jobs.
+     * This extension point allows such restrictions.
+     *
+     * @since FIXME
+     */
+    public static abstract class LabelValidator implements ExtensionPoint {
+
+        /**
+         * Validates the use of a label within a job context.
+         *
+         * @param job   The job that wants to restrict itself to the specified label.
+         * @param label The label that the job wants to restrict itself to.
+         * @return The validation result.
+         */
+        @NonNull
+        public abstract FormValidation check(@NonNull Job<?, ?> job, @NonNull Label label);
+
+    }
+
+    /**
+     * Generates auto-completion candidates for a (partial) label.
+     *
+     * @param label The (partial) label for which auto-completion is being requested.
+     * @return A set of auto-completion candidates.
+     * @since FIXME
+     */
+    public static AutoCompletionCandidates autoComplete(@Nullable String label) {
+        AutoCompletionCandidates c = new AutoCompletionCandidates();
+        Set<Label> labels = Jenkins.get().getLabels();
+        List<String> queries = new AutoCompleteSeeder(label).getSeeds();
+
+        for (String term : queries) {
+            for (Label l : labels) {
+                if (l.getName().startsWith(term)) {
+                    c.add(l.getName());
+                }
+            }
+        }
+        return c;
+    }
+
+    /**
+     * Validates a label expression.
+     *
+     * @param expression The expression to validate.
+     * @return The validation result.
+     * @since FIXME
+     */
+    @NonNull
+    public static FormValidation validate(@Nullable String expression) {
+        return LabelExpression.validate(expression, null);
+    }
+
+    /**
+     * Validates a label expression.
+     *
+     * @param expression The label expression to validate.
+     * @param job        The job context, if applicable; used for potential additional restrictions.
+     * @return The validation result.
+     * @since FIXME
+     */
+    // FIXME: Should the messages be moved, or kept where they are for backward compatibility?
+    @NonNull
+    public static FormValidation validate(@Nullable String expression, @CheckForNull Job<?, ?> job) {
+        if (Util.fixEmpty(expression) == null)
+            return FormValidation.ok(); // nothing typed yet
+        try {
+            Label.parseExpression(expression);
+        } catch (ANTLRException e) {
+            return FormValidation.error(e,
+                    Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
+        }
+        Jenkins j = Jenkins.get();
+        Label l = j.getLabel(expression);
+        if (l.isEmpty()) {
+            for (LabelAtom a : l.listAtoms()) {
+                if (a.isEmpty()) {
+                    LabelAtom nearest = LabelAtom.findNearest(a.getName());
+                    return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
+                }
+            }
+            return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
+        }
+        if (job != null) {
+            if (job instanceof AbstractProject) { // Use any project-oriented label validators
+                final AbstractProject<?, ?> project = (AbstractProject<?,?>) job;
+                for (AbstractProject.LabelValidator v : j.getExtensionList(AbstractProject.LabelValidator.class)) {
+                    FormValidation result = v.check(project, l);
+                    if (!FormValidation.Kind.OK.equals(result.kind)) {
+                        return result;
+                    }
+                }
+            }
+            else {
+                for (LabelValidator v : j.getExtensionList(LabelValidator.class)) {
+                    FormValidation result = v.check(job, l);
+                    if (!FormValidation.Kind.OK.equals(result.kind)) {
+                        return result;
+                    }
+                }
+            }
+        }
+        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
+                j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
+        );
+    }
+
+    //endregion
+
 }

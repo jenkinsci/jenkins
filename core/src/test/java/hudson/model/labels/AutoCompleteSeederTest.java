@@ -22,14 +22,14 @@
  *  THE SOFTWARE.
  */
 
-package hudson.model;
+package hudson.model.labels;
 
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import org.junit.runners.Parameterized;
 import org.junit.runner.RunWith;
-import hudson.model.AbstractProject.AbstractProjectDescriptor.AutoCompleteSeeder;
+import hudson.model.labels.LabelExpression.AutoCompleteSeeder;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
@@ -41,8 +41,8 @@ import static org.junit.Assert.assertEquals;
 public class AutoCompleteSeederTest {
 
     public static class TestData {
-        private String seed;
-        private List<String> expected;
+        private final String seed;
+        private final List<String> expected;
         
         public TestData(String seed, String... expected) {
             this.seed = seed;
@@ -69,8 +69,8 @@ public class AutoCompleteSeederTest {
                });
     }
 
-    private String seed;
-    private List<String> expected;
+    private final String seed;
+    private final List<String> expected;
 
     public AutoCompleteSeederTest(TestData dataSet) {
         this.seed = dataSet.seed;
@@ -79,7 +79,7 @@ public class AutoCompleteSeederTest {
 
     @Test
     public void testAutoCompleteSeeds() throws Exception {
-        AutoCompleteSeeder seeder = new AbstractProject.AbstractProjectDescriptor.AutoCompleteSeeder(seed);
+        AutoCompleteSeeder seeder = new AutoCompleteSeeder(seed);
         assertEquals(expected, seeder.getSeeds());
 
     }
