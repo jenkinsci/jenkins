@@ -23,11 +23,11 @@
  */
 package hudson.util;
 
-import static org.junit.Assert.assertArrayEquals;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -75,6 +75,14 @@ public class QuotedStringTokenizerTest {
     public void test7() {
         check("foo=\"bar\\zot\"",
               "foo=bar\\zot");
+    }
+
+    @Test
+    public void testHasMoreToken() {
+        QuotedStringTokenizer tokenizer = new QuotedStringTokenizer("");
+        assertFalse(tokenizer.hasMoreTokens());
+        tokenizer = new QuotedStringTokenizer("one");
+        assertTrue(tokenizer.hasMoreTokens());
     }
 
     private void check(String src, String... expected) {
