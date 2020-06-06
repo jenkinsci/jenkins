@@ -25,11 +25,15 @@
 package hudson.tools;
 
 import hudson.DescriptorExtensionList;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.Descriptor;
+import hudson.model.labels.LabelExpression;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.ArrayList;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Descriptor for a {@link ToolInstaller}.
@@ -60,6 +64,16 @@ public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends D
             if(d.isApplicable(type))
                 r.add(d);
         return r;
+    }
+
+    @SuppressWarnings("unused")
+    public AutoCompletionCandidates doAutoCompleteLabel(@QueryParameter String value) {
+        return LabelExpression.autoComplete(value);
+    }
+
+    @SuppressWarnings("unused")
+    public FormValidation doCheckLabel(@QueryParameter String value) {
+        return LabelExpression.validate(value);
     }
 
 }
