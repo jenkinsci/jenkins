@@ -218,16 +218,15 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 "fingerprints/" + id.substring(0,2) + '/' + id.substring(2,4) + '/' + id.substring(4) + ".xml");
     }
 
-    private static String messageOfParseException(Throwable t) {
-        if (t instanceof XmlPullParserException || t instanceof EOFException) {
-            return t.getMessage();
+    private static String messageOfParseException(Throwable throwable) {
+        if (throwable instanceof XmlPullParserException || throwable instanceof EOFException) {
+            return throwable.getMessage();
         }
-        Throwable t2 = t.getCause();
-        if (t2 != null) {
-            return messageOfParseException(t2);
-        } else {
-            return null;
+        Throwable causeOfThrowable = throwable.getCause();
+        if (causeOfThrowable != null) {
+            return messageOfParseException(causeOfThrowable);
         }
+        return null;
     }
 
     /**
