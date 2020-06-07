@@ -230,7 +230,8 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     /**
-     * Used to serialize the range sets (builds) of the fingerprint.
+     * Used to serialize the range sets (builds) of the fingerprint using commas and dashes.
+     * For e.g., if used in builds 1,2,3,5, it will be serialized to 1-3,5
      */
     private static String serialize(Fingerprint.RangeSet src) {
         StringBuilder buf = new StringBuilder(src.getRanges().size() * 10);
