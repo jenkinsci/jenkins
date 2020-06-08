@@ -41,6 +41,8 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
 import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
@@ -304,6 +306,7 @@ public final class XmlFile {
         try (InputStream in = Files.newInputStream(file.toPath())) {
             InputSource input = new InputSource(file.toURI().toASCIIString());
             input.setByteStream(in);
+            JAXP.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             JAXP.newSAXParser().parse(input,new DefaultHandler() {
                 private Locator loc;
                 @Override
