@@ -31,6 +31,9 @@ THE SOFTWARE.
   <j:set var="firstTransientBuildKey" value="${it.widget.firstTransientBuildKey}" />
   <j:set var="transitive" value="${(firstTransientBuildKey!=null and (it.widget.adapter.compare(build,firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
   <j:set var="link" value="${it.widget.baseUrl}/${build.number}/" />
+  <j:if test="${h.isUserTimeZoneOverride()}">
+    <i:setTimeZone value="${h.getUserTimeZone()}" />
+   </j:if>
   <tr class="build-row ${transitive} single-line" page-entry-id="${pageEntry.entryId}">
     <td class="build-row-cell">
       <div class="pane build-name">
