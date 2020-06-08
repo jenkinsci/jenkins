@@ -1318,7 +1318,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * malformed.
      */
     public static @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
-        long start=0;
+        long start = 0;
         if(logger.isLoggable(Level.FINE)) {
             start = System.currentTimeMillis();
         }
