@@ -23,6 +23,7 @@
  */
 package jenkins.fingerprints;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
@@ -58,7 +59,7 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     /**
      * Returns the Fingerprint with the given unique ID.
      */
-    public abstract Fingerprint load(String id) throws IOException;
+    public abstract @CheckForNull Fingerprint load(String id) throws IOException;
 
     /**
      * Deletes the Fingerprint with the given unique ID.
