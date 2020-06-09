@@ -31,7 +31,7 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.AutoCompletionCandidates;
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.model.Label;
 import hudson.model.Messages;
 import hudson.util.FormValidation;
@@ -270,7 +270,7 @@ public abstract class LabelExpression extends Label {
     }
 
     /**
-     * Plugins may want to contribute additional restrictions on the use of specific labels for specific jobs.
+     * Plugins may want to contribute additional restrictions on the use of specific labels for specific context items.
      * This extension point allows such restrictions.
      *
      * @since TODO
@@ -278,14 +278,14 @@ public abstract class LabelExpression extends Label {
     public static abstract class LabelValidator implements ExtensionPoint {
 
         /**
-         * Validates the use of a label within a job context.
+         * Validates the use of a label within a particular context.
          *
-         * @param job   The job that wants to restrict itself to the specified label.
+         * @param item  The context item to be restricted by the label.
          * @param label The label that the job wants to restrict itself to.
          * @return The validation result.
          */
         @NonNull
-        public abstract FormValidation check(@NonNull Job<?, ?> job, @NonNull Label label);
+        public abstract FormValidation check(@NonNull Item item, @NonNull Label label);
 
     }
 
@@ -300,7 +300,6 @@ public abstract class LabelExpression extends Label {
         AutoCompletionCandidates c = new AutoCompletionCandidates();
         Set<Label> labels = Jenkins.get().getLabels();
         List<String> queries = new AutoCompleteSeeder(label).getSeeds();
-
         for (String term : queries) {
             for (Label l : labels) {
                 if (l.getName().startsWith(term)) {
@@ -327,22 +326,23 @@ public abstract class LabelExpression extends Label {
      * Validates a label expression.
      *
      * @param expression The label expression to validate.
-     * @param job        The job context, if applicable; used for potential additional restrictions.
+     * @param item       The context item (like a job or a folder), if applicable; used for potential additional
+     *                   restrictions via {@link LabelValidator} instances.
      * @return The validation result.
      * @since TODO
      */
     // FIXME: Should the messages be moved, or kept where they are for backward compatibility?
     @NonNull
-    public static FormValidation validate(@Nullable String expression, @CheckForNull Job<?, ?> job) {
-        if (Util.fixEmpty(expression) == null)
-            return FormValidation.ok(); // nothing typed yet
+    public static FormValidation validate(@Nullable String expression, @CheckForNull Item item) {
+        if (Util.fixEmptyAndTrim(expression) == null)
+            return FormValidation.ok();
         try {
             Label.parseExpression(expression);
         } catch (ANTLRException e) {
             return FormValidation.error(e,
                     Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
         }
-        Jenkins j = Jenkins.get();
+        final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);
         if (l.isEmpty()) {
             for (LabelAtom a : l.listAtoms()) {
@@ -353,9 +353,9 @@ public abstract class LabelExpression extends Label {
             }
             return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
         }
-        if (job != null) {
-            if (job instanceof AbstractProject) { // Use any project-oriented label validators
-                final AbstractProject<?, ?> project = (AbstractProject<?,?>) job;
+        if (item != null) {
+            if (item instanceof AbstractProject) { // Use any project-oriented label validators
+                final AbstractProject<?, ?> project = (AbstractProject<?,?>) item;
                 for (AbstractProject.LabelValidator v : j.getExtensionList(AbstractProject.LabelValidator.class)) {
                     FormValidation result = v.check(project, l);
                     if (!FormValidation.Kind.OK.equals(result.kind)) {
@@ -363,12 +363,10 @@ public abstract class LabelExpression extends Label {
                     }
                 }
             }
-            else {
-                for (LabelValidator v : j.getExtensionList(LabelValidator.class)) {
-                    FormValidation result = v.check(job, l);
-                    if (!FormValidation.Kind.OK.equals(result.kind)) {
-                        return result;
-                    }
+            for (LabelValidator v : j.getExtensionList(LabelValidator.class)) {
+                FormValidation result = v.check(item, l);
+                if (!FormValidation.Kind.OK.equals(result.kind)) {
+                    return result;
                 }
             }
         }
