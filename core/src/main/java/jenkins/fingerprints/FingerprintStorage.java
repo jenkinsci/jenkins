@@ -46,7 +46,7 @@ public abstract class FingerprintStorage implements ExtensionPoint {
      */
     public static FingerprintStorage get() {
         String fingerprintStorageEngine = SystemProperties.getString("FingerprintStorageEngine",
-                "jenkins.fingerprints.FileFingerprintStorage");
+                FileFingerprintStorage.class.getName());
         return ExtensionList.lookup(FingerprintStorage.class).getDynamic(fingerprintStorageEngine);
     }
 
