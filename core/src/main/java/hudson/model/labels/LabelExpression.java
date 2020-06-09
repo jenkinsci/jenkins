@@ -275,7 +275,7 @@ public abstract class LabelExpression extends Label {
      *
      * @since TODO
      */
-    public static abstract class LabelValidator implements ExtensionPoint {
+    public interface LabelValidator extends ExtensionPoint {
 
         /**
          * Validates the use of a label within a particular context.
@@ -285,7 +285,7 @@ public abstract class LabelExpression extends Label {
          * @return The validation result.
          */
         @NonNull
-        public abstract FormValidation check(@NonNull Item item, @NonNull Label label);
+        FormValidation check(@NonNull Item item, @NonNull Label label);
 
     }
 
