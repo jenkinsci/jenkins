@@ -35,7 +35,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.EOFException;
@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  *
  * @author Sumit Sarin
  */
-@Restricted(Beta.class)
+@Restricted(NoExternalUse.class)
 @Extension
 public class FileFingerprintStorage extends FingerprintStorage {
 
