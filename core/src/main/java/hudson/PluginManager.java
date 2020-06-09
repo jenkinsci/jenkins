@@ -1918,6 +1918,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         final Map<String,VersionNumber> requestedPlugins = new TreeMap<>();
         try {
             SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+            // this is no real issue, it is just a false positive, since jenkins handles it differently
+            // for more information check: https://github.com/jenkinsci/jenkins/pull/4779
             parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             parserFactory.newSAXParser().parse(configXml, new DefaultHandler() {
                 @Override public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {

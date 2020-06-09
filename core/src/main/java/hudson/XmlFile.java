@@ -306,6 +306,8 @@ public final class XmlFile {
         try (InputStream in = Files.newInputStream(file.toPath())) {
             InputSource input = new InputSource(file.toURI().toASCIIString());
             input.setByteStream(in);
+            // this is no real issue, it is just a false positive, since jenkins handles it differently
+            // for more information check: https://github.com/jenkinsci/jenkins/pull/4779
             JAXP.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             JAXP.newSAXParser().parse(input,new DefaultHandler() {
                 private Locator loc;
