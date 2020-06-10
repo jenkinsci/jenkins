@@ -95,8 +95,10 @@
     color: #204A87;
     color: var(--link-color);
     text-decoration: underline;
+    text-decoration: var(--link-text-decoration);
     padding: 0;
-    font-weight: normal;
+    font-weight: 600;
+    font-weight: var(--link-font-weight);
 }
 #visible-am-container #visible-am-list a:visited {
     color: #5c3566;
@@ -107,7 +109,7 @@
 #visible-am-container #visible-am-list a:active {
     color: #5c3566;
     color: var(--link-color);
-    text-decoration-color: #5c3566;
     background-color: transparent;
     text-decoration: underline;
+    text-decoration: var(--link-text-decoration--hover);
 }

@@ -129,6 +129,10 @@ a {
   .link();
 }
 
+p a {
+  text-decoration: underline;
+}
+
 a.lowkey:link {
   text-decoration: none;
   color: inherit;
@@ -299,6 +303,7 @@ pre.console {
   padding: 7px 10px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+  font-weight: normal;
 }
 .tabBar .tab a:hover {
   background: var(--tab-bar-bg-color--hover);
@@ -740,6 +745,10 @@ LABEL.attach-previous {
   word-break: break-word;
 }
 
+.help a {
+  text-decoration: underline;
+}
+
 .help .from-plugin {
     text-align: right;
     color: #666;
@@ -1150,9 +1159,13 @@ TABLE.fileList TD.fileSize {
 table.sortable a.sortheader {
   text-decoration: none;
   display: block;
+  color: var(--pane-text-color);
+  font-weight: bold;
 }
 table.sortable span.sortarrow {
   text-decoration: none;
+  color: var(--pane-text-color);
+  font-weight: bold;
 }
 
 
@@ -1792,6 +1805,7 @@ body.no-sticker #bottom-sticker {
     margin: 0;
     text-decoration: none !important;
     color: var(--text-color);
+    font-weight: normal;
     outline: 0;
 }
 
