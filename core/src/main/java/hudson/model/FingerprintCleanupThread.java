@@ -76,7 +76,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     public void execute(TaskListener listener) {
         Object fingerprintStorage = FingerprintStorage.get();
-        if (fingerprintStorage instanceof FileFingerprintStorage) {
+        if (!(fingerprintStorage instanceof FileFingerprintStorage)) {
             LOGGER.fine("External fingerprint storage is configured. Skipping execution");
             return;
         }
