@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Functions;
 import jenkins.fingerprints.FileFingerprintStorage;
+import jenkins.fingerprints.FingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
@@ -36,6 +37,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -54,6 +56,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
+    private static final Logger LOGGER = Logger.getLogger(FingerprintCleanupThread.class.getName());
 
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
@@ -72,6 +75,12 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     public void execute(TaskListener listener) {
+        Object fingerprintStorage = FingerprintStorage.get();
+        if (fingerprintStorage instanceof FileFingerprintStorage) {
+            LOGGER.fine("External fingerprint storage is configured. Skipping execution");
+            return;
+        }
+
         int numFiles = 0;
 
         File root = new File(getRootDir(), FINGERPRINTS_DIR_NAME);
