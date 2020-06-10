@@ -1921,7 +1921,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          *
          * @param project May be specified to perform project specific validation.
          * @since 1.590
-         * @deprecated Use {@link LabelExpression#validate(String, Job)} instead.
+         * @deprecated Use {@link LabelExpression#validate(String, Item)} instead.
          */
         @Deprecated
         public static @NonNull FormValidation validateLabelExpression(String value, @CheckForNull AbstractProject<?, ?> project) {
