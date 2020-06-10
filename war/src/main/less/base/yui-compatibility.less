@@ -161,21 +161,23 @@ DIV.yahooTree td {
   background-image: none; //Do not use background image, use CSS arrow instead
 
   //Center the CSS arrow
-  display: inline-block;
-  display: inline-flex;
+  position: relative;
   align-items: center;
   justify-content: center;
 
   &:after {
     /* Right arrow */
     content: "";
-    border-left: 0.3em solid #333;
-    border-left: 0.3em solid var(--text-color);
-    border-top: 0.3em solid transparent;
-    border-bottom: 0.3em solid transparent;
+    border-left: 0.35em solid #333;
+    border-left: 0.35em solid var(--text-color);
+    border-top: 0.35em solid transparent;
+    border-bottom: 0.35em solid transparent;
     border-right: 0;
 
-    position: relative;
-    right: 0.3em;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0.75em;
+    display: inline-block;
   }
 }
