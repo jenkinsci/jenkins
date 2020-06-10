@@ -58,11 +58,13 @@ public abstract class FingerprintStorage implements ExtensionPoint {
 
     /**
      * Returns the Fingerprint with the given unique ID.
+     * The unique ID for a fingerprint is defined by {@link Fingerprint#getHashString()}.
      */
     public abstract @CheckForNull Fingerprint load(String id) throws IOException;
 
     /**
      * Deletes the Fingerprint with the given unique ID.
+     * The unique ID for a fingerprint is defined by {@link Fingerprint#getHashString()}.
      */
     public abstract void delete(String id) throws IOException;
 
