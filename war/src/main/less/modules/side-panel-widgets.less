@@ -66,21 +66,8 @@
 #side-panel .pane-header a,
 #side-panel .pane-footer a,
 #side-panel .pane-content a {
-  &:link,
-  &:visited {
-    color: var(--link-dark-color);
-  }
-
-  &:focus,
-  &:hover {
-    color: var(--link-dark-color--hover);
-    text-decoration: underline;
-  }
-
-  &:active {
-    color: var(--link-dark-color--active);
-    text-decoration: underline;
-  }
+  .link-dark();
+  text-decoration: underline;
 }
 
 #side-panel .pane-content a {
