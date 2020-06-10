@@ -65,6 +65,7 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     /**
      * Deletes the Fingerprint with the given unique ID.
      * The unique ID for a fingerprint is defined by {@link Fingerprint#getHashString()}.
+     * TODO: Needed for external storage fingerprint cleanup.
      */
     public abstract void delete(String id) throws IOException;
 
