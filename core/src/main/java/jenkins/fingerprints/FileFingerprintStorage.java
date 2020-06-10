@@ -204,6 +204,13 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     /**
+     * Returns true if there's some data in the local fingerprint database.
+     */
+    public boolean isReady() {
+        return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
+    }
+
+    /**
      * The file we save our configuration.
      */
     private static @NonNull XmlFile getConfigFile(@NonNull File file) {

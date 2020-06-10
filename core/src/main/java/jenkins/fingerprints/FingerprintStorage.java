@@ -68,4 +68,9 @@ public abstract class FingerprintStorage implements ExtensionPoint {
      */
     public abstract void delete(String id) throws IOException;
 
+    /**
+     * Returns true if there's some data in the fingerprint database.
+     */
+    public abstract boolean isReady();
+
 }
