@@ -147,13 +147,13 @@ public abstract class SU {
                 return newLocalChannel();
 
             String javaExe = System.getProperty("java.home") + "/bin/java";
-            File slaveJar = Which.jarFile(Launcher.class);
+            File agentJar = Which.jarFile(Launcher.class);
 
             ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
-            if(slaveJar.isFile())
-                args.add("-jar").add(slaveJar);
+            if(agentJar.isFile())
+                args.add("-jar").add(agentJar);
             else // in production code this never happens, but during debugging this is convenient    
-                args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
+                args.add("-cp").add(agentJar).add(hudson.remoting.Launcher.class.getName());
 
             if (Util.fixEmptyAndTrim(rootPassword) == null) {
                 // try sudo, in the hope that the user has the permission to do so without password

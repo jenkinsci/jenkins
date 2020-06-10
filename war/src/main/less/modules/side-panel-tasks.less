@@ -5,10 +5,7 @@
   margin-bottom: 20px;
   display: inline-block;
 
-  // The task list is touching the side of the screen. This should be removed
-  // once .side-panel loses it's padding.
-  width: calc(100% + 30px);
-  margin-left: -15px;
+  width: 100%;
 }
 
 #tasks .task {
@@ -111,10 +108,10 @@
 }
 .subtasks .task {
   &:first-of-type {
-    border-top: 2px solid #EAEFF2;
+    border-top: 2px solid #eaeff2;
   }
   &:last-of-type {
-    border-bottom: 2px solid #EAEFF2;
+    border-bottom: 2px solid #eaeff2;
   }
 }
 // Some styles should not be applied to tasks or subtasks in nested levels,

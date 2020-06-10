@@ -1700,7 +1700,7 @@ public class Util {
      * because Jenkins itself has those files locked "open", and even then it
      * should only be used on agents with relatively few executors (because the
      * garbage collection can impact the performance of all job executors on
-     * that slave).<br/>
+     * that agent).<br/>
      * i.e. Setting this flag is a act of last resort - it is <em>not</em>
      * recommended, and should not be used on the main Jenkins server
      * unless you can tolerate the performance impact.
