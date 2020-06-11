@@ -317,7 +317,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
         }
         
-        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
+        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on an agent
             decorate(con);
         }
 
