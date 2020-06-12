@@ -61,12 +61,6 @@
     margin-bottom: 4px;
 }
 
-.manage-option:hover {
-    border: 1px solid var(--manage-option-border-color);
-    border-radius: 3px;
-    background-color: var(--manage-option-bg-color--hover);
-}
-
 .manage-option dl {
     padding: 0;
     margin: 0 0 0 62px;
@@ -90,7 +84,20 @@
     margin: 0;
     text-decoration: none !important;
     color: var(--text-color);
-    outline: 0;
+    height: 100%;
+
+    &:hover,
+    &:focus {
+      background-color: var(--manage-option-bg-color--hover);
+    }
+
+    &:focus {
+      outline-color: var(--focus);
+    }
+
+    &:active {
+      background-color: var(--manage-option-bg-color--active);
+    }
 }
 
 .manage-option .icon {
