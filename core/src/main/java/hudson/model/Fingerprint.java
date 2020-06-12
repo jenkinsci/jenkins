@@ -1255,9 +1255,8 @@ public class Fingerprint implements ModelObject, Saveable {
         // TODO: Consider improving Saveable Listener API: https://issues.jenkins-ci.org/browse/JENKINS-62543
         FingerprintStorage.get().save(this);
 
-        if(logger.isLoggable(Level.FINE)) {
+        if(logger.isLoggable(Level.FINE))
             logger.fine("Saving fingerprint " + getHashString() + " took " + (System.currentTimeMillis() - start) + "ms");
-        }
     }
 
     /**
