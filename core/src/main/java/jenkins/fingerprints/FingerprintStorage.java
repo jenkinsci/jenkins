@@ -35,6 +35,8 @@ import org.kohsuke.accmod.Restricted;
 
 /**
  * Pluggable fingerprint storage API for fingerprints.
+ * Note: The ID supplied as arguments in various methods to uniquely identify fingerprints should not contain the
+ * character '|'.
  *
  * @author Sumit Sarin
  */
