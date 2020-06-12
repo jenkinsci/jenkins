@@ -30,7 +30,6 @@ import hudson.ExtensionPoint;
 import java.io.IOException;
 
 import hudson.model.Fingerprint;
-import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
 
