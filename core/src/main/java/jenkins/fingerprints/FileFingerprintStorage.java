@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * @author Sumit Sarin
  */
 @Restricted(NoExternalUse.class)
-@Extension
+@Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
     private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
