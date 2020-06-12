@@ -1247,7 +1247,7 @@ public class Fingerprint implements ModelObject, Saveable {
             return;
         }
 
-        long start = 0;
+        long start=0;
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();
 
