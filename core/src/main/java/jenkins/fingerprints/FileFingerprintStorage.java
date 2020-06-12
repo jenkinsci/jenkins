@@ -83,7 +83,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
             Fingerprint f = (Fingerprint) loaded;
             return f;
         } catch (IOException e) {
-            if(file.exists() && file.length()==0) {
+            if(file.exists() && file.length() == 0) {
                 // Despite the use of AtomicFile, there are reports indicating that people often see
                 // empty XML file, presumably either due to file system corruption (perhaps by sudden
                 // power loss, etc.) or abnormal program termination.
