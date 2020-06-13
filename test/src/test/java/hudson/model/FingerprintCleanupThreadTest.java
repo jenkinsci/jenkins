@@ -55,7 +55,7 @@ public class FingerprintCleanupThreadTest {
     private Path fpFile;
 
     @Rule
-    public JenkinsRule j = new JenkinsRule();
+    public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Test
     public void testDoesNotLogUnimportantExcessiveLogMessage() throws IOException {
