@@ -68,14 +68,40 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * Called when a segment of a build is started that is to be enhanced with this wrapper.
      * @param context a way of collecting modifications to the environment for nested steps
      * @param build a build being run
-     * @param workspace a workspace of the build
-     * @param launcher a way to start commands
+     * @param workspace a workspace of the build; may be {@code null} unless {@link #requiresWorkspace()} returns {@code true} (the default)
+     * @param launcher a way to start commands; may be {@code null} unless {@link #requiresLauncher()} returns {@code true} (the default)
      * @param listener a way to report progress
      * @param initialEnvironment the environment variables set at the outset
      * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
      */
-    public abstract void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
+    public abstract void setUp(@NonNull Context context, @NonNull Run<?,?> build, @CheckForNull FilePath workspace, @CheckForNull Launcher launcher, @NonNull TaskListener listener, @NonNull EnvVars initialEnvironment) throws IOException, InterruptedException;
+
+    /**
+     * Indicates whether or not this wrapper requires a launcher.
+     * <p>
+     * If this return {@code false}, this means that {@link #setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)}
+     * will accept {@code null} for its {@code launcher} parameter.
+     *
+     * @return {@code true} when this wrapper requires a launcher; {@code false} otherwise.
+     * @since TODO
+     */
+    public boolean requiresLauncher() {
+        return true;
+    }
+
+    /**
+     * Indicates whether or not this wrapper requires a workspace.
+     * <p>
+     * If this return {@code false}, this means that {@link #setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)}
+     * will accept {@code null} for its {@code workspace} parameter.
+     *
+     * @return {@code true} when this wrapper requires a workspace; {@code false} otherwise.
+     * @since TODO
+     */
+    public boolean requiresWorkspace() {
+        return true;
+    }
 
     /**
      * Parameter passed to {@link #setUp} to allow an implementation to specify its behavior after the initial setup.
@@ -120,13 +146,39 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         /**
          * Attempt to clean up anything that was done in the initial setup.
          * @param build a build being run
-         * @param workspace a workspace of the build
-         * @param launcher a way to start commands
+         * @param workspace a workspace of the build; may be {@code null} unless {@link #requiresWorkspace()} returns {@code true} (the default)
+         * @param launcher a way to start commands; may be {@code null} unless {@link #requiresLauncher()} returns {@code true} (the default)
          * @param listener a way to report progress
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
-        public abstract void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+        public abstract void tearDown(@NonNull Run<?,?> build, @CheckForNull FilePath workspace, @CheckForNull Launcher launcher, @NonNull TaskListener listener) throws IOException, InterruptedException;
+
+        /**
+         * Indicates whether or not this wrapper callback requires a launcher.
+         * <p>
+         * If this return {@code false}, this means that {@link #tearDown(Run, FilePath, Launcher, TaskListener)}
+         * will accept {@code null} for its {@code launcher} parameter.
+         *
+         * @return {@code true} when this wrapper callback requires a launcher; {@code false} otherwise.
+         * @since TODO
+         */
+        public boolean requiresLauncher() {
+            return true;
+        }
+
+        /**
+         * Indicates whether or not this wrapper callback requires a workspace.
+         * <p>
+         * If this return {@code false}, this means that {@link #tearDown(Run, FilePath, Launcher, TaskListener)}
+         * will accept {@code null} for its {@code workspace} parameter.
+         *
+         * @return {@code true} when this wrapper callback requires a workspace; {@code false} otherwise.
+         * @since TODO
+         */
+        public boolean requiresWorkspace() {
+            return true;
+        }
     }
 
     /**
@@ -138,7 +190,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         return false;
     }
 
-    @Override public final Environment setUp(AbstractBuild build, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    @Override public final Environment setUp(@NonNull AbstractBuild build, final @CheckForNull Launcher launcher, @NonNull BuildListener listener) throws IOException, InterruptedException {
         if (runPreCheckout()) {
             return new Environment() {};
         } else {
@@ -148,7 +200,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
     }
 
-    @Override public final void preCheckout(AbstractBuild build, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    @Override public final void preCheckout(@NonNull AbstractBuild build, final @CheckForNull Launcher launcher, @NonNull BuildListener listener) throws IOException, InterruptedException {
         if (runPreCheckout()) {
             final Context c = new Context();
             setUp(c, build, build.getWorkspace(), launcher, listener, build.getEnvironment(listener));
@@ -157,9 +209,9 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     }
 
     private class EnvironmentWrapper extends Environment {
-        private final Context c;
-        private final Launcher launcher;
-        EnvironmentWrapper(Context c, Launcher launcher) {
+        private final @NonNull Context c;
+        private final @CheckForNull Launcher launcher;
+        EnvironmentWrapper(@NonNull Context c, @CheckForNull Launcher launcher) {
             this.c = c;
             this.launcher = launcher;
         }
@@ -170,7 +222,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
                 env.putAll(c.env);
             }
         }
-        @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+        @Override public boolean tearDown(@NonNull AbstractBuild build, @NonNull BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
                 c.disposer.tearDown(build, build.getWorkspace(), launcher, listener);
             }
