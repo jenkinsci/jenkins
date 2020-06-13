@@ -24,6 +24,7 @@
 
 package jenkins.tasks;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -77,15 +78,15 @@ public interface SimpleBuildStep extends BuildStep {
     /**
      * Run this step.
      * @param run a build this is running as a part of
-     * @param workspace a workspace to use for any file operations
-     * @param launcher a way to start processes
+     * @param workspace a workspace to use for any file operations; may be {@code null}, unless {@link #requiresWorkspace()} returns {@code true}
+     * @param launcher a way to start processes; may be {@code null}, unless {@link #requiresLauncher()} returns {@code true}
      * @param listener a place to send output
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
      * @deprecated Use {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener) instead.}
      */
     @Deprecated
-    default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher,
+    default void perform(@NonNull Run<?, ?> run, @CheckForNull FilePath workspace, @CheckForNull Launcher launcher,
                          @NonNull TaskListener listener) throws InterruptedException, IOException {
         // No additional environment available; just use that from the Run.
         this.perform(run, workspace, run.getEnvironment(listener), launcher, listener);
@@ -94,15 +95,15 @@ public interface SimpleBuildStep extends BuildStep {
     /**
      * Run this step.
      * @param run a build this is running as a part of
-     * @param workspace a workspace to use for any file operations
+     * @param workspace a workspace to use for any file operations; may be {@code null}, unless {@link #requiresWorkspace()} returns {@code true}
      * @param env environment variables applicable to this step
-     * @param launcher a way to start processes
+     * @param launcher a way to start processes; may be {@code null}, unless {@link #requiresLauncher()} returns {@code true}
      * @param listener a place to send output
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
      * @since TODO
      */
-    default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher,
+    default void perform(@NonNull Run<?, ?> run, @CheckForNull FilePath workspace, @NonNull EnvVars env, @CheckForNull Launcher launcher,
                          @NonNull TaskListener listener) throws InterruptedException, IOException {
         // If this is called, this must be an implementer of the previous API, in which case we call that, discarding
         // the environment we were given.
@@ -113,6 +114,32 @@ public interface SimpleBuildStep extends BuildStep {
         } else {
             throw new AbstractMethodError();
         }
+    }
+
+    /**
+     * Indicates whether or not this step requires a launcher.
+     * <p>
+     * If this return {@code false}, this means that {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)}
+     * will accept {@code null} for its {@code launcher} parameter.
+     *
+     * @return {@code true} when this step requires a launcher; {@code false} otherwise.
+     * @since TODO
+     */
+    default boolean requiresLauncher() {
+        return true;
+    }
+
+    /**
+     * Indicates whether or not this step requires a workspace.
+     * <p>
+     * If this return {@code false}, this means that {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)}
+     * will accept {@code null} for its {@code workspace} parameter.
+     *
+     * @return {@code true} when this step requires a workspace; {@code false} otherwise.
+     * @since TODO
+     */
+    default boolean requiresWorkspace() {
+        return true;
     }
 
     /**
