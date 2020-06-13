@@ -200,6 +200,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         // failing to record fingerprints is an error but not fatal
     }
 
+    @Override
+    public boolean requiresLauncher() {
+        return false;
+    }
+
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
