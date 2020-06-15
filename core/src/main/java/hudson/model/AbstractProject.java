@@ -2048,7 +2048,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This extension point allows such restrictions.
      *
      * @since 1.540
-     * @deprecated Use {@link LabelExpression.LabelValidator} instead.
+     * @deprecated Use {@link hudson.model.labels.LabelValidator} instead.
      */
     @Deprecated
     public static abstract class LabelValidator implements ExtensionPoint {
