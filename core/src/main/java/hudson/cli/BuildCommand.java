@@ -134,9 +134,6 @@ public class BuildCommand extends CLICommand {
 
                 // not passed in use default
                 ParameterValue defaultValue = pd.getDefaultParameterValue();
-                if (defaultValue == null) {
-                    throw new CmdLineException(null, String.format("No default value for the parameter '%s'.",pd.getName()));
-                }
                 values.add(defaultValue);
             }
 
