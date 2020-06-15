@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.junit.runners.Parameterized;
 import org.junit.runner.RunWith;
-import hudson.model.labels.LabelExpression.AutoCompleteSeeder;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
@@ -38,7 +37,7 @@ import static org.junit.Assert.assertEquals;
  * @author dty
  */
 @RunWith(Parameterized.class)
-public class AutoCompleteSeederTest {
+public class LabelAutoCompleteSeederTest {
 
     public static class TestData {
         private final String seed;
@@ -72,14 +71,14 @@ public class AutoCompleteSeederTest {
     private final String seed;
     private final List<String> expected;
 
-    public AutoCompleteSeederTest(TestData dataSet) {
+    public LabelAutoCompleteSeederTest(TestData dataSet) {
         this.seed = dataSet.seed;
         this.expected = dataSet.expected;
     }
 
     @Test
     public void testAutoCompleteSeeds() throws Exception {
-        AutoCompleteSeeder seeder = new AutoCompleteSeeder(seed);
+        LabelAutoCompleteSeeder seeder = new LabelAutoCompleteSeeder(seed);
         assertEquals(expected, seeder.getSeeds());
 
     }

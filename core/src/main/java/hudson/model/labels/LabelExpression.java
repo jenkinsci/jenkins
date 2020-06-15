@@ -35,7 +35,6 @@ import hudson.model.Label;
 import hudson.model.Messages;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -228,57 +227,17 @@ public abstract class LabelExpression extends Label {
     //region Auto-Completion and Validation
 
     /**
-     * Utility class for taking the current input value and computing a list of potential terms to match against the
-     * list of defined labels.
-     */
-    static class AutoCompleteSeeder {
-        private String source;
-
-        AutoCompleteSeeder(String source) {
-            this.source = source;
-        }
-
-        List<String> getSeeds() {
-            ArrayList<String> terms = new ArrayList<>();
-            boolean trailingQuote = source.endsWith("\"");
-            boolean leadingQuote = source.startsWith("\"");
-            boolean trailingSpace = source.endsWith(" ");
-
-            if (trailingQuote || (trailingSpace && !leadingQuote)) {
-                terms.add("");
-            } else {
-                if (leadingQuote) {
-                    int quote = source.lastIndexOf('"');
-                    if (quote == 0) {
-                        terms.add(source.substring(1));
-                    } else {
-                        terms.add("");
-                    }
-                } else {
-                    int space = source.lastIndexOf(' ');
-                    if (space > -1) {
-                        terms.add(source.substring(space+1));
-                    } else {
-                        terms.add(source);
-                    }
-                }
-            }
-
-            return terms;
-        }
-    }
-
-    /**
      * Generates auto-completion candidates for a (partial) label.
      *
      * @param label The (partial) label for which auto-completion is being requested.
      * @return A set of auto-completion candidates.
      * @since TODO
      */
+    @NonNull
     public static AutoCompletionCandidates autoComplete(@Nullable String label) {
         AutoCompletionCandidates c = new AutoCompletionCandidates();
         Set<Label> labels = Jenkins.get().getLabels();
-        List<String> queries = new AutoCompleteSeeder(label).getSeeds();
+        List<String> queries = new LabelAutoCompleteSeeder(Util.fixNull(label)).getSeeds();
         for (String term : queries) {
             for (Label l : labels) {
                 if (l.getName().startsWith(term)) {
