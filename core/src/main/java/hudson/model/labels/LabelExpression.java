@@ -278,7 +278,7 @@ public abstract class LabelExpression extends Label {
             Label.parseExpression(expression);
         } catch (ANTLRException e) {
             return FormValidation.error(e,
-                    Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
+                    Messages.LabelExpression_InvalidBooleanExpression(e.getMessage()));
         }
         final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);
@@ -286,10 +286,10 @@ public abstract class LabelExpression extends Label {
             for (LabelAtom a : l.listAtoms()) {
                 if (a.isEmpty()) {
                     LabelAtom nearest = LabelAtom.findNearest(a.getName());
-                    return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
+                    return FormValidation.warning(Messages.LabelExpression_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
                 }
             }
-            return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
+            return FormValidation.warning(Messages.LabelExpression_NoMatch());
         }
         if (item != null) {
             if (item instanceof AbstractProject) { // Use any project-oriented label validators
@@ -308,7 +308,7 @@ public abstract class LabelExpression extends Label {
                 }
             }
         }
-        return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
+        return FormValidation.okWithMarkup(Messages.LabelExpression_LabelLink(
                 j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
         );
     }
