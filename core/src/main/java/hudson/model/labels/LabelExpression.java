@@ -292,13 +292,13 @@ public abstract class LabelExpression extends Label {
             return FormValidation.warning(Messages.LabelExpression_NoMatch());
         }
         if (item != null) {
-            if (item instanceof AbstractProject) { // Use any project-oriented label validators
-                final AbstractProject<?, ?> project = (AbstractProject<?,?>) item;
-                for (AbstractProject.LabelValidator v : j.getExtensionList(AbstractProject.LabelValidator.class)) {
-                    FormValidation result = v.check(project, l);
-                    if (!FormValidation.Kind.OK.equals(result.kind)) {
-                        return result;
-                    }
+            // Use the project-oriented validators (including any that might implement checkItem to support non-Project
+            // items too).
+            // FIXME: Perhaps these should aggregate their errors/warnings?
+            for (AbstractProject.LabelValidator v : j.getExtensionList(AbstractProject.LabelValidator.class)) {
+                FormValidation result = v.checkItem(item, l);
+                if (!FormValidation.Kind.OK.equals(result.kind)) {
+                    return result;
                 }
             }
             for (LabelValidator v : j.getExtensionList(LabelValidator.class)) {

@@ -2052,6 +2052,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Deprecated
     public static abstract class LabelValidator implements ExtensionPoint {
+
         /**
          * Check the use of the label within the specified context.
          *
@@ -2061,6 +2062,27 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          */
         @NonNull
         public abstract FormValidation check(@NonNull AbstractProject<?, ?> project, @NonNull Label label);
+
+        /**
+         * Validates the use of a label within a particular context.
+         * <p>
+         * This method exists to allow plugins to implement an override for it, enabling checking in non-AbstractProject
+         * contexts without needing to update their Jenkins dependency (and using the new LabelValidator instead).
+         *
+         * @param item  The context item to be restricted by the label.
+         * @param label The label that the job wants to restrict itself to.
+         * @return The validation result.
+         *
+         * @since TODO
+         */
+        @NonNull
+        public FormValidation checkItem(@NonNull Item item, @NonNull Label label) {
+            if (item instanceof AbstractProject<?, ?>) {
+                return this.check((AbstractProject<?, ?>) item, label);
+            }
+            return FormValidation.ok();
+        }
+
     }
 
 }
