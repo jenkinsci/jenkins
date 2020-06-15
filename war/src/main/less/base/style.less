@@ -1380,6 +1380,10 @@ TEXTAREA.rich-editor {
     color: #888a85;
 }
 
+#plugins .excerpt a {
+  text-decoration: underline;
+}
+
 /*
  * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299,
  *                  remove once there are no more dependencies
@@ -1654,6 +1658,16 @@ select.select-ajax-pending {
     border-radius: 4px;
 }
 
+.alert a {
+  text-decoration: underline;
+
+  &:hover,
+  &:focus,
+  &:active {
+    text-decoration: underline;
+  }
+}
+
 .alert-info {
   color: var(--alert-info-color-call-out);
   background-color: var(--alert-info-bg-color-call-out);
@@ -1758,7 +1772,7 @@ body.no-sticker #bottom-sticker {
 }
 
 .manage-messages .alert a:hover {
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .manage-messages .alert form {

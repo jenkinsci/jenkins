@@ -95,7 +95,6 @@
     color: #204A87;
     color: var(--link-color);
     text-decoration: underline;
-    text-decoration: var(--link-text-decoration);
     padding: 0;
     font-weight: 600;
     font-weight: var(--link-font-weight);
