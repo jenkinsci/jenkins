@@ -7,15 +7,27 @@ import java.util.List;
 /**
  * Utility class for taking the current input value and computing a list of potential terms to match against the
  * list of defined labels.
+ *
+ * @since TODO
  */
 public class LabelAutoCompleteSeeder {
 
     private final String source;
 
+    /**
+     * Creates a new auto-complete seeder for labels.
+     *
+     * @param source The (partial) label expression to use as the source..
+     */
     LabelAutoCompleteSeeder(@NonNull String source) {
         this.source = source;
     }
 
+    /**
+     * Gets a list of seeds for label auto-completion.
+     *
+     * @return A list of seeds for label auto-completion.
+     */
     @NonNull
     List<String> getSeeds() {
         final ArrayList<String> terms = new ArrayList<>();
