@@ -1334,7 +1334,8 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * @deprecated as of TODO
+     * Determines the file name from md5sum.
+     * @deprecated as of TODO. Use {@link #load(String)} instead.
      */
     @Deprecated
     /*package*/ static @CheckForNull Fingerprint load(@NonNull byte[] md5sum) throws IOException {
