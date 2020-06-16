@@ -1343,7 +1343,10 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * @deprecated as of TODO
+     * Loads a {@link Fingerprint} from a file in the image.
+     * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
+     * malformed.
+     * @deprecated as of TODO. Use {@link #load(String)} instead.
      */
     @Deprecated
     /*package*/ static @CheckForNull Fingerprint load(@NonNull File file) throws IOException {

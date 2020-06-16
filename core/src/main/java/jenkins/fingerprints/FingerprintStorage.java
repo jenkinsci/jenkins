@@ -50,19 +50,27 @@ public abstract class FingerprintStorage implements ExtensionPoint {
 
     /**
      * Saves the given Fingerprint in the storage.
+     * This acts as a blocking operation, and for file system based default storage, throws IOException when it fails.
+     *
+     * @throws IOException Save error
      */
     public abstract void save(Fingerprint fp) throws IOException;
 
     /**
      * Returns the Fingerprint with the given unique ID.
      * The unique ID for a fingerprint is defined by {@link Fingerprint#getHashString()}.
+     *
+     * @throws IOException Load error
      */
     public abstract @CheckForNull Fingerprint load(String id) throws IOException;
 
     /**
      * Deletes the Fingerprint with the given unique ID.
+     * This acts as a blocking operation, and for file system based default storage, throws IOException when it fails.
      * The unique ID for a fingerprint is defined by {@link Fingerprint#getHashString()}.
      * TODO: Needed for external storage fingerprint cleanup.
+     *
+     * @throws IOException Deletion error
      */
     public abstract void delete(String id) throws IOException;
 
