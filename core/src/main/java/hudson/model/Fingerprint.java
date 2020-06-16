@@ -1262,7 +1262,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Save the Fingerprint in the given file locally
      * @throws IOException Save error
-     * @deprecated as of TODO
+     * @deprecated as of TODO. Use {@link #save()} instead.
      */
     @Deprecated
     void save(File file) throws IOException {
