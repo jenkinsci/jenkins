@@ -1314,7 +1314,7 @@ public class Fingerprint implements ModelObject, Saveable {
 
     /**
      * Loads a {@link Fingerprint} from the Storage with the given unique id.
-     * @return Loaded {@link Fingerprint}. Null if the config file does not exist or
+     * @return Loaded {@link Fingerprint}. {@code null} if the config file does not exist or
      * malformed.
      */
     public static @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
