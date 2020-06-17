@@ -38,6 +38,8 @@ import hudson.util.VariableResolver;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.model.labels.LabelAutoCompleteSeeder;
+import jenkins.model.labels.LabelValidator;
 
 /**
  * Boolean expression of labels.
@@ -272,13 +274,13 @@ public abstract class LabelExpression extends Label {
     // FIXME: Should the messages be moved, or kept where they are for backward compatibility?
     @NonNull
     public static FormValidation validate(@Nullable String expression, @CheckForNull Item item) {
-        if (Util.fixEmptyAndTrim(expression) == null)
+        if (Util.fixEmptyAndTrim(expression) == null) {
             return FormValidation.ok();
+        }
         try {
             Label.parseExpression(expression);
         } catch (ANTLRException e) {
-            return FormValidation.error(e,
-                    Messages.LabelExpression_InvalidBooleanExpression(e.getMessage()));
+            return FormValidation.error(e, Messages.LabelExpression_InvalidBooleanExpression(e.getMessage()));
         }
         final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);

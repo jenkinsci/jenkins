@@ -1,4 +1,4 @@
-package hudson.model.labels;
+package jenkins.model.labels;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class LabelAutoCompleteSeeder {
      *
      * @param source The (partial) label expression to use as the source..
      */
-    LabelAutoCompleteSeeder(@NonNull String source) {
+    public LabelAutoCompleteSeeder(@NonNull String source) {
         this.source = source;
     }
 
@@ -29,12 +29,11 @@ public class LabelAutoCompleteSeeder {
      * @return A list of seeds for label auto-completion.
      */
     @NonNull
-    List<String> getSeeds() {
+    public List<String> getSeeds() {
         final ArrayList<String> terms = new ArrayList<>();
         boolean trailingQuote = source.endsWith("\"");
         boolean leadingQuote = source.startsWith("\"");
         boolean trailingSpace = source.endsWith(" ");
-
         if (trailingQuote || (trailingSpace && !leadingQuote)) {
             terms.add("");
         } else {
@@ -54,7 +53,6 @@ public class LabelAutoCompleteSeeder {
                 }
             }
         }
-
         return terms;
     }
 

@@ -1,4 +1,4 @@
-package hudson.model.labels;
+package jenkins.model.labels;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;

@@ -22,14 +22,15 @@
  *  THE SOFTWARE.
  */
 
-package hudson.model.labels;
+package jenkins.model.labels;
 
-import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
-import org.junit.runners.Parameterized;
-import org.junit.runner.RunWith;
+import java.util.List;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -80,6 +81,6 @@ public class LabelAutoCompleteSeederTest {
     public void testAutoCompleteSeeds() throws Exception {
         LabelAutoCompleteSeeder seeder = new LabelAutoCompleteSeeder(seed);
         assertEquals(expected, seeder.getSeeds());
-
     }
+
 }
