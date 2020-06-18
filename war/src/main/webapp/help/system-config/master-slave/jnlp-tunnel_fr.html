@@ -1,5 +1,5 @@
 <div>
-    Quand un esclave est lancé par JNLP, l'agent de l'esclave tente de se connecter à Jenkins par un port
+    Quand un agent est lancé par JNLP, l'agent de l'agent tente de se connecter à Jenkins par un port
     TCP spécifique, afin d'établir un canal de communication.
     Certains réseaux très sécurisés peuvent vous empècher d'effectuer cette connexion.
     Cela peut également être le cas quand Jenkins tourne derrière un répartiteur de charge (load balancer),
@@ -9,9 +9,9 @@
     <p>
     Cette option de tunneling vous permet, dans ces situations, de rediriger la connexion sur un autre host ou
     un autre numéro de port. Le champ supporte les formats "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>" et "<tt>HOST:</tt>".
-    Dans le premier format, l'agent JNLP de l'esclave se connectera sur le numéro de port TCP et le host spécifiés et
+    Dans le premier format, l'agent JNLP de l'agent se connectera sur le numéro de port TCP et le host spécifiés et
     supposera que vous avez configuré votre réseau de façon à ce que ce port fasse suivre la connexion sur le
-    port TCP de l'esclave JNLP de Jenkins.
+    port TCP de l'agent JNLP de Jenkins.
 
     <p>
     Dans les deux derniers formats, le nom de host et le numéro de port par défaut (c'est-à-dire le nom de host que
