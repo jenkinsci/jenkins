@@ -88,7 +88,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 // empty XML file, presumably either due to file system corruption (perhaps by sudden
                 // power loss, etc.) or abnormal program termination.
                 // generally we don't want to wipe out user data just because we can't load it,
-                // but if the file size is 0, which is what's reported in HUDSON-2012, then it seems
+                // but if the file size is 0, which is what's reported in JENKINS-2012, then it seems
                 // like recovering it silently by deleting the file is not a bad idea.
                 logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
                 file.delete();
@@ -187,16 +187,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
         }
 
         File inner = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2) + "/" + id.substring(2,4));
-        String[] inner_files = inner.list();
-        if (inner_files != null && inner_files.length == 0) {
+        String[] innerFiles = inner.list();
+        if (innerFiles != null && innerFiles.length == 0) {
             if (!inner.delete()){
                 throw new IOException("Error occurred in deleting inner directory of Fingerprint " + id);
             }
         }
 
         File outer = new File(Jenkins.get().getRootDir(), "fingerprints/" + id.substring(0,2));
-        String[] outer_files = outer.list();
-        if (outer_files != null && outer_files.length == 0) {
+        String[] outerFiles = outer.list();
+        if (outerFiles != null && outerFiles.length == 0) {
             if (!outer.delete()){
                 throw new IOException("Error occurred in deleting outer directory of Fingerprint " + id);
             }
