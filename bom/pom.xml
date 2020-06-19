@@ -51,7 +51,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
-        <version>4.0.1</version>
+        <version>${spotbugs-annotations.version}</version>
       </dependency>
       <dependency>
         <groupId>net.jcip</groupId>
