@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -269,6 +270,7 @@ public class DownloadService {
             this(id, url, DEFAULT_INTERVAL);
         }
 
+        @NonNull
         public String getId() {
             return id;
         }
@@ -281,6 +283,7 @@ public class DownloadService {
          *
          * @since TODO
          */
+        @NonNull
         public static String idFor(@NonNull Class<?> clazz) {
             return clazz.getName().replace('$','.');
         }
@@ -446,6 +449,7 @@ public class DownloadService {
         /**
          * Returns all the registered {@link Downloadable}s.
          */
+        @NonNull
         public static ExtensionList<Downloadable> all() {
             return ExtensionList.lookup(Downloadable.class);
         }
@@ -457,6 +461,7 @@ public class DownloadService {
          *
          * @since TODO
          */
+        @CheckForNull
         public static Downloadable get(@NonNull Class<?> clazz) {
             return Downloadable.get(Downloadable.idFor(clazz));
         }
@@ -466,6 +471,7 @@ public class DownloadService {
          *
          * @param id The ID to look for.
          */
+        @CheckForNull
         public static Downloadable get(String id) {
             for (Downloadable d : all()) {
                 if(d.id.equals(id))
