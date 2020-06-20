@@ -623,6 +623,7 @@ public class PluginManagerTest {
     variant, not in update-center.json, deprecated via top-level list
      */
     @Test
+    @Issue("JENKINS-59136")
     @WithPlugin({"credentials.hpi", "htmlpublisher.jpi", "icon-shim.hpi", "token-macro.hpi", "variant.hpi"})
     public void testDeprecationNotices() throws Exception {
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
