@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Assume;
 import static org.junit.Assume.*;
 import org.junit.Rule;

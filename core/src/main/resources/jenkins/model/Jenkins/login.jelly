@@ -83,6 +83,7 @@ THE SOFTWARE.
                 </j:if>
                 <div class="formRow">
                   <input
+                    aria-label="${%Username}"
                     class="${inputClass}"
                     type="text"
                     name="j_username"
@@ -94,6 +95,7 @@ THE SOFTWARE.
                 </div>
                 <div class="formRow">
                   <input
+                    aria-label="${%Password}"
                     class="${inputClass}"
                     type="password"
                     name="j_password"

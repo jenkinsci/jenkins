@@ -2294,6 +2294,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean hasLatestVersionNewerThanOffered(UpdateSite.Plugin plugin) {
+        if (plugin.latest == null) {
+            return false;
+        }
+        return !plugin.latest.equalsIgnoreCase(plugin.version); // we can assume that any defined 'latest' will be newer than the actual offered version
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean hasAdoptThisPluginLabel(PluginWrapper plugin) {
         final UpdateSite.Plugin pluginMeta = Jenkins.get().getUpdateCenter().getPlugin(plugin.getShortName());
         if (pluginMeta == null) {

@@ -25,6 +25,7 @@
  */
 package hudson;
 
+import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.security.*;
 
@@ -166,6 +167,7 @@ import hudson.util.RunList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
@@ -1159,6 +1161,43 @@ public class Functions {
     /**
      * Checks if the current security principal has one of the supplied permissions.
      *
+     * @since TODO
+     */
+    public static boolean hasAnyPermission(AccessControlled ac, Permission[] permissions) {
+        if (permissions == null || permissions.length == 0) {
+            return true;
+        }
+
+        return ac.hasAnyPermission(permissions);
+    }
+
+    /**
+     * This version is so that the 'hasAnyPermission'
+     * degrades gracefully if "it" is not an {@link AccessControlled} object.
+     * Otherwise it will perform no check and that problem is hard to notice.
+     *
+     * @since TODO
+     */
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+        if (permissions == null || permissions.length == 0) {
+            return true;
+        }
+
+        if (object instanceof AccessControlled)
+            return hasAnyPermission((AccessControlled) object, permissions);
+        else {
+            AccessControlled ac = Stapler.getCurrentRequest().findAncestorObject(AccessControlled.class);
+            if (ac != null) {
+                return hasAnyPermission(ac, permissions);
+            }
+            
+            return hasAnyPermission(Jenkins.get(), permissions);
+        }
+    }
+
+    /**
+     * Checks if the current security principal has one of the supplied permissions.
+     *
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
      *
@@ -1720,7 +1759,7 @@ public class Functions {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("since TODO")
+    @RestrictedSince("2.173")
     public static String toCCStatus(Item i) {
         return "Unknown";
     }
@@ -2013,21 +2052,70 @@ public class Functions {
      * Used by {@code <f:password/>} so that we send an encrypted value to the client.
      */
     public String getPasswordValue(Object o) {
-        if (o==null)    return null;
-        if (o instanceof Secret) {
-            StaplerRequest req = Stapler.getCurrentRequest();
+        if (o == null) {
+            return null;
+        }
+
+        /*
+         Return plain value if it's the default value for PasswordParameterDefinition.
+         This needs to work even when the user doesn't have CONFIGURE permission
+         */
+        if (o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
+            return o.toString();
+        }
+
+        /* Mask from Extended Read */
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (o instanceof Secret || Secret.BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE) {
             if (req != null) {
                 Item item = req.findAncestorObject(Item.class);
                 if (item != null && !item.hasPermission(Item.CONFIGURE)) {
                     return "********";
                 }
+                Computer computer = req.findAncestorObject(Computer.class);
+                if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
+                    return "********";
+                }
             }
+        }
+
+        /* Return encrypted value if it's a Secret */
+        if (o instanceof Secret) {
             return ((Secret) o).getEncryptedValue();
         }
-        if (getIsUnitTest() && !o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
-            throw new SecurityException("attempted to render plaintext ‘" + o + "’ in password field; use a getter of type Secret instead");
+
+        /* Log a warning if we're in development mode (core or plugin): There's an f:password backed by a non-Secret */
+        if (req != null && (Boolean.getBoolean("hudson.hpi.run") || Boolean.getBoolean("hudson.Main.development"))) {
+            LOGGER.log(Level.WARNING, () -> "<f:password/> form control in " + getJellyViewsInformationForCurrentRequest() +
+                    " is not backed by hudson.util.Secret. Learn more: https://jenkins.io/redirect/hudson.util.Secret");
         }
-        return o.toString();
+
+        /* Return plain value if it's not a Secret and the escape hatch is set */
+        if (!Secret.AUTO_ENCRYPT_PASSWORD_CONTROL) {
+            return o.toString();
+        }
+
+        /* Make it a Secret and return its encrypted value */
+        return Secret.fromString(o.toString()).getEncryptedValue();
+    }
+
+    private String getJellyViewsInformationForCurrentRequest() {
+        final Thread thread = Thread.currentThread();
+        String threadName = thread.getName();
+
+        // try to simplify based on org.kohsuke.stapler.jelly.JellyViewScript
+        // Views are expected to contain a slash and a period, neither as the first char, and the last slash before the first period: Class/view.jelly
+        // Nested classes use slashes, so we do not expect period before: Class/Nested/view.jelly
+        String views = Arrays.stream(threadName.split(" ")).filter(part -> {
+            int slash = part.lastIndexOf("/");
+            int firstPeriod = part.indexOf(".");
+            return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
+        }).collect(Collectors.joining(" "));
+        if (StringUtils.isBlank(views)) {
+            // fallback to full thread name if there are no apparent views
+            return threadName;
+        }
+        return views;
     }
 
     public List filterDescriptors(Object context, Iterable descriptors) {

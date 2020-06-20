@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.ACL;

@@ -55,7 +55,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     /**
-     * @since TODO
+     * @since 2.230
      */
     public static String encodeTo(Label label) {
         return encodeTo("/" + label.getUrl(), label.getName());

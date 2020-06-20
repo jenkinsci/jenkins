@@ -6,7 +6,7 @@ import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import org.apache.commons.io.IOUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

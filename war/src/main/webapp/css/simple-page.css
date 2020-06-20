@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2018, CloudBees, Inc.
+ * Copyright (c) 2018-2020, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+@import "./simple-page-variables.css";
+
 html {
   height: 100vh;
   font-family: "LatoLatinWeb", "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 18px;
+  color: #4a4a4a;
+  color: var(--text-color);
+}
+
+body {
+  background: #fff;
+  background: var(--background);
+}
+
+a {
+  color: #204a87;
+  color: var(--link-color);
 }
 
 .simple-page h1 {
@@ -66,7 +80,13 @@ html {
   text-decoration: none;
   font-size: 18px;
   border-radius: 3px;
-  border: 1px solid rgba(74,74,74,0.25);
+  border-width: 1px;
+  border-color: rgba(74, 74, 74, 0.25);
+  border-color: var(--input-form-border);
+  background-color: #fff;
+  background-color: var(--background-medium);
+  color: #4a4a4a;
+  color: var(--text-color);
 }
 
 .simple-page input[type=text],
@@ -89,7 +109,9 @@ html {
 
 .simple-page form .submit input {
   border-radius: 3px;
+  font-weight: bold;
   color: #fff;
+  color: var(--btn-text-color);
   cursor: pointer;
 }
 

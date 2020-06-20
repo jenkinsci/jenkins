@@ -133,7 +133,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         /**
          * Add a header row (no icon, no URL, rendered in header style).
          *
-         * @since TODO
+         * @since 2.231
          */
         @Restricted(DoNotUse.class) // manage.jelly only
         public ContextMenu addHeader(String title) {
@@ -276,7 +276,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * True to display this item as a section header.
-         * @since TODO
+         * @since 2.231
          */
         @Exported public boolean header;
 

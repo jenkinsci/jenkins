@@ -34,7 +34,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class ComputerLauncherTest {
 

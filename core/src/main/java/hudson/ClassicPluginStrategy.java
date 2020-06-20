@@ -271,8 +271,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * @see DetachedPluginsUtil#getImpliedDependencies(String, String)
+     *
+     * @deprecated since 2.163
      */
-    @Deprecated // since TODO
+    @Deprecated
     @NonNull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         return DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion);
@@ -714,6 +716,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
+    /* Unused since 1.527, see https://github.com/jenkinsci/jenkins/commit/47de54d070f67af95b4fefb6d006a72bb31a5cb8 */
+    @Deprecated
     public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
     public static boolean DISABLE_TRANSFORMER = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }

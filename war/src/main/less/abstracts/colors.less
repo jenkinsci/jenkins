@@ -1,84 +1,187 @@
-@white: #fff;
-@black: #333;
+:root {
+  --white: #fff;
+  --very-light-grey: #f0f0f0;
+  --black: #333;
 
-@primary: #0587d4;
-@secondary: #4D545D;
-@success: #138347;
-@danger: #CC0003;
-@warning: #EA6B19;
-@focus: #3FB3F7;
+  // branding
+  --primary: #0587d4;
+  --secondary: #4d545d;
+  --success: #138347;
+  --danger: #cc0003;
+  --warning: #ea6b19;
+  --focus: #3fb3f7;
 
-// State colors
-@primary-hover: #0B6AA2;
-@primary-active: #095683;
-@danger-hover: #EB383B;
-@danger-active: #B50003;
+  // State colors
+  --primary-hover: #0b6aa2;
+  --primary-active: #095683;
+  --danger-hover: #eb383b;
+  --danger-active: #b50003;
 
-// Page header colors
-@logo-bg: @white;
-@brand-link-color: @secondary;
-@header-link-color: @white;
-@header-link-color-active: #f5f5f5;
-@header-link-outline: @focus;
-@search-input-color: @brand-link-color;
-@search-background: @white;
-@search-box-completion-bg: @primary;
-@search-box-shadow: 0 1px 7px 0 rgba(0,0,0,0.3);
+  // Background colors
+  --background: var(--white);
 
-// Header classic colors
-@header-bg-classic: #000;
-@header-link-bg-classic-hover: lighten(@header-bg-classic, 25%);
-@header-link-bg-classic-active: lighten(@header-bg-classic, 20%);
+  // Borders
+  --line-green: #acb;
+  --medium-translucent: rgba(255, 255, 255, 0.75);
 
-// Header new UI colors
-@header-bg-v2: @primary;
-@brand-link-color-hover-v2: @primary-hover;
-@brand-link-color-active-v2: @primary-active;
-@header-link-bg-hover-v2: @primary-hover;
-@header-link-bg-active-v2: @primary-active;
+  // Page header colors
+  --logo-bg: var(--white);
+  --brand-link-color: var(--secondary);
+  --header-link-color: var(--white);
+  --header-link-color-active: #f5f5f5;
+  --header-link-outline: var(--focus);
+  --header-search-border: var(--white);
+  --search-input-color: var(--brand-link-color);
+  --search-bg: var(--white);
+  --search-box-completion-bg: var(--primary);
+  --search-box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.3);
 
-// Header dimensions
-@header-item-border-radius: 4px;
+  // Header classic colors
+  --header-bg-classic: #000;
+  --header-link-bg-classic-hover: #404040;
+  --header-link-bg-classic-active: #404040;
 
-// Breadcrumbs and footer
-@breadcrumbs-bg: #f8f8f8;
-@breadcrumbs-border: #EAEFF2;
+  // Header new UI colors
+  --header-bg-v2: var(--primary);
+  --brand-link-color-hover-v2: var(--primary-hover);
+  --brand-link-color-active-v2: var(--primary-active);
+  --header-link-bg-hover-v2: var(--primary-hover);
+  --header-link-bg-active-v2: var(--primary-active);
 
-// Monitor / bell-alert new colors
-@monitor-bg-v2: #f8d7da;
-@monitor-color-v2: #721c24;
+  // Header dimensions
+  --header-item-border-radius: 4px;
 
-// Alert banners
-@alert-default-icon-color: #2196f3;
-@alert-default-bg-color: #d1ecf1;
-@alert-default-border-color: #bee5eb;
-@alert-default-color: #0C5464;
+  // Breadcrumbs and footer
+  --breadcrumbs-bg: #f8f8f8;
+  --breadcrumbs-border: #eaeff2;
+  --breadcrumbs-text-color: #4d545d;
+  --breadcrumbs-item-bg-color--hover: #e0e4dc;
 
-@alert-success-icon-color: #4caf50;
-@alert-success-bg-color: #d4edda;
-@alert-success-border-color: #c3e6cb;
-@alert-success-color: @success;
+  // Monitor / bell-alert new colors
+  --monitor-bg-v2: #f8d7da;
+  --monitor-color-v2: #721c24;
 
-@alert-warn-icon-color: #ff9800;
-@alert-warn-bg-color: #fff3cd;
-@alert-warn-border-color: #ffeeba;
-@alert-warn-color: #856404;
+  // Alert banners
+  // Default
+  --alert-default-icon-color: #2196f3;
+  --alert-default-bg-color: #d1ecf1;
+  --alert-default-border-color: #bee5eb;
+  --alert-default-color: #0c5464;
 
-@alert-err-icon-color: #f44336;
-@alert-err-bg-color: #f8d7da;
-@alert-err-border-color: #f5c6cb;
-@alert-err-color: #721c24;
+  // Success
+  --alert-success-icon-color: #4caf50;
+  --alert-success-bg-color: #d4edda;
+  --alert-success-border-color: #c3e6cb;
+  --alert-success-color: var(--success);
 
-// Typography
-@text-color: @black;
-@text-color-primary: @primary;
-@text-color-primary-accent: @primary-active;
-@text-color-grey-light: #747C82;
-@text-inactive: @text-color-grey-light;
+  // Warning
+  --alert-warn-icon-color: #ff9800;
+  --alert-warn-bg-color: #fff3cd;
+  --alert-warn-border-color: #ffeeba;
+  --alert-warn-color: #856404;
 
-// Buttons
-@btn-primary-bg: @primary-hover;
-@btn-primary-bg-hover: @primary;
-@btn-primary-bg-active: @primary-active;
-@btn-secondary-color: @secondary;
-@btn-secondary-border: #9BA7AF;
+  // Error
+  --alert-err-icon-color: #f44336;
+  --alert-err-bg-color: #f8d7da;
+  --alert-err-border-color: #f5c6cb;
+  --alert-err-color: #721c24;
+
+  // Alert call outs
+  --alert-info-color-call-out: #31708f;
+  --alert-info-bg-color-call-out: #d9edf7;
+
+  // Typography
+  --text-color: var(--black);
+  --text-color-grey-light: #747c82;
+  --text-inactive: var(--text-color-grey-light);
+
+  // Buttons
+  --btn-primary-bg: var(--primary-hover);
+  --btn-primary-bg-hover: var(--primary);
+  --btn-primary-bg-active: var(--primary-active);
+  --btn-secondary-color: var(--secondary);
+  --btn-secondary-bg: var(--btn-text-color);
+  --btn-secondary-border: #9ba7af;
+  --btn-text-color: var(--white);
+
+  // Help area
+  --help-area-bg-color: var(--very-light-grey);
+  --configure-job-help-area-bg-color: var(--medium-translucent);
+
+  // Table
+  --even-row-color: #fbfbfb;
+  --bigtable-header-color: var(--very-light-grey);
+  --project-status-border-bottom-color: #ddd;
+  --table-parameters-bg-color--hover: var(--very-light-grey);
+  --table-stripped-bg-color--hover: #e8e8e8;
+
+  // Link
+  --link-color: #204a87;
+  --link-visited-color: #5c3566;
+  --link-dark-color: var(--black);
+  --link-dark-color--hover: var(--primary);
+  --link-dark-color--active: var(--primary-active);
+
+  // Pane
+  --pane-header-color: #eee;
+  --pane-header-border-color: #f3f3f3;
+  --pane-border-color: var(--very-light-grey);
+  --pane-text-color: #3b3b3b;
+  --pane-link-color: black;
+  --pane-link-color--visited: black;
+
+  // TabBar
+  --tab-bar-border-color: var(--very-light-grey);
+  --tab-bar-text-color: #999;
+  --tab-bar-bg--checked: #eee;
+  --tab-bar-border-color--checked: var(--very-light-grey);
+  --tab-bar-text-color--checked: #000;
+  --tab-bar-bg-color--hover: #eee;
+  --tab-bar-add-text-color: #0460d1;
+  --tab-bar-add-bg-color--hover: #d8efff;
+  --tab-bar-add-border-color: #d8efff;
+
+  // Side panel
+  --panel-header-bg-color: #eaeff2;
+  --panel-border-color: #eaeff2;
+  --panel-border-color--hover: #cecece;
+  --side-panel-hover-color: var(--panel-border-color);
+  --task-link-bg-color--active: var(--panel-border-color);
+  --task-link-bg-color--hover: #f8f8f8;
+
+  // Form
+  --input-color: var(--white);
+  --input-border: #ccc;
+  --input-hidden-password-bg-color: #f9f9f9;
+
+  // Pop out menus
+  --menu-text-color: black;
+  --menu-bg-color: var(--white);
+  --menu-selected-color: #b3d4ff;
+  --menu-box-shadow: 0px 3px 10px #bbb;
+
+  // Manage component
+  --manage-option-bg-color--hover: #fafafa;
+  --manage-option-border-color: var(--input-border);
+
+  // Add form widget / configure job
+  --light-bg-color: #eee;
+  --bright-bg-color: #f9f9f9;
+  --brightest-bg-color: var(--white);
+  --light-bg-color--hover: rgba(255, 255, 255, 0.65);
+  --add-item-btn-decorator-border-color: #acb;
+  --add-item-btn-decorator-bg-color: rgba(245, 249, 239, 0.75);
+  --configure-job-bottom-sticker-bg-color: rgba(245, 249, 239, 0.75);
+  --configure-job-bottom-sticker-border-color: var(--line-green);
+
+  // Plugin manager
+  --plugin-manager-bg-color-already-upgraded: #e8eeee;
+  --plugin-manager-category-link-bg-color: #fbfbfb;
+  --plugin-manager-category-link-bg-color--hover: #f2f2f2;
+  --plugin-manager-category-link-border-color--hover: var(--black);
+  --plugin-manager-category-text-color: var(--text-color);
+  --plugin-manager-category-link-color--hover: var(--text-color);
+
+  // Auto complete
+  --auto-complete-bg-color--prehighlight: #b3d4ff;
+}
