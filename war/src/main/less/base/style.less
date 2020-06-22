@@ -125,14 +125,12 @@ dt {
     color: #ccc;
 } */
 
-a:link {
-  text-decoration: underline;
-  color: var(--link-color);
+a {
+  .link();
 }
 
-a:visited {
+p a {
   text-decoration: underline;
-  color: var(--link-visited-color);
 }
 
 a.lowkey:link {
@@ -305,6 +303,7 @@ pre.console {
   padding: 7px 10px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+  font-weight: normal;
 }
 .tabBar .tab a:hover {
   background: var(--tab-bar-bg-color--hover);
@@ -746,6 +745,10 @@ LABEL.attach-previous {
   word-break: break-word;
 }
 
+.help a {
+  text-decoration: underline;
+}
+
 .help .from-plugin {
     text-align: right;
     color: #666;
@@ -1156,9 +1159,13 @@ TABLE.fileList TD.fileSize {
 table.sortable a.sortheader {
   text-decoration: none;
   display: block;
+  color: var(--pane-text-color);
+  font-weight: bold;
 }
 table.sortable span.sortarrow {
   text-decoration: none;
+  color: var(--pane-text-color);
+  font-weight: bold;
 }
 
 
@@ -1371,6 +1378,10 @@ TEXTAREA.rich-editor {
     margin-top: 0.5em;
     padding-left: 2em;
     color: #888a85;
+}
+
+#plugins .excerpt a {
+  text-decoration: underline;
 }
 
 /*
@@ -1647,6 +1658,16 @@ select.select-ajax-pending {
     border-radius: 4px;
 }
 
+.alert a {
+  text-decoration: underline;
+
+  &:hover,
+  &:focus,
+  &:active {
+    text-decoration: underline;
+  }
+}
+
 .alert-info {
   color: var(--alert-info-color-call-out);
   background-color: var(--alert-info-bg-color-call-out);
@@ -1751,7 +1772,7 @@ body.no-sticker #bottom-sticker {
 }
 
 .manage-messages .alert a:hover {
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .manage-messages .alert form {
@@ -1798,6 +1819,7 @@ body.no-sticker #bottom-sticker {
     margin: 0;
     text-decoration: none !important;
     color: var(--text-color);
+    font-weight: normal;
     outline: 0;
 }
 
