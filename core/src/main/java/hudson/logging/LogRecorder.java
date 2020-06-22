@@ -30,36 +30,58 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.model.*;
-import hudson.util.HttpResponses;
-import jenkins.util.MemoryReductionUtil;
-import jenkins.model.Jenkins;
+import hudson.model.AbstractModelObject;
+import hudson.model.AutoCompletionCandidates;
+import hudson.model.Computer;
+import hudson.model.Failure;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
+import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.MemoryReductionUtil;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.*;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.verb.POST;
 
 /**
  * Records a selected set of logs so that the system administrator
@@ -338,19 +360,23 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         String newName = src.getString("name"), redirect = ".";
         XmlFile oldFile = null;
-        if(!name.equals(newName)) {
+        if (!name.equals(newName)) {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
             getParent().logRecorders.remove(name);
             this.name = newName;
-            getParent().logRecorders.put(name,this);
+            getParent().logRecorders.put(name, this);
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
         List<Target> newTargets = req.bindJSONToList(Target.class, src.get("targets"));
-        for (Target t : newTargets)
-            t.enable();
+        if (newTargets.stream().anyMatch(target ->
+                Util.fixEmpty(target.getName()) == null && target.getLevel().intValue() <= Level.FINE.intValue()) ) {
+
+            throw new Failure(Messages.LogRecorder_Target_Empty_Error());
+        }
+        newTargets.forEach(Target::enable);
         targets.replaceBy(newTargets);
 
         save();

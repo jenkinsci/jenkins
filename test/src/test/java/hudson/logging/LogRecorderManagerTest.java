@@ -23,12 +23,15 @@
  */
 package hudson.logging;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import jenkins.security.MasterToSlaveCallable;
 import org.jvnet.hudson.test.Url;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
+
+import java.util.Arrays;
 import java.util.List;
 
 import java.util.logging.Logger;
@@ -37,8 +40,10 @@ import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -65,6 +70,50 @@ public class LogRecorderManagerTest {
         j.submit(form);
 
         assertEquals(logger.getLevel(), Level.FINEST);
+    }
+    
+    @Issue("JENKINS-62472")
+    @Test public void logRecorderConfig() throws Exception {
+        LogRecorder testRecorder = new LogRecorder("test");
+        j.jenkins.getLog().logRecorders.put("test", testRecorder);
+        testRecorder.save();
+
+        // FINE level and below are not allowed
+        for(Level level : Arrays.asList(Level.FINE, Level.FINER, Level.FINEST, Level.ALL)) {
+            HtmlPage page = j.createWebClient().goTo("log/test/configure");
+            HtmlForm form = page.getFormByName("config");
+            form.getInputsByName("_.name").get(0).setValueAttribute("test");
+            form.getElementsByTagName("button").get(0).click();
+            form.getInputsByName("_.name").get(1).setValueAttribute("");
+            form.getSelectByName("level").getOptionByValue(level.getName()).setSelected(true);
+            FailingHttpStatusCodeException expectedException = null;
+            try {
+                j.submit(form);
+            } catch (FailingHttpStatusCodeException ex) {
+                expectedException = ex;
+            }
+            assertNotNull("Should report an error", expectedException);
+            String errorMessage = expectedException.getResponse().getResponseHeaderValue("X-Error");
+            assertNotNull(errorMessage);
+            assertEquals(Messages.LogRecorder_Target_Empty_Error(), errorMessage);
+            assertEquals(0, j.jenkins.getLog().logRecorders.get("test").targets.size());
+            assertNotEquals(Logger.getLogger("").getLevel(), level);
+        }
+        
+        // CONFIG level (only level between INFO and FINE) is allowed
+        HtmlPage page = j.createWebClient().goTo("log/test/configure");
+        HtmlForm form = page.getFormByName("config");
+        form.getInputsByName("_.name").get(0).setValueAttribute("test");
+        form.getElementsByTagName("button").get(0).click();
+        form.getInputsByName("_.name").get(1).setValueAttribute("");
+        form.getSelectByName("level").getOptionByValue(Level.CONFIG.getName()).setSelected(true);
+        j.submit(form);
+        assertEquals(1, j.jenkins.getLog().logRecorders.get("test").targets.size());
+        LogRecorder.Target testTarget = j.jenkins.getLog().logRecorders.get("test").targets.get(0);
+        assertNotNull(testTarget);
+        assertEquals("", testTarget.getName());
+        assertEquals(Level.CONFIG, testTarget.getLevel());
+        assertEquals(Logger.getLogger("").getLevel(), Level.CONFIG);
     }
 
     @Issue({"JENKINS-18274", "JENKINS-63458"})
