@@ -76,7 +76,7 @@ import hudson.model.DescriptorByNameOwner;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Failure;
 import hudson.model.Fingerprint;
-import hudson.model.FingerprintCleanupThread;
+import jenkins.fingerprints.FingerprintCleanupThread;
 import hudson.model.FingerprintMap;
 import hudson.model.Hudson;
 import hudson.model.Item;

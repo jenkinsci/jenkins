@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
 import java.io.IOException;
+import java.util.List;
 
 import hudson.model.Fingerprint;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -79,5 +80,10 @@ public abstract class FingerprintStorage implements ExtensionPoint {
      * Returns true if there's some data in the fingerprint database.
      */
     public abstract boolean isReady();
+
+    /**
+     * Returns all the fingerprint ids currently stored by the particular Jenkins instance.
+     */
+    public abstract List<String> getAllFingerprintIds();
 
 }

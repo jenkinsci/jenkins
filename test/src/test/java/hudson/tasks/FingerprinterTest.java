@@ -53,6 +53,7 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
+import jenkins.fingerprints.FingerprintCleanupThread;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
