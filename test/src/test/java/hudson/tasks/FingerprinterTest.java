@@ -353,7 +353,7 @@ public class FingerprinterTest {
 
         // discard the p3 records
         p3.delete();
-        new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
+        FingerprintCleanupThread.get().execute(StreamTaskListener.fromStdout());
 
         j.jenkins.rebuildDependencyGraph();
 
@@ -371,7 +371,7 @@ public class FingerprinterTest {
 
         // another garbage collection that gets rid of p2 records from the fingerprint
         p2.getBuildByNumber(1).delete();
-        new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
+        FingerprintCleanupThread.get().execute(StreamTaskListener.fromStdout());
 
         assertEquals(1,f.getUsages().size());
     }

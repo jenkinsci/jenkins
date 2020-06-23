@@ -54,7 +54,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FileFingerprintCleanupThreadTest {
 
-//    private static final Fingerprint.BuildPtr ptr = new Fingerprint.BuildPtr("fred", 23);
     private static final long DAY = 24*60*1000*60;
     private Path tempDirectory;
     private Path fpFile;

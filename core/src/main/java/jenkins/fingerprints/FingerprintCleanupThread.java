@@ -62,15 +62,15 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
      * Invokes the periodic job.
      */
     public static void invoke() {
-        getInstance().run();
+        get().run();
     }
 
     /**
      * Returns the first implementation of {@link FingerprintCleanupThread} for the instance.
      * External storage plugins which implement {@link FingerprintCleanupThread} are given a higher priority.
      */
-    private static FingerprintCleanupThread getInstance() {
-        return ExtensionList.lookup(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
+    public static FingerprintCleanupThread get() {
+        return ExtensionList.lookup(FingerprintCleanupThread.class).get(0);
     }
 
     public void execute(TaskListener taskListener) {
