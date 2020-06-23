@@ -24,21 +24,29 @@
 package jenkins.fingerprints;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
+import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-public class FileFingerprintCleanupThread extends FingerprintCleanupThread{
+@Extension(ordinal=-100)
+@Restricted(NoExternalUse.class)
+public class FileFingerprintCleanupThread extends FingerprintCleanupThread {
 
     static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
-    private static final Logger LOGGER = Logger.getLogger(FileFingerprintCleanupThread.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(FingerprintCleanupThread.class.getName());
 
     @Override
     public void execute(TaskListener listener) {
@@ -58,8 +66,7 @@ public class FileFingerprintCleanupThread extends FingerprintCleanupThread{
                 for(File file2 : files2) {
                     File[] files3 = file2.listFiles(f -> f.isFile() && FINGERPRINT_FILE_PATTERN.matcher(f.getName()).matches());
                     for(File file3 : files3) {
-                        Fingerprint fingerprint = loadFingerprint(file3, listener);
-                        if(fingerprint != null && this.cleanFingerprint(fingerprint, listener))
+                        if(check(file3, listener))
                             numFiles++;
                     }
                     deleteIfEmpty(file2);
@@ -81,22 +88,42 @@ public class FileFingerprintCleanupThread extends FingerprintCleanupThread{
             dir.delete();
     }
 
-    protected @CheckForNull Fingerprint loadFingerprint(File fingerprintFile, TaskListener taskListener) {
+    /**
+     * Examines the file and returns true if a file was deleted.
+     */
+    private boolean check(File fingerprintFile, TaskListener listener) {
         try {
-            return FileFingerprintStorage.load(fingerprintFile);
+            Fingerprint fp = loadFingerprint(fingerprintFile);
+            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null) ) {
+                listener.getLogger().println("deleting obsolete " + fingerprintFile);
+                fingerprintFile.delete();
+                return true;
+            } else {
+                if (!fp.isAlive()) {
+                    FingerprintFacet deletionBlockerFacet = fp.getFacetBlockingDeletion();
+                    listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + new Date(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
+                }
+                // get the fingerprint in the official map so have the changes visible to Jenkins
+                // otherwise the mutation made in FingerprintMap can override our trimming.
+                fp = getFingerprint(fp);
+                return fp.trim();
+            }
         } catch (IOException e) {
-            Functions.printStackTrace(e, taskListener.error("Failed to process " + fingerprintFile));
-            return null;
+            Functions.printStackTrace(e, listener.error("Failed to process " + fingerprintFile));
+            return false;
         }
+    }
+
+    protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
+        return FileFingerprintStorage.load(fingerprintFile);
+    }
+
+    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        return Jenkins.get()._getFingerprint(fp.getHashString());
     }
 
     protected File getRootDir() {
         return Jenkins.get().getRootDir();
-    }
-
-    @Override
-    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
-        return super.getFingerprint(fp);
     }
 
 }

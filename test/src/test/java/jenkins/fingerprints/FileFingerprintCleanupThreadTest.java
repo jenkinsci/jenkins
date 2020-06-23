@@ -175,7 +175,7 @@ public class FileFingerprintCleanupThreadTest {
 
         @Override
         protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
-            return new Fingerprint(null, "file", new byte[0]);
+            return new Fingerprint(null, "file", Util.fromHexString(Util.getDigestOf("random")));
         }
 
         @Override
@@ -184,7 +184,7 @@ public class FileFingerprintCleanupThreadTest {
         }
 
         @Override
-        protected Fingerprint loadFingerprint(File fingerprintFile, TaskListener taskListener) {
+        protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
             return fingerprintToLoad;
         }
 
@@ -210,11 +210,11 @@ public class FileFingerprintCleanupThreadTest {
         private boolean isAlive = true;
 
         public TestFingerprint() throws IOException {
-            super(null, "fred", Util.fromHexString(Util.getDigestOf("fred")));
+            super(null, "fred", Util.fromHexString(Util.getDigestOf("random")));
         }
 
         public TestFingerprint(boolean isAlive) throws IOException {
-            super(null, "fred", Util.fromHexString(Util.getDigestOf("fred")));
+            super(null, "fred", Util.fromHexString(Util.getDigestOf("random")));
             this.isAlive = isAlive;
         }
 
@@ -224,14 +224,14 @@ public class FileFingerprintCleanupThreadTest {
         }
     }
 
-//    private class TestFingerprintCleanupThreadThrowsExceptionOnLoad extends TestFileFingerprintCleanupThread {
+//    private class TestFingerprintCleanupThreadThrowsExceptionOnLoad extends TestFingerprintCleanupThread {
 //
 //        public TestFingerprintCleanupThreadThrowsExceptionOnLoad(Fingerprint fingerprintToLoad) throws IOException {
 //            super(fingerprintToLoad);
 //        }
 //
 //        @Override
-//        protected Fingerprint loadFingerprint(File fingerprintFile) {
+//        protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
 //            throw new IOException("Test exception");
 //        }
 //    }
