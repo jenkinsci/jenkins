@@ -40,6 +40,12 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Fingerprint Cleanup API.
+ * To implement custom fingerprint cleanup by external storage plugin, extend this class, and override the
+ * {@link #execute(TaskListener)} method.
+ * {@link #cleanFingerprint(Fingerprint, TaskListener)} can be used to clean the fingerprint.
+ */
 @Symbol("fingerprintCleanup")
 @Restricted(Beta.class)
 public class FingerprintCleanupThread extends AsyncPeriodicWork implements ExtensionPoint {
@@ -52,10 +58,17 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
         return DAY;
     }
 
+    /**
+     * Invokes the periodic job.
+     */
     public static void invoke() {
         getInstance().run();
     }
 
+    /**
+     * Returns the first implementation of {@link FingerprintCleanupThread} for the instance.
+     * External storage plugins which implement {@link FingerprintCleanupThread} are given a higher priority.
+     */
     private static FingerprintCleanupThread getInstance() {
         return ExtensionList.lookup(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
     }
@@ -76,6 +89,9 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
 
     }
 
+    /**
+     * This method performs the cleanup of the given fingerprint.
+     */
     public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
         try {
             if (!fingerprint.isAlive() && fingerprint.getFacetBlockingDeletion() == null) {
@@ -91,17 +107,13 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
                 }
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
-                fingerprint = getFingerprint(fingerprint);
+                fingerprint = Jenkins.get()._getFingerprint(fingerprint.getHashString());
                 return fingerprint.trim();
             }
         } catch (IOException e) {
             Functions.printStackTrace(e, taskListener.error("Failed to process " + fingerprint.getHashString()));
             return false;
         }
-    }
-
-    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
-        return Jenkins.get()._getFingerprint(fp.getHashString());
     }
 
 }

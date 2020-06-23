@@ -98,15 +98,15 @@ public class FileFingerprintCleanupThreadTest {
         assertTrue("Should have done nothing.", logOutput.startsWith("Cleaned up 0 records"));
     }
 
-//    @Test
-//    public void testIOExceptionOnLoad() throws IOException {
-//        createFolderStructure();
-//        TestTaskListener testTaskListener = new TestTaskListener();
-//        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThreadThrowsExceptionOnLoad(new TestFingerprint());
-//        cleanupThread.execute(testTaskListener);
-//        String logOutput = testTaskListener.outputStream.toString();
-//        assertTrue("Should have logged IOException.", logOutput.contains("ERROR: Failed to process"));
-//    }
+    @Test
+    public void testIOExceptionOnLoad() throws IOException {
+        createFolderStructure();
+        TestTaskListener testTaskListener = new TestTaskListener();
+        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThreadThrowsExceptionOnLoad(new TestFingerprint());
+        cleanupThread.execute(testTaskListener);
+        String logOutput = testTaskListener.outputStream.toString();
+        assertTrue("Should have logged IOException.", logOutput.contains("ERROR: Failed to process"));
+    }
 
     @Test
     public void testBlockingFacetBlocksDeletion() throws IOException {
@@ -224,15 +224,15 @@ public class FileFingerprintCleanupThreadTest {
         }
     }
 
-//    private class TestFingerprintCleanupThreadThrowsExceptionOnLoad extends TestFingerprintCleanupThread {
-//
-//        public TestFingerprintCleanupThreadThrowsExceptionOnLoad(Fingerprint fingerprintToLoad) throws IOException {
-//            super(fingerprintToLoad);
-//        }
-//
-//        @Override
-//        protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
-//            throw new IOException("Test exception");
-//        }
-//    }
+    private class TestFileFingerprintCleanupThreadThrowsExceptionOnLoad extends TestFileFingerprintCleanupThread {
+
+        public TestFileFingerprintCleanupThreadThrowsExceptionOnLoad(Fingerprint fingerprintToLoad) throws IOException {
+            super(fingerprintToLoad);
+        }
+
+        @Override
+        protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
+            throw new IOException("Test exception");
+        }
+    }
 }
