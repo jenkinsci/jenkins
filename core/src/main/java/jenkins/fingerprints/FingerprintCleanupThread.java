@@ -13,7 +13,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -80,10 +79,6 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
 
     protected static Fingerprint getFingerprint(Fingerprint fp) throws IOException {
         return Jenkins.get()._getFingerprint(fp.getHashString());
-    }
-
-    protected File getRootDir() {
-        return Jenkins.get().getRootDir();
     }
 
 }

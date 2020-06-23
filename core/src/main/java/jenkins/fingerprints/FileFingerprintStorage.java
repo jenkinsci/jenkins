@@ -42,6 +42,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -201,6 +202,10 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 throw new IOException("Error occurred in deleting outer directory of Fingerprint " + id);
             }
         }
+    }
+
+    public List<String> getAllFingerprintIds() {
+        return null;
     }
 
     /**
