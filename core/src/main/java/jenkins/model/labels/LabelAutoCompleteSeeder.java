@@ -3,13 +3,14 @@ package jenkins.model.labels;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Utility class for taking the current input value and computing a list of potential terms to match against the
  * list of defined labels.
- *
- * @since TODO
  */
+@Restricted(NoExternalUse.class)
 public class LabelAutoCompleteSeeder {
 
     private final String source;
