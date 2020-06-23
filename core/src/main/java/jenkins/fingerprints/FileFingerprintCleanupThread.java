@@ -23,6 +23,7 @@
  */
 package jenkins.fingerprints;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Functions;
 import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
@@ -37,7 +38,7 @@ public class FileFingerprintCleanupThread extends FingerprintCleanupThread{
 
     static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
-    private static final Logger LOGGER = Logger.getLogger(hudson.model.FingerprintCleanupThread.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(FileFingerprintCleanupThread.class.getName());
 
     @Override
     public void execute(TaskListener listener) {
@@ -58,7 +59,7 @@ public class FileFingerprintCleanupThread extends FingerprintCleanupThread{
                     File[] files3 = file2.listFiles(f -> f.isFile() && FINGERPRINT_FILE_PATTERN.matcher(f.getName()).matches());
                     for(File file3 : files3) {
                         Fingerprint fingerprint = loadFingerprint(file3, listener);
-                        if(fingerprint != null && FingerprintCleanupThread.cleanFingerprint(fingerprint, listener))
+                        if(fingerprint != null && this.cleanFingerprint(fingerprint, listener))
                             numFiles++;
                     }
                     deleteIfEmpty(file2);
@@ -80,7 +81,7 @@ public class FileFingerprintCleanupThread extends FingerprintCleanupThread{
             dir.delete();
     }
 
-    protected Fingerprint loadFingerprint(File fingerprintFile, TaskListener taskListener) {
+    protected @CheckForNull Fingerprint loadFingerprint(File fingerprintFile, TaskListener taskListener) {
         try {
             return FileFingerprintStorage.load(fingerprintFile);
         } catch (IOException e) {
@@ -91,6 +92,11 @@ public class FileFingerprintCleanupThread extends FingerprintCleanupThread{
 
     protected File getRootDir() {
         return Jenkins.get().getRootDir();
+    }
+
+    @Override
+    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        return super.getFingerprint(fp);
     }
 
 }

@@ -34,14 +34,14 @@ import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.Beta;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 @Symbol("fingerprintCleanup")
-@Restricted(NoExternalUse.class)
+@Restricted(Beta.class)
 public class FingerprintCleanupThread extends AsyncPeriodicWork implements ExtensionPoint {
 
     public FingerprintCleanupThread() {
@@ -76,7 +76,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
 
     }
 
-    public static boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
+    public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
         try {
             if (!fingerprint.isAlive() && fingerprint.getFacetBlockingDeletion() == null) {
                 taskListener.getLogger().println("deleting obsolete " + fingerprint.toString());
@@ -100,7 +100,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
         }
     }
 
-    protected static Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
         return Jenkins.get()._getFingerprint(fp.getHashString());
     }
 
