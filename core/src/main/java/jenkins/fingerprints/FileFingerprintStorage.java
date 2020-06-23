@@ -204,10 +204,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
         }
     }
 
-    public List<String> getAllFingerprintIds() {
-        return null;
-    }
-
     /**
      * Returns true if there's some data in the local fingerprint database.
      */

@@ -81,9 +81,4 @@ public abstract class FingerprintStorage implements ExtensionPoint {
      */
     public abstract boolean isReady();
 
-    /**
-     * Returns all the fingerprint ids currently stored by the particular Jenkins instance.
-     */
-    public abstract List<String> getAllFingerprintIds();
-
 }

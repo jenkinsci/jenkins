@@ -48,7 +48,7 @@ import java.util.List;
  */
 @Symbol("fingerprintCleanup")
 @Restricted(Beta.class)
-public class FingerprintCleanupThread extends AsyncPeriodicWork implements ExtensionPoint {
+public abstract class FingerprintCleanupThread extends AsyncPeriodicWork implements ExtensionPoint {
 
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
@@ -73,21 +73,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork implements Exten
         return ExtensionList.lookup(FingerprintCleanupThread.class).get(0);
     }
 
-    public void execute(TaskListener taskListener) {
-        List<String> fingerprintIds = FingerprintStorage.get().getAllFingerprintIds();
-        for (String id : fingerprintIds) {
-            try {
-                Fingerprint fingerprint = Fingerprint.load(id);
-                if (fingerprint != null) {
-                    cleanFingerprint(fingerprint,taskListener);
-                    fingerprint.save();
-                }
-            } catch (IOException e) {
-                Functions.printStackTrace(e, taskListener.error("Failed to process " + id));
-            }
-        }
-
-    }
+    public abstract void execute(TaskListener taskListener);
 
     /**
      * This method performs the cleanup of the given fingerprint.
