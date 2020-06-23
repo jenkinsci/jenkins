@@ -35,6 +35,7 @@ import hudson.model.Label;
 import hudson.model.Messages;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -288,28 +289,35 @@ public abstract class LabelExpression extends Label {
             for (LabelAtom a : l.listAtoms()) {
                 if (a.isEmpty()) {
                     LabelAtom nearest = LabelAtom.findNearest(a.getName());
-                    return FormValidation.warning(Messages.LabelExpression_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
+                    return FormValidation.warning(Messages.LabelExpression_NoMatch_DidYouMean(a.getName(), nearest.getDisplayName()));
                 }
             }
             return FormValidation.warning(Messages.LabelExpression_NoMatch());
         }
         if (item != null) {
-            // Use the project-oriented validators (including any that might implement checkItem to support non-Project
-            // items too).
-            // FIXME: Perhaps these should aggregate their errors/warnings?
+            final List<FormValidation> problems = new ArrayList<>();
+            // Use the project-oriented validators too, so that validation from older plugins still gets applied.
             for (AbstractProject.LabelValidator v : j.getExtensionList(AbstractProject.LabelValidator.class)) {
                 FormValidation result = v.checkItem(item, l);
-                if (!FormValidation.Kind.OK.equals(result.kind)) {
-                    return result;
+                if (FormValidation.Kind.OK.equals(result.kind)) {
+                    continue;
                 }
+                problems.add(result);
             }
+            // And then use the new validators.
             for (LabelValidator v : j.getExtensionList(LabelValidator.class)) {
                 FormValidation result = v.check(item, l);
-                if (!FormValidation.Kind.OK.equals(result.kind)) {
-                    return result;
+                if (FormValidation.Kind.OK.equals(result.kind)) {
+                    continue;
                 }
+                problems.add(result);
+            }
+            // If there were any problems, report them all.
+            if (!problems.isEmpty()) {
+                return FormValidation.aggregate(problems);
             }
         }
+        // All done. Report the results.
         return FormValidation.okWithMarkup(Messages.LabelExpression_LabelLink(
                 j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
         );

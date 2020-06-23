@@ -16,6 +16,9 @@ public interface LabelValidator extends ExtensionPoint {
 
     /**
      * Validates the use of a label within a particular context.
+     * <p>
+     * Note that "OK" responses (and any text/markup that may be set on them) will be ignored. Only warnings and errors
+     * are taken into account, and aggregated across all validators.
      *
      * @param item  The context item to be restricted by the label.
      * @param label The label that the job wants to restrict itself to.

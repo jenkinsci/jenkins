@@ -2055,6 +2055,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         /**
          * Check the use of the label within the specified context.
+         * <p>
+         * Note that "OK" responses (and any text/markup that may be set on them) will be ignored. Only warnings and
+         * errors are taken into account, and aggregated across all validators.
          *
          * @param project the project that wants to restrict itself to the specified label.
          * @param label   the label that the project wants to restrict itself to.
@@ -2066,8 +2069,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         /**
          * Validates the use of a label within a particular context.
          * <p>
+         * Note that "OK" responses (and any text/markup that may be set on them) will be ignored. Only warnings and
+         * errors are taken into account, and aggregated across all validators.
+         * <p>
          * This method exists to allow plugins to implement an override for it, enabling checking in non-AbstractProject
-         * contexts without needing to update their Jenkins dependency (and using the new LabelValidator instead).
+         * contexts without needing to update their Jenkins dependency (and using the new
+         * {@link jenkins.model.labels.LabelValidator} instead).
          *
          * @param item  The context item to be restricted by the label.
          * @param label The label that the job wants to restrict itself to.
