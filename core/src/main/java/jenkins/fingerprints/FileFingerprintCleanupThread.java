@@ -46,7 +46,6 @@ public class FileFingerprintCleanupThread extends FingerprintCleanupThread {
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
     private static final Logger LOGGER = Logger.getLogger(FingerprintCleanupThread.class.getName());
 
-    @Override
     public void execute(TaskListener listener) {
         Object fingerprintStorage = FingerprintStorage.get();
         if (!(fingerprintStorage instanceof FileFingerprintStorage)) {
