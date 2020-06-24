@@ -53,7 +53,6 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
-import jenkins.fingerprints.FingerprintCleanupThread;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -353,7 +352,7 @@ public class FingerprinterTest {
 
         // discard the p3 records
         p3.delete();
-        FingerprintCleanupThread.get().execute(StreamTaskListener.fromStdout());
+        new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
 
         j.jenkins.rebuildDependencyGraph();
 
@@ -371,7 +370,7 @@ public class FingerprinterTest {
 
         // another garbage collection that gets rid of p2 records from the fingerprint
         p2.getBuildByNumber(1).delete();
-        FingerprintCleanupThread.get().execute(StreamTaskListener.fromStdout());
+        new FingerprintCleanupThread().execute(StreamTaskListener.fromStdout());
 
         assertEquals(1,f.getUsages().size());
     }
