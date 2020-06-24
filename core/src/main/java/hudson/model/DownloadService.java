@@ -227,8 +227,8 @@ public class DownloadService {
 
         /**
          * Creates a new downloadable.
-         * This will generate an ID based on this downloadable's class. The URL will be set to that ID, with an added
-         * {@code .json} extension, and the default interval will be used.
+         * This will generate an ID based on this downloadable's class (using {@link #idFor(Class)}. The URL will be set
+         * to that ID, with an added {@code .json} extension, and the default interval will be used.
          */
         public Downloadable() {
             this.id = Downloadable.idFor(this.getClass());
@@ -238,8 +238,8 @@ public class DownloadService {
 
         /**
          * Creates a new downloadable.
-         * This will generate an ID based on the specified class. The URL will be set to that ID, with an added
-         * {@code .json} extension, and the default interval will be used.
+         * This will generate an ID based on the specified class (using {@link #idFor(Class)}. The URL will be set to
+         * that ID, with an added {@code .json} extension, and the default interval will be used.
          *
          * @param clazz The class to use to generate the ID.
          */
@@ -248,8 +248,8 @@ public class DownloadService {
         }
 
         /**
-         * Creates a new downloadable with a specific ID.
-         * The URL will be set to that ID, with an added {@code .json} extension, and the default interval will be used.
+         * Creates a new downloadable with a specific ID. The URL will be set to that ID, with an added {@code .json}
+         * extension, and the default interval will be used.
          *
          * @param id The ID to use.
          */
@@ -455,7 +455,8 @@ public class DownloadService {
         }
 
         /**
-         * Returns the {@link Downloadable} that has an ID associated with the specified class.
+         * Returns the {@link Downloadable} that has an ID associated with the specified class (as computed via
+         * {@link #idFor(Class)}).
          *
          * @param clazz The class to use to determine the downloadable's ID.
          *
