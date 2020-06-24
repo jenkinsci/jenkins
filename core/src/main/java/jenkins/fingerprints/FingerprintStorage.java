@@ -30,7 +30,6 @@ import hudson.ExtensionPoint;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 
 import hudson.Functions;
 import hudson.model.Fingerprint;
@@ -88,9 +87,12 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     public abstract boolean isReady();
 
     /**
-     * Performs the fingerprint cleanup.
+     * Iterates a set of fingerprints, and cleans them up.
+     * This method is called periodically by {@link hudson.model.FingerprintCleanupThread}.
+     * For reference, see {@link FileFingerprintStorage#iterateAndCleanupFingerprints(TaskListener)}
+     * For cleaning up the fingerprint {@link #cleanFingerprint(Fingerprint, TaskListener)} may be used.
      */
-    public abstract void execute(TaskListener taskListener);
+    public abstract void iterateAndCleanupFingerprints(TaskListener taskListener);
 
     /**
      * This method performs the cleanup of the given fingerprint.

@@ -25,15 +25,10 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
-import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
-import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Scans the fingerprint database and remove old records
@@ -66,7 +61,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     public void execute(TaskListener listener) {
-        FingerprintStorage.get().execute(listener);
+        FingerprintStorage.get().iterateAndCleanupFingerprints(listener);
     }
 
 }

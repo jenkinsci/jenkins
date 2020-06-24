@@ -29,7 +29,6 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Fingerprint;
-import hudson.model.FingerprintCleanupThread;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
@@ -221,7 +220,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Perform Fingerprint cleanup.
      */
-    public void execute(TaskListener taskListener) {
+    public void iterateAndCleanupFingerprints(TaskListener taskListener) {
         Object fingerprintStorage = FingerprintStorage.get();
         if (!(fingerprintStorage instanceof FileFingerprintStorage)) {
             logger.fine("External fingerprint storage is configured. Skipping execution");

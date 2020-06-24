@@ -24,7 +24,6 @@
 package hudson.model;
 
 import jenkins.fingerprints.FileFingerprintStorage;
-import jenkins.fingerprints.FingerprintStorage;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -162,7 +161,7 @@ public class FingerprintCleanupThreadTest {
 
         @Override
         public void execute(TaskListener listener) {
-            new TestFileFingerprintStorage(fingerprintToLoad).execute(listener);
+            new TestFileFingerprintStorage(fingerprintToLoad).iterateAndCleanupFingerprints(listener);
         }
 
     }
