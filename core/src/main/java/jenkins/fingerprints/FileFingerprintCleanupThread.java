@@ -38,6 +38,16 @@ import java.util.Date;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+/**
+ * Scans the fingerprint database and remove old records
+ * that are no longer relevant.
+ *
+ * <p>
+ * A {@link Fingerprint} is removed when none of the builds that
+ * it point to is available in the records.
+ *
+ * @author Kohsuke Kawaguchi
+ */
 @Extension(ordinal=-100)
 @Restricted(NoExternalUse.class)
 public class FileFingerprintCleanupThread extends FingerprintCleanupThread {
