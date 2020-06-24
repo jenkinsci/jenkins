@@ -21,13 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.fingerprints;
+package hudson.model;
 
-import hudson.Util;
-import hudson.model.Fingerprint;
-import hudson.model.Saveable;
-import hudson.model.TaskListener;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -48,13 +43,14 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringContains.containsString;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class FileFingerprintCleanupThreadTest {
+public class FingerprintCleanupThreadTest {
 
-    private static final long DAY = 24*60*1000*60;
+    private static final Fingerprint.BuildPtr ptr = new Fingerprint.BuildPtr("fred", 23);
     private Path tempDirectory;
     private Path fpFile;
 
@@ -65,7 +61,7 @@ public class FileFingerprintCleanupThreadTest {
     public void testDoesNotLogUnimportantExcessiveLogMessage() throws IOException {
         createFolderStructure();
         TestTaskListener testTaskListener = new TestTaskListener();
-        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThread(new TestFingerprint(true));
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(new TestFingerprint(true));
         cleanupThread.execute(testTaskListener);
         String logOutput = testTaskListener.outputStream.toString();
         assertFalse("Should not have logged unimportant, excessive message.", logOutput.contains("possibly trimming"));
@@ -75,7 +71,7 @@ public class FileFingerprintCleanupThreadTest {
     public void testFingerprintFileIsEmpty() throws IOException {
         createFolderStructure();
         TestTaskListener testTaskListener = new TestTaskListener();
-        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThread(new TestFingerprint(false));
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(new TestFingerprint(false));
         cleanupThread.execute(testTaskListener);
         String logOutput = testTaskListener.outputStream.toString();
         assertFalse("Should have deleted obsolete file.", fpFile.toFile().exists());
@@ -83,15 +79,15 @@ public class FileFingerprintCleanupThreadTest {
 
     @Test
     public void testGetRecurrencePeriod() throws IOException {
-        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThread(new TestFingerprint());
-        Assert.assertEquals("Wrong recurrence period.", DAY, cleanupThread.getRecurrencePeriod());
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(new TestFingerprint());
+        assertEquals("Wrong recurrence period.", PeriodicWork.DAY, cleanupThread.getRecurrencePeriod());
     }
 
     @Test
     public void testNoFingerprintsDir() throws IOException {
         createTestDir();
         TestTaskListener testTaskListener = new TestTaskListener();
-        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThread(new TestFingerprint());
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(new TestFingerprint());
         cleanupThread.execute(testTaskListener);
         String logOutput = testTaskListener.outputStream.toString();
         assertTrue("Should have done nothing.", logOutput.startsWith("Cleaned up 0 records"));
@@ -101,7 +97,7 @@ public class FileFingerprintCleanupThreadTest {
     public void testIOExceptionOnLoad() throws IOException {
         createFolderStructure();
         TestTaskListener testTaskListener = new TestTaskListener();
-        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThreadThrowsExceptionOnLoad(new TestFingerprint());
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThreadThrowsExceptionOnLoad(new TestFingerprint());
         cleanupThread.execute(testTaskListener);
         String logOutput = testTaskListener.outputStream.toString();
         assertTrue("Should have logged IOException.", logOutput.contains("ERROR: Failed to process"));
@@ -112,10 +108,10 @@ public class FileFingerprintCleanupThreadTest {
         createFolderStructure();
         TestTaskListener testTaskListener = new TestTaskListener();
         Fingerprint fp = new TestFingerprint(false);
-        fp.getPersistedFacets().setOwner(Saveable.NOOP);
+        fp.facets.setOwner(Saveable.NOOP);
         TestFingperprintFacet facet = new TestFingperprintFacet(fp, System.currentTimeMillis(), true);
-        fp.getPersistedFacets().add(facet);
-        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThread(fp);
+        fp.facets.add(facet);
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(fp);
         cleanupThread.execute(testTaskListener);
         String logOutput = testTaskListener.outputStream.toString();
         assertThat(logOutput, containsString("blocked deletion of"));
@@ -126,17 +122,17 @@ public class FileFingerprintCleanupThreadTest {
         createFolderStructure();
         TestTaskListener testTaskListener = new TestTaskListener();
         Fingerprint fp = new TestFingerprint(false);
-        fp.getPersistedFacets().setOwner(Saveable.NOOP);
+        fp.facets.setOwner(Saveable.NOOP);
         TestFingperprintFacet facet = new TestFingperprintFacet(fp, System.currentTimeMillis(), false);
-        fp.getPersistedFacets().add(facet);
-        FingerprintCleanupThread cleanupThread = new TestFileFingerprintCleanupThread(fp);
+        fp.facets.add(facet);
+        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThread(fp);
         cleanupThread.execute(testTaskListener);
         assertThat(fpFile.toFile(), is(not(aReadableFile())));
     }
 
     private void createFolderStructure() throws IOException {
         createTestDir();
-        Path fingerprintsPath = tempDirectory.resolve(FileFingerprintCleanupThread.FINGERPRINTS_DIR_NAME);
+        Path fingerprintsPath = tempDirectory.resolve(FingerprintCleanupThread.FINGERPRINTS_DIR_NAME);
         Files.createDirectory(fingerprintsPath);
         Path aaDir = fingerprintsPath.resolve("aa");
         Files.createDirectory(aaDir);
@@ -164,17 +160,17 @@ public class FileFingerprintCleanupThreadTest {
 
     }
 
-    private class TestFileFingerprintCleanupThread extends FileFingerprintCleanupThread {
+    private class TestFingerprintCleanupThread extends FingerprintCleanupThread {
 
         private Fingerprint fingerprintToLoad;
 
-        public TestFileFingerprintCleanupThread(Fingerprint fingerprintToLoad) throws IOException {
+        public TestFingerprintCleanupThread(Fingerprint fingerprintToLoad) throws IOException {
             this.fingerprintToLoad = fingerprintToLoad;
         }
 
         @Override
         protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
-            return new Fingerprint(null, "file", Util.fromHexString(Util.getDigestOf("random")));
+            return new Fingerprint(ptr, "file", new byte[0]);
         }
 
         @Override
@@ -209,11 +205,11 @@ public class FileFingerprintCleanupThreadTest {
         private boolean isAlive = true;
 
         public TestFingerprint() throws IOException {
-            super(null, "fred", Util.fromHexString(Util.getDigestOf("random")));
+            super(ptr, "fred", new byte[0]);
         }
 
         public TestFingerprint(boolean isAlive) throws IOException {
-            super(null, "fred", Util.fromHexString(Util.getDigestOf("random")));
+            super(ptr, "fred", new byte[0]);
             this.isAlive = isAlive;
         }
 
@@ -223,9 +219,9 @@ public class FileFingerprintCleanupThreadTest {
         }
     }
 
-    private class TestFileFingerprintCleanupThreadThrowsExceptionOnLoad extends TestFileFingerprintCleanupThread {
+    private class TestFingerprintCleanupThreadThrowsExceptionOnLoad extends TestFingerprintCleanupThread {
 
-        public TestFileFingerprintCleanupThreadThrowsExceptionOnLoad(Fingerprint fingerprintToLoad) throws IOException {
+        public TestFingerprintCleanupThreadThrowsExceptionOnLoad(Fingerprint fingerprintToLoad) throws IOException {
             super(fingerprintToLoad);
         }
 

@@ -25,14 +25,17 @@ package jenkins.fingerprints;
 
 import com.thoughtworks.xstream.converters.basic.DateConverter;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Fingerprint;
+import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -42,10 +45,11 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Default file system storage implementation for fingerprints.
@@ -56,8 +60,10 @@ import java.util.logging.Logger;
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
-    private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
+    static final String FINGERPRINTS_DIR_NAME = "fingerprints";
+    private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
+    private static final Logger LOGGER = Logger.getLogger(FileFingerprintStorage.class.getName());
 
     /**
      * Load the Fingerprint with the given unique id.
@@ -91,17 +97,17 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 // generally we don't want to wipe out user data just because we can't load it,
                 // but if the file size is 0, which is what's reported in JENKINS-2012, then it seems
                 // like recovering it silently by deleting the file is not a bad idea.
-                logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
+                LOGGER.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
                 file.delete();
                 return null;
             }
             String parseError = messageOfParseException(e);
             if (parseError != null) {
-                logger.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
+                LOGGER.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
                 file.delete();
                 return null;
             }
-            logger.log(Level.WARNING, "Failed to load " + configFile, e);
+            LOGGER.log(Level.WARNING, "Failed to load " + configFile, e);
             throw e;
         }
     }
@@ -211,6 +217,58 @@ public class FileFingerprintStorage extends FingerprintStorage {
         return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
     }
 
+    public void execute(TaskListener taskListener) {
+        Object fingerprintStorage = FingerprintStorage.get();
+        if (!(fingerprintStorage instanceof FileFingerprintStorage)) {
+            LOGGER.fine("External fingerprint storage is configured. Skipping execution");
+            return;
+        }
+
+        int numFiles = 0;
+
+        File root = new File(getRootDir(), FINGERPRINTS_DIR_NAME);
+        File[] files1 = root.listFiles(f -> f.isDirectory() && f.getName().length()==2);
+        if(files1!=null) {
+            for (File file1 : files1) {
+                File[] files2 = file1.listFiles(f -> f.isDirectory() && f.getName().length()==2);
+                for(File file2 : files2) {
+                    File[] files3 = file2.listFiles(f -> f.isFile() && FINGERPRINT_FILE_PATTERN.matcher(f.getName()).matches());
+                    for(File file3 : files3) {
+                        if(cleanFingerprint(file3, taskListener))
+                            numFiles++;
+                    }
+                    deleteIfEmpty(file2);
+                }
+                deleteIfEmpty(file1);
+            }
+        }
+
+        taskListener.getLogger().println("Cleaned up "+numFiles+" records");
+    }
+
+    private boolean cleanFingerprint(File fingerprintFile, TaskListener listener) {
+        try {
+            Fingerprint fp = loadFingerprint(fingerprintFile);
+            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null) ) {
+                listener.getLogger().println("deleting obsolete " + fingerprintFile);
+                fingerprintFile.delete();
+                return true;
+            } else {
+                if (!fp.isAlive()) {
+                    FingerprintFacet deletionBlockerFacet = fp.getFacetBlockingDeletion();
+                    listener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " + new Date(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " + fingerprintFile);
+                }
+                // get the fingerprint in the official map so have the changes visible to Jenkins
+                // otherwise the mutation made in FingerprintMap can override our trimming.
+                fp = getFingerprint(fp);
+                return fp.trim();
+            }
+        } catch (IOException e) {
+            Functions.printStackTrace(e, listener.error("Failed to process " + fingerprintFile));
+            return false;
+        }
+    }
+
     /**
      * The file we save our configuration.
      */
@@ -254,6 +312,28 @@ public class FileFingerprintStorage extends FingerprintStorage {
             }
         }
         return buf.toString();
+    }
+
+    /**
+     * Deletes a directory if it's empty.
+     */
+    private void deleteIfEmpty(File dir) {
+        String[] r = dir.list();
+        if(r==null)     return; // can happen in a rare occasion
+        if(r.length==0)
+            dir.delete();
+    }
+
+    protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
+        return FileFingerprintStorage.load(fingerprintFile);
+    }
+
+    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        return Jenkins.get()._getFingerprint(fp.getHashString());
+    }
+
+    protected File getRootDir() {
+        return Jenkins.get().getRootDir();
     }
 
 }
