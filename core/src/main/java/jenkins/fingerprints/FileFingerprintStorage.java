@@ -29,6 +29,7 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Fingerprint;
+import hudson.model.FingerprintCleanupThread;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
@@ -62,7 +63,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
     private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
-    static final String FINGERPRINTS_DIR_NAME = "fingerprints";
+    public static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
 
     /**
@@ -217,6 +218,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
         return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
     }
 
+    /**
+     * Perform Fingerprint cleanup.
+     */
     public void execute(TaskListener taskListener) {
         Object fingerprintStorage = FingerprintStorage.get();
         if (!(fingerprintStorage instanceof FileFingerprintStorage)) {

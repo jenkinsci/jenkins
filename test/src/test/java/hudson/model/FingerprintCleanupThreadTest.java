@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import jenkins.fingerprints.FileFingerprintStorage;
+import jenkins.fingerprints.FingerprintStorage;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -94,16 +96,6 @@ public class FingerprintCleanupThreadTest {
     }
 
     @Test
-    public void testIOExceptionOnLoad() throws IOException {
-        createFolderStructure();
-        TestTaskListener testTaskListener = new TestTaskListener();
-        FingerprintCleanupThread cleanupThread = new TestFingerprintCleanupThreadThrowsExceptionOnLoad(new TestFingerprint());
-        cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
-        assertTrue("Should have logged IOException.", logOutput.contains("ERROR: Failed to process"));
-    }
-
-    @Test
     public void testBlockingFacetBlocksDeletion() throws IOException {
         createFolderStructure();
         TestTaskListener testTaskListener = new TestTaskListener();
@@ -132,7 +124,7 @@ public class FingerprintCleanupThreadTest {
 
     private void createFolderStructure() throws IOException {
         createTestDir();
-        Path fingerprintsPath = tempDirectory.resolve(FingerprintCleanupThread.FINGERPRINTS_DIR_NAME);
+        Path fingerprintsPath = tempDirectory.resolve(FileFingerprintStorage.FINGERPRINTS_DIR_NAME);
         Files.createDirectory(fingerprintsPath);
         Path aaDir = fingerprintsPath.resolve("aa");
         Files.createDirectory(aaDir);
@@ -165,6 +157,21 @@ public class FingerprintCleanupThreadTest {
         private Fingerprint fingerprintToLoad;
 
         public TestFingerprintCleanupThread(Fingerprint fingerprintToLoad) throws IOException {
+            this.fingerprintToLoad = fingerprintToLoad;
+        }
+
+        @Override
+        public void execute(TaskListener listener) {
+            new TestFileFingerprintStorage(fingerprintToLoad).execute(listener);
+        }
+
+    }
+
+    private class TestFileFingerprintStorage extends FileFingerprintStorage {
+
+        private Fingerprint fingerprintToLoad;
+
+        public TestFileFingerprintStorage(Fingerprint fingerprintToLoad) {
             this.fingerprintToLoad = fingerprintToLoad;
         }
 
@@ -219,15 +226,4 @@ public class FingerprintCleanupThreadTest {
         }
     }
 
-    private class TestFingerprintCleanupThreadThrowsExceptionOnLoad extends TestFingerprintCleanupThread {
-
-        public TestFingerprintCleanupThreadThrowsExceptionOnLoad(Fingerprint fingerprintToLoad) throws IOException {
-            super(fingerprintToLoad);
-        }
-
-        @Override
-        protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
-            throw new IOException("Test exception");
-        }
-    }
 }
