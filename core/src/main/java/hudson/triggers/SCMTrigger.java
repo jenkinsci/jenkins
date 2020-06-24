@@ -41,6 +41,7 @@ import hudson.model.PersistentDescriptor;
 import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
 import hudson.util.NamingThreadFactory;
@@ -219,7 +220,7 @@ public class SCMTrigger extends Trigger<Item> {
     public static class DescriptorImpl extends TriggerDescriptor implements PersistentDescriptor {
 
         private static ThreadFactory threadFactory() {
-            return new NamingThreadFactory(Executors.defaultThreadFactory(), "SCMTrigger");
+            return new NamingThreadFactory(new DaemonThreadFactory(), "SCMTrigger");
         }
 
         /**
