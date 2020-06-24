@@ -60,10 +60,10 @@ import java.util.regex.Pattern;
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
+    private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
     static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
-    private static final Logger LOGGER = Logger.getLogger(FileFingerprintStorage.class.getName());
 
     /**
      * Load the Fingerprint with the given unique id.
@@ -97,17 +97,17 @@ public class FileFingerprintStorage extends FingerprintStorage {
                 // generally we don't want to wipe out user data just because we can't load it,
                 // but if the file size is 0, which is what's reported in JENKINS-2012, then it seems
                 // like recovering it silently by deleting the file is not a bad idea.
-                LOGGER.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
+                logger.log(Level.WARNING, "Size zero fingerprint. Disk corruption? {0}", configFile);
                 file.delete();
                 return null;
             }
             String parseError = messageOfParseException(e);
             if (parseError != null) {
-                LOGGER.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
+                logger.log(Level.WARNING, "Malformed XML in {0}: {1}", new Object[] {configFile, parseError});
                 file.delete();
                 return null;
             }
-            LOGGER.log(Level.WARNING, "Failed to load " + configFile, e);
+            logger.log(Level.WARNING, "Failed to load " + configFile, e);
             throw e;
         }
     }
@@ -220,7 +220,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     public void execute(TaskListener taskListener) {
         Object fingerprintStorage = FingerprintStorage.get();
         if (!(fingerprintStorage instanceof FileFingerprintStorage)) {
-            LOGGER.fine("External fingerprint storage is configured. Skipping execution");
+            logger.fine("External fingerprint storage is configured. Skipping execution");
             return;
         }
 
