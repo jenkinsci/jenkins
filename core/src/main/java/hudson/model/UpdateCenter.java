@@ -1066,6 +1066,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         for (PluginWrapper wrapper : Jenkins.get().getPluginManager().getPlugins()) {
             for (UpdateSite site : sites) {
                 UpdateSite.Plugin plugin = site.getPlugin(wrapper.getShortName());
+                if (plugin == null) {
+                    // Plugin not distributed by this update site
+                    continue;
+                }
                 final Plugin existing = pluginMap.get(plugin.name);
                 if (existing == null) { // TODO better support for overlapping update sites
                     if (plugin.latest != null && !plugin.latest.equalsIgnoreCase(plugin.version) && !plugin.latest.equalsIgnoreCase(wrapper.getVersion())) {

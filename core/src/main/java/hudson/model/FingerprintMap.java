@@ -25,9 +25,9 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.util.KeyedDataStorage;
+import jenkins.fingerprints.FingerprintStorage;
 import jenkins.model.Jenkins;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -50,7 +50,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
      * Returns true if there's some data in the fingerprint database.
      */
     public boolean isReady() {
-        return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
+        return FingerprintStorage.get().isReady();
     }
 
     /**
@@ -94,7 +94,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
     }
 
     protected @CheckForNull Fingerprint load(@NonNull String key) throws IOException {
-        return Fingerprint.load(toByteArray(key));
+        return Fingerprint.load(key);
     }
 
 static class FingerprintParams {
