@@ -61,9 +61,8 @@ import hudson.triggers.Trigger;
 public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoint {
 
     /** @deprecated Use your own logger, or send messages to the logger in {@link AsyncPeriodicWork#execute}. */
-    @SuppressWarnings("NonConstantLogger")
     @Deprecated
-    protected final Logger logger = Logger.getLogger(getClass().getName());
+    protected static final Logger logger = Logger.getLogger(PeriodicWork.class.getName());
 
     /**
      * Gets the number of milliseconds between successive executions.
