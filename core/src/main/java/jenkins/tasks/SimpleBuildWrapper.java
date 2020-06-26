@@ -147,39 +147,14 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         /**
          * Attempt to clean up anything that was done in the initial setup.
          * @param build a build being run
-         * @param workspace a workspace of the build; may be {@code null} unless {@link #requiresWorkspace()} returns {@code true} (the default)
-         * @param launcher a way to start commands; may be {@code null} unless {@link #requiresLauncher()} returns {@code true} (the default)
+         * @param workspace a workspace of the build; may be {@code null} if is allowed by the corresponding wrapper
+         * @param launcher a way to start commands; may be {@code null} if is allowed by the corresponding wrapper
          * @param listener a way to report progress
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
+         * @see SimpleBuildWrapper#setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)
          */
         public abstract void tearDown(@NonNull Run<?,?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @NonNull TaskListener listener) throws IOException, InterruptedException;
-
-        /**
-         * Indicates whether or not this wrapper callback requires a launcher.
-         * <p>
-         * If this return {@code false}, this means that {@link #tearDown(Run, FilePath, Launcher, TaskListener)}
-         * will accept {@code null} for its {@code launcher} parameter.
-         *
-         * @return {@code true} when this wrapper callback requires a launcher; {@code false} otherwise.
-         * @since TODO
-         */
-        public boolean requiresLauncher() {
-            return true;
-        }
-
-        /**
-         * Indicates whether or not this wrapper callback requires a workspace.
-         * <p>
-         * If this return {@code false}, this means that {@link #tearDown(Run, FilePath, Launcher, TaskListener)}
-         * will accept {@code null} for its {@code workspace} parameter.
-         *
-         * @return {@code true} when this wrapper callback requires a workspace; {@code false} otherwise.
-         * @since TODO
-         */
-        public boolean requiresWorkspace() {
-            return true;
-        }
     }
 
     /**
