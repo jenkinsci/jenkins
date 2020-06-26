@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * A generalization of {@link BuildWrapper} that, like {@link SimpleBuildStep}, may be called at various points within a build.
@@ -75,7 +76,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
      */
-    public abstract void setUp(@NonNull Context context, @NonNull Run<?,?> build, @CheckForNull FilePath workspace, @CheckForNull Launcher launcher, @NonNull TaskListener listener, @NonNull EnvVars initialEnvironment) throws IOException, InterruptedException;
+    public abstract void setUp(@NonNull Context context, @NonNull Run<?,?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @NonNull TaskListener listener, @NonNull EnvVars initialEnvironment) throws IOException, InterruptedException;
 
     /**
      * Indicates whether or not this wrapper requires a launcher.
@@ -152,7 +153,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
-        public abstract void tearDown(@NonNull Run<?,?> build, @CheckForNull FilePath workspace, @CheckForNull Launcher launcher, @NonNull TaskListener listener) throws IOException, InterruptedException;
+        public abstract void tearDown(@NonNull Run<?,?> build, @Nullable FilePath workspace, @Nullable Launcher launcher, @NonNull TaskListener listener) throws IOException, InterruptedException;
 
         /**
          * Indicates whether or not this wrapper callback requires a launcher.
@@ -190,7 +191,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         return false;
     }
 
-    @Override public final Environment setUp(@NonNull AbstractBuild build, final @CheckForNull Launcher launcher, @NonNull BuildListener listener) throws IOException, InterruptedException {
+    @Override public final Environment setUp(@NonNull AbstractBuild build, final @Nullable Launcher launcher, @NonNull BuildListener listener) throws IOException, InterruptedException {
         if (runPreCheckout()) {
             return new Environment() {};
         } else {
@@ -200,7 +201,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
     }
 
-    @Override public final void preCheckout(@NonNull AbstractBuild build, final @CheckForNull Launcher launcher, @NonNull BuildListener listener) throws IOException, InterruptedException {
+    @Override public final void preCheckout(@NonNull AbstractBuild build, final @Nullable Launcher launcher, @NonNull BuildListener listener) throws IOException, InterruptedException {
         if (runPreCheckout()) {
             final Context c = new Context();
             setUp(c, build, build.getWorkspace(), launcher, listener, build.getEnvironment(listener));
@@ -210,8 +211,8 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
 
     private class EnvironmentWrapper extends Environment {
         private final @NonNull Context c;
-        private final @CheckForNull Launcher launcher;
-        EnvironmentWrapper(@NonNull Context c, @CheckForNull Launcher launcher) {
+        private final @Nullable Launcher launcher;
+        EnvironmentWrapper(@NonNull Context c, @Nullable Launcher launcher) {
             this.c = c;
             this.launcher = launcher;
         }

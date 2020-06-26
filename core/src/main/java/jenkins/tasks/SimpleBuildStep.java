@@ -24,7 +24,6 @@
 
 package jenkins.tasks;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -51,6 +50,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
@@ -86,7 +86,7 @@ public interface SimpleBuildStep extends BuildStep {
      * @deprecated Use {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener) instead.}
      */
     @Deprecated
-    default void perform(@NonNull Run<?, ?> run, @CheckForNull FilePath workspace, @CheckForNull Launcher launcher,
+    default void perform(@NonNull Run<?, ?> run, @Nullable FilePath workspace, @Nullable Launcher launcher,
                          @NonNull TaskListener listener) throws InterruptedException, IOException {
         // No additional environment available; just use that from the Run.
         this.perform(run, workspace, run.getEnvironment(listener), launcher, listener);
@@ -103,7 +103,7 @@ public interface SimpleBuildStep extends BuildStep {
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
      * @since TODO
      */
-    default void perform(@NonNull Run<?, ?> run, @CheckForNull FilePath workspace, @NonNull EnvVars env, @CheckForNull Launcher launcher,
+    default void perform(@NonNull Run<?, ?> run, @Nullable FilePath workspace, @NonNull EnvVars env, @Nullable Launcher launcher,
                          @NonNull TaskListener listener) throws InterruptedException, IOException {
         // If this is called, this must be an implementer of the previous API, in which case we call that, discarding
         // the environment we were given.
