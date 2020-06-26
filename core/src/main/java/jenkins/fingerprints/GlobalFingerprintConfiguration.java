@@ -37,6 +37,10 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
         load();
     }
 
+    public static GlobalFingerprintConfiguration get() {
+        return GlobalConfiguration.all().getInstance(GlobalFingerprintConfiguration.class);
+    }
+
     public boolean getFingerprintCleanup() {
         return fingerprintCleanup;
     }

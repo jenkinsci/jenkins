@@ -26,9 +26,12 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.fingerprints.FingerprintStorage;
+import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import java.util.logging.Logger;
 
 /**
  * Scans the fingerprint database and remove old records
@@ -43,6 +46,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension @Symbol("fingerprintCleanup")
 @Restricted(NoExternalUse.class)
 public class FingerprintCleanupThread extends AsyncPeriodicWork {
+
+    private static final Logger LOGGER = Logger.getLogger(FingerprintCleanupThread.class.getName());
 
     public FingerprintCleanupThread() {
         super("Fingerprint cleanup");
@@ -61,6 +66,10 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     public void execute(TaskListener listener) {
+        if (!GlobalFingerprintConfiguration.get().getFingerprintCleanup()) {
+            LOGGER.fine("Fingerprint cleanup is disabled. Skipping execution");
+            return;
+        }
         FingerprintStorage.get().iterateAndCleanupFingerprints(listener);
     }
 
