@@ -73,11 +73,8 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             final SimpleBuildStep sbs = ((SimpleBuildStep) this);
             // delegate to the overloaded version defined in SimpleBuildStep
             FilePath workspace = build.getWorkspace();
-            if (workspace == null && sbs.requiresWorkspace()) {
+            if (workspace == null) {
                 throw new AbortException("no workspace for " + build);
-            }
-            if (launcher == null && sbs.requiresLauncher()) {
-                throw new AbortException("no launcher for " + build);
             }
             sbs.perform(build, workspace, build.getEnvironment(listener), launcher, listener);
             return true;
