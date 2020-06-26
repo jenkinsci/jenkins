@@ -688,7 +688,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public @Override String toString() {
-        return fullName;
+        return id;
     }
 
     /**
