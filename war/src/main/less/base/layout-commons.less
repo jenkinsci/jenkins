@@ -80,8 +80,14 @@ html {
 }
 
 #main-panel {
+  padding: 15px 15px 40px 15px;
+  display: inline-block;
+  width: 100%;
+}
+
+body.two-column #main-panel {
+  width: calc(100% - 320px);
   flex: 1;
-  padding: 1rem 1rem 2.5rem 1rem;
 }
 
 body.two-column #main-panel {
@@ -109,7 +115,7 @@ body.full-screen #main-panel {
 
   body.two-column #main-panel {
     margin-left: 0;
-    display:block;
+    width: 100%;
   }
 }
 
@@ -119,7 +125,7 @@ body.full-screen #main-panel {
   }
 
   body.two-column #main-panel {
-    display:block;
+    width: calc(100% - 370px);
   }
 }
 
