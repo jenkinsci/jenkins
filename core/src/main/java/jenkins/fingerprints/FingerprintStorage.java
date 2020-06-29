@@ -56,6 +56,13 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     }
 
     /**
+     * Returns the file system based {@link FileFingerprintStorage} configured on the system.
+     */
+    public static FingerprintStorage getFileFingerprintStorage() {
+        return ExtensionList.lookup(FingerprintStorage.class).get(FileFingerprintStorage.class);
+    }
+
+    /**
      * Saves the given Fingerprint in the storage.
      * This acts as a blocking operation. For file system based default storage, throws IOException when it fails.
      *

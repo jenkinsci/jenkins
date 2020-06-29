@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
 import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import org.jenkinsci.Symbol;
@@ -65,12 +66,21 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
         return ExtensionList.lookup(AsyncPeriodicWork.class).get(FingerprintCleanupThread.class);
     }
 
+    /**
+     * Initiates the cleanup of fingerprints IF enabled.
+     * In case of configured external storage, the file system based storage cleanup is also performed.
+     */
     public void execute(TaskListener listener) {
         if (!GlobalFingerprintConfiguration.get().getFingerprintCleanup()) {
             LOGGER.fine("Fingerprint cleanup is disabled. Skipping execution");
             return;
         }
         FingerprintStorage.get().iterateAndCleanupFingerprints(listener);
+
+        if (!(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
+                FingerprintStorage.getFileFingerprintStorage().isReady()) {
+            FileFingerprintStorage.getFileFingerprintStorage().iterateAndCleanupFingerprints(listener);
+        }
     }
 
 }
