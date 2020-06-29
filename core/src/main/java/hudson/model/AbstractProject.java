@@ -1913,7 +1913,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         public FormValidation doCheckLabel(@AncestorInPath AbstractProject<?,?> project,
                                            @QueryParameter String value) {
-            return validateLabelExpression(value, project);
+            return LabelExpression.validate(value, project);
         }
 
         /**
@@ -1921,39 +1921,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          *
          * @param project May be specified to perform project specific validation.
          * @since 1.590
+         * @deprecated Use {@link LabelExpression#validate(String, Item)} instead.
          */
+        @Deprecated
         public static @NonNull FormValidation validateLabelExpression(String value, @CheckForNull AbstractProject<?, ?> project) {
-            if (Util.fixEmpty(value)==null)
-                return FormValidation.ok(); // nothing typed yet
-            try {
-                Label.parseExpression(value);
-            } catch (ANTLRException e) {
-                return FormValidation.error(e,
-                        Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
-            }
-            Jenkins j = Jenkins.get();
-            Label l = j.getLabel(value);
-            if (l.isEmpty()) {
-                for (LabelAtom a : l.listAtoms()) {
-                    if (a.isEmpty()) {
-                        LabelAtom nearest = LabelAtom.findNearest(a.getName());
-                        return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
-                    }
-                }
-                return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
-            }
-            if (project != null) {
-                for (AbstractProject.LabelValidator v : j
-                        .getExtensionList(AbstractProject.LabelValidator.class)) {
-                    FormValidation result = v.check(project, l);
-                    if (!FormValidation.Kind.OK.equals(result.kind)) {
-                        return result;
-                    }
-                }
-            }
-            return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-                    j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
-            );
+            return LabelExpression.validate(value, project);
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
@@ -1985,63 +1957,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         public AutoCompletionCandidates doAutoCompleteLabel(@QueryParameter String value) {
-            AutoCompletionCandidates c = new AutoCompletionCandidates();
-            Set<Label> labels = Jenkins.get().getLabels();
-            List<String> queries = new AutoCompleteSeeder(value).getSeeds();
-
-            for (String term : queries) {
-                for (Label l : labels) {
-                    if (l.getName().startsWith(term)) {
-                        c.add(l.getName());
-                    }
-                }
-            }
-            return c;
+            return LabelExpression.autoComplete(value);
         }
 
         public List<SCMCheckoutStrategyDescriptor> getApplicableSCMCheckoutStrategyDescriptors(AbstractProject p) {
             return SCMCheckoutStrategyDescriptor._for(p);
-        }
-
-        /**
-        * Utility class for taking the current input value and computing a list
-        * of potential terms to match against the list of defined labels.
-         */
-        static class AutoCompleteSeeder {
-            private String source;
-
-            AutoCompleteSeeder(String source) {
-                this.source = source;
-            }
-
-            List<String> getSeeds() {
-                ArrayList<String> terms = new ArrayList<>();
-                boolean trailingQuote = source.endsWith("\"");
-                boolean leadingQuote = source.startsWith("\"");
-                boolean trailingSpace = source.endsWith(" ");
-
-                if (trailingQuote || (trailingSpace && !leadingQuote)) {
-                    terms.add("");
-                } else {
-                    if (leadingQuote) {
-                        int quote = source.lastIndexOf('"');
-                        if (quote == 0) {
-                            terms.add(source.substring(1));
-                        } else {
-                            terms.add("");
-                        }
-                    } else {
-                        int space = source.lastIndexOf(' ');
-                        if (space > -1) {
-                            terms.add(source.substring(space+1));
-                        } else {
-                            terms.add(source);
-                        }
-                    }
-                }
-
-                return terms;
-            }
         }
     }
 
@@ -2128,10 +2048,16 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This extension point allows such restrictions.
      *
      * @since 1.540
+     * @deprecated Use {@link jenkins.model.labels.LabelValidator} instead.
      */
+    @Deprecated
     public static abstract class LabelValidator implements ExtensionPoint {
+
         /**
          * Check the use of the label within the specified context.
+         * <p>
+         * Note that "OK" responses (and any text/markup that may be set on them) will be ignored. Only warnings and
+         * errors are taken into account, and aggregated across all validators.
          *
          * @param project the project that wants to restrict itself to the specified label.
          * @param label   the label that the project wants to restrict itself to.
@@ -2139,6 +2065,31 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          */
         @NonNull
         public abstract FormValidation check(@NonNull AbstractProject<?, ?> project, @NonNull Label label);
+
+        /**
+         * Validates the use of a label within a particular context.
+         * <p>
+         * Note that "OK" responses (and any text/markup that may be set on them) will be ignored. Only warnings and
+         * errors are taken into account, and aggregated across all validators.
+         * <p>
+         * This method exists to allow plugins to implement an override for it, enabling checking in non-AbstractProject
+         * contexts without needing to update their Jenkins dependency (and using the new
+         * {@link jenkins.model.labels.LabelValidator} instead).
+         *
+         * @param item  The context item to be restricted by the label.
+         * @param label The label that the job wants to restrict itself to.
+         * @return The validation result.
+         *
+         * @since TODO
+         */
+        @NonNull
+        public FormValidation checkItem(@NonNull Item item, @NonNull Label label) {
+            if (item instanceof AbstractProject<?, ?>) {
+                return this.check((AbstractProject<?, ?>) item, label);
+            }
+            return FormValidation.ok();
+        }
+
     }
 
 }
