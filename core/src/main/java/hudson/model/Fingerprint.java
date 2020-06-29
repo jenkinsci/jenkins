@@ -1316,6 +1316,10 @@ public class Fingerprint implements ModelObject, Saveable {
      * Loads a {@link Fingerprint} from the Storage with the given unique id.
      * @return Loaded {@link Fingerprint}. {@code null} if the config file does not exist or
      * malformed.
+     *
+     * In case an external storage is configured on top of a file system based storage, first external storage is
+     * polled to retrieve the fingerprint, if not found then local storage is polled to retrieve the fingerprint if it
+     * is present there.
      */
     public static @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
         long start=0;
@@ -1324,7 +1328,17 @@ public class Fingerprint implements ModelObject, Saveable {
         }
 
         Fingerprint loaded = FingerprintStorage.get().load(id);
-        initFacets(loaded);
+        if (loaded == null && !(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
+                FingerprintStorage.getFileFingerprintStorage().isReady()) {
+            loaded = FingerprintStorage.getFileFingerprintStorage().load(id);
+            if (loaded != null) {
+                initFacets(loaded);
+                FingerprintStorage.get().save(loaded);
+                FingerprintStorage.getFileFingerprintStorage().delete(id);
+            }
+        } else {
+            initFacets(loaded);
+        }
 
         if(logger.isLoggable(Level.FINE)) {
             logger.fine("Loading fingerprint took " + (System.currentTimeMillis() - start) + "ms");
@@ -1357,12 +1371,17 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * Deletes the {@link Fingerprint} in the Storage with the given unique id.
+     * Deletes the {@link Fingerprint} in the configured storage with the given unique id.
      *
      * @since TODO
      */
     public static void delete(@NonNull String id) throws IOException {
         FingerprintStorage.get().delete(id);
+
+        if (!(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
+                FingerprintStorage.getFileFingerprintStorage().isReady()) {
+            FingerprintStorage.getFileFingerprintStorage().delete(id);
+        }
     }
 
     /**
