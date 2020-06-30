@@ -141,21 +141,27 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return new StringParameterValue(getName(), defaultValue, getDescription());
     }
 
-    private StringParameterValue checkValue(StringParameterValue value) {
-        if (!choices.contains(value.value))
-            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value.value);
-        return value;
+    @Override
+    public boolean isValid(ParameterValue value) {
+        return choices.contains(((StringParameterValue) value).getValue());
     }
 
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
         value.setDescription(getDescription());
-        return checkValue(value);
+        if (!isValid(value)) {
+            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value.getValue());
+        }
+        return value;
     }
 
     public StringParameterValue createValue(String value) {
-        return checkValue(new StringParameterValue(getName(), value, getDescription()));
+        StringParameterValue parameterValue = new StringParameterValue(getName(), value, getDescription());
+        if (!isValid(parameterValue)) {
+            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value);
+        }
+        return parameterValue;
     }
 
     @Extension @Symbol({"choice","choiceParam"})
