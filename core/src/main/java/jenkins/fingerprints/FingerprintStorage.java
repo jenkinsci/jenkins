@@ -119,13 +119,17 @@ public abstract class FingerprintStorage implements ExtensionPoint {
                 }
                 // get the fingerprint in the official map so have the changes visible to Jenkins
                 // otherwise the mutation made in FingerprintMap can override our trimming.
-                fingerprint = Jenkins.get()._getFingerprint(fingerprint.getHashString());
+                fingerprint = getFingerprint(fingerprint);
                 return fingerprint.trim();
             }
         } catch (IOException e) {
             Functions.printStackTrace(e, taskListener.error("Failed to process " + fingerprint.getHashString()));
             return false;
         }
+    }
+
+    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        return Jenkins.get()._getFingerprint(fp.getHashString());
     }
 
 }
