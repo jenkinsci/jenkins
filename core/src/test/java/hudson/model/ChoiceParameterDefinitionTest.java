@@ -44,7 +44,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void checkValue_Null() {
         String stringValue = null;
         String[] choices = new String[]{stringValue};
@@ -59,7 +59,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void checkValue_Blank() {
         String stringValue = "";
         String[] choices = new String[]{stringValue};
@@ -74,7 +74,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void checkValue_Empty() {
         String stringValue = "";
         String[] choices = new String[]{stringValue};
@@ -82,7 +82,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void checkValue_Single() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
@@ -90,7 +90,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void checkValue_Multiple() {
         String[] choices = new String[]{"one", "two", "three"};
         ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition("name", choices, "description");
@@ -101,7 +101,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void checkValue_Invalid() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
@@ -111,7 +111,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test(expected = ClassCastException.class)
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void checkValue_WrongValueType() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
@@ -121,7 +121,7 @@ public class ChoiceParameterDefinitionTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    @Issue("new_issue")
+    @Issue("JENKINS-62889")
     public void createValue_Invalid() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
