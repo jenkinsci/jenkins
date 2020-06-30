@@ -20,7 +20,7 @@ function buildTimeTrend_displayBuilds(data) {
 		update(e.durationString.escapeHTML()));
 		if (isMasterSlaveEnabled) {
 			tr.insert(new Element('td').
-				update(e.builtOn ? new Element('a', {href: rootURL + '/computer/' + e.builtOn, 'class': 'model-link inside'}).update(e.builtOnStr) : e.builtOnStr));
+				update(e.builtOn ? new Element('a', {href: rootURL + '/computer/' + e.builtOn, 'class': 'model-link inside'}).update(e.builtOnStr.escapeHTML()) : e.builtOnStr.escapeHTML()));
 		}
 		p.insert(tr);
 		Behaviour.applySubtree(tr);
