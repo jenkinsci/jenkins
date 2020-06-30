@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import org.junit.Rule;
 import org.junit.Test;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -35,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import jenkins.model.FingerprintFacet;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.io.FileMatchers.aReadableFile;
 import static org.hamcrest.core.Is.is;
@@ -44,13 +46,16 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FingerprintCleanupThreadTest {
 
     private static final Fingerprint.BuildPtr ptr = new Fingerprint.BuildPtr("fred", 23);
     private Path tempDirectory;
     private Path fpFile;
+
+    @Rule
+    public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Test
     public void testDoesNotLogUnimportantExcessiveLogMessage() throws IOException {

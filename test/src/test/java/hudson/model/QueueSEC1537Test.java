@@ -14,7 +14,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 //TODO merge into QueueTest after security patch
 public class QueueSEC1537Test {

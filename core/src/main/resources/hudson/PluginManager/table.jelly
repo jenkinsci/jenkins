@@ -72,8 +72,9 @@ THE SOFTWARE.
               <th>${%Released}</th>
               <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
             </tr>
+            <j:set var="unavailableList" value="${app.updateCenter.pluginsWithUnavailableUpdates}"/>
             <j:choose>
-              <j:when test="${!empty(list)}">
+              <j:when test="${!empty(list) or (isUpdates and !empty(unavailableList))}">
                 <j:set var="cache" value="${it.createCache()}"/>
                 <j:if test="${filtered == 'true'}">
                   <tr id="hidden-by-default-instructions">
@@ -165,6 +166,11 @@ THE SOFTWARE.
                           ${%adoptThisPlugin}
                         </div>
                       </j:if>
+                      <j:if test="${it.hasLatestVersionNewerThanOffered(p)}">
+                        <div class="alert alert-info">
+                          ${%newerVersionExists(p.latest)}
+                        </div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <td class="pane" data="${p.releaseTimestamp.time}">
@@ -187,6 +193,55 @@ THE SOFTWARE.
                     </j:if>
                   </tr>
                 </j:forEach>
+                <j:if test="${isUpdates}">
+                  <!-- TODO this might be nicer by going through the root list element and populating it in index.jelly -->
+                  <j:forEach var="p" items="${unavailableList}">
+                    <j:if test="${!list.contains(p)}"><!-- only show entries for plugins not already in the real updates list -->
+                      <tr class="unavailable">
+                        <l:isAdmin>
+                          <td><!-- install --></td>
+                        </l:isAdmin>
+                        <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
+                          <div>
+                            <a href="${p.wiki}" target="_blank"><st:out value="${p.displayName}"/></a>
+                            <span class="unavailable-label">${%unavailable}</span>
+                          </div>
+                          <j:if test="${!p.categories.isEmpty()}">
+                            <div class="plugin-manager__categories">
+                              <j:forEach var="label" items="${p.categories}">
+                                <j:if test="${!it.isMetaLabel(label)}">
+                                  <a href="?filter=${app.updateCenter.getCategoryDisplayName(label)}"
+                                     class="plugin-manager__category-label">
+                                    ${app.updateCenter.getCategoryDisplayName(label)}
+                                  </a>
+                                </j:if>
+                              </j:forEach>
+                            </div>
+                          </j:if>
+                          <j:if test="${p.excerpt!=null}">
+                            <div class="excerpt"><j:out value="${p.excerpt}" /></div>
+                          </j:if>
+                          <j:if test="${it.hasLatestVersionNewerThanOffered(p)}">
+                            <div class="alert alert-info">
+                              ${%newerVersionEntry(p.wiki)}
+                            </div>
+                          </j:if>
+                        </td>
+                        <td>${p.latest}</td>
+                        <td><!-- timestamp --></td>
+                        <td class="pane">
+                          <j:choose><j:when test="${p.installed.active}">
+                            <st:out value="${p.installed.version}" />
+                          </j:when><j:otherwise>
+                            <span title="${%Inactive}">
+                              (<st:out value="${p.installed.version}" />)
+                            </span>
+                          </j:otherwise></j:choose>
+                        </td>
+                      </tr>
+                    </j:if>
+                  </j:forEach>
+                </j:if>
               </j:when>
               <j:otherwise>
                 <tr>

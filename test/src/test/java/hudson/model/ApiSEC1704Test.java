@@ -34,7 +34,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 //TODO to be merged back to ApiTest after security release
 /**

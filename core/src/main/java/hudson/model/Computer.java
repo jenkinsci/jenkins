@@ -195,6 +195,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     protected final Object statusChangeLock = new Object();
 
+    private final Object logDirLock = new String("logDirLock");
+
     /**
      * Keeps track of stack traces to track the termination requests for this computer.
      *
@@ -303,10 +305,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected @NonNull File getLogDir() {
         File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
-        try {
-            IOUtils.mkdirs(dir);
-        } catch (IOException x) {
-            LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
+        synchronized (logDirLock) {
+            try {
+                IOUtils.mkdirs(dir);
+            } catch (IOException x) {
+                LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
+            }
         }
         return dir;
     }
@@ -329,7 +333,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText<Computer> getLogText() {
-        checkPermission(CONNECT);
+        checkAnyPermission(CONNECT, EXTENDED_READ);
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
@@ -1803,6 +1807,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static final Permission[] EXTENDED_READ_AND_CONNECT =
+            new Permission[] { EXTENDED_READ, CONNECT };
 
     // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
     // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,

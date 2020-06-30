@@ -57,7 +57,13 @@ import org.acegisecurity.Authentication;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -674,6 +680,65 @@ public class PasswordTest {
 
         public String getStringPassword() {
             return "stringPassword";
+        }
+    }
+
+    @Test
+    public void computerExtendedReadNoSecretsRevealed() throws Exception {
+        Computer computer = j.jenkins.getComputers()[0];
+        computer.addAction(new SecuredAction());
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        final String ADMIN = "admin";
+        final String READONLY = "readonly";
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                // full access
+                .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
+
+                // Extended access
+                .grant(Computer.EXTENDED_READ).everywhere().to(READONLY)
+                .grant(Jenkins.READ).everywhere().to(READONLY)
+
+        );
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        {
+            wc.login(READONLY);
+            HtmlPage page = wc.goTo("computer/(master)/secured/");
+
+            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            assertThat(value, is("********"));
+        }
+
+        {
+            wc.login(ADMIN);
+            HtmlPage page = wc.goTo("computer/(master)/secured/");
+
+            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            assertThat(Secret.fromString(value).getPlainText(), is("abcdefgh"));
+        }
+    }
+
+
+    public static class SecuredAction implements Action {
+
+        public final Secret secret = Secret.fromString("abcdefgh");
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Secured";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "secured";
         }
     }
 }

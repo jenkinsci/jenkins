@@ -1,14 +1,13 @@
-@import "../abstracts/font.less";
-@import "../abstracts/colors.less";
+@import "../abstracts/theme.less";
 
 .page-header {
     display: block;
     display: flex;
     align-items: center;
     height: 3.5rem;
-    font-size: @font-size-base;
-    line-height: @line-height-base;
-    background-color: @header-bg-classic;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    background-color: var(--header-bg-classic);
 }
 
 .page-header > * {
@@ -61,34 +60,33 @@ a.page-header__brand-link {
     padding: 0.5rem;
     margin-right: 0.25rem;
     font-weight: bold;
-
-    outline-color: @header-link-outline;
+    outline-color: var(--header-link-outline);
 
     &:link,
     &:visited {
-        color: @header-link-color;
-        border-radius: @header-item-border-radius;
+        color: var(--header-link-color);
+        border-radius: var(--header-item-border-radius);
         text-decoration: none;
     }
 
     &:hover,
     &:focus,
     &.mouseIsOverMenuSelector {
-        color: @header-link-color-active;
-        background-color: @header-link-bg-classic-hover;
+        color: var(--header-link-color-active);
+        background-color: var(--header-link-bg-classic-hover);
         text-decoration: underline;
-        text-decoration-color: @header-link-color-active;
+        text-decoration-color: var(--header-link-color-active);
     }
 
     &:active {
-        background-color: @header-link-bg-classic-active;
+        background-color: var(--header-link-bg-classic-active);
     }
 }
 
 // This could probably be colocated with the rest of the AM CSS,
-// But we put it here to take advantage of the variables
+// But we put it here to take advantage of the: variables
 #visible-am-container.visible #visible-am-button {
-    background-color: @header-link-bg-classic-active;
+    background-color: var(--header-link-bg-classic-active);
     text-decoration: none;
 }
 
@@ -106,7 +104,7 @@ a.page-header__brand-link {
 // the YUI Autocomplete module
 #searchform {
     position: relative;
-    font-family: @font-family-sans;
+    font-family: var(--font-family-sans);
     display: inline-block;
     display: inline-flex;
     height: 2.5rem;
@@ -118,14 +116,12 @@ a.page-header__brand-link {
     position: static;
     padding: 0.25rem 2.5rem;
     margin: 0;
-
-    font-size: @font-size-base;
-    line-height: @line-height-base;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     font-weight: bold;
-    color: @search-input-color;
-
-    border-radius: @header-item-border-radius;
-    border: 3px solid white;
+    color: var(--search-input-color);
+    border-radius: var(--header-item-border-radius);
+    border: 3px solid var(--header-search-border);
     outline: none;
 
     &::placeholder {
@@ -133,7 +129,7 @@ a.page-header__brand-link {
     }
 
     &:focus {
-        border-color: @header-link-outline;
+        border-color: var(--header-link-outline);
     }
 }
 
@@ -157,20 +153,20 @@ a.page-header__brand-link {
 
 .main-search__icon-trailing {
     right: 0;
-    outline-color: @header-link-outline;
+    outline-color: var(--header-link-outline);
 
     &:link,
     &:visited {
-        color: @search-input-color;
+        color: var(--search-input-color);
     }
 
     &:hover,
     &:focus {
-        color: @header-link-bg-classic-hover;
+        color: var(--header-link-bg-classic-hover);
     }
 
     &:active {
-        fill: @header-link-bg-classic-active;
+        fill: var(--header-link-bg-classic-active);
     }
 }
 
@@ -179,18 +175,6 @@ a.page-header__brand-link {
     width: 25em;
     position: absolute;
     z-index: 1000;
-}
-
-#search-box-completion .yui-ac-content {
-    width: 30em;
-    background-color: @search-background;
-    overflow: hidden;
-
-    // TODO:  chose a better box shadow
-    box-shadow: @search-box-shadow;
-
-    border: none;
-    border-radius: @header-item-border-radius;
 }
 
 #search-box-completion UL {
@@ -203,19 +187,14 @@ a.page-header__brand-link {
 #search-box-completion LI {
     white-space: nowrap;
     padding: 0.25rem 1.25rem;
-    font-size: @font-size-base;
-    line-height: @line-height-base;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-#search-box-completion LI.yui-ac-highlight {
-    background: @search-box-completion-bg;
-    font-weight: bold;
-}
-
 #search-box-sizer {
-    position:absolute;
+    position: absolute;
     visibility: hidden;
     min-width: 15rem;
     max-width: calc(100vw - 500px);

@@ -66,7 +66,12 @@ import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 /**
