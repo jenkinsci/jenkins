@@ -59,7 +59,7 @@ public abstract class FingerprintStorage implements ExtensionPoint {
      * Returns the file system based {@link FileFingerprintStorage} configured on the system.
      */
     public static FingerprintStorage getFileFingerprintStorage() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(FileFingerprintStorage.class);
+        return ExtensionList.lookup(FingerprintStorage.class).get(1);
     }
 
     /**

@@ -88,7 +88,6 @@ public class FingerprintCleanupThreadTest {
 
     @Test
     public void testGetRecurrencePeriod() throws IOException {
-        configureLocalTestStorage(new TestFingerprint());
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         assertEquals("Wrong recurrence period.", PeriodicWork.DAY, cleanupThread.getRecurrencePeriod());
     }
@@ -164,6 +163,7 @@ public class FingerprintCleanupThreadTest {
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
         assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(nullValue()));
+        assertThat(fpFile.toFile(), is(not(aReadableFile())));
     }
 
     private void configureLocalTestStorage(Fingerprint fingerprint) {
@@ -226,6 +226,11 @@ public class FingerprintCleanupThreadTest {
         @Override
         protected Fingerprint loadFingerprint(File fingerprintFile) throws IOException {
             return fingerprintToLoad;
+        }
+
+        @Override
+        public boolean isReady() {
+            return fpFile.toFile().exists();
         }
 
     }

@@ -221,12 +221,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
      * Perform Fingerprint cleanup.
      */
     public void iterateAndCleanupFingerprints(TaskListener taskListener) {
-        Object fingerprintStorage = FingerprintStorage.get();
-        if (!(fingerprintStorage instanceof FileFingerprintStorage)) {
-            logger.fine("External fingerprint storage is configured. Skipping execution");
-            return;
-        }
-
         int numFiles = 0;
 
         File root = new File(getRootDir(), FINGERPRINTS_DIR_NAME);
