@@ -155,7 +155,6 @@ public class FingerprintCleanupThreadTest {
         TestTaskListener testTaskListener = new TestTaskListener();
         Fingerprint localFingerprint = new TestFingerprint(false);
         configureLocalTestStorage(localFingerprint);
-        assertThat(Fingerprint.load(localFingerprint.getHashString()), is(not(nullValue())));
 
         Fingerprint externalFingerprint = new TestFingerprint(false);
         configureExternalTestStorage();
@@ -212,11 +211,6 @@ public class FingerprintCleanupThreadTest {
 
         public TestFileFingerprintStorage(Fingerprint fingerprintToLoad) {
             this.fingerprintToLoad = fingerprintToLoad;
-        }
-
-        @Override
-        public Fingerprint load(String id) {
-            return fingerprintToLoad;
         }
 
         @Override
@@ -306,5 +300,4 @@ public class FingerprintCleanupThreadTest {
             return new Fingerprint(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
         }
     }
-
 }
