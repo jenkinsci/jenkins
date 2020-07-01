@@ -765,9 +765,8 @@ function getParentForm(element) {
     if (element == null) throw 'not found a parent form';
     if (element instanceof HTMLFormElement) return element;
 
-    return false;
+    return getParentForm(element.parentNode);
 }
-
 function saveAndSubmit() {
     editor.save();
     getParentForm(e).submit();
