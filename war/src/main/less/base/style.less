@@ -277,67 +277,6 @@ pre.console {
   padding-top: 0;
 }
 
-/* tabBar */
-
-.tabBar {
-  overflow: auto;
-  position: relative;
-  top: 1px;
-}
-.tabBar .tab {
-  float: left;
-  margin-left: 3px;
-}
-.tabBar .tab:first-child {
-  margin-left: 15px;
-}
-.tabBar .tab a {
-  position: relative;
-  display: block;
-  border: solid 1px var(--tab-bar-border-color);
-  border-bottom: none;
-  text-decoration: none;
-  color: #999;
-  padding: 7px 10px;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  font-weight: normal;
-}
-.tabBar .tab a:hover {
-  background: var(--tab-bar-bg-color--hover);
-}
-.tabBar .tab a.addTab {
-  font-weight: bold;
-  color: var(--tab-bar-add-text-color);
-  border: 1px solid var(--tab-bar-add-border-color);
-  border-bottom: none;
-}
-.tabBar .tab a.addTab:hover {
-  background: var(--tab-bar-add-bg-color--hover);
-}
-.tabBar .tab [type=radio] {
-  display: none;
-}
-.tabBar [type=radio]:checked ~ a {
-  border: solid 1px var(--tab-bar-border-color--checked);
-  border-bottom: none;
-  background: var(--tab-bar-bg--checked);
-  color: var(--tab-bar-text-color--checked);
-  font-weight: bold;
-  z-index: 2;
-}
-.tabBarBaseline {
-  border-top: 1px solid #f0f0f0;
-  z-index: 1;
-}
-
-.tabBarBaseline {
-  display: none; /* Baseline is hidden by default.  See next rule fo adding visibility. */
-}
-.tabBarFrame.showBaseline .tabBarBaseline {
-  display: block;
-}
-
 /* div that looks like a hyperlink */
 .pseudoLink {
   cursor: pointer;
@@ -372,114 +311,6 @@ pre.console {
 }
 
 .main-table {
-}
-
-/* pane */
-
-.pane-frame {
-  border: solid 1px var(--pane-border-color);
-  border-radius: 4px;
-}
-
-.pane-header, .pane-footer {
-  padding: 8px 0px;
-  background-color: var(--pane-header-color);
-  border: solid 1px var(--pane-header-border-color);
-  border-left: none;
-  border-right: none;
-  color: var(--pane-text-color);
-}
-.pane-header {
-  border-top: none;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-}
-.pane-footer {
-  border-bottom: none;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-
-.pane td {
-  padding: 4px 4px 3px 4px;
-  vertical-align: middle;
-}
-
-table.pane {
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px #bbb solid;
-}
-
-td.pane {
-  padding: 3px 4px 3px 4px;
-  vertical-align: middle;
-}
-
-table.stripped tr:nth-of-type(even) {
-  background: var(--even-row-color);
-}
-
-table.stripped-even tr:nth-child(even) {
-  background: var(--even-row-color);
-}
-table.stripped-odd tr:nth-child(odd) {
-  background: var(--even-row-color);
-}
-table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
-  background: var(--table-stripped-bg-color--hover) !important;
-}
-
-div.pane-header {
-  font-weight: bold;
-  padding-right: 24px;
-}
-
-div.pane-header .collapse {
-  float: right;
-  margin-left: 3px;
-}
-
-th.pane {
-  font-weight: bold;
-}
-
-
-/* bigtable */
-
-/* For non-full screen table */
-.bigtable.width-auto {
-  width: auto;
-}
-
-.bigtable tr {
-  border: 1px solid #bbb;
-  padding: 3px 4px 3px 4px;
-}
-table.bigtable.pane > tbody > tr > td:last-child {
-  border-right: none;
-}
-
-.pane-frame table, .pane-frame .bigtable tr {
-  border: none; /* Border will be provided by the pane-frame */
-}
-
-.bigtable th {
-  font-weight: bold;
-  border: none;
-  background-color: var(--bigtable-header-color);
-  padding: 6px 4px;
-  white-space: nowrap;
-  text-align: left;
-
-  &.minimum-width {
-    width: 1px;
-  }
-}
-
-.bigtable td {
-  vertical-align: middle;
-  padding: 3px 4px 3px 4px;
 }
 
 .smallfont {
@@ -1150,24 +981,6 @@ TABLE.fileList TD.fileSize {
   font-size: var(--font-size-base);
   font-weight: bold;
 }
-
-
-
-/* ========================= sortable table ========================= */
-table.sortable a.sortheader {
-  text-decoration: none;
-  display: block;
-  color: var(--pane-text-color);
-  font-weight: bold;
-}
-table.sortable span.sortarrow {
-  text-decoration: none;
-  color: var(--pane-text-color);
-  font-weight: bold;
-}
-
-
-
 
 /* ========================= fingerprint ========================= */
 .md5sum {

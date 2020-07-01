@@ -1,0 +1,123 @@
+/* pane */
+
+.pane-frame {
+  border: solid 1px var(--pane-border-color);
+  border-radius: 4px;
+}
+
+.pane-header, .pane-footer {
+  padding: 8px 0px;
+  background-color: var(--pane-header-color);
+  border: solid 1px var(--pane-header-border-color);
+  border-left: none;
+  border-right: none;
+  color: var(--pane-text-color);
+}
+
+.pane-header {
+  border-top: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.pane-footer {
+  border-bottom: none;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.pane td {
+  padding: 4px 4px 3px 4px;
+  vertical-align: middle;
+}
+
+table.pane {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px #bbb solid;
+}
+
+td.pane {
+  padding: 3px 4px 3px 4px;
+  vertical-align: middle;
+}
+
+table.stripped tr:nth-of-type(even) {
+  background: var(--even-row-color);
+}
+
+table.stripped-even tr:nth-child(even) {
+  background: var(--even-row-color);
+}
+table.stripped-odd tr:nth-child(odd) {
+  background: var(--even-row-color);
+}
+table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
+  background: var(--table-stripped-bg-color--hover) !important;
+}
+
+div.pane-header {
+  font-weight: bold;
+  padding-right: 24px;
+}
+
+div.pane-header .collapse {
+  float: right;
+  margin-left: 3px;
+}
+
+th.pane {
+  font-weight: bold;
+}
+
+/* Bigtable */
+
+/* For non-full screen table */
+
+.bigtable.width-auto {
+  width: auto;
+}
+
+.bigtable tr {
+  border: 1px solid #bbb;
+  padding: 3px 4px 3px 4px;
+}
+table.bigtable.pane > tbody > tr > td:last-child {
+  border-right: none;
+}
+
+.pane-frame table, .pane-frame .bigtable tr {
+  border: none; /* Border will be provided by the pane-frame */
+}
+
+.bigtable th {
+  font-weight: bold;
+  border: none;
+  background-color: var(--bigtable-header-color);
+  padding: 6px 4px;
+  white-space: nowrap;
+  text-align: left;
+
+  &.minimum-width {
+    width: 1px;
+  }
+}
+
+.bigtable td {
+  vertical-align: middle;
+  padding: 3px 4px 3px 4px;
+}
+
+/* ========================= sortable table ========================= */
+table.sortable a.sortheader {
+  text-decoration: none;
+  display: block;
+  color: var(--pane-text-color);
+  font-weight: bold;
+}
+
+table.sortable span.sortarrow {
+  text-decoration: none;
+  color: var(--pane-text-color);
+  font-weight: bold;
+}

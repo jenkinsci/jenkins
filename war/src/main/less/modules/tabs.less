@@ -1,0 +1,65 @@
+.tabBar {
+  overflow: auto;
+  position: relative;
+  top: 1px;
+}
+
+.tabBar .tab {
+  float: left;
+  margin-left: 3px;
+}
+
+.tabBar .tab:first-child {
+  margin-left: 15px;
+}
+
+.tabBar .tab a {
+  position: relative;
+  display: block;
+  border: solid 1px var(--tab-bar-border-color);
+  border-bottom: none;
+  text-decoration: none;
+  color: #999;
+  padding: 7px 10px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  font-weight: normal;
+}
+
+.tabBar .tab a:hover {
+  background: var(--tab-bar-bg-color--hover);
+}
+
+.tabBar .tab a.addTab {
+  font-weight: bold;
+  color: var(--tab-bar-add-text-color);
+  border: 1px solid var(--tab-bar-add-border-color);
+  border-bottom: none;
+}
+
+.tabBar .tab a.addTab:hover {
+  background: var(--tab-bar-add-bg-color--hover);
+}
+
+.tabBar .tab [type=radio] {
+  display: none;
+}
+
+.tabBar [type=radio]:checked ~ a {
+  border: solid 1px var(--tab-bar-border-color--checked);
+  border-bottom: none;
+  background: var(--tab-bar-bg--checked);
+  color: var(--tab-bar-text-color--checked);
+  font-weight: bold;
+  z-index: 2;
+}
+
+.tabBarBaseline {
+  border-top: 1px solid #f0f0f0;
+  z-index: 1;
+  display: none; /* Baseline is hidden by default.  See next rule fo adding visibility. */
+}
+
+.tabBarFrame.showBaseline .tabBarBaseline {
+  display: block;
+}
