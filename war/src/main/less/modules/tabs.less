@@ -1,44 +1,65 @@
 .tabBar {
   overflow: auto;
-  position: relative;
-  top: 1px;
+  // position: relative;
+  // top: var(--tab-link-border-width);
 }
 
 .tabBar .tab {
   float: left;
-  margin-left: 3px;
-}
 
-.tabBar .tab:first-child {
-  margin-left: 15px;
+  &:not(:first-child) {
+    margin-left: var(--tab-link-separation);
+  }
 }
 
 .tabBar .tab a {
   position: relative;
   display: block;
-  border: solid 1px var(--tab-bar-border-color);
-  border-bottom: none;
+  border: solid var(--tab-link-border-width) var(--tab-link-border-color);
   text-decoration: none;
-  color: #999;
-  padding: 7px 10px;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  font-weight: normal;
+  padding: var(--tab-link-padding-y) var(--tab-link-padding-x);
+  border-top-left-radius: var(--tab-link-border-radius-top);
+  border-top-right-radius: var(--tab-link-border-radius-top);
+  border-bottom-left-radius: var(--tab-link-border-radius-bottom);
+  border-bottom-right-radius: var(--tab-link-border-radius-bottom);
+  font-weight: var(--tab-link-font-weight);
+
+  color: var(--tab-link-text-color);
+  background: var(--tab-link-bg);
+  border-color: var(--tab-link-border-color);
+
+  &:hover,
+  &:focus {
+    color: var(--tab-link-text-color--hover);
+    background: var(--tab-link-bg--hover);
+    border-color: var(--tab-link-border-color--hover);
+  }
+
+  &:active {
+    color: var(--tab-link-text-color--active);
+    background: var(--tab-link-bg--active);
+    border-color: var(--tab-link-border-color--active);
+  }
 }
 
 .tabBar .tab a:hover {
-  background: var(--tab-bar-bg-color--hover);
+  background: var(--tab-link-bg--hover);
 }
 
 .tabBar .tab a.addTab {
-  font-weight: bold;
-  color: var(--tab-bar-add-text-color);
-  border: 1px solid var(--tab-bar-add-border-color);
-  border-bottom: none;
-}
+  color: var(--link-color);
+  border: var(--tab-link-border-width) solid var(--tab-link-add-border-color);
 
-.tabBar .tab a.addTab:hover {
-  background: var(--tab-bar-add-bg-color--hover);
+  &:hover,
+  &:focus {
+    color: var(--link-color--hover);
+    background: var(--tab-link-add-bg--hover);
+  }
+
+  &:active {
+    color: var(--link-color--active);
+    background: var(--tab-link-add-bg--hover);
+  }
 }
 
 .tabBar .tab [type=radio] {
@@ -46,11 +67,9 @@
 }
 
 .tabBar [type=radio]:checked ~ a {
-  border: solid 1px var(--tab-bar-border-color--checked);
-  border-bottom: none;
-  background: var(--tab-bar-bg--checked);
-  color: var(--tab-bar-text-color--checked);
-  font-weight: bold;
+  border: var(--tab-link-border-width) solid var(--tab-link-checked-border-color);
+  background: var(--tab-link-checked-bg);
+  color: var(--tab-link-checked-text-color);
   z-index: 2;
 }
 

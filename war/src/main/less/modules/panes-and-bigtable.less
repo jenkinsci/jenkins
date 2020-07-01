@@ -7,8 +7,9 @@
 
 .pane-header, .pane-footer {
   padding: 8px 0px;
-  background-color: var(--pane-header-color);
-  border: solid 1px var(--pane-header-border-color);
+  color: var(--pane-header-color);
+  background: var(--pane-header-bg);
+  border: solid 1px var(--pane-header-border-color); // TODO: see how this affects the side panel widgets
   border-left: none;
   border-right: none;
   color: var(--pane-text-color);
@@ -57,7 +58,7 @@ table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hov
 }
 
 div.pane-header {
-  font-weight: bold;
+  font-weight: var(--pane-header-font-weight);
   padding-right: 24px;
 }
 
@@ -67,7 +68,7 @@ div.pane-header .collapse {
 }
 
 th.pane {
-  font-weight: bold;
+  font-weight: var(--pane-header-font-weight);
 }
 
 /* Bigtable */
@@ -91,9 +92,10 @@ table.bigtable.pane > tbody > tr > td:last-child {
 }
 
 .bigtable th {
-  font-weight: bold;
+  font-weight: var(--bigtable-header-font-weight);
   border: none;
-  background-color: var(--bigtable-header-color);
+  color: var(--bigtable-header-text-color);
+  background: var(--bigtable-header-bg);
   padding: 6px 4px;
   white-space: nowrap;
   text-align: left;
@@ -112,12 +114,14 @@ table.bigtable.pane > tbody > tr > td:last-child {
 table.sortable a.sortheader {
   text-decoration: none;
   display: block;
-  color: var(--pane-text-color);
-  font-weight: bold;
+  // color: var(--pane-text-color);
+  color: var(--bigtable-header-text-color);
+  font-weight: var(--pane-header-font-weight);  // Should we use the bigtable one here?
 }
 
 table.sortable span.sortarrow {
   text-decoration: none;
-  color: var(--pane-text-color);
-  font-weight: bold;
+  // color: var(--pane-text-color);
+  color: var(--bigtable-header-text-color);
+  font-weight: var(--pane-header-font-weight); // Should we use the bigtable one here?
 }
