@@ -1269,8 +1269,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Deletes all suffixed directories that are separated by {@link WorkspaceList.COMBINATOR}, including all its contents recursively.
-     */
+     * Deletes all suffixed directories that are separated by {@link WorkspaceList#COMBINATOR}, including all its contents recursively.
+     */ 
     private class DeleteSuffixesRecursive extends SecureFileCallable<Void> {
         private static final long serialVersionUID = 1L;
 
