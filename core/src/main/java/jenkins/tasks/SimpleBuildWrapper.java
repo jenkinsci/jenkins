@@ -147,8 +147,8 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         /**
          * Attempt to clean up anything that was done in the initial setup.
          * @param build a build being run
-         * @param workspace a workspace of the build; may be {@code null} if is allowed by the corresponding wrapper
-         * @param launcher a way to start commands; may be {@code null} if is allowed by the corresponding wrapper
+         * @param workspace a workspace of the build; may be {@code null} if also allowed by the corresponding wrapper
+         * @param launcher a way to start commands; may be {@code null} if also allowed by the corresponding wrapper
          * @param listener a way to report progress
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
