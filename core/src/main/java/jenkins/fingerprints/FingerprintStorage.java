@@ -94,7 +94,10 @@ public abstract class FingerprintStorage implements ExtensionPoint {
     public abstract boolean isReady();
 
     /**
-     * Iterates a set of fingerprints, and cleans them up.
+     * Iterates a set of fingerprints, and cleans them up. Cleaning up a fingerprint implies deleting the builds
+     * associated with the fingerprints, once they are no longer available on the system. If all the builds have been
+     * deleted, the fingerprint itself is deleted.
+     *
      * This method is called periodically by {@link hudson.model.FingerprintCleanupThread}.
      * For reference, see {@link FileFingerprintStorage#iterateAndCleanupFingerprints(TaskListener)}
      * For cleaning up the fingerprint {@link #cleanFingerprint(Fingerprint, TaskListener)} may be used.
