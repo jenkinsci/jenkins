@@ -20,6 +20,7 @@
     line-height: 1.5;
     padding: 0 1.25rem;
     background-color: #F8F8F8;
+    background-color: var(--breadcrumbs-bg);
 }
 
 #breadcrumbs {
@@ -50,6 +51,7 @@
 
 #breadcrumbs LI:hover, A.breadcrumbBarAnchor.mouseIsOverMenuSelector {
   background-color: #e0e4dc;
+  background-color: var(--breadcrumbs-item-bg-color--hover);
 }
 
 
@@ -66,6 +68,7 @@
     display: inline-block;
     display: inline-flex;
     color: #4d545d;
+    color: var(--breadcrumbs-text-color);
 }
 
 #breadcrumbs LI A:hover, #breadcrumbs LI A:focus {
@@ -89,18 +92,25 @@
     display: inline-block;
     display: inline-flex;
     align-items: center;
-    background-image: url(menu_right_arrow2.png);
-    background-position: center center;
-    background-repeat: no-repeat;
+    justify-content: center;
+}
 
+#breadcrumbs LI.children:after, #breadcrumbs LI.separator:after {
+    /* Right arrow */
+    content: "";
+    border-left: 0.25em solid #bcbcbc;
+    border-top: 0.25em solid transparent;
+    border-bottom: 0.25em solid transparent;
+    border-right: 0;
 }
 
 #breadcrumbs LI.children {
     cursor: pointer;
 }
 
-#breadcrumbs LI.children:hover {
-    background-image: url(menu_right_arrow.png);
+#breadcrumbs LI.children:hover:after {
+    border-left-color: #4d545d;
+    border-left-color: var(--breadcrumbs-text-color);
 }
 
 #breadcrumbs LI.separator:last-child {/* separators are for in-between only */
@@ -108,19 +118,28 @@
 }
 
 #menuSelector {/* used for showing 'v' on the right of the anchor */
-    background-color:transparent;
-    background-image: url(menu_down_arrow.png);
-    background-position: center center;
-    background-repeat: no-repeat;
     width: 15px;
     height:16px;
     position: absolute;
     visibility: hidden;
     cursor: pointer;
     z-index: 2000;
+    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
-#menuSelector.inverse {
-    background-image: url(menu_down_arrow2.png);
+#menuSelector:after {
+    /* Down arrow */
+    content: "";
+    border-top: 0.30em solid #4d545d;
+    border-top: 0.30em solid var(--breadcrumbs-text-color);
+    border-left: 0.30em solid transparent;
+    border-right: 0.30em solid transparent;
+    border-bottom: 0;
+}
+#menuSelector.inverse:after {
+    border-top-color: #bcbcbc;
 }
 
 A.model-link.inside, #breadcrumbs A.inside {/* additional 'inside' class allows pre-allocation of the context menu space */

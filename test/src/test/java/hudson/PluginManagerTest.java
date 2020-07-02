@@ -48,6 +48,7 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import jenkins.model.GlobalConfiguration;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -60,6 +61,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -608,5 +610,19 @@ public class PluginManagerTest {
         assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
         dynamicLoad("jenkins-50336.hpi");
         assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
+    }
+
+    @Issue("JENKINS-62622")
+    @Test
+    @WithPlugin("legacy.hpi")
+    public void doNotThrowWithUnknownPlugins() throws Exception {
+        final UpdateCenter uc = Jenkins.get().getUpdateCenter();
+        Assert.assertNull("This test requires the plugin with ID 'legacy' to not exist in update sites", uc.getPlugin("legacy"));
+
+        // ensure data is loaded - probably unnecessary, but closer to reality
+        Assert.assertTrue(uc.getSite("default").updateDirectlyNow().kind == FormValidation.Kind.OK);
+
+        // This would throw NPE
+        uc.getPluginsWithUnavailableUpdates();
     }
 }

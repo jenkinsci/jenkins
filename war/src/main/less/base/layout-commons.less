@@ -1,4 +1,4 @@
-@import '../abstracts/font.less';
+@import '../abstracts/theme.less';
 
 html {
   position: relative;
@@ -11,6 +11,7 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
+  background-color: var(--background);
 }
 
 html {
@@ -51,11 +52,11 @@ html {
 #breadcrumbBar,
 #footer-container,
 .top-sticker-inner {
-  background-color: @breadcrumbs-bg;
+  background-color: var(--breadcrumbs-bg);
 }
 
 .top-sticker-inner {
-  border-bottom: 1px solid @breadcrumbs-border;
+  border-bottom: 1px solid --var(breadcrumbs-border);
 }
 
 /* -------------------------------------- */
@@ -72,14 +73,15 @@ html {
 }
 
 #side-panel {
-  padding: 15px 15px 40px 15px;
-  width: 320px;
-  border-right: 1px solid #EAEFF2;
+  padding: 1rem 0 2.5rem 0;
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--panel-border-color);
 }
 
 #main-panel {
-  padding: 15px 15px 40px 15px;
   flex: 1;
+  padding: 1rem 1rem 2.5rem 1rem;
 }
 
 body.two-column #main-panel {
@@ -113,7 +115,7 @@ body.full-screen #main-panel {
 
 @media (min-width: 1170px) {
   body.two-column #side-panel {
-    width: 360px;
+    width: 340px;
   }
 
   body.two-column #main-panel {

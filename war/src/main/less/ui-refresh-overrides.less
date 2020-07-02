@@ -1,9 +1,8 @@
-@import "./abstracts/colors.less";
-@import "./abstracts/font.less";
+@import  "./abstracts/theme.less";
 
 .ui-refresh {
     .page-header {
-        background-color: @header-bg-v2;
+        background-color: var(--header-bg-v2);
     }
 
     #header .logo {
@@ -12,35 +11,35 @@
 
     // Need to use the element selector to increase weight otherwise it will be overriden by the
     // a:visited selector if it is declared later
-    A.page-header__brand-link {
+    a.page-header__brand-link {
         display: inline-block;
         display: inline-flex;
         align-items: center;
         height: 100%;
         padding: 16px 24px;
-        font-size: @font-size-base;
+        font-size: var(--font-size-base);
         font-weight: bold;
-        background-color: @logo-bg;
+        background-color: var(--logo-bg);
         // TODO: comment on browser support for clip-path
         clip-path: polygon(0 0, 100% 0, 95% 100%, 0 100%);
 
         &:link,
         &:visited {
-            color: @brand-link-color;
+            color: var(--brand-link-color);
             text-decoration: none;
         }
 
         &:hover,
         &:focus {
             text-decoration: underline;
-            color: @brand-link-color-hover-v2;
-            text-decoration-color: @brand-link-color-hover-v2;
+            color: var(--brand-link-color-hover-v2);
+            text-decoration-color: var(--brand-link-color-hover-v2);
         }
 
         &:link:focus {
             outline: none;
-            color: @brand-link-color-active-v2;
-            text-decoration-color: @brand-link-color-active-v2;
+            color: var(--brand-link-color-active-v2);
+            text-decoration-color: var(--brand-link-color-active-v2);
 
             .page-header__brand-name {
                 outline: auto;
@@ -48,43 +47,43 @@
         }
     }
 
-    .page-header__hyperlinks A {
+    .page-header__hyperlinks a {
         &:hover,
         &:focus,
         &.mouseIsOverMenuSelector {
-            background-color: @header-link-bg-hover-v2;
+            background-color: var(--header-link-bg-hover-v2);
         }
 
         &:active {
-            background-color: @header-link-bg-active-v2;
+            background-color: var(--header-link-bg-active-v2);
         }
     }
 
     .main-search__input:hover ~ .main-search__icon-leading {
-        color: @header-link-bg-hover-v2;
+        color: var(--header-link-bg-hover-v2);
     }
 
     .main-search__input:focus ~ .main-search__icon-leading {
-        color: @header-link-bg-active-v2;
+        color: var(--header-link-bg-active-v2);
     }
 
     .main-search__icon-trailing {
         &:hover,
         &:focus {
-            color: @header-link-bg-hover-v2;
+            color: var(--header-link-bg-hover-v2);
         }
 
         &:active {
-            fill: @header-link-bg-active-v2;
+            fill: var(--header-link-bg-active-v2);
         }
     }
 
     #visible-am-container.visible #visible-am-button {
-        background-color: @header-link-bg-active-v2;
+        background-color: var(--header-link-bg-active-v2);
     }
 
     #visible-am-button .am-monitor__count {
-        color: @monitor-color-v2;
-        background-color: @monitor-bg-v2;
+        color: var(--monitor-color-v2);
+        background-color: var(--monitor-bg-v2);
     }
 }

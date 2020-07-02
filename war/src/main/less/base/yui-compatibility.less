@@ -58,9 +58,127 @@
   zoom: 1;
 }
 .yui-skin-sam .yui-ac-content li.yui-ac-prehighlight {
-  background: #b3d4ff;
+  background: var(--auto-complete-bg-color--prehighlight);
 }
 .yui-skin-sam .yui-ac-content li.yui-ac-highlight {
   background: #426fd9;
   color: #fff;
+}
+
+#jenkins.yui-skin-sam {
+  .yui-menu ul {
+    border-color: var(--input-border);
+  }
+
+  .yuimenuitem-selected {
+    background-color: var(--menu-selected-color);
+  }
+
+  .yuimenuitemlabel {
+    color: var(--menu-text-color);
+    font-weight: normal;
+
+    &:visited {
+      color: var(--menu-text-color);
+    }
+  }
+
+  .yuimenu {
+    .bd {
+      border-color: var(--input-border);
+      background-color: var(--menu-bg-color);
+    }
+  }
+}
+
+.ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
+  color: inherit;
+}
+
+DIV.yahooTree td {
+  vertical-align: middle;
+}
+
+.yui-tt {
+  border: 1px solid black !important;
+  background-color: #fff !important;
+  padding: 2px !important;
+  font-family: inherit !important;
+  color: inherit !important;
+}
+
+.yui-skin-sam .yui-tt .bd {
+  border: none !important;
+  background-color: #fff !important;
+}
+
+.yuimenu LI .yui-menu-tooltip {
+  color: #a6a6a6;
+}
+
+.yuimenu LI.yui-menuitem-tooltip {
+  border-bottom: 1px solid #808080;
+  padding-bottom: 3px;
+  margin-bottom: 1em;
+}
+
+#jenkins .yuimenuitem {
+  font-size: var(--font-size-xs);
+  padding: 3px;
+}
+
+#jenkins .yuimenuitem,
+#jenkins .yuimenuitemlabel {
+  cursor: pointer;
+}
+
+#jenkins .yuimenu .bd {
+  border: 1px solid #ccc;
+  box-shadow: var(--menu-box-shadow);
+}
+
+#jenkins .yui-menu-shadow {
+  display: none;
+}
+
+#jenkins .yui-ac-content {
+  width: 30em;
+  background-color: var(--search-bg);
+  overflow: hidden;
+
+  // TODO:  chose a better box shadow
+  box-shadow: var(--search-box-shadow);
+
+  border: none;
+  border-radius: var(--header-item-border-radius);
+}
+
+#jenkins li.yui-ac-highlight {
+  background: var(--search-box-completion-bg);
+  font-weight: bold;
+}
+
+#jenkins.yui-skin-sam .yuimenuitem.yuimenuitem-hassubmenu {
+  background-image: none; //Do not use background image, use CSS arrow instead
+
+  //Center the CSS arrow
+  position: relative;
+  align-items: center;
+  justify-content: center;
+
+  &:after {
+    /* Right arrow */
+    content: "";
+    border-left: 0.35em solid #333;
+    border-left: 0.35em solid var(--text-color);
+    border-top: 0.35em solid transparent;
+    border-bottom: 0.35em solid transparent;
+    border-right: 0;
+
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0.75em;
+    display: inline-block;
+  }
 }
