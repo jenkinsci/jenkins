@@ -150,17 +150,19 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
         value.setDescription(getDescription());
-        if (!isValid(value)) {
-            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value.getValue());
-        }
+        checkValue(value, value.getValue());
         return value;
+    }
+
+    private void checkValue(StringParameterValue value, String value2) {
+        if (!isValid(value)) {
+            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value2);
+        }
     }
 
     public StringParameterValue createValue(String value) {
         StringParameterValue parameterValue = new StringParameterValue(getName(), value, getDescription());
-        if (!isValid(parameterValue)) {
-            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value);
-        }
+        checkValue(parameterValue, value);
         return parameterValue;
     }
 
