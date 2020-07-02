@@ -85,6 +85,7 @@ public class HyperlinkNoteTest {
         FreeStyleProject upstream = r.createFreeStyleProject("upstream");
         r.createFreeStyleProject("d0wnstr3'am");
         upstream.getPublishersList().add(new BuildTrigger("d0wnstr3'am", Result.SUCCESS));
+        r.jenkins.rebuildDependencyGraph();
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.waitUntilNoActivity();
         HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
