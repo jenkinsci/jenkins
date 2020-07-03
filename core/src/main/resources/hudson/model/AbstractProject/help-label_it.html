@@ -1,48 +1,52 @@
 <div>
   Definisce un'espressione logica che determina quali agenti possano eseguire
-  compilazioni di questo progetto. Quest'espressione, se testata sul nome e
-  sulle etichette di ogni agente disponibile, sarà <i>vera</i> o <i>falsa</i>.
-  Se l'espressione viene valutata come <i>vera</i>, allora a tale agente sarà
-  consentito eseguire compilazioni di questo progetto.
+  le compilazioni di questo progetto. Quest'espression, se testata con il
+  nome e le etichette di ogni agente disponibile, sarà valutata come
+  <i>true</i> o <i>false</i>. Se l'espressione viene valutata come <i>true</i>,
+  allora a tale agente sarà consentito eseguire le compilazioni di questo
+  progetto.
   <p>
-  Se questo progetto deve essere sempre compilato su un agente specifico, o sul
-  master Jenkins, è possibile rispettivamente immettere il nome dell'agente, o
-  <code>master</code>.
+  Se questo progetto dovrebbe essere sempre compilato su un agente specifico,
+  o sul nodo master Jenkins, allora si dovrebbe immettere semplicemente,
+  rispettivamente, il nome dell'agente o <code>master</code>.
   <p>
-  Ciò nonostante, in generale si dovrebbe evitare di utilizzare il <i>nome</i>
-  di un agente in questo campo e si dovrebbero preferibilmente specificare le
-  <i>etichette</i> di un agente. Come documentato nella pagina di configurazione
-  di ogni agente e nella pagina <i>Configura sistema</i> del master, le
-  etichette possono essere utilizzate per rappresentare il sistema operativo
-  su cui è in esecuzione l'agente, la sua architettura della CPU, o altre
+  Ciò nonostante, si dovrebbe generalmente evitare di usare il <i>nome</i> di
+  un agente in questo campo, preferendo le <i>etichette</i> di un agente.
+  Come documentato sulla pagina di configurazione di ogni agente e sulla
+  pagina <i>Configura sistema</i> del nodo master, è possibile utilizzare
+  etichette per rappresentare il sistema operativo su cui è in esecuzione
+  l'agente, la sua architettura CPU o un qualunque numero di altre
   caratteristiche.
   <br>
-  L'utilizzo delle etichette elimina la necessità di riconfigurare l'espressione
-  per le etichette immessa in questo campo ogni volta che si aggiungono,
-  rimuovono o rinominano agenti.
+  L'utilizzo delle etichette fa venir meno la necessità di riconfigurare
+  l'espressione etichetta immessa in questo campo ogni volta che si aggiungono,
+  rimuovono o ridenominano agenti.
   <p>
-  Un'espressione etichetta può essere semplice, come una singola <b>etichetta</b>
-  o un <b>nome agente</b>, ad esempio <code>android-builder</code>, o
-  <code>linux-machine-42</code>.<br>
-  È anche possibile utilizzare vari <i>operatori</i> per creare espressioni
-  più complesse.
+  Un'espressione etichetta può essere semplicemente una singola
+  <b>etichetta</b> o <b>nome agente</b>, ad esempio
+  <code>android-builder</code> o <code>linux-machine-42</code>.<br>
+  È possibile inoltre utilizzare svariati <i>operatori</i> per creare
+  espressioni più complesse.
 
   <h3>Operatori supportati</h3>
-  Sono supportati i seguenti operatori in ordine di priorità decrescente:
+  Sono supportati i seguenti operatori in ordine di precedenza decrescente:
   <dl>
     <dt><tt>(espressione)</tt></dt>
     <dd>
-      parentesi — utilizzate per definire esplicitamente l'associatività di un'espressione
+      parentesi — utilizzate per definire esplicitamente l'associatività
+      di un'espressione
     </dd>
 
     <dt><tt>!espressione</tt></dt>
     <dd>
-      NOT — negazione; il risultato di <tt>espressione</tt> <b>non</b> deve essere vero
+      NOT — negazione; il risultato di <tt>espressione</tt> <b>non</b>
+      dev'essere vero
     </dd>
 
     <dt><tt>a &amp;&amp; b</tt></dt>
     <dd>
-      AND — <b>entrambe</b> le espressioni <tt>a</tt> e <tt>b</tt> devono essere vere
+      AND — <b>entrambe</b> le espressioni <tt>a</tt> e <tt>b</tt> devono
+      essere vere
     </dd>
 
     <dt><tt>a || b</tt></dt>
@@ -52,80 +56,83 @@
 
     <dt><tt>a -> b</tt></dt>
     <dd>
-      operatore "implica" — equivalente a <tt>!a || b</tt>.<br>
-      Ad esempio, si può pensare a <tt>windows -> x64</tt> come a "se viene
-      utilizzato un agente Windows, allora quell'agente <i>deve</i> essere a 64
-      bit", consentendo comunque a questo progetto di essere eseguito su un
-      qualunque agente <i>senza</i> l'etichetta <tt>windows</tt>,
-      indipendentemente dal fatto che abbiano anche un'etichetta <tt>x64</tt>
+      operatore "implica" — equivalente ad <tt>!a || b</tt>.<br>
+      Ad esempio, <tt>windows -> x64</tt> può essere interpretato come "se
+      viene utilizzato un agente Windows, allora tale agente <i>deve</i>
+      essere a 64 bit", consentendo comunque l'esecuzione su qualunque agente
+      che <i>non</i> abbia l'etichetta <tt>windows</tt>, a prescindere dal
+      fatto che abbia l'etichetta <tt>x64</tt>
     </dd>
 
     <dt><tt>a &lt;-> b</tt></dt>
     <dd>
       operatore "se e solo se" — equivalente a <tt>a &amp;&amp; b ||
       !a &amp;&amp; !b</tt><br>
-      Ad esempio, si può pensare a <tt>windows &lt;-> dc2</tt> come a "se viene
-      utilizzato un agente Windows, allora quell'agente <i>deve</i> essere nel
-      datacenter 2, ma se non viene utilizzato un agente Windows allora
-      <i>non deve</i> essere nel datacenter 2"
+      Ad esempio, <tt>windows &lt;-> dc2</tt> può essere interpretato come
+      "se viene utilizzato un agente Windows, allora tale agente <i>deve</i>
+      essere nel datacenter 2, ma se viene utilizzato un agente non Windows,
+      allora <i>non deve</i> essere nel datacenter 2"
     </dd>
   </dl>
 
   <h3>Note</h3>
   <ul>
     <li>
-      Tutti gli operatori sono associativi a sinistra, ossia <tt>a -> b -> c</tt>
-      è equivalente a <tt>(a -> b) -> c</tt>.
+      Tutti gli operatori sono associativi a sinistra, ossia
+      <tt>a -> b -> c</tt> è equivalente ad <tt>(a -> b) -> c</tt>.
     </li>
     <li>
-      Le etichette o i nomi degli agenti possono essere posti fra virgolette
-      doppie se contengono caratteri che entrerebbero in conflitto con la
-      sintassi degli operatori.<br>
+      Le etichette o i nomi degli agenti possono essere racchiusi da
+      virgolette doppie se contengono caratteri che andrebbero in conflitto con
+      la sintassi degli operatori.<br>
       Ad esempio, <tt>"osx (10.11)" || "Windows Server"</tt>.
     </li>
     <li>
-      Le espressioni possono essere scritte senza spazi bianchi, ma è
-      raccomandato includerli per una maggiore leggibilità; Jenkins ignorerà
-      gli spazi bianchi durante la valutazione delle espressioni.
+      Le espressioni possono essere scritte senza spazi bianchi, ma includerli
+      è raccomandato per questioni di leggibilità; Jenkins ignorerà gli spazi
+      bianchi durante la valutazione delle espressioni.
     </li>
     <li>
-      La ricerca di corrispondenze fra etichette o nomi di agenti con caratteri
-      jolly o espressioni regolari non è supportata.
+      La ricerca di corrispondenze fra etichette o nomi agenti con
+      espressioni con caratteri jolly o espressioni regolari non è supportata.
     </li>
     <li>
-      Un'espressione vuota sarà sempre valutata come <i>vero</i> e come
-      corrispondente a tutti gli agenti.
+      Un'espressione vuota verrà sempre valutata come <i>true</i> e
+      corrisponderà a tutti gli agenti.
     </li>
   </ul>
 
   <h3>Esempi</h3>
   <dl>
     <dt><tt>master</tt></dt>
-    <dd>Le compilazioni di questo progetto possono essere eseguite solo sul master Jenkins<dd>
+    <dd>
+      Le compilazioni di questo progetto possono eseguite solo sul nodo
+      master di Jenkins
+    </dd>
 
     <dt><tt>linux-machine-42</tt></dt>
     <dd>
-      Le compilazioni di questo progetto possono essere eseguite solo sull'agente
-      con nome <tt>linux-machine-42</tt> (o su una qualsiasi macchina che abbia
-      l'etichetta <tt>linux-machine-42</tt>)
+      Le compilazioni di questo progetto possono essere eseguite solo
+      sull'agente denominato <tt>linux-machine-42</tt> (o su qualunque sistema
+      che abbia un'etichetta denominata <tt>linux-machine-42</tt>)
     </dd>
 
     <dt><tt>windows &amp;&amp; jdk9</tt></dt>
     <dd>
       Le compilazioni di questo progetto possono essere eseguite solo su un
-      agente Windows che abbia installato il Java Development Kit, versione 9
-      (assumendo che agli agenti che abbiano il JDK 9 installato sia stata
-      assegnata l'etichetta <tt>jdk9</tt>)
+      qualunque agente Windows che abbia installata la versione 9 del Java
+      Development Kit (assumendo che agli agenti su cui sia installato JDK 9
+      sia stata assegnata l'etichetta <tt>jdk9</tt>)
     </dd>
 
     <dt><tt>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</tt></dt>
     <dd>
-      Le compilazioni di questo progetto possono essere eseguite solo su un
-      agente Linux o FreeBSD, a condizione che <i>non</i> siano una macchina
-      virtuale e che abbiano PostgreSQL installato (assumendo che ogni agente
-      abbia le etichette appropriate — in particolare, ogni agente eseguito in
-      una macchina virtuale deve avere l'etichetta <tt>vm</tt> per far sì che
-      quest'esempio funzioni come previsto)
+      Le compilazioni di questo progetto possono essere eseguite solo su
+      qualunque agente Linux o FreeBSD fintantoché <i>non</i> siano una
+      macchina virtuale e abbiano PostgreSQL installato (assumendo che ogni
+      agente abbia le etichette appropriate — in particolare, ogni agente in
+      esecuzione in una macchina virtuale deve avere l'etichetta <tt>vm</tt>
+      affinché quest'esempio funzioni come atteso)
     </dd>
 
   </dl>
