@@ -116,7 +116,7 @@ public interface SimpleBuildStep extends BuildStep {
                 "perform", Run.class, FilePath.class, Launcher.class, TaskListener.class)) {
             this.perform(run, workspace, launcher, listener);
         } else {
-            throw new AbstractMethodError();
+            throw new AbstractMethodError(Messages.SimpleBuildStep_NeedPerformMethodWithWorkspace());
         }
     }
 

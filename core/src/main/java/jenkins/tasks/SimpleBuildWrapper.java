@@ -24,6 +24,8 @@
 
 package jenkins.tasks;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -45,8 +47,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A generalization of {@link BuildWrapper} that, like {@link SimpleBuildStep}, may be called at various points within a build.
@@ -75,7 +75,46 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
      */
-    public abstract void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
+    public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
+        if (!this.requiresWorkspace()) {
+            this.setUp(context, build, listener, initialEnvironment);
+            return;
+        }
+        throw new AbstractMethodError(Messages.SimpleBuildWrapper_NeedSetUpMethodWithWorkspace());
+    }
+
+    /**
+     * Determines whether or not this wrapper requires a workspace context (working directory and launcher).
+     * <p>
+     * When this returns {@code true}, {@link #setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)} applies.
+     * Otherwise, {@link #setUp(Context, Run, TaskListener, EnvVars)} applies.
+     *
+     * @return {@code true} if this step requires a workspace context; {@code false} otherwise.
+     * @since TODO
+     */
+    boolean requiresWorkspace() {
+        return true;
+    }
+
+    /**
+     * Called when a segment of a build is started that is to be enhanced with this wrapper.
+     * @param context a way of collecting modifications to the environment for nested steps
+     * @param build a build being run
+     * @param listener a way to report progress
+     * @param initialEnvironment the environment variables set at the outset
+     * @throws IOException if something fails; {@link AbortException} for user errors
+     * @throws InterruptedException if setup is interrupted
+     * @since TODO
+     */
+    public void setUp(Context context, Run<?,?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        // If this wrapper requires a workspace, this is the wrong method to call.
+        if (this.requiresWorkspace()) {
+            throw new AbortException(Messages.SimpleBuildWrapper_WorkspaceContextNeeded());
+        }
+        // Otherwise, this method must have an implementation.
+        throw new AbstractMethodError(Messages.SimpleBuildWrapper_NeedSetUpMethodWithoutWorkspace());
+    }
 
     /**
      * Parameter passed to {@link #setUp} to allow an implementation to specify its behavior after the initial setup.
@@ -117,6 +156,32 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * Must be safely serializable, so it receives runtime context comparable to that of the original setup.
      */
     public static abstract class Disposer implements Serializable {
+
+        /**
+         * Creates a new end-of-wrapped-block callback.
+         *
+         * @deprecated Use the constructor that takes a wrapper instance instead.
+         */
+        @Deprecated
+        protected Disposer() {
+            this.requiresWorkspace = true;
+        }
+
+        /**
+         * Creates a new end-of-wrapped-block callback.
+         *
+         * @param wrapper The wrapper for which this is a callback; used to determine whether or not this callback
+         *                requires a workspace context (working directory and launcher). That choice determines whether
+         *                {@link #tearDown(Run, FilePath, Launcher, TaskListener)} or
+         *                {@link #tearDown(Run, TaskListener)} applies.
+         * @since TODO
+         */
+        protected Disposer(@NonNull SimpleBuildWrapper wrapper) {
+            this.requiresWorkspace = wrapper.requiresWorkspace();
+        }
+
+        private final boolean requiresWorkspace;
+
         /**
          * Attempt to clean up anything that was done in the initial setup.
          * @param build a build being run
@@ -126,7 +191,32 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
-        public abstract void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+        public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+            // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
+            if (!this.requiresWorkspace) {
+                this.tearDown(build, listener);
+                return;
+            }
+            throw new AbstractMethodError(Messages.SimpleBuildWrapper_Disposer_NeedTearDownMethodWithWorkspace());
+        }
+
+        /**
+         * Attempt to clean up anything that was done in the initial setup.
+         * @param build a build being run
+         * @param listener a way to report progress
+         * @throws IOException if something fails; {@link AbortException} for user errors
+         * @throws InterruptedException if tear down is interrupted
+         * @since TODO
+         */
+        public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
+            // If this callback requires a workspace, this is the wrong method to call.
+            if (this.requiresWorkspace) {
+                throw new AbortException(Messages.SimpleBuildWrapper_Disposer_WorkspaceContextNeeded());
+            }
+            // Otherwise, this method must have an implementation.
+            throw new AbstractMethodError(Messages.SimpleBuildWrapper_Disposer_NeedTearDownMethodWithoutWorkspace());
+        }
+
     }
 
     /**
@@ -172,7 +262,11 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
         @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
-                c.disposer.tearDown(build, build.getWorkspace(), launcher, listener);
+                if (c.disposer.requiresWorkspace) {
+                    c.disposer.tearDown(build, build.getWorkspace(), this.launcher, listener);
+                } else {
+                    c.disposer.tearDown(build, listener);
+                }
             }
             return true;
         }
