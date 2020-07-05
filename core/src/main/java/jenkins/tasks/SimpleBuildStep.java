@@ -104,7 +104,12 @@ public interface SimpleBuildStep extends BuildStep {
      */
     default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher,
                          @NonNull TaskListener listener) throws InterruptedException, IOException {
-        // If this is called, this must be an implementer of the previous API, in which case we call that, discarding
+        // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
+        if (!this.requiresWorkspace()) {
+            this.perform(run, env, listener);
+            return;
+        }
+        // If we get here, this must be an implementer of the previous API, in which case we call that, discarding
         // the environment we were given.
         // But for that to work, that API method must have been implemented.
         if (Util.isOverridden(SimpleBuildStep.class, this.getClass(),
@@ -113,6 +118,37 @@ public interface SimpleBuildStep extends BuildStep {
         } else {
             throw new AbstractMethodError();
         }
+    }
+
+    /**
+     * Determines whether or not this step requires a workspace context (working directory and launcher).
+     * <p>
+     * When this returns {@code true}, {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)} applies.
+     * Otherwise, {@link #perform(Run, EnvVars, TaskListener)} applies.
+     *
+     * @return {@code true} if this step requires a workspace context; {@code false} otherwise.
+     * @since TODO
+     */
+    default boolean requiresWorkspace() {
+        return true;
+    }
+
+    /**
+     * Run this step, without a workspace context.
+     * @param run a build this is running as a part of
+     * @param env environment variables applicable to this step
+     * @param listener a place to send output
+     * @throws InterruptedException if the step is interrupted
+     * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
+     * @since TODO
+     */
+    default void perform(@NonNull Run<?, ?> run, @NonNull EnvVars env, @NonNull TaskListener listener) throws InterruptedException, IOException {
+        // If this step requires a workspace, this is the wrong method to call.
+        if (this.requiresWorkspace()) {
+            throw new AbortException(Messages.SimpleBuildStep_WorkspaceContextNeeded());
+        }
+        // Otherwise, this method must have an implementation.
+        throw new AbstractMethodError(Messages.SimpleBuildStep_NeedPerformMethodWithoutWorkspace());
     }
 
     /**
