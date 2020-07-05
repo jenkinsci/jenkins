@@ -1,61 +1,60 @@
 <div>
-  Quest'opzione determina se e quando i record di compilazione per questo
-  progetto saranno eliminati. I record di compilazione includono l'output della
-  console, gli artefatti archiviati e tutti gli altri metadati correlati a una
-  specifica compilazione.
+  Quest'opzione determina il momento in cui saranno rimossi i record di
+  compilazione per questo progetto (se saranno rimossi). I record di
+  compilazione includono l'output della console, gli artefatti archiviati e
+  tutti gli altri metadati legati a una specifica compilazione.
   <p>
-  Mantenere meno compilazioni significa utilizzare meno spazio su disco nella
-  <i>directory radice record di compilazione</i> specificata nella schermata
-  <i>Configura sistema</i>.
+  Mantenere meno compilazioni significa che verrà utilizzato meno spazio su
+  disco nella <i>directory radice dei record di compilazione</i> specificata
+  nella sezione <i>Configura sistema</i>.
   <p>
-  <!-- TODO: Most/all of the following should be dynamic, showing info from the
-       `BuildDiscarder` implementations that are currently loaded -->
-  Jenkins offre due opzioni per determinare quando le compilazioni dovranno
-  essere eliminate:
+  Jenkins fornisce due modalità per determinare il momento in cui rimuovere le
+  compilazioni:
   <ol>
     <li>
-      Età delle compilazioni: elimina le compilazioni se raggiungono una certa
-      età (ad esempio: sette giorni).
+      Età della compilazione: rimuove le compilazioni una volta che queste
+      hanno raggiunto una certa età; ad esempio, sette giorni.
     <li>
-      Numero delle compilazioni: elimina la compilazione più vecchia se esiste
-      già un certo numero di compilazioni.
+      Numero compilazioni: rimuove la compilazione meno recente quando
+      esiste già un certo numero di compilazioni.
   </ol>
-  Queste due opzioni possono essere attive contemporaneamente, in modo per
-  esempio da mantenere le compilazioni per 14 giorni, ma fino a un numero
-  massimo di 50. Se uno dei due limiti è superato, le compilazioni che lo
-  superano vengono eliminate.
+  Queste due opzioni possono essere attive contemporaneamente, in modo da
+  poter, ad esempio, mantenere le compilazioni per 14 giorni, ma solo fino a
+  un limite massimo di 50 compilazioni. Se uno dei due limiti viene superato,
+  ogni compilazione che superi tali limiti sarà rimossa.
   <p>
-  È anche possibile assicurarsi che le compilazioni importanti siano mantenute
-  per sempre indipendentemente da queste impostazioni cliccando sul pulsante
-  <i>Mantieni questa compilazione per sempre</i> nella pagina della
-  compilazione.
+  È possibile inoltre assicurarsi che le compilazioni importanti siano
+  mantenute per sempre, indipendentemente da queste impostazioni; si clicchi
+  sul pulsante <i>Mantieni questa compilazione per sempre</i> nella pagina
+  della compilazione.
   <br>
-  Le ultime compilazioni stabili e riuscite non sono altresì soggette a queste
-  regole.
+  Le ultime compilazioni stabile e completata con successo sono, inoltre,
+  escluse da queste regole.
 
   <hr>
 
-  Le stesse opzioni possono essere specificate nella sezione <i>Avanzate</i>,
-  ma in modo specifico per gli <b>artefatti</b> di compilazione. Se abilitate,
-  gli artefatti delle compilazioni che superano i limiti definiti saranno
-  eliminati. Le compilazioni in sé continueranno a essere mantenute; saranno
-  eliminati solo gli artefatti associati, se questi esistono.
+  Nella sezione <i>Avanzate</i> è possibile specificare le stesse opzioni, ma
+  in modo specifica per gli <b>artefatti</b> di compilazione. Se tali opzioni
+  sono abilitate, gli artefatti di compilazione saranno rimossi per tutte le
+  compilazioni che superano i limiti definiti. Le compilazioni in sé saranno
+  mantenute; solo gli artefatti associati saranno eliminati, se presenti.
   <p>
-  Ad esempio, se un progetto compila del software e genera un programma di
+  Ad esempio, se un progetto compila del software e produce un programma di
   installazione di grandi dimensioni che viene archiviato, si potrebbe
-  desiderare di mantenere sempre il log della console e le informazioni
-  relative al commit di origine nel sistema di controllo del codice sorgente,
-  mentre, per motivi legati allo spazio su disco, si potrebbe desiderare di
-  mantenere solo gli ultimi tre programmi di installazione generati.
+  desiderare di mantenere per sempre il log della console e le informazioni
+  riguardanti il commit del sistema di controllo del codice sorgente che è
+  stato compilato, mentre, per mantenere lo spazio su disco occupato basso,
+  si potrebbero voler mantenere solo gli ultimi tre programmi di installazione
+  creati.
   <br>
-  Questo può avere senso per i progetti in cui si possano ricreare facilmente
-  gli stessi artefatti in un secondo momento compilando nuovamente lo stesso
-  commit del sistema di controllo del codice sorgente.
+  Ciò può aver senso per i progetti per cui si possono creare nuovamente gli
+  stessi artefatti in un secondo momento ricompilando lo stesso commit del
+  sistema di controllo del codice sorgente.
 
   <hr>
 
-  Si noti che Jenkins non elimina gli elementi immediatamente quando queste
-  impostazioni sono aggiornate o non appena viene superato uno dei valori
-  configurati; queste regole sono valutate ogni volta che viene completata
-  una compilazione per questo progetto.
+  Si noti che Jenkins non rimuove gli elementi subito dopo l'aggiornamento di
+  questa configurazione o non appena uno dei valori configurati venga superato;
+  queste regole sono valutate ad ogni completamento di una compilazione di
+  questo progetto.
 </div>
