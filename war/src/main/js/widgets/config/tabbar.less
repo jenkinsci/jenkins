@@ -109,6 +109,30 @@
 
     }
 
+    table {
+      border-collapse: collapse;
+
+      td {
+        padding: 5px;
+      }
+
+      .repeated-chunk,
+      tr[nameref^="rowSetStart"],
+      tr[nameref^="cb"],
+      tr[nameref^="radio-block"] {
+        background: var(--shade-hint);
+        border-left: 5px solid var(--shade);
+      }
+
+      .hetero-list-container,
+      .repeated-container,
+      tr.optional-block-start,
+      tr.radio-block-start {
+        border-left: 5px solid var(--shade);
+        background: none;
+      }
+    }
+
     .config-table {
       // Table configuration
       table,
@@ -255,11 +279,6 @@
           font-size: 12px;
           text-indent: 0;
         }
-      }
-
-      .repeated-chunk {
-        background: var(--shade-hint);
-        border-left: 5px solid var(--shade);
       }
 
       span.highlight {
