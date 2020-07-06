@@ -226,6 +226,17 @@ public abstract class ParameterDefinition implements
     }
 
     /**
+     * Checks whether a given value is valid for this definition.
+     * @since TODO
+     * @param value The value to validate.
+     * @return True if the value is valid for this definition. False if it is invalid.
+     */
+    public boolean isValid(ParameterValue value) {
+        // The base implementation just accepts the value.
+        return true;
+    }
+
+    /**
      * Returns all the registered {@link ParameterDefinition} descriptors.
      */
     public static DescriptorExtensionList<ParameterDefinition,ParameterDescriptor> all() {
