@@ -24,11 +24,16 @@
 
 package hudson.console;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+
+import hudson.model.Result;
+import hudson.tasks.BuildTrigger;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,6 +76,19 @@ public class HyperlinkNoteTest {
                 containsString("href='" + r.getURL().toString()+p.getUrl() + "'"),
                 containsString(new ModelHyperlinkNote("", 0).extraAttributes()),
                 containsString(">" + noteTextSanitized + "</a>")));
+    }
+
+    @Test
+    public void textWithSingleQuote() throws Exception {
+        FreeStyleProject upstream = r.createFreeStyleProject("upstream");
+        r.createFreeStyleProject("d0wnstr3'am");
+        upstream.getPublishersList().add(new BuildTrigger("d0wnstr3'am", Result.SUCCESS));
+        r.jenkins.rebuildDependencyGraph();
+        FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
+        r.waitUntilNoActivity();
+        HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
+        assertThat(rsp.querySelector(".console-output").asText(), containsString("Triggering a new build of"));
+        assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
     }
 
     private static String annotate(String text) throws IOException {
