@@ -149,6 +149,8 @@ THE SOFTWARE.
     <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
+    <script src="${resURL}/scripts/polyfills.js" type="text/javascript" />
+    
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
