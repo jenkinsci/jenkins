@@ -1440,6 +1440,8 @@ public class Util {
      * @param methodName The name of the method.
      * @param types      The types of the arguments for the method.
      * @return {@code true} when {@code derived} provides the specified method other than as inherited from {@code base}.
+     * @throws IllegalArgumentException When {@code derived} does not derive from {@code base}, or when {@code base}
+     *                                  does not contain the specified method.
      */
     public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
         // If derived is not a subclass or implementor of base, it can't override any method
