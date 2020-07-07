@@ -28,6 +28,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Util;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -89,14 +90,14 @@ public class IsOverriddenTest {
     @Issue("JENKINS-62723")
     @Test
     public void finalOverrides() {
-        errors.checkThat("X1 overrides X.m1", Util.isOverridden(X.class, X1.class, "m1"), is(true));
-        errors.checkThat("X1 does not override X.m2", Util.isOverridden(X.class, X1.class, "m2"), is(false));
-        errors.checkThat("X2 overrides X.m1", Util.isOverridden(X.class, X2.class, "m1"), is(true));
-        errors.checkThat("X2 does not override X.m2", Util.isOverridden(X.class, X2.class, "m2"), is(false));
-        errors.checkThat("X3 overrides X.m1", Util.isOverridden(X.class, X3.class, "m1"), is(true));
-        errors.checkThat("X3 overrides X.m2", Util.isOverridden(X.class, X3.class, "m2"), is(true));
-        errors.checkThat("X4 overrides X.m1", Util.isOverridden(X.class, X4.class, "m1"), is(true));
-        errors.checkThat("X4 overrides X.m2", Util.isOverridden(X.class, X4.class, "m2"), is(true));
+        errors.checkSucceeds(() -> {assertThat("X1 overrides X.m1", Util.isOverridden(X.class, X1.class, "m1"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("X1 does not override X.m2", Util.isOverridden(X.class, X1.class, "m2"), is(false)); return null;});
+        errors.checkSucceeds(() -> {assertThat("X2 overrides X.m1", Util.isOverridden(X.class, X2.class, "m1"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("X2 does not override X.m2", Util.isOverridden(X.class, X2.class, "m2"), is(false)); return null;});
+        errors.checkSucceeds(() -> {assertThat("X3 overrides X.m1", Util.isOverridden(X.class, X3.class, "m1"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("X3 overrides X.m2", Util.isOverridden(X.class, X3.class, "m2"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("X4 overrides X.m1", Util.isOverridden(X.class, X4.class, "m1"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("X4 overrides X.m2", Util.isOverridden(X.class, X4.class, "m2"), is(true)); return null;});
     }
     public static interface X {
         void m1();
