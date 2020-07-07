@@ -1,7 +1,7 @@
 /* pane */
 
 .pane-frame {
-  border: solid 1px var(--pane-border-color);
+  border: var(--pane-border-width) solid var(--pane-border-color);
   border-radius: 4px;
 }
 
@@ -9,7 +9,8 @@
   padding: 8px 0px;
   color: var(--pane-header-color);
   background: var(--pane-header-bg);
-  border: solid 1px var(--pane-header-border-color); // TODO: see how this affects the side panel widgets
+  // TODO: see how this affects the side panel widgets
+  border: var(--pane-border-width) solid var(--pane-header-border-color);
   border-left: none;
   border-right: none;
   color: var(--pane-text-color);
@@ -28,18 +29,18 @@
 }
 
 .pane td {
-  padding: 4px 4px 3px 4px;
+  padding: 0.25rem;
   vertical-align: middle;
 }
 
 table.pane {
   width: 100%;
   border-collapse: collapse;
-  border: 1px #bbb solid;
+  border: var(--pane-border-width) solid var(--pane-border-color);
 }
 
 td.pane {
-  padding: 3px 4px 3px 4px;
+  padding: 0.25rem;
   vertical-align: middle;
 }
 
@@ -54,7 +55,7 @@ table.stripped-odd tr:nth-child(odd) {
   background: var(--even-row-color);
 }
 table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
-  background: var(--table-stripped-bg-color--hover) !important;
+  background: var(--table-stripped-bg--hover) !important;
 }
 
 div.pane-header {
@@ -73,41 +74,56 @@ th.pane {
 
 /* Bigtable */
 
+table.bigtable {
+  border: none; // Needs to be set AFTER the table.pane declaration
+}
+
 /* For non-full screen table */
 
 .bigtable.width-auto {
   width: auto;
 }
 
-.bigtable tr {
-  border: 1px solid #bbb;
-  padding: 3px 4px 3px 4px;
-}
-table.bigtable.pane > tbody > tr > td:last-child {
-  border-right: none;
-}
-
+// Keep this for tables still wrapped by .pane-frame
 .pane-frame table, .pane-frame .bigtable tr {
   border: none; /* Border will be provided by the pane-frame */
 }
 
 .bigtable th {
+  font-size: var(--bigtable-header-font-size); // TODO: move this to a <thead> or .header declaration
   font-weight: var(--bigtable-header-font-weight);
-  border: none;
   color: var(--bigtable-header-text-color);
   background: var(--bigtable-header-bg);
-  padding: 6px 4px;
   white-space: nowrap;
+  text-align: left;
+  border-top: var(--bigtable-border-width) solid var(--bigtable-header-bg);
   text-align: left;
 
   &.minimum-width {
     width: 1px;
   }
+
+  &[align=right] {
+    text-align: right;
+  }
 }
 
 .bigtable td {
+  border-top: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
   vertical-align: middle;
-  padding: 3px 4px 3px 4px;
+}
+.bigtable tr:last-child td {
+  border-bottom: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
+}
+
+.bigtable td,
+.bigtable th {
+  padding: var(--bigtable-cell-padding-y) var(--bigtable-cell-padding-x);
+}
+
+.bigtable .pane-header,
+.bigtable .pane-footer {
+  border-radius: 0;
 }
 
 /* ========================= sortable table ========================= */
