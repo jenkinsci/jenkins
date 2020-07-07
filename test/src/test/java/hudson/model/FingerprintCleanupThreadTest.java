@@ -27,6 +27,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
+import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -164,6 +165,26 @@ public class FingerprintCleanupThreadTest {
         cleanupThread.execute(testTaskListener);
         assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(nullValue()));
         assertThat(fpFile.toFile(), is(not(aReadableFile())));
+    }
+
+    @Test
+    public void shouldNotCleanFingerprintsWhenDisabled() throws IOException {
+        createFolderStructure();
+        TestTaskListener testTaskListener = new TestTaskListener();
+        Fingerprint localFingerprint = new TestFingerprint(false);
+        configureLocalTestStorage(localFingerprint);
+
+        Fingerprint externalFingerprint = new TestFingerprint(false);
+        configureExternalTestStorage();
+        externalFingerprint.save();
+        assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(not(nullValue())));
+
+        GlobalFingerprintConfiguration.get().setFingerprintCleanup(false);
+
+        FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
+        cleanupThread.execute(testTaskListener);
+        assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(not(nullValue())));
+        assertThat(fpFile.toFile(), is(aReadableFile()));
     }
 
     private void configureLocalTestStorage(Fingerprint fingerprint) {
