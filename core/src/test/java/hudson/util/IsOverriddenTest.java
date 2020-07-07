@@ -28,11 +28,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Util;
+import static org.hamcrest.Matchers.is;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.rules.ErrorCollector;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * Test for {@link Util#isOverridden} method.
  */
 public class IsOverriddenTest {
+
+    @Rule
+    public ErrorCollector errors = new ErrorCollector();
 
     /**
      * Test that a method is found by isOverridden even when it is inherited from an intermediate class.
@@ -76,6 +84,40 @@ public class IsOverriddenTest {
         public Integer getX() { return 0; }
     }
     public class Derived extends Intermediate {}
+
+    @Ignore("TODO fails as predicted")
+    @Issue("JENKINS-62723")
+    @Test
+    public void finalOverrides() {
+        errors.checkThat("X1 overrides X.m1", Util.isOverridden(X.class, X1.class, "m1"), is(true));
+        errors.checkThat("X1 does not override X.m2", Util.isOverridden(X.class, X1.class, "m2"), is(false));
+        errors.checkThat("X2 overrides X.m1", Util.isOverridden(X.class, X2.class, "m1"), is(true));
+        errors.checkThat("X2 does not override X.m2", Util.isOverridden(X.class, X2.class, "m2"), is(false));
+        errors.checkThat("X3 overrides X.m1", Util.isOverridden(X.class, X3.class, "m1"), is(true));
+        errors.checkThat("X3 overrides X.m2", Util.isOverridden(X.class, X3.class, "m2"), is(true));
+        errors.checkThat("X4 overrides X.m1", Util.isOverridden(X.class, X4.class, "m1"), is(true));
+        errors.checkThat("X4 overrides X.m2", Util.isOverridden(X.class, X4.class, "m2"), is(true));
+    }
+    public static interface X {
+        void m1();
+        default void m2() {}
+    }
+    public static class X1 implements X {
+        public void m1() {}
+    }
+    public static class X2 implements X {
+        public final void m1() {}
+    }
+    public static class X3 implements X {
+        public void m1() {}
+        @Override
+        public void m2() {}
+    }
+    public static class X4 implements X {
+        public void m1() {}
+        @Override
+        public final void m2() {}
+    }
 
 }
 
