@@ -132,7 +132,7 @@
   --bigtable-border-width: var(--pane-border-width);
   --bigtable-header-bg: var(--pane-header-bg);
   --bigtable-header-font-weight: bold; // Does specifying this make sense
-  --bigtable-header-font-size: var(--font-size-base);
+  --bigtable-header-font-size: var(--font-size-md);
   --bigtable-header-text-color: var(--pane-header-text-color);
   --bigtable-row-border-color: var(--medium-grey);
   --bigtable-cell-padding-x: 0.75rem;
@@ -170,15 +170,12 @@
   --pane-link-color: black;
   --pane-link-color--visited: black;
 
-  // TabBar
-  --tab-link-border-radius-top: 4px;
-  --tab-link-border-radius-bottom: 0;
+  // TabBar links
+  --tab-link-border-radius: 4px;
   --tab-link-border-width: 2px;
-  --tab-link-separation: 0.25rem; // TODO: should be a var?
   --tab-link-padding-x: 0.75rem;
   --tab-link-padding-y: 0.375rem;
   --tab-link-font-weight: bold;
-  // normal
   --tab-link-text-color: var(--text-color-secondary);
   --tab-link-bg: transparent;
   --tab-link-border-color: var(--light-grey);
@@ -188,15 +185,13 @@
   --tab-link-text-color--active: var(--tab-link-text-color); // Redundant?
   --tab-link-bg--active: var(--light-grey);
   --tab-link-border-color--active: var(--tab-link-checked-bg); // Redundant?
-  // checked
   --tab-link-checked-text-color: var(--pane-header-text-color);
   --tab-link-checked-bg: var(--pane-header-bg);
   --tab-link-checked-border-color: var(--tab-link-checked-bg);
-  // new item
-  // --tab-link-add-bg: ????
-  --tab-link-add-border-color: #d8efff;
-  --tab-link-add-bg--hover: #d8efff;
-  // underline
+  // Tabbar baseline
+  --tab-baseline-width: 2px;
+  --tab-baseline-color: var(--light-grey);
+  --tab-baseline-default-display: none;
 
   // Side panel
   --panel-header-bg-color: var(--light-grey);
