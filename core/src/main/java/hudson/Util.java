@@ -1443,6 +1443,8 @@ public class Util {
      */
     public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
         // If derived is not a subclass or implementor of base, it can't override any method
+        // Technically this should also be triggered when base == derived, because it can't override its own method, but
+        // the unit tests explicitly test for that as working.
         if (!base.isAssignableFrom(derived)) {
             throw new IllegalArgumentException("The specified derived class (" + derived.getCanonicalName() + ") does not derive from the specified base class (" + base.getCanonicalName() + ").");
         }
@@ -1474,13 +1476,24 @@ public class Util {
             }
             return res;
         } catch (NoSuchMethodException e) {
+            // If the base is an interface, the implementation may come from a default implementation on a derived
+            // interface. So look at interfaces too.
+            if (base != null && Modifier.isInterface(base.getModifiers())) {
+                for (Class<?> iface : clazz.getInterfaces()) {
+                    if (base.equals(iface) || !base.isAssignableFrom(iface)) {
+                        continue;
+                    }
+                    final Method defaultImpl = Util.getMethod(iface, base, methodName, types);
+                    if (defaultImpl != null) {
+                        return defaultImpl;
+                    }
+                }
+            }
             // Method not found in clazz, let's search in superclasses
             Class<?> superclass = clazz.getSuperclass();
-            // TODO: When base is an interface, it's _possible_ that the class may implement a subinterface of base
-            //       which provides a default implementation. Such a case is not currently detected as an override.
             if (superclass != null) {
-                // if the superclass doesn't derive from base anymore, stop looking
-                if (base != null && !base.isAssignableFrom(superclass)) {
+                // if the superclass doesn't derive from base anymore (or IS base), stop looking
+                if (base != null && (base.equals(superclass) || !base.isAssignableFrom(superclass))) {
                     return null;
                 }
                 return getMethod(superclass, base, methodName, types);
