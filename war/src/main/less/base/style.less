@@ -994,6 +994,12 @@ TABLE.fingerprint-in-build TD {
   border-top: none;
 }
 
+#plugins.bigtable {
+  // Add this fallback because tables with hidden rows will
+  // not have a bottom border
+  border-bottom: 1px solid var(--bigtable-row-border-color);
+}
+
 #pluginsAdv tr:hover {
   background-color: inherit;
 }

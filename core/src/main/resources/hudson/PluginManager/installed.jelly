@@ -130,7 +130,7 @@ THE SOFTWARE.
                     </div>
                   </j:if>
                 </td>
-                <td class="center pane" style="white-space:normal">
+                <td class="pane" style="white-space:normal">
                   <a href="plugin/${p.shortName}/thirdPartyLicenses">
                     ${p.version}
                   </a>
