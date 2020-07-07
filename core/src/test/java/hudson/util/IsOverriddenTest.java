@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 import hudson.Util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import org.junit.Ignore;
+
 import org.junit.Rule;
 import org.junit.rules.ErrorCollector;
 import org.jvnet.hudson.test.Issue;
@@ -57,11 +57,17 @@ public class IsOverriddenTest {
 
     /**
      * Negative test.
-     * Trying to check for a method which does not exist in the hierarchy,
+     * Trying to check for a method which does not exist in the hierarchy.
      */
     @Test(expected = IllegalArgumentException.class)
     public void isOverriddenNegativeTest() {
         Util.isOverridden(Base.class, Derived.class, "method2");
+    }
+
+    /** Specifying a base class that is not a base class should result in an error. */
+    @Test(expected = IllegalArgumentException.class)
+    public void badHierarchyIsReported() {
+        Util.isOverridden(Derived.class, Base.class, "method");
     }
 
     /**
@@ -86,7 +92,6 @@ public class IsOverriddenTest {
     }
     public class Derived extends Intermediate {}
 
-    @Ignore("TODO fails as predicted")
     @Issue("JENKINS-62723")
     @Test
     public void finalOverrides() {
@@ -119,6 +124,45 @@ public class IsOverriddenTest {
         @Override
         public final void m2() {}
     }
+
+    @Issue("JENKINS-62723")
+    @Test
+    public void baseInterface() {
+        // Normal case: classes implementing interface methods
+        errors.checkSucceeds(() -> {assertThat("I1 does not override I1.foo", Util.isOverridden(I1.class, I1.class, "foo"), is(false)); return null;});
+        errors.checkSucceeds(() -> {assertThat("I2 does not override I1.foo", Util.isOverridden(I1.class, I2.class, "foo"), is(false)); return null;});
+        errors.checkSucceeds(() -> {assertThat("C1 does not override I1.foo", Util.isOverridden(I1.class, C1.class, "foo"), is(false)); return null;});
+        errors.checkSucceeds(() -> {assertThat("C2 does not override I1.foo", Util.isOverridden(I1.class, C2.class, "foo"), is(false)); return null;});
+        errors.checkSucceeds(() -> {assertThat("C3 overrides I1.foo", Util.isOverridden(I1.class, C3.class, "foo"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("C4 overrides I1.foo", Util.isOverridden(I1.class, C4.class, "foo"), is(true)); return null;});
+        // Special case: interfaces providing default implementation of base interface
+        errors.checkSucceeds(() -> {assertThat("I1 does not override I1.bar", Util.isOverridden(I1.class, I1.class, "bar"), is(false)); return null;});
+        errors.checkSucceeds(() -> {assertThat("I2 overrides I1.bar", Util.isOverridden(I1.class, I2.class, "bar"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("C1 does not override I1.bar", Util.isOverridden(I1.class, C1.class, "bar"), is(false)); return null;});
+        // TODO: Not currently handled by isOverridden()
+        //errors.checkSucceeds(() -> {assertThat("C2 overrides I1.bar (via I2)", Util.isOverridden(I1.class, C2.class, "bar"), is(true)); return null;});
+        //errors.checkSucceeds(() -> {assertThat("C3 overrides I1.bar (via I2)", Util.isOverridden(I1.class, C3.class, "bar"), is(true)); return null;});
+        errors.checkSucceeds(() -> {assertThat("C4 overrides I1.bar", Util.isOverridden(I1.class, C4.class, "bar"), is(true)); return null;});
+    }
+    private interface I1 {
+        String foo();
+        String bar();
+    }
+    private interface I2 extends I1 {
+        default String bar() { return "default"; }
+    }
+    private static abstract class C1 implements I1 {
+    }
+    private static abstract class C2 extends C1 implements I2 {
+        @Override public abstract String foo();
+    }
+    private static abstract class C3 extends C2 {
+        @Override public String foo() { return "foo"; }
+    }
+    private static class C4 extends C3 implements I1 {
+        @Override public String bar() { return "bar"; }
+    }
+
 
 }
 

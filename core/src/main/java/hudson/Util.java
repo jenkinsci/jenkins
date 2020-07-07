@@ -1432,36 +1432,63 @@ public class Util {
     }
 
     /**
-     * Checks if the method defined on the base type with the given arguments
-     * is overridden in the given derived type.
+     * Checks whether the method defined on the base type with the given arguments is overridden in the given derived
+     * type.
+     *
+     * @param base       The base type.
+     * @param derived    The derived type.
+     * @param methodName The name of the method.
+     * @param types      The types of the arguments for the method.
+     * @return {@code true} when {@code derived} provides the specified method other than as inherited from {@code base}.
      */
-    public static boolean isOverridden(@NonNull Class base, @NonNull Class derived, @NonNull String methodName, @NonNull Class... types) {
-        return !getMethod(base, methodName, types).equals(getMethod(derived, methodName, types));
+    public static boolean isOverridden(@NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
+        // If derived is not a subclass or implementor of base, it can't override any method
+        if (!base.isAssignableFrom(derived)) {
+            throw new IllegalArgumentException("The specified derived class (" + derived.getCanonicalName() + ") does not derive from the specified base class (" + base.getCanonicalName() + ").");
+        }
+        final Method baseMethod = Util.getMethod(base, null, methodName, types);
+        if (baseMethod == null) {
+            throw new IllegalArgumentException("The specified method is not declared by the specified base class (" + base.getCanonicalName() + "), or it is private, static or final.");
+        }
+        final Method derivedMethod = Util.getMethod(derived, base, methodName, types);
+        // the lookup will either return null or the base method when no override has been found (depending on whether
+        // the base is an interface)
+        return derivedMethod != null && derivedMethod != baseMethod;
     }
 
-    private static Method getMethod(@NonNull Class clazz, @NonNull String methodName, @NonNull Class... types) {
-        Method res = null;
+    private static Method getMethod(@NonNull Class<?> clazz, @Nullable Class<?> base, @NonNull String methodName, @NonNull Class<?>... types) {
         try {
-            res = clazz.getDeclaredMethod(methodName, types);
-            // private, static or final methods can not be overridden
-            if (res != null && (Modifier.isPrivate(res.getModifiers()) || Modifier.isFinal(res.getModifiers()) 
-                    || Modifier.isStatic(res.getModifiers()))) {
-                res = null;
+            final Method res = clazz.getDeclaredMethod(methodName, types);
+            final int mod = res.getModifiers();
+            // private and static methods are never ok, and end the search
+            if (Modifier.isPrivate(mod) || Modifier.isStatic(mod)) {
+                return null;
             }
+            // when looking for the base/declaring method, final is not ok
+            if (base == null && Modifier.isFinal(mod)) {
+                return null;
+            }
+            // when looking for the overriding method, abstract is not ok
+            if (base != null && Modifier.isAbstract(mod)) {
+                return null;
+            }
+            return res;
         } catch (NoSuchMethodException e) {
             // Method not found in clazz, let's search in superclasses
-            Class superclass = clazz.getSuperclass();
+            Class<?> superclass = clazz.getSuperclass();
+            // TODO: When base is an interface, it's _possible_ that the class may implement a subinterface of base
+            //       which provides a default implementation. Such a case is not currently detected as an override.
             if (superclass != null) {
-                res = getMethod(superclass, methodName, types);
+                // if the superclass doesn't derive from base anymore, stop looking
+                if (base != null && !base.isAssignableFrom(superclass)) {
+                    return null;
+                }
+                return getMethod(superclass, base, methodName, types);
             }
+            return null;
         } catch (SecurityException e) {
             throw new AssertionError(e);
         }
-        if (res == null) {
-            throw new IllegalArgumentException(
-                    String.format("Method %s not found in %s (or it is private, final or static)", methodName, clazz.getName()));
-        }
-        return res;
     }
 
     /**
