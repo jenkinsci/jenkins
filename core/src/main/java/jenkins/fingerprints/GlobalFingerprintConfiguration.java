@@ -26,14 +26,10 @@ package jenkins.fingerprints;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.model.Descriptor;
 import jenkins.model.GlobalConfiguration;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.List;
 
 @Extension
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
