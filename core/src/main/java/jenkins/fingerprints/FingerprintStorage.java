@@ -24,7 +24,6 @@
 package jenkins.fingerprints;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
 import java.io.IOException;
@@ -80,5 +79,9 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      * Returns true if there's some data in the fingerprint database.
      */
     public abstract boolean isReady();
+
+    @Override public FingerprintStorageDescriptor getDescriptor() {
+        return (FingerprintStorageDescriptor) super.getDescriptor();
+    }
 
 }

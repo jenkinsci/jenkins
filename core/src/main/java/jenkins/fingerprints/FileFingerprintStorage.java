@@ -261,7 +261,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     }
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<FingerprintStorage> {
+    public static class DescriptorImpl extends FingerprintStorageDescriptor {
 
         @Override
         public String getDisplayName() {
