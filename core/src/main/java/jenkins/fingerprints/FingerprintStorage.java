@@ -24,6 +24,7 @@
 package jenkins.fingerprints;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      * External storage plugins which implement FingerprintStorage are given a higher priority.
      */
     public static FingerprintStorage get() {
-        return GlobalFingerprintConfiguration.get().getFingerprintStorage();
+        return ExtensionList.lookup(FingerprintStorage.class).get(0);
     }
 
     /**

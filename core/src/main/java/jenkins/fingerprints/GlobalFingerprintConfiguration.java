@@ -37,7 +37,6 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
     private FingerprintStorage fingerprintStorage;
 
     public GlobalFingerprintConfiguration() {
-        fingerprintStorage = ExtensionList.lookup(FingerprintStorage.class).get(0);
         load();
     }
 
@@ -56,7 +55,7 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) {
-//        json = json.getJSONObject("fingerprints");
+        json = json.getJSONObject("fingerprints");
         req.bindJSON(this, json);
         save();
         return true;
