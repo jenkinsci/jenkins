@@ -27,6 +27,7 @@ import com.thoughtworks.xstream.converters.basic.DateConverter;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.model.Descriptor;
 import hudson.model.Fingerprint;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
@@ -36,6 +37,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.EOFException;
@@ -57,6 +59,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
     private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
+
+    @DataBoundConstructor
+    public FileFingerprintStorage () {}
 
     /**
      * Load the Fingerprint with the given unique id.
@@ -253,6 +258,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
             }
         }
         return buf.toString();
+    }
+
+    @Extension
+    public static class DescriptorImpl extends Descriptor<FingerprintStorage> {
+
+        @Override
+        public String getDisplayName() {
+            return "Disabled";
+        }
+
     }
 
 }

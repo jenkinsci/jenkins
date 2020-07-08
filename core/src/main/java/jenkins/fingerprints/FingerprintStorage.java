@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 
 import java.io.IOException;
 
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.Fingerprint;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
@@ -39,14 +40,14 @@ import org.kohsuke.accmod.Restricted;
  * @author Sumit Sarin
  */
 @Restricted(Beta.class)
-public abstract class FingerprintStorage implements ExtensionPoint {
+public abstract class FingerprintStorage extends AbstractDescribableImpl<FingerprintStorage> implements ExtensionPoint {
 
     /**
      * Returns the first implementation of FingerprintStorage for the instance.
      * External storage plugins which implement FingerprintStorage are given a higher priority.
      */
     public static FingerprintStorage get() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(0);
+        return GlobalFingerprintConfiguration.get().getFingerprintStorage();
     }
 
     /**
