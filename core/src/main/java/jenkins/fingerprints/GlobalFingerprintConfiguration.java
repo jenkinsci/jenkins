@@ -23,6 +23,7 @@
  */
 package jenkins.fingerprints;
 
+import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
@@ -59,14 +60,14 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) {
-        json = json.getJSONObject("fingerprints");
+//        json = json.getJSONObject("fingerprints");
         req.bindJSON(this, json);
         save();
         return true;
     }
 
-    public List<Descriptor> descriptors() {
-        return Jenkins.get().getDescriptorList(FingerprintStorage.class);
+    public DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> descriptors() {
+        return FingerprintStorageDescriptor.all();
     }
 
 }

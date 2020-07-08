@@ -23,7 +23,9 @@
  */
 package jenkins.fingerprints;
 
+import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 
 public class FingerprintStorageDescriptor extends Descriptor<FingerprintStorage> {
 
@@ -32,6 +34,10 @@ public class FingerprintStorageDescriptor extends Descriptor<FingerprintStorage>
 
     public FingerprintStorageDescriptor(Class<? extends FingerprintStorage> clazz) {
         super(clazz);
+    }
+
+    public static DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> all() {
+        return Jenkins.get().getDescriptorList(FingerprintStorage.class);
     }
 
 }
