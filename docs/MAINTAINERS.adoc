@@ -253,6 +253,8 @@ References:
 
 * link:https://www.jenkins.io/download/weekly/[Jenkins Weekly Releases Documentation]
 * link:https://github.com/jenkins-infra/release[Jenkins Release Environment and the release process]
+* link:https://github.com/jenkinsci/packaging[Native Jenkins packages and installers for platforms]
+* link:https://github.com/jenkinsci/docker[Docker packaging for Jenkins]
 
 == LTS Process
 
