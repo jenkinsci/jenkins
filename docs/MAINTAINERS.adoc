@@ -246,6 +246,14 @@ When do we squash commits?
 * We squash commits when core maintainers decide to do so (`squash-merge-me` label), usually when the conditions above are not met.
 * There is no strong requirement to squash merge pull requests at the moment, so there might be deviations from the merge policy in practice.
 
+== Weekly release process
+
+link:https://www.jenkins.io/download/weekly/[Jenkins Weekly releases] are managed by the Jenkins Release Team which has access to the dedicated release environment within the Jenkins Infrastructure.
+References:
+
+* link:https://www.jenkins.io/download/weekly/[Jenkins Weekly Releases Documentation]
+* link:https://github.com/jenkins-infra/release[Jenkins Release Environment and the release process]
+
 == LTS Process
 
 Jenkins also offers the link:https://jenkins.io/download/lts/[LTS Release Line].

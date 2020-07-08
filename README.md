@@ -20,7 +20,16 @@ Use Jenkins to automate your development workflow so you can focus on work that 
 Execute repetitive tasks, save time, and optimize your development process with Jenkins.
 
 # Downloads
-Non-source downloads such as WAR files and several Linux packages can be found on our [Mirrors].
+
+The Jenkins project provides official distributions as WAR files, Docker images, native packages and installers for platforms including several Linux distributions and Windows.
+See the [Downloads](https://www.jenkins.io/download) page for references.
+
+For all distributions Jenkins offers two release lines:
+
+* [Weekly](https://www.jenkins.io/download/weekly/) -
+  Frequent releases which include all new features, improvements, and bug fixes.
+* [Long-Term Support (LTS)](https://www.jenkins.io/download/lts/) -
+  Older release line which gets periodically updated via bug fix backports.
 
 # Source
 Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
