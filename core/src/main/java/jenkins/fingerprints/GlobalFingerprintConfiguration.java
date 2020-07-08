@@ -23,6 +23,7 @@
  */
 package jenkins.fingerprints;
 
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import jenkins.model.GlobalConfiguration;
@@ -33,6 +34,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.List;
 
+@Extension
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     private FingerprintStorage fingerprintStorage;
@@ -43,7 +45,7 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
     }
 
     public static GlobalFingerprintConfiguration get() {
-        return (GlobalFingerprintConfiguration) Jenkins.get().getDescriptorOrDie(GlobalFingerprintConfiguration.class);
+        return GlobalConfiguration.all().getInstance(GlobalFingerprintConfiguration.class);
     }
 
     public FingerprintStorage getFingerprintStorage() {
