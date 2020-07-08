@@ -28,18 +28,19 @@ Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
 # Contributing to Jenkins
 
 Follow the [contributing guidelines](CONTRIBUTING.md) if you want to propose a change in the Jenkins core.
-For more information about participating in the community  contributing to the Jenkins project,
+For more information about participating in the community and contributing to the Jenkins project,
 see [this page](https://www.jenkins.io/participate/).
 
 Documentation for Jenkins core maintainers is in the [maintainers guidelines](docs/MAINTAINERS.adoc).
 
 # News and Website
+
 All information about Jenkins can be found on our [website].
 Follow us on [Twitter](https://twitter.com/jenkinsci) or [LinkedIn](https://www.linkedin.com/company/jenkins-project/).
 
 # Governance
 
-See the [Jenkins Governance Document](https://www.jenkins.io/project/governance/) for information about the project's open governance, our philosophy and values, and the development practices.
+See the [Jenkins Governance Document](https://www.jenkins.io/project/governance/) for information about the project's open governance, our philosophy and values, and development practices.
 Jenkins Code of Conduct can be found [here](https://www.jenkins.io/project/conduct/).
 
 # Adopters
