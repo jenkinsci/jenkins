@@ -27,7 +27,6 @@ import com.thoughtworks.xstream.converters.basic.DateConverter;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.model.Descriptor;
 import hudson.model.Fingerprint;
 import hudson.model.listeners.SaveableListener;
 import hudson.util.AtomicFileWriter;
