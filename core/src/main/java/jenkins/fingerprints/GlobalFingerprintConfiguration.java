@@ -23,9 +23,7 @@
  */
 package jenkins.fingerprints;
 
-import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.ExtensionList;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -59,10 +57,6 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
         req.bindJSON(this, json);
         save();
         return true;
-    }
-
-    public DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> descriptors() {
-        return FingerprintStorageDescriptor.all();
     }
 
 }
