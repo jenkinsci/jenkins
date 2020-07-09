@@ -32,10 +32,6 @@ public class FingerprintStorageDescriptor extends Descriptor<FingerprintStorage>
     public FingerprintStorageDescriptor() {
     }
 
-    public FingerprintStorageDescriptor(Class<? extends FingerprintStorage> clazz) {
-        super(clazz);
-    }
-
     public static DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> all() {
         return Jenkins.get().getDescriptorList(FingerprintStorage.class);
     }

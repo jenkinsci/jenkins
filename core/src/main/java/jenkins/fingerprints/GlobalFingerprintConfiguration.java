@@ -24,6 +24,7 @@
 package jenkins.fingerprints;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -32,14 +33,10 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
-    private FingerprintStorage fingerprintStorage;
+    private FingerprintStorage fingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
     public GlobalFingerprintConfiguration() {
         load();
-    }
-
-    public static GlobalFingerprintConfiguration get() {
-        return GlobalConfiguration.all().getInstance(GlobalFingerprintConfiguration.class);
     }
 
     public FingerprintStorage getFingerprintStorage() {
@@ -47,8 +44,8 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
     }
 
     @DataBoundSetter
-    public void setFingerprintStorage(FingerprintStorage fingerprintStorage) {
-        this.fingerprintStorage = fingerprintStorage;
+    public void setFingerprintStorage(FingerprintStorage newFingerprintStorage) {
+        this.fingerprintStorage = newFingerprintStorage;
     }
 
     @Override

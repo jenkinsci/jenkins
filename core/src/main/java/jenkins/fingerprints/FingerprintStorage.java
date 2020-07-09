@@ -47,7 +47,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      * External storage plugins which implement FingerprintStorage are given a higher priority.
      */
     public static FingerprintStorage get() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(0);
+        return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class).getFingerprintStorage();
     }
 
     /**
