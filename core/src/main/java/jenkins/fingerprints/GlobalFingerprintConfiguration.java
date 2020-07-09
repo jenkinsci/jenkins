@@ -30,10 +30,13 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.logging.Logger;
+
 @Extension
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     private FingerprintStorage fingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
+    private static final Logger logger = Logger.getLogger(GlobalFingerprintConfiguration.class.getName());
 
     public GlobalFingerprintConfiguration() {
         load();
@@ -46,6 +49,8 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
     @DataBoundSetter
     public void setFingerprintStorage(FingerprintStorage newFingerprintStorage) {
         this.fingerprintStorage = newFingerprintStorage;
+        logger.fine("Fingerprint Storage for the system changed to " +
+                newFingerprintStorage.getDescriptor().getDisplayName());
     }
 
     @Override
