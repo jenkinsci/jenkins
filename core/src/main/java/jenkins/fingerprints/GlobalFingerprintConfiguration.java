@@ -42,6 +42,10 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
         load();
     }
 
+    public static GlobalFingerprintConfiguration get() {
+        return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class);
+    }
+
     public FingerprintStorage getFingerprintStorage() {
         return fingerprintStorage;
     }
