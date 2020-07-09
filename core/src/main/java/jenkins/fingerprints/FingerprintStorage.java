@@ -43,8 +43,7 @@ import org.kohsuke.accmod.Restricted;
 public abstract class FingerprintStorage extends AbstractDescribableImpl<FingerprintStorage> implements ExtensionPoint {
 
     /**
-     * Returns the first implementation of FingerprintStorage for the instance.
-     * External storage plugins which implement FingerprintStorage are given a higher priority.
+     * Returns the configured {@link FingerprintStorage} engine chosen by the user for the system.
      */
     public static FingerprintStorage get() {
         return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class).getFingerprintStorage();

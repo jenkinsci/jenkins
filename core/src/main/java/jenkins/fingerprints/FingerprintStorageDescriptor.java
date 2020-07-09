@@ -27,6 +27,9 @@ import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
+/**
+ * Descriptor for {@link FingerprintStorage}. Used for configuring external fingerprint storages.
+ */
 public class FingerprintStorageDescriptor extends Descriptor<FingerprintStorage> {
 
     public static DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> all() {
