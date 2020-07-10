@@ -177,9 +177,9 @@ a.tip:hover span {
   display: table;
   margin-bottom: 5px;
   padding: 10px;
-  background-color: var(--alert-info-bg-color-call-out);
+  background-color: var(--alert-info-bg-color);
   border-left: 4px solid #577baa;
-  color: var(--alert-info-color-call-out);
+  color: var(--alert-info-text-color);
 }
 
 .call-to-action a, .call-to-action a:visited {
@@ -1474,29 +1474,29 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 #notification-bar.notif-alert-success {
-  background-color: var(--alert-success-bg-color);
-  border-color: var(--alert-success-border-color);
-  color: var(--alert-success-color);
+  background-color: var(--notification-success-bg-color);
+  border-color: var(--notification-success-border-color);
+  color: var(--notification-success-color);
   .svg-icon {
-    color: var(--alert-success-icon-color);
+    color: var(--notification-success-icon-color);
   }
 }
 
 #notification-bar.notif-alert-warn {
-  background-color: var(--alert-warn-bg-color);
-  border-color: var(--alert-warn-border-color);
-  color: var(--alert-warn-color);
+  background-color: var(--notification-warn-bg-color);
+  border-color: var(--notification-warn-border-color);
+  color: var(--notification-warn-color);
   .svg-icon {
-    color: var(--alert-warn-icon-color);
+    color: var(--notification-warn-icon-color);
   }
 }
 
 #notification-bar.notif-alert-err {
-  background-color: var(--alert-err-bg-color);
-  border-color: var(--alert-err-border-color);
-  color: var(--alert-err-color);
+  background-color: var(--notification-err-bg-color);
+  border-color: var(--notification-err-border-color);
+  color: var(--notification-err-color);
   .svg-icon {
-    color: var(--alert-err-icon-color);
+    color: var(--notification-err-icon-color);
   }
 }
 
@@ -1667,29 +1667,29 @@ select.select-ajax-pending {
 }
 
 .alert-info {
-  color: var(--alert-info-color-call-out);
-  background-color: var(--alert-info-bg-color-call-out);
-  border-color: #bce8f1;
+  color: var(--alert-info-text-color);
+  background-color: var(--alert-info-bg-color);
+  border-color: var(--alert-info-border-color);
 }
 
 .alert-warning {
-    color: #8a6d3b;
-    background-color: #fcf8e3;
-    border-color: #faebcc;
+    color: var(--alert-warning-text-color);
+    background-color: var(--alert-warning-bg-color);
+    border-color: var(--alert-warning-border-color);
 }
 
 .alert-warning p {
-    color: #8a6d3b;
+    color: var(--alert-warning-text-color);
 }
 
 .alert-danger {
-    color: #a94442;
-    background-color: #f2dede;
-    border-color: #ebccd1;
+    color: var(--alert-danger-text-color);
+    background-color: var(--alert-danger-bg-color);
+    border-color: var(--alert-danger-border-color);
 }
 
 .alert-danger p {
-    color: #a94442;
+    color: var(--alert-danger-text-color);
 }
 
 body.no-decoration #main-panel {
