@@ -23,6 +23,7 @@
  */
 package jenkins.fingerprints;
 
+import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.model.GlobalConfiguration;
@@ -64,6 +65,10 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
         req.bindJSON(this, json);
         save();
         return true;
+    }
+
+    public DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> getFingerprintStorageDescriptors() {
+        return FingerprintStorageDescriptor.all();
     }
 
 }

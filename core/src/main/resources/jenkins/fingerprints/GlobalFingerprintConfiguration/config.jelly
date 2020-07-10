@@ -19,9 +19,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:section title="${%Fingerprints}">
-        <f:entry>
-            <f:dropdownDescriptorSelector field="fingerprintStorage" title="Configure External Fingerprint Storage"/>
-        </f:entry>
-    </f:section>
+    <j:if test="${descriptor.fingerprintStorageDescriptors.size() gt 1}">
+        <f:section title="${%Fingerprints}">
+            <f:entry>
+                <f:dropdownDescriptorSelector field="fingerprintStorage" title="Configure External Fingerprint Storage"/>
+            </f:entry>
+        </f:section>
+    </j:if>
 </j:jelly>
