@@ -31,6 +31,7 @@ import java.io.IOException;
 
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Fingerprint;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
 
@@ -40,6 +41,7 @@ import org.kohsuke.accmod.Restricted;
  * @author Sumit Sarin
  */
 @Restricted(Beta.class)
+@Symbol("fingerprintStorage")
 public abstract class FingerprintStorage extends AbstractDescribableImpl<FingerprintStorage> implements ExtensionPoint {
 
     /**

@@ -27,12 +27,14 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.logging.Logger;
 
 @Extension
+@Symbol("fingerprints")
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     private FingerprintStorage fingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
