@@ -41,7 +41,7 @@ import org.kohsuke.accmod.Restricted;
  * @author Sumit Sarin
  */
 @Restricted(Beta.class)
-@Symbol("fingerprintStorage")
+@Symbol("storage")
 public abstract class FingerprintStorage extends AbstractDescribableImpl<FingerprintStorage> implements ExtensionPoint {
 
     /**
