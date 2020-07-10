@@ -59,7 +59,6 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) {
-        json = json.getJSONObject("fingerprints");
         req.bindJSON(this, json);
         save();
         return true;

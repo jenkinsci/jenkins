@@ -440,7 +440,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * and throws an {@code IllegalStateException} otherwise.
      *
      * @param type The type to look up.
-     * @return the singleton instance of the given type in its list.
+     * @return the singleton instance of the given type in .its list.
      * @throws IllegalStateException if there are no instances, or more than one
      *
      * @since 2.87
