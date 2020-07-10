@@ -846,6 +846,11 @@ public class UpdateSite {
      */
     @Restricted(NoExternalUse.class)
     public static final class Deprecation {
+        /**
+         * URL for this deprecation.
+         *
+         * Jenkins will show a link to this URL when displaying the deprecation message.
+         */
         public final String url;
         public Deprecation(String url) {
             this.url = url;
