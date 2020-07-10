@@ -34,6 +34,7 @@ import hudson.util.AtomicFileWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -52,6 +53,7 @@ import java.util.logging.Logger;
  *
  * @author Sumit Sarin
  */
+@Symbol("fileFingerprintStorage")
 @Restricted(NoExternalUse.class)
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
