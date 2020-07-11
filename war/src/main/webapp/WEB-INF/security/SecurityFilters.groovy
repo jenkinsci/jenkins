@@ -34,9 +34,9 @@ import hudson.security.UnwrapSecurityExceptionFilter
 import hudson.security.HudsonAuthenticationEntryPoint
 import jenkins.security.BasicHeaderProcessor
 import jenkins.security.ExceptionTranslationFilter
-import org.acegisecurity.providers.anonymous.AnonymousProcessingFilter
-import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
-import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
+import jenkins.security.facade.providers.anonymous.AnonymousProcessingFilter
+import jenkins.security.facade.ui.basicauth.BasicProcessingFilterEntryPoint
+import jenkins.security.facade.ui.rememberme.RememberMeProcessingFilter
 import hudson.security.HttpSessionContextIntegrationFilter2
 
 // providers that apply to both patterns

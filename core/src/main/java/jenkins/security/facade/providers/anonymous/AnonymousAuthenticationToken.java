@@ -24,8 +24,7 @@ import java.io.Serializable;
 /**
  * Represents an anonymous <code>Authentication</code>.
  *
- * @author Ben Alex
- * @version $Id: AnonymousAuthenticationToken.java 1784 2007-02-24 21:00:24Z luke_t $
+ * Copied from acegi-security
  */
 public class AnonymousAuthenticationToken extends AbstractAuthenticationToken implements Serializable {
     //~ Instance fields ================================================================================================
