@@ -79,7 +79,6 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.lang.StringUtils;
@@ -578,7 +577,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.609
      */
     public static @CheckForNull User get(@CheckForNull Authentication a) {
-        if (a == null || a instanceof AnonymousAuthenticationToken)
+        if (a == null || ACL.isAnonymous(a))
             return null;
 
         // Since we already know this is a name, we can just call getOrCreateById with the name directly.
@@ -899,7 +898,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public ACL getACL() {
         ACL base = Jenkins.get().getAuthorizationStrategy().getACL(this);
         // always allow a non-anonymous user full control of himself.
-        return ACL.lambda((a, permission) -> (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
+        return ACL.lambda((a, permission) -> (idStrategy().equals(a.getName(), id) && !ACL.isAnonymous(a))
                 || base.hasPermission(a, permission));
     }
 

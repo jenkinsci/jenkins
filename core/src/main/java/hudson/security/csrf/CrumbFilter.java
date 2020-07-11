@@ -5,10 +5,10 @@
  */
 package hudson.security.csrf;
 
+import hudson.security.ACL;
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -139,7 +139,7 @@ public class CrumbFilter implements Filter {
             }
 
             // JENKINS-40344: Don't spam the log just because a session is expired
-            Level level = Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken ? Level.FINE : Level.WARNING;
+            Level level = ACL.isAnonymous(Jenkins.getAuthentication()) ? Level.FINE : Level.WARNING;
 
             if (crumb != null) {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {

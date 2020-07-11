@@ -33,6 +33,8 @@ import java.util.logging.Level;
  * {@link BindAuthenticator} with improved diagnostics.
  * 
  * @author Kohsuke Kawaguchi
+ * 
+ * PATCH: used in ldap/reverse-proxy-auth inside groovy bean file
  */
 public class BindAuthenticator2 extends BindAuthenticator {
     /**

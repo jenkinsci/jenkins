@@ -25,11 +25,10 @@ package hudson.security;
 
 import hudson.model.User;
 import jenkins.security.NonSerializableSecurityContext;
+import jenkins.security.facade.context.HttpSessionContextIntegrationFilter;
 import jenkins.security.seed.UserSeedProperty;
-import org.acegisecurity.context.HttpSessionContextIntegrationFilter;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -80,7 +79,7 @@ public class HttpSessionContextIntegrationFilter2 extends HttpSessionContextInte
     }
 
     private boolean hasInvalidSessionSeed(Authentication authentication, HttpSession session) {
-        if (UserSeedProperty.DISABLE_USER_SEED || authentication instanceof AnonymousAuthenticationToken) {
+        if (UserSeedProperty.DISABLE_USER_SEED || ACL.isAnonymous(authentication)) {
             return false;
         }
 

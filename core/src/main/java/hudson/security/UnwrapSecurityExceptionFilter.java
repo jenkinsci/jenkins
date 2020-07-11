@@ -25,7 +25,6 @@ package hudson.security;
 
 import org.apache.commons.jelly.JellyTagException;
 import org.acegisecurity.AcegiSecurityException;
-import org.acegisecurity.ui.ExceptionTranslationFilter;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -37,7 +36,7 @@ import java.io.IOException;
 
 /**
  * If {@link AcegiSecurityException} caused {@link JellyTagException},
- * rethrow it accordingly so that {@link ExceptionTranslationFilter}
+ * rethrow it accordingly so that {@link jenkins.security.ExceptionTranslationFilter}
  * can pick it up and initiate the redirection.
  * 
  * @author Kohsuke Kawaguchi

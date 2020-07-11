@@ -23,10 +23,10 @@
  */
 package hudson.security;
 
+import jenkins.security.facade.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.acegisecurity.acls.sid.Sid;
 
 import edu.umd.cs.findbugs.annotations.NonNull;

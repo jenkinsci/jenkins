@@ -1,7 +1,6 @@
 package hudson.security;
 
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -13,6 +12,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 
 import hudson.model.User;
 import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.facade.ui.rememberme.TokenBasedRememberMeServices;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -78,7 +78,7 @@ public class LoginTest {
      * Returns the 'remember me' cookie if set, otherwise return null. We don't care about the type, only whether it's null
      */
     private Object getRememberMeCookie(WebClient wc) {
-        return wc.getCookieManager().getCookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY);
+        return wc.getCookieManager().getCookie(TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY);
     }
 
     /**

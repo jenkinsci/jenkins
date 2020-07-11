@@ -27,9 +27,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 
 import com.google.common.base.Strings;
+import jenkins.security.facade.ui.AuthenticationEntryPoint;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.InsufficientAuthenticationException;
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -59,7 +59,8 @@ import java.text.MessageFormat;
  *
  * @author Kohsuke Kawaguchi
  */
-public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilterEntryPoint {
+public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    private String loginFormUrl;
     @Override
     public void commence(ServletRequest request, ServletResponse response, AuthenticationException reason) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
@@ -77,7 +78,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
             if(!Strings.isNullOrEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
-            String loginForm = req.getContextPath()+getLoginFormUrl();
+            String loginForm = req.getContextPath() + loginFormUrl;
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
@@ -128,5 +129,16 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             "%n%n"+
             "Authentication required%n"+
             "<!--%n",loginForm);
+    }
+    
+    /**
+     * The URL where the <code>AuthenticationProcessingFilter</code> login
+     * page can be found. Should be relative to the web-app context path, and
+     * include a leading <code>/</code>
+     *
+     * @param loginFormUrl
+     */
+    public void setLoginFormUrl(String loginFormUrl) {
+        this.loginFormUrl = loginFormUrl;
     }
 }

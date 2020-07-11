@@ -24,7 +24,7 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.acegisecurity.AccessDeniedException;
+import jenkins.security.facade.exception.AccessDeniedException;
 import org.acegisecurity.Authentication;
 
 /**

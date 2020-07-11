@@ -24,8 +24,8 @@
 package hudson.security;
 
 import jenkins.model.Jenkins;
+import jenkins.security.facade.ui.AccessDeniedHandler;
 import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.ui.AccessDeniedHandler;
 import org.kohsuke.stapler.WebApp;
 
 import javax.servlet.ServletException;

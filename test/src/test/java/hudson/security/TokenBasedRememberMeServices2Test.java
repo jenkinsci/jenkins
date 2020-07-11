@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import hudson.model.User;
 import jenkins.model.Jenkins;
+import jenkins.security.facade.ui.rememberme.TokenBasedRememberMeServices;
 import jenkins.security.seed.UserSeedProperty;
 
 import org.acegisecurity.Authentication;
@@ -18,7 +19,6 @@ import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 

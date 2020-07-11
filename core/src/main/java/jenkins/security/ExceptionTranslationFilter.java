@@ -15,20 +15,20 @@
  */
 package jenkins.security;
 
+import hudson.security.AccessDeniedHandlerImpl;
+import jenkins.security.facade.AuthenticationTrustResolver;
+import jenkins.security.facade.AuthenticationTrustResolverImpl;
+import jenkins.security.facade.ui.AbstractProcessingFilter;
+import jenkins.security.facade.ui.AccessDeniedHandler;
+import jenkins.security.facade.ui.AuthenticationEntryPoint;
+import jenkins.security.facade.ui.savedrequest.SavedRequest;
+import jenkins.security.facade.util.PortResolver;
+import jenkins.security.facade.util.PortResolverImpl;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.AuthenticationTrustResolver;
-import org.acegisecurity.AuthenticationTrustResolverImpl;
 import org.acegisecurity.InsufficientAuthenticationException;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.ui.AbstractProcessingFilter;
-import org.acegisecurity.ui.AccessDeniedHandler;
-import org.acegisecurity.ui.AccessDeniedHandlerImpl;
-import org.acegisecurity.ui.AuthenticationEntryPoint;
-import org.acegisecurity.ui.savedrequest.SavedRequest;
-import org.acegisecurity.util.PortResolver;
-import org.acegisecurity.util.PortResolverImpl;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 

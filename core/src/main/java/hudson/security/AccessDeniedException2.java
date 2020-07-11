@@ -1,6 +1,6 @@
 package hudson.security;
 
-import org.acegisecurity.AccessDeniedException;
+import jenkins.security.facade.exception.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 

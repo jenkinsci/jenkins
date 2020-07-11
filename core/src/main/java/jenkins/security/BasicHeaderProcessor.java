@@ -4,13 +4,12 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
+import jenkins.security.facade.ui.AuthenticationEntryPoint;
+import jenkins.security.facade.ui.rememberme.NullRememberMeServices;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.acegisecurity.ui.AuthenticationEntryPoint;
-import org.acegisecurity.ui.rememberme.NullRememberMeServices;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.apache.commons.lang.StringUtils;
 
@@ -125,7 +124,7 @@ public class BasicHeaderProcessor implements Filter {
         // BASIC protocol is desirable. This behaviour is also consistent with that provided by form and digest,
         // both of which force re-authentication if the respective header is detected (and in doing so replace
         // any existing AnonymousAuthenticationToken). See SEC-610.
-        if (existingAuth instanceof AnonymousAuthenticationToken) {
+        if (ACL.isAnonymous(existingAuth)) {
             return true;
         }
 

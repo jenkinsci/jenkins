@@ -37,6 +37,7 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import hudson.util.spring.BeanBuilder;
+import jenkins.security.facade.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthorityImpl;
@@ -44,7 +45,6 @@ import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
-import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
@@ -301,7 +301,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
-        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY, "");
+        Cookie cookie = new Cookie(TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);

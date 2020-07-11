@@ -383,9 +383,24 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>commons-jexl</artifactId>
     </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.acegisecurity</groupId>-->
+<!--      <artifactId>acegi-security</artifactId>-->
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <groupId>org.springframework</groupId>-->
+<!--          <artifactId>spring-remoting</artifactId>-->
+<!--        </exclusion>-->
+<!--        <exclusion>-->
+<!--          <groupId>org.springframework</groupId>-->
+<!--          <artifactId>spring-support</artifactId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
+<!--    </dependency>-->
     <dependency>
-      <groupId>org.acegisecurity</groupId>
-      <artifactId>acegi-security</artifactId>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>acegi-security-facade-lib</artifactId>
+      <version>1.0.7</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>

@@ -35,10 +35,10 @@ import javax.servlet.http.HttpSession;
 import hudson.Util;
 import hudson.model.User;
 import jenkins.security.SecurityListener;
+import jenkins.security.facade.ui.webapp.AuthenticationProcessingFilter;
 import jenkins.security.seed.UserSeedProperty;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
 
 /**
  * {@link AuthenticationProcessingFilter} with a change for Jenkins so that

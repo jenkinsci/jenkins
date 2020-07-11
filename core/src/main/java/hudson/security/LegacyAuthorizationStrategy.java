@@ -26,7 +26,7 @@ package hudson.security;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
+import jenkins.security.facade.acls.sid.GrantedAuthoritySid;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
