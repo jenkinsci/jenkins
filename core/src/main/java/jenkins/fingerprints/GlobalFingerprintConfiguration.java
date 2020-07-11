@@ -54,10 +54,10 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
     }
 
     @DataBoundSetter
-    public void setFingerprintStorage(FingerprintStorage newFingerprintStorage) {
-        this.fingerprintStorage = newFingerprintStorage;
+    public void setFingerprintStorage(FingerprintStorage fingerprintStorage) {
+        this.fingerprintStorage = fingerprintStorage;
         logger.fine("Fingerprint Storage for the system changed to " +
-                newFingerprintStorage.getDescriptor().getDisplayName());
+                fingerprintStorage.getDescriptor().getDisplayName());
     }
 
     @Override
