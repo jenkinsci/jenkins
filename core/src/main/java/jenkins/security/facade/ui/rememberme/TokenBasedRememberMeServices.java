@@ -16,11 +16,11 @@
 package jenkins.security.facade.ui.rememberme;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.security.facade.providers.rememberme.RememberMeAuthenticationToken;
-import jenkins.security.facade.ui.AuthenticationDetailsSource;
-import jenkins.security.facade.ui.AuthenticationDetailsSourceImpl;
 import jenkins.security.facade.ui.logout.LogoutHandler;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken;
+import org.acegisecurity.ui.AuthenticationDetailsSource;
+import org.acegisecurity.ui.AuthenticationDetailsSourceImpl;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UserDetailsService;

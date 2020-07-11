@@ -27,9 +27,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 
 import com.google.common.base.Strings;
-import jenkins.security.facade.ui.AuthenticationEntryPoint;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.InsufficientAuthenticationException;
+import org.acegisecurity.ui.AuthenticationEntryPoint;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;

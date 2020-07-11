@@ -15,14 +15,14 @@
 package jenkins.security;
 
 import hudson.Extension;
-import jenkins.security.facade.ui.AuthenticationDetailsSource;
-import jenkins.security.facade.ui.AuthenticationDetailsSourceImpl;
 import jenkins.util.SystemProperties;
 import jenkins.ExtensionFilter;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.ui.AuthenticationDetailsSource;
+import org.acegisecurity.ui.AuthenticationDetailsSourceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

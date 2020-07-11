@@ -15,12 +15,12 @@
 
 package jenkins.security.facade.providers.ldap.authenticator;
 
-import jenkins.security.facade.userdetails.ldap.LdapUserDetailsMapper;
 import org.acegisecurity.AcegiMessageSource;
 import org.acegisecurity.ldap.InitialDirContextFactory;
 import org.acegisecurity.ldap.LdapEntryMapper;
 import org.acegisecurity.ldap.LdapUserSearch;
 import org.acegisecurity.providers.ldap.LdapAuthenticator;
+import org.acegisecurity.userdetails.ldap.LdapUserDetailsMapper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;

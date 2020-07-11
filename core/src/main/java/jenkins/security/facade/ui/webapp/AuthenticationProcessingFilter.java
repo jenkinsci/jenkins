@@ -15,10 +15,10 @@
 
 package jenkins.security.facade.ui.webapp;
 
-import jenkins.security.facade.ui.AbstractProcessingFilter;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.ui.AbstractProcessingFilter;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;

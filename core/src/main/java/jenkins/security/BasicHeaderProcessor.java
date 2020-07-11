@@ -4,12 +4,12 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
-import jenkins.security.facade.ui.AuthenticationEntryPoint;
-import jenkins.security.facade.ui.rememberme.NullRememberMeServices;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.ui.AuthenticationEntryPoint;
+import org.acegisecurity.ui.rememberme.NullRememberMeServices;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
 import org.apache.commons.lang.StringUtils;
 

@@ -400,7 +400,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>acegi-security-facade-lib</artifactId>
-      <version>1.0.7_v1-20200711.211133-1</version>
+      <version>1.0.7_v1-20200711.233457-4</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>
