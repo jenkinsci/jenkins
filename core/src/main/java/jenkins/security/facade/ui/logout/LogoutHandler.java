@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
  * Indicates a class that is able to participate in logout handling.
  *
  * <p>
- * Called by {@link LogoutFilter}.
+ * Called by LogoutFilter.
  *
  * Copied from acegi-security
  */

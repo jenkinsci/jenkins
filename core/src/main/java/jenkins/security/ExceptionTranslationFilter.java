@@ -177,7 +177,7 @@ public class ExceptionTranslationFilter implements Filter, InitializingBean {
      * In situations where you do not wish to unnecessarily create {@link HttpSession}s - because the user agent
      * will know the failed URL, such as with BASIC or Digest authentication - you may wish to
 	 * set this property to {@code false}. Remember to also set the
-	 * {@link org.acegisecurity.context.HttpSessionContextIntegrationFilter#allowSessionCreation}
+	 * HttpSessionContextIntegrationFilter#allowSessionCreation
 	 * to {@code false} if you set this property to {@code false}.
 	 *
 	 * @return {@code true} if the {@link HttpSession} will be

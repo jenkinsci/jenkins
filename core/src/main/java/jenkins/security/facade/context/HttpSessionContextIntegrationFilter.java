@@ -40,8 +40,8 @@ import java.lang.reflect.Method;
 /**
  * Populates the {@link SecurityContextHolder} with information obtained from
  * the <code>HttpSession</code>.
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * The <code>HttpSession</code> will be queried to retrieve the
  * <code>SecurityContext</code> that should be stored against the
  * <code>SecurityContextHolder</code> for the duration of the web request. At
@@ -49,14 +49,14 @@ import java.lang.reflect.Method;
  * <code>SecurityContextHolder</code> will be persisted back to the
  * <code>HttpSession</code> by this filter.
  * </p>
- * <p/>
+ * <p>
  * If a valid <code>SecurityContext</code> cannot be obtained from the
  * <code>HttpSession</code> for whatever reason, a fresh
  * <code>SecurityContext</code> will be created and used instead. The created
  * object will be of the instance defined by the {@link #setContext(Class)}
  * method (which defaults to {@link org.acegisecurity.context.SecurityContextImpl}.
  * </p>
- * <p/>
+ * <p>
  * No <code>HttpSession</code> will be created by this filter if one does not
  * already exist. If at the end of the web request the <code>HttpSession</code>
  * does not exist, a <code>HttpSession</code> will <b>only</b> be created if
@@ -70,11 +70,11 @@ import java.lang.reflect.Method;
  * irrespective of normal session-minimisation logic (the default is
  * <code>false</code>, as this is resource intensive and not recommended).
  * </p>
- * <p/>
+ * <p>
  * This filter will only execute once per request, to resolve servlet container
  * (specifically Weblogic) incompatibilities.
  * </p>
- * <p/>
+ * <p>
  * If for whatever reason no <code>HttpSession</code> should <b>ever</b> be
  * created (eg this filter is only being used with Basic authentication or
  * similar clients that will never present the same <code>jsessionid</code>
@@ -87,7 +87,7 @@ import java.lang.reflect.Method;
  * <code>true</code> (setting it to <code>false</code> will cause a startup
  * time error).
  * </p>
- * <p/>
+ * <p>
  * This filter MUST be executed BEFORE any authentication processing mechanisms.
  * Authentication processing mechanisms (eg BASIC, CAS processing filters etc)
  * expect the <code>SecurityContextHolder</code> to contain a valid

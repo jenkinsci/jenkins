@@ -66,14 +66,14 @@ import java.util.Map;
  * cookie.
  * </p>
  * 
- * <p>
+ * 
  * The cookie encoded by this implementation adopts the following form:
  * 
  * <pre>
  * username + &quot;:&quot; + expiryTime + &quot;:&quot; + Md5Hex(username + &quot;:&quot; + expiryTime + &quot;:&quot; + password + &quot;:&quot; + key)
  * </pre>
  * 
- * </p>
+ * 
  * <p>
  * As such, if the user changes their password any remember-me token will be
  * invalidated. Equally, the system administrator may invalidate every

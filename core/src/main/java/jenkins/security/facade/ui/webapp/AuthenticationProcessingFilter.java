@@ -31,8 +31,7 @@ import javax.servlet.http.HttpServletRequest;
  * password. The parameter names to use are contained in the static fields {@link #ACEGI_SECURITY_FORM_USERNAME_KEY}
  * and {@link #ACEGI_SECURITY_FORM_PASSWORD_KEY}.</p>
  *
- * <p><b>Do not use this class directly.</b> Instead configure <code>web.xml</code> to use the {@link
- * org.acegisecurity.util.FilterToBeanProxy}.</p>
+ * <p><b>Do not use this class directly.</b> Instead configure <code>web.xml</code> to use the FilterToBeanProxy.</p>
  *
  * Copied from acegi-security
  */
