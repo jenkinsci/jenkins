@@ -15,6 +15,7 @@
 
 package jenkins.security.facade.ui.webapp;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.ui.AuthenticationEntryPoint;
 import org.acegisecurity.util.PortMapper;
@@ -96,6 +97,8 @@ public class AuthenticationProcessingFilterEntryPoint implements AuthenticationE
 		return getLoginFormUrl();
 	}
 
+	//PATCH: add warning to satisfy spotbugs
+	@SuppressFBWarnings(value = "URL_REWRITING", justification = "The session ID is not stored in the URL by default.")
 	public void commence(ServletRequest request, ServletResponse response, AuthenticationException authException)
 			throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) request;
