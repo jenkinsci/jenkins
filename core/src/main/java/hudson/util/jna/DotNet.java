@@ -37,8 +37,6 @@ import java.net.UnknownHostException;
  * @author Kohsuke Kawaguchi
  */
 public class DotNet {
-    private static final String PATH10 = "SOFTWARE\\Microsoft\\.NETFramework\\Policy\\v1.0\\3705";
-    private static final String PATH11 = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v1.1.4322";
     private static final String PATH20 = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v2.0.50727";
     private static final String PATH30 = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.0\\Setup";
     private static final String PATH35 = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
@@ -63,10 +61,6 @@ public class DotNet {
                 return isV35Installed() || isV30Installed();
             } else if (major == 2 && minor == 0) {
                 return isV35Installed() || isV30Installed() || isV20Installed();
-            } else if (major == 1 && minor == 1) {
-                return isV11Installed();
-            } else if (major == 1 && minor == 0) {
-                return isV11Installed() || isV10Installed();
             } else {
                 return false;
             }
@@ -109,18 +103,6 @@ public class DotNet {
         }
     }
 
-    private static boolean isV11Installed() {
-        try (RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(PATH11)) {
-            return key.getIntValue(VALUE_INSTALL) == 1;
-        }
-    }
-
-    private static boolean isV10Installed() {
-        try (RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(PATH10)) {
-            return key.getStringValue(VALUE_INSTALL) == "1";
-        }
-    }
-
     /**
      * Returns true if the .NET framework of a compatible version is installed on a remote machine. 
      */
@@ -139,10 +121,6 @@ public class DotNet {
                 return isV35Installed(registry, hklm) || isV30Installed(registry, hklm);
             } else if (major == 2 && minor == 0) {
                 return isV35Installed(registry, hklm) || isV30Installed(registry, hklm) || isV20Installed(registry, hklm);
-            } else if (major == 1 && minor == 1) {
-                return isV11Installed(registry, hklm);
-            } else if (major == 1 && minor == 0) {
-                return isV11Installed(registry, hklm) || isV10Installed(registry, hklm);
             } else {
                 return false;
             }
@@ -220,36 +198,8 @@ public class DotNet {
         }
     }
 
-    private static boolean isV11Installed(IJIWinReg registry, JIPolicyHandle hklm) throws JIException {
-        JIPolicyHandle key = null;
-        try {
-            key = registry.winreg_OpenKey(hklm, PATH11, IJIWinReg.KEY_READ);
-            return GetIntValue(registry, key, VALUE_INSTALL) == 1;
-        } finally {
-            if (key != null) {
-                registry.winreg_CloseKey(key);
-            }
-        }
-    }
-
-    private static boolean isV10Installed(IJIWinReg registry, JIPolicyHandle hklm) throws JIException {
-        JIPolicyHandle key = null;
-        try {
-            key = registry.winreg_OpenKey(hklm, PATH10, IJIWinReg.KEY_READ);
-            return GetStringValue(registry, key, VALUE_INSTALL) == "1";
-        } finally {
-            if (key != null) {
-                registry.winreg_CloseKey(key);
-            }
-        }
-    }
-
     private static int GetIntValue(IJIWinReg registry, JIPolicyHandle key, String name) throws JIException {
         return RegistryKey.convertBufferToInt((byte[])registry.winreg_QueryValue(key, name, Integer.BYTES)[1]);
-    }
-
-    private static String GetStringValue(IJIWinReg registry, JIPolicyHandle key, String name) throws JIException {
-        return RegistryKey.convertBufferToString((byte[])registry.winreg_QueryValue(key, name, Character.BYTES * 2)[1]);
     }
 
     private static int GetV45PlusMinRelease(int minor) {
