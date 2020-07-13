@@ -9,7 +9,6 @@
   padding: 8px 0px;
   color: var(--pane-header-color);
   background: var(--pane-header-bg);
-  // TODO: see how this affects the side panel widgets
   border: var(--pane-border-width) solid var(--pane-header-border-color);
   border-left: none;
   border-right: none;
@@ -90,7 +89,6 @@ table.bigtable {
 }
 
 .bigtable th {
-  font-size: var(--bigtable-header-font-size); // TODO: move this to a <thead> or .header declaration
   font-weight: var(--bigtable-header-font-weight);
   color: var(--bigtable-header-text-color);
   background: var(--bigtable-header-bg);
@@ -129,13 +127,17 @@ table.bigtable {
 table.sortable a.sortheader {
   text-decoration: none;
   display: block;
-  color: var(--bigtable-header-text-color);
+  color: var(--pane-header-color);
   font-weight: var(--pane-header-font-weight);  // Should we use the bigtable one here?
 }
 
 table.sortable span.sortarrow {
   text-decoration: none;
-  // color: var(--pane-text-color);
-  color: var(--bigtable-header-text-color);
+  color: var(--pane-header-color);
   font-weight: var(--pane-header-font-weight); // Should we use the bigtable one here?
+}
+
+table.bigtable.sortable a.sortheader,
+table.bigtable.sortable span.sortarrow {
+  color: var(--bigtable-header-text-color);
 }
