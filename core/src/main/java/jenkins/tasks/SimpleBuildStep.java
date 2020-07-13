@@ -116,7 +116,7 @@ public interface SimpleBuildStep extends BuildStep {
                 "perform", Run.class, FilePath.class, Launcher.class, TaskListener.class)) {
             this.perform(run, workspace, launcher, listener);
         } else {
-            throw new AbstractMethodError(Messages.SimpleBuildStep_NeedPerformMethodWithWorkspace());
+            throw new AbstractMethodError("Unless a build step is marked as not requiring a workspace context, you must implement the overload of the perform() method that takes both a workspace and a launcher.");
         }
     }
 
@@ -145,10 +145,10 @@ public interface SimpleBuildStep extends BuildStep {
     default void perform(@NonNull Run<?, ?> run, @NonNull EnvVars env, @NonNull TaskListener listener) throws InterruptedException, IOException {
         // If this step requires a workspace, this is the wrong method to call.
         if (this.requiresWorkspace()) {
-            throw new AbortException(Messages.SimpleBuildStep_WorkspaceContextNeeded());
+            throw new AbortException("This build step requires a workspace context, but none was provided.");
         }
         // Otherwise, this method must have an implementation.
-        throw new AbstractMethodError(Messages.SimpleBuildStep_NeedPerformMethodWithoutWorkspace());
+        throw new AbstractMethodError("When a build step is marked as not requiring a workspace context, you must implement the overload of the perform() method that does not take a workspace or launcher.");
     }
 
     /**

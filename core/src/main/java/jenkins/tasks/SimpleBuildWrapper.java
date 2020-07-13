@@ -81,7 +81,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
             this.setUp(context, build, listener, initialEnvironment);
             return;
         }
-        throw new AbstractMethodError(Messages.SimpleBuildWrapper_NeedSetUpMethodWithWorkspace());
+        throw new AbstractMethodError("Unless a build wrapper is marked as not requiring a workspace context, you must implement the overload of the setUp() method that takes both a workspace and a launcher.");
     }
 
     /**
@@ -110,10 +110,10 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     public void setUp(Context context, Run<?,?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // If this wrapper requires a workspace, this is the wrong method to call.
         if (this.requiresWorkspace()) {
-            throw new AbortException(Messages.SimpleBuildWrapper_WorkspaceContextNeeded());
+            throw new AbortException("This build wrapper requires a workspace context, but none was provided.");
         }
         // Otherwise, this method must have an implementation.
-        throw new AbstractMethodError(Messages.SimpleBuildWrapper_NeedSetUpMethodWithoutWorkspace());
+        throw new AbstractMethodError("When a build wrapper is marked as not requiring a workspace context, you must implement the overload of the setUp() method that does not take a workspace or launcher.");
     }
 
     /**
@@ -197,7 +197,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
                 this.tearDown(build, listener);
                 return;
             }
-            throw new AbstractMethodError(Messages.SimpleBuildWrapper_Disposer_NeedTearDownMethodWithWorkspace());
+            throw new AbstractMethodError("Unless an end-of-wrapped-block callback is marked as not requiring a workspace context, you must implement the overload of the tearDown() method that takes both a workspace and a launcher.");
         }
 
         /**
@@ -211,10 +211,10 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
             // If this callback requires a workspace, this is the wrong method to call.
             if (this.requiresWorkspace) {
-                throw new AbortException(Messages.SimpleBuildWrapper_Disposer_WorkspaceContextNeeded());
+                throw new AbortException("This end-of-wrapped-block callback requires a workspace context, but none was provided.");
             }
             // Otherwise, this method must have an implementation.
-            throw new AbstractMethodError(Messages.SimpleBuildWrapper_Disposer_NeedTearDownMethodWithoutWorkspace());
+            throw new AbstractMethodError("When an end-of-wrapped-block callback is marked as not requiring a workspace context, you must implement the overload of the tearDown() method that does not take a workspace or launcher.");
         }
 
     }
