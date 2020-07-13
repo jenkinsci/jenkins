@@ -157,6 +157,9 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      */
     public static abstract class Disposer implements Serializable {
 
+        // Inverted meaning from requiresWorkspace(), to be compatible with old serialized instances.
+        private final boolean workspaceOptional;
+
         /**
          * Creates a new end-of-wrapped-block callback.
          *
@@ -164,7 +167,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          */
         @Deprecated
         protected Disposer() {
-            this.requiresWorkspace = true;
+            this.workspaceOptional = false;
         }
 
         /**
@@ -174,26 +177,59 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          *                requires a workspace context (working directory and launcher). That choice determines whether
          *                {@link #tearDown(Run, FilePath, Launcher, TaskListener)} or
          *                {@link #tearDown(Run, TaskListener)} applies.
+         * @see #requiresWorkspace()
          * @since TODO
          */
         protected Disposer(@NonNull SimpleBuildWrapper wrapper) {
-            this.requiresWorkspace = wrapper.requiresWorkspace();
+            this.workspaceOptional = !wrapper.requiresWorkspace();
         }
 
-        private final boolean requiresWorkspace;
+        /**
+         * Creates a new end-of-wrapped-block callback.
+         *
+         * @param requiresWorkspace Indicates whether or not this callback requires a workspace context (working
+         *                          directory and launcher). That choice determines whether
+         *                          {@link #tearDown(Run, FilePath, Launcher, TaskListener)} or
+         *                          {@link #tearDown(Run, TaskListener)} applies.
+         * @see #requiresWorkspace()
+         * @since TODO
+         */
+        protected Disposer(boolean requiresWorkspace) {
+            this.workspaceOptional = !requiresWorkspace;
+        }
+
+        /**
+         * Determines whether or not this end-of-wrapped-block callback requires a workspace context (working
+         * directory and launcher).
+         * <p>
+         * When such a context is required (the default), then {@link #tearDown(Run, FilePath, Launcher, TaskListener)}
+         * applies. Otherwise, {@link #tearDown(Run, TaskListener)} applies.
+         *
+         * @return {@code true} when a workspace context is required; {@code false} otherwise.
+         * @since TODO
+         */
+        public final boolean requiresWorkspace() {
+            return !this.workspaceOptional;
+        }
 
         /**
          * Attempt to clean up anything that was done in the initial setup.
-         * @param build a build being run
+         * <p>
+         * This method <strong>must</strong> be overridden when this callback requires a workspace context. If such a
+         * context is <em>not</em> required, it does not need to be overridden; it will then forward to
+         * {@link #tearDown(Run, TaskListener)}.
+         *
+         * @param build     a build being run
          * @param workspace a workspace of the build
-         * @param launcher a way to start commands
-         * @param listener a way to report progress
-         * @throws IOException if something fails; {@link AbortException} for user errors
+         * @param launcher  a way to start commands
+         * @param listener  a way to report progress
+         * @throws AbstractMethodError  When this method is not overridden, and this callback requires a workspace.
+         * @throws IOException          if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
         public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
             // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
-            if (!this.requiresWorkspace) {
+            if (this.workspaceOptional) {
                 this.tearDown(build, listener);
                 return;
             }
@@ -202,15 +238,21 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
 
         /**
          * Attempt to clean up anything that was done in the initial setup.
-         * @param build a build being run
+         * <p>
+         * This method <strong>must</strong> be overridden when this callback does not require a workspace context, and
+         * <strong>must not</strong> be called when such a context <em>is</em> required.
+         *
+         * @param build    a build being run
          * @param listener a way to report progress
-         * @throws IOException if something fails; {@link AbortException} for user errors
+         * @throws AbortException       When this callback requires a workspace.
+         * @throws AbstractMethodError  When this method is not overridden, and this callback does not require a workspace.
+         * @throws IOException          if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          * @since TODO
          */
         public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
             // If this callback requires a workspace, this is the wrong method to call.
-            if (this.requiresWorkspace) {
+            if (!this.workspaceOptional) {
                 throw new AbortException("This end-of-wrapped-block callback requires a workspace context, but none was provided.");
             }
             // Otherwise, this method must have an implementation.
@@ -262,7 +304,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
         @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
-                if (c.disposer.requiresWorkspace) {
+                if (c.disposer.workspaceOptional) {
                     c.disposer.tearDown(build, build.getWorkspace(), this.launcher, listener);
                 } else {
                     c.disposer.tearDown(build, listener);
