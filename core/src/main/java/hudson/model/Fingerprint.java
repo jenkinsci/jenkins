@@ -1317,9 +1317,9 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return Loaded {@link Fingerprint}. {@code null} if the config file does not exist or
      * malformed.
      *
-     * In case an external storage is configured on top of a file system based storage, first external storage is
-     * polled to retrieve the fingerprint, if not found then local storage is polled to retrieve the fingerprint if it
-     * is present there.
+     * In case an external storage is configured on top of a file system based storage:
+     * 1. External storage is polled to retrieve the fingerprint
+     * 2. If not found, then the local storage is polled to retrieve the fingerprint
      */
     public static @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
         long start=0;
