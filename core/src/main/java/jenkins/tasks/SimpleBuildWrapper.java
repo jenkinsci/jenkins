@@ -24,8 +24,6 @@
 
 package jenkins.tasks;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -47,6 +45,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A generalization of {@link BuildWrapper} that, like {@link SimpleBuildStep}, may be called at various points within a build.
@@ -65,14 +65,33 @@ import java.util.Set;
 public abstract class SimpleBuildWrapper extends BuildWrapper {
 
     /**
+     * Determines whether or not this wrapper requires a workspace context (working directory and launcher).
+     * <p>
+     * When such a context is required (the default), {@link #setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)} applies.
+     * Otherwise, {@link #setUp(Context, Run, TaskListener, EnvVars)} applies.
+     *
+     * @return {@code true} if this wrapper requires a workspace context; {@code false} otherwise.
+     * @since TODO
+     */
+    boolean requiresWorkspace() {
+        return true;
+    }
+
+    /**
      * Called when a segment of a build is started that is to be enhanced with this wrapper.
-     * @param context a way of collecting modifications to the environment for nested steps
-     * @param build a build being run
-     * @param workspace a workspace of the build
-     * @param launcher a way to start commands
-     * @param listener a way to report progress
+     * <p>
+     * This method <strong>must</strong> be overridden when this wrapper requires a workspace context. If such a context
+     * is <em>not</em> required, it does not need to be overridden; it will then forward to
+     * {@link #setUp(Context, Run, TaskListener, EnvVars)}.
+     *
+     * @param context            a way of collecting modifications to the environment for nested steps
+     * @param build              a build being run
+     * @param workspace          a workspace of the build
+     * @param launcher           a way to start commands
+     * @param listener           a way to report progress
      * @param initialEnvironment the environment variables set at the outset
-     * @throws IOException if something fails; {@link AbortException} for user errors
+     * @throws AbstractMethodError  if this wrapper requires a workspace context, and this method is not overridden
+     * @throws IOException          if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
      */
     public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -85,32 +104,25 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     }
 
     /**
-     * Determines whether or not this wrapper requires a workspace context (working directory and launcher).
-     * <p>
-     * When this returns {@code true}, {@link #setUp(Context, Run, FilePath, Launcher, TaskListener, EnvVars)} applies.
-     * Otherwise, {@link #setUp(Context, Run, TaskListener, EnvVars)} applies.
-     *
-     * @return {@code true} if this step requires a workspace context; {@code false} otherwise.
-     * @since TODO
-     */
-    boolean requiresWorkspace() {
-        return true;
-    }
-
-    /**
      * Called when a segment of a build is started that is to be enhanced with this wrapper.
-     * @param context a way of collecting modifications to the environment for nested steps
-     * @param build a build being run
-     * @param listener a way to report progress
+     * <p>
+     * This method <strong>must</strong> be overridden when this wrapper does not require a workspace context, and
+     * <strong>must not</strong> be called when such a context <em>is</em> required.
+     *
+     * @param context            a way of collecting modifications to the environment for nested steps
+     * @param build              a build being run
+     * @param listener           a way to report progress
      * @param initialEnvironment the environment variables set at the outset
-     * @throws IOException if something fails; {@link AbortException} for user errors
-     * @throws InterruptedException if setup is interrupted
+     * @throws AbstractMethodError   if this method is not overridden
+     * @throws IllegalStateException if this wrapper requires a workspace context
+     * @throws IOException           if something fails; {@link AbortException} for user errors
+     * @throws InterruptedException  if setup is interrupted
      * @since TODO
      */
     public void setUp(Context context, Run<?,?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // If this wrapper requires a workspace, this is the wrong method to call.
         if (this.requiresWorkspace()) {
-            throw new AbortException("This build wrapper requires a workspace context, but none was provided.");
+            throw new IllegalStateException("This build wrapper requires a workspace context, but none was provided.");
         }
         // Otherwise, this method must have an implementation.
         throw new AbstractMethodError("When a build wrapper is marked as not requiring a workspace context, you must implement the overload of the setUp() method that does not take a workspace or launcher.");
@@ -202,10 +214,10 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * Determines whether or not this end-of-wrapped-block callback requires a workspace context (working
          * directory and launcher).
          * <p>
-         * When such a context is required (the default), then {@link #tearDown(Run, FilePath, Launcher, TaskListener)}
-         * applies. Otherwise, {@link #tearDown(Run, TaskListener)} applies.
+         * When such a context is required (the default), then {@link #tearDown(Run, FilePath, Launcher, TaskListener)} applies.
+         * Otherwise, {@link #tearDown(Run, TaskListener)} applies.
          *
-         * @return {@code true} when a workspace context is required; {@code false} otherwise.
+         * @return {@code true} when this end-of-wrapped-block callback requires a workspace context; {@code false} otherwise.
          * @since TODO
          */
         public final boolean requiresWorkspace() {
@@ -215,15 +227,15 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         /**
          * Attempt to clean up anything that was done in the initial setup.
          * <p>
-         * This method <strong>must</strong> be overridden when this callback requires a workspace context. If such a
-         * context is <em>not</em> required, it does not need to be overridden; it will then forward to
-         * {@link #tearDown(Run, TaskListener)}.
+         * This method <strong>must</strong> be overridden when this end-of-wrapped-block callback requires a workspace
+         * context. If such a context is <em>not</em> required, it does not need to be overridden; it will then forward
+         * to {@link #tearDown(Run, TaskListener)}.
          *
          * @param build     a build being run
          * @param workspace a workspace of the build
          * @param launcher  a way to start commands
          * @param listener  a way to report progress
-         * @throws AbstractMethodError  When this method is not overridden, and this callback requires a workspace.
+         * @throws AbstractMethodError  if this end-of-wrapped-block callback requires a workspace and this method is not overridden.
          * @throws IOException          if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
@@ -239,21 +251,21 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         /**
          * Attempt to clean up anything that was done in the initial setup.
          * <p>
-         * This method <strong>must</strong> be overridden when this callback does not require a workspace context, and
-         * <strong>must not</strong> be called when such a context <em>is</em> required.
+         * This method <strong>must</strong> be overridden when this end-of-wrapped-block callback does not require a
+         * workspace context, and <strong>must not</strong> be called when such a context <em>is</em> required.
          *
          * @param build    a build being run
          * @param listener a way to report progress
-         * @throws AbortException       When this callback requires a workspace.
-         * @throws AbstractMethodError  When this method is not overridden, and this callback does not require a workspace.
-         * @throws IOException          if something fails; {@link AbortException} for user errors
-         * @throws InterruptedException if tear down is interrupted
+         * @throws AbstractMethodError   if this this method is not overridden
+         * @throws IllegalStateException if this end-of-wrapped-block callback requires a workspace
+         * @throws IOException           if something fails; {@link AbortException} for user errors
+         * @throws InterruptedException  if tear down is interrupted
          * @since TODO
          */
         public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
             // If this callback requires a workspace, this is the wrong method to call.
             if (!this.workspaceOptional) {
-                throw new AbortException("This end-of-wrapped-block callback requires a workspace context, but none was provided.");
+                throw new IllegalStateException("This end-of-wrapped-block callback requires a workspace context, but none was provided.");
             }
             // Otherwise, this method must have an implementation.
             throw new AbstractMethodError("When an end-of-wrapped-block callback is marked as not requiring a workspace context, you must implement the overload of the tearDown() method that does not take a workspace or launcher.");
