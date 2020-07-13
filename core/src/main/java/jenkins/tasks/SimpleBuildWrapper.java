@@ -295,11 +295,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
         @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
-                if (c.disposer.requiresWorkspace()) {
-                    c.disposer.tearDown(build, build.getWorkspace(), this.launcher, listener);
-                } else {
-                    c.disposer.tearDown(build, listener);
-                }
+                c.disposer.tearDown(build, build.getWorkspace(), this.launcher, listener);
             }
             return true;
         }
