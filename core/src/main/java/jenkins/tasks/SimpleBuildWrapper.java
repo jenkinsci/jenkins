@@ -47,6 +47,8 @@ import java.util.Map;
 import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * A generalization of {@link BuildWrapper} that, like {@link SimpleBuildStep}, may be called at various points within a build.
@@ -73,6 +75,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @return {@code true} if this wrapper requires a workspace context; {@code false} otherwise.
      * @since TODO
      */
+    @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
     public boolean requiresWorkspace() {
         return true;
     }
@@ -157,6 +160,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * Any {@link Disposer} set on this context will then be configured accordingly.
          * @param wrapper The wrapper to get the workspace requirement from.
          */
+        @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
         public void setWorkspaceRequirement(@NonNull SimpleBuildWrapper wrapper) {
             this.wrapperRequiresWorkspace = wrapper.requiresWorkspace();
         }
@@ -197,6 +201,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @return {@code true} when this end-of-wrapped-block callback requires a workspace context; {@code false} otherwise.
          * @since TODO
          */
+        @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
         public final boolean requiresWorkspace() {
             return this.wrapperRequiresWorkspace == null || this.wrapperRequiresWorkspace;
         }
