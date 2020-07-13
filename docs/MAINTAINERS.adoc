@@ -42,7 +42,7 @@ Remoting updates in the core are subject to the process though.
 There is no special preconditions to do so.
 Anyone is welcome to contribute.
 
-**Issues Triage Team Members** review the incoming incoming issues submitted in Jenkins Jira:
+**Issues Triage Team Members** review the incoming issues submitted in Jenkins Jira:
 bug reports, requests for enhancement, etc.
 There is no special permissions required to take this role and to contribute,
 anyone is welcome to start contributing (see the triage guidelines below).
