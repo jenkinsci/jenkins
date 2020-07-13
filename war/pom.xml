@@ -557,7 +557,7 @@ THE SOFTWARE.
             <systemProperty>
               <!-- enable the plugins in main by default -->
               <name>hudson.bundled.plugins</name>
-              <!-- run "./mvnw install" once will generate the.hpl -->
+              <!-- run "../mvnw install" once will generate the.hpl -->
               <value>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi</value>
             </systemProperty>
             <systemProperty>
