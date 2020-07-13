@@ -148,6 +148,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
             }
             env.put(key, value);
         }
+        @CheckForNull
         private Boolean wrapperRequiresWorkspace;
         /**
          * Keeps track of whether or not the specified wrapper requires a workspace context (working directory and
@@ -183,6 +184,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      */
     public static abstract class Disposer implements Serializable {
 
+        @CheckForNull
         private Boolean wrapperRequiresWorkspace;
 
         /**
