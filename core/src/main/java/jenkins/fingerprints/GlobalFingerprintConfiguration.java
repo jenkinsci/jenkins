@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     private FingerprintStorage fingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
-    private static final Logger logger = Logger.getLogger(GlobalFingerprintConfiguration.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GlobalFingerprintConfiguration.class.getName());
 
     public GlobalFingerprintConfiguration() {
         load();
@@ -56,7 +56,7 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
     @DataBoundSetter
     public void setFingerprintStorage(FingerprintStorage fingerprintStorage) {
         this.fingerprintStorage = fingerprintStorage;
-        logger.fine("Fingerprint Storage for the system changed to " +
+        LOGGER.fine("Fingerprint Storage for the system changed to " +
                 fingerprintStorage.getDescriptor().getDisplayName());
     }
 
