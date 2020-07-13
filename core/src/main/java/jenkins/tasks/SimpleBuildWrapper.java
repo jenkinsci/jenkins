@@ -73,7 +73,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @return {@code true} if this wrapper requires a workspace context; {@code false} otherwise.
      * @since TODO
      */
-    boolean requiresWorkspace() {
+    public boolean requiresWorkspace() {
         return true;
     }
 
