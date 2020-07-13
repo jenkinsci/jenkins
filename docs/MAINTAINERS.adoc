@@ -212,7 +212,7 @@ Initial issue triage follows the following objectives:
 ** link:https://github.com/jenkinsci/remoting#reporting-issues[Reporting Jenkins Remoting issues]
 * **Verify the issue component**.
   It is essential to ensure that the `component` field references the right component (the Jenkins core, a plugin, etc.)
-  so that an issue is discoverable processed by a component maintainer.
+  so that an issue can be discovered and processed by a component maintainer.
   When moving an issue, assign the issue to the `automatic` assignee so that the maintainer gets notification.
   Not all components have a default assignee, and it is perfectly fine to leave the assignee empty.
 * **Verify the issue type**.
@@ -248,7 +248,7 @@ or they can leave it to component maintainers.
 Triage objectives:
 
 * **Confirm reported defects**. Try to reproduce the issue or analyze the codebase.
-  If the issue is legit, it is great to explicitly confirm it in a comment.
+  If the issue is legitimate, it is great to explicitly confirm it in a comment.
 * Nice2Have: **Define next steps**.
   If possible, define a potential resolution for the issue.
   If you do not plan to work on the issue in foreseeable future,
@@ -313,7 +313,7 @@ when it gets ugly.
 
 Jira workflow for the `JENKINS` project has two similar states: `Resolved` and `Closed`.
 Historically the issues are rarely being **closed**, and all dashboard and Jenkins processes interpret resolved issues as closed.
-The main difference is that the _Resolved_ issues can e reopened by users while _Closed_ ones can be reopened by admins only.
+The main difference is that the _Resolved_ issues can be reopened by users while _Closed_ ones can be reopened by admins only.
 
 For triage purposes, it is recommended to use the `Resolved` state if there is a chance that the issue will be reopened by the reporter or other contributor
 (e.g. resolving due to inactivity, disagreement with the resolution, etc.).
