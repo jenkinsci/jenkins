@@ -171,7 +171,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
                 throw new IllegalStateException("just one disposer");
             }
             // Assumption: the provided Disposer instance is only associated with one wrapper at a time, or at least
-            // only with wrappers that agree on whether or not.
+            // only with wrappers that agree on whether or not a workspace is required.
             disposer.wrapperRequiresWorkspace = this.wrapperRequiresWorkspace;
             this.disposer = disposer;
         }
