@@ -44,10 +44,10 @@ Anyone is welcome to contribute.
 
 **Issues Triage Team Members** review the incoming issues submitted in Jenkins Jira:
 bug reports, requests for enhancement, etc.
-There is no special permissions required to take this role and to contribute,
-anyone is welcome to start contributing (see the triage guidelines below).
+Special permissions are not required to take this role or to contribute.
+Anyone is welcome to start contributing (see the <<issue-triage,triage guidelines below>>).
 
-**Core Pull Request Reviewers** is a team for contributors who are interested to review Jenkins pull requests on a regular basis and to eventually become Jenkins core maintainers.
+**Core Pull Request Reviewers** is a team for contributors who are willing to regularly review Jenkins pull requests and to eventually become Jenkins core maintainers.
 They get https://help.github.com/en/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization[Triage permissions] so that they can manage pull requests, request reviews and prepare changelog drafts in the pull request description.
 Their main responsibility is to triage and review the incoming pull requests,
 and to guide newcomer contributors who are not familiar with the project's processes.
@@ -202,7 +202,7 @@ Searching for all Jenkins core issues is not trivial, and we provide Jira filter
 
 === HOWTO: Initial triage
 
-Initial issue triage follows the following objectives:
+Initial issue triage has the following objectives:
 
 * **Perform initial triage of an issue**.
   Issue triage team members are not expected to perform a full analysis of the issue (though they are welcome to do so!).
@@ -232,7 +232,7 @@ Initial issue triage follows the following objectives:
 * **Resolve invalid issues and support requests**.
   Sometimes Jenkins Jira is used as a support portal.
   We do not want to encourage that.
-  Jenkins Jira is an issue tracker, and we expect reporters to investigate issues on their side to an extent that they can be followed-up by maintainers.
+  Jenkins Jira is an issue tracker, and we expect reporters to investigate issues on their side to an extent that they can be reviewed by maintainers.
   For support requests users are expected to use link:https://www.jenkins.io/mailing-lists[mailing lists],
   link:https://www.jenkins.io/chat/[chats] and other resources (e.g. Stackoverflow).
   It is fine to link users to link:https://github.com/jenkinsci/.github/blob/master/SUPPORT.md[this page]. 
@@ -245,6 +245,7 @@ Initial issue triage follows the following objectives:
 Further triage focuses on confirming the issue and defining a potential resolution.
 It can be performed by _Issue Triage Team Members_ if they want to dive deeper,
 or they can leave it to component maintainers.
+
 Triage objectives:
 
 * **Confirm reported defects**. Try to reproduce the issue or analyze the codebase.
@@ -272,9 +273,9 @@ In addition to the initial triage, it is a good practice to sometimes review pre
   it is fine to resolve them after a 2-week timeout with the `Incomplete` or `Cannot reproduce` resolution.
 * **Resolve/update obsolete issues**.
   Sometimes issues become obsolete due to other changes in the Jenkins core (e.g. feature removal),
-  and such issues can be just closed.
+  and such issues can be closed.
   Same for detaching functionality from the Jenkins core and plugins,
-  issues can be reassigned to the new Jira component so that they do not longer appear in the core backlog.
+  issues can be reassigned to the new Jira component so that they are removed from the core backlog.
 
 === Triaging requests for enhancement
 
