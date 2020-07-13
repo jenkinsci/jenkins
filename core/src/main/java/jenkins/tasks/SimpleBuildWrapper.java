@@ -84,14 +84,14 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * is <em>not</em> required, it does not need to be overridden; it will then forward to
      * {@link #setUp(Context, Run, TaskListener, EnvVars)}.
      *
-     * @param context            a way of collecting modifications to the environment for nested steps
-     * @param build              a build being run
-     * @param workspace          a workspace of the build
-     * @param launcher           a way to start commands
-     * @param listener           a way to report progress
+     * @param context a way of collecting modifications to the environment for nested steps
+     * @param build a build being run
+     * @param workspace a workspace of the build
+     * @param launcher a way to start commands
+     * @param listener a way to report progress
      * @param initialEnvironment the environment variables set at the outset
-     * @throws AbstractMethodError  if this wrapper requires a workspace context, and this method is not overridden
-     * @throws IOException          if something fails; {@link AbortException} for user errors
+     * @throws AbstractMethodError if this wrapper requires a workspace context, and this method is not overridden
+     * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
      */
     public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -109,14 +109,14 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * This method <strong>must</strong> be overridden when this wrapper does not require a workspace context, and
      * <strong>must not</strong> be called when such a context <em>is</em> required.
      *
-     * @param context            a way of collecting modifications to the environment for nested steps
-     * @param build              a build being run
-     * @param listener           a way to report progress
+     * @param context a way of collecting modifications to the environment for nested steps
+     * @param build a build being run
+     * @param listener a way to report progress
      * @param initialEnvironment the environment variables set at the outset
-     * @throws AbstractMethodError   if this method is not overridden
+     * @throws AbstractMethodError if this method is not overridden
      * @throws IllegalStateException if this wrapper requires a workspace context
-     * @throws IOException           if something fails; {@link AbortException} for user errors
-     * @throws InterruptedException  if setup is interrupted
+     * @throws IOException if something fails; {@link AbortException} for user errors
+     * @throws InterruptedException if setup is interrupted
      * @since TODO
      */
     public void setUp(Context context, Run<?,?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -208,12 +208,12 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * context. If such a context is <em>not</em> required, it does not need to be overridden; it will then forward
          * to {@link #tearDown(Run, TaskListener)}.
          *
-         * @param build     a build being run
+         * @param build a build being run
          * @param workspace a workspace of the build
-         * @param launcher  a way to start commands
-         * @param listener  a way to report progress
-         * @throws AbstractMethodError  if this end-of-wrapped-block callback requires a workspace and this method is not overridden.
-         * @throws IOException          if something fails; {@link AbortException} for user errors
+         * @param launcher a way to start commands
+         * @param listener a way to report progress
+         * @throws AbstractMethodError if this end-of-wrapped-block callback requires a workspace and this method is not overridden.
+         * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
         public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
@@ -231,12 +231,12 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * This method <strong>must</strong> be overridden when this end-of-wrapped-block callback does not require a
          * workspace context, and <strong>must not</strong> be called when such a context <em>is</em> required.
          *
-         * @param build    a build being run
+         * @param build a build being run
          * @param listener a way to report progress
-         * @throws AbstractMethodError   if this this method is not overridden
+         * @throws AbstractMethodError if this this method is not overridden
          * @throws IllegalStateException if this end-of-wrapped-block callback requires a workspace
-         * @throws IOException           if something fails; {@link AbortException} for user errors
-         * @throws InterruptedException  if tear down is interrupted
+         * @throws IOException if something fails; {@link AbortException} for user errors
+         * @throws InterruptedException if tear down is interrupted
          * @since TODO
          */
         public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
