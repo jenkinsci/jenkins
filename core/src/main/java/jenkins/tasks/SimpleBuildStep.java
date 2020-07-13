@@ -103,7 +103,7 @@ public interface SimpleBuildStep extends BuildStep {
      * @param env environment variables applicable to this step
      * @param launcher a way to start processes
      * @param listener a place to send output
-     * @throws AbstractMethodError if this step requires a workspace context and this method is not overridden
+     * @throws AbstractMethodError if this step requires a workspace context and neither this method nor {@link #perform(Run, FilePath, Launcher, TaskListener)} is overridden
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
      * @since TODO
