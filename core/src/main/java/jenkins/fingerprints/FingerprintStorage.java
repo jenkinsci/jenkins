@@ -46,7 +46,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      * Returns the configured {@link FingerprintStorage} engine chosen by the user for the system.
      */
     public static FingerprintStorage get() {
-        return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class).getFingerprintStorage();
+        return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class).getStorage();
     }
 
     /**

@@ -34,6 +34,9 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.logging.Logger;
 
+/**
+ * Allows configuring the settings of fingerprints.
+ */
 @Extension
 @Symbol("fingerprints")
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
@@ -49,12 +52,12 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
         return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class);
     }
 
-    public FingerprintStorage getFingerprintStorage() {
+    public FingerprintStorage getStorage() {
         return storage;
     }
 
     @DataBoundSetter
-    public void setFingerprintStorage(FingerprintStorage fingerprintStorage) {
+    public void setStorage(FingerprintStorage fingerprintStorage) {
         this.storage = fingerprintStorage;
         LOGGER.fine("Fingerprint Storage for the system changed to " +
                 fingerprintStorage.getDescriptor().getDisplayName());
