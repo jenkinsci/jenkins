@@ -227,6 +227,7 @@ Initial issue triage has the following objectives:
 * **Move security issue** to the `SECURITY` project.
   Sometimes the issue reporters do not follow the link:https://www.jenkins.io/security/#reporting-vulnerabilities[vulnerability reporting] process and report security issues in public.
   If you see such issues, move them to the `SECURITY` project so that the security team takes care of their triage.
+  Note that the required fields are different between projects, so some manual updates might be required when moving them.
 * **Label regressions and CC stakeholders** if an issue is reported as a regression with a clear root cause,
   please set a `regression` label and, if applicable, CC contributors of a change which led to the regression.
 * **Resolve invalid issues and support requests**.
