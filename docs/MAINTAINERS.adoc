@@ -213,8 +213,8 @@ Initial issue triage has the following objectives:
 * **Verify the issue component**.
   It is essential to ensure that the `component` field references the right component (the Jenkins core, a plugin, etc.)
   so that an issue can be discovered and processed by a component maintainer.
-  When moving an issue, assign the issue to the `automatic` assignee so that the maintainer gets notification.
-  Not all components have a default assignee, and it is perfectly fine to leave the assignee empty.
+  When moving an issue, assign the issue to the `automatic` assignee so that the maintainer gets a notification.
+  Not all components have a default assignee, and it is perfectly fine to leave the assignee field empty.
 * **Verify the issue type**.
   `Bug` should be used for bug reports.
   All other issue types are considered as requests for enhancements, and there is no practical difference for the Jenkins core.
@@ -281,7 +281,7 @@ In addition to the initial triage, it is a good practice to sometimes review pre
 === Triaging requests for enhancement
 
 Requests for enhancement (RFEs) include the `New Feature` and `Improvement` types in Jenkins Jira.
-They might be more different to triage than bug reports.
+The process to triage them might be different than bug reports.
 because it is not always possible to say whether a request should be implemented in the Jenkins core,
 an existing or a new plugin.
 In the case of doubt, it is fine to just skip an issue or CC subject matter experts who could advice.
