@@ -266,7 +266,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
         @Override
         public String getDisplayName() {
-            return "Disabled";
+            return "Local Fingerprint Storage";
         }
 
     }

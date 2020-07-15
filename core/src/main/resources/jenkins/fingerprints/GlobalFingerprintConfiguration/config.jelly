@@ -22,7 +22,7 @@ THE SOFTWARE.
     <j:if test="${descriptor.fingerprintStorageDescriptors.size() gt 1}">
         <f:section title="${%Fingerprints}">
             <f:entry>
-                <f:dropdownDescriptorSelector field="storage" title="Configure External Fingerprint Storage" descriptors="${descriptor.fingerprintStorageDescriptors}"/>
+                <f:dropdownDescriptorSelector field="storage" title="Fingerprint Storage Engine" descriptors="${descriptor.fingerprintStorageDescriptors}"/>
             </f:entry>
         </f:section>
     </j:if>
