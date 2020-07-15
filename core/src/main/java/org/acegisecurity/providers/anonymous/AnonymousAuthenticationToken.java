@@ -22,19 +22,15 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity.providers.anonymous;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+import java.util.Collection;
+import org.acegisecurity.GrantedAuthority;
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
+public class AnonymousAuthenticationToken extends org.springframework.security.authentication.AnonymousAuthenticationToken {
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
-    }
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    public AnonymousAuthenticationToken(String key, Object principal, Collection<? extends GrantedAuthority> authorities) {
+        super(key, principal, authorities);
     }
 
 }

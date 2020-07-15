@@ -22,19 +22,16 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+public class AuthenticationException extends org.springframework.security.core.AuthenticationException {
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
+    public AuthenticationException(String msg) {
+        super(msg);
     }
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    public AuthenticationException(String msg, Throwable t) {
+        super(msg, t);
     }
 
 }

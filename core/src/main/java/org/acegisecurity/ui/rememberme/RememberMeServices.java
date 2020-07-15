@@ -22,19 +22,15 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity.ui.rememberme;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.acegisecurity.Authentication;
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
+public interface RememberMeServices extends org.springframework.security.web.authentication.RememberMeServices {
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
-    }
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
-    }
+    @Override
+    public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response);
 
 }

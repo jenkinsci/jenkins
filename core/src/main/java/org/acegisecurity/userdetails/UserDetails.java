@@ -22,19 +22,6 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity.userdetails;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
-
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
-    }
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
-    }
-
-}
+public interface UserDetails extends org.springframework.security.core.userdetails.UserDetails {}

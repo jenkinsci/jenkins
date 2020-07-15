@@ -384,18 +384,8 @@ THE SOFTWARE.
       <artifactId>commons-jexl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.acegisecurity</groupId>
-      <artifactId>acegi-security</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-remoting</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-support</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
@@ -410,22 +400,6 @@ THE SOFTWARE.
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-    </dependency>
-    <dependency>
-      <!--
-        for Grails spring bean builder.
-        Ideally we should be able to modify BeanBuilder so as not to depend on this.
-      -->
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-    </dependency>
-    <dependency><!-- Jenkins core doesn't use it but HUDSON-3811 requires us to put it. -->
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aop</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

@@ -22,19 +22,16 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity.userdetails;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+public class UsernameNotFoundException extends org.springframework.security.core.userdetails.UsernameNotFoundException {
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
+    public UsernameNotFoundException(String msg) {
+        super(msg);
     }
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    public UsernameNotFoundException(String msg, Throwable t) {
+        super(msg, t);
     }
 
 }

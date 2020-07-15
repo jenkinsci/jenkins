@@ -22,19 +22,16 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+public class BadCredentialsException extends org.springframework.security.authentication.BadCredentialsException {
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
+    public BadCredentialsException(String msg) {
+        super(msg);
     }
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    public BadCredentialsException(String msg, Throwable t) {
+        super(msg, t);
     }
 
 }

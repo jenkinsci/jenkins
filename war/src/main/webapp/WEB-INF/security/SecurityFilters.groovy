@@ -39,6 +39,7 @@ import org.acegisecurity.ui.basicauth.BasicProcessingFilterEntryPoint
 import org.acegisecurity.ui.rememberme.RememberMeProcessingFilter
 import hudson.security.HttpSessionContextIntegrationFilter2
 
+// TODO rewrite in Java
 // providers that apply to both patterns
 def commonProviders() {
     return [

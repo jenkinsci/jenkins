@@ -22,19 +22,19 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+public interface GrantedAuthority extends org.springframework.security.core.GrantedAuthority {
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
-    }
-
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    class SpringSecurityBridge implements GrantedAuthority {
+        private final org.springframework.security.core.GrantedAuthority ga;
+        public SpringSecurityBridge(org.springframework.security.core.GrantedAuthority ga) {
+            this.ga = ga;
+        }
+        @Override
+        public String getAuthority() {
+            return ga.getAuthority();
+        }
     }
 
 }

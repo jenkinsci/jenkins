@@ -22,19 +22,40 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity.acls.sid;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+import java.util.Objects;
+import org.acegisecurity.GrantedAuthority;
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
+public class GrantedAuthoritySid implements Sid {
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
+    private final String grantedAuthority;
+
+    public GrantedAuthoritySid(String grantedAuthority) {
+        this.grantedAuthority = grantedAuthority;
     }
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    public GrantedAuthoritySid(GrantedAuthority ga) {
+        grantedAuthority = ga.getAuthority();
+    }
+
+    public String getGrantedAuthority() {
+        return grantedAuthority;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof GrantedAuthoritySid && Objects.equals(grantedAuthority, ((GrantedAuthoritySid) o).grantedAuthority);
+    }
+
+    @Override
+    public int hashCode() {
+        return grantedAuthority.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return grantedAuthority;
     }
 
 }

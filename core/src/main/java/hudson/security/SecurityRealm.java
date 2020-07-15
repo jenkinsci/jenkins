@@ -514,7 +514,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         binding.setVariable("securityComponents", sc);
         binding.setVariable("securityRealm",this);
         BeanBuilder builder = new BeanBuilder();
-        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding);
+        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding); // TODO rewrite
         WebApplicationContext context = builder.createApplicationContext();
         return (Filter) context.getBean("filter");
     }

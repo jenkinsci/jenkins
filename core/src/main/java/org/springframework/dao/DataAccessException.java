@@ -22,19 +22,18 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.springframework.dao;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.core.NestedRuntimeException;
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
+public class DataAccessException extends NestedRuntimeException {
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
+    public DataAccessException(String msg) {
+        super(msg);
     }
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    public DataAccessException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 
 }

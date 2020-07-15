@@ -22,19 +22,42 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package org.acegisecurity.acls.sid;
 
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.savedrequest.RequestCache;
+import java.util.Objects;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.userdetails.UserDetails;
 
-public class ExceptionTranslationFilter extends org.springframework.security.web.access.ExceptionTranslationFilter {
+public class PrincipalSid implements Sid {
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint) {
-        super(authenticationEntryPoint);
+    private final String principal;
+    
+    public PrincipalSid(String principal) {
+        this.principal = principal;
     }
 
-    public ExceptionTranslationFilter(AuthenticationEntryPoint authenticationEntryPoint, RequestCache requestCache) {
-        super(authenticationEntryPoint, requestCache);
+    public PrincipalSid(Authentication a) {
+        Object p = a.getPrincipal();
+        this.principal = p instanceof UserDetails ? ((UserDetails) p).getUsername() : p.toString();
+    }
+    
+    public String getPrincipal() {
+        return principal;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof PrincipalSid && Objects.equals(principal, ((PrincipalSid) o).principal);
+    }
+
+    @Override
+    public int hashCode() {
+        return principal.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return principal;
     }
 
 }

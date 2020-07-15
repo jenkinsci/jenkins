@@ -206,7 +206,6 @@ import jenkins.util.xml.XMLUtils;
 import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
@@ -2635,7 +2634,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception
-            throw new AcegiSecurityException("Failed to configure filter",e) {};
+            throw new RuntimeException("Failed to configure filter",e) {};
         }
         saveQuietly();
     }
