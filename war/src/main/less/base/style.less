@@ -241,20 +241,42 @@ pre.console {
   overflow: auto;
 }
 
+.form-group {
+  margin-bottom: 1rem;
+
+  &:after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+ }
+}
+
 .setting-leftspace {
   width: 2em;
 }
 
 .setting-name {
+  //font-weight: 500;  // TODO tables to divs needs this
+  margin-bottom: 0.5rem;
   white-space: nowrap;
 }
 
+.setting-checkbox {
+  //font-weight: 500;  // TODO tables to divs needs this
+}
+
 .setting-main {
+  margin-top: 0.25rem;
   width: 100%; /* try to make this column as big as possible. */
 }
 .setting-help {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   width: 16px;
   vertical-align: middle;
+  float: right;
 }
 .setting-no-help {
   width: 16px;
@@ -275,6 +297,39 @@ pre.console {
   font-size: var(--font-size-xs);
   margin-top: 0;
   padding-top: 0;
+}
+
+.setting-name, .setting-main > input, .setting-main > textarea {
+  //vertical-align: middle; // TODO tables to divs needs this
+  margin-top: 0;
+}
+
+.setting-main > .yui-button {
+  clear: both;
+  float: right;
+}
+
+.setting-main > .yui-button {
+  clear: both;
+  float: right;
+}
+
+.setting-name, .setting-main > input, .setting-main > textarea {
+  //vertical-align: middle; // TODO tables to divs needs this
+  margin-top: 0;
+}
+
+.expanding-input {
+  display: flex;
+}
+.expanding-input__input {
+  flex: 1;
+}
+.expanding-input__button {
+  flex-shrink: 1;
+}
+.expanding-input__button input {
+  min-width: 0 !important;
 }
 
 /* div that looks like a hyperlink */
@@ -1088,6 +1143,7 @@ TABLE.fingerprint-in-build TD {
 
 .repeated-chunk {
     border: 2px dashed transparent;
+    padding-left: 1.5rem;
 }
 
 .repeated-chunk.hover {
@@ -1132,6 +1188,18 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= Other form related CSS ========================= */
 
+.form-container {
+  max-width: 100%;
+}
+
+.optionalBlock-container > .form-container,
+.radioBlock-container > .form-container,
+.dropdownList-container {
+  margin-left: 0.25rem;
+  //border-left: 2px dashed rgba(0, 0, 0, 0.33); // TODO tables to divs needs this
+  padding-left: 1rem;
+}
+
 .row-set-end { display: none; }
 
 /* ========================= resizable text area ========================= */
@@ -1139,11 +1207,12 @@ DIV.to-be-removed { display: none; }
 TEXTAREA {
     margin-bottom: 0;
 }
-DIV.textarea-handle {
+
+div.textarea-handle {
     height: 5px;
     font-size: 0;
-    background: #EEE url(../../images/textarea-handle.gif) no-repeat 50% 1px;
-    border: 1px solid #BABDB6;
+    background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
+    border: 1px solid var(--medium-grey);
     border-top: none;
     cursor: s-resize;
 }
@@ -1169,10 +1238,16 @@ TEXTAREA.rich-editor {
     padding-left: 20px;
 }
 
-.hetero-list-container.with-drag-drop .repeated-chunk {
+.hetero-list-container.with-drag-drop .repeated-chunk,
+.repeated-container.with-drag-drop .repeated-chunk {
     padding: 0.5em;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
+    padding-left: 1.5rem;
+}
+.hetero-list-container.with-drag-drop .repeated-chunk .dd-handle,
+.repeated-container.with-drag-drop .repeated-chunk .dd-handle {
+  margin-left: -1.25rem;
 }
 
 
@@ -1563,6 +1638,12 @@ body.no-sticker #bottom-sticker {
   fill: currentColor;
 }
 
+/* -------------------------------------- */
+
+.tr {
+  margin-top: 0.4em;
+}
+
 /* -------------- Unclassified ---------- */
 
 .spacer {
@@ -1575,4 +1656,3 @@ body.no-sticker #bottom-sticker {
 }
 
 /* -------------------------------------- */
-

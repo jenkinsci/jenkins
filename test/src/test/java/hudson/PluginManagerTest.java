@@ -40,8 +40,11 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import jenkins.ClassLoaderReflectionToolkit;
@@ -610,6 +613,64 @@ public class PluginManagerTest {
         assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
         dynamicLoad("jenkins-50336.hpi");
         assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
+    }
+
+    /*
+    credentials - present in update-center.json, not deprecated
+    htmlpublisher - not in update-center.json, not deprecated
+    icon-shim, present in update-center.json, deprecated via label and top-level list
+    token-macro, present in update-center.json, deprecated via label only
+    variant, not in update-center.json, deprecated via top-level list
+     */
+    @Test
+    @Issue("JENKINS-59136")
+    @WithPlugin({"credentials.hpi", "htmlpublisher.jpi", "icon-shim.hpi", "token-macro.hpi", "variant.hpi"})
+    public void testDeprecationNotices() throws Exception {
+        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = PluginManagerTest.class.getResource("/plugins/deprecations-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+
+        assertEquals(FormValidation.ok(), site.updateDirectlyNow(false));
+        assertNotNull(site.getData());
+
+        assertTrue(ExtensionList.lookupSingleton(PluginManager.PluginDeprecationMonitor.class).isActivated());
+
+        final PluginManager pm = Jenkins.get().getPluginManager();
+
+        final PluginWrapper credentials = pm.getPlugin("credentials");
+        Objects.requireNonNull(credentials);
+        assertFalse(credentials.isDeprecated());
+        assertTrue(credentials.getDeprecations().isEmpty());
+
+        final PluginWrapper htmlpublisher = pm.getPlugin("htmlpublisher");
+        Objects.requireNonNull(htmlpublisher);
+        assertFalse(htmlpublisher.isDeprecated());
+        assertTrue(htmlpublisher.getDeprecations().isEmpty());
+
+        final PluginWrapper iconShim = pm.getPlugin("icon-shim");
+        Objects.requireNonNull(iconShim);
+        assertTrue(iconShim.isDeprecated());
+        List<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
+        assertEquals(1, deprecations.size());
+        assertEquals("https://jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
+        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin", iconShim.getInfo().wiki);
+
+        final PluginWrapper tokenMacro = pm.getPlugin("token-macro");
+        Objects.requireNonNull(tokenMacro);
+        assertTrue(tokenMacro.isDeprecated());
+        deprecations = tokenMacro.getDeprecations();
+        assertEquals(1, deprecations.size());
+        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", deprecations.get(0).url);
+
+        final PluginWrapper variant = pm.getPlugin("variant");
+        Objects.requireNonNull(variant);
+        assertTrue(variant.isDeprecated());
+        deprecations = variant.getDeprecations();
+        assertEquals(1, deprecations.size());
+        assertEquals("https://jenkins.io/deprecations/variant/", deprecations.get(0).url);
+        assertNull(variant.getInfo());
     }
 
     @Issue("JENKINS-62622")

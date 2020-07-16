@@ -734,8 +734,8 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>2.3.0</version>
-                  <classifier>bin</classifier>
+                  <version>2.9.0</version>
+                  <classifier>net4</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
                   <destFileName>jenkins.exe</destFileName>

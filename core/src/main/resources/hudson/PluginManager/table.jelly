@@ -161,6 +161,11 @@ THE SOFTWARE.
                           </ul>
                         </div>
                       </j:if>
+                      <j:if test="${p.isDeprecated()}">
+                        <div class="alert alert-warning">
+                          ${%deprecationWarning(p.getDeprecation().url)}
+                        </div>
+                      </j:if>
                       <j:if test="${it.hasAdoptThisPluginLabel(p)}">
                         <div class="alert alert-warning">
                           ${%adoptThisPlugin}
