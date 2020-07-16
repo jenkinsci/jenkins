@@ -141,13 +141,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.26.1</version>
+      <version>1.29</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.7</version>
+      <version>1.20</version>
       <scope>test</scope>
     </dependency>
     <dependency>
