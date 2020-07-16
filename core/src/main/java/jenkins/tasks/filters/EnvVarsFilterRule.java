@@ -35,12 +35,13 @@ import java.io.Serializable;
 
 /**
  * The order of execution of the rules is determined by first their type (local before global)
- * and then their {@link Extension#ordinal()}, higher ordinal first.
+ * and then, by default, their {@link Extension#ordinal()}, higher ordinal first, but configuration can customize the order.
  */
 @Restricted(Beta.class)
 public interface EnvVarsFilterRule extends Serializable {
     /**
-     * In case the filter detects something that must stop the build, it must throw a {@link EnvVarsFilterException}
+     * In case the filter detects something that must stop the build, it must throw a {@link EnvVarsFilterException}.
+     * This method may be executed on agents through a remoting channel.
      */
     void filter(@NonNull EnvVars envVars, @NonNull EnvVarsFilterRuleContext context) throws EnvVarsFilterException;
 

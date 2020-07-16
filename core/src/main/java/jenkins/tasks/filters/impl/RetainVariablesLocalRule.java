@@ -26,6 +26,8 @@ package jenkins.tasks.filters.impl;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.util.FormValidation;
 import jenkins.tasks.filters.EnvVarsFilterRuleContext;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
@@ -56,6 +58,15 @@ import java.util.Map;
 @Restricted(NoExternalUse.class)
 public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
 
+    /**
+     * The variables considered to be 'characteristic' for the purposes of this rule.
+     *
+     * @see Job#getCharacteristicEnvVars()
+     * @see Run#getCharacteristicEnvVars()
+     */
+    // TODO Make the 'HUDSON_COOKIE' variable less special so we can remove it.
+    // TODO consider just querying the build, if any, for its characteristic env vars
+    private static final List<String> CHARACTERISTIC_ENV_VARS = Arrays.asList("jenkins_server_cookie", "hudson_server_cookie", "job_name", "job_base_name", "build_number", "build_id", "build_tag");
     /**
      * List of lowercase names of variable that will be retained from removal
      */
@@ -96,6 +107,13 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
         this.retainCharacteristicEnvVars = retainCharacteristicEnvVars;
     }
 
+    /**
+     * Whether to retain characteristic environment variables.
+     * @return true if and only if to retain characteristic environment variables.
+     *
+     * @see Job#getCharacteristicEnvVars()
+     * @see Run#getCharacteristicEnvVars()
+     */
     public boolean isRetainCharacteristicEnvVars() {
         return retainCharacteristicEnvVars;
     }
@@ -103,8 +121,7 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
     private List<String> variablesToRetain() {
         List<String> vars = new ArrayList<>(convertStringToList(this.variables));
         if (isRetainCharacteristicEnvVars()) {
-            // TODO Make the 'HUDSON_COOKIE' variable less special so we can remove it.
-            vars.addAll(Arrays.asList("jenkins_server_cookie", "hudson_server_cookie", "job_name", "job_base_name", "build_number", "build_id", "build_tag"));
+            vars.addAll(CHARACTERISTIC_ENV_VARS);
         }
         return vars;
     }
@@ -163,12 +180,11 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
         this.processVariablesHandling = processVariablesHandling;
     }
 
-    // the ordinal is used to sort the rules in term of execution, the smaller value first
+    // the ordinal is used to sort the rules in term of execution, the higher value first
     // and take care of the fact that local rules are always applied before global ones
-    @Extension(ordinal = DescriptorImpl.ORDER)
+    @Extension(ordinal = 1000)
     @Symbol("retainOnlyVariables")
     public static final class DescriptorImpl extends EnvVarsFilterLocalRuleDescriptor {
-        public static final int ORDER = 1000;
 
         public DescriptorImpl() {
             super();

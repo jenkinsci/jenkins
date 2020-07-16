@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
  */
 @Restricted(NoExternalUse.class)
 public class EnvVarsFilterRuleWrapper implements Serializable {
+    private static final long serialVersionUID = -8647970104978388598L;
     private List<EnvVarsFilterRule> rules;
 
     public EnvVarsFilterRuleWrapper(@NonNull List<EnvVarsFilterRule> rules) {

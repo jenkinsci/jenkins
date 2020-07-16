@@ -27,17 +27,15 @@ THE SOFTWARE.
     <j:if test="${instance.allGlobalRules.size() gt 0}">
         <!-- hide this configuration when there are no descriptors -->
         <f:section title="${%jobEnvironmentVariableFilters}">
-            <j:choose>
-                    <f:advanced title="${%showGlobalRules}" align="left">
-                        <f:entry title="${%globalRules}">
-                            <f:hetero-list name="rules"
-                                           hasHeader="true"
-                                           descriptors="${instance.allGlobalRules}"
-                                           items="${instance.allActivatedGlobalRules}"
-                                           addCaption="${%addRule}"/>
-                        </f:entry>
-                    </f:advanced>
-            </j:choose>
+            <f:advanced title="${%showGlobalRules}" align="left">
+                <f:entry title="${%globalRules}">
+                    <f:hetero-list name="rules"
+                                   hasHeader="true"
+                                   descriptors="${instance.allGlobalRules}"
+                                   items="${instance.allActivatedGlobalRules}"
+                                   addCaption="${%addRule}"/>
+                </f:entry>
+            </f:advanced>
         </f:section>
     </j:if>
 </j:jelly>

@@ -39,7 +39,6 @@ import java.util.List;
 public interface EnvVarsFilterableBuilder {
     /**
      * The order is respected for the execution. Local rules will be executed before the global ones.
-     * At least it will be the initial ordering, but rules are free to rearranged the order of the next rules.<p>
      *
      * This method is called only once per step to create the {@link EnvVarsFilterRuleContext}.
      *
