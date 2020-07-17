@@ -24,13 +24,49 @@
 
 package org.acegisecurity.providers.anonymous;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 
-public class AnonymousAuthenticationToken extends org.springframework.security.authentication.AnonymousAuthenticationToken {
+public class AnonymousAuthenticationToken implements Authentication, Serializable {
 
-    public AnonymousAuthenticationToken(String key, Object principal, Collection<? extends GrantedAuthority> authorities) {
-        super(key, principal, authorities);
+    private final org.springframework.security.authentication.AnonymousAuthenticationToken delegate;
+
+    public AnonymousAuthenticationToken(String key, Object principal, GrantedAuthority[] authorities) {
+        delegate = new org.springframework.security.authentication.AnonymousAuthenticationToken(key, principal, Arrays.asList(authorities));
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return delegate.getAuthorities().stream().map(ga -> new GrantedAuthority.SpringSecurityBridge(ga)).collect(Collectors.toList());
+    }
+
+    @Override
+    public Object getCredentials() {
+        return delegate.getCredentials(); // TODO check what this is
+    }
+    @Override
+    public Object getDetails() {
+        return delegate.getDetails(); // TODO check what this is
+    }
+    @Override
+    public Object getPrincipal() {
+         return delegate.getPrincipal(); // TODO wrap UserDetails if necessary
+    }
+    @Override
+    public boolean isAuthenticated() {
+        return delegate.isAuthenticated();
+    }
+    @Override
+    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+        delegate.setAuthenticated(isAuthenticated);
+    }
+    @Override
+    public String getName() {
+        return delegate.getName();
     }
 
 }

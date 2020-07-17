@@ -22,15 +22,38 @@
  * THE SOFTWARE.
  */
 
-package org.acegisecurity.ui.rememberme;
+package org.acegisecurity;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.acegisecurity.Authentication;
+import java.io.Serializable;
 
-public interface RememberMeServices extends org.springframework.security.web.authentication.RememberMeServices {
+public class GrantedAuthorityImpl implements GrantedAuthority, Serializable {
+
+    private static final long serialVersionUID = 1;
+
+    private final String authority;
+
+    public GrantedAuthorityImpl(String authority) {
+        this.authority = authority;
+    }
 
     @Override
-    Authentication autoLogin(HttpServletRequest request, HttpServletResponse response);
+    public String getAuthority() {
+        return authority;
+    }
+
+    @Override
+    public String toString() {
+        return authority;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof GrantedAuthorityImpl && authority.equals(((GrantedAuthorityImpl) o).authority);
+    }
+
+    @Override
+    public int hashCode() {
+        return authority.hashCode();
+    }
 
 }

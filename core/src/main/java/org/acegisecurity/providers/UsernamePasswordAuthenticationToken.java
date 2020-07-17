@@ -47,11 +47,11 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
     }
     @Override
     public Object getCredentials() {
-        return delegate.getCredentials();
+        return delegate.getCredentials(); // TODO check what this is
     }
     @Override
     public Object getDetails() {
-        return delegate.getDetails();
+        return delegate.getDetails(); // TODO check what this is
     }
     @Override
     public Object getPrincipal() {
@@ -69,5 +69,7 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
     public String getName() {
         return delegate.getName();
     }
+
+    // TODO Serializable? equals/hashCode/toString?
 
 }
