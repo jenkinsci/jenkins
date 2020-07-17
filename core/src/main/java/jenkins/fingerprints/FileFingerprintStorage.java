@@ -226,6 +226,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Perform Fingerprint cleanup.
      */
+    @Override
     public void iterateAndCleanupFingerprints(TaskListener taskListener) {
         int numFiles = 0;
 
@@ -248,7 +249,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
         taskListener.getLogger().println("Cleaned up "+numFiles+" records");
     }
-
+    
     private boolean cleanFingerprint(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = loadFingerprint(fingerprintFile);

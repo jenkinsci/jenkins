@@ -101,11 +101,15 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      * This method is called periodically by {@link hudson.model.FingerprintCleanupThread}.
      * For reference, see {@link FileFingerprintStorage#iterateAndCleanupFingerprints(TaskListener)}
      * For cleaning up the fingerprint {@link #cleanFingerprint(Fingerprint, TaskListener)} may be used.
+     *
+     * @since TODO
      */
     public abstract void iterateAndCleanupFingerprints(TaskListener taskListener);
 
     /**
      * This method performs the cleanup of the given fingerprint.
+     *
+     * @since TODO
      */
     public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
         try {
@@ -135,6 +139,9 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
         return Jenkins.get()._getFingerprint(fp.getHashString());
     }
 
+    /**
+     * @since TODO
+     */
     @Override public FingerprintStorageDescriptor getDescriptor() {
         return (FingerprintStorageDescriptor) super.getDescriptor();
 
