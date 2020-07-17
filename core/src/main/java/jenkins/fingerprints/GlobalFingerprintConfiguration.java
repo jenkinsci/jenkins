@@ -43,7 +43,7 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     private FingerprintStorage storage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
     private static final Logger LOGGER = Logger.getLogger(GlobalFingerprintConfiguration.class.getName());
-    private boolean fingerprintCleanup = true;
+    private boolean fingerprintCleanupDisabled;
 
     public GlobalFingerprintConfiguration() {
         load();
@@ -64,13 +64,13 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
                 fingerprintStorage.getDescriptor().getDisplayName());
     }
 
-    public boolean getFingerprintCleanup() {
-        return fingerprintCleanup;
+    public boolean getFingerprintCleanupDisabled() {
+        return fingerprintCleanupDisabled;
     }
 
     @DataBoundSetter
-    public void setFingerprintCleanup(boolean fingerprintCleanup) {
-        this.fingerprintCleanup = fingerprintCleanup;
+    public void setFingerprintCleanupDisabled(boolean fingerprintCleanupDisabled) {
+        this.fingerprintCleanupDisabled = fingerprintCleanupDisabled;
     }
 
     @Override

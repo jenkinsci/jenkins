@@ -179,7 +179,7 @@ public class FingerprintCleanupThreadTest {
         externalFingerprint.save();
         assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(not(nullValue())));
 
-        GlobalFingerprintConfiguration.get().setFingerprintCleanup(false);
+        GlobalFingerprintConfiguration.get().setFingerprintCleanupDisabled(true);
 
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
