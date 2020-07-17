@@ -8,7 +8,7 @@ function updateListBox(listBox,url,config) {
 
     var settingMain = listBox.closest('.setting-main')
     if (!settingMain) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", listBox)
         return;
     }
 

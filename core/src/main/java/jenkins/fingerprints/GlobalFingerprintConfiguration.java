@@ -23,38 +23,65 @@
  */
 package jenkins.fingerprints;
 
+import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionList;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.logging.Logger;
+
+/**
+ * Allows configuring the settings of fingerprints.
+ */
 @Extension
+@Symbol("fingerprints")
 public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
-    private boolean fingerprintCleanup = true;
+    private FingerprintStorage storage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
+    private static final Logger LOGGER = Logger.getLogger(GlobalFingerprintConfiguration.class.getName());
+    private boolean fingerprintCleanup;
 
     public GlobalFingerprintConfiguration() {
         load();
     }
 
     public static GlobalFingerprintConfiguration get() {
-        return GlobalConfiguration.all().getInstance(GlobalFingerprintConfiguration.class);
+        return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class);
+    }
+
+    public FingerprintStorage getStorage() {
+        return storage;
+    }
+
+    @DataBoundSetter
+    public void setStorage(FingerprintStorage fingerprintStorage) {
+        this.storage = fingerprintStorage;
+        LOGGER.fine("Fingerprint Storage for the system changed to " +
+                fingerprintStorage.getDescriptor().getDisplayName());
     }
 
     public boolean getFingerprintCleanup() {
         return fingerprintCleanup;
     }
 
+    @DataBoundSetter
     public void setFingerprintCleanup(boolean fingerprintCleanup) {
         this.fingerprintCleanup = fingerprintCleanup;
     }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) {
-        json = json.getJSONObject("fingerprints");
-        setFingerprintCleanup(json.getBoolean("fingerprintCleanup"));
+        req.bindJSON(this, json);
         save();
         return true;
+    }
+
+    public DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> getFingerprintStorageDescriptors() {
+        return FingerprintStorageDescriptor.all();
     }
 
 }

@@ -37,8 +37,10 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.EOFException;
@@ -56,6 +58,7 @@ import java.util.regex.Pattern;
  *
  * @author Sumit Sarin
  */
+@Symbol("fileFingerprintStorage")
 @Restricted(NoExternalUse.class)
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
@@ -64,6 +67,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private static final DateConverter DATE_CONVERTER = new DateConverter();
     public static final String FINGERPRINTS_DIR_NAME = "fingerprints";
     private static final Pattern FINGERPRINT_FILE_PATTERN = Pattern.compile("[0-9a-f]{28}\\.xml");
+
+    @DataBoundConstructor
+    public FileFingerprintStorage () {}
 
     /**
      * Load the Fingerprint with the given unique id.
@@ -331,6 +337,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
     protected File getRootDir() {
         return Jenkins.get().getRootDir();
+    }
+
+    @Extension
+    public static class DescriptorImpl extends FingerprintStorageDescriptor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.FileFingerprintStorage_DisplayName();
+        }
+
     }
 
 }

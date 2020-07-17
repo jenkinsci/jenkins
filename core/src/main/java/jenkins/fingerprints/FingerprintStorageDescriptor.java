@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
- * 
+ *
+ * Copyright (c) 2020, Jenkins project contributors
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,38 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins.fingerprints;
 
-import hudson.EnvVars;
-import org.kohsuke.stapler.DataBoundConstructor;
+import hudson.DescriptorExtensionList;
+import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 
-import java.util.Locale;
+/**
+ * Descriptor for {@link FingerprintStorage}. Used for configuring external fingerprint storages.
+ */
+public class FingerprintStorageDescriptor extends Descriptor<FingerprintStorage> {
 
-public class JobParameterValue extends ParameterValue {
-    public final Job job;
-
-    @DataBoundConstructor
-    public JobParameterValue(String name, Job job) {
-        super(name);
-        this.job = job;
+    public static DescriptorExtensionList<FingerprintStorage, FingerprintStorageDescriptor> all() {
+        return Jenkins.get().getDescriptorList(FingerprintStorage.class);
     }
 
-    @Override
-    public Job getValue() {
-        return job;
-    }
-
-    /**
-     * Exposes the name/value as an environment variable.
-     */
-    @Override
-    public void buildEnvironment(Run<?,?> build, EnvVars env) {
-        // TODO: check with Tom if this is really what he had in mind
-        env.put(name,job.toString());
-        env.put(name.toUpperCase(Locale.ENGLISH),job.toString()); // backward compatibility pre 1.345
-    }
-
-    @Override public String getShortDescription() {
-        return name + "=" + job.getFullDisplayName();
-    }
 }

@@ -437,7 +437,7 @@ public class QueueTest {
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.<Node>emptyList());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
-        m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
+        m.setAxes(new AxisList(new LabelAxis("label", Collections.singletonList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
@@ -844,8 +844,8 @@ public class QueueTest {
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
         
-        projectA.getPublishersList().add(new BuildTrigger(Arrays.asList(projectB), Result.SUCCESS));
-        projectB.getPublishersList().add(new BuildTrigger(Arrays.asList(projectC), Result.SUCCESS));
+        projectA.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectB), Result.SUCCESS));
+        projectB.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectC), Result.SUCCESS));
         
         final QueueTaskFuture<FreeStyleBuild> taskA = projectA.scheduleBuild2(0, new TimerTriggerCause());
         Thread.sleep(1000);

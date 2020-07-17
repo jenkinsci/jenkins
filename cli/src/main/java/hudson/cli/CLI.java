@@ -261,7 +261,7 @@ public class CLI {
         }
 
         if(args.isEmpty())
-            args = Arrays.asList("help"); // default to help
+            args = Collections.singletonList("help"); // default to help
 
         if (mode == null) {
             mode = Mode.HTTP;

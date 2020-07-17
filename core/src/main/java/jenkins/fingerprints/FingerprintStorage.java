@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import hudson.Functions;
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
 import jenkins.model.FingerprintFacet;
@@ -45,21 +46,20 @@ import org.kohsuke.accmod.Restricted;
  * @author Sumit Sarin
  */
 @Restricted(Beta.class)
-public abstract class FingerprintStorage implements ExtensionPoint {
+public abstract class FingerprintStorage extends AbstractDescribableImpl<FingerprintStorage> implements ExtensionPoint {
 
     /**
-     * Returns the first implementation of FingerprintStorage for the instance.
-     * External storage plugins which implement FingerprintStorage are given a higher priority.
+     * Returns the configured {@link FingerprintStorage} engine chosen by the user for the system.
      */
     public static FingerprintStorage get() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(0);
+        return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class).getStorage();
     }
 
     /**
      * Returns the file system based {@link FileFingerprintStorage} configured on the system.
      */
     public static FingerprintStorage getFileFingerprintStorage() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(1);
+        return ExtensionList.lookup(FileFingerprintStorage.class).get(0);
     }
 
     /**
@@ -133,6 +133,11 @@ public abstract class FingerprintStorage implements ExtensionPoint {
 
     protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
         return Jenkins.get()._getFingerprint(fp.getHashString());
+    }
+
+    @Override public FingerprintStorageDescriptor getDescriptor() {
+        return (FingerprintStorageDescriptor) super.getDescriptor();
+
     }
 
 }
