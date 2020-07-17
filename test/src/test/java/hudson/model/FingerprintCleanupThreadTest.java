@@ -23,10 +23,11 @@
  */
 package hudson.model;
 
-import hudson.ExtensionList;
+import hudson.Extension;
 import hudson.Util;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
+import jenkins.fingerprints.FingerprintStorageDescriptor;
 import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,8 +60,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class FingerprintCleanupThreadTest {
 
     private static final Fingerprint.BuildPtr ptr = new Fingerprint.BuildPtr("fred", 23);
-    private Path tempDirectory;
-    private Path fpFile;
+    private static Path tempDirectory;
+    private static Path fpFile;
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -151,49 +152,54 @@ public class FingerprintCleanupThreadTest {
 
     @Test
     public void testExternalStorageCleanupWithLocalFingerprints() throws IOException {
-        createFolderStructure();
         TestTaskListener testTaskListener = new TestTaskListener();
-        Fingerprint localFingerprint = new TestFingerprint(false);
-        configureLocalTestStorage(localFingerprint);
 
-        Fingerprint externalFingerprint = new TestFingerprint(false);
+        String localFingerprintId = Util.getDigestOf("local");
+        new Fingerprint((Run) null, "foo.jar", Util.fromHexString(localFingerprintId));
+
         configureExternalTestStorage();
-        externalFingerprint.save();
-        assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(not(nullValue())));
+        String externalFingerprintId = Util.getDigestOf("local");
+        new Fingerprint((Run) null, "bar.jar", Util.fromHexString(externalFingerprintId));
+
+        assertThat(Fingerprint.load(localFingerprintId), is(not(nullValue())));
+        assertThat(Fingerprint.load(externalFingerprintId), is(not(nullValue())));
 
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(nullValue()));
-        assertThat(fpFile.toFile(), is(not(aReadableFile())));
+
+        assertThat(Fingerprint.load(localFingerprintId), is(nullValue()));
+        assertThat(Fingerprint.load(externalFingerprintId), is(nullValue()));
     }
 
     @Test
     public void shouldNotCleanFingerprintsWhenDisabled() throws IOException {
-        createFolderStructure();
-        TestTaskListener testTaskListener = new TestTaskListener();
-        Fingerprint localFingerprint = new TestFingerprint(false);
-        configureLocalTestStorage(localFingerprint);
-
-        Fingerprint externalFingerprint = new TestFingerprint(false);
-        configureExternalTestStorage();
-        externalFingerprint.save();
-        assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(not(nullValue())));
-
         GlobalFingerprintConfiguration.get().setFingerprintCleanupDisabled(true);
+
+        TestTaskListener testTaskListener = new TestTaskListener();
+
+        String localFingerprintId = Util.getDigestOf("local");
+        new Fingerprint((Run) null, "foo.jar", Util.fromHexString(localFingerprintId));
+
+        configureExternalTestStorage();
+        String externalFingerprintId = Util.getDigestOf("local");
+        new Fingerprint((Run) null, "bar.jar", Util.fromHexString(externalFingerprintId));
+
+        assertThat(Fingerprint.load(localFingerprintId), is(not(nullValue())));
+        assertThat(Fingerprint.load(externalFingerprintId), is(not(nullValue())));
 
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        assertThat(Fingerprint.load(externalFingerprint.getHashString()), is(not(nullValue())));
-        assertThat(fpFile.toFile(), is(aReadableFile()));
+
+        assertThat(Fingerprint.load(localFingerprintId), is(not(nullValue())));
+        assertThat(Fingerprint.load(externalFingerprintId), is(not(nullValue())));
     }
 
     private void configureLocalTestStorage(Fingerprint fingerprint) {
-        ExtensionList.lookup(FingerprintStorage.class).remove(0);
-        ExtensionList.lookup(FingerprintStorage.class).add(0, new TestFileFingerprintStorage(fingerprint));
+        GlobalFingerprintConfiguration.get().setStorage(new TestFileFingerprintStorage(fingerprint));
     }
 
     private void configureExternalTestStorage() {
-        ExtensionList.lookup(FingerprintStorage.class).add(0, new TestExternalFingerprintStorage());
+        GlobalFingerprintConfiguration.get().setStorage(new TestExternalFingerprintStorage());
     }
 
     private void createFolderStructure() throws IOException {
@@ -226,7 +232,7 @@ public class FingerprintCleanupThreadTest {
 
     }
 
-    private class TestFileFingerprintStorage extends FileFingerprintStorage {
+    private static class TestFileFingerprintStorage extends FileFingerprintStorage {
 
         private Fingerprint fingerprintToLoad;
 
@@ -252,6 +258,16 @@ public class FingerprintCleanupThreadTest {
         @Override
         public boolean isReady() {
             return fpFile.toFile().exists();
+        }
+
+        @Extension
+        public static class DescriptorImpl extends FingerprintStorageDescriptor {
+
+            @Override
+            public String getDisplayName() {
+                return "TestFileFingerprintStorage";
+            }
+
         }
 
     }
@@ -324,6 +340,16 @@ public class FingerprintCleanupThreadTest {
         @Override
         protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
             return new Fingerprint(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
+        }
+
+        @Extension
+        public static class DescriptorImpl extends FingerprintStorageDescriptor {
+
+            @Override
+            public String getDisplayName() {
+                return "TestExternalFingerprintStorage";
+            }
+
         }
     }
 }
