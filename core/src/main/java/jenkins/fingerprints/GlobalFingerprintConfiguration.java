@@ -43,7 +43,7 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
 
     private FingerprintStorage storage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
     private static final Logger LOGGER = Logger.getLogger(GlobalFingerprintConfiguration.class.getName());
-    private boolean fingerprintCleanup;
+    private boolean fingerprintCleanup = true;
 
     public GlobalFingerprintConfiguration() {
         load();
