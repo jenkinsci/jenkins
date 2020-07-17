@@ -286,8 +286,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
 	private boolean logWasFoundAtLevel(String searched, Level level) {
 		return loggerRule.getRecords().stream()
-                .filter(record -> record.getMessage().contains(searched))
-                .filter(record -> record.getLevel().equals(level)).count() > 0;
+                .filter(record -> record.getMessage().contains(searched)).anyMatch(record -> record.getLevel().equals(level));
 	}
 
     @Test
