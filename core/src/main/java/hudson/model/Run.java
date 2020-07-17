@@ -308,6 +308,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private @CheckForNull ArtifactManager artifactManager;
 
     /**
+     * If the build is pending delete.
+     */
+    private transient boolean isPendingDelete;
+
+    /**
      * Creates a new {@link Run}.
      * @param job Owner job
      */
@@ -1612,6 +1617,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *      if we fail to delete.
      */
     public void delete() throws IOException {
+        synchronized (this) {
+            // Avoid concurrent delete. See https://issues.jenkins-ci.org/browse/JENKINS-61687
+            if (isPendingDelete) {
+                return;
+            }
+
+            isPendingDelete = true;
+        }
+
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
             //No root directory found to delete. Somebody seems to have nuked
