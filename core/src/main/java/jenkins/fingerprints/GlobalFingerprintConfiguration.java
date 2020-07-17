@@ -64,7 +64,7 @@ public class GlobalFingerprintConfiguration extends GlobalConfiguration {
                 fingerprintStorage.getDescriptor().getDisplayName());
     }
 
-    public boolean getFingerprintCleanupDisabled() {
+    public boolean isFingerprintCleanupDisabled() {
         return fingerprintCleanupDisabled;
     }
 
