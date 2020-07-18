@@ -230,13 +230,6 @@ THE SOFTWARE.
         <div class="page-footer__flex-row">
           <div class="page-footer__footer-id-placeholder" id="footer"></div>
 
-          <div class="page-footer__timestamp hidden-xs hidden-sm">
-            <span class="page-footer__generated">
-              ${%Page generated}:
-              <span class="page-footer__generated-timestamp"><i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="long"/></span>
-            </span>
-          </div>
-
           <j:if test="${!empty(it.api)}">
             <div class="page-footer__links rest_api hidden-xs">
               <a href="api/">REST API</a>
