@@ -140,7 +140,50 @@ var crumb = {
             }
         }
     }
-}
+};
+
+(function initializeCrumb() {
+    var extensionsAvailable = document.head.getAttribute('data-extensions-available');
+    if (extensionsAvailable === 'true') {
+        var crumbHeaderName = document.head.getAttribute('data-crumb-header');
+        var crumbValue = document.head.getAttribute('data-crumb-value');
+        if (crumbHeaderName && crumbValue) {
+            crumb.init(crumbHeaderName, crumbValue);
+        }
+    }
+    // else, the instance is starting, restarting, etc.
+})();
+
+var isRunAsTest = undefined; 
+// Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
+// but the contextPath only, like /jenkins
+var rootURL = 'not-defined-yet';
+var resURL = 'not-defined-yet';
+
+(function initializeUnitTestAndURLs() {
+    var dataUnitTest = document.head.getAttribute('data-unit-test');
+    if (dataUnitTest !== null) {
+        isRunAsTest = dataUnitTest === 'true';
+    }
+    var dataRootURL = document.head.getAttribute('data-rooturl');
+    if (dataRootURL !== null) {
+        rootURL = dataRootURL;
+    }
+    var dataResURL = document.head.getAttribute('data-resurl');
+    if (dataResURL !== null) {
+        resURL = dataResURL;
+    }
+})();
+
+(function initializeYUIDebugLogReader(){
+    Behaviour.addLoadEvent(function(){
+        var logReaderElement = document.getElementById('yui-logreader');
+        if (logReaderElement !== null) {
+            var logReader = new YAHOO.widget.LogReader('yui-logreader');
+            logReader.collapse();
+        }
+    });
+})();
 
 // Form check code
 //========================================================
