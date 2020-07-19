@@ -24,4 +24,8 @@
 
 package org.acegisecurity.userdetails;
 
+/**
+ * @deprecated TODO replacement
+ */
+@Deprecated
 public interface UserDetails extends org.springframework.security.core.userdetails.UserDetails {}

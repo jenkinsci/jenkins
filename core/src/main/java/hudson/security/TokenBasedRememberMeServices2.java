@@ -23,29 +23,10 @@
  */
 package hudson.security;
 
-import hudson.Functions;
-import hudson.model.User;
-import jenkins.model.Jenkins;
-import jenkins.security.HMACConfidentialKey;
-import jenkins.security.ImpersonatingUserDetailsService;
-import jenkins.security.LastGrantedAuthoritiesProperty;
-import jenkins.security.seed.UserSeedProperty;
-import jenkins.util.SystemProperties;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.providers.rememberme.RememberMeAuthenticationToken;
-import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import hudson.Functions;
+import hudson.model.User;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -55,6 +36,24 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
+import jenkins.security.HMACConfidentialKey;
+import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.LastGrantedAuthoritiesProperty;
+import jenkins.security.seed.UserSeedProperty;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.RememberMeAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely
@@ -195,7 +194,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         }
 
         for (Cookie cookie : cookies) {
-            if (ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY.equals(cookie.getName())) {
+            if (TokenBasedRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY.equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }

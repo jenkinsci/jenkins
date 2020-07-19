@@ -24,6 +24,10 @@
 
 package org.acegisecurity;
 
+/**
+ * @deprecated TODO replacement
+ */
+@Deprecated
 public class BadCredentialsException extends org.springframework.security.authentication.BadCredentialsException {
 
     public BadCredentialsException(String msg) {

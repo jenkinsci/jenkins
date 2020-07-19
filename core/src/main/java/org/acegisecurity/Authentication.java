@@ -23,47 +23,73 @@
  */
 package org.acegisecurity;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import java.io.Serializable;
+import java.security.Principal;
+import org.apache.commons.lang.NotImplementedException;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 
-public interface Authentication extends org.springframework.security.core.Authentication {
+/**
+ * @deprecated use TODO or {@link org.springframework.security.core.Authentication}
+ */
+@Deprecated
+public interface Authentication extends Principal, Serializable {
 
-    @Override
-    Collection<? extends GrantedAuthority> getAuthorities();
+    GrantedAuthority[] getAuthorities();
 
-    class SpringSecurityBridge implements Authentication {
-        private final org.springframework.security.core.Authentication a;
-        public SpringSecurityBridge(org.springframework.security.core.Authentication a) {
-            this.a = a;
-        }
-        @Override
-        public Collection<? extends GrantedAuthority> getAuthorities() {
-            return a.getAuthorities().stream().map(ga -> new GrantedAuthority.SpringSecurityBridge(ga)).collect(Collectors.toList());
-        }
-        @Override
-        public Object getCredentials() {
-            return a.getCredentials();
-        }
-        @Override
-        public Object getDetails() {
-            return a.getDetails();
-        }
-        @Override
-        public Object getPrincipal() {
-            return a.getPrincipal(); // TODO wrap UserDetails if necessary
-        }
-        @Override
-        public boolean isAuthenticated() {
-            return a.isAuthenticated();
-        }
-        @Override
-        public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-            a.setAuthenticated(isAuthenticated);
-        }
-        @Override
-        public String getName() {
-            return a.getName();
-        }
+    Object getCredentials();
+
+    Object getDetails();
+
+    Object getPrincipal();
+
+    boolean isAuthenticated();
+
+    void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException;
+
+    static Authentication fromSpring(org.springframework.security.core.Authentication a) {
+        return new Authentication() {
+            @Override
+            public GrantedAuthority[] getAuthorities() {
+                return GrantedAuthority.fromSpring(a.getAuthorities());
+            }
+            @Override
+            public Object getCredentials() {
+                throw new NotImplementedException();
+            }
+            @Override
+            public Object getDetails() {
+                throw new NotImplementedException();
+            }
+            @Override
+            public Object getPrincipal() {
+                return a.getPrincipal(); // TODO wrap UserDetails if necessary
+            }
+            @Override
+            public boolean isAuthenticated() {
+                return a.isAuthenticated();
+            }
+            @Override
+            public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+                a.setAuthenticated(isAuthenticated);
+            }
+            @Override
+            public String getName() {
+                return a.getName();
+            }
+        };
+    }
+
+    default org.springframework.security.core.Authentication toSpring() {
+        return new AbstractAuthenticationToken(GrantedAuthority.toSpring(getAuthorities())) {
+            @Override
+            public Object getCredentials() {
+                throw new NotImplementedException();
+            }
+            @Override
+            public Object getPrincipal() {
+                return Authentication.this.getPrincipal(); // TODO wrap UserDetails if necessary
+            }
+        };
     }
 
 }

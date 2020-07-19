@@ -24,37 +24,22 @@
 
 package org.acegisecurity.context;
 
+import hudson.model.User;
+import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 
+/**
+ * @deprecated Use {@link ACL#as(User)} or {@link org.springframework.security.core.context.SecurityContext}.
+ */
+@Deprecated
 public class SecurityContextHolder {
 
-    // TODO wrap as in NonSerializableSecurityContext
-
     public static SecurityContext getContext() {
-        org.springframework.security.core.context.SecurityContext c = org.springframework.security.core.context.SecurityContextHolder.getContext();
-        return new SecurityContext() {
-            @Override
-            public Authentication getAuthentication() {
-                return new Authentication.SpringSecurityBridge(c.getAuthentication());
-            }
-            @Override
-            public void setAuthentication(Authentication a) {
-                c.setAuthentication(a);
-            }
-        };
+        return SecurityContext.fromSpring(org.springframework.security.core.context.SecurityContextHolder.getContext());
     }
 
     public static void setContext(SecurityContext c) {
-        org.springframework.security.core.context.SecurityContextHolder.setContext(new org.springframework.security.core.context.SecurityContext() {
-            @Override
-            public org.springframework.security.core.Authentication getAuthentication() {
-                return c.getAuthentication();
-            }
-            @Override
-            public void setAuthentication(org.springframework.security.core.Authentication a) {
-                c.setAuthentication(new Authentication.SpringSecurityBridge(a));
-            }
-        });
+        org.springframework.security.core.context.SecurityContextHolder.setContext(c.toSpring());
     }
 
 }

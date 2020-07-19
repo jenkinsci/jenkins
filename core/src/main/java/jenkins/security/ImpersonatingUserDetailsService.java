@@ -3,10 +3,10 @@ package jenkins.security;
 import hudson.model.User;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.springframework.dao.DataAccessException;
+import java.util.Arrays;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * {@link UserDetailsService} for those {@link SecurityRealm}
@@ -25,10 +25,10 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
             return base.loadUserByUsername(username);
-        } catch (UserMayOrMayNotExistException | DataAccessException e) {
+        } catch (UserMayOrMayNotExistException e) {
             return attemptToImpersonate(username, e);
         }
     }
@@ -39,8 +39,8 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
         if (u!=null) {
             LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
             if (p!=null)
-                return new org.acegisecurity.userdetails.User(username,"",true,true,true,true,
-                        p.getAuthorities());
+                return new org.springframework.security.core.userdetails.User(username,"",true,true,true,true,
+                        Arrays.asList(p.getAuthorities()));
         }
 
         throw e;

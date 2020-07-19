@@ -24,12 +24,26 @@
 
 package org.acegisecurity.context;
 
+import hudson.security.ACL;
 import org.acegisecurity.Authentication;
+import org.apache.commons.lang.NotImplementedException;
 
+/**
+ * @deprecated Use {@link ACL#as(User)} or {@link org.springframework.security.core.context.SecurityContext}.
+ */
+@Deprecated
 public interface SecurityContext {
 
     Authentication getAuthentication();
 
     void setAuthentication(Authentication a);
+
+    static SecurityContext fromSpring(org.springframework.security.core.context.SecurityContext context) {
+        throw new NotImplementedException("TODO");
+    }
+
+    default org.springframework.security.core.context.SecurityContext toSpring() {
+        throw new NotImplementedException("TODO");
+    }
 
 }

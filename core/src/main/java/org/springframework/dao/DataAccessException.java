@@ -26,6 +26,10 @@ package org.springframework.dao;
 
 import org.springframework.core.NestedRuntimeException;
 
+/**
+ * @deprecated TODO replacement
+ */
+@Deprecated
 public class DataAccessException extends NestedRuntimeException {
 
     public DataAccessException(String msg) {

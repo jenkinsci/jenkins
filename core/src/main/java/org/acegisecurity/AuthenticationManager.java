@@ -24,6 +24,10 @@
 
 package org.acegisecurity;
 
+/**
+ * @deprecated TODO replacement
+ */
+@Deprecated
 public interface AuthenticationManager {
 
     Authentication authenticate(Authentication authentication) throws AuthenticationException;

@@ -25,32 +25,34 @@
 package org.acegisecurity.providers.anonymous;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Collectors;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
+import org.apache.commons.lang.NotImplementedException;
 
+/**
+ * @deprecated TODO replacement
+ */
+@Deprecated
 public class AnonymousAuthenticationToken implements Authentication, Serializable {
 
     private final org.springframework.security.authentication.AnonymousAuthenticationToken delegate;
 
     public AnonymousAuthenticationToken(String key, Object principal, GrantedAuthority[] authorities) {
-        delegate = new org.springframework.security.authentication.AnonymousAuthenticationToken(key, principal, Arrays.asList(authorities));
+        delegate = new org.springframework.security.authentication.AnonymousAuthenticationToken(key, /* TODO wrap */principal, GrantedAuthority.toSpring(authorities));
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return delegate.getAuthorities().stream().map(ga -> new GrantedAuthority.SpringSecurityBridge(ga)).collect(Collectors.toList());
+    public GrantedAuthority[] getAuthorities() {
+        return GrantedAuthority.fromSpring(delegate.getAuthorities());
     }
 
     @Override
     public Object getCredentials() {
-        return delegate.getCredentials(); // TODO check what this is
+        throw new NotImplementedException();
     }
     @Override
     public Object getDetails() {
-        return delegate.getDetails(); // TODO check what this is
+        throw new NotImplementedException();
     }
     @Override
     public Object getPrincipal() {

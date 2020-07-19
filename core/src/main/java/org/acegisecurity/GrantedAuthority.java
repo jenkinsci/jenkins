@@ -24,17 +24,42 @@
 
 package org.acegisecurity;
 
-public interface GrantedAuthority extends org.springframework.security.core.GrantedAuthority {
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-    class SpringSecurityBridge implements GrantedAuthority {
-        private final org.springframework.security.core.GrantedAuthority ga;
-        public SpringSecurityBridge(org.springframework.security.core.GrantedAuthority ga) {
-            this.ga = ga;
-        }
-        @Override
-        public String getAuthority() {
-            return ga.getAuthority();
-        }
+/**
+ * @deprecated use TODO or {@link org.springframework.security.core.GrantedAuthority}
+ */
+@Deprecated
+public interface GrantedAuthority {
+
+    String getAuthority();
+
+    @Override
+    String toString();
+
+    @Override
+    boolean equals(Object obj);
+
+    @Override
+    int hashCode();
+
+    static GrantedAuthority fromSpring(org.springframework.security.core.GrantedAuthority ga) {
+        return new GrantedAuthorityImpl(ga.getAuthority());
+    }
+
+    default org.springframework.security.core.GrantedAuthority toSpring() {
+        return new SimpleGrantedAuthority(getAuthority());
+    }
+
+    static GrantedAuthority[] fromSpring(Collection<? extends org.springframework.security.core.GrantedAuthority> gas) {
+        return gas.stream().map(GrantedAuthority::fromSpring).toArray(GrantedAuthority[]::new);
+    }
+
+    static Collection<? extends org.springframework.security.core.GrantedAuthority> toSpring(GrantedAuthority[] gas) {
+        return Stream.of(gas).map(GrantedAuthority::toSpring).collect(Collectors.toList());
     }
 
 }

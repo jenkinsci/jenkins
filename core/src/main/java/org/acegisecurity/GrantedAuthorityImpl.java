@@ -25,7 +25,12 @@
 package org.acegisecurity;
 
 import java.io.Serializable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+/**
+ * @deprecated use TODO or {@link SimpleGrantedAuthority}
+ */
+@Deprecated
 public class GrantedAuthorityImpl implements GrantedAuthority, Serializable {
 
     private static final long serialVersionUID = 1;

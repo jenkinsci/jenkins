@@ -37,17 +37,6 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import hudson.util.spring.BeanBuilder;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.ui.rememberme.RememberMeServices;
-import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -57,7 +46,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.dao.DataAccessException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -72,6 +60,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -301,7 +299,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
-        Cookie cookie = new Cookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY, "");
+        Cookie cookie = new Cookie(TokenBasedRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
@@ -380,7 +378,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * This information, when available, can be used by {@link AuthorizationStrategy}s to improve the UI and
      * error diagnostics for the user.
      */
-    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
         throw new UserMayOrMayNotExistException(groupname);
     }
 
@@ -401,7 +399,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @since 1.549
      */
     public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers)
-            throws UsernameNotFoundException, DataAccessException {
+            throws UsernameNotFoundException {
         return loadGroupByGroupname(groupname);
     }
 
@@ -578,7 +576,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                     return authentication;
                 }
             }, new UserDetailsService() {
-                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                     throw new UsernameNotFoundException(username);
                 }
             });
@@ -588,7 +586,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          * There's no group.
          */
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
             throw new UsernameNotFoundException(groupname);
         }
 

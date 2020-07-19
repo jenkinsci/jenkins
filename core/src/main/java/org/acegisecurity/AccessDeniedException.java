@@ -24,6 +24,12 @@
 
 package org.acegisecurity;
 
+import hudson.security.AccessDeniedException2;
+
+/**
+ * @deprecated use {@link AccessDeniedException2}
+ */
+@Deprecated
 public class AccessDeniedException extends org.springframework.security.access.AccessDeniedException {
 
     public AccessDeniedException(String msg) {

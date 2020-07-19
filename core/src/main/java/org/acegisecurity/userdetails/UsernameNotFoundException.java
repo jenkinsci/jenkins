@@ -24,6 +24,10 @@
 
 package org.acegisecurity.userdetails;
 
+/**
+ * @deprecated TODO replacement
+ */
+@Deprecated
 public class UsernameNotFoundException extends org.springframework.security.core.userdetails.UsernameNotFoundException {
 
     public UsernameNotFoundException(String msg) {

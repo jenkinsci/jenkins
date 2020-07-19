@@ -24,12 +24,14 @@
 
 package org.acegisecurity.providers;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-import javax.security.auth.Subject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
+import org.apache.commons.lang.NotImplementedException;
 
+/**
+ * @deprecated TODO replacement
+ */
+@Deprecated
 public class UsernamePasswordAuthenticationToken implements Authentication {
 
     private final org.springframework.security.authentication.UsernamePasswordAuthenticationToken delegate;
@@ -38,20 +40,21 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
         delegate = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials);
     }
 
-    public UsernamePasswordAuthenticationToken(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
-        delegate = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials, authorities);
+    public UsernamePasswordAuthenticationToken(Object principal, Object credentials, GrantedAuthority[] authorities) {
+        delegate = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials, GrantedAuthority.toSpring(authorities));
     }
+
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return delegate.getAuthorities().stream().map(ga -> new GrantedAuthority.SpringSecurityBridge(ga)).collect(Collectors.toList());
+    public GrantedAuthority[] getAuthorities() {
+        return GrantedAuthority.fromSpring(delegate.getAuthorities());
     }
     @Override
     public Object getCredentials() {
-        return delegate.getCredentials(); // TODO check what this is
+        throw new NotImplementedException();
     }
     @Override
     public Object getDetails() {
-        return delegate.getDetails(); // TODO check what this is
+        throw new NotImplementedException();
     }
     @Override
     public Object getPrincipal() {
