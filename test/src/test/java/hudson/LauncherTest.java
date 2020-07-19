@@ -54,10 +54,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import static org.hamcrest.Matchers.*;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.Rule;
 import org.junit.Test;
