@@ -20,6 +20,10 @@ function findConfigTables() {
     return $('form[name="config"] > table');
 }
 
+function closestTR(node) {
+    return node.closest('tr, .tr');
+}
+
 function fromConfigTable(configTable) {
     var $ = getJQuery();
     var sectionHeaders = $('.section-header', configTable);
@@ -28,7 +32,7 @@ function fromConfigTable(configTable) {
     // Mark the ancestor <tr>s of the section headers and add a title
     sectionHeaders.each(function () {
         var sectionHeader = $(this);
-        var sectionRow = sectionHeader.closest('tr');
+        var sectionRow = closestTR(sectionHeader);
         var sectionTitle = sectionRow.text();
 
         // Remove leading hash from accumulated text in title (from <a> element).
@@ -50,7 +54,14 @@ function fromConfigTable(configTable) {
     // See the next block of code.
     
     if(!firstRow.hasClass('section-header-row')){
-      var generalRow = $('<tr class="section-header-row insert first" title="General"><td colspan="4"><div class="section-header"><a class="section-anchor">#</a>General</div></td></tr>');
+      var td, tr;
+      if (configTable[0].nodeName === 'TR') {
+        tr = 'tr';
+        td = 'td';
+      } else {
+        tr = td = 'div';
+      }
+      var generalRow = $('<'+tr+' class="section-header-row insert first tr" title="General"><'+td+' colspan="4"><div class="section-header"><a class="section-anchor">#</a>General</div></+'+td+'></'+tr+'>');
       firstRow.before(generalRow);
       firstRow = configTableMetadata.getFirstRow();
       var newArray = $.makeArray(topRows);
@@ -73,7 +84,7 @@ function fromConfigTable(configTable) {
         }
     });
 
-    var buttonsRow = $('#bottom-sticker', configTable).closest('tr');
+    var buttonsRow = closestTR($('#bottom-sticker', configTable));
     buttonsRow.removeClass(curSection.id);
     buttonsRow.addClass(toId('buttons'));
 
@@ -89,7 +100,7 @@ function ConfigTableMetaData(configForm, configTable) {
     this.$ = getJQuery();
     this.configForm = configForm;
     this.configTable = configTable;
-    this.configTableBody = this.$('> tbody', configTable);
+    this.configTableBody = configTable[0].nodeName === 'DIV' ? configTable : this.$('> tbody', configTable);
     this.activatorContainer = undefined;
     this.sections = [];
     this.findInput = undefined;
@@ -100,7 +111,7 @@ function ConfigTableMetaData(configForm, configTable) {
 }
 
 ConfigTableMetaData.prototype.getTopRows = function() {
-    var topRows = this.configTableBody.children('tr');
+    var topRows = this.configTableBody.find('tr, .tr');
     topRows.addClass('config-table-top-row');
     return topRows;
 };

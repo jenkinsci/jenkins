@@ -2196,11 +2196,7 @@ public class Functions {
 
     public static ArrayList<CLICommand> getCLICommands() {
         ArrayList<CLICommand> all = new ArrayList<>(CLICommand.all());
-        Collections.sort(all, new Comparator<CLICommand>() {
-            public int compare(CLICommand cliCommand, CLICommand cliCommand1) {
-                return cliCommand.getName().compareTo(cliCommand1.getName());
-            }
-        });
+        all.sort(Comparator.comparing(CLICommand::getName));
         return all;
     }
 

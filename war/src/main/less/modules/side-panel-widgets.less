@@ -1,5 +1,4 @@
-@import '../abstracts/colors.less';
-@import '../abstracts/font.less';
+@import '../abstracts/theme.less';
 
 #side-panel .pane-frame {
   border-radius: 0;
@@ -66,21 +65,12 @@
 #side-panel .pane-header a,
 #side-panel .pane-footer a,
 #side-panel .pane-content a {
-  &:link,
-  &:visited {
-    color: var(--link-dark-color);
-  }
+  .link-dark();
+  text-decoration: underline;
+}
 
-  &:focus,
-  &:hover {
-    color: var(--link-dark-color--hover);
-    text-decoration: underline;
-  }
-
-  &:active {
-    color: var(--link-dark-color--active);
-    text-decoration: underline;
-  }
+#side-panel .pane-header a {
+  font-weight: bold;
 }
 
 #side-panel .pane-content a {

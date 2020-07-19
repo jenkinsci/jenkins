@@ -1,5 +1,4 @@
-@import '../abstracts/colors.less';
-@import '../abstracts/font.less';
+@import '../abstracts/theme.less';
 
 #tasks {
   margin-bottom: 20px;
@@ -43,13 +42,16 @@
 .task-link:visited {
   color: var(--link-dark-color);
   text-decoration: none;
+  font-weight: 500;
 
   &:hover,
   &:focus {
+    text-decoration: none;
     background-color: var(--task-link-bg-color--hover);
   }
 
   &:active {
+    text-decoration: none;
     background-color: var(--task-link-bg-color--active);
   }
 

@@ -383,6 +383,6 @@ public class MissingClassTelemetryFasterTest {
         // No events gathered
         assertEquals(0, eventsGathered.size());
 
-        assertEquals("No log if telemetry disabled", 0, logging.getRecords().stream().count());
+        assertEquals("No log if telemetry disabled", 0, logging.getRecords().size());
     }
 }

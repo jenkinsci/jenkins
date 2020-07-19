@@ -1,8 +1,11 @@
 <div>
-  Jenkins utilizza una porta TCP per comunicare con gli agenti lanciati
-  tramite JNLP. Normalmente questa porta è scelta casualmente per evitare
-  collisioni, ma ciò renderebbe difficile mettere in sicurezza il sistema.
-  Se non si utilizzano agenti JNLP, è raccomandato disabilitare questa porta
-  TCP. In alternativa, è possibile specificare un numero di porta fisso per
-  poter configurare il proprio firewall in modo appropriato.
+  Se non si utilizzano agenti in ingresso, è consigliato disabilitare
+  completamente quest'opzione (che è il comportamento predefinito).
+  Jenkins utilizza una porta TCP per comunicare con gli agenti in ingresso.
+  Se si utilizzeranno gli agenti in ingresso, è possibile consentire al
+  sistema di selezionare casualmente una porta all'avvio (ciò consente di
+  evitare interferenze con altri programmi, incluse altre istanze di Jenkins).
+  Poiché per i firewall è difficile mettere in sicurezza una porta casuale,
+  come alternativa è possibile specificare un numero di porta fisso e
+  configurare il proprio firewall di conseguenza.
 </div>

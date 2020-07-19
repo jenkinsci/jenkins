@@ -2,7 +2,7 @@
  * Tab bar specific rules.
  */
 
-@import '../../../less/abstracts/font.less';
+@import '../../../less/abstracts/theme.less';
 
 .jenkins-config-widgets {
   position: relative;
@@ -109,19 +109,58 @@
 
     }
 
-    table.config-table {
-      .section-header-row {
-        background: none;
-        border-color: transparent
+    table {
+      border-collapse: collapse;
+
+      td {
+        padding: 5px;
       }
-      .section-header {
-        margin-top: 10px;
+
+      .repeated-chunk,
+      tr[nameref^="rowSetStart"],
+      tr[nameref^="cb"],
+      tr[nameref^="radio-block"] {
+        background: var(--shade-hint);
+        border-left: 5px solid var(--shade);
+      }
+
+      .hetero-list-container,
+      .repeated-container,
+      tr.optional-block-start,
+      tr.radio-block-start {
+        border-left: 5px solid var(--shade);
+        background: none;
       }
     }
 
-    table {
-      border-collapse:collapse;
+    .config-table {
+      // Table configuration
+      table,
+      .table {
+        border-collapse: collapse;
+      }
 
+      // Input elements
+      input[type='email'].setting-input,
+      input[type='password'].setting-input,
+      input[type='text'].setting-input {
+        height: var(--input-line-height);
+        line-height: var(--input-line-height);
+        padding: 0 5px;
+        .border-radius(@border-radius);
+      }
+
+      select:not([multiple]) {
+        height: var(--input-line-height);
+        line-height: var(--input-line-height);
+      }
+
+      select:not(.select-ajax-pending) {
+        border-radius: 0;
+        background: var(--brightest-bg-color);
+      }
+
+      // Bottom buttons
       .bottom-sticker-edge {
         display:none;
       }
@@ -151,156 +190,83 @@
         }
       }
 
-      .section-header{
-        margin: 30px 0px 5px -10px;
-        font-size: 1.25rem;
-        padding: 10px 15px;
-        border: none;
-        border-top: 1px solid #ddd;
-      }
-      .attach-previous {
-        margin-left:3px;
-      }
-      .validation-error-area td{
-        padding:0 5px;
+      // Help & descriptions
+      .help {
+        background: var(--configure-job-help-area-bg-color);
       }
 
-      .stapler-class-bag td {
-        padding: 0px;
+      p,
+      .help,
+      .setting-description {
+        font-size: var(--font-size-base);
       }
-      
-      td.setting-name{
-        line-height:29px;
-      }
-      td.setting-main{
-        input[type='radio'],
-        input[type='checkbox']{
-          position:relative;
-          top:.33em;
-        }
-      }
-      td{
-        padding:5px;
-        
-        textarea.setting-input {
-          display:block;
-        }
 
-        input[type='email'].setting-input,
-        input[type='password'].setting-input,
-        input[type='text'].setting-input{
-          height:var(--input-line-height);
-          line-height:var(--input-line-height);
-          padding:0 5px;
-          .border-radius(@border-radius);
-        }
+      tr.help-area,
+      .tr.help-area {
+        background: none !important;
 
-        select:not([multiple]){
-          height:var(--input-line-height);
-          line-height:var(--input-line-height);
-        }
-        select:not(.select-ajax-pending) {
-          border-radius:0;
-          background:var(--brightest-bg-color);
-        }
-        .help{
-          background:var(--configure-job-help-area-bg-color);
-        }
-        p,
-        .help,
-        .setting-description {
-          font-size: var(--font-size-base);
+        td,
+        .td {
+          padding: 0 5px;
         }
       }
-      td[colspan="4"]:empty{
-        display:none
+
+      // Repeatable elements
+
+      .repeated-container > .repeated-chunk {
+        padding: 0.75rem;
       }
-      td.setting-help{
-        vertical-align:top;
-        padding:5px 10px 5px 5px
+
+      .repeated-chunk.hover {
+        border-color: var(--line-blue);
+        box-shadow: 0 2px 10px var(--shade), inset 0 200px 200px -200px var(--brightest-bg-color);
+        position: relative;
+        z-index: 2
       }
-      td.setting-leftspace:after {
-        content:' '; 
-        display:block; 
-        width:13px; 
-        height:1px;
+
+      .repeated-chunk.dragging {
+        position: static;
       }
-      .repeated-chunk,
-      tr[nameref^="rowSetStart"],
-      tr[nameref^="cb"],
-      tr[nameref^="radio-block"] {
-        background:var(--shade-hint); 
-        border-left:5px solid var(--shade)
+
+      .repeated-chunk {
+        border: 1px solid var(--shade);
+        margin: 2px;
+        position: relative;
       }
-      .hetero-list-container,
-      .repeated-container,
-      tr.optional-block-start,
-      tr.radio-block-start {
-        border-left:5px solid var(--shade); 
-        background:none;
-      }
-      tr.help-area {
-        background:none !important;
-        
-        td {
-          padding:0 5px
-        }
-      }
-      .CodeMirror {
-        background:var(--brightest-bg-color);
-  
-      }
-      .CodeMirror-scroll {
-          border:1px solid var(--input-border) !important;
-      }
-      .repeated-container > .repeated-chunk {padding-top:15px;}
-      .repeated-chunk.hover{ 
-        border-color:var(--line-blue); 
-        box-shadow:0 2px 10px var(--shade), inset 0 200px 200px -200px var(--brightest-bg-color); 
-        position:relative; 
-        z-index:2
-      }
-      .repeated-chunk.dragging{
-        position:static;
-      }
-      .repeated-chunk{
-        border:1px solid var(--shade);
-        margin:2px;
-        position:relative;
-      }  
+
       .repeatable-delete {
         position: absolute;
         top: -4px;
         right: 40px;
         height: 20px;
         width: 30px;
+      }
 
-        button {
-          text-align: center;
-          text-indent: -9999px;
-          width: 30px !important;
-          height: 18px !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          .border-radius-top(0) !important;
-          background-color: var(--danger);
-          color: var(--light-bg-color);
-          border: 1px solid var(--danger-line);
-          line-height: 12px !important;
-          display: inline-block;
-          font-size: 8px;
-          min-width: 0;
-          min-height: 0;
-        }
+      .repeatable-delete button {
+        text-align: center;
+        text-indent: -9999px;
+        width: 30px !important;
+        height: 18px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        .border-radius-top(0) !important;
+        background-color: var(--danger);
+        color: var(--light-bg-color);
+        border: 1px solid var(--danger-line);
+        line-height: 12px !important;
+        display: inline-block;
+        font-size: 8px;
+        min-width: 0;
+        min-height: 0;
 
-        button:focus,
-        button:hover {
+        &:focus,
+        &:hover {
           background-color: var(--danger-dark);
           border-color: var(--danger-dark-line);
           color: var(--brightest-bg-color);
         }
 
-        button:before {
+        &:before {
           content: 'X';
           font-weight: bold;
           position: absolute;
@@ -313,15 +279,24 @@
           font-size: 12px;
           text-indent: 0;
         }
-
       }
-    }
 
-    span.highlight {
-      background-color: #ffff00;
+      span.highlight {
+        background-color: #ffff00;
+      }
+
+      // CodeMirror
+      .CodeMirror {
+        background: var(--brightest-bg-color);
+      }
+
+      .CodeMirror-scroll {
+        border: 1px solid var(--input-border) !important;
+      }
     }
   }
 }
+
 #ygddfdiv {
   background:var(--light-bg-color);
   border:1px solid var(--line-blue) !important;

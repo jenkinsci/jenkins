@@ -125,6 +125,12 @@ THE SOFTWARE.
                         </ul>
                       </div>
                     </j:if>
+                    <j:if test="${p.isDeprecated()}">
+                      <div class="alert alert-warning">
+                        <!-- figure out a way how to present deprecations by multiple update sites instead of just the first one -->
+                        ${%deprecationWarning(p.getDeprecations().get(0).url)}
+                      </div>
+                    </j:if>
                     <j:if test="${it.hasAdoptThisPluginLabel(p)}">
                       <div class="alert alert-warning">
                         ${%adoptThisPlugin}
