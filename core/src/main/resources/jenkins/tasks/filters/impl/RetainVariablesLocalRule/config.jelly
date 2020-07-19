@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2020, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +22,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
-
-  <st:documentation>
-    <st:attribute name="class">
-      'tabBarFrame' class specification.  This will allow styling.
-    </st:attribute>
-
-    <st:attribute name="showBaseline">
-      Set to true to show the baseline
-    </st:attribute>
-  </st:documentation>
-
-  <!-- Use the current millis time as an id for the tab group -->
-  <j:set scope="parent" var="tabBarId" value="${h.getCurrentTime().getTime()}" />
-  <div class="tabBarFrame ${attrs.class} ${attrs.showBaseline ? 'showBaseline' : ''}">
-    <div class="tabBar">
-      <d:invokeBody/>
-    </div>
-    <div class="tabBarBaseline"></div>
-  </div>
-
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry field="variables" title="${%variablesLabel}"
+             description="${%variablesDescription}" >
+        <f:textbox value="${instance.variables}" />
+    </f:entry>
+    <f:entry field="retainCharacteristicEnvVars" title="${%retainCharacteristicEnvVarsLabel}">
+        <f:checkbox default="true" />
+    </f:entry>
+    <f:entry title="${%retainProcessVariablesLabel}">
+        <f:enum field="processVariablesHandling" default="RESET">
+            ${it.displayName}
+        </f:enum>
+    </f:entry>
 </j:jelly>

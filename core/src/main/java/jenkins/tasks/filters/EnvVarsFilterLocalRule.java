@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2020, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,29 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.Shell
-f=namespace(lib.FormTagLib)
+package jenkins.tasks.filters;
 
-f.entry(title:_("Command"),description:_("description",rootURL)) {
-    f.textarea(name: "command", value: instance?.command, class: "fixed-width", 'codemirror-mode': 'shell', 'codemirror-config': "mode: 'text/x-sh'")
-}
+import hudson.ExtensionPoint;
+import hudson.model.Describable;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
-f.advanced() {
-    f.entry(title:_("Exit code to set build unstable"), field: "unstableReturn") {
-        f.number(clazz:"positive-number", value: instance?.unstableReturn, min:1, max:255, step:1)
-    }
+import java.io.Serializable;
 
-    if (instance?.configuredLocalRules || descriptor.applicableLocalRules) {
-        f.entry(title: _("filterRules")) {
-            f.hetero_list(
-                    name: "configuredLocalRules",
-                    hasHeader: true,
-                    oneEach: true,
-                    disableDragAndDrop: true,
-                    descriptors: descriptor.applicableLocalRules,
-                    items: instance?.configuredLocalRules,
-                    addCaption: _("addFilterRule")
-            )
-        }
+/**
+ * Environment variables filter rule that is specific to a job configuration, using script-specific variables, etc.<p>
+ * The job types can be filtered using {@link EnvVarsFilterLocalRuleDescriptor#isApplicable(Class)}
+ *
+ * The local rules are applied before the global ones.
+ *
+ * @since TODO
+ */
+@Restricted(Beta.class)
+public interface EnvVarsFilterLocalRule extends Describable<EnvVarsFilterLocalRule>, EnvVarsFilterRule, ExtensionPoint, Serializable {
+    default EnvVarsFilterLocalRuleDescriptor getDescriptor() {
+        return (EnvVarsFilterLocalRuleDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 }

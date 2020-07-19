@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2020, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,29 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.tasks.Shell
-f=namespace(lib.FormTagLib)
+package jenkins.tasks.filters;
 
-f.entry(title:_("Command"),description:_("description",rootURL)) {
-    f.textarea(name: "command", value: instance?.command, class: "fixed-width", 'codemirror-mode': 'shell', 'codemirror-config': "mode: 'text/x-sh'")
-}
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Launcher;
+import hudson.model.TaskListener;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
-f.advanced() {
-    f.entry(title:_("Exit code to set build unstable"), field: "unstableReturn") {
-        f.number(clazz:"positive-number", value: instance?.unstableReturn, min:1, max:255, step:1)
+/**
+ * Information that is used for the environment filtering process.
+ *
+ * @since TODO
+ */
+@Restricted(Beta.class)
+public class EnvVarsFilterRuleContext {
+    private final Launcher launcher;
+    private final TaskListener taskListener;
+
+    public EnvVarsFilterRuleContext(@NonNull Launcher launcher, @NonNull TaskListener taskListener) {
+        this.launcher = launcher;
+        this.taskListener = taskListener;
     }
 
-    if (instance?.configuredLocalRules || descriptor.applicableLocalRules) {
-        f.entry(title: _("filterRules")) {
-            f.hetero_list(
-                    name: "configuredLocalRules",
-                    hasHeader: true,
-                    oneEach: true,
-                    disableDragAndDrop: true,
-                    descriptors: descriptor.applicableLocalRules,
-                    items: instance?.configuredLocalRules,
-                    addCaption: _("addFilterRule")
-            )
-        }
+    public Launcher getLauncher() {
+        return launcher;
+    }
+
+    public TaskListener getTaskListener() {
+        return taskListener;
     }
 }
