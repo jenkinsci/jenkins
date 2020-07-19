@@ -2,17 +2,16 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.model.User;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.springframework.dao.DataAccessException;
-
+import static java.util.logging.Level.*;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Checks if the password given in the BASIC header matches the user's API token.
@@ -20,6 +19,7 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  * @since 1.576
  */
+@Restricted(DoNotUse.class)
 @Extension
 public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
     /**
@@ -40,8 +40,6 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
                 // The token was valid, but the impersonation failed. This token is clearly not his real password,
                 // so there's no point in continuing the request processing. Report this error and abort.
                 LOGGER.log(WARNING, "API token matched for user " + username + " but the impersonation failed", x);
-                throw new ServletException(x);
-            } catch (DataAccessException x) {
                 throw new ServletException(x);
             }
 

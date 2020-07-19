@@ -29,7 +29,7 @@ import hudson.security.ACLContext;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import jenkins.util.InterceptingExecutorService;
-import org.acegisecurity.Authentication;
+import org.springframework.security.core.Authentication;
 
 /**
  * Uses {@link ACL#impersonate(Authentication)} for all tasks.

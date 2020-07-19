@@ -29,7 +29,7 @@ import hudson.security.ACLContext;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import jenkins.util.InterceptingScheduledExecutorService;
-import org.acegisecurity.Authentication;
+import org.springframework.security.core.Authentication;
 
 /**
  * Variant of {@link ImpersonatingExecutorService} for scheduled services.

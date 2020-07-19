@@ -27,12 +27,11 @@ import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import org.acegisecurity.Authentication;
-
 import java.util.Collection;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
+import org.springframework.security.core.Authentication;
 
 /**
  * Convenience methods around {@link Task} and {@link SubTask}.

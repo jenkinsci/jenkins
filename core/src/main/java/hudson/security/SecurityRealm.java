@@ -60,9 +60,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -366,7 +368,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @return
      *      never null.
      */
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return getSecurityComponents().userDetails.loadUserByUsername(username);
     }
 
@@ -702,5 +704,5 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * {@link GrantedAuthority} that represents the built-in "authenticated" role, which is granted to
      * anyone non-anonymous.
      */
-    public static final GrantedAuthority AUTHENTICATED_AUTHORITY = new GrantedAuthorityImpl("authenticated");
+    public static final GrantedAuthority AUTHENTICATED_AUTHORITY = new SimpleGrantedAuthority("authenticated");
 }

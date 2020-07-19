@@ -24,9 +24,9 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * A {@link AutoCloseable} that captures the previous {@link SecurityContext} and restores it on {@link #close()}

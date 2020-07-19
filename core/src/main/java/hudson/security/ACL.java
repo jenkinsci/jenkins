@@ -23,34 +23,33 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
+import hudson.remoting.Callable;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import hudson.model.Item;
-import hudson.remoting.Callable;
-import hudson.model.ItemGroup;
-import hudson.model.TopLevelItemDescriptor;
 import java.util.function.BiFunction;
-import jenkins.security.NonSerializableSecurityContext;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
+import jenkins.security.NonSerializableSecurityContext;
 import jenkins.security.NotReallyRoleSensitiveCallable;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.

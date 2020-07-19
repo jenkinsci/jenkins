@@ -298,13 +298,12 @@ import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
-import org.acegisecurity.GrantedAuthorityImpl;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.WebMethod;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
@@ -4085,6 +4084,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
 
+        /* TODO unclear what the Spring equivalent is; check AbstractAuthenticationProcessingFilter, SavedRequest
         String url = AbstractProcessingFilter.obtainFullRequestUrl(req);
         if(url!=null) {
             // if the login redirect is initiated by Acegi
@@ -4092,6 +4092,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             rsp.sendRedirect2(url);
             return;
         }
+        */
 
         rsp.sendRedirect2(".");
     }
@@ -5373,7 +5374,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     static {
         try {
             ANONYMOUS = new AnonymousAuthenticationToken(
-                    "anonymous", "anonymous", new GrantedAuthority[]{new GrantedAuthorityImpl("anonymous")});
+                    "anonymous", "anonymous", Collections.singleton(new SimpleGrantedAuthority("anonymous")));
             XSTREAM = XSTREAM2 = new XStream2();
 
             XSTREAM.alias("jenkins", Jenkins.class);

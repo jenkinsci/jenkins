@@ -115,8 +115,6 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.util.AtmostOneTaskExecutor;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 import org.jenkinsci.bytecode.AdaptField;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -138,6 +136,8 @@ import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * Build queue.

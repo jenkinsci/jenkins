@@ -5,14 +5,13 @@ import hudson.util.spring.BeanBuilder;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService;
 import jenkins.security.SecurityListener;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.springframework.dao.DataAccessException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -87,7 +86,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * a query like this, just always throw {@link UsernameNotFoundException}.
      */
     @Override
-    public abstract UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException;
+    public abstract UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
 
     /**
      * Retrieves information about a group by its name.
@@ -95,7 +94,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * This method is the group version of the {@link #loadUserByUsername(String)}.
      */
     @Override
-    public abstract GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException;
+    public abstract GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException;
 
     class Authenticator extends AbstractUserDetailsAuthenticationProvider {
         protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {

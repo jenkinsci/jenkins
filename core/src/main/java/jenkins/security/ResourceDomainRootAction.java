@@ -24,6 +24,9 @@
 package jenkins.security;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -32,30 +35,25 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.commons.lang.ArrayUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.*;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import static java.time.Instant.*;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static java.time.Instant.*;
-import static java.time.temporal.ChronoUnit.MINUTES;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.apache.commons.lang.ArrayUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Root action serving {@link DirectoryBrowserSupport} instances

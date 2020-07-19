@@ -4,16 +4,10 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.acegisecurity.ui.AuthenticationEntryPoint;
-import org.acegisecurity.ui.rememberme.NullRememberMeServices;
-import org.acegisecurity.ui.rememberme.RememberMeServices;
-import org.apache.commons.lang.StringUtils;
-
+import java.io.IOException;
+import java.util.List;
+import static java.util.logging.Level.*;
+import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -22,11 +16,15 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.NullRememberMeServices;
+import org.springframework.security.web.authentication.RememberMeServices;
 
 /**
  * Takes "username:password" given in the {@code Authorization} HTTP header and authenticates

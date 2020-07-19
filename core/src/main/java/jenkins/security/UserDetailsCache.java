@@ -24,31 +24,27 @@
 package jenkins.security;
 
 import com.google.common.cache.Cache;
+import static com.google.common.cache.CacheBuilder.newBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.security.UserMayOrMayNotExistException;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.springframework.dao.DataAccessException;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.cache.CacheBuilder.newBuilder;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * Cache layer for {@link org.acegisecurity.userdetails.UserDetails} lookup.
- *
- * @since 2.15
+ * Cache layer for {@link UserDetails} lookup.
  */
+@Restricted(NoExternalUse.class)
 @Extension
 public final class UserDetailsCache {
 
@@ -118,7 +114,7 @@ public final class UserDetailsCache {
      * @throws ExecutionException if anything else went wrong in the cache lookup/retrieval
      */
     @NonNull
-    public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, DataAccessException, ExecutionException {
+    public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, ExecutionException {
         Boolean exists = existenceCache.getIfPresent(idOrFullName);
         if(exists != null && !exists) {
             throw new UsernameNotFoundException(String.format("\"%s\" does not exist", idOrFullName));
@@ -128,8 +124,6 @@ public final class UserDetailsCache {
             } catch (ExecutionException | UncheckedExecutionException e) {
                 if (e.getCause() instanceof UsernameNotFoundException) {
                     throw ((UsernameNotFoundException)e.getCause());
-                } else if (e.getCause() instanceof DataAccessException) {
-                    throw ((DataAccessException)e.getCause());
                 } else {
                     throw e;
                 }
@@ -179,9 +173,6 @@ public final class UserDetailsCache {
                 return userDetails;
             } catch (UsernameNotFoundException e) {
                 existenceCache.put(this.idOrFullName, Boolean.FALSE);
-                throw e;
-            } catch (DataAccessException e) {
-                existenceCache.invalidate(this.idOrFullName);
                 throw e;
             }
         }

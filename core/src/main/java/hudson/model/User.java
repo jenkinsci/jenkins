@@ -26,6 +26,9 @@ package hudson.model;
 
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.Extension;
@@ -45,7 +48,6 @@ import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,12 +64,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -76,12 +74,6 @@ import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -93,7 +85,12 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
-import org.springframework.dao.DataAccessException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Represents a user.
@@ -396,9 +393,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm", id);
                 throw e;
             }
-        } catch (DataAccessException e) {
-            // seems like it's in the same boat as UserMayOrMayNotExistException
-            LOGGER.log(Level.FINE, "The user {0} retrieval just threw a DataAccess exception with msg = {1}, so we provide minimum access", new Object[]{id, e.getMessage()});
         }
 
         return new LegitimateButUnknownUserDetails(id);
@@ -407,12 +401,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Only used for a legitimate user we have no idea about. We give it only minimum access
      */
-    private static class LegitimateButUnknownUserDetails extends org.acegisecurity.userdetails.User {
+    private static class LegitimateButUnknownUserDetails extends org.springframework.security.core.userdetails.User {
         private LegitimateButUnknownUserDetails(String username) throws IllegalArgumentException {
             super(
                     username, "",
                     true, true, true, true,
-                    new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY}
+                    Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY)
             );
         }
     }
@@ -1213,7 +1207,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         return userDetails.getUsername();
                     } catch (UsernameNotFoundException x) {
                         LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
-                    } catch (DataAccessException | ExecutionException x) {
+                    } catch (ExecutionException x) {
                         LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
                     } finally {
                         resolving.set(false);
