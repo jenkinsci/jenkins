@@ -25,7 +25,9 @@ package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
@@ -232,7 +234,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+    public void perform(Run<?,?> build, FilePath ws, EnvVars environment, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         if(artifacts.length()==0) {
             throw new AbortException(Messages.ArtifactArchiver_NoIncludes());
         }
@@ -245,7 +247,10 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
         listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
-            String artifacts = build.getEnvironment(listener).expand(this.artifacts);
+            String artifacts = this.artifacts;
+            if (build instanceof AbstractBuild) { // no expansion in pipelines
+                artifacts = environment.expand(artifacts);
+            }
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive, followSymlinks));
             if (!files.isEmpty()) {

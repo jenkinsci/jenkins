@@ -1,5 +1,4 @@
-@import '../abstracts/colors.less';
-@import '../abstracts/font.less';
+@import '../abstracts/theme.less';
 
 // Button: variant mixins
 
@@ -59,21 +58,21 @@
 }
 
 .button-link {
-  color: var(--primary);
+  color: var(--primary-hover);
   background-color: transparent;
   border-color: transparent;
 
   &:hover,
   &:focus {
-    color: var(--primary-hover);
-    background-color: #f8f8f8;
-    border-color: #f8f8f8;
+    color: var(--primary);
+    background-color: var(--btn-link-bg--hover);
+    border-color: var(--btn-link-bg--hover);
   }
 
   &:active {
     color: var(--primary-active);
-    background-color: #EAEFF2;
-    border-color: #EAEFF2;
+    background-color: var(--btn-link-bg--active);
+    border-color: var(--btn-link-bg--active);
   }
 }
 
@@ -120,7 +119,9 @@ a.yui-button:visited {
   border: 2px solid;
   border-radius: 4px;
 
-  transition: all 0.15s ease-in-out;
+  transition: color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
 
   .button-secondary();
 

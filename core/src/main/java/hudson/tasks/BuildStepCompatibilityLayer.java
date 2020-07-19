@@ -75,7 +75,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             if (workspace == null) {
                 throw new AbortException("no workspace for " + build);
             }
-            ((SimpleBuildStep) this).perform(build, workspace, launcher, listener);
+            ((SimpleBuildStep) this).perform(build, workspace, build.getEnvironment(listener), launcher, listener);
             return true;
         } else if (build instanceof Build) {
             // delegate to the legacy signature deprecated in 1.312

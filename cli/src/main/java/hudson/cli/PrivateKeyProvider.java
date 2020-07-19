@@ -52,7 +52,7 @@ import org.apache.sshd.common.util.security.SecurityUtils;
  */
 public class PrivateKeyProvider {
 
-    private List<KeyPair> privateKeys = new ArrayList<KeyPair>();
+    private List<KeyPair> privateKeys = new ArrayList<>();
 
     /**
      * Get keys read so far.

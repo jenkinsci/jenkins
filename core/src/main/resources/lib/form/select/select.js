@@ -5,7 +5,18 @@ function updateListBox(listBox,url,config) {
     config = object(config);
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
-    var status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
+
+    var settingMain = listBox.closest('.setting-main')
+    if (!settingMain) {
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", listBox)
+        return;
+    }
+
+    var status = settingMain.nextElementSibling;
+    if (!status) {
+        console.warn("Couldn't find the expected status element", settingMain)
+        return;
+    }
     if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }

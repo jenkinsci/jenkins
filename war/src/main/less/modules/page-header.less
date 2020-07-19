@@ -1,5 +1,4 @@
-@import "../abstracts/font.less";
-@import "../abstracts/colors.less";
+@import "../abstracts/theme.less";
 
 .page-header {
     display: block;
@@ -61,7 +60,6 @@ a.page-header__brand-link {
     padding: 0.5rem;
     margin-right: 0.25rem;
     font-weight: bold;
-
     outline-color: var(--header-link-outline);
 
     &:link,
@@ -118,12 +116,10 @@ a.page-header__brand-link {
     position: static;
     padding: 0.25rem 2.5rem;
     margin: 0;
-
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     font-weight: bold;
     color: var(--search-input-color);
-
     border-radius: var(--header-item-border-radius);
     border: 3px solid var(--header-search-border);
     outline: none;
@@ -198,7 +194,7 @@ a.page-header__brand-link {
 }
 
 #search-box-sizer {
-    position:absolute;
+    position: absolute;
     visibility: hidden;
     min-width: 15rem;
     max-width: calc(100vw - 500px);

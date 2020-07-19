@@ -10,7 +10,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import jenkins.model.Jenkins;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 

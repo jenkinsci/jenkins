@@ -297,7 +297,7 @@ public final class WorkspaceList {
      * acknowledging that these will be readable by builds of other jobs done on the same node.
      * <p>Each plugin using this directory is responsible for specifying sufficiently unique subdirectory/file names.
      * {@link FilePath#createTempFile} may be used for this purpose if desired.
-     * <p>The resulting directory may not exist; you may call {@link FilePath#mkdirs} on it if you need it to.
+     * <p>The resulting directory may not exist; you may call {@link FilePath#mkdirs()} on it if you need it to.
      * It may be deleted alongside the workspace itself during cleanup actions.
      * @param ws a directory such as a build workspace
      * @return a sibling directory, for example {@code …/something@tmp} for {@code …/something}, or {@code null} if {@link FilePath#getParent} is null
@@ -312,6 +312,7 @@ public final class WorkspaceList {
 
     /**
      * The token that combines the project name and unique number to create unique workspace directory.
+     * @since TODO
      */
-    private static final String COMBINATOR = SystemProperties.getString(WorkspaceList.class.getName(),"@");
+    public static final String COMBINATOR = SystemProperties.getString(WorkspaceList.class.getName(),"@");
 }
