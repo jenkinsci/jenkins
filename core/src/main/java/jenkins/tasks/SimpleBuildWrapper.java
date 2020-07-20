@@ -131,14 +131,44 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     }
 
     /**
+     * Creates a new {@link Context} for use with this wrapper.
+     *
+     * @return a new {@link Context} instance
+     */
+    @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
+    public Context createContext() {
+        return new Context(this.requiresWorkspace());
+    }
+
+    /**
      * Parameter passed to {@link #setUp} to allow an implementation to specify its behavior after the initial setup.
      */
     public static final class Context {
         private Disposer disposer;
         private final Map<String,String> env = new HashMap<>();
-        public @NonNull Map<String,String> getEnv() {
-            return env;
+        private final @CheckForNull Boolean wrapperRequiresWorkspace;
+
+        /**
+         * Creates a new context.
+         *
+         * @deprecated Use {@link SimpleBuildWrapper#createContext()} instead, so that this context can tell whether or
+         * not a disposer will require a workspace context.
+         */
+        @Deprecated
+        public Context() {
+            this.wrapperRequiresWorkspace = null;
         }
+
+        /**
+         * Creates a context.
+         *
+         * @param wrapperRequiresWorkspace Indicates whether the wrapper for which this context was created requires a
+         * workspace context, which in turn determines the same for any {@link Disposer} set on this context.
+         */
+        private Context(boolean wrapperRequiresWorkspace) {
+            this.wrapperRequiresWorkspace = wrapperRequiresWorkspace;
+        }
+
         /**
          * Specify an environment variable override to apply to processes launched within the block.
          * If unspecified, environment variables will be inherited unmodified.
@@ -150,22 +180,15 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
             }
             env.put(key, value);
         }
-        @CheckForNull
-        private Boolean wrapperRequiresWorkspace;
-        /**
-         * Keeps track of whether or not the specified wrapper requires a workspace context (working directory and
-         * launcher).
-         * <p>
-         * Any {@link Disposer} set on this context will then be configured accordingly.
-         * @param wrapper The wrapper to get the workspace requirement from.
-         */
-        @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
-        public void setWorkspaceRequirement(@NonNull SimpleBuildWrapper wrapper) {
-            this.wrapperRequiresWorkspace = wrapper.requiresWorkspace();
-        }
+
         public @CheckForNull Disposer getDisposer() {
             return disposer;
         }
+
+        public @NonNull Map<String,String> getEnv() {
+            return env;
+        }
+
         /**
          * Specify an action to take when the block ends.
          * If not specified, nothing special happens.
@@ -267,8 +290,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         if (runPreCheckout()) {
             return new Environment() {};
         } else {
-            final Context c = new Context();
-            c.setWorkspaceRequirement(this);
+            final Context c = this.createContext();
             setUp(c, build, build.getWorkspace(), launcher, listener, build.getEnvironment(listener));
             return new EnvironmentWrapper(c, launcher);
         }
@@ -276,8 +298,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
 
     @Override public final void preCheckout(AbstractBuild build, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (runPreCheckout()) {
-            final Context c = new Context();
-            c.setWorkspaceRequirement(this);
+            final Context c = this.createContext();
             setUp(c, build, build.getWorkspace(), launcher, listener, build.getEnvironment(listener));
             build.getEnvironments().add(new EnvironmentWrapper(c, launcher));
         }
