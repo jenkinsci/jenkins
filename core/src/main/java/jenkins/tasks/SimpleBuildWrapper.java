@@ -75,7 +75,6 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @return {@code true} if this wrapper requires a workspace context; {@code false} otherwise.
      * @since TODO
      */
-    @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
     public boolean requiresWorkspace() {
         return true;
     }
