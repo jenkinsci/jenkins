@@ -207,6 +207,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Returns the URL to submit a form for the authentication.
      * There's no need to override this, except for {@link LegacySecurityRealm}.
+     * @see AuthenticationProcessingFilter2
      */
     public String getAuthenticationGatewayUrl() {
         return "j_acegi_security_check";

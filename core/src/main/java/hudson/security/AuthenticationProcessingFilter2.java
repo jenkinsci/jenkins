@@ -23,33 +23,31 @@
  */
 package hudson.security;
 
-import java.util.Properties;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import hudson.Util;
-import hudson.model.User;
-import jenkins.security.SecurityListener;
-import jenkins.security.seed.UserSeedProperty;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
- * {@link AuthenticationProcessingFilter} with a change for Jenkins so that
+ * Login filter with a change for Jenkins so that
  * we can pick up the hidden "from" form field defined in {@code login.jelly}
  * to send the user back to where he came from, after a successful authentication.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFilter {
+public class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
+
+    public AuthenticationProcessingFilter2() {
+        // TODO consider switching to a better URL (/doLogin? /j_spring_security_check?) and updating SecurityRealm.getAuthenticationGatewayUrl accordingly.
+        // Cannot use the default of /login since that would clash with Jenkins/login.jelly which would be activated even for GET requests,
+        // and which cannot trivially be renamed since it is a fairly well-known URL sometimes used e.g. for K8s liveness checks.
+        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/j_acegi_security_check", "POST"));
+    }
+
+    /* TODO none of this looks at all similar in Spring Security; rewrite:
+
     @Override
     protected String determineTargetUrl(HttpServletRequest request) {
+        AbstractAuthenticationProcessingFilter f = new UsernamePasswordAuthenticationFilter();
         String targetUrl = request.getParameter("from");
         request.getSession().setAttribute("from", targetUrl);
 
@@ -71,7 +69,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 
     /**
      * @see org.acegisecurity.ui.AbstractProcessingFilter#determineFailureUrl(javax.servlet.http.HttpServletRequest, org.acegisecurity.AuthenticationException)
-     */
+     * /
     @Override
     protected String determineFailureUrl(HttpServletRequest request, AuthenticationException failed) {
         Properties excMap = getExceptionMappings();
@@ -111,7 +109,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
      *
      * <p>
      * Otherwise it seems like Acegi doesn't really leave the detail of the failure anywhere.
-     */
+     * /
     @Override
     protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
         super.onUnsuccessfulAuthentication(request, response, failed);
@@ -121,6 +119,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
             SecurityListener.fireFailedToLogIn(auth.getName());
         }
     }
+    */
 
     private static final Logger LOGGER = Logger.getLogger(AuthenticationProcessingFilter2.class.getName());
 }

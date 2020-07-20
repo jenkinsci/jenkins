@@ -29,6 +29,7 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
 import jenkins.model.Jenkins
 
+// TODO rewrite in Java
 authenticationManager(ProviderManager) {
     providers = [
         // this does all the hard work.

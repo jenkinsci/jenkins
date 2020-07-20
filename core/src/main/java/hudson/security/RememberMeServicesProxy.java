@@ -23,13 +23,12 @@
  */
 package hudson.security;
 
-import jenkins.model.Jenkins;
-import jenkins.security.ConfidentialStore;
-import org.acegisecurity.ui.rememberme.RememberMeServices;
-import org.acegisecurity.Authentication;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
+import jenkins.security.ConfidentialStore;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.RememberMeServices;
 
 /**
  * {@link RememberMeServices} proxy.
