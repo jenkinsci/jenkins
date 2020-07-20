@@ -54,7 +54,6 @@ import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -160,7 +159,6 @@ public interface SimpleBuildStep extends BuildStep {
      * @return {@code true} if this step requires a workspace context; {@code false} otherwise.
      * @since TODO
      */
-    @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
     default boolean requiresWorkspace() {
         return true;
     }
