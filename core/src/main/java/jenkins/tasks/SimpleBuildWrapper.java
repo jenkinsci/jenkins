@@ -108,8 +108,8 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     /**
      * Called when a segment of a build is started that is to be enhanced with this wrapper.
      * <p>
-     * This method <strong>must</strong> be overridden when this wrapper does not require a workspace context, and
-     * <strong>must not</strong> be called when such a context <em>is</em> required.
+     * This method <strong>must</strong> be overridden when this wrapper does not require a workspace context, and will
+     * not be called when such a context <em>is</em> required.
      *
      * @param context a way of collecting modifications to the environment for nested steps
      * @param build a build being run
@@ -233,7 +233,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * Attempt to clean up anything that was done in the initial setup.
          * <p>
          * This method <strong>must</strong> be overridden when this end-of-wrapped-block callback does not require a
-         * workspace context, and <strong>must not</strong> be called when such a context <em>is</em> required.
+         * workspace context, and will not be called when such a context <em>is</em> required.
          *
          * @param build a build being run
          * @param listener a way to report progress
@@ -299,7 +299,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         }
         @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
-                c.disposer.tearDown(build, build.getWorkspace(), this.launcher, listener);
+                c.disposer.tearDown(build, build.getWorkspace(), launcher, listener);
             }
             return true;
         }

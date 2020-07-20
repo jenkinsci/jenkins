@@ -24,7 +24,6 @@
 
 package jenkins.tasks;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -50,6 +49,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
@@ -129,8 +129,8 @@ public interface SimpleBuildStep extends BuildStep {
     /**
      * Run this step, without a workspace context.
      * <p>
-     * This method <strong>must</strong> be overridden when this step does not require a workspace context, and
-     * <strong>must not</strong> be called when such a context <em>is</em> required.
+     * This method <strong>must</strong> be overridden when this step does not require a workspace context, and will not
+     * be called when such a context <em>is</em> required.
      *
      * @param run a build this is running as a part of
      * @param env environment variables applicable to this step
@@ -153,8 +153,8 @@ public interface SimpleBuildStep extends BuildStep {
     /**
      * Determines whether or not this step requires a workspace context (working directory and launcher).
      * <p>
-     * When such a context is required (the default), {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)} applies.
-     * Otherwise, {@link #perform(Run, EnvVars, TaskListener)} applies.
+     * When such a context is required (the default), {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)}
+     * applies. Otherwise, {@link #perform(Run, EnvVars, TaskListener)} applies.
      *
      * @return {@code true} if this step requires a workspace context; {@code false} otherwise.
      * @since TODO
