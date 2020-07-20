@@ -34,8 +34,10 @@ import hudson.util.AtomicFileWriter;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.EOFException;
@@ -51,12 +53,16 @@ import java.util.logging.Logger;
  *
  * @author Sumit Sarin
  */
+@Symbol("fileFingerprintStorage")
 @Restricted(NoExternalUse.class)
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
     private static final Logger logger = Logger.getLogger(FileFingerprintStorage.class.getName());
     private static final DateConverter DATE_CONVERTER = new DateConverter();
+
+    @DataBoundConstructor
+    public FileFingerprintStorage () {}
 
     /**
      * Load the Fingerprint with the given unique id.
@@ -253,6 +259,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
             }
         }
         return buf.toString();
+    }
+
+    @Extension
+    public static class DescriptorImpl extends FingerprintStorageDescriptor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.FileFingerprintStorage_DisplayName();
+        }
+
     }
 
 }

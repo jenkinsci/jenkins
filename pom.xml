@@ -231,6 +231,12 @@ THE SOFTWARE.
           <configuration>
             <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
+            <compilerArgs>
+            <!--always compile package-info.java for useIncrementalCompilation
+            ref: https://stackoverflow.com/questions/6770455/maven-compiling-package-info-java-to-package-info-class
+             -->
+              <compilerArg>-Xpkginfo:always</compilerArg>
+            </compilerArgs>
           </configuration>
         </plugin>
         <plugin>
