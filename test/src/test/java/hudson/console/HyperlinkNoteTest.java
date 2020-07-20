@@ -78,8 +78,7 @@ public class HyperlinkNoteTest {
                 containsString(new ModelHyperlinkNote("", 0).extraAttributes()),
                 containsString(">" + noteTextSanitized + "</a>")));
     }
-    
-    
+
     @Test
     public void textWithSingleQuote() throws Exception {
         FreeStyleProject upstream = r.createFreeStyleProject("upstream");
@@ -93,7 +92,6 @@ public class HyperlinkNoteTest {
         assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
     }
 
-    
     private static String annotate(String text) throws IOException {
         StringWriter writer = new StringWriter();
         try (ConsoleAnnotationOutputStream out = new ConsoleAnnotationOutputStream(writer, null, null, StandardCharsets.UTF_8)) {

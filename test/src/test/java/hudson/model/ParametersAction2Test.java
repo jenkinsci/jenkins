@@ -126,7 +126,7 @@ public class ParametersAction2Test {
 
         // remove bar and undef from parameters definition
         p.removeProperty(ParametersDefinitionProperty.class);
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new StringParameterDefinition("foo", "foo"))));
 
         assertEquals("the build still have 2 parameters", 2, build.getAction(ParametersAction.class).getParameters().size());
