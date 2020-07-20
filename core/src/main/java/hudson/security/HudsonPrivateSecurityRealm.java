@@ -47,16 +47,6 @@ import jenkins.security.SecurityListener;
 import jenkins.util.SystemProperties;
 import jenkins.security.seed.UserSeedProperty;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.encoding.PasswordEncoder;
-import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
@@ -68,7 +58,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.dao.DataAccessException;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.Filter;
@@ -86,7 +75,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -94,6 +82,15 @@ import java.util.regex.Pattern;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -183,12 +180,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This implementation doesn't support groups.
      */
     @Override
-    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
         throw new UsernameNotFoundException(groupname);
     }
 
     @Override
-    public Details loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public Details loadUserByUsername(String username) throws UsernameNotFoundException {
         User u = User.getById(username, false);
         Details p = u!=null ? u.getProperty(Details.class) : null;
         if(p==null)
@@ -575,7 +572,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     // TODO
-    private static final GrantedAuthority[] TEST_AUTHORITY = {AUTHENTICATED_AUTHORITY};
+    private static final Collection<? extends GrantedAuthority> TEST_AUTHORITY = Collections.singleton(AUTHENTICATED_AUTHORITY);
 
     public static final class SignupInfo {
         public String username,password1,password2,fullname,email,captcha;
@@ -642,10 +639,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         static Details fromPlainPassword(String rawPassword) {
-            return new Details(PASSWORD_ENCODER.encodePassword(rawPassword,null));
+            return new Details(PASSWORD_ENCODER.encode(rawPassword));
         }
 
-        public GrantedAuthority[] getAuthorities() {
+        public Collection<? extends GrantedAuthority> getAuthorities() {
             // TODO
             return TEST_AUTHORITY;
         }
@@ -655,7 +652,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         public boolean isPasswordCorrect(String candidate) {
-            return PASSWORD_ENCODER.isPasswordValid(getPassword(),candidate,null);
+            return PASSWORD_ENCODER.matches(candidate, getPassword());
         }
 
         public String getProtectedPassword() {
@@ -696,7 +693,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             @Override protected void callback(Details d, UnmarshallingContext context) {
                 // Convert to hashed password and report to monitor if we load old data
                 if (d.password!=null && d.passwordHash==null) {
-                    d.passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(d.password),null);
+                    d.passwordHash = PASSWORD_ENCODER.encode(Scrambler.descramble(d.password));
                     OldDataMonitor.report(context, "1.283");
                 }
             }
@@ -804,56 +801,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    /**
-     * {@link PasswordEncoder} based on SHA-256 and random salt generation.
-     *
-     * <p>
-     * The salt is prepended to the hashed password and returned. So the encoded password is of the form
-     * {@code SALT ':' hash(PASSWORD,SALT)}.
-     *
-     * <p>
-     * This abbreviates the need to store the salt separately, which in turn allows us to hide the salt handling
-     * in this little class. The rest of the Acegi thinks that we are not using salt.
-     */
-    /*package*/ static final PasswordEncoder CLASSIC = new PasswordEncoder() {
-        private final PasswordEncoder passwordEncoder = new ShaPasswordEncoder(256);
-
-        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
-            return hash(rawPass);
-        }
-
-        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
-            // pull out the sale from the encoded password
-            int i = encPass.indexOf(':');
-            if(i<0) return false;
-            String salt = encPass.substring(0,i);
-            return encPass.substring(i+1).equals(passwordEncoder.encodePassword(rawPass,salt));
-        }
-
-        /**
-         * Creates a hashed password by generating a random salt.
-         */
-        private String hash(String password) {
-            String salt = generateSalt();
-            return salt+':'+passwordEncoder.encodePassword(password,salt);
-        }
-
-        /**
-         * Generates random salt.
-         */
-        private String generateSalt() {
-            StringBuilder buf = new StringBuilder();
-            SecureRandom sr = new SecureRandom();
-            for( int i=0; i<6; i++ ) {// log2(52^6)=34.20... so, this is about 32bit strong.
-                boolean upper = sr.nextBoolean();
-                char ch = (char)(sr.nextInt(26) + 'a');
-                if(upper)   ch=Character.toUpperCase(ch);
-                buf.append(ch);
-            }
-            return buf.toString();
-        }
-    };
-
+    // TODO can we instead use BCryptPasswordEncoder from Spring Security, which has its own copy of BCrypt so we could drop the special library?
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
@@ -866,12 +814,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
 
-        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
-            return BCrypt.hashpw(rawPass,BCrypt.gensalt());
+        @Override
+        public String encode(CharSequence rawPassword) {
+            return BCrypt.hashpw(rawPassword.toString(), BCrypt.gensalt());
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
-            return BCrypt.checkpw(rawPass,encPass);
+        @Override
+        public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            return BCrypt.checkpw(rawPassword.toString(), encodedPassword);
         }
 
         /**
@@ -896,8 +846,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /* package */ static final JBCryptEncoder JBCRYPT_ENCODER = new JBCryptEncoder();
 
     /**
-     * Combines {@link #JBCRYPT_ENCODER} and {@link #CLASSIC} into one so that we can continue
-     * to accept {@link #CLASSIC} format but new encoding will always done via {@link #JBCRYPT_ENCODER}.
+     * Wraps {@link #JBCRYPT_ENCODER}.
+     * There used to be a SHA-256-based encoder but this is long deprecated, and insecure anyway.
      */
     /* package */ static class MultiPasswordEncoder implements PasswordEncoder {
         /**
@@ -911,15 +861,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             '#' is neither in base64 nor hex, which makes it a good choice.
          */
-        public String encodePassword(String rawPass, Object salt) throws DataAccessException {
-            return JBCRYPT_HEADER+JBCRYPT_ENCODER.encodePassword(rawPass,salt);
+        @Override
+        public String encode(CharSequence rawPassword) {
+            return JBCRYPT_HEADER+JBCRYPT_ENCODER.encode(rawPassword);
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object salt) throws DataAccessException {
+        @Override
+        public boolean matches(CharSequence rawPassword, String encPass) {
             if (isPasswordHashed(encPass)) {
-                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()), rawPass, salt);
+                return JBCRYPT_ENCODER.matches(rawPassword, encPass.substring(JBCRYPT_HEADER.length()));
             } else {
-                return CLASSIC.isPasswordValid(encPass, rawPass, salt);
+                return false;
             }
         }
 

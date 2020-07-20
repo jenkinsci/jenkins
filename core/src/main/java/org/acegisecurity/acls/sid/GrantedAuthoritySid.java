@@ -25,7 +25,7 @@
 package org.acegisecurity.acls.sid;
 
 import java.util.Objects;
-import org.acegisecurity.GrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
 
 public class GrantedAuthoritySid implements Sid {
 

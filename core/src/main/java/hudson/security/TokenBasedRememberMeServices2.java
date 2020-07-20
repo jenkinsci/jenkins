@@ -23,20 +23,12 @@
  */
 package hudson.security;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Functions;
 import hudson.model.User;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -47,13 +39,11 @@ import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely
@@ -85,19 +75,27 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      * implementations that do not do it, so doing it helps retrofit old plugins to benefit from
      * the user impersonation improvements. Plus multiple {@link ImpersonatingUserDetailsService}
      * do not incur any real performance penalty.
+     *
+     * TokenBasedRememberMeServices needs to be used in conjunction with RememberMeAuthenticationProvider,
+     * and both needs to use the same key (this is a reflection of a poor design in AcegiSecurity, if you ask me)
+     * and various security plugins have its own groovy script that configures them.
+     *
+     * So if we change this, it creates a painful situation for those plugins by forcing them to choose
+     * to work with earlier version of Jenkins or newer version of Jenkins, and not both.
+     *
+     * So we keep this here.
      */
-    @Override
-    public void setUserDetailsService(UserDetailsService userDetailsService) {
-        super.setUserDetailsService(new ImpersonatingUserDetailsService(userDetailsService));
+    public TokenBasedRememberMeServices2(UserDetailsService userDetailsService) {
+        super(Jenkins.get().getSecretKey(), new ImpersonatingUserDetailsService(userDetailsService));
     }
 
     @Override
-    protected String makeTokenSignature(long tokenExpiryTime, UserDetails userDetails) {
+    protected String makeTokenSignature(long tokenExpiryTime, String username, String password) {
         String userSeed;
         if (UserSeedProperty.DISABLE_USER_SEED) {
             userSeed = "no-seed";
         } else {
-            User user = User.getById(userDetails.getUsername(), false);
+            User user = User.getById(username, false);
             if (user == null) {
                 return "no-user";
             }
@@ -108,7 +106,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
             }
             userSeed = userSeedProperty.getSeed();
         }
-        String token = String.join(":", userDetails.getUsername(), Long.toString(tokenExpiryTime), userSeed, getKey());
+        String token = String.join(":", username, Long.toString(tokenExpiryTime), userSeed, getKey());
         return MAC.mac(token);
     }
 
@@ -118,7 +116,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     }
 
     @Override
-	public void loginSuccess(HttpServletRequest request, HttpServletResponse response,
+	public void onLoginSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication successfulAuthentication) {
 		// Exit if the principal hasn't asked to be remembered
 		if (!rememberMeRequested(request, getParameter())) {
@@ -144,13 +142,19 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 		Assert.notNull(successfulAuthentication.getCredentials());
 		Assert.isInstanceOf(UserDetails.class, successfulAuthentication.getPrincipal());
 
-		long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(tokenValiditySeconds);
+		long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(getTokenValiditySeconds());
 		String username = ((UserDetails) successfulAuthentication.getPrincipal()).getUsername();
 
-		String signatureValue = makeTokenSignature(expiryTime, (UserDetails)successfulAuthentication.getPrincipal());
+		String signatureValue = makeTokenSignature(expiryTime, username, ((UserDetails) successfulAuthentication.getPrincipal()).getPassword());
 		String tokenValue = username + ":" + expiryTime + ":" + signatureValue;
 		String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
-		response.addCookie(makeValidCookie(tokenValueBase64, request, tokenValiditySeconds));
+		int tokenLifetime = calculateLoginLifetime(request, successfulAuthentication);
+        /* TODO unclear what the Spring Security equivalent to this is:
+		response.addCookie(makeValidCookie(tokenValueBase64, request, getTokenValiditySeconds()));
+        // something like this, but where is the token signature?
+		setCookie(new String[] { username, Long.toString(expiryTime), signatureValue },
+				tokenLifetime, request, response);
+        */
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Added remember-me cookie for user '" + username + "', expiry: '" + new Date(expiryTime)
@@ -158,6 +162,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 		}
 	}
 
+    /* TODO now final
     @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
         Jenkins j = Jenkins.getInstanceOrNull();
@@ -185,7 +190,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
     /**
      * Patched version of the super.autoLogin with a time-independent equality check for the token validation
-     */
+     * /
     private String findRememberMeCookieValue(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
 
@@ -286,7 +291,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
     /**
      * @return the decoded base64 of the cookie or {@code null} if the value was not correctly encoded
-     */
+     * /
     private @CheckForNull String decodeCookieBase64(@NonNull String base64EncodedValue){
         StringBuilder base64EncodedValueBuilder = new StringBuilder(base64EncodedValue);
         for (int j = 0; j < base64EncodedValueBuilder.length() % 4; j++) {
@@ -302,39 +307,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
             return null;
         }
     }
-
-    @Override
-    protected Cookie makeValidCookie(String tokenValueBase64, HttpServletRequest request, long maxAge) {
-        Cookie cookie = super.makeValidCookie(tokenValueBase64, request, maxAge);
-        secureCookie(cookie, request);
-        return cookie;
-    }
-
-    @Override 
-    protected Cookie makeCancelCookie(HttpServletRequest request) {
-        Cookie cookie = super.makeCancelCookie(request);
-        secureCookie(cookie, request);
-        return cookie;
-    }
-    
-    /**
-     * Force always the http-only flag and depending on the request, put also the secure flag.
-     */
-    private void secureCookie(Cookie cookie, HttpServletRequest request){
-        // if we can mark the cookie HTTP only, do so to protect this cookie even in case of XSS vulnerability.
-        if (SET_HTTP_ONLY!=null) {
-            try {
-                SET_HTTP_ONLY.invoke(cookie,true);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                // ignore
-            }
-        }
-
-        // if the user is running Jenkins over HTTPS, we also want to prevent the cookie from leaking in HTTP.
-        // whether the login is done over HTTPS or not would be a good enough approximation of whether Jenkins runs in
-        // HTTPS or not, so use that.
-        cookie.setSecure(request.isSecure());
-    }
+    */
 
     /**
      * In addition to the expiration requested by the super class, we also check the expiration is not too far in the future.
@@ -343,7 +316,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     @Override
     protected boolean isTokenExpired(long tokenExpiryTimeMs) {
         long nowMs = System.currentTimeMillis();
-        long maxExpirationMs = TimeUnit.SECONDS.toMillis(tokenValiditySeconds) + nowMs;
+        long maxExpirationMs = TimeUnit.SECONDS.toMillis(getTokenValiditySeconds()) + nowMs;
         if(!SKIP_TOO_FAR_EXPIRATION_DATE_CHECK && tokenExpiryTimeMs > maxExpirationMs){
             // attempt to use a cookie that has more than the maximum allowed expiration duration
             // was either created before a change of configuration or maliciously crafted
@@ -363,14 +336,4 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      */
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(TokenBasedRememberMeServices.class,"mac");
 
-    private static final Method SET_HTTP_ONLY;
-
-	static {
-		Method m = null;
-		try {
-			m = Cookie.class.getMethod("setHttpOnly", boolean.class);
-		} catch (NoSuchMethodException x) { // 3.0+
-		}
-        SET_HTTP_ONLY = m;
-	}
 }

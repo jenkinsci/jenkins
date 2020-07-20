@@ -25,8 +25,8 @@
 package org.acegisecurity.acls.sid;
 
 import java.util.Objects;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public class PrincipalSid implements Sid {
 

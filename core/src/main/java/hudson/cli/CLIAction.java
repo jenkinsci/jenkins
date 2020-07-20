@@ -61,9 +61,9 @@ import java.util.logging.Logger;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
-import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.springframework.security.core.Authentication;
 
 /**
  * Shows usage of CLI and commands.

@@ -24,8 +24,8 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * Object that has an {@link ACL}

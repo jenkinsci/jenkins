@@ -23,10 +23,9 @@
  */
 package hudson.security;
 
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UserDetailsService;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * {@link UserDetailsService} proxy that delegates to another instance.
@@ -36,7 +35,7 @@ import org.springframework.dao.DataAccessException;
 public class UserDetailsServiceProxy implements UserDetailsService {
     private volatile UserDetailsService delegate;
 
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserDetailsService uds = delegate;  // fix the reference for concurrency support
 
         if(uds ==null)
