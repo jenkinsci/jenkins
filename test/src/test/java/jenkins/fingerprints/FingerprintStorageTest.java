@@ -23,16 +23,14 @@
  */
 package jenkins.fingerprints;
 
-import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.Fingerprint;
+import hudson.model.FingerprintCleanupThreadTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -54,27 +52,27 @@ public class FingerprintStorageTest {
         assertThat(fingerprintSaved.toString(), is(equalTo(fingerprintLoaded.toString())));
 
         // After external storage is configured, check if local storage fingerprint is still accessible.
-        configureExternalStorage();
+        FingerprintStorage externalFingerprintStorage = configureExternalStorage();
         fingerprintLoaded = Fingerprint.load(id);
         assertThat(fingerprintLoaded, is(not(nullValue())));
         assertThat(fingerprintSaved.toString(), is(equalTo(fingerprintLoaded.toString())));
 
         // After loading the fingerprint, ensure it was moved to external storage.
-        fingerprintLoaded = ExtensionList.lookup(FingerprintStorage.class).get(TestExternalFingerprintStorage.class).load(id);
+        fingerprintLoaded = externalFingerprintStorage.load(id);
         assertThat(fingerprintLoaded, is(not(nullValue())));
         assertThat(fingerprintSaved.toString(), is(equalTo(fingerprintLoaded.toString())));
 
         // Ensure that the loaded fingerprint was deleted from local storage after being loaded.
-        fingerprintLoaded = ExtensionList.lookup(FingerprintStorage.class).get(FileFingerprintStorage.class).load(id);
+        fingerprintLoaded = FingerprintStorage.getFileFingerprintStorage().load(id);
         assertThat(fingerprintLoaded, is(nullValue()));
     }
 
     @Test
     public void testLoadingAndSavingFingerprintWithExternalStorage() throws IOException {
-        configureExternalStorage();
+        FingerprintStorage externalFingerprintStorage = configureExternalStorage();
         String id = Util.getDigestOf("testLoadingAndSavingFingerprintWithExternalStorage");
         Fingerprint fingerprintSaved = new Fingerprint(null, "bar.jar", Util.fromHexString(id));
-        Fingerprint fingerprintLoaded = ExtensionList.lookup(FingerprintStorage.class).get(TestExternalFingerprintStorage.class).load(id);
+        Fingerprint fingerprintLoaded = externalFingerprintStorage.load(id);
         assertThat(fingerprintLoaded, is(not(nullValue())));
         assertThat(fingerprintSaved.toString(), is(equalTo(fingerprintLoaded.toString())));
     }
@@ -85,7 +83,7 @@ public class FingerprintStorageTest {
         new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         configureExternalStorage();
         Fingerprint.delete(id);
-        Fingerprint fingerprintLoaded = ExtensionList.lookup(FingerprintStorage.class).get(FileFingerprintStorage.class).load(id);
+        Fingerprint fingerprintLoaded = FingerprintStorage.getFileFingerprintStorage().load(id);
         assertThat(fingerprintLoaded, is(nullValue()));
     }
 
@@ -93,10 +91,10 @@ public class FingerprintStorageTest {
     public void testDeletingLocalStorageFingerprintWithExternalStorageAfterMigration() throws IOException {
         String id = Util.getDigestOf("testLoadingAndSavingLocalStorageFingerprintWithExternalStorage");
         new Fingerprint(null, "foo.jar", Util.fromHexString(id));
-        configureExternalStorage();
+        FingerprintStorage externalFingerprintStorage = configureExternalStorage();
         Fingerprint.load(id);
         Fingerprint.delete(id);
-        Fingerprint fingerprintLoaded = ExtensionList.lookup(FingerprintStorage.class).get(TestExternalFingerprintStorage.class).load(id);
+        Fingerprint fingerprintLoaded = externalFingerprintStorage.load(id);
         assertThat(fingerprintLoaded, is(nullValue()));
     }
 
@@ -111,32 +109,10 @@ public class FingerprintStorageTest {
         assertThat(fingerprintLoaded, is(nullValue()));
     }
 
-    private void configureExternalStorage() {
-        ExtensionList.lookup(FingerprintStorage.class).add(0, new TestExternalFingerprintStorage());
+    private FingerprintStorage configureExternalStorage() {
+        FingerprintStorage fingerprintStorage = new FingerprintCleanupThreadTest.TestExternalFingerprintStorage();
+        GlobalFingerprintConfiguration.get().setStorage(fingerprintStorage);
+        return fingerprintStorage;
     }
 
-    public static class TestExternalFingerprintStorage extends FingerprintStorage {
-
-        Map<String, Fingerprint> storage = new HashMap<>();
-
-        @Override
-        public void save(Fingerprint fp) {
-            storage.put(fp.getHashString(), fp);
-        }
-
-        @Override
-        public Fingerprint load(String id) {
-            return storage.get(id);
-        }
-
-        @Override
-        public void delete(String id) {
-            storage.remove(id);
-        }
-
-        @Override
-        public boolean isReady() {
-            return storage.size() != 0;
-        }
-    }
 }
