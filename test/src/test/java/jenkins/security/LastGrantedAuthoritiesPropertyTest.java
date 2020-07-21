@@ -80,7 +80,7 @@ public class LastGrantedAuthoritiesPropertyTest {
      */
     private static class TestSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (password.equals("error"))
                 throw new BadCredentialsException(username);
             String[] desiredAuthorities = password.split(":");
@@ -90,12 +90,12 @@ public class LastGrantedAuthoritiesPropertyTest {
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        public GroupDetails loadGroupByGroupname2(String groupname) throws UsernameNotFoundException, DataAccessException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException, DataAccessException {
             throw new UserMayOrMayNotExistException("fallback");
         }
     }

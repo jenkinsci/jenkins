@@ -103,7 +103,7 @@ public final class UserDetailsCache {
 
     /**
      * Locates the user based on the username, by first looking in the cache and then delegate to
-     * {@link hudson.security.SecurityRealm#loadUserByUsername(String)}.
+     * {@link hudson.security.SecurityRealm#loadUserByUsername2(String)}.
      *
      * @param idOrFullName the username
      * @return the details
@@ -163,7 +163,7 @@ public final class UserDetailsCache {
         public UserDetails call() throws Exception {
             try {
                 Jenkins jenkins = Jenkins.get();
-                UserDetails userDetails = jenkins.getSecurityRealm().loadUserByUsername(idOrFullName);
+                UserDetails userDetails = jenkins.getSecurityRealm().loadUserByUsername2(idOrFullName);
                 if (userDetails == null) {
                     existenceCache.put(this.idOrFullName, Boolean.FALSE);
                     throw new NullPointerException("hudson.security.SecurityRealm should never return null. "

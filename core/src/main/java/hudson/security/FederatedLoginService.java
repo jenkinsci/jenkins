@@ -188,7 +188,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
             User u = locateUser();
             if (u!=null) {
                 // login as this user
-                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername(u.getId());
+                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername2(u.getId());
 
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
                 token.setDetails(d);

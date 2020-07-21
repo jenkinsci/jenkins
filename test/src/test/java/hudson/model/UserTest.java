@@ -618,7 +618,7 @@ public class UserTest {
 
     private static class ExternalSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             if (username.equals("nonexistent")) {
                 throw new UsernameNotFoundException(username);
             } else if (username.equals("unknown")) {
@@ -634,11 +634,11 @@ public class UserTest {
             }
         }
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
-            return loadUserByUsername(username); // irrelevant
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
+            return loadUserByUsername2(username); // irrelevant
         }
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
+        public GroupDetails loadGroupByGroupname2(String groupname) throws UsernameNotFoundException {
             throw new UsernameNotFoundException(groupname); // irrelevant
         }
     }

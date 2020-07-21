@@ -39,7 +39,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  * @since 1.280
  */
-public class UserMayOrMayNotExistException extends UsernameNotFoundException {
+public class UserMayOrMayNotExistException extends org.acegisecurity.userdetails.UsernameNotFoundException {
     public UserMayOrMayNotExistException(String msg) {
         super(msg);
     }

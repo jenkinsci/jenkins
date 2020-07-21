@@ -24,8 +24,94 @@
 
 package org.acegisecurity.userdetails;
 
+import java.io.Serializable;
+import java.util.Collection;
+import org.acegisecurity.GrantedAuthority;
+
 /**
- * @deprecated TODO replacement
+ * @deprecated use {@link org.springframework.security.core.userdetails.UserDetails} instead
  */
 @Deprecated
-public interface UserDetails extends org.springframework.security.core.userdetails.UserDetails {}
+public interface UserDetails extends Serializable {
+
+    GrantedAuthority[] getAuthorities();
+
+    String getPassword();
+
+    String getUsername();
+
+    boolean isAccountNonExpired();
+
+    boolean isAccountNonLocked();
+
+    boolean isCredentialsNonExpired();
+
+    boolean isEnabled();
+
+    default org.springframework.security.core.userdetails.UserDetails toSpring() {
+        return new org.springframework.security.core.userdetails.UserDetails() {
+            @Override
+            public Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+                return GrantedAuthority.toSpring(UserDetails.this.getAuthorities());
+            }
+            @Override
+            public String getPassword() {
+                return UserDetails.this.getPassword();
+            }
+            @Override
+            public String getUsername() {
+                return UserDetails.this.getUsername();
+            }
+            @Override
+            public boolean isAccountNonExpired() {
+                return UserDetails.this.isAccountNonExpired();
+            }
+            @Override
+            public boolean isAccountNonLocked() {
+                return UserDetails.this.isAccountNonLocked();
+            }
+            @Override
+            public boolean isCredentialsNonExpired() {
+                return UserDetails.this.isCredentialsNonExpired();
+            }
+            @Override
+            public boolean isEnabled() {
+                return UserDetails.this.isEnabled();
+            }
+        };
+    }
+
+    static UserDetails fromSpring(org.springframework.security.core.userdetails.UserDetails ud) {
+        return new UserDetails() {
+            @Override
+            public GrantedAuthority[] getAuthorities() {
+                return GrantedAuthority.fromSpring(ud.getAuthorities());
+            }
+            @Override
+            public String getPassword() {
+                return ud.getPassword();
+            }
+            @Override
+            public String getUsername() {
+                return ud.getUsername();
+            }
+            @Override
+            public boolean isAccountNonExpired() {
+                return ud.isAccountNonExpired();
+            }
+            @Override
+            public boolean isAccountNonLocked() {
+                return ud.isAccountNonLocked();
+            }
+            @Override
+            public boolean isCredentialsNonExpired() {
+                return ud.isCredentialsNonExpired();
+            }
+            @Override
+            public boolean isEnabled() {
+                return ud.isEnabled();
+            }
+        };
+    }
+
+}

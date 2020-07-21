@@ -1,5 +1,6 @@
 package hudson.security;
 
+import hudson.Util;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService;
 import jenkins.security.SecurityListener;
@@ -27,7 +28,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  * @since 1.317
  */
-public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm implements UserDetailsService {
+public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     @Override
     public SecurityComponents createSecurityComponents() {
         // this does all the hard work.
@@ -35,13 +36,13 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
         // these providers apply everywhere
         RememberMeAuthenticationProvider rmap = new RememberMeAuthenticationProvider(Jenkins.get().getSecretKey());
         // this doesn't mean we allow anonymous access.
-        // we just authenticate anonymous users as such,
+        // we just authenticate2 anonymous users as such,
         // so that later authorization can reject them if so configured
         AnonymousAuthenticationProvider aap = new AnonymousAuthenticationProvider("anonymous");
         AuthenticationManager authenticationManager = new ProviderManager(authenticator, rmap, aap);
         return new SecurityComponents(
                 authenticationManager,
-                new ImpersonatingUserDetailsService(this));
+                new ImpersonatingUserDetailsService(this::loadUserByUsername2));
     }
 
     /**
@@ -66,12 +67,33 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * <p>
      * If the user name and the password pair doesn't match, throw {@link AuthenticationException} to reject the login
      * attempt.
+     * @since TODO
      */
-    protected abstract UserDetails authenticate(String username, String password) throws AuthenticationException;
+    protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
+        if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "authenticate", String.class, String.class)) {
+            return authenticate(username, password).toSpring();
+        } else {
+            throw new AbstractMethodError("Implement authenticate2");
+        }
+    }
+
+    /**
+     * @deprecated use {@link #authenticate2}
+     */
+    @Deprecated
+    public org.acegisecurity.userdetails.UserDetails authenticate(String username, String password) throws org.acegisecurity.AuthenticationException {
+        try {
+            return org.acegisecurity.userdetails.UserDetails.fromSpring(authenticate2(username, password));
+        } catch (org.acegisecurity.AuthenticationException x) {
+            throw x;
+        } catch (AuthenticationException x) {
+            throw new org.acegisecurity.AuthenticationException(x.toString(), x);
+        }
+    }
 
     private UserDetails doAuthenticate(String username, String password) throws AuthenticationException {
         try {
-            UserDetails user = authenticate(username, password);
+            UserDetails user = authenticate2(username, password);
             SecurityListener.fireAuthenticated(user);
             return user;
         } catch (AuthenticationException x) {
@@ -89,15 +111,65 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      * a query like this, just always throw {@link UsernameNotFoundException}.
      */
     @Override
-    public abstract UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
+    public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+        if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "loadUserByUsername", String.class)) {
+            try {
+                return loadUserByUsername(username).toSpring();
+            } catch (org.springframework.dao.DataAccessException x) {
+                throw new UserMayOrMayNotExistException(x.toString(), x);
+            }
+        } else {
+            throw new AbstractMethodError("Implement loadUserByUsername2");
+        }
+    }
+
+    /**
+     * @deprecated use {@link loadUserByUsername2}
+     */
+    @Deprecated
+    @Override
+    public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
+        try {
+            return org.acegisecurity.userdetails.UserDetails.fromSpring(loadUserByUsername2(username));
+        } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            throw x;
+        } catch (UsernameNotFoundException x) {
+            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+        }
+    }
 
     /**
      * Retrieves information about a group by its name.
      *
-     * This method is the group version of the {@link #loadUserByUsername(String)}.
+     * This method is the group version of the {@link #loadUserByUsername2(String)}.
      */
     @Override
-    public abstract GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException;
+    public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
+        if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "loadGroupByGroupname", String.class)) {
+            try {
+                return loadGroupByGroupname(groupname);
+            } catch (org.springframework.dao.DataAccessException x) {
+                throw new UserMayOrMayNotExistException(x.toString(), x);
+            }
+        } else {
+            throw new AbstractMethodError("Implement loadGroupByGroupname2");
+        }
+    }
+
+    /**
+     * @deprecated use {@link loadGroupByGroupname2}
+     */
+    @Deprecated
+    @Override
+    public GroupDetails loadGroupByGroupname(String groupname) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
+        try {
+            return loadGroupByGroupname2(groupname, false);
+        } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            throw x;
+        } catch (UsernameNotFoundException x) {
+            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+        }
+    }
 
     class Authenticator extends AbstractUserDetailsAuthenticationProvider {
         protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {

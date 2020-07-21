@@ -94,7 +94,7 @@ public class TokenBasedRememberMeServices2Test {
 
     private static class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (username.equals(password)) {
                 return new org.springframework.security.core.userdetails.User(username, password, true, Collections.singleton(new SimpleGrantedAuthority("myteam")));
             }
@@ -102,12 +102,12 @@ public class TokenBasedRememberMeServices2Test {
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
+        public GroupDetails loadGroupByGroupname2(String groupname) throws UsernameNotFoundException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             failureInduced = true;
             throw new UsernameNotFoundException("intentionally not working");
         }
@@ -144,7 +144,7 @@ public class TokenBasedRememberMeServices2Test {
 
     private static class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             failureInduced = true;
             throw new UserMayOrMayNotExistException("I cannot tell");
         }
@@ -317,7 +317,7 @@ public class TokenBasedRememberMeServices2Test {
 
         assertEquals(userSeed, sessionSeed);
 
-        // finally, ensure that loadUserByUsername is not being called anymore
+        // finally, ensure that loadUserByUsername2 is not being called anymore
         wc.goTo("");
         assertUserConnected(wc, "alice");
         realm.verifyInvocations(0);
@@ -329,9 +329,9 @@ public class TokenBasedRememberMeServices2Test {
         private int counter = 0;
 
         @Override
-        public synchronized UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        public synchronized UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException, DataAccessException {
             ++counter;
-            return super.loadUserByUsername(username);
+            return super.loadUserByUsername2(username);
         }
 
         synchronized void verifyInvocations(int count) {

@@ -180,12 +180,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This implementation doesn't support groups.
      */
     @Override
-    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
+    public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
         throw new UsernameNotFoundException(groupname);
     }
 
     @Override
-    public Details loadUserByUsername(String username) throws UsernameNotFoundException {
+    public Details loadUserByUsername2(String username) throws UsernameNotFoundException {
         User u = User.getById(username, false);
         Details p = u!=null ? u.getProperty(Details.class) : null;
         if(p==null)
@@ -196,8 +196,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     @Override
-    protected Details authenticate(String username, String password) throws AuthenticationException {
-        Details u = loadUserByUsername(username);
+    protected Details authenticate2(String username, String password) throws AuthenticationException {
+        Details u = loadUserByUsername2(username);
         if (!u.isPasswordCorrect(password)) {
             throw new BadCredentialsException("Bad credentials");
         }

@@ -204,15 +204,15 @@ public class WhoAmITest {
     private static class SecurityRealmImpl extends AbstractPasswordBasedSecurityRealm {
 
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             return createUserDetails(username);
         }
 
-        @Override public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        @Override public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException, DataAccessException {
             return createUserDetails(username);
         }
 
-        @Override public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        @Override public GroupDetails loadGroupByGroupname2(String groupname) throws UsernameNotFoundException, DataAccessException {
             return null;
         }
 
