@@ -19,11 +19,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <j:if test="${descriptor.fingerprintStorageDescriptors.size() gt 1}">
-        <f:section title="${%Fingerprints}">
+    <f:section title="${%Fingerprints}">
+        <f:entry title="Disable Fingerprint Cleanup">
+            <f:checkbox field="fingerprintCleanupDisabled" default="${it.fingerprintCleanupDisabled}" />
+        </f:entry>
+        <j:if test="${descriptor.fingerprintStorageDescriptors.size() gt 1}">
             <f:entry>
                 <f:dropdownDescriptorSelector field="storage" title="Fingerprint Storage Engine" descriptors="${descriptor.fingerprintStorageDescriptors}"/>
             </f:entry>
-        </f:section>
-    </j:if>
+        </j:if>
+    </f:section>
 </j:jelly>
