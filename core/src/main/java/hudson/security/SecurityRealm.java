@@ -75,6 +75,8 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.session.SessionManagementFilter;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -507,9 +509,11 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public Filter createFilter(FilterConfig filterConfig) {
         LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
         
-        SecurityComponents securityComponents = getSecurityComponents();
+        SecurityComponents sc = getSecurityComponents();
         List<Filter> filters = new ArrayList<>();
-        // no more HttpSessionContextIntegrationFilter2(allowSessionCreation = false)
+        HttpSessionSecurityContextRepository httpSessionSecurityContextRepository = new HttpSessionSecurityContextRepository();
+        httpSessionSecurityContextRepository.setAllowSessionCreation(false);
+        filters.add(new HttpSessionContextIntegrationFilter2(httpSessionSecurityContextRepository));
         // if any "Authorization: Basic xxx:yyy" is sent this is the filter that processes it
         BasicHeaderProcessor bhp = new BasicHeaderProcessor();
         // if basic authentication fails (which only happens incorrect basic auth credential is sent),
@@ -521,12 +525,12 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
         filters.add(bhp);
         AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
-        apf.setAuthenticationManager(securityComponents.manager);
-        apf.setRememberMeServices(securityComponents.rememberMe);
+        apf.setAuthenticationManager(sc.manager);
+        apf.setRememberMeServices(sc.rememberMe);
         // TODO apf.authenticationFailureUrl = "/loginError" try SimpleUrlAuthenticationFailureHandler
         // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
         filters.add(apf);
-        filters.add(new RememberMeAuthenticationFilter(securityComponents.manager, securityComponents.rememberMe));
+        filters.add(new RememberMeAuthenticationFilter(sc.manager, sc.rememberMe));
         filters.addAll(commonFilters());
         return new ChainedServletFilter(filters);
     }
