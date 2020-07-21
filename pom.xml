@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.244</revision>
+    <revision>2.246</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -101,7 +101,7 @@ THE SOFTWARE.
     <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.3</remoting.version>
+    <remoting.version>4.5</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -231,6 +231,12 @@ THE SOFTWARE.
           <configuration>
             <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
+            <compilerArgs>
+            <!--always compile package-info.java for useIncrementalCompilation
+            ref: https://stackoverflow.com/questions/6770455/maven-compiling-package-info-java-to-package-info-class
+             -->
+              <compilerArg>-Xpkginfo:always</compilerArg>
+            </compilerArgs>
           </configuration>
         </plugin>
         <plugin>
