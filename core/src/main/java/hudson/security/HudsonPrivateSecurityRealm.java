@@ -616,7 +616,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * is sent to the hidden input field by using {@link Protector}, so that
      * the same password can be retained but without leaking information to the browser.
      */
-    public static final class Details extends UserProperty implements InvalidatableUserDetails {
+    public static final class Details extends UserProperty implements UserDetails {
         /**
          * Hashed password.
          */
@@ -682,10 +682,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         public boolean isEnabled() {
             return true;
-        }
-
-        public boolean isInvalid() {
-            return user==null;
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<Details> {

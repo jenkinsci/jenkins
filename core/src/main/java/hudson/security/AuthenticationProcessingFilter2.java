@@ -37,7 +37,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
 
     public AuthenticationProcessingFilter2() {
-        // TODO consider switching to a better URL (/doLogin? /j_spring_security_check?) and updating SecurityRealm.getAuthenticationGatewayUrl accordingly.
+        // TODO consider switching to a better URL (/j_spring_security_check? https://stackoverflow.com/a/62552368/12916) and updating SecurityRealm.getAuthenticationGatewayUrl accordingly.
         // Cannot use the default of /login since that would clash with Jenkins/login.jelly which would be activated even for GET requests,
         // and which cannot trivially be renamed since it is a fairly well-known URL sometimes used e.g. for K8s liveness checks.
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/j_acegi_security_check", "POST"));

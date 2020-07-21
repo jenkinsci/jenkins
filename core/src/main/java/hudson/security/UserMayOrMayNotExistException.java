@@ -23,8 +23,8 @@
  */
 package hudson.security;
 
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.acegisecurity.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Thrown from {@link UserDetailsService#loadUserByUsername(String)}
@@ -42,10 +42,6 @@ import org.acegisecurity.userdetails.UserDetailsService;
 public class UserMayOrMayNotExistException extends UsernameNotFoundException {
     public UserMayOrMayNotExistException(String msg) {
         super(msg);
-    }
-
-    public UserMayOrMayNotExistException(String msg, Object extraInformation) {
-        super(msg, extraInformation);
     }
 
     public UserMayOrMayNotExistException(String msg, Throwable t) {
