@@ -551,7 +551,7 @@ THE SOFTWARE.
                   <archive>${project.build.directory}/${project.build.finalName}.war</archive>
                   <arguments>
                     <argument>-tsa</argument>
-                    <argument>http://timestamp.comodoca.com/rfc3161</argument>
+                    <argument>http://timestamp.digicert.com</argument>
                   </arguments>
                 </configuration>
               </execution>
