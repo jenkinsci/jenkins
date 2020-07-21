@@ -213,7 +213,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @see AuthenticationProcessingFilter2
      */
     public String getAuthenticationGatewayUrl() {
-        return "j_acegi_security_check";
+        // Default as of Spring Security 3: https://stackoverflow.com/a/62552368/12916
+        // Cannot use the 4+ default of /login since that would clash with Jenkins/login.jelly which would be activated even for GET requests,
+        // and which cannot trivially be renamed since it is a fairly well-known URL sometimes used e.g. for K8s liveness checks.
+        return "j_spring_security_check";
     }
 
     /**
@@ -525,12 +528,11 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         basicAuthenticationEntryPoint.setRealmName("Jenkins");
         bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
         filters.add(bhp);
-        AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2();
+        AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
         apf.setAuthenticationManager(securityComponents.manager);
         apf.setRememberMeServices(securityComponents.rememberMe);
-        // TODO apf.authenticationFailureUrl = "/loginError"
-        // TODO apf.defaultTargetUrl = "/"
-        apf.setFilterProcessesUrl("/" + getAuthenticationGatewayUrl());
+        // TODO apf.authenticationFailureUrl = "/loginError" try SimpleUrlAuthenticationFailureHandler
+        // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
         filters.add(apf);
         filters.add(new RememberMeAuthenticationFilter(securityComponents.manager, securityComponents.rememberMe));
         filters.addAll(commonFilters());
