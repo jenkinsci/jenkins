@@ -38,6 +38,7 @@ import hudson.security.Permission;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,7 +86,7 @@ public class ListViewTest {
 
     @Issue("JENKINS-15309")
     @LocalData
-    @Test public void nullJobNames() throws Exception {
+    @Test public void nullJobNames() {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
     }
     
@@ -159,15 +160,15 @@ public class ListViewTest {
         v.add(p1);
         v.add(p2);
         v.add(p3);
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2, p3)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2, p3)), new HashSet<>(v.getItems()));
         sub.renameTo("lower");
         MockFolder stuff = top.createProject(MockFolder.class, "stuff");
         Items.move(p1, stuff);
         p3.delete();
         top.createProject(FreeStyleProject.class, "p3");
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
         top.renameTo("upper");
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
     }
 
     @Issue("JENKINS-23893")
@@ -258,7 +259,7 @@ public class ListViewTest {
         StaplerRequest req = mock(StaplerRequest.class);
         StaplerResponse rsp = mock(StaplerResponse.class);
 
-        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), "UTF-8");
+        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), StandardCharsets.UTF_8);
 
         when(req.getMethod()).thenReturn("POST");
         when(req.getParameter("name")).thenReturn("job1");

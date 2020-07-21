@@ -279,7 +279,7 @@ public class HudsonPrivateSecurityRealmTest {
 
         createAccountByAdmin("alice");
         // no new event in such case
-        assertEquals(true, spySecurityListener.loggedInUsernames.isEmpty());
+        assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
 
         selfRegistration("bob");
         assertEquals("bob", spySecurityListener.loggedInUsernames.get(0));

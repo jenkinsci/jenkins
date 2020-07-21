@@ -104,6 +104,11 @@ table.bigtable {
     text-align: right;
   }
 }
+.bigtable tfoot th,
+.bigtable .sortbottom th {
+  color: var(--text-color);
+  background-color: var(--background);
+}
 
 .bigtable td {
   border-top: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
@@ -140,4 +145,12 @@ table.sortable span.sortarrow {
 table.bigtable.sortable a.sortheader,
 table.bigtable.sortable span.sortarrow {
   color: var(--bigtable-header-text-color);
+}
+
+/* ========================= Bigtable variants ========================= */
+
+.bigtable--compact th,
+.bigtable--compact td {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }

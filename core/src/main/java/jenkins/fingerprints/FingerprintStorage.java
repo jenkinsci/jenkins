@@ -24,13 +24,19 @@
 package jenkins.fingerprints;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
 import java.io.IOException;
+import java.util.Date;
 
+import hudson.Functions;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Fingerprint;
+import hudson.model.TaskListener;
+import jenkins.model.FingerprintFacet;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
 
@@ -47,6 +53,13 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      */
     public static FingerprintStorage get() {
         return ExtensionList.lookupSingleton(GlobalFingerprintConfiguration.class).getStorage();
+    }
+
+    /**
+     * Returns the file system based {@link FileFingerprintStorage} configured on the system.
+     */
+    public static FingerprintStorage getFileFingerprintStorage() {
+        return ExtensionList.lookup(FingerprintStorage.class).get(ExtensionList.lookup(FingerprintStorage.class).size()-1);
     }
 
     /**
@@ -80,8 +93,58 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      */
     public abstract boolean isReady();
 
+    /**
+     * Iterates a set of fingerprints, and cleans them up. Cleaning up a fingerprint implies deleting the builds
+     * associated with the fingerprints, once they are no longer available on the system. If all the builds have been
+     * deleted, the fingerprint itself is deleted.
+     *
+     * This method is called periodically by {@link hudson.model.FingerprintCleanupThread}.
+     * For reference, see {@link FileFingerprintStorage#iterateAndCleanupFingerprints(TaskListener)}
+     * For cleaning up the fingerprint {@link #cleanFingerprint(Fingerprint, TaskListener)} may be used.
+     *
+     * @since TODO
+     */
+    public abstract void iterateAndCleanupFingerprints(TaskListener taskListener);
+
+    /**
+     * This method performs the cleanup of the given fingerprint.
+     *
+     * @since TODO
+     */
+    public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
+        try {
+            if (!fingerprint.isAlive() && fingerprint.getFacetBlockingDeletion() == null) {
+                taskListener.getLogger().println("deleting obsolete " + fingerprint.toString());
+                Fingerprint.delete(fingerprint.getHashString());
+                return true;
+            } else {
+                if (!fingerprint.isAlive()) {
+                    FingerprintFacet deletionBlockerFacet = fingerprint.getFacetBlockingDeletion();
+                    taskListener.getLogger().println(deletionBlockerFacet.getClass().getName() + " created on " +
+                            new Date(deletionBlockerFacet.getTimestamp()) + " blocked deletion of " +
+                            fingerprint.getHashString());
+                }
+                // get the fingerprint in the official map so have the changes visible to Jenkins
+                // otherwise the mutation made in FingerprintMap can override our trimming.
+                fingerprint = getFingerprint(fingerprint);
+                return fingerprint.trim();
+            }
+        } catch (IOException e) {
+            Functions.printStackTrace(e, taskListener.error("Failed to process " + fingerprint.getHashString()));
+            return false;
+        }
+    }
+
+    protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
+        return Jenkins.get()._getFingerprint(fp.getHashString());
+    }
+
+    /**
+     * @since TODO
+     */
     @Override public FingerprintStorageDescriptor getDescriptor() {
         return (FingerprintStorageDescriptor) super.getDescriptor();
+
     }
 
 }

@@ -26,6 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.*;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
@@ -46,6 +47,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,6 +62,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -173,7 +176,7 @@ public class DirectoryBrowserSupportTest {
         InputStream is = readzip.getInputStream(readzip.getEntry("archive/artifact.out"));
 
         // ZipException in case of JENKINS-19752
-        assertFalse("Downloaded zip file must not be empty", is.read() == -1);
+        assertNotEquals("Downloaded zip file must not be empty", is.read(), -1);
 
         is.close();
         readzip.close();
@@ -299,39 +302,40 @@ public class DirectoryBrowserSupportTest {
                     return root();
                 }
                 @Override
-                public boolean isDirectory() throws IOException {
+                public boolean isDirectory() {
                     return false;
                 }
                 @Override
-                public boolean isFile() throws IOException {
+                public boolean isFile() {
                     return true;
                 }
                 @Override
-                public boolean exists() throws IOException {
+                public boolean exists() {
                     return true;
                 }
                 @Override
-                public VirtualFile[] list() throws IOException {
+                public VirtualFile[] list() {
                     return new VirtualFile[0];
                 }
                 @Override
-                public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
+                public Collection<String> list(@NonNull String includes, String excludes, boolean useDefaultExcludes) {
                     return Collections.emptySet();
                 }
+                @NonNull
                 @Override
-                public VirtualFile child(String name) {
+                public VirtualFile child(@NonNull String name) {
                     throw new UnsupportedOperationException();
                 }
                 @Override
-                public long length() throws IOException {
+                public long length() {
                     return 0;
                 }
                 @Override
-                public long lastModified() throws IOException {
+                public long lastModified() {
                     return 0;
                 }
                 @Override
-                public boolean canRead() throws IOException {
+                public boolean canRead() {
                     return true;
                 }
                 @Override
@@ -344,10 +348,12 @@ public class DirectoryBrowserSupportTest {
                 }
             };
             return new VirtualFile() { // the root
+                @NonNull
                 @Override
                 public String getName() {
                     return "";
                 }
+                @NonNull
                 @Override
                 public URI toURI() {
                     return URI.create("root:");
@@ -357,27 +363,30 @@ public class DirectoryBrowserSupportTest {
                     return this;
                 }
                 @Override
-                public boolean isDirectory() throws IOException {
+                public boolean isDirectory() {
                     return true;
                 }
                 @Override
-                public boolean isFile() throws IOException {
+                public boolean isFile() {
                     return false;
                 }
                 @Override
-                public boolean exists() throws IOException {
+                public boolean exists() {
                     return true;
                 }
+                @NonNull
                 @Override
-                public VirtualFile[] list() throws IOException {
+                public VirtualFile[] list() {
                     return new VirtualFile[] {file};
                 }
+                @NonNull
                 @Override
-                public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
+                public Collection<String> list(@NonNull String includes, String excludes, boolean useDefaultExcludes) {
                     throw new UnsupportedOperationException();
                 }
+                @NonNull
                 @Override
-                public VirtualFile child(String name) {
+                public VirtualFile child(@NonNull String name) {
                     if (name.equals("f")) {
                         return file;
                     } else if (name.isEmpty()) {
@@ -387,15 +396,15 @@ public class DirectoryBrowserSupportTest {
                     }
                 }
                 @Override
-                public long length() throws IOException {
+                public long length() {
                     return 0;
                 }
                 @Override
-                public long lastModified() throws IOException {
+                public long lastModified() {
                     return 0;
                 }
                 @Override
-                public boolean canRead() throws IOException {
+                public boolean canRead() {
                     return true;
                 }
                 @Override
@@ -405,9 +414,9 @@ public class DirectoryBrowserSupportTest {
             };
         }
         @Override
-        public void onLoad(Run<?, ?> build) {}
+        public void onLoad(@NonNull Run<?, ?> build) {}
         @Override
-        public boolean delete() throws IOException, InterruptedException {
+        public boolean delete() {
             return false;
         }
     }
@@ -420,7 +429,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent);
+        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -542,10 +551,10 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent);
-        FileUtils.write(new File(secretsFolder, "public_fake1.key"), secretContent);
-        FileUtils.write(new File(secretsFolder, "public_fake2.key"), secretContent);
-        FileUtils.write(new File(secretsFolder, "public_fake3.key"), secretContent);
+        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
+        FileUtils.write(new File(secretsFolder, "public_fake1.key"), secretContent, StandardCharsets.UTF_8);
+        FileUtils.write(new File(secretsFolder, "public_fake2.key"), secretContent, StandardCharsets.UTF_8);
+        FileUtils.write(new File(secretsFolder, "public_fake3.key"), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -626,7 +635,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent);
+        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -847,7 +856,7 @@ public class DirectoryBrowserSupportTest {
         folderInsideWorkspace.mkdir();
         File fileTarget = new File(folderInsideWorkspace, "goal.txt");
         String publicContent = "not-secret";
-        FileUtils.write(fileTarget, publicContent);
+        FileUtils.write(fileTarget, publicContent, StandardCharsets.UTF_8);
 
         /*
          *  workspace/
@@ -934,6 +943,6 @@ public class DirectoryBrowserSupportTest {
             fail("The resource with fileName " + fileNameInResources + " is not present in the resources of the test");
         }
         File resourceFile = new File(resourceUrl.toURI());
-        return FileUtils.readFileToString(resourceFile);
+        return FileUtils.readFileToString(resourceFile, StandardCharsets.UTF_8);
     }
 }
