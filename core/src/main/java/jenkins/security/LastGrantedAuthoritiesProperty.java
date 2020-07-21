@@ -49,10 +49,10 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         String[] roles = this.roles;    // capture to a variable for immutability
 
         if(roles == null){
-            return new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY};
+            return new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY2};
         }
 
-        String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY.getAuthority();
+        String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY2.getAuthority();
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length + 1);
         grantedAuthorities.add(new SimpleGrantedAuthority(authenticatedRole));
 

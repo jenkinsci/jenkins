@@ -406,7 +406,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             super(
                     username, "",
                     true, true, true, true,
-                    Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY)
+                    Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2)
             );
         }
     }
@@ -909,7 +909,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Checks for authorities (groups) associated with this user.
      * If the caller lacks {@link Jenkins#ADMINISTER}, or any problems arise, returns an empty list.
-     * {@link SecurityRealm#AUTHENTICATED_AUTHORITY} and the username, if present, are omitted.
+     * {@link SecurityRealm#AUTHENTICATED_AUTHORITY2} and the username, if present, are omitted.
      *
      * @return a possibly empty list
      * @since 1.498
@@ -927,7 +927,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             return Collections.emptyList();
         }
         for (GrantedAuthority a : authentication.getAuthorities()) {
-            if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
+            if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY2)) {
                 continue;
             }
             String n = a.getAuthority();

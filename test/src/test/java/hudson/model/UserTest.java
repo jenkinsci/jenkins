@@ -630,7 +630,7 @@ public class UserTest {
                 } catch (IOException x) {
                     throw new RuntimeException(x);
                 }
-                return new org.springframework.security.core.userdetails.User(canonicalName, "", true, true, true, true, Collections.singleton(AUTHENTICATED_AUTHORITY));
+                return new org.springframework.security.core.userdetails.User(canonicalName, "", true, true, true, true, Collections.singleton(AUTHENTICATED_AUTHORITY2));
             }
         }
         @Override

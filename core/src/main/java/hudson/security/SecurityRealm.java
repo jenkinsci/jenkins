@@ -26,7 +26,6 @@ package hudson.security;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
@@ -76,7 +75,6 @@ import org.springframework.security.web.authentication.rememberme.RememberMeAuth
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.session.SessionManagementFilter;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -716,6 +714,14 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * {@link GrantedAuthority} that represents the built-in "authenticated" role, which is granted to
      * anyone non-anonymous.
+     * @since TODO
      */
-    public static final GrantedAuthority AUTHENTICATED_AUTHORITY = new SimpleGrantedAuthority("authenticated");
+    public static final GrantedAuthority AUTHENTICATED_AUTHORITY2 = new SimpleGrantedAuthority("authenticated");
+
+    /**
+     * @deprecated use {@link AUTHENTICATED_AUTHORITY2}
+     */
+    @Deprecated
+    public static final org.acegisecurity.GrantedAuthority AUTHENTICATED_AUTHORITY = new org.acegisecurity.GrantedAuthorityImpl("authenticated");
+
 }

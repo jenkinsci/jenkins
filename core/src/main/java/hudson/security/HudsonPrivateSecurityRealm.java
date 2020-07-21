@@ -566,7 +566,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     // TODO
-    private static final Collection<? extends GrantedAuthority> TEST_AUTHORITY = Collections.singleton(AUTHENTICATED_AUTHORITY);
+    private static final Collection<? extends GrantedAuthority> TEST_AUTHORITY = Collections.singleton(AUTHENTICATED_AUTHORITY2);
 
     public static final class SignupInfo {
         public String username,password1,password2,fullname,email,captcha;

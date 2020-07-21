@@ -96,7 +96,7 @@ public abstract class SecurityListener implements ExtensionPoint {
         if (LOGGER.isLoggable(Level.FINE)) {
             List<String> groups = new ArrayList<>();
             for (GrantedAuthority auth : details.getAuthorities()) {
-                if (!auth.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
+                if (!auth.equals(SecurityRealm.AUTHENTICATED_AUTHORITY2)) {
                     groups.add(auth.getAuthority());
                 }
             }
