@@ -139,7 +139,6 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 		}
 
 		Assert.notNull(successfulAuthentication.getPrincipal());
-		Assert.notNull(successfulAuthentication.getCredentials());
 		Assert.isInstanceOf(UserDetails.class, successfulAuthentication.getPrincipal());
 
 		long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(getTokenValiditySeconds());

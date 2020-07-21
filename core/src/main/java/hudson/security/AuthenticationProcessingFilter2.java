@@ -34,10 +34,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
+public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
 
     public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/" + authenticationGatewayUrl, "POST"));
+        // Jenkins/login.jelly & SetupWizard/authenticate-security-token.jelly
+        setUsernameParameter("j_username");
+        setPasswordParameter("j_password");
     }
 
     /* TODO none of this compiles against Spring Security; rewrite (try InteractiveAuthenticationSuccessEvent):
