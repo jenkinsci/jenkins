@@ -4084,7 +4084,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
 
-        /* TODO unclear what the Spring equivalent is; check AbstractAuthenticationProcessingFilter, SavedRequest
+        /* TODO unclear what the Spring Security equivalent is; check AbstractAuthenticationProcessingFilter, SavedRequest
         String url = AbstractProcessingFilter.obtainFullRequestUrl(req);
         if(url!=null) {
             // if the login redirect is initiated by Acegi
@@ -5364,7 +5364,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * {@link Authentication} object that represents the anonymous user.
-     * Because Acegi creates its own {@link AnonymousAuthenticationToken} instances, the code must not
+     * Because Spring Security creates its own {@link AnonymousAuthenticationToken} instances, the code must not
      * expect the singleton semantics. This is just a convenient instance.
      *
      * @since 1.343

@@ -90,7 +90,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
  * For compatibility reasons, there are two somewhat different ways to implement a custom SecurityRealm.
  *
  * <p>
- * One is to override the {@link #createSecurityComponents()} and create key Acegi components
+ * One is to override the {@link #createSecurityComponents()} and create key Spring Security components
  * that control the authentication process.
  * The default {@link SecurityRealm#createFilter(FilterConfig)} implementation then assembles them
  * into a chain of {@link Filter}s. All the incoming requests to Hudson go through this filter chain,
@@ -109,7 +109,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
  * The other way of doing this is to ignore {@link #createSecurityComponents()} completely (by returning
  * {@link SecurityComponents} created by the default constructor) and just concentrate on {@link #createFilter(FilterConfig)}.
  * As long as the resulting filter chain properly sets up {@link Authentication} object at the end of the processing,
- * Hudson doesn't really need you to fit the standard Acegi models like {@link AuthenticationManager} and
+ * Jenkins doesn't really need you to fit the standard Spring Security models like {@link AuthenticationManager} and
  * {@link UserDetailsService}.
  *
  * <p>
@@ -160,12 +160,12 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
     /**
      * Returns the {@link IdStrategy} that should be used for turning
-     * {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     * {@link UserDetails#getUsername()} into an ID.
      * Mostly this should be {@link IdStrategy.CaseInsensitive} but there may be occasions when either
      * {@link IdStrategy.CaseSensitive} or {@link IdStrategy.CaseSensitiveEmailAddress} are the correct approach.
      *
      * @return the {@link IdStrategy} that should be used for turning
-     *         {@link org.acegisecurity.userdetails.UserDetails#getUsername()} into an ID.
+     *         {@link UserDetails#getUsername()} into an ID.
      * @since 1.566
      */
     public IdStrategy getUserIdStrategy() {
@@ -184,14 +184,6 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public IdStrategy getGroupIdStrategy() {
         return getUserIdStrategy();
-    }
-
-    /**
-     * @deprecated No longer used.
-     */
-    @Deprecated
-    public CliAuthenticator createCliAuthenticator(final CLICommand command) {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -466,7 +458,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * If there are multiple beans of the same type or if there are none,
      * this method treats that as an {@link IllegalArgumentException}.
      *
-     * This method is intended to be used to pick up a Acegi object from
+     * This method is intended to be used to pick up a Spring Security object from
      * spring once the bean definition file is parsed.
      */
     public static <T> T findBean(Class<T> type, ApplicationContext context) {

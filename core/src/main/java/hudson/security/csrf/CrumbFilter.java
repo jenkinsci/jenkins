@@ -8,7 +8,6 @@ package hudson.security.csrf;
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -32,6 +31,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 /**
  * Checks for and validates crumbs on requests that cause state changes, to

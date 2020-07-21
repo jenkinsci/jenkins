@@ -47,10 +47,10 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.WeakHashMap;
 import jenkins.security.QueueItemAuthenticator;
-import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
+import org.springframework.security.core.Authentication;
 
 /**
  * One step of the whole build process.

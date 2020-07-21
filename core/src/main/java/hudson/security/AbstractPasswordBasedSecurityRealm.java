@@ -18,7 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * Partial implementation of {@link SecurityRealm} for username/password based authentication.
  * This is a convenience base class if all you are trying to do is to check the given username
  * and password with the information stored in somewhere else, and you don't want to do anything
- * with Acegi.
+ * with Spring Security.
  *
  * <p>
  * This {@link SecurityRealm} uses the standard login form (and a few other optional mechanisms like BASIC auth)
@@ -50,7 +50,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
      *
      * <p>
      * If the user name and the password pair matches, retrieve the information about this user and
-     * return it as a {@link UserDetails} object. {@link org.acegisecurity.userdetails.User} is a convenient
+     * return it as a {@link UserDetails} object. {@link org.springframework.security.core.userdetails.User} is a convenient
      * implementation to use, but if your backend offers additional data, you may want to use your own subtype
      * so that the rest of Hudson can use those additional information (such as e-mail address --- see
      * MailAddressResolver.)

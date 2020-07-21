@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
@@ -63,7 +64,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     /**
      * Fired when a user has logged in. Compared to authenticated, there is a notion of storage / cache.
      * Would be called after {@link #authenticated}.
-     * It should be called after the {@link org.acegisecurity.context.SecurityContextHolder#getContext()}'s authentication is set.
+     * It should be called after the {@link SecurityContextHolder#getContext()}'s authentication is set.
      * @param username the user
      */
     protected void loggedIn(@NonNull String username){}

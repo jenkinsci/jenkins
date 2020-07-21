@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
- * {@link org.acegisecurity.AccessDeniedException} with more information.
+ * {@link org.springframework.security.access.AccessDeniedException} with more information.
  * @author Kohsuke Kawaguchi
  */
 public class AccessDeniedException2 extends org.acegisecurity.AccessDeniedException {

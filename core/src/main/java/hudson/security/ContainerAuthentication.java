@@ -40,7 +40,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  * given through {@link HttpServletRequest}.
  *
  * <p>
- * This is used to plug the container authentication to Acegi,
+ * This is used to plug the container authentication to Spring Security,
  * for backward compatibility with Hudson &lt; 1.160.
  *
  * @author Kohsuke Kawaguchi

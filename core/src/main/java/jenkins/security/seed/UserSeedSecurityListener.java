@@ -56,7 +56,7 @@ public class UserSeedSecurityListener extends SecurityListener {
         StaplerRequest req = Stapler.getCurrentRequest();
         if (req == null) {
             // expected case: CLI
-            // But also HudsonPrivateSecurityRealm because of a redirect from Acegi, the request is not a Stapler one
+            // But also HudsonPrivateSecurityRealm because of a redirect from Spring Security, the request is not a Stapler one
             return;
         }
 

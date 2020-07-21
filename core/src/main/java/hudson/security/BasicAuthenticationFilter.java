@@ -108,7 +108,7 @@ public class BasicAuthenticationFilter implements Filter {
             // normal requests, or security not enabled
             if(req.getUserPrincipal()!=null) {
                 // before we route this request, integrate the container authentication
-                // to Acegi. For anonymous users that doesn't have user principal,
+                // to Spring Security. For anonymous users that doesn't have user principal,
                 // AnonymousProcessingFilter that follows this should create
                 // an Authentication object.
                 SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));

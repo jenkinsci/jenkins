@@ -68,7 +68,7 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
     }
 
     /**
-     * @see org.acegisecurity.ui.AbstractProcessingFilter#determineFailureUrl(javax.servlet.http.HttpServletRequest, org.acegisecurity.AuthenticationException)
+     * @see AbstractProcessingFilter#determineFailureUrl(HttpServletRequest, AuthenticationException)
      * /
     @Override
     protected String determineFailureUrl(HttpServletRequest request, AuthenticationException failed) {

@@ -75,7 +75,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -102,6 +101,7 @@ import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Partial default implementation of {@link Item}.
