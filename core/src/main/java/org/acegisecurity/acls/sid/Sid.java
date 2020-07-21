@@ -24,6 +24,7 @@
 
 package org.acegisecurity.acls.sid;
 
+// TODO perhaps delegate to the org.springframework.security.acls package
 public interface Sid {
 
     @Override
