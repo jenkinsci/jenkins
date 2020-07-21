@@ -87,6 +87,7 @@ public class ChainedServletFilter implements Filter {
                     filters[position++].doFilter(request,response,this);
                 }
             }
+        // TODO how does this even work? Seems to be equivalent to only calling the first one.
         }.doFilter(request,response);
     }
 

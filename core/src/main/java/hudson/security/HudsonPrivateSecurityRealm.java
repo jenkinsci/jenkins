@@ -841,6 +841,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     /* package */ static final JBCryptEncoder JBCRYPT_ENCODER = new JBCryptEncoder();
 
+    // TODO check if DelegatingPasswordEncoder can be used
     /**
      * Wraps {@link #JBCRYPT_ENCODER}.
      * There used to be a SHA-256-based encoder but this is long deprecated, and insecure anyway.
