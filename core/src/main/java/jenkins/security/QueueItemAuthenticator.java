@@ -36,8 +36,9 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      *
      * @return
      *      returning non-null will determine the identity. If null is returned, the next
-     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate2
-      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
+     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate
+     *      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
+     * @since TODO
      */
     public @CheckForNull Authentication authenticate2(Queue.Item item) {
         if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate2", Queue.Task.class)) {
@@ -59,9 +60,9 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      *
      * @return
      *      returning non-null will determine the identity. If null is returned, the next
-     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate2
-      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
-     * @since 1.560
+     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate
+     *      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
+     * @since TODO
      */
     public @CheckForNull Authentication authenticate2(Queue.Task task) {
         if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate2", Queue.Item.class)) {
@@ -76,11 +77,18 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
         }
     }
 
+    /**
+     * @deprecated use {@link #authenticate2(Queue.Item)}
+     */
     @Deprecated
     public @CheckForNull org.acegisecurity.Authentication authenticate(Queue.Item item) {
         return org.acegisecurity.Authentication.fromSpring(authenticate2(item));
     }
 
+    /**
+     * @deprecated use {@link #authenticate2(Queue.Task)}
+     * @since 1.560
+     */
     @Deprecated
     public @CheckForNull org.acegisecurity.Authentication authenticate(Queue.Task task) {
         return org.acegisecurity.Authentication.fromSpring(authenticate2(task));
