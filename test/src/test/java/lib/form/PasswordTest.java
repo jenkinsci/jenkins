@@ -90,7 +90,7 @@ public class PasswordTest {
         SecretNotPlainText.secret = Secret.fromString("secret");
         HtmlPage p = j.createWebClient().goTo("secretNotPlainText");
         String value = ((HtmlInput)p.getElementById("password")).getValueAttribute();
-        assertFalse("password shouldn't be plain text",value.equals("secret"));
+        assertNotEquals("password shouldn't be plain text", "secret", value);
         assertEquals("secret",Secret.fromString(value).getPlainText());
     }
 
@@ -634,7 +634,7 @@ public class PasswordTest {
         for (DomElement element : htmlPage.getElementsByTagName("input")) {
             if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
                 final HtmlHiddenInput input = (HtmlHiddenInput) element;
-                assertTrue(input.getValueAttribute().equals("********"));
+                assertEquals("********", input.getValueAttribute());
             }
         }
     }

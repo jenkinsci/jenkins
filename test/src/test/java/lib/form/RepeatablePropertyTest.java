@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class RepeatablePropertyTest extends HudsonTestCase implements Describable<RepeatablePropertyTest> {
 
@@ -159,7 +160,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ExcitingObject that = (ExcitingObject) o;
-            if (greatProperty != null ? !greatProperty.equals(that.greatProperty) : that.greatProperty != null)
+            if (!Objects.equals(greatProperty, that.greatProperty))
                 return false;
             return true;
         }

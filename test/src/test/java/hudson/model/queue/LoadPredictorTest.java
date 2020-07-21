@@ -79,7 +79,7 @@ public class LoadPredictorTest {
     public void test1() throws Exception {
         Task t = mock(Task.class);
         when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) asList(t));
+        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
 
         Computer c = createMockComputer(1);
 
@@ -107,7 +107,7 @@ public class LoadPredictorTest {
     public void test2() throws Exception {
         Task t = mock(Task.class);
         when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) asList(t));
+        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
 
         Computer c = createMockComputer(2);
         Executor e = c.getExecutors().get(0);
