@@ -1,18 +1,18 @@
 package hudson.security;
 
-import groovy.lang.Binding;
-import hudson.util.spring.BeanBuilder;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingUserDetailsService;
 import jenkins.security.SecurityListener;
+import org.springframework.security.authentication.AnonymousAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.RememberMeAuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Partial implementation of {@link SecurityRealm} for username/password based authentication.
@@ -30,14 +30,17 @@ import org.springframework.web.context.WebApplicationContext;
 public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm implements UserDetailsService {
     @Override
     public SecurityComponents createSecurityComponents() {
-        Binding binding = new Binding();
-        binding.setVariable("authenticator", new Authenticator());
-
-        BeanBuilder builder = new BeanBuilder();
-        builder.parse(Jenkins.get().servletContext.getResourceAsStream("/WEB-INF/security/AbstractPasswordBasedSecurityRealm.groovy"),binding); // TODO rewrite
-        WebApplicationContext context = builder.createApplicationContext();
+        // this does all the hard work.
+        Authenticator authenticator = new Authenticator();
+        // these providers apply everywhere
+        RememberMeAuthenticationProvider rmap = new RememberMeAuthenticationProvider(Jenkins.get().getSecretKey());
+        // this doesn't mean we allow anonymous access.
+        // we just authenticate anonymous users as such,
+        // so that later authorization can reject them if so configured
+        AnonymousAuthenticationProvider aap = new AnonymousAuthenticationProvider("anonymous");
+        AuthenticationManager authenticationManager = new ProviderManager(authenticator, rmap, aap);
         return new SecurityComponents(
-                findBean(AuthenticationManager.class, context),
+                authenticationManager,
                 new ImpersonatingUserDetailsService(this));
     }
 

@@ -23,10 +23,10 @@
  */
 package hudson.security;
 
-import groovy.lang.Binding;
 import hudson.Extension;
 import hudson.model.Descriptor;
-import hudson.util.spring.BeanBuilder;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import org.jenkinsci.Symbol;
@@ -36,7 +36,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.context.WebApplicationContext;
 
 /**
  * {@link SecurityRealm} that accepts {@link ContainerAuthentication} object
@@ -75,22 +74,17 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
         return "loginEntry";
     }
 
-    /**
-     * Filter to run for the LegacySecurityRealm is the
-     * ChainServletFilter legacy from /WEB-INF/security/SecurityFilters.groovy.
-     */
     @Override
     public Filter createFilter(FilterConfig filterConfig) {
-        Binding binding = new Binding();
-        SecurityComponents sc = this.createSecurityComponents();
-        binding.setVariable("securityComponents", sc);
-        binding.setVariable("securityRealm",this);
-        BeanBuilder builder = new BeanBuilder();
-        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding); // TODO rewrite
-        
-        WebApplicationContext context = builder.createApplicationContext();
-        
-        return (Filter) context.getBean("legacy");
+        // this filter set up is used to emulate the legacy Hudson behavior
+        // of container authentication before 1.160
+        List<Filter> filters = new ArrayList<>();
+        filters.add(new BasicAuthenticationFilter());
+        filters.addAll(commonFilters());
+        // when using container-authentication we can't hit /login directly.
+        // we first have to hit protected /loginEntry, then let the container
+        // trap that into /login.
+        return new ChainedServletFilter(filters);
     }
 
     /**

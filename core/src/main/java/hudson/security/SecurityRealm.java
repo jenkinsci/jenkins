@@ -23,21 +23,37 @@
  */
 package hudson.security;
 
-import groovy.lang.Binding;
-import hudson.ExtensionPoint;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.ExtensionPoint;
 import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import jenkins.model.IdStrategy;
-import jenkins.model.Jenkins;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
-import hudson.util.spring.BeanBuilder;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.Filter;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpSession;
+import jenkins.model.IdStrategy;
+import jenkins.model.Jenkins;
+import jenkins.security.BasicHeaderProcessor;
+import jenkins.security.ExceptionTranslationFilter;
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -45,22 +61,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Cookie;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.sf.json.JSONObject;
-import org.jenkinsci.Symbol;
-import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -70,8 +70,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 
 /**
  * Pluggable security realm that connects external user database to Hudson.
@@ -398,7 +401,6 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *                     may still return {@code null}
      * @throws UserMayOrMayNotExistException if no conclusive result could be determined regarding the group existence.
      * @throws UsernameNotFoundException     if the group does not exist.
-     * @throws DataAccessException           if the backing security realm could not be connected to.
      * @since 1.549
      */
     public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers)
@@ -498,7 +500,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *
      * <p>
      * The default implementation uses {@link #getSecurityComponents()} and builds
-     * a standard filter chain from /WEB-INF/security/SecurityFilters.groovy.
+     * a standard filter chain.
      * But subclasses can override this to completely change the filter sequence.
      *
      * <p>
@@ -510,14 +512,38 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public Filter createFilter(FilterConfig filterConfig) {
         LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
         
-        Binding binding = new Binding();
-        SecurityComponents sc = getSecurityComponents();
-        binding.setVariable("securityComponents", sc);
-        binding.setVariable("securityRealm",this);
-        BeanBuilder builder = new BeanBuilder();
-        builder.parse(filterConfig.getServletContext().getResourceAsStream("/WEB-INF/security/SecurityFilters.groovy"),binding); // TODO rewrite
-        WebApplicationContext context = builder.createApplicationContext();
-        return (Filter) context.getBean("filter");
+        SecurityComponents securityComponents = getSecurityComponents();
+        List<Filter> filters = new ArrayList<>();
+        // no more HttpSessionContextIntegrationFilter2(allowSessionCreation = false)
+        // if any "Authorization: Basic xxx:yyy" is sent this is the filter that processes it
+        BasicHeaderProcessor bhp = new BasicHeaderProcessor();
+        // if basic authentication fails (which only happens incorrect basic auth credential is sent),
+        // respond with 401 with basic auth request, instead of redirecting the user to the login page,
+        // since users of basic auth tends to be a program and won't see the redirection to the form
+        // page as a failure
+        BasicAuthenticationEntryPoint basicAuthenticationEntryPoint = new BasicAuthenticationEntryPoint();
+        basicAuthenticationEntryPoint.setRealmName("Jenkins");
+        bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
+        filters.add(bhp);
+        AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2();
+        apf.setAuthenticationManager(securityComponents.manager);
+        apf.setRememberMeServices(securityComponents.rememberMe);
+        // TODO apf.authenticationFailureUrl = "/loginError"
+        // TODO apf.defaultTargetUrl = "/"
+        apf.setFilterProcessesUrl("/" + getAuthenticationGatewayUrl());
+        filters.add(apf);
+        filters.add(new RememberMeAuthenticationFilter(securityComponents.manager, securityComponents.rememberMe));
+        filters.addAll(commonFilters());
+        return new ChainedServletFilter(filters);
+    }
+
+    protected final List<Filter> commonFilters() {
+        // like Jenkins.ANONYMOUS:
+        AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", Collections.singletonList(new SimpleGrantedAuthority("anonymous")));
+        ExceptionTranslationFilter etf = new ExceptionTranslationFilter(new HudsonAuthenticationEntryPoint("/" + getLoginUrl() + "?from={0}"));
+        etf.setAccessDeniedHandler(new AccessDeniedHandlerImpl());
+        UnwrapSecurityExceptionFilter usef = new UnwrapSecurityExceptionFilter();
+        return Arrays.asList(apf, etf, usef);
     }
 
     /**
