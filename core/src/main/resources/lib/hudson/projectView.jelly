@@ -67,7 +67,7 @@ THE SOFTWARE.
         <d:invokeBody/>
       </div>
       <!-- project list -->
-      <table id="projectstatus" class="sortable pane bigtable stripped-odd">
+      <table id="projectstatus" class="sortable pane bigtable stripped-odd ${iconSize == '16x16' ? 'bigtable--compact' : ''}">
         <tr class="header">
           <j:forEach var="col" items="${columnExtensions}">
             <st:include page="columnHeader.jelly" it="${col}" />
