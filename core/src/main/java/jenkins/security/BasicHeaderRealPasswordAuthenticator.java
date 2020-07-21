@@ -25,7 +25,7 @@ import jenkins.ExtensionFilter;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,7 +39,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
  * @author Kohsuke Kawaguchi
  * @since 1.576
  */
-@Restricted(DoNotUse.class)
+@Restricted(NoExternalUse.class)
 @Extension
 public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticator {
     private AuthenticationDetailsSource authenticationDetailsSource = new WebAuthenticationDetailsSource();
