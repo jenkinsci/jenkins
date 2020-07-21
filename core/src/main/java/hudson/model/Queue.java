@@ -2329,7 +2329,7 @@ public class Queue extends ResourceController implements Saveable {
         @NonNull
         public Authentication authenticate() {
             for (QueueItemAuthenticator auth : QueueItemAuthenticatorProvider.authenticators()) {
-                Authentication a = auth.authenticate(this);
+                Authentication a = auth.authenticate2(this);
                 if (a!=null)
                     return a;
             }

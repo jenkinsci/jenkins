@@ -17,7 +17,7 @@ import org.springframework.security.core.Authentication;
 
 /**
  * Extension point to run {@link hudson.model.Queue.Executable}s under a specific identity for better access control.
- * You must override either {@link #authenticate(hudson.model.Queue.Item)}, or {@link #authenticate(hudson.model.Queue.Task)}, or both.
+ * You must override either {@link #authenticate2(hudson.model.Queue.Item)}, or {@link #authenticate2(hudson.model.Queue.Task)}, or both.
  * @author Kohsuke Kawaguchi
  * @since 1.520
  * @see QueueItemAuthenticatorConfiguration
@@ -28,7 +28,7 @@ import org.springframework.security.core.Authentication;
 public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<QueueItemAuthenticator> implements ExtensionPoint {
     /**
      * Determines the identity in which the {@link hudson.model.Queue.Executable} will run as.
-     * The default implementation delegates to {@link #authenticate(hudson.model.Queue.Task)}.
+     * The default implementation delegates to {@link #authenticate2(hudson.model.Queue.Task)}.
      * @param item
      *      The contextual information to assist the authentication.
      *      The primary interest is likely {@link hudson.model.Queue.Item#task}, which is often {@link AbstractProject}.
@@ -36,36 +36,54 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      *
      * @return
      *      returning non-null will determine the identity. If null is returned, the next
-     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate
-     *      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
+     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate2
+      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
      */
-    public @CheckForNull Authentication authenticate(Queue.Item item) {
-        if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Task.class)) {
-            return authenticate(item.task);
+    public @CheckForNull Authentication authenticate2(Queue.Item item) {
+        if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate2", Queue.Task.class)) {
+            return authenticate2(item.task);
+        } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Task.class)) {
+            return authenticate(item.task).toSpring();
+        } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Item.class)) {
+            return authenticate(item).toSpring();
         } else {
-            throw new AbstractMethodError("you must override at least one of the QueueItemAuthenticator.authenticate methods");
+            throw new AbstractMethodError("you must override at least one of the QueueItemAuthenticator.authenticate2 methods");
         }
     }
 
     /**
      * Determines the identity in which the {@link hudson.model.Queue.Executable} will run as.
-     * The default implementation delegates to {@link #authenticate(hudson.model.Queue.Item)} (there will be no associated actions).
+     * The default implementation delegates to {@link #authenticate2(hudson.model.Queue.Item)} (there will be no associated actions).
      * @param task
      *      Often {@link AbstractProject}.
      *
      * @return
      *      returning non-null will determine the identity. If null is returned, the next
-     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate
-     *      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
+     *      configured {@link QueueItemAuthenticator} will be given a chance to authenticate2
+      the executor. If everything fails, fall back to {@link Task#getDefaultAuthentication()}.
      * @since 1.560
      */
-    public @CheckForNull Authentication authenticate(Queue.Task task) {
-        if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Item.class)) {
+    public @CheckForNull Authentication authenticate2(Queue.Task task) {
+        if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate2", Queue.Item.class)) {
             // Need a fake (unscheduled) item. All the other calls assume a BuildableItem but probably it does not matter.
-            return authenticate(new Queue.WaitingItem(Calendar.getInstance(), task, Collections.emptyList()));
+            return authenticate2(new Queue.WaitingItem(Calendar.getInstance(), task, Collections.emptyList()));
+        } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Item.class)) {
+            return authenticate(new Queue.WaitingItem(Calendar.getInstance(), task, Collections.emptyList())).toSpring();
+        } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Task.class)) {
+            return authenticate(task).toSpring();
         } else {
-            throw new AbstractMethodError("you must override at least one of the QueueItemAuthenticator.authenticate methods");
+            throw new AbstractMethodError("you must override at least one of the QueueItemAuthenticator.authenticate2 methods");
         }
+    }
+
+    @Deprecated
+    public @CheckForNull org.acegisecurity.Authentication authenticate(Queue.Item item) {
+        return org.acegisecurity.Authentication.fromSpring(authenticate2(item));
+    }
+
+    @Deprecated
+    public @CheckForNull org.acegisecurity.Authentication authenticate(Queue.Task task) {
+        return org.acegisecurity.Authentication.fromSpring(authenticate2(task));
     }
 
     @Override
