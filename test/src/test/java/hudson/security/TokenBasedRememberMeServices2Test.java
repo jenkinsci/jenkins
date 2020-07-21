@@ -4,23 +4,14 @@ import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
 import java.util.Base64;
 import static java.util.logging.Level.FINEST;
 import java.util.stream.Collectors;
 
 import hudson.model.User;
+import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.security.seed.UserSeedProperty;
-
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -45,6 +36,15 @@ import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 
 public class TokenBasedRememberMeServices2Test {
 
@@ -89,25 +89,25 @@ public class TokenBasedRememberMeServices2Test {
     }
 
     private Cookie getRememberMeCookie(JenkinsRule.WebClient wc) {
-        return wc.getCookieManager().getCookie(TokenBasedRememberMeServices2.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY);
+        return wc.getCookieManager().getCookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY);
     }
 
     private static class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
             if (username.equals(password)) {
-                return new org.acegisecurity.userdetails.User(username, password, true, new GrantedAuthority[] {new GrantedAuthorityImpl("myteam")});
+                return new org.springframework.security.core.userdetails.User(username, password, true, Collections.singleton(new SimpleGrantedAuthority("myteam")));
             }
             throw new BadCredentialsException(username);
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
             failureInduced = true;
             throw new UsernameNotFoundException("intentionally not working");
         }
@@ -137,14 +137,14 @@ public class TokenBasedRememberMeServices2Test {
         wc.executeOnServer(() -> {
             Authentication a = Jenkins.getAuthentication();
             assertEquals("bob", a.getName());
-            assertEquals(ImmutableList.of("authenticated", "myteam"), Arrays.stream(a.getAuthorities()).map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+            assertEquals(ImmutableList.of("authenticated", "myteam"), a.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
             return null;
         });
     }
 
     private static class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
             failureInduced = true;
             throw new UserMayOrMayNotExistException("I cannot tell");
         }

@@ -49,7 +49,6 @@ import java.util.TreeSet;
 
 import hudson.views.ViewJobFilter;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -75,6 +74,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
 public class ListViewTest {

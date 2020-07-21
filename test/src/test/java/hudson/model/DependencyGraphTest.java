@@ -33,11 +33,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * @author Alan.Harder@sun.com

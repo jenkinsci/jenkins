@@ -1,6 +1,5 @@
 package hudson.model;
 
-import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -10,6 +9,7 @@ import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Test cases for TimeZoneProperty

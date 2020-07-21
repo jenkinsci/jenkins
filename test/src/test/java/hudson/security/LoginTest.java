@@ -1,7 +1,6 @@
 package hudson.security;
 
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -23,6 +22,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.URL;
+import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -78,7 +78,7 @@ public class LoginTest {
      * Returns the 'remember me' cookie if set, otherwise return null. We don't care about the type, only whether it's null
      */
     private Object getRememberMeCookie(WebClient wc) {
-        return wc.getCookieManager().getCookie(ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY);
+        return wc.getCookieManager().getCookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY);
     }
 
     /**

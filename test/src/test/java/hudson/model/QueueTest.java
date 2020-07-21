@@ -80,10 +80,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.triggers.ReverseBuildTrigger;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -148,6 +145,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.jvnet.hudson.test.LoggerRule;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -665,7 +665,7 @@ public class QueueTest {
         r.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
-    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice",new GrantedAuthority[0]);
+    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice", Collections.emptySet());
 
 
     /**

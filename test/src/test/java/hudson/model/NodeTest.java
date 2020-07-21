@@ -52,7 +52,6 @@ import java.util.concurrent.Callable;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +71,7 @@ import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *

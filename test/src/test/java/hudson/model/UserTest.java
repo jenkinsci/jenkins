@@ -55,14 +55,6 @@ import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 
 import jenkins.security.apitoken.ApiTokenTestHelper;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
@@ -85,6 +77,14 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Category(SmokeTest.class)
 public class UserTest {
@@ -630,7 +630,7 @@ public class UserTest {
                 } catch (IOException x) {
                     throw new RuntimeException(x);
                 }
-                return new org.acegisecurity.userdetails.User(canonicalName, "", true, true, true, true, new GrantedAuthority[] {AUTHENTICATED_AUTHORITY});
+                return new org.springframework.security.core.userdetails.User(canonicalName, "", true, true, true, true, Collections.singleton(AUTHENTICATED_AUTHORITY));
             }
         }
         @Override

@@ -25,14 +25,15 @@ package test.security.realm;
 
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.springframework.dao.DataAccessException;
+import java.util.Collection;
+import java.util.Collections;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Accept any password
@@ -65,12 +66,12 @@ public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userStorage.get(username);
     }
 
     @Override
-    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException {
         return null;
     }
 
@@ -82,8 +83,8 @@ public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
         }
 
         @Override
-        public GrantedAuthority[] getAuthorities() {
-            return new GrantedAuthority[0];
+        public Collection<? extends GrantedAuthority> getAuthorities() {
+            return Collections.emptySet();
         }
 
         @Override

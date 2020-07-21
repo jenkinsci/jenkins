@@ -31,7 +31,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.acegisecurity.context.SecurityContextHolder;
 import static org.hamcrest.Matchers.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -40,6 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import org.jvnet.hudson.test.LoggerRule;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *
