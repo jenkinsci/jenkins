@@ -68,7 +68,7 @@ public abstract class ACL {
      */
     public final void checkPermission(@NonNull Permission p) {
         Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM2) {
+        if (a.equals(SYSTEM2)) {
             return;
         }
         if (!hasPermission(a,p)) {
@@ -130,7 +130,7 @@ public abstract class ACL {
      */
     public final boolean hasPermission(@NonNull Permission p) {
         Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM2) {
+        if (a.equals(SYSTEM2)) {
             return true;
         }
         return hasPermission(a, p);
@@ -151,7 +151,7 @@ public abstract class ACL {
         }
 
         Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM2) {
+        if (a.equals(SYSTEM2)) {
             return true;
         }
 
@@ -201,7 +201,7 @@ public abstract class ACL {
     public final void checkCreatePermission(@NonNull ItemGroup c,
                                             @NonNull TopLevelItemDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM2) {
+        if (a.equals(SYSTEM2)) {
             return;
         }
         if (!hasCreatePermission(a, c, d)) {
@@ -239,7 +239,7 @@ public abstract class ACL {
     public final void checkCreatePermission(@NonNull ViewGroup c,
                                             @NonNull ViewDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM2) {
+        if (a.equals(SYSTEM2)) {
             return;
         }
         if (!hasCreatePermission(a, c, d)) {

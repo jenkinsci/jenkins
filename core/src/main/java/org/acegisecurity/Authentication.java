@@ -25,6 +25,7 @@ package org.acegisecurity;
 
 import java.io.Serializable;
 import java.security.Principal;
+import java.util.Collection;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
@@ -54,11 +55,11 @@ public interface Authentication extends Principal, Serializable {
             }
             @Override
             public Object getCredentials() {
-                throw new NotImplementedException();
+                return a.getCredentials(); // TODO wrap if necessary
             }
             @Override
             public Object getDetails() {
-                throw new NotImplementedException();
+                return a.getDetails(); // TODO wrap if necessary
             }
             @Override
             public Object getPrincipal() {
@@ -76,18 +77,62 @@ public interface Authentication extends Principal, Serializable {
             public String getName() {
                 return a.getName();
             }
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof Authentication && ((Authentication) o).getName().equals(getName());
+            }
+            @Override
+            public int hashCode() {
+                return getName().hashCode();
+            }
+            @Override
+            public String toString() {
+                return getName();
+            }
         };
     }
 
     default org.springframework.security.core.Authentication toSpring() {
-        return new AbstractAuthenticationToken(GrantedAuthority.toSpring(getAuthorities())) {
+        return new org.springframework.security.core.Authentication() {
+            @Override
+            public Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
+                return GrantedAuthority.toSpring(Authentication.this.getAuthorities());
+            }
             @Override
             public Object getCredentials() {
-                throw new NotImplementedException();
+                return Authentication.this.getCredentials(); // TODO wrap if necessary
+            }
+            @Override
+            public Object getDetails() {
+                return Authentication.this.getDetails(); // TODO wrap if necessary
             }
             @Override
             public Object getPrincipal() {
                 return Authentication.this.getPrincipal(); // TODO wrap UserDetails if necessary
+            }
+            @Override
+            public boolean isAuthenticated() {
+                return Authentication.this.isAuthenticated();
+            }
+            @Override
+            public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+                Authentication.this.setAuthenticated(isAuthenticated);
+            }
+            @Override
+            public String getName() {
+                return Authentication.this.getName();
+            }
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof org.springframework.security.core.Authentication && ((org.springframework.security.core.Authentication) o).getName().equals(getName());
+            }
+            @Override
+            public int hashCode() {
+                return getName().hashCode();
+            }
+            @Override
+            public String toString() {
+                return getName();
             }
         };
     }

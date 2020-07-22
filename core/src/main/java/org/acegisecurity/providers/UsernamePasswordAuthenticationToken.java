@@ -29,11 +29,12 @@ import org.acegisecurity.GrantedAuthority;
 import org.apache.commons.lang.NotImplementedException;
 
 /**
- * @deprecated TODO replacement
+ * @deprecated use {@link org.springframework.security.authentication.UsernamePasswordAuthenticationToken}
  */
 @Deprecated
 public class UsernamePasswordAuthenticationToken implements Authentication {
 
+    // TODO maybe better to wrap using Authentication.fromSpring
     private final org.springframework.security.authentication.UsernamePasswordAuthenticationToken delegate;
 
     public UsernamePasswordAuthenticationToken(Object principal, Object credentials) {
@@ -48,31 +49,52 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
     public GrantedAuthority[] getAuthorities() {
         return GrantedAuthority.fromSpring(delegate.getAuthorities());
     }
+
     @Override
     public Object getCredentials() {
-        throw new NotImplementedException();
+        return delegate.getCredentials(); // TODO wrap if necessary
     }
+
     @Override
     public Object getDetails() {
-        throw new NotImplementedException();
+        return delegate.getDetails(); // TODO wrap if necessary
     }
+
     @Override
     public Object getPrincipal() {
         return delegate.getPrincipal(); // TODO wrap UserDetails if necessary
     }
+
     @Override
     public boolean isAuthenticated() {
         return delegate.isAuthenticated();
     }
+
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
         delegate.setAuthenticated(isAuthenticated);
     }
+
     @Override
     public String getName() {
         return delegate.getName();
     }
 
-    // TODO Serializable? equals/hashCode/toString?
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Authentication && ((Authentication) o).getName().equals(getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    // TODO Serializable?
 
 }

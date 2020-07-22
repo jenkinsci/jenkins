@@ -30,11 +30,12 @@ import org.acegisecurity.GrantedAuthority;
 import org.apache.commons.lang.NotImplementedException;
 
 /**
- * @deprecated TODO replacement
+ * @deprecated use {@link org.springframework.security.authentication.AnonymousAuthenticationToken}
  */
 @Deprecated
 public class AnonymousAuthenticationToken implements Authentication, Serializable {
 
+    // TODO maybe better to wrap using Authentication.fromSpring
     private final org.springframework.security.authentication.AnonymousAuthenticationToken delegate;
 
     public AnonymousAuthenticationToken(String key, Object principal, GrantedAuthority[] authorities) {
@@ -48,27 +49,47 @@ public class AnonymousAuthenticationToken implements Authentication, Serializabl
 
     @Override
     public Object getCredentials() {
-        throw new NotImplementedException();
+        return delegate.getCredentials(); // TODO wrap if necessary
     }
+
     @Override
     public Object getDetails() {
-        throw new NotImplementedException();
+        return delegate.getDetails(); // TODO wrap if necessary
     }
+
     @Override
     public Object getPrincipal() {
          return delegate.getPrincipal(); // TODO wrap UserDetails if necessary
     }
+
     @Override
     public boolean isAuthenticated() {
         return delegate.isAuthenticated();
     }
+
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
         delegate.setAuthenticated(isAuthenticated);
     }
+
     @Override
     public String getName() {
         return delegate.getName();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Authentication && ((Authentication) o).getName().equals(getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
 }
