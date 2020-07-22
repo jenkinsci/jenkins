@@ -2,6 +2,8 @@
 
 # About
 
+[![Jenkins Regular Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog%2Fbadge.json)](https://jenkins.io/changelog)
+[![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://jenkins.io/changelog-stable)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 
@@ -31,6 +33,11 @@ For all distributions Jenkins offers two release lines:
   Frequent releases which include all new features, improvements, and bug fixes.
 * [Long-Term Support (LTS)](https://www.jenkins.io/download/lts/) -
   Older release line which gets periodically updated via bug fix backports.
+
+Latest releases:
+[![Jenkins Regular Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog%2Fbadge.json)](https://jenkins.io/changelog)
+[![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://jenkins.io/changelog-stable)
+
 
 # Source
 Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
