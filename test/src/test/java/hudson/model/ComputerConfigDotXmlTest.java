@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import hudson.security.ACL;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
 import java.io.ByteArrayOutputStream;
@@ -86,7 +86,7 @@ public class ComputerConfigDotXmlTest {
         SecurityContextHolder.setContext(oldSecurityContext);
     }
 
-    @Test(expected = AccessDeniedException2.class)
+    @Test(expected = AccessDeniedException3.class)
     public void configXmlGetShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("GET");
@@ -96,7 +96,7 @@ public class ComputerConfigDotXmlTest {
         computer.doConfigDotXml(req, rsp);
     }
 
-    @Test(expected = AccessDeniedException2.class)
+    @Test(expected = AccessDeniedException3.class)
     public void configXmlPostShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("POST");

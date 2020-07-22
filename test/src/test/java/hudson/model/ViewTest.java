@@ -54,7 +54,7 @@ import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import hudson.security.ACL;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.slaves.DumbSlave;
 import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
@@ -538,7 +538,7 @@ public class ViewTest {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 return null;
@@ -550,13 +550,13 @@ public class ViewTest {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 try {
                     assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);

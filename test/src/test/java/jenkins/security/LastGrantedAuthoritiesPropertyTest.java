@@ -3,7 +3,7 @@ package jenkins.security;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
-import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -100,7 +100,7 @@ public class LastGrantedAuthoritiesPropertyTest {
 
         @Override
         public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
-            throw new UserMayOrMayNotExistException("fallback");
+            throw new UserMayOrMayNotExistException2("fallback");
         }
     }
 }

@@ -24,11 +24,10 @@
 
 package org.springframework.dao;
 
-import hudson.security.UserMayOrMayNotExistException;
 import org.springframework.core.NestedRuntimeException;
 
 /**
- * @deprecated Prefer {@link UserMayOrMayNotExistException}.
+ * @deprecated no replacement
  */
 @Deprecated
 public class DataAccessException extends NestedRuntimeException {

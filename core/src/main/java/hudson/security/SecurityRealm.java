@@ -363,7 +363,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Shortcut for {@link UserDetailsService#loadUserByUsername(String)}.
      *
-     * @throws UserMayOrMayNotExistException
+     * @throws UserMayOrMayNotExistException2
      *      If the security realm cannot even tell if the user exists or not.
      * @return
      *      never null.
@@ -373,8 +373,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (Util.isOverridden(SecurityRealm.class, getClass(), "loadUserByUsername", String.class)) {
             try {
                 return loadUserByUsername(username).toSpring();
-            } catch (org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException(x.toString(), x);
+            } catch (UserMayOrMayNotExistException | org.springframework.dao.DataAccessException x) {
+                throw new UserMayOrMayNotExistException2(x.toString(), x);
+            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+                throw new UsernameNotFoundException(x.toString(), x);
             }
         } else {
             return getSecurityComponents().userDetails.loadUserByUsername(username);
@@ -388,8 +390,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(loadUserByUsername2(username));
-        } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-            throw x;
+        } catch (UserMayOrMayNotExistException2 x) {
+            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
             throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
         }
@@ -406,7 +408,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @param fetchMembers if {@code true} then try and fetch the members of the group if it exists. Trying does not
      *                     imply that the members will be fetched and {@link hudson.security.GroupDetails#getMembers()}
      *                     may still return {@code null}
-     * @throws UserMayOrMayNotExistException if no conclusive result could be determined regarding the group existence.
+     * @throws UserMayOrMayNotExistException2 if no conclusive result could be determined regarding the group existence.
      * @throws UsernameNotFoundException     if the group does not exist.
      * @since TODO
      */
@@ -415,17 +417,21 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (Util.isOverridden(SecurityRealm.class, getClass(), "loadGroupByGroupname", String.class)) {
             try {
                 return loadGroupByGroupname(groupname);
-            } catch (org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException(x.toString(), x);
+            } catch (UserMayOrMayNotExistException | org.springframework.dao.DataAccessException x) {
+                throw new UserMayOrMayNotExistException2(x.toString(), x);
+            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+                throw new UsernameNotFoundException(x.toString(), x);
             }
         } else if (Util.isOverridden(SecurityRealm.class, getClass(), "loadGroupByGroupname", String.class, boolean.class)) {
             try {
                 return loadGroupByGroupname(groupname, fetchMembers);
+            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+                throw new UsernameNotFoundException(x.toString(), x);
             } catch (org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException(x.toString(), x);
+                throw new UserMayOrMayNotExistException2(x.toString(), x);
             }
         } else {
-            throw new UserMayOrMayNotExistException(groupname);
+            throw new UserMayOrMayNotExistException2(groupname);
         }
     }
 
@@ -436,8 +442,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public GroupDetails loadGroupByGroupname(String groupname) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, false);
-        } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-            throw x;
+        } catch (UserMayOrMayNotExistException2 x) {
+            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
             throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
         }
@@ -451,8 +457,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, fetchMembers);
-        } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-            throw x;
+        } catch (UserMayOrMayNotExistException2 x) {
+            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
             throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
         }

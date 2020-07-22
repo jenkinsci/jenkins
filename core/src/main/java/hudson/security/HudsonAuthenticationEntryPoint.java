@@ -85,11 +85,11 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
             Functions.advertiseHeaders(rsp);
 
-            AccessDeniedException2 cause = null;
+            AccessDeniedException3 cause = null;
             // report the diagnosis information if possible
             if (reason instanceof InsufficientAuthenticationException) {
-                if (reason.getCause() instanceof AccessDeniedException2) {
-                    cause = (AccessDeniedException2) reason.getCause();
+                if (reason.getCause() instanceof AccessDeniedException3) {
+                    cause = (AccessDeniedException3) reason.getCause();
                     cause.reportAsHeaders(rsp);
                 }
             }

@@ -35,12 +35,12 @@ import hudson.ExtensionList;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.GroupDetails;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
-import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
 import hudson.tasks.MailAddressResolver;
 import java.io.File;
 import java.io.IOException;
@@ -410,7 +410,7 @@ public class UserTest {
             fail("User should not have permission to configure another user.");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         }
@@ -449,7 +449,7 @@ public class UserTest {
             fail("User should not have permission to delete another user.");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         }
@@ -622,7 +622,7 @@ public class UserTest {
             if (username.equals("nonexistent")) {
                 throw new UsernameNotFoundException(username);
             } else if (username.equals("unknown")) {
-                throw new UserMayOrMayNotExistException(username);
+                throw new UserMayOrMayNotExistException2(username);
             } else {
                 String canonicalName = username.toLowerCase(Locale.ENGLISH);
                 try {

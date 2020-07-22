@@ -25,8 +25,6 @@ package hudson.security;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -47,8 +45,8 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
         rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         req.setAttribute("exception",cause);
 
-        if (cause instanceof AccessDeniedException2) {
-            ((AccessDeniedException2)cause).reportAsHeaders(rsp);
+        if (cause instanceof AccessDeniedException3) {
+            ((AccessDeniedException3)cause).reportAsHeaders(rsp);
         }
 
         WebApp.get(Jenkins.get().servletContext).getSomeStapler()

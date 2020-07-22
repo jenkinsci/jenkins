@@ -1,22 +1,21 @@
 package hudson.security;
 
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import jenkins.util.SystemProperties;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * {@link AccessDeniedException} with more information.
  * @author Kohsuke Kawaguchi
- * @deprecated use {@link AccessDeniedException3}
+ * @since TODO
  */
-@Deprecated
-public class AccessDeniedException2 extends AccessDeniedException {
+public class AccessDeniedException3 extends AccessDeniedException {
 
     /** If true, report {@code X-You-Are-In-Group} headers. Disabled due to JENKINS-39402; use {@code /whoAmI} etc. to diagnose permission issues. */
+    @SuppressWarnings("deprecation")
     private static /* not final */ boolean REPORT_GROUP_HEADERS = SystemProperties.getBoolean(AccessDeniedException2.class.getName() + ".REPORT_GROUP_HEADERS");
 
     /**
@@ -29,11 +28,11 @@ public class AccessDeniedException2 extends AccessDeniedException {
      */
     public final Permission permission;
 
-    public AccessDeniedException2(Authentication authentication, Permission permission) {
+    public AccessDeniedException3(Authentication authentication, Permission permission) {
         this(null,authentication,permission);
     }
 
-    public AccessDeniedException2(Throwable t, Authentication authentication, Permission permission) {
+    public AccessDeniedException3(Throwable t, Authentication authentication, Permission permission) {
         super(Messages.AccessDeniedException2_MissingPermission(authentication.getName(),
                 permission.group.title+"/"+permission.name), t);
         this.authentication = authentication;

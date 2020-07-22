@@ -75,7 +75,7 @@ public abstract class ACL {
             while (!p.enabled && p.impliedBy != null) {
                 p = p.impliedBy;
             }
-            throw new AccessDeniedException2(a,p);
+            throw new AccessDeniedException3(a,p);
         }
     }
 

@@ -145,7 +145,7 @@ public class TokenBasedRememberMeServices2Test {
         @Override
         public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             failureInduced = true;
-            throw new UserMayOrMayNotExistException("I cannot tell");
+            throw new UserMayOrMayNotExistException2("I cannot tell");
         }
     }
 

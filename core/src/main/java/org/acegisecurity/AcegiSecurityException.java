@@ -24,35 +24,20 @@
 
 package org.acegisecurity;
 
+import org.springframework.core.NestedRuntimeException;
+
 /**
- * @deprecated use {@link org.springframework.security.core.AuthenticationException}
+ * @deprecated use {@link RuntimeException}
  */
 @Deprecated
-public abstract class AuthenticationException extends AcegiSecurityException {
+public abstract class AcegiSecurityException extends NestedRuntimeException {
 
-    private final Object extraInformation;
-
-    public AuthenticationException(String msg) {
+    public AcegiSecurityException(String msg) {
         super(msg);
-        extraInformation = null;
     }
-
-    public AuthenticationException(String msg, Object extraInformation) {
-        super(msg);
-        this.extraInformation = extraInformation;
-    }
-
-    public AuthenticationException(String msg, Throwable t) {
-        super(msg, t);
-        extraInformation = null;
-    }
-
-    public Authentication getAuthentication() {
-        return null; // TODO in the real thing, there is a setter, but who calls it?
-    }
-
-    public Object getExtraInformation() {
-        return extraInformation;
+    
+    public AcegiSecurityException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 
 }

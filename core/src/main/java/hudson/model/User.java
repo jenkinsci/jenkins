@@ -43,7 +43,7 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
-import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
@@ -399,7 +399,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             UserDetails userDetails = userDetailsService.loadUserByUsername(id);
             LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", id);
             return userDetails;
-        } catch (UserMayOrMayNotExistException e) {
+        } catch (UserMayOrMayNotExistException2 e) {
             LOGGER.log(Level.FINE, "The user {0} may or may not exist in the SecurityRealm, so we provide minimum access", id);
         } catch (UsernameNotFoundException e) {
             if (ALLOW_NON_EXISTENT_USER_TO_LOGIN) {

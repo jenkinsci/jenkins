@@ -2,7 +2,7 @@ package jenkins.security;
 
 import hudson.model.User;
 import hudson.security.SecurityRealm;
-import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
 import java.util.Arrays;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * {@link UserDetailsService} for those {@link SecurityRealm}
  * that doesn't allow query of other users.
  *
- * When the backend responds with {@link UserMayOrMayNotExistException}, we try to replace that with
+ * When the backend responds with {@link UserMayOrMayNotExistException2}, we try to replace that with
  * information stored in {@link LastGrantedAuthoritiesProperty}.
  *
  * @author Kohsuke Kawaguchi
@@ -28,7 +28,7 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
             return base.loadUserByUsername(username);
-        } catch (UserMayOrMayNotExistException e) {
+        } catch (UserMayOrMayNotExistException2 e) {
             return attemptToImpersonate(username, e);
         }
     }

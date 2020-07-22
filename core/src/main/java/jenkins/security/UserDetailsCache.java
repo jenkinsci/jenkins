@@ -30,7 +30,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +95,7 @@ public final class UserDetailsCache {
     public UserDetails getCached(String idOrFullName) throws UsernameNotFoundException {
         Boolean exists = existenceCache.getIfPresent(idOrFullName);
         if (exists != null && !exists) {
-            throw new UserMayOrMayNotExistException(String.format("\"%s\" does not exist", idOrFullName));
+            throw new UserMayOrMayNotExistException2(String.format("\"%s\" does not exist", idOrFullName));
         } else {
             return detailsCache.getIfPresent(idOrFullName);
         }
@@ -108,7 +108,7 @@ public final class UserDetailsCache {
      * @param idOrFullName the username
      * @return the details
      *
-     * @throws UsernameNotFoundException (normally a {@link hudson.security.UserMayOrMayNotExistException})
+     * @throws UsernameNotFoundException (normally a {@link hudson.security.UserMayOrMayNotExistException2})
      *              if the user could not be found or the user has no GrantedAuthority
      * @throws DataAccessException if user could not be found for a repository-specific reason
      * @throws ExecutionException if anything else went wrong in the cache lookup/retrieval

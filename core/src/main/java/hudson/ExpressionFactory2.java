@@ -1,6 +1,6 @@
 package hudson;
 
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.expression.Expression;
@@ -72,7 +72,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
                 CURRENT_CONTEXT.set(context);
                 JexlContext jexlContext = new JellyJexlContext( context );
                 return expression.evaluate(jexlContext);
-            } catch (AccessDeniedException2 e) {
+            } catch (AccessDeniedException3 e) {
                 // let the security exception pass through
                 throw e;
             } catch (Exception e) {

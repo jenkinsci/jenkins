@@ -28,10 +28,14 @@ package org.acegisecurity.userdetails;
  * @deprecated use {@link org.springframework.security.core.userdetails.UsernameNotFoundException}
  */
 @Deprecated
-public class UsernameNotFoundException extends org.springframework.security.core.userdetails.UsernameNotFoundException {
+public class UsernameNotFoundException extends org.acegisecurity.BadCredentialsException {
 
     public UsernameNotFoundException(String msg) {
         super(msg);
+    }
+
+    public UsernameNotFoundException(String msg, Object extraInformation) {
+        super(msg, extraInformation);
     }
 
     public UsernameNotFoundException(String msg, Throwable t) {
