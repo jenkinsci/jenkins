@@ -7,6 +7,8 @@
 
 def buildNumber = BUILD_NUMBER as int; if (buildNumber > 1) milestone(buildNumber - 1); milestone(buildNumber) // JENKINS-43353 / JENKINS-58625
 
+unstable 'TODO do not even bother with CI yet'; return
+
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
 def runTests = true
 def failFast = false
