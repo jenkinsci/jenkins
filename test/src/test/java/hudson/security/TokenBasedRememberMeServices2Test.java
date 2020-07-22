@@ -22,6 +22,7 @@ import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 
+import static org.hamcrest.Matchers.emptyString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -378,7 +378,7 @@ public class TokenBasedRememberMeServices2Test {
             // we should see a remember me cookie
             rememberMeCookie = getRememberMeCookie(wc);
             assertNotNull(rememberMeCookie);
-            assertThat(rememberMeCookie.getValue(), not(isEmptyString()));
+            assertThat(rememberMeCookie.getValue(), not(is(emptyString())));
         }
 
         j.jenkins.setDisableRememberMe(true);
