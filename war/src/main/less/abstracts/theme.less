@@ -12,11 +12,10 @@
 
   // Color palette
   --white: #fff;
-  --lightest-grey: #f8f8f8;
+  --very-light-grey: #f8f8f8;
   --light-grey: #eaeff2;
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
-  --very-light-grey: #f0f0f0;
   --black: #333;
 
   // branding
@@ -71,7 +70,7 @@
   --breadcrumbs-bg: #f8f8f8;
   --breadcrumbs-border: var(--light-grey);
   --breadcrumbs-text-color: #4d545d;
-  --breadcrumbs-item-bg-color--hover: #e0e4dc;
+  --breadcrumbs-item-bg-color--hover: var(--light-grey);
 
   // Monitor / bell-alert new colors
   --monitor-bg-v2: #f8d7da;
@@ -119,8 +118,6 @@
   // Typography
   --text-color: var(--black);
   --text-color-secondary: var(--secondary);
-  --text-color-grey-light: #747c82;
-  --text-inactive: var(--text-color-grey-light);
 
   // Buttons
   --btn-primary-bg: var(--primary);
@@ -128,17 +125,17 @@
   --btn-primary-bg-active: var(--primary-active);
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
-  --btn-secondary-border: #9ba7af;
+  --btn-secondary-border: var(--medium-grey);
   --btn-text-color: var(--white);
-  --btn-link-bg--hover: #f8f8f8;
-  --btn-link-bg--active: #eaeff2;
+  --btn-link-bg--hover: var(--very-light-grey);
+  --btn-link-bg--active: var(--light-grey);
 
   // Help area
   --help-area-bg-color: var(--very-light-grey);
   --configure-job-help-area-bg-color: var(--medium-translucent);
 
   // Table
-  --even-row-color: var(--lightest-grey);
+  --even-row-color: var(--very-light-grey);
   --bigtable-border-width: var(--pane-border-width);
   --bigtable-header-bg: var(--dark-grey);
   --bigtable-header-font-weight: bold; // Does specifying this make sense
@@ -205,10 +202,9 @@
   // Side panel
   --panel-header-bg-color: var(--light-grey);
   --panel-border-color: var(--light-grey);
-  --panel-border-color--hover: #cecece;
   --side-panel-hover-color: var(--panel-border-color);
   --task-link-bg-color--active: var(--panel-border-color);
-  --task-link-bg-color--hover: #f8f8f8;
+  --task-link-bg-color--hover: var(--very-light-grey);
 
   // Form
   --input-color: var(--white);
@@ -222,7 +218,7 @@
   --menu-box-shadow: 0 3px 10px #bbb;
 
   // Manage component
-  --manage-option-bg-color--hover: #f8f8f8;
+  --manage-option-bg-color--hover: var(--very-light-grey);
   --manage-option-bg-color--active: var(--light-grey);
   --manage-option-border-color: var(--medium-grey);
 
@@ -237,9 +233,10 @@
   --configure-job-bottom-sticker-border-color: var(--line-green);
 
   // Plugin manager
-  --plugin-manager-bg-color-already-upgraded: #e8eeee;
-  --plugin-manager-category-link-bg-color: #fbfbfb;
+  --plugin-manager-bg-color-already-upgraded: var(--light-grey);
+  --plugin-manager-category-link-bg-color: var(--very-light-grey);
   --plugin-manager-category-link-bg-color--hover: #f2f2f2;
+  --plugin-manager-category-link-border-color: var(--medium-grey);
   --plugin-manager-category-link-border-color--hover: var(--black);
   --plugin-manager-category-text-color: var(--text-color);
   --plugin-manager-category-link-color--hover: var(--text-color);
