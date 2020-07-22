@@ -29,7 +29,7 @@ public class TimeZonePropertyTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.get("John Smith", true, java.util.Collections.emptyMap());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
 
         TimeZoneProperty tzp = new TimeZoneProperty("InvalidTimeZoneName");
         user.addProperty(tzp);
@@ -43,7 +43,7 @@ public class TimeZonePropertyTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         User user = User.get("John Smith", true, java.util.Collections.emptyMap());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
 
         assertEquals(null, TimeZoneProperty.forCurrentUser());
         TimeZoneProperty tzp = new TimeZoneProperty(timeZone);

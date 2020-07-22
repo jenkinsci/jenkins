@@ -360,10 +360,25 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * logged in.
      *
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
+     * @since TODO
+     */
+    public @NonNull Authentication impersonate2() throws UsernameNotFoundException {
+        return this.impersonate(this.getUserDetailsForImpersonation());
+    }
+
+    /**
+     * @deprecated use {@link #impersonate2}
      * @since 1.419
      */
-    public @NonNull Authentication impersonate() throws UsernameNotFoundException {
-        return this.impersonate(this.getUserDetailsForImpersonation());
+    @Deprecated
+    public @NonNull org.acegisecurity.Authentication impersonate() throws org.acegisecurity.userdetails.UsernameNotFoundException {
+        try {
+            return org.acegisecurity.Authentication.fromSpring(impersonate2());
+        } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            throw x;
+        } catch (UsernameNotFoundException x) {
+            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+        }
     }
 
     /**
@@ -921,7 +936,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         List<String> r = new ArrayList<>();
         Authentication authentication;
         try {
-            authentication = impersonate();
+            authentication = impersonate2();
         } catch (UsernameNotFoundException x) {
             LOGGER.log(Level.FINE, "cannot look up authorities for " + id, x);
             return Collections.emptyList();

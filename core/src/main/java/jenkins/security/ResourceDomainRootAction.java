@@ -176,7 +176,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         LOGGER.fine(() -> "Determined DBS URL: " + dbsUrl + " from restOfUrl: " + completeUrl + " and restOfPath: " + dbsFile);
 
         Authentication authentication = Jenkins.getAuthentication();
-        String authenticationName = authentication == Jenkins.ANONYMOUS ? "" : authentication.getName();
+        String authenticationName = authentication == Jenkins.ANONYMOUS2 ? "" : authentication.getName();
 
         try {
             return new Token(dbsUrl, authenticationName, Instant.now());
@@ -205,12 +205,12 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
             LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
 
-            Authentication auth = Jenkins.ANONYMOUS;
+            Authentication auth = Jenkins.ANONYMOUS2;
             if (Util.fixEmpty(authenticationName) != null) {
                 User user = User.getById(authenticationName, false);
                 if (user != null) {
                     try {
-                        auth = user.impersonate();
+                        auth = user.impersonate2();
                         LOGGER.fine(() -> "Successfully impersonated " + authenticationName);
                     } catch (UsernameNotFoundException ex) {
                         LOGGER.log(Level.FINE, "Failed to impersonate " + authenticationName, ex);

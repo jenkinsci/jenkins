@@ -68,7 +68,7 @@ public class MyViewTest {
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);
         auth.add(Job.READ, "User1");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("View " + view.getDisplayName() + " should not contain job " + job.getDisplayName(), view.contains(job));
         auth.add(Job.CONFIGURE, "User1");
         assertTrue("View " + view.getDisplayName() + " contain job " + job.getDisplayName(), view.contains(job));
@@ -102,7 +102,7 @@ public class MyViewTest {
         FreeStyleProject job = rule.createFreeStyleProject("job");
         MyView view = new MyView("My", rule.jenkins);
         auth.add(Job.READ, "User1");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("View " + view.getDisplayName() + " should not contains job " + job.getDisplayName(), view.getItems().contains(job));
         assertFalse("View " + view.getDisplayName() + " should not contains job " + job2.getDisplayName(), view.getItems().contains(job2));
         auth.add(Job.CONFIGURE, "User1");

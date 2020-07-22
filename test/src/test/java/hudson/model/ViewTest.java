@@ -532,7 +532,7 @@ public class ViewTest {
             grant(Jenkins.READ).everywhere().toEveryone().
             grant(Job.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
-        ACL.impersonate(Jenkins.ANONYMOUS, new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 try {
@@ -544,7 +544,7 @@ public class ViewTest {
                 return null;
             }
         });
-        ACL.impersonate(User.get("dev").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 try {
@@ -563,7 +563,7 @@ public class ViewTest {
                 return null;
             }
         });
-        ACL.impersonate(User.get("admin").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);

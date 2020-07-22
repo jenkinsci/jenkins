@@ -291,7 +291,7 @@ public class ItemsTest {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 CLICommand cmd = new CreateJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.get("attacker").impersonate());
+                cmd.setTransportAuth(User.get("attacker").impersonate2());
                 int status = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs(target).returnCode();
                 if (status != 0) {
                     throw new AbortException("CLI command failed with status " + status);
@@ -304,7 +304,7 @@ public class ItemsTest {
                 r.createFreeStyleProject("dupe");
                 CLICommand cmd = new CopyJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.get("attacker").impersonate());
+                cmd.setTransportAuth(User.get("attacker").impersonate2());
                 int status = invoker.invokeWithArgs("dupe", target).returnCode();
                 r.jenkins.getItem("dupe").delete();
                 if (status != 0) {
@@ -316,7 +316,7 @@ public class ItemsTest {
         MOVE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 try {
-                    SecurityContext orig = ACL.impersonate(User.get("attacker").impersonate());
+                    SecurityContext orig = ACL.impersonate(User.get("attacker").impersonate2());
                     try {
                         Items.move(r.jenkins.getItemByFullName("d", MockFolder.class).createProject(FreeStyleProject.class, target), r.jenkins);
                     } finally {

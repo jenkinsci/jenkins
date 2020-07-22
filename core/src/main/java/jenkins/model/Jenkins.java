@@ -4471,7 +4471,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // run the request through filters when this is the login request.
         // see http://www.nabble.com/Matrix-authorization-problem-tp14602081p14886312.html
         if(a==null)
-            a = ANONYMOUS;
+            a = ANONYMOUS2;
         return a;
     }
 
@@ -5367,14 +5367,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Because Spring Security creates its own {@link AnonymousAuthenticationToken} instances, the code must not
      * expect the singleton semantics. This is just a convenient instance.
      *
+     * @since TODO
+     */
+    public static final Authentication ANONYMOUS2;
+
+    /**
+     * @deprecated use {@link ANONYMOUS2}
      * @since 1.343
      */
-    public static final Authentication ANONYMOUS;
+    @Deprecated
+    public static final org.acegisecurity.Authentication ANONYMOUS;
 
     static {
         try {
-            ANONYMOUS = new AnonymousAuthenticationToken(
+            ANONYMOUS2 = new AnonymousAuthenticationToken(
                     "anonymous", "anonymous", Collections.singleton(new SimpleGrantedAuthority("anonymous")));
+            ANONYMOUS = org.acegisecurity.Authentication.fromSpring(ANONYMOUS2);
             XSTREAM = XSTREAM2 = new XStream2();
 
             XSTREAM.alias("jenkins", Jenkins.class);

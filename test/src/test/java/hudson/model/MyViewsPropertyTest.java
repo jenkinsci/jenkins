@@ -250,7 +250,7 @@ public class MyViewsPropertyTest {
         rule.jenkins.setAuthorizationStrategy(auth);     
         user.addProperty(property);
         boolean ex = false;
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         try{
             property.checkPermission(Permission.CONFIGURE);
         }
@@ -258,14 +258,14 @@ public class MyViewsPropertyTest {
             ex = true;
         }
         assertTrue("Property should throw AccessDeniedException.",ex);
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         try{
             property.checkPermission(Permission.CONFIGURE);
         }
         catch(AccessDeniedException e){
             fail("Property should not throw AccessDeniedException - user should control of himself.");
         }
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         auth.add(Jenkins.ADMINISTER, "User2");
         try{
             property.checkPermission(Permission.CONFIGURE);
@@ -286,9 +286,9 @@ public class MyViewsPropertyTest {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);    
         user.addProperty(property);
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         assertFalse("User User2 should not configure permission for user User",property.hasPermission(Permission.CONFIGURE));
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertTrue("User should control of himself.", property.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, "User2");
         assertTrue("User User2 should configure permission for user User",property.hasPermission(Permission.CONFIGURE));

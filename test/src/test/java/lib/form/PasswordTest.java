@@ -162,7 +162,7 @@ public class PasswordTest {
             assertThat(xmlAdmin, containsString("<description>" + p.getDescription() + "</description>"));
             // CLICommandInvoker does not work here, as it sets up its own SecurityRealm + AuthorizationStrategy.
             GetJobCommand getJobCommand = new GetJobCommand();
-            Authentication adminAuth = User.get("admin").impersonate();
+            Authentication adminAuth = User.get("admin").impersonate2();
             getJobCommand.setTransportAuth(adminAuth);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             String pName = p.getFullName();
@@ -186,7 +186,7 @@ public class PasswordTest {
             assertThat(xml_regex_pattern.matcher(xmlDev).find(), is(false));
             assertEquals(xmlAdmin.replaceAll(xml_regex_match, "********"), xmlDev);
             getJobCommand = new GetJobCommand();
-            Authentication devAuth = User.get("dev").impersonate();
+            Authentication devAuth = User.get("dev").impersonate2();
             getJobCommand.setTransportAuth(devAuth);
             baos = new ByteArrayOutputStream();
             getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);

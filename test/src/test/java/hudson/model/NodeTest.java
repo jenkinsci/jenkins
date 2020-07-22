@@ -113,7 +113,7 @@ public class NodeTest {
         OfflineCause.UserCause cause;
 
         final User someone = User.get("someone@somewhere.com");
-        ACL.impersonate(someone.impersonate());
+        ACL.impersonate(someone.impersonate2());
 
         computer.doToggleOffline("original message");
         cause = (UserCause) computer.getOfflineCause();
@@ -121,7 +121,7 @@ public class NodeTest {
         assertEquals(someone, cause.getUser());
 
         final User root = User.get("root@localhost");
-        ACL.impersonate(root.impersonate());
+        ACL.impersonate(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
@@ -137,7 +137,7 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         final Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
-        try (ACLContext ctxt = ACL.as(Jenkins.ANONYMOUS)) {
+        try (ACLContext ctxt = ACL.as(Jenkins.ANONYMOUS2)) {
             computer.doToggleOffline("original message");
         }
 
@@ -147,7 +147,7 @@ public class NodeTest {
 
 
         final User root = User.get("root@localhost");
-        try (ACLContext ctxt = ACL.as(root.impersonate())) {
+        try (ACLContext ctxt = ACL.as(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
         cause = (UserCause) computer.getOfflineCause();
@@ -253,13 +253,13 @@ public class NodeTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
         User user = realm.createAccount("John Smith","abcdef");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
         auth.add(Computer.CONFIGURE, user.getId());
         assertTrue("Current user should have permission CONFIGURE.", user.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
 
         user = User.get("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));

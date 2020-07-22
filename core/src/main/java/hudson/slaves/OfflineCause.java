@@ -147,7 +147,7 @@ public abstract class OfflineCause {
         }
 
         private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS.getName(), message));
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message));
             this.userId = userId;
         }
 

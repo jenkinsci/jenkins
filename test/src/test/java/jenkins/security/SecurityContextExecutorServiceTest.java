@@ -65,7 +65,7 @@ public class SecurityContextExecutorServiceTest {
 
             User u = User.get("bob");
             // Create a sample user context
-            userContext = new NonSerializableSecurityContext(u.impersonate());
+            userContext = new NonSerializableSecurityContext(u.impersonate2());
 
             // Create a null context
             SecurityContextHolder.clearContext();

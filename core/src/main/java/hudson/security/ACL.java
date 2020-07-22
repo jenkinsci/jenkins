@@ -409,12 +409,12 @@ public abstract class ACL {
      */
     @NonNull
     public static ACLContext as(@CheckForNull User user) {
-        return as(user == null ? Jenkins.ANONYMOUS : user.impersonate());
+        return as(user == null ? Jenkins.ANONYMOUS2 : user.impersonate2());
     }
 
     /**
      * Checks if the given authentication is anonymous by checking its class.
-     * @see Jenkins#ANONYMOUS
+     * @see Jenkins#ANONYMOUS2
      * @see AnonymousAuthenticationToken
      */
     public static boolean isAnonymous(@NonNull Authentication authentication) {

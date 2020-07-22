@@ -412,7 +412,7 @@ public class JenkinsTest {
         j.jenkins.setAuthorizationStrategy(auth);
 
         // no anonymous read access
-        assertFalse(Jenkins.get().hasPermission(Jenkins.ANONYMOUS, Jenkins.READ));
+        assertFalse(Jenkins.get().hasPermission(Jenkins.ANONYMOUS2, Jenkins.READ));
 
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);

@@ -1866,7 +1866,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         listener.getLogger().println(Messages.Run_running_as_SYSTEM());
                     } else {
                         String id = auth.getName();
-                        if (!auth.equals(Jenkins.ANONYMOUS)) {
+                        if (!auth.equals(Jenkins.ANONYMOUS2)) {
                             final User usr = User.getById(id, false);
                             if (usr != null) { // Encode user hyperlink for existing users
                                 id = ModelHyperlinkNote.encodeTo(usr);

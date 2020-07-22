@@ -330,12 +330,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @param auth
      *      Always non-null.
      *      If the underlying transport had already performed authentication, this object is something other than
-     *      {@link jenkins.model.Jenkins#ANONYMOUS}.
+     *      {@link jenkins.model.Jenkins#ANONYMOUS2}.
      * @deprecated Unused.
      */
     @Deprecated
     protected boolean shouldPerformAuthentication(Authentication auth) {
-        return auth== Jenkins.ANONYMOUS;
+        return auth== Jenkins.ANONYMOUS2;
     }
 
     /**
@@ -352,11 +352,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * then this method can return a valid identity of the client.
      *
      * <p>
-     * If the transport doesn't do authentication, this method returns {@link jenkins.model.Jenkins#ANONYMOUS}.
+     * If the transport doesn't do authentication, this method returns {@link jenkins.model.Jenkins#ANONYMOUS2}.
      */
     public Authentication getTransportAuthentication() {
         Authentication a = transportAuth; 
-        if (a==null)    a = Jenkins.ANONYMOUS;
+        if (a==null)    a = Jenkins.ANONYMOUS2;
         return a;
     }
 

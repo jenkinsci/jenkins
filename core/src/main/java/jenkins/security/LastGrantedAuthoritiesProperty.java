@@ -26,7 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 /**
  * Remembers the set of {@link GrantedAuthority}s that was obtained the last time the user has logged in.
  *
- * This allows us to implement {@link User#impersonate()} with proper set of groups.
+ * This allows us to implement {@link User#impersonate2()} with proper set of groups.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.556

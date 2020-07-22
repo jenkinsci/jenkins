@@ -168,12 +168,12 @@ public class UserTest {
         SecurityContext seccon = SecurityContextHolder.getContext();
         Authentication orig = seccon.getAuthentication();
         try {
-            seccon.setAuthentication(User.get("administrator").impersonate());
+            seccon.setAuthentication(User.get("administrator").impersonate2());
             assertEquals("[admins]", User.get("administrator").getAuthorities().toString());
             assertEquals("[users]", User.get("alice").getAuthorities().toString());
             assertEquals("[lpadmin, users]", User.get("bob").getAuthorities().toString());
             assertEquals("[]", User.get("MasterOfXaos").getAuthorities().toString());
-            seccon.setAuthentication(User.get("alice").impersonate());
+            seccon.setAuthentication(User.get("alice").impersonate2());
             assertEquals("[]", User.get("alice").getAuthorities().toString());
             assertEquals("[]", User.get("bob").getAuthorities().toString());
         } finally {
@@ -263,7 +263,7 @@ public class UserTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User user = User.get("John Smith");
         assertNotSame("User John Smith should not be the current user.", User.current().getId(), user.getId());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertEquals("User John Smith should be the current user.", user.getId(), User.current().getId());
     }
 
@@ -399,12 +399,12 @@ public class UserTest {
         user2.save();
         auth.add(Jenkins.ADMINISTER, user.getId());
         auth.add(Jenkins.READ, user2.getId());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         HtmlForm form = j.createWebClient().withBasicCredentials(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
         form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         try{
             user.doConfigSubmit(null, null);
             fail("User should not have permission to configure another user.");
@@ -435,7 +435,7 @@ public class UserTest {
         user2.save();
         auth.add(Jenkins.ADMINISTER, user.getId());
         auth.add(Jenkins.READ, user2.getId());
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         HtmlForm form = j.createWebClient().login(user.getId(), "password").goTo(user2.getUrl() + "/delete").getFormByName("delete");
         j.submit(form);
         assertFalse("User should be deleted from memory.", User.getAll().contains(user2));
@@ -443,7 +443,7 @@ public class UserTest {
         User.reload();
         assertNull("Deleted user should not be loaded.", User.get(user2.getId(),false, Collections.EMPTY_MAP));
         user2 = realm.createAccount("John Smith2", "password");
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         try{
             user.doDoDelete(null, null);
             fail("User should not have permission to delete another user.");
@@ -478,12 +478,12 @@ public class UserTest {
         j.jenkins.setSecurityRealm(realm);
         User user = realm.createAccount("John Smith","password");
         User user2 = realm.createAccount("John Smith2", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", user2.hasPermission(Permission.READ));
         assertTrue("Current user should always have permission read to himself.", user.hasPermission(Permission.READ));
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Current user should have permission read, because he has permission administer.", user2.hasPermission(Permission.READ));
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
         user2 = User.get("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user2.hasPermission(Permission.READ));
     }
@@ -499,13 +499,13 @@ public class UserTest {
         User user2 = realm.createAccount("John Smith2","password");
         user2.save();
 
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Ordinary user cannot delete somebody else", user2.canDelete());
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Administrator can delete anybody else", user2.canDelete());
         assertFalse("User (even admin) cannot delete himself", user.canDelete());
 
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         auth.add(Jenkins.ADMINISTER, user2.getId());
         User user3 = User.get("Random Somebody");
         assertFalse("Storage-less temporary user cannot be deleted", user3.canDelete());
@@ -531,20 +531,20 @@ public class UserTest {
         auth.add(Jenkins.ADMINISTER, admin.getId());
 
         // Admin can change everyone's token
-        SecurityContextHolder.getContext().setAuthentication(admin.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(admin.impersonate2());
         admin.getProperty(ApiTokenProperty.class).changeApiToken();
         alice.getProperty(ApiTokenProperty.class).changeApiToken();
 
         // User can change only own token
-        SecurityContextHolder.getContext().setAuthentication(bob.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(bob.impersonate2());
         bob.getProperty(ApiTokenProperty.class).changeApiToken();
         try {
             alice.getProperty(ApiTokenProperty.class).changeApiToken();
             fail("Bob should not be authorized to change alice's token");
         } catch (AccessDeniedException expected) { }
 
-        // ANONYMOUS can not change any token
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+        // ANONYMOUS2 can not change any token
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
         try {
             alice.getProperty(ApiTokenProperty.class).changeApiToken();
             fail("Anonymous should not be authorized to change alice's token");
