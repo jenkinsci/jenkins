@@ -24,12 +24,12 @@
 
 package org.acegisecurity.context;
 
+import hudson.model.User;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
-import org.apache.commons.lang.NotImplementedException;
 
 /**
- * @deprecated Use {@link ACL#as(User)} or {@link org.springframework.security.core.context.SecurityContext}.
+ * @deprecated Use {@link ACL#as2(User)} or {@link org.springframework.security.core.context.SecurityContext}
  */
 @Deprecated
 public interface SecurityContext {
@@ -38,12 +38,30 @@ public interface SecurityContext {
 
     void setAuthentication(Authentication a);
 
-    static SecurityContext fromSpring(org.springframework.security.core.context.SecurityContext context) {
-        throw new NotImplementedException("TODO");
+    static SecurityContext fromSpring(org.springframework.security.core.context.SecurityContext c) {
+        return new SecurityContext() {
+            @Override
+            public Authentication getAuthentication() {
+                return Authentication.fromSpring(c.getAuthentication());
+            }
+            @Override
+            public void setAuthentication(Authentication a) {
+                c.setAuthentication(a.toSpring());
+            }
+        };
     }
 
     default org.springframework.security.core.context.SecurityContext toSpring() {
-        throw new NotImplementedException("TODO");
+        return new org.springframework.security.core.context.SecurityContext() {
+            @Override
+            public org.springframework.security.core.Authentication getAuthentication() {
+                return SecurityContext.this.getAuthentication().toSpring();
+            }
+            @Override
+            public void setAuthentication(org.springframework.security.core.Authentication authentication) {
+                SecurityContext.this.setAuthentication(Authentication.fromSpring(authentication));
+            }
+        };
     }
 
 }

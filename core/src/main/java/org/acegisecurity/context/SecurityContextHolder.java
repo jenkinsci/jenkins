@@ -42,4 +42,8 @@ public class SecurityContextHolder {
         org.springframework.security.core.context.SecurityContextHolder.setContext(c.toSpring());
     }
 
+    public static void clearContext() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
 }
