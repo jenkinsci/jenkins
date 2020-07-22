@@ -62,14 +62,12 @@ import java.util.Set;
 import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.security.ACLContext;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTriggerTest;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.junit.Assume;
@@ -87,6 +85,9 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.xml.sax.SAXException;
 
 public class BuildTriggerTest {
@@ -267,7 +268,7 @@ public class BuildTriggerTest {
         assertNotNull(cause);
         assertEquals(b, cause.getUpstreamRun());
         // Now if we have configured some QIA’s but they are not active on this job, we should normally fall back to running as anonymous. Which would normally have no permissions:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", Jenkins.ANONYMOUS2)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", Jenkins.ANONYMOUS)));
         assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
         assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
@@ -302,13 +303,10 @@ public class BuildTriggerTest {
         assertEquals(3, downstream.getLastBuild().number);
         b3 = j.buildAndAssertSuccess(simple);
     }
-    private void assertDoCheck(Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
+    private void assertDoCheck(org.acegisecurity.Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
         FormValidation result;
-        SecurityContext orig = ACL.impersonate(auth);
-        try {
+        try (ACLContext c = ACL.as(auth)) {
             result = j.jenkins.getDescriptorByType(BuildTrigger.DescriptorImpl.class).doCheck(project, value);
-        } finally {
-            SecurityContextHolder.setContext(orig);
         }
         if (expectedError == null) {
             assertEquals(result.renderHtml(), FormValidation.Kind.OK, result.kind);

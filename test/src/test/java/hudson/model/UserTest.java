@@ -638,7 +638,7 @@ public class UserTest {
             return loadUserByUsername2(username); // irrelevant
         }
         @Override
-        public GroupDetails loadGroupByGroupname2(String groupname) throws UsernameNotFoundException {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UsernameNotFoundException(groupname); // irrelevant
         }
     }
