@@ -44,6 +44,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -76,13 +77,13 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
     }
 
     public @NonNull List<EnvVarsFilterLocalRule> buildEnvVarsFilterRules() {
-        return new ArrayList<>(configuredLocalRules);
+        return configuredLocalRules == null ? Collections.emptyList() : new ArrayList<>(configuredLocalRules);
     }
 
     // used by Jelly view
     @Restricted(NoExternalUse.class)
     public List<EnvVarsFilterLocalRule> getConfiguredLocalRules() {
-        return configuredLocalRules;
+        return configuredLocalRules == null ? Collections.emptyList() : configuredLocalRules;
     }
 
     @Override
