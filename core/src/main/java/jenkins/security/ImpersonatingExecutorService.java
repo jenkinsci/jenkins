@@ -32,7 +32,7 @@ import jenkins.util.InterceptingExecutorService;
 import org.springframework.security.core.Authentication;
 
 /**
- * Uses {@link ACL#impersonate(Authentication)} for all tasks.
+ * Uses {@link ACL#impersonate2(Authentication)} for all tasks.
  * @see SecurityContextExecutorService
  * @since 2.51
  */
@@ -55,7 +55,7 @@ public final class ImpersonatingExecutorService extends InterceptingExecutorServ
         return new Runnable() {
             @Override
             public void run() {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     r.run();
                 }
             }
@@ -67,7 +67,7 @@ public final class ImpersonatingExecutorService extends InterceptingExecutorServ
         return new Callable<V>() {
             @Override
             public V call() throws Exception {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     return r.call();
                 }
             }

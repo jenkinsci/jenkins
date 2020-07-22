@@ -220,7 +220,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 }
             }
 
-            try (ACLContext ignored = ACL.as(auth)) {
+            try (ACLContext ignored = ACL.as2(auth)) {
                 try {
                     String path = requestUrlSuffix + Arrays.stream(restOfPath.split("[/]")).map(Util::rawEncode).collect(Collectors.joining("/"));
                     Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), path);

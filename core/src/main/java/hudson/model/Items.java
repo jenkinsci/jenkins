@@ -636,7 +636,7 @@ public class Items {
                             // slower path because the caller has switched authentication
                             // we need to keep the original authentication so that allItems() can be used
                             // like getAllItems() without the cost of building the entire list up front
-                            try (ACLContext ctx = ACL.as(authentication)) {
+                            try (ACLContext ctx = ACL.as2(authentication)) {
                                 delegate = group.getItems(search).iterator();
                             }
                         }
@@ -679,7 +679,7 @@ public class Items {
      */
     static void verifyItemDoesNotAlreadyExist(@NonNull ItemGroup<?> parent, @NonNull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
         Item existing;
-        try (ACLContext ctxt = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctxt = ACL.as2(ACL.SYSTEM2)) {
             existing = parent.getItem(newName);
         }
         if (existing != null && existing != variant) {

@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.model.User;
 import java.util.Base64;
 import java.util.Date;
@@ -328,6 +329,18 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
             return true;
         }
         return false;
+    }
+
+    @VisibleForTesting
+    @Override
+    protected int getTokenValiditySeconds() {
+        return super.getTokenValiditySeconds();
+    }
+
+    @VisibleForTesting
+    @Override
+    protected String getCookieName() {
+        return super.getCookieName();
     }
 
     /**

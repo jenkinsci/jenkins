@@ -47,7 +47,7 @@ public class InitReactorRunner {
         else
             es = Executors.newSingleThreadExecutor(new NamingThreadFactory(new DaemonThreadFactory(), "InitReactorRunner"));
         try {
-            reactor.execute(new ImpersonatingExecutorService(es, ACL.SYSTEM), buildReactorListener());
+            reactor.execute(new ImpersonatingExecutorService(es, ACL.SYSTEM2), buildReactorListener());
         } finally {
             es.shutdownNow();   // upon a successful return the executor queue should be empty. Upon an exception, we want to cancel all pending tasks
         }

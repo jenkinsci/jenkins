@@ -113,7 +113,7 @@ public class NodeTest {
         OfflineCause.UserCause cause;
 
         final User someone = User.get("someone@somewhere.com");
-        ACL.impersonate(someone.impersonate2());
+        ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
         cause = (UserCause) computer.getOfflineCause();
@@ -121,7 +121,7 @@ public class NodeTest {
         assertEquals(someone, cause.getUser());
 
         final User root = User.get("root@localhost");
-        ACL.impersonate(root.impersonate2());
+        ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
@@ -137,7 +137,7 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         final Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
-        try (ACLContext ctxt = ACL.as(Jenkins.ANONYMOUS2)) {
+        try (ACLContext ctxt = ACL.as2(Jenkins.ANONYMOUS2)) {
             computer.doToggleOffline("original message");
         }
 
@@ -147,7 +147,7 @@ public class NodeTest {
 
 
         final User root = User.get("root@localhost");
-        try (ACLContext ctxt = ACL.as(root.impersonate2())) {
+        try (ACLContext ctxt = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
         cause = (UserCause) computer.getOfflineCause();

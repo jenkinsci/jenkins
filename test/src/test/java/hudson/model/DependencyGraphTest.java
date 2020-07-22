@@ -118,7 +118,7 @@ public class DependencyGraphTest extends HudsonTestCase {
         jenkins.rebuildDependencyGraph();
         try {
             // Switch to full access to check results:
-            ACL.impersonate(ACL.SYSTEM);
+            ACL.impersonate2(ACL.SYSTEM2);
             // @LocalData for this test has jobs w/o anonymous Item.READ
             AbstractProject up = (AbstractProject) jenkins.getItem("hiddenUpstream");
             assertNotNull("hiddenUpstream project not found", up);

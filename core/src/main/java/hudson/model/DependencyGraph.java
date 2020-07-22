@@ -86,7 +86,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     
     public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)){
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)){
             this.computationalData = new HashMap<>();
             for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);

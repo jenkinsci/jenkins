@@ -313,7 +313,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             if (item != null) {
                 throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
             }
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                 item = getParent().getItem(newName);
                 if (item != null) {
                     if (LOGGER.isLoggable(Level.FINE)) {

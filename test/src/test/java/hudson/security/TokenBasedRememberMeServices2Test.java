@@ -25,7 +25,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.kohsuke.stapler.Stapler;
-import org.springframework.dao.DataAccessException;
 import test.security.realm.InMemorySecurityRealm;
 
 import net.jcip.annotations.GuardedBy;
@@ -96,13 +95,13 @@ public class TokenBasedRememberMeServices2Test {
         @Override
         protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (username.equals(password)) {
-                return new org.springframework.security.core.userdetails.User(username, password, true, Collections.singleton(new SimpleGrantedAuthority("myteam")));
+                return new org.springframework.security.core.userdetails.User(username, password, Collections.singleton(new SimpleGrantedAuthority("myteam")));
             }
             throw new BadCredentialsException(username);
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname2(String groupname) throws UsernameNotFoundException {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UnsupportedOperationException();
         }
 
@@ -329,7 +328,7 @@ public class TokenBasedRememberMeServices2Test {
         private int counter = 0;
 
         @Override
-        public synchronized UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException, DataAccessException {
+        public synchronized UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             ++counter;
             return super.loadUserByUsername2(username);
         }
@@ -347,7 +346,8 @@ public class TokenBasedRememberMeServices2Test {
         // the hack
         expiryTime += deltaDuration;
 
-        String signatureValue = tokenService.makeTokenSignature(expiryTime, user.getProperty(HudsonPrivateSecurityRealm.Details.class));
+        HudsonPrivateSecurityRealm.Details details = user.getProperty(HudsonPrivateSecurityRealm.Details.class);
+        String signatureValue = tokenService.makeTokenSignature(expiryTime, details.getUsername(), details.getPassword());
         String tokenValue = user.getId() + ":" + expiryTime + ":" + signatureValue;
         String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
         return new Cookie(j.getURL().getHost(), tokenService.getCookieName(), tokenValueBase64);

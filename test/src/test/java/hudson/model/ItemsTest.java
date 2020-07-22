@@ -316,7 +316,7 @@ public class ItemsTest {
         MOVE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 try {
-                    SecurityContext orig = ACL.impersonate(User.get("attacker").impersonate2());
+                    SecurityContext orig = ACL.impersonate2(User.get("attacker").impersonate2());
                     try {
                         Items.move(r.jenkins.getItemByFullName("d", MockFolder.class).createProject(FreeStyleProject.class, target), r.jenkins);
                     } finally {

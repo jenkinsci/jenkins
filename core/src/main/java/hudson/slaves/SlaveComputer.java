@@ -288,7 +288,7 @@ public class SlaveComputer extends Computer {
             // do this on another thread so that the lengthy launch operation
             // (which is typical) won't block UI thread.
 
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {// background activity should run like a super user
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {// background activity should run like a super user
                 log.rewind();
                 try {
                     for (ComputerListener cl : ComputerListener.all())
@@ -679,7 +679,7 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 cl.preOnline(this,channel,root,taskListener);
             }
@@ -709,7 +709,7 @@ public class SlaveComputer extends Computer {
                 statusChangeLock.notifyAll();
             }
         }
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 try {
                     cl.onOnline(this,taskListener);

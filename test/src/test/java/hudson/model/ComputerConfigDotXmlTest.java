@@ -77,7 +77,7 @@ public class ComputerConfigDotXmlTest {
         MockitoAnnotations.initMocks(this);
         computer = spy(rule.createSlave().toComputer());
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        oldSecurityContext = ACL.impersonate(User.get("user").impersonate2());
+        oldSecurityContext = ACL.impersonate2(User.get("user").impersonate2());
     }
 
     @After

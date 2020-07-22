@@ -133,7 +133,7 @@ public class BasicHeaderProcessor implements Filter {
     protected void success(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain, Authentication auth) throws IOException, ServletException {
         rememberMeServices.loginSuccess(req, rsp, auth);
 
-        try (ACLContext ctx = ACL.as(auth)){
+        try (ACLContext ctx = ACL.as2(auth)){
             chain.doFilter(req,rsp);
         }
     }

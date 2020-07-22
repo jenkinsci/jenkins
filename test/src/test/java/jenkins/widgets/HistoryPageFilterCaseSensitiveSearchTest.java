@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +22,7 @@ import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 /**
  * TODO: Code partially duplicated with HistoryPageFilterTest in core
@@ -65,7 +65,7 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         UsernamePasswordAuthenticationToken testUserAuthentication = new UsernamePasswordAuthenticationToken(TEST_USER_NAME, "any");
-        try (ACLContext ignored = ACL.as(testUserAuthentication)) {
+        try (ACLContext ignored = ACL.as2(testUserAuthentication)) {
             User.get(TEST_USER_NAME).addProperty(new UserSearchProperty(false));
 
             //test logic

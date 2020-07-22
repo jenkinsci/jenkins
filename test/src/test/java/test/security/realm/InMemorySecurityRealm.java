@@ -71,7 +71,7 @@ public class InMemorySecurityRealm extends AbstractPasswordBasedSecurityRealm {
     }
 
     @Override
-    public GroupDetails loadGroupByGroupname2(String groupname) throws UsernameNotFoundException {
+    public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
         return null;
     }
 

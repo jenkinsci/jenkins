@@ -54,7 +54,7 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
         return new Runnable() {
             @Override
             public void run() {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     r.run();
                 }
             }
@@ -66,7 +66,7 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
         return new Callable<V>() {
             @Override
             public V call() throws Exception {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     return r.call();
                 }
             }

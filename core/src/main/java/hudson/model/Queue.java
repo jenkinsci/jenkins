@@ -2003,13 +2003,13 @@ public class Queue extends ResourceController implements Saveable {
          * When the task execution touches other objects inside Jenkins, the access control is performed
          * based on whether this {@link Authentication} is allowed to use them.
          *
-         * @return by default, {@link ACL#SYSTEM}
+         * @return by default, {@link ACL#SYSTEM2}
          * @since 1.520
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task)
          */
         default @NonNull Authentication getDefaultAuthentication() {
-            return ACL.SYSTEM;
+            return ACL.SYSTEM2;
         }
 
         /**
@@ -2321,7 +2321,7 @@ public class Queue extends ResourceController implements Saveable {
          *
          * When the task execution touches other objects inside Jenkins, the access control is performed
          * based on whether this {@link Authentication} is allowed to use them. Implementers, if you are unsure,
-         * return the identity of the user who queued the task, or {@link ACL#SYSTEM} to bypass the access control
+         * return the identity of the user who queued the task, or {@link ACL#SYSTEM2} to bypass the access control
          * and run as the super user.
          *
          * @since 1.520

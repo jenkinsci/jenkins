@@ -42,6 +42,6 @@ public class ComputerTest {
     @Test
     public void testThreadPoolForRemotingActsAsSystemUser() throws InterruptedException, ExecutionException {
         Future<Authentication> job = Computer.threadPoolForRemoting.submit(Jenkins::getAuthentication);
-        assertThat(job.get(), is(ACL.SYSTEM));
+        assertThat(job.get(), is(ACL.SYSTEM2));
     }
 }

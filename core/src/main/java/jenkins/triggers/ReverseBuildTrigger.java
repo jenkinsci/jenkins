@@ -148,7 +148,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
 
         Item authUpstream = null;
-        try (ACLContext ctx = ACL.as(auth)) {
+        try (ACLContext ctx = ACL.as2(auth)) {
             authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
         } catch (AccessDeniedException ade) {
@@ -245,7 +245,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
 
         private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 final Map<Job, Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
                 for (Job<?, ?> downstream : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger trigger =
@@ -306,7 +306,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     public static class ItemListenerImpl extends ItemListener {
         @Override
         public void onLocationChanged(Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {

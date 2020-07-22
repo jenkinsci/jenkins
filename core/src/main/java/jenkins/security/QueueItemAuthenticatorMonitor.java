@@ -91,7 +91,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
     }
 
     public boolean isAnyBuildLaunchedAsSystemWithAuthenticatorPresent() {
-        // you configured a QueueItemAuthenticator, but builds are still running as SYSTEM
+        // you configured a QueueItemAuthenticator, but builds are still running as SYSTEM2
         return anyBuildLaunchedAsSystemWithAuthenticatorPresent;
     }
 
@@ -127,7 +127,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
 
             // TODO this is probably not intended to be used as a getter -- seems potentially unstable
             Authentication buildAuthentication = li.authenticate();
-            boolean buildRunsAsSystem = buildAuthentication == ACL.SYSTEM;
+            boolean buildRunsAsSystem = buildAuthentication == ACL.SYSTEM2;
             if (!buildRunsAsSystem) {
                 LOGGER.log(Level.FINE, displayName + " does not run as SYSTEM");
                 return;

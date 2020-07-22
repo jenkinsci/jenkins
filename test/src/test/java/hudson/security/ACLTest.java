@@ -63,7 +63,7 @@ public class ACLTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new DoNotBotherMe());
         assertTrue(p.hasPermission(Item.CONFIGURE));
-        assertTrue(p.hasPermission(ACL.SYSTEM, Item.CONFIGURE));
+        assertTrue(p.hasPermission(ACL.SYSTEM2, Item.CONFIGURE));
         p.checkPermission(Item.CONFIGURE);
         p.checkAbortPermission();
         assertEquals(Collections.singletonList(p), r.jenkins.getAllItems());
@@ -78,7 +78,7 @@ public class ACLTest {
         );
 
         final User manager = User.getOrCreateByIdOrFullName("manager");
-        try (ACLContext ignored = ACL.as(manager.impersonate2())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.MANAGE);
         }
     }
@@ -95,7 +95,7 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing the Overall/Administer permission");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate2())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.ADMINISTER);
         }
     }
@@ -112,7 +112,7 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing a permission, one of Overall/Administer, Overall/Read is required");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate2())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.ADMINISTER, Jenkins.READ);
         }
     }
@@ -130,7 +130,7 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing the Overall/Administer permission");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate2())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ);
         }
     }
@@ -148,7 +148,7 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate2())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Build.ARTIFACTS);
         }
     }

@@ -531,7 +531,7 @@ public class ListView extends View implements DirectlyModifiableView {
     public static final class Listener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 locationChanged(oldFullName, newFullName);
             }
         }
@@ -576,7 +576,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
         @Override
         public void onDeleted(final Item item) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 deleted(item);
             }
         }

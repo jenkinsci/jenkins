@@ -1366,7 +1366,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Executors.newCachedThreadPool(
                 new ExceptionCatchingThreadFactory(
                     new NamingThreadFactory(
-                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM));
+                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM2));
 
 //
 //
