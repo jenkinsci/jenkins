@@ -7,11 +7,15 @@
 
 .pane-header, .pane-footer {
   padding: 8px 0px;
-  color: var(--pane-header-color);
+  color: var(--pane-header-text-color);
   background: var(--pane-header-bg);
   border: var(--pane-border-width) solid var(--pane-header-border-color);
   border-left: none;
   border-right: none;
+  color: var(--pane-header-text-color);
+}
+
+.pane {
   color: var(--pane-text-color);
 }
 
@@ -132,13 +136,13 @@ table.bigtable {
 table.sortable a.sortheader {
   text-decoration: none;
   display: block;
-  color: var(--pane-header-color);
+  color: var(--pane-header-text-color);
   font-weight: var(--pane-header-font-weight);  // Should we use the bigtable one here?
 }
 
 table.sortable span.sortarrow {
   text-decoration: none;
-  color: var(--pane-header-color);
+  color: var(--pane-header-text-color);
   font-weight: var(--pane-header-font-weight); // Should we use the bigtable one here?
 }
 
