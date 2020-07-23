@@ -40,29 +40,29 @@ public class LastGrantedAuthoritiesPropertyTest {
 
         hudson.model.User u = hudson.model.User.get("alice");
         LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
-        assertAuthorities(p, "authenticated:alice:development:us");
-        assertAuthorities(u.impersonate2(), "authenticated:alice:development:us");
+        assertAuthorities(p, "alice:authenticated:development:us");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:us");
 
         // visiting the configuration page shouldn't change authorities
         HtmlPage pg = wc.goTo("user/alice/configure");
         j.submit(pg.getFormByName("config"));
 
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);
-        assertAuthorities(p, "authenticated:alice:development:us");
-        assertAuthorities(u.impersonate2(), "authenticated:alice:development:us");
+        assertAuthorities(p, "alice:authenticated:development:us");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:us");
 
         // change should be reflected right away
         wc.login("alice", "alice:development:uk");
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);
-        assertAuthorities(p, "authenticated:alice:development:uk");
-        assertAuthorities(u.impersonate2(), "authenticated:alice:development:uk");
+        assertAuthorities(p, "alice:authenticated:development:uk");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:uk");
 
         // if already receiving the authenticated group, we should avoid duplicate
         wc.login("alice", "alice:authenticated:development:uk");
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);
 
-        assertAuthorities(p, "authenticated:alice:development:uk");
-        assertAuthorities(u.impersonate2(), "authenticated:alice:development:uk");
+        assertAuthorities(p, "alice:authenticated:development:uk");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:uk");
     }
 
     private void assertAuthorities(LastGrantedAuthoritiesProperty p, String expected) {
@@ -74,9 +74,9 @@ public class LastGrantedAuthoritiesPropertyTest {
     }
 
     private void _assertAuthorities(Collection<? extends GrantedAuthority> grantedAuthorities, String expected){
-        List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).sorted().collect(Collectors.toList());
 
-        assertEquals(String.join(":", authorities), expected);
+        assertEquals(expected, String.join(":", authorities));
     }
 
     /**
