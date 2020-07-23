@@ -33,6 +33,7 @@ import jenkins.model.Jenkins;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.function.Executable;
 
 @SuppressWarnings("deprecation")
@@ -46,6 +47,9 @@ public class AuthenticationTest {
     @Test
     public void anonymous() {
         assertEquality(Jenkins.ANONYMOUS, Jenkins.ANONYMOUS2);
+        assertTrue(ACL.isAnonymous(Jenkins.ANONYMOUS2));
+        assertTrue(ACL.isAnonymous(Jenkins.ANONYMOUS.toSpring()));
+        assertTrue(ACL.isAnonymous(Authentication.fromSpring(Jenkins.ANONYMOUS2).toSpring()));
     }
 
     @Test
