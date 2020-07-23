@@ -43,6 +43,7 @@ import org.springframework.security.authentication.RememberMeAuthenticationProvi
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.rememberme.InvalidCookieException;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.util.Assert;
 
@@ -149,6 +150,21 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 							+ "'");
 		}
 	}
+
+    @Override
+    protected UserDetails processAutoLoginCookie(String[] cookieTokens, HttpServletRequest request, HttpServletResponse response) {
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            // as this filter could be called during restart, this corrects at least the symptoms
+            throw new InvalidCookieException("Jenkins is not yet running");
+        }
+        if (j.isDisableRememberMe()) {
+            cancelCookie(request, response);
+            throw new InvalidCookieException("rememberMe is disabled");
+        } else {
+            return super.processAutoLoginCookie(cookieTokens, request, response);
+        }
+    }
 
     @Override
     protected Authentication createSuccessfulAuthentication(HttpServletRequest request, UserDetails userDetails) {
