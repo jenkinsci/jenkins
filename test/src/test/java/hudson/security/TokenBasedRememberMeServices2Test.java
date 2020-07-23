@@ -5,7 +5,6 @@ import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.google.common.collect.ImmutableList;
 import java.util.Base64;
-import static java.util.logging.Level.FINEST;
 import java.util.stream.Collectors;
 
 import hudson.model.User;
@@ -23,7 +22,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
 import org.kohsuke.stapler.Stapler;
 import test.security.realm.InMemorySecurityRealm;
 
@@ -43,15 +41,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
-import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 
 public class TokenBasedRememberMeServices2Test {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-
-    @Rule
-    public LoggerRule logging = new LoggerRule();
 
     private static boolean failureInduced;
 
@@ -77,12 +71,10 @@ public class TokenBasedRememberMeServices2Test {
         wc.getCookieManager().addCookie(c);
 
         // even if SecurityRealm chokes, it shouldn't kill the page
-        logging.capture(1000).record(TokenBasedRememberMeServices.class, FINEST);
         wc.goTo("");
 
         // make sure that the server recorded this failure
         assertTrue(failureInduced);
-        assertTrue(logging.getMessages().stream().anyMatch(m -> m.contains("contained username 'alice' but was not found")));
         // and the problematic cookie should have been removed
         assertNull(getRememberMeCookie(wc));
     }
