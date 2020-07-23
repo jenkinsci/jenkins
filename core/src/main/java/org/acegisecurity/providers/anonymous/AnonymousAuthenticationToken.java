@@ -27,7 +27,8 @@ package org.acegisecurity.providers.anonymous;
 import java.io.Serializable;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
-import org.apache.commons.lang.NotImplementedException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @deprecated use {@link org.springframework.security.authentication.AnonymousAuthenticationToken}
@@ -35,11 +36,15 @@ import org.apache.commons.lang.NotImplementedException;
 @Deprecated
 public class AnonymousAuthenticationToken implements Authentication, Serializable {
 
-    // TODO maybe better to wrap using Authentication.fromSpring
     private final org.springframework.security.authentication.AnonymousAuthenticationToken delegate;
 
+    @Restricted(NoExternalUse.class)
+    public AnonymousAuthenticationToken(org.springframework.security.authentication.AnonymousAuthenticationToken delegate) {
+        this.delegate = delegate;
+    }
+
     public AnonymousAuthenticationToken(String key, Object principal, GrantedAuthority[] authorities) {
-        delegate = new org.springframework.security.authentication.AnonymousAuthenticationToken(key, /* TODO wrap */principal, GrantedAuthority.toSpring(authorities));
+        this(new org.springframework.security.authentication.AnonymousAuthenticationToken(key, /* TODO wrap */principal, GrantedAuthority.toSpring(authorities)));
     }
 
     @Override
@@ -89,7 +94,12 @@ public class AnonymousAuthenticationToken implements Authentication, Serializabl
 
     @Override
     public String toString() {
-        return getName();
+        return super.toString() + ": " + getName();
+    }
+
+    @Override
+    public org.springframework.security.core.Authentication toSpring() {
+        return delegate;
     }
 
 }

@@ -26,7 +26,8 @@ package org.acegisecurity.providers;
 
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
-import org.apache.commons.lang.NotImplementedException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @deprecated use {@link org.springframework.security.authentication.UsernamePasswordAuthenticationToken}
@@ -34,15 +35,19 @@ import org.apache.commons.lang.NotImplementedException;
 @Deprecated
 public class UsernamePasswordAuthenticationToken implements Authentication {
 
-    // TODO maybe better to wrap using Authentication.fromSpring
     private final org.springframework.security.authentication.UsernamePasswordAuthenticationToken delegate;
 
+    @Restricted(NoExternalUse.class)
+    public UsernamePasswordAuthenticationToken(org.springframework.security.authentication.UsernamePasswordAuthenticationToken delegate) {
+        this.delegate = delegate;
+    }
+
     public UsernamePasswordAuthenticationToken(Object principal, Object credentials) {
-        delegate = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials);
+        this(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials));
     }
 
     public UsernamePasswordAuthenticationToken(Object principal, Object credentials, GrantedAuthority[] authorities) {
-        delegate = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials, GrantedAuthority.toSpring(authorities));
+        this(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials, GrantedAuthority.toSpring(authorities)));
     }
 
     @Override
@@ -92,9 +97,13 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
 
     @Override
     public String toString() {
-        return getName();
+        return super.toString() + ": " + getName();
+    }
+
+    @Override
+    public org.springframework.security.core.Authentication toSpring() {
+        return delegate;
     }
 
     // TODO Serializable?
-
 }

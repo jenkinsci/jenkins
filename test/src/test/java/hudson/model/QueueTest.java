@@ -653,18 +653,19 @@ public class QueueTest {
      */
     @Test public void accessControl() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), org.acegisecurity.Authentication.fromSpring(alice))));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice,Jenkins.getAuthentication());
+                assertEquals(alice2, Jenkins.getAuthentication());
                 return true;
             }
         });
         r.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
-    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice", Collections.emptySet());
+    private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice","alice", Collections.emptySet());
+    private static org.acegisecurity.Authentication alice = org.acegisecurity.Authentication.fromSpring(alice2);
 
 
     /**
@@ -679,11 +680,11 @@ public class QueueTest {
         DumbSlave s2 = r.createSlave();
 
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), org.acegisecurity.Authentication.fromSpring(alice))));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice,Jenkins.getAuthentication());
+                assertEquals(alice2, Jenkins.getAuthentication());
                 return true;
             }
         });
@@ -713,7 +714,7 @@ public class QueueTest {
             if (node.getNodeName().equals(blocked)) {
                 // ACL that allow anyone to do anything except Alice can't build.
                 SparseACL acl = new SparseACL(null);
-                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
+                acl.add(new PrincipalSid(alice2), Computer.BUILD, false);
                 acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
                 return acl;
             }

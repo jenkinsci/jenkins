@@ -26,8 +26,8 @@ package org.acegisecurity;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
-import org.apache.commons.lang.NotImplementedException;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 
 /**
  * @deprecated use TODO or {@link org.springframework.security.core.Authentication}
@@ -48,48 +48,54 @@ public interface Authentication extends Principal, Serializable {
     void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException;
 
     static Authentication fromSpring(org.springframework.security.core.Authentication a) {
-        return new Authentication() {
-            @Override
-            public GrantedAuthority[] getAuthorities() {
-                return GrantedAuthority.fromSpring(a.getAuthorities());
-            }
-            @Override
-            public Object getCredentials() {
-                return a.getCredentials(); // TODO wrap if necessary
-            }
-            @Override
-            public Object getDetails() {
-                return a.getDetails(); // TODO wrap if necessary
-            }
-            @Override
-            public Object getPrincipal() {
-                return a.getPrincipal(); // TODO wrap UserDetails if necessary
-            }
-            @Override
-            public boolean isAuthenticated() {
-                return a.isAuthenticated();
-            }
-            @Override
-            public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-                a.setAuthenticated(isAuthenticated);
-            }
-            @Override
-            public String getName() {
-                return a.getName();
-            }
-            @Override
-            public boolean equals(Object o) {
-                return o instanceof Authentication && ((Authentication) o).getName().equals(getName());
-            }
-            @Override
-            public int hashCode() {
-                return getName().hashCode();
-            }
-            @Override
-            public String toString() {
-                return getName();
-            }
-        };
+        if (a instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+            return new AnonymousAuthenticationToken((org.springframework.security.authentication.AnonymousAuthenticationToken) a);
+        } else if (a instanceof org.springframework.security.authentication.UsernamePasswordAuthenticationToken) {
+            return new UsernamePasswordAuthenticationToken((org.springframework.security.authentication.UsernamePasswordAuthenticationToken) a);
+        } else {
+            return new Authentication() {
+                @Override
+                public GrantedAuthority[] getAuthorities() {
+                    return GrantedAuthority.fromSpring(a.getAuthorities());
+                }
+                @Override
+                public Object getCredentials() {
+                    return a.getCredentials(); // TODO wrap if necessary
+                }
+                @Override
+                public Object getDetails() {
+                    return a.getDetails(); // TODO wrap if necessary
+                }
+                @Override
+                public Object getPrincipal() {
+                    return a.getPrincipal(); // TODO wrap UserDetails if necessary
+                }
+                @Override
+                public boolean isAuthenticated() {
+                    return a.isAuthenticated();
+                }
+                @Override
+                public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+                    a.setAuthenticated(isAuthenticated);
+                }
+                @Override
+                public String getName() {
+                    return a.getName();
+                }
+                @Override
+                public boolean equals(Object o) {
+                    return o instanceof Authentication && ((Authentication) o).getName().equals(getName());
+                }
+                @Override
+                public int hashCode() {
+                    return getName().hashCode();
+                }
+                @Override
+                public String toString() {
+                    return super.toString() + ": " + getName();
+                }
+            };
+        }
     }
 
     default org.springframework.security.core.Authentication toSpring() {
@@ -132,7 +138,7 @@ public interface Authentication extends Principal, Serializable {
             }
             @Override
             public String toString() {
-                return getName();
+                return super.toString() + ": " + getName();
             }
         };
     }
