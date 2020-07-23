@@ -95,7 +95,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     private UserDetails doAuthenticate(String username, String password) throws AuthenticationException {
         try {
             UserDetails user = authenticate2(username, password);
-            SecurityListener.fireAuthenticated(user);
+            SecurityListener.fireAuthenticated2(user);
             return user;
         } catch (AuthenticationException x) {
             SecurityListener.fireFailedToAuthenticate(username);

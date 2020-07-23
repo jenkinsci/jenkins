@@ -35,7 +35,7 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
                 UserDetails userDetails = u.getUserDetailsForImpersonation2();
                 auth = u.impersonate(userDetails);
 
-                SecurityListener.fireAuthenticated(userDetails);
+                SecurityListener.fireAuthenticated2(userDetails);
             } catch (UsernameNotFoundException x) {
                 // The token was valid, but the impersonation failed. This token is clearly not his real password,
                 // so there's no point in continuing the request processing. Report this error and abort.

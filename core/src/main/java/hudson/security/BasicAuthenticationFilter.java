@@ -143,7 +143,7 @@ public class BasicAuthenticationFilter implements Filter {
                 UserDetails userDetails = u.getUserDetailsForImpersonation2();
                 Authentication auth = u.impersonate(userDetails);
 
-                SecurityListener.fireAuthenticated(userDetails);
+                SecurityListener.fireAuthenticated2(userDetails);
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 try {

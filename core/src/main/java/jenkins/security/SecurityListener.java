@@ -49,21 +49,30 @@ public abstract class SecurityListener implements ExtensionPoint {
      * This might be via the web UI, or via REST (using API token or Basic), or CLI (remoting, auth, ssh)
      * or any other way plugins can propose.
      * @param details details of the newly authenticated user, such as name and groups.
+     * @since TODO
      */
-    protected void authenticated(@NonNull UserDetails details){}
+    protected void authenticated2(@NonNull UserDetails details) {
+        authenticated(org.acegisecurity.userdetails.UserDetails.fromSpring(details));
+    }
+
+    /**
+     * @deprecated use {@link #authenticated2}
+     */
+    @Deprecated
+    protected void authenticated(@NonNull org.acegisecurity.userdetails.UserDetails details) {}
 
     /**
      * Fired when a user tried to authenticate but failed.
      * In case the authentication method uses multiple layers to validate the credentials,
      * we do fire this event only when even the last layer failed to authenticate.
      * @param username the user
-     * @see #authenticated
+     * @see #authenticated2
      */
     protected void failedToAuthenticate(@NonNull String username){}
 
     /**
      * Fired when a user has logged in. Compared to authenticated, there is a notion of storage / cache.
-     * Would be called after {@link #authenticated}.
+     * Would be called after {@link #authenticated2}.
      * It should be called after the {@link SecurityContextHolder#getContext()}'s authentication is set.
      * @param username the user
      */
@@ -91,8 +100,10 @@ public abstract class SecurityListener implements ExtensionPoint {
      */
     protected void loggedOut(@NonNull String username){}
 
-    /** @since 1.569 */
-    public static void fireAuthenticated(@NonNull UserDetails details) {
+    /**
+     * @since TODO
+     */
+    public static void fireAuthenticated2(@NonNull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {
             List<String> groups = new ArrayList<>();
             for (GrantedAuthority auth : details.getAuthorities()) {
@@ -103,8 +114,17 @@ public abstract class SecurityListener implements ExtensionPoint {
             LOGGER.log(Level.FINE, "authenticated: {0} {1}", new Object[] {details.getUsername(), groups});
         }
         for (SecurityListener l : all()) {
-            l.authenticated(details);
+            l.authenticated2(details);
         }
+    }
+
+    /**
+     * @deprecated use {@link #fireAuthenticated2}
+     * @since 1.569
+     */
+    @Deprecated
+    public static void fireAuthenticated(@NonNull org.acegisecurity.userdetails.UserDetails details) {
+        fireAuthenticated2(details.toSpring());
     }
 
     /** @since 2.161 */
