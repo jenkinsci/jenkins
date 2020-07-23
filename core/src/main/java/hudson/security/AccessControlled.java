@@ -79,7 +79,7 @@ public interface AccessControlled {
      * @since 2.92
      */
     default boolean hasPermission(@NonNull Authentication a, @NonNull Permission permission) {
-        if (a == ACL.SYSTEM2) {
+        if (a.equals(ACL.SYSTEM2)) {
             return true;
         }
         return getACL().hasPermission(a, permission);

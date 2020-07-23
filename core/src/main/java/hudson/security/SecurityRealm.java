@@ -582,6 +582,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         BasicAuthenticationEntryPoint basicAuthenticationEntryPoint = new BasicAuthenticationEntryPoint();
         basicAuthenticationEntryPoint.setRealmName("Jenkins");
         bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
+        bhp.setRememberMeServices(sc.rememberMe);
         filters.add(bhp);
         AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
         apf.setAuthenticationManager(sc.manager);

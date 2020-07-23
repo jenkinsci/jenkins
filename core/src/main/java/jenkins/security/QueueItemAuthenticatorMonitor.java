@@ -127,7 +127,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
 
             // TODO this is probably not intended to be used as a getter -- seems potentially unstable
             Authentication buildAuthentication = li.authenticate();
-            boolean buildRunsAsSystem = buildAuthentication == ACL.SYSTEM2;
+            boolean buildRunsAsSystem = buildAuthentication.equals(ACL.SYSTEM2);
             if (!buildRunsAsSystem) {
                 LOGGER.log(Level.FINE, displayName + " does not run as SYSTEM");
                 return;

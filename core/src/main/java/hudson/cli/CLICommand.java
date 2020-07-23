@@ -335,7 +335,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     @Deprecated
     protected boolean shouldPerformAuthentication(Authentication auth) {
-        return auth== Jenkins.ANONYMOUS2;
+        return auth.equals(Jenkins.ANONYMOUS2);
     }
 
     /**

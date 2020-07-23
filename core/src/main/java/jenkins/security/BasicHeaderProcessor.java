@@ -39,7 +39,6 @@ import org.springframework.security.web.authentication.RememberMeServices;
  * @author Kohsuke Kawaguchi
  */
 public class BasicHeaderProcessor implements Filter {
-    // these fields are supposed to be injected by Spring
     private AuthenticationEntryPoint authenticationEntryPoint;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
 
