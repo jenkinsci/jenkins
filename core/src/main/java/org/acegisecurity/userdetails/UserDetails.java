@@ -24,6 +24,7 @@
 
 package org.acegisecurity.userdetails;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
 import java.util.Collection;
 import org.acegisecurity.GrantedAuthority;
@@ -48,7 +49,7 @@ public interface UserDetails extends Serializable {
 
     boolean isEnabled();
 
-    default org.springframework.security.core.userdetails.UserDetails toSpring() {
+    default @NonNull org.springframework.security.core.userdetails.UserDetails toSpring() {
         return new org.springframework.security.core.userdetails.UserDetails() {
             @Override
             public Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
@@ -81,7 +82,7 @@ public interface UserDetails extends Serializable {
         };
     }
 
-    static UserDetails fromSpring(org.springframework.security.core.userdetails.UserDetails ud) {
+    static @NonNull UserDetails fromSpring(@NonNull org.springframework.security.core.userdetails.UserDetails ud) {
         return new UserDetails() {
             @Override
             public GrantedAuthority[] getAuthorities() {

@@ -23,6 +23,7 @@
  */
 package org.acegisecurity;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.ACL;
 import java.io.Serializable;
 import java.security.Principal;
@@ -48,7 +49,7 @@ public interface Authentication extends Principal, Serializable {
 
     void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException;
 
-    static Authentication fromSpring(org.springframework.security.core.Authentication a) {
+    static @NonNull Authentication fromSpring(@NonNull org.springframework.security.core.Authentication a) {
         if (a == ACL.SYSTEM2) {
             return ACL.SYSTEM;
         } else if (a instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
@@ -101,7 +102,7 @@ public interface Authentication extends Principal, Serializable {
         }
     }
 
-    default org.springframework.security.core.Authentication toSpring() {
+    default @NonNull org.springframework.security.core.Authentication toSpring() {
         return new org.springframework.security.core.Authentication() {
             @Override
             public Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {

@@ -24,6 +24,7 @@
 
 package org.acegisecurity;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,19 +47,19 @@ public interface GrantedAuthority {
     @Override
     int hashCode();
 
-    static GrantedAuthority fromSpring(org.springframework.security.core.GrantedAuthority ga) {
+    static @NonNull GrantedAuthority fromSpring(@NonNull org.springframework.security.core.GrantedAuthority ga) {
         return new GrantedAuthorityImpl(ga.getAuthority());
     }
 
-    default org.springframework.security.core.GrantedAuthority toSpring() {
+    default @NonNull org.springframework.security.core.GrantedAuthority toSpring() {
         return new SimpleGrantedAuthority(getAuthority());
     }
 
-    static GrantedAuthority[] fromSpring(Collection<? extends org.springframework.security.core.GrantedAuthority> gas) {
+    static @NonNull GrantedAuthority[] fromSpring(@NonNull Collection<? extends org.springframework.security.core.GrantedAuthority> gas) {
         return gas.stream().map(GrantedAuthority::fromSpring).toArray(GrantedAuthority[]::new);
     }
 
-    static Collection<? extends org.springframework.security.core.GrantedAuthority> toSpring(GrantedAuthority[] gas) {
+    static @NonNull Collection<? extends org.springframework.security.core.GrantedAuthority> toSpring(@NonNull GrantedAuthority[] gas) {
         return Stream.of(gas).map(GrantedAuthority::toSpring).collect(Collectors.toList());
     }
 

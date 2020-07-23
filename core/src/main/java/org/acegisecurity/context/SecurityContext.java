@@ -24,6 +24,7 @@
 
 package org.acegisecurity.context;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.User;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
@@ -38,7 +39,7 @@ public interface SecurityContext {
 
     void setAuthentication(Authentication a);
 
-    static SecurityContext fromSpring(org.springframework.security.core.context.SecurityContext c) {
+    static @NonNull SecurityContext fromSpring(@NonNull org.springframework.security.core.context.SecurityContext c) {
         return new SecurityContext() {
             @Override
             public Authentication getAuthentication() {
@@ -51,7 +52,7 @@ public interface SecurityContext {
         };
     }
 
-    default org.springframework.security.core.context.SecurityContext toSpring() {
+    default @NonNull org.springframework.security.core.context.SecurityContext toSpring() {
         return new org.springframework.security.core.context.SecurityContext() {
             @Override
             public org.springframework.security.core.Authentication getAuthentication() {

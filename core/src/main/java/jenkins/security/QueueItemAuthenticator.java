@@ -44,9 +44,11 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
         if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate2", Queue.Task.class)) {
             return authenticate2(item.task);
         } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Task.class)) {
-            return authenticate(item.task).toSpring();
+            org.acegisecurity.Authentication a = authenticate(item.task);
+            return a != null ? a.toSpring() : null;
         } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Item.class)) {
-            return authenticate(item).toSpring();
+            org.acegisecurity.Authentication a = authenticate(item);
+            return a != null ? a.toSpring() : null;
         } else {
             throw new AbstractMethodError("you must override at least one of the QueueItemAuthenticator.authenticate2 methods");
         }
@@ -69,9 +71,11 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
             // Need a fake (unscheduled) item. All the other calls assume a BuildableItem but probably it does not matter.
             return authenticate2(new Queue.WaitingItem(Calendar.getInstance(), task, Collections.emptyList()));
         } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Item.class)) {
-            return authenticate(new Queue.WaitingItem(Calendar.getInstance(), task, Collections.emptyList())).toSpring();
+            org.acegisecurity.Authentication a = authenticate(new Queue.WaitingItem(Calendar.getInstance(), task, Collections.emptyList()));
+            return a != null ? a.toSpring() : null;
         } else if (Util.isOverridden(QueueItemAuthenticator.class, getClass(), "authenticate", Queue.Task.class)) {
-            return authenticate(task).toSpring();
+            org.acegisecurity.Authentication a = authenticate(task);
+            return a != null ? a.toSpring() : null;
         } else {
             throw new AbstractMethodError("you must override at least one of the QueueItemAuthenticator.authenticate2 methods");
         }
@@ -82,7 +86,8 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      */
     @Deprecated
     public @CheckForNull org.acegisecurity.Authentication authenticate(Queue.Item item) {
-        return org.acegisecurity.Authentication.fromSpring(authenticate2(item));
+        Authentication a = authenticate2(item);
+        return a != null ? org.acegisecurity.Authentication.fromSpring(a) : null;
     }
 
     /**
@@ -91,7 +96,8 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
      */
     @Deprecated
     public @CheckForNull org.acegisecurity.Authentication authenticate(Queue.Task task) {
-        return org.acegisecurity.Authentication.fromSpring(authenticate2(task));
+        Authentication a = authenticate2(task);
+        return a != null ? org.acegisecurity.Authentication.fromSpring(a) : null;
     }
 
     @Override
