@@ -269,7 +269,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 sendExit(2);
                 return;
             }
-            command.setTransportAuth(authentication);
+            command.setTransportAuth2(authentication);
             command.setClientCharset(encoding);
             CLICommand orig = CLICommand.setCurrent(command);
             try {

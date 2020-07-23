@@ -207,7 +207,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
-                                    Authentication auth = getTransportAuthentication();
+                                    Authentication auth = getTransportAuthentication2();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     jenkins.checkPermission(Jenkins.READ);
 

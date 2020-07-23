@@ -163,13 +163,13 @@ public class PasswordTest {
             // CLICommandInvoker does not work here, as it sets up its own SecurityRealm + AuthorizationStrategy.
             GetJobCommand getJobCommand = new GetJobCommand();
             Authentication adminAuth = User.get("admin").impersonate2();
-            getJobCommand.setTransportAuth(adminAuth);
+            getJobCommand.setTransportAuth2(adminAuth);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             String pName = p.getFullName();
             getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset().name()));
             CopyJobCommand copyJobCommand = new CopyJobCommand();
-            copyJobCommand.setTransportAuth(adminAuth);
+            copyJobCommand.setTransportAuth2(adminAuth);
             String pAdminName = pName + "-admin";
             assertEquals(0, copyJobCommand.main(Arrays.asList(pName, pAdminName), Locale.ENGLISH, System.in, System.out, System.err));
             FreeStyleProject pAdmin = j.jenkins.getItemByFullName(pAdminName, FreeStyleProject.class);
@@ -187,12 +187,12 @@ public class PasswordTest {
             assertEquals(xmlAdmin.replaceAll(xml_regex_match, "********"), xmlDev);
             getJobCommand = new GetJobCommand();
             Authentication devAuth = User.get("dev").impersonate2();
-            getJobCommand.setTransportAuth(devAuth);
+            getJobCommand.setTransportAuth2(devAuth);
             baos = new ByteArrayOutputStream();
             getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset().name()));
             copyJobCommand = new CopyJobCommand();
-            copyJobCommand.setTransportAuth(devAuth);
+            copyJobCommand.setTransportAuth2(devAuth);
             String pDevName = pName + "-dev";
             assertThat(copyJobCommand.main(Arrays.asList(pName, pDevName), Locale.ENGLISH, System.in, System.out, System.err), not(0));
             assertNull(j.jenkins.getItemByFullName(pDevName, FreeStyleProject.class));
