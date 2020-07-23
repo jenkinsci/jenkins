@@ -41,7 +41,7 @@ public class WhoAmICommand extends CLICommand {
     }
 
     protected int run() {
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         stdout.println("Authenticated as: "+a.getName());
         stdout.println("Authorities:");
         for (GrantedAuthority ga : a.getAuthorities()) {

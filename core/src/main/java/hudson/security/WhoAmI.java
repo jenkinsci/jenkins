@@ -71,7 +71,7 @@ public class WhoAmI implements UnprotectedRootAction {
     }
 
     private @NonNull Authentication auth() {
-        return Jenkins.getAuthentication();
+        return Jenkins.getAuthentication2();
     }
 
     @Exported

@@ -262,7 +262,7 @@ public class UpdateSite {
      * @since 2.9
      */
     protected UpdateCenter.InstallationJob createInstallationJob(Plugin plugin, UpdateCenter uc, boolean dynamicLoad) {
-        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication(), dynamicLoad);
+        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication2(), dynamicLoad);
     }
 
     /**
@@ -1597,7 +1597,7 @@ public class UpdateSite {
         public Future<UpdateCenterJob> deployBackup() {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
-            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication()));
+            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication2()));
         }
         /**
          * Making the installation web bound.

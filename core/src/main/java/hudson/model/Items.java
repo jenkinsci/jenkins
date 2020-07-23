@@ -163,7 +163,7 @@ public class Items {
      * @since 1.607
      */
     public static List<TopLevelItemDescriptor> all(ItemGroup c) {
-        return all(Jenkins.getAuthentication(), c);
+        return all(Jenkins.getAuthentication2(), c);
     }
 
     /**
@@ -438,7 +438,7 @@ public class Items {
 
     /**
      * Gets a read-only view of all the {@link Item}s recursively in the {@link ItemGroup} tree visible to
-     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * {@link Jenkins#getAuthentication2()} without concern for the order in which items are returned. Each iteration
      * of the view will be "live" reflecting the items available between the time the iteration was started and the
      * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
      * may be possible for such items to escape the entire iteration.
@@ -450,13 +450,13 @@ public class Items {
      * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type) {
-        return allItems(Jenkins.getAuthentication(), root, type);
+        return allItems(Jenkins.getAuthentication2(), root, type);
     }
 
     /**
      * Gets a read-only view of all the {@link Item}s recursively matching type and predicate
      * in the {@link ItemGroup} tree visible to
-     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * {@link Jenkins#getAuthentication2()} without concern for the order in which items are returned. Each iteration
      * of the view will be "live" reflecting the items available between the time the iteration was started and the
      * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
      * may be possible for such items to escape the entire iteration.
@@ -469,7 +469,7 @@ public class Items {
      * @since 2.221
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type, Predicate<T> pred) {
-        return allItems(Jenkins.getAuthentication(), root, type, pred);
+        return allItems(Jenkins.getAuthentication2(), root, type, pred);
     }
 
     /**
@@ -630,7 +630,7 @@ public class Items {
                         }
                         ItemGroup group = stack.pop();
                         // group.getItems() is responsible for performing the permission check so we will not repeat it
-                        if (Jenkins.getAuthentication() == authentication) {
+                        if (Jenkins.getAuthentication2().equals(authentication)) {
                             delegate = group.getItems(search).iterator();
                         } else {
                             // slower path because the caller has switched authentication

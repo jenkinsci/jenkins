@@ -67,7 +67,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final void checkPermission(@NonNull Permission p) {
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         if (a.equals(SYSTEM2)) {
             return;
         }
@@ -98,7 +98,7 @@ public abstract class ACL {
 
         boolean failed = !hasAnyPermission(permissions);
 
-        Authentication authentication = Jenkins.getAuthentication();
+        Authentication authentication = Jenkins.getAuthentication2();
         if (failed) { // we know that none of the permissions are granted
             Set<Permission> enabledPermissions = new LinkedHashSet<>();
             for (Permission p : permissions) {
@@ -129,7 +129,7 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(@NonNull Permission p) {
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         if (a.equals(SYSTEM2)) {
             return true;
         }
@@ -150,7 +150,7 @@ public abstract class ACL {
             throw new IllegalArgumentException("At least one permission must be provided");
         }
 
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         if (a.equals(SYSTEM2)) {
             return true;
         }
@@ -200,7 +200,7 @@ public abstract class ACL {
      */
     public final void checkCreatePermission(@NonNull ItemGroup c,
                                             @NonNull TopLevelItemDescriptor d) {
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         if (a.equals(SYSTEM2)) {
             return;
         }
@@ -238,7 +238,7 @@ public abstract class ACL {
      */
     public final void checkCreatePermission(@NonNull ViewGroup c,
                                             @NonNull ViewDescriptor d) {
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         if (a.equals(SYSTEM2)) {
             return;
         }

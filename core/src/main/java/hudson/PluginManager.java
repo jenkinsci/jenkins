@@ -1548,7 +1548,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             installJobs.add(updateCenter.addJob(updateCenter.new CompleteBatchJob(batch, start, correlationId)));
         }
 
-        final Authentication currentAuth = Jenkins.getAuthentication();
+        final Authentication currentAuth = Jenkins.getAuthentication2();
 
         if (!jenkins.getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);

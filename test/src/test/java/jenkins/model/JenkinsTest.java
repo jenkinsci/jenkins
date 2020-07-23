@@ -384,7 +384,7 @@ public class JenkinsTest {
         }
 
         public HttpResponse doDynamic() {
-            assertEquals("anonymous", Jenkins.get().getAuthentication().getName());
+            assertEquals("anonymous", Jenkins.get().getAuthentication2().getName());
             count++;
             return HttpResponses.html("OK");
         }

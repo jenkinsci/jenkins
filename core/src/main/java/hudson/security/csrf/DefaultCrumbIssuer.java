@@ -75,7 +75,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             if (md != null) {
                 HttpServletRequest req = (HttpServletRequest) request;
                 StringBuilder buffer = new StringBuilder();
-                Authentication a = Jenkins.getAuthentication();
+                Authentication a = Jenkins.getAuthentication2();
                 buffer.append(a.getName());
                 buffer.append(';');
                 if (!isExcludeClientIPFromCrumb()) {

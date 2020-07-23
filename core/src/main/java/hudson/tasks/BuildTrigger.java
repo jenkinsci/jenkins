@@ -200,7 +200,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             PrintStream logger = listener.getLogger();
             for (Job<?, ?> downstream : jobs) {
                 if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) {
-                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
+                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication2().getName(), downstream, build.getParent()});
                     continue;
                 }
                 if (!downstream.hasPermission(Item.BUILD)) {
@@ -297,7 +297,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                                                   List<Action> actions) {
                     AbstractProject downstream = getDownstreamProject();
                     if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
-                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
+                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication2().getName(), downstream, getUpstreamProject()});
                         return false; // do not even issue a warning to build log
                     }
                     if (!downstream.hasPermission(Item.BUILD)) {

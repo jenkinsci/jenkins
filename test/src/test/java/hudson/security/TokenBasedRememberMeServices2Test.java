@@ -126,7 +126,7 @@ public class TokenBasedRememberMeServices2Test {
         assertTrue(failureInduced);
         // but we should have logged in
         wc.executeOnServer(() -> {
-            Authentication a = Jenkins.getAuthentication();
+            Authentication a = Jenkins.getAuthentication2();
             assertEquals("bob", a.getName());
             assertEquals(ImmutableList.of("authenticated", "myteam"), a.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
             return null;

@@ -4101,7 +4101,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Logs out the user.
      */
     public void doLogout( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        String user = getAuthentication().getName();
+        String user = getAuthentication2().getName();
         securityRealm.doLogout(req, rsp);
         SecurityListener.fireLoggedOut(user);
     }
@@ -4123,7 +4123,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(MANAGE);
-        LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication().getName());
+        LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication2().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread
         WebApp.get(servletContext).setApp(new HudsonIsLoading());
@@ -4313,7 +4313,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         servletContext.setAttribute("app", new HudsonIsRestarting());
 
         new Thread("restart thread") {
-            final String exitUser = getAuthentication().getName();
+            final String exitUser = getAuthentication2().getName();
             @Override
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
@@ -4340,7 +4340,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         isQuietingDown = true;
 
         new Thread("safe-restart thread") {
-            final String exitUser = getAuthentication().getName();
+            final String exitUser = getAuthentication2().getName();
             @Override
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
@@ -4415,7 +4415,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             public void run() {
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
-                            getAuthentication().getName(), req != null ? req.getRemoteAddr() : "???"));
+                            getAuthentication2().getName(), req != null ? req.getRemoteAddr() : "???"));
 
                     cleanUp();
                     System.exit(0);
@@ -4435,7 +4435,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
         checkPermission(ADMINISTER);
         isQuietingDown = true;
-        final String exitUser = getAuthentication().getName();
+        final String exitUser = getAuthentication2().getName();
         final String exitAddr = req!=null ? req.getRemoteAddr() : "unknown";
         new Thread("safe-exit thread") {
             @Override
@@ -4463,8 +4463,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Gets the {@link Authentication} object that represents the user
      * associated with the current request.
+     * @since TODO
      */
-    public static @NonNull Authentication getAuthentication() {
+    public static @NonNull Authentication getAuthentication2() {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
         // on Tomcat while serving the login page, this is null despite the fact
         // that we have filters. Looking at the stack trace, Tomcat doesn't seem to
@@ -4473,6 +4474,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(a==null)
             a = ANONYMOUS2;
         return a;
+    }
+
+    /**
+     * @deprecated use {@link #getAuthentication2}
+     */
+    @Deprecated
+    public static @NonNull org.acegisecurity.Authentication getAuthentication() {
+        return org.acegisecurity.Authentication.fromSpring(getAuthentication2());
     }
 
     /**

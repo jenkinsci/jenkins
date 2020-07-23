@@ -107,7 +107,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
                 LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
                 if (o==null)
                     u.addProperty(o=new LastGrantedAuthoritiesProperty());
-                Authentication a = Jenkins.getAuthentication();
+                Authentication a = Jenkins.getAuthentication2();
                 if (a!=null && a.getName().equals(username))
                     o.update(a);    // just for defensive sanity checking
             } catch (IOException e) {

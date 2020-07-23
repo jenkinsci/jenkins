@@ -61,7 +61,7 @@ public abstract class GenericItemOptionHandler<T extends Item> extends OptionHan
         final String src = params.getParameter(0);
         T s = j.getItemByFullName(src, type());
         if (s == null) {
-            final Authentication who = Jenkins.getAuthentication();
+            final Authentication who = Jenkins.getAuthentication2();
             try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 Item actual = j.getItemByFullName(src);
                 if (actual == null) {

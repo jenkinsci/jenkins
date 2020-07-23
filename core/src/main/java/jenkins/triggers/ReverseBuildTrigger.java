@@ -143,7 +143,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             downstreamDiscoverable = true;
         }
 
-        Authentication originalAuth = Jenkins.getAuthentication();
+        Authentication originalAuth = Jenkins.getAuthentication2();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
 

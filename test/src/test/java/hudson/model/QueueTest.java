@@ -657,7 +657,7 @@ public class QueueTest {
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice2, Jenkins.getAuthentication());
+                assertEquals(alice2, Jenkins.getAuthentication2());
                 return true;
             }
         });
@@ -684,7 +684,7 @@ public class QueueTest {
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice2, Jenkins.getAuthentication());
+                assertEquals(alice2, Jenkins.getAuthentication2());
                 return true;
             }
         });

@@ -229,7 +229,7 @@ public abstract class ItemGroupMixIn {
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
-                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
+                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication2().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
                 }
             }
         }
@@ -282,7 +282,7 @@ public abstract class ItemGroupMixIn {
                 }
             });
 
-            success = acl.getACL().hasCreatePermission(Jenkins.getAuthentication(), parent, result.getDescriptor())
+            success = acl.getACL().hasCreatePermission(Jenkins.getAuthentication2(), parent, result.getDescriptor())
                 && result.getDescriptor().isApplicableIn(parent);
 
             add(result);

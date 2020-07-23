@@ -702,7 +702,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @RequirePOST
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Jenkins.getAuthentication());
+        HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Jenkins.getAuthentication2());
         if(!Lifecycle.get().canRewriteHudsonWar()) {
             sendError("Jenkins upgrade not supported in this running mode");
             return;
@@ -813,7 +813,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return;
         }
 
-        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication());
+        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2());
         LOGGER.info("Scheduling the core downgrade");
         addJob(job);
         rsp.sendRedirect2(".");
@@ -825,7 +825,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @RequirePOST
     public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication());
+        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2());
         LOGGER.info("Scheduling the core downgrade");
 
         addJob(job);
@@ -1534,7 +1534,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         public RestartJenkinsJob(UpdateSite site) {
             super(site);
-            this.authentication = Jenkins.getAuthentication().getName();
+            this.authentication = Jenkins.getAuthentication2().getName();
         }
 
         public synchronized void run() {

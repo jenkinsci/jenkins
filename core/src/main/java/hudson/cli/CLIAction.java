@@ -118,7 +118,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         if (!WebSockets.isSupported()) {
             return HttpResponses.notFound();
         }
-        Authentication authentication = Jenkins.getAuthentication();
+        Authentication authentication = Jenkins.getAuthentication2();
         return WebSockets.upgrade(new WebSocketSession() {
             ServerSideImpl connection;
             class OutputImpl implements PlainCLIProtocol.Output {
@@ -303,7 +303,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             return new FullDuplexHttpService(uuid) {
                 @Override
                 protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {
-                    try (ServerSideImpl connection = new ServerSideImpl(new PlainCLIProtocol.FramedOutput(download), Jenkins.getAuthentication())) {
+                    try (ServerSideImpl connection = new ServerSideImpl(new PlainCLIProtocol.FramedOutput(download), Jenkins.getAuthentication2())) {
                         new PlainCLIProtocol.FramedReader(connection, upload).start();
                         connection.run();
                     }

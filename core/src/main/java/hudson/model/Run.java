@@ -1861,7 +1861,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener = createBuildListener(job, logger, charset);
                     listener.started(getCauses());
 
-                    Authentication auth = Jenkins.getAuthentication();
+                    Authentication auth = Jenkins.getAuthentication2();
                     if (auth.equals(ACL.SYSTEM2)) {
                         listener.getLogger().println(Messages.Run_running_as_SYSTEM());
                     } else {

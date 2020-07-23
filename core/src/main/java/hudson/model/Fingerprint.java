@@ -1404,7 +1404,7 @@ public class Fingerprint implements ModelObject, Saveable {
           
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM2 user and to check permissions manually.
-        final Authentication userAuth = Jenkins.getAuthentication();
+        final Authentication userAuth = Jenkins.getAuthentication2();
         try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
             final Item itemBySystemUser = jenkins.getItemByFullName(fullName);
             if (itemBySystemUser == null) {

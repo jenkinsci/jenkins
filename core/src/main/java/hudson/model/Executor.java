@@ -195,7 +195,7 @@ public class Executor extends Thread implements ModelObject {
     }
 
     private void interrupt(Result result, boolean forShutdown) {
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         if (a.equals(ACL.SYSTEM2))
             interrupt(result, forShutdown, new CauseOfInterruption[0]);
         else {

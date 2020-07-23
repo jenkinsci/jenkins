@@ -575,7 +575,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.172
      */
     public static @CheckForNull User current() {
-        return get(Jenkins.getAuthentication());
+        return get(Jenkins.getAuthentication2());
     }
 
     /**
@@ -869,7 +869,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @RequirePOST
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
-        if (idStrategy().equals(id, Jenkins.getAuthentication().getName())) {
+        if (idStrategy().equals(id, Jenkins.getAuthentication2().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
             return;
         }
@@ -917,7 +917,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public boolean canDelete() {
         final IdStrategy strategy = idStrategy();
-        return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication().getName())
+        return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication2().getName())
                 && UserIdMapper.getInstance().isMapped(id);
     }
 
