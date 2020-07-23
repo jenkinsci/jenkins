@@ -153,6 +153,21 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 		}
 	}
 
+    @Override
+    protected Authentication createSuccessfulAuthentication(HttpServletRequest request, UserDetails userDetails) {
+        Authentication auth = super.createSuccessfulAuthentication(request, userDetails);
+
+        // Ensure this session is linked to the user's seed
+        if (!UserSeedProperty.DISABLE_USER_SEED) {
+            User user = User.get(auth);
+            UserSeedProperty userSeed = user.getProperty(UserSeedProperty.class);
+            String sessionSeed = userSeed.getSeed();
+            request.getSession().setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
+        }
+
+        return auth;
+    }
+
     /**
      * In addition to the expiration requested by the super class, we also check the expiration is not too far in the future.
      * Especially to detect maliciously crafted cookie.
