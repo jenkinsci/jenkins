@@ -194,7 +194,7 @@ public class ACLTest {
         public ACL getRootACL() {
             return new ACL() {
                 @Override
-                public boolean hasPermission(Authentication a, Permission permission) {
+                public boolean hasPermission2(Authentication a, Permission permission) {
                     throw new AssertionError("should not have needed to check " + permission + " for " + a);
                 }
             };

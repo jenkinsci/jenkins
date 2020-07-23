@@ -42,7 +42,7 @@ import org.springframework.security.core.GrantedAuthority;
 public abstract class SidACL extends ACL {
 
     @Override
-    public boolean hasPermission(@NonNull Authentication a, Permission permission) {
+    public boolean hasPermission2(@NonNull Authentication a, Permission permission) {
         if(a.equals(SYSTEM2)) {
             if(LOGGER.isLoggable(FINE))
                 LOGGER.fine("hasPermission("+a+","+permission+")=>SYSTEM user has full access");
@@ -58,7 +58,7 @@ public abstract class SidACL extends ACL {
     }
 
     /**
-     * Implementation that backs up {@link #hasPermission(Authentication, Permission)}.
+     * Implementation that backs up {@link #hasPermission2(Authentication, Permission)}.
      *
      * @return
      *      true or false if {@link #hasPermission(Sid, Permission)} returns it.
@@ -99,7 +99,7 @@ public abstract class SidACL extends ACL {
      * Checks if the given {@link Sid} has the given {@link Permission}.
      *
      * <p>
-     * {@link #hasPermission(Authentication, Permission)} is implemented
+     * {@link #hasPermission2(Authentication, Permission)} is implemented
      * by checking authentication's {@link GrantedAuthority} by using
      * this method.
      *

@@ -1291,7 +1291,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
         for (ViewDescriptor d : DescriptorVisibilityFilter.apply(owner, all())) {
             if (d.isApplicableIn(owner) && d.isInstantiable()
-                    && owner.getACL().hasCreatePermission(Jenkins.getAuthentication2(), owner, d)) {
+                    && owner.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), owner, d)) {
                 r.add(d);
             }
         }

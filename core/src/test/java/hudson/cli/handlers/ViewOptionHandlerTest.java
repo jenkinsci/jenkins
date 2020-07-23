@@ -88,7 +88,7 @@ public class ViewOptionHandlerTest {
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
         when(jenkins.getACL()).thenReturn(new ACL() {
             @Override
-            public boolean hasPermission(Authentication a, Permission p) {
+            public boolean hasPermission2(Authentication a, Permission p) {
                 return true;
             }
         });

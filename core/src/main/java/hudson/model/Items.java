@@ -182,7 +182,7 @@ public class Items {
             acl = Jenkins.get().getACL();
         }
         for (TopLevelItemDescriptor d: all()) {
-            if (acl.hasCreatePermission(a, c, d) && d.isApplicableIn(c)) {
+            if (acl.hasCreatePermission2(a, c, d) && d.isApplicableIn(c)) {
                 result.add(d);
             }
         }

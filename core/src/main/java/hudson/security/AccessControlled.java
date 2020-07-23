@@ -58,7 +58,7 @@ public interface AccessControlled {
     }
 
     /**
-     * Convenient short-cut for {@code getACL().hasPermission(permission)}
+     * Convenient short-cut for {@code getACL().hasPermission2(permission)}
      */
     default boolean hasPermission(@NonNull Permission permission) {
         return getACL().hasPermission(permission);
@@ -75,14 +75,14 @@ public interface AccessControlled {
     }
 
     /**
-     * Convenient short-cut for {@code getACL().hasPermission(a, permission)}
+     * Convenient short-cut for {@code getACL().hasPermission2(a, permission)}
      * @since 2.92
      */
     default boolean hasPermission(@NonNull Authentication a, @NonNull Permission permission) {
         if (a.equals(ACL.SYSTEM2)) {
             return true;
         }
-        return getACL().hasPermission(a, permission);
+        return getACL().hasPermission2(a, permission);
     }
 
 }

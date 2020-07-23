@@ -367,7 +367,7 @@ public class ListViewTest {
         }
         @Override public ACL getACL(View item) {
             return new ACL() {
-                @Override public boolean hasPermission(Authentication a, Permission permission) {
+                @Override public boolean hasPermission2(Authentication a, Permission permission) {
                     return a.equals(SYSTEM2);
                 }
             };

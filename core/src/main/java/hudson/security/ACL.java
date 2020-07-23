@@ -25,6 +25,7 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItemDescriptor;
@@ -71,7 +72,7 @@ public abstract class ACL {
         if (a.equals(SYSTEM2)) {
             return;
         }
-        if (!hasPermission(a,p)) {
+        if (!hasPermission2(a,p)) {
             while (!p.enabled && p.impliedBy != null) {
                 p = p.impliedBy;
             }
@@ -133,7 +134,7 @@ public abstract class ACL {
         if (a.equals(SYSTEM2)) {
             return true;
         }
-        return hasPermission(a, p);
+        return hasPermission2(a, p);
     }
 
     /**
@@ -169,19 +170,48 @@ public abstract class ACL {
      * <p>
      * Note that {@link #SYSTEM2} can be passed in as the authentication parameter,
      * in which case you should probably just assume it has every permission.
+     * @since TODO
      */
-    public abstract boolean hasPermission(@NonNull Authentication a, @NonNull Permission permission);
+    public boolean hasPermission2(@NonNull Authentication a, @NonNull Permission permission) {
+        if (Util.isOverridden(ACL.class, getClass(), "hasPermission", org.acegisecurity.Authentication.class, Permission.class)) {
+            return hasPermission(org.acegisecurity.Authentication.fromSpring(a), permission);
+        } else {
+            throw new AbstractMethodError("implement hasPermission2");
+        }
+    }
+
+    /**
+     * @deprecated use {@link hasPermission2}
+     */
+    @Deprecated
+    public boolean hasPermission(@NonNull org.acegisecurity.Authentication a, @NonNull Permission permission) {
+        return hasPermission2(a.toSpring(), permission);
+    }
 
     /**
      * Creates a simple {@link ACL} implementation based on a “single-abstract-method” easily implemented via lambda syntax.
-     * @param impl the implementation of {@link ACL#hasPermission(Authentication, Permission)}
+     * @param impl the implementation of {@link ACL#hasPermission2(Authentication, Permission)}
      * @return an adapter to that lambda
-     * @since 2.105
+     * @since TODO
      */
-    public static ACL lambda(final BiFunction<Authentication, Permission, Boolean> impl) {
+    public static ACL lambda2(final BiFunction<Authentication, Permission, Boolean> impl) {
         return new ACL() {
             @Override
-            public boolean hasPermission(Authentication a, Permission permission) {
+            public boolean hasPermission2(Authentication a, Permission permission) {
+                return impl.apply(a, permission);
+            }
+        };
+    }
+
+    /**
+     * @deprecated use {@link #lambda2}
+     * @since 2.105
+     */
+    @Deprecated
+    public static ACL lambda(final BiFunction<org.acegisecurity.Authentication, Permission, Boolean> impl) {
+        return new ACL() {
+            @Override
+            public boolean hasPermission(org.acegisecurity.Authentication a, Permission permission) {
                 return impl.apply(a, permission);
             }
         };
@@ -204,7 +234,7 @@ public abstract class ACL {
         if (a.equals(SYSTEM2)) {
             return;
         }
-        if (!hasCreatePermission(a, c, d)) {
+        if (!hasCreatePermission2(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     Item.CREATE.group.title+"/"+Item.CREATE.name + Item.CREATE + "/" + d.getDisplayName()));
         }
@@ -219,11 +249,25 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @return false
      *      if the user doesn't have the permission.
+     * @since TODO
+     */
+    public boolean hasCreatePermission2(@NonNull Authentication a, @NonNull ItemGroup c,
+                                       @NonNull TopLevelItemDescriptor d) {
+        if (Util.isOverridden(ACL.class, getClass(), "hasCreatePermission", org.acegisecurity.Authentication.class, ItemGroup.class, TopLevelItemDescriptor.class)) {
+            return hasCreatePermission(org.acegisecurity.Authentication.fromSpring(a), c, d);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * @deprecated use {@link #hasCreatePermission2(Authentication, ItemGroup, TopLevelItemDescriptor)}
      * @since 1.607
      */
-    public boolean hasCreatePermission(@NonNull Authentication a, @NonNull ItemGroup c,
+    @Deprecated
+    public boolean hasCreatePermission(@NonNull org.acegisecurity.Authentication a, @NonNull ItemGroup c,
                                        @NonNull TopLevelItemDescriptor d) {
-        return true;
+        return hasCreatePermission2(a.toSpring(), c, d);
     }
 
     /**
@@ -242,7 +286,7 @@ public abstract class ACL {
         if (a.equals(SYSTEM2)) {
             return;
         }
-        if (!hasCreatePermission(a, c, d)) {
+        if (!hasCreatePermission2(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
         }
@@ -258,11 +302,25 @@ public abstract class ACL {
      * @param d the descriptor of the view to be created.
      * @return false
      *      if the user doesn't have the permission.
+     * @since TODO
+     */
+    public boolean hasCreatePermission2(@NonNull Authentication a, @NonNull ViewGroup c,
+                                       @NonNull ViewDescriptor d) {
+        if (Util.isOverridden(ACL.class, getClass(), "hasCreatePermission", org.acegisecurity.Authentication.class, ViewGroup.class, ViewDescriptor.class)) {
+            return hasCreatePermission(org.acegisecurity.Authentication.fromSpring(a), c, d);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * @deprecated use {@link #hasCreatePermission2(Authentication, ItemGroup, TopLevelItemDescriptor)}
      * @since 2.37
      */
-    public boolean hasCreatePermission(@NonNull Authentication a, @NonNull ViewGroup c,
+    @Deprecated
+    public boolean hasCreatePermission(@NonNull org.acegisecurity.Authentication a, @NonNull ViewGroup c,
                                        @NonNull ViewDescriptor d) {
-        return true;
+        return hasCreatePermission2(a.toSpring(), c, d);
     }
 
     //

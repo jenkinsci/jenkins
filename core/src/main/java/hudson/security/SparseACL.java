@@ -68,7 +68,7 @@ public class SparseACL extends SidACL {
     }
 
     @Override
-    public boolean hasPermission(Authentication a, Permission permission) {
+    public boolean hasPermission2(Authentication a, Permission permission) {
         if(a.equals(SYSTEM2))   return true;
         Boolean b = _hasPermission(a,permission);
         if(b!=null) return b;
@@ -76,7 +76,7 @@ public class SparseACL extends SidACL {
         if(parent!=null) {
             if(LOGGER.isLoggable(FINE))
                 LOGGER.fine("hasPermission("+a+","+permission+") is delegating to parent ACL: "+parent);
-            return parent.hasPermission(a,permission);
+            return parent.hasPermission2(a,permission);
         }
 
         // the ultimate default is to reject everything
