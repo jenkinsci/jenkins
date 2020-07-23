@@ -376,7 +376,7 @@ public abstract class ACL {
      * @deprecated use {@link #SYSTEM2}
      */
     @Deprecated
-    public static final org.acegisecurity.Authentication SYSTEM = org.acegisecurity.Authentication.fromSpring(SYSTEM2);
+    public static final org.acegisecurity.Authentication SYSTEM = new org.acegisecurity.providers.UsernamePasswordAuthenticationToken((UsernamePasswordAuthenticationToken) SYSTEM2);
 
     /**
      * Changes the {@link Authentication} associated with the current thread

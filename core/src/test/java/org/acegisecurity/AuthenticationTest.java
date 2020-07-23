@@ -42,6 +42,9 @@ public class AuthenticationTest {
     @Test
     public void system() {
         assertEquality(ACL.SYSTEM, ACL.SYSTEM2);
+        assertTrue(ACL.SYSTEM == org.acegisecurity.Authentication.fromSpring(ACL.SYSTEM2), "old code often compares a == SYSTEM");
+        assertTrue(ACL.SYSTEM2 == ACL.SYSTEM.toSpring());
+
     }
 
     @Test

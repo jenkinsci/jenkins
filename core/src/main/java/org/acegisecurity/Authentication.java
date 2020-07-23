@@ -23,6 +23,7 @@
  */
 package org.acegisecurity;
 
+import hudson.security.ACL;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
@@ -48,7 +49,9 @@ public interface Authentication extends Principal, Serializable {
     void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException;
 
     static Authentication fromSpring(org.springframework.security.core.Authentication a) {
-        if (a instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+        if (a == ACL.SYSTEM2) {
+            return ACL.SYSTEM;
+        } else if (a instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
             return new AnonymousAuthenticationToken((org.springframework.security.authentication.AnonymousAuthenticationToken) a);
         } else if (a instanceof org.springframework.security.authentication.UsernamePasswordAuthenticationToken) {
             return new UsernamePasswordAuthenticationToken((org.springframework.security.authentication.UsernamePasswordAuthenticationToken) a);

@@ -24,6 +24,7 @@
 
 package org.acegisecurity.providers;
 
+import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.kohsuke.accmod.Restricted;
