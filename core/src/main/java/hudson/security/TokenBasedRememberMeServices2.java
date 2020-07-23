@@ -91,10 +91,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         if (UserSeedProperty.DISABLE_USER_SEED) {
             userSeed = "no-seed";
         } else {
-            User user = User.getById(username, false);
-            if (user == null) {
-                return "no-user";
-            }
+            User user = User.getById(username, true);
             UserSeedProperty userSeedProperty = user.getProperty(UserSeedProperty.class);
             if (userSeedProperty == null) {
                 // if you want to filter out the user seed property, you should consider using the DISABLE_USER_SEED instead
