@@ -39,6 +39,7 @@ import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.RememberMeAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -69,21 +70,16 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     /**
      * Decorate {@link UserDetailsService} so that we can use information stored in
      * {@link LastGrantedAuthoritiesProperty}.
-     *
+     * <p>
      * We wrap by {@link ImpersonatingUserDetailsService} in other places too,
-     * so this is possibly redundant, but there are many {@link AbstractPasswordBasedSecurityRealm#loadUserByUsername(String)}
+     * so this is possibly redundant, but there are many {@link AbstractPasswordBasedSecurityRealm#loadUserByUsername2(String)}
      * implementations that do not do it, so doing it helps retrofit old plugins to benefit from
      * the user impersonation improvements. Plus multiple {@link ImpersonatingUserDetailsService}
      * do not incur any real performance penalty.
-     *
-     * TokenBasedRememberMeServices needs to be used in conjunction with RememberMeAuthenticationProvider,
-     * and both needs to use the same key (this is a reflection of a poor design in AcegiSecurity, if you ask me)
-     * and various security plugins have its own groovy script that configures them.
-     *
-     * So if we change this, it creates a painful situation for those plugins by forcing them to choose
-     * to work with earlier version of Jenkins or newer version of Jenkins, and not both.
-     *
-     * So we keep this here.
+     * <p>
+     * {@link TokenBasedRememberMeServices} needs to be used in conjunction with {@link RememberMeAuthenticationProvider}
+     * (see {@link AbstractPasswordBasedSecurityRealm#createSecurityComponents})
+     * and both need to use the same key and various security plugins need to do the same.
      */
     public TokenBasedRememberMeServices2(UserDetailsService userDetailsService) {
         super(Jenkins.get().getSecretKey(), new ImpersonatingUserDetailsService(userDetailsService));
