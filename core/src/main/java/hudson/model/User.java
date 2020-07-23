@@ -363,7 +363,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since TODO
      */
     public @NonNull Authentication impersonate2() throws UsernameNotFoundException {
-        return this.impersonate(this.getUserDetailsForImpersonation());
+        return this.impersonate(this.getUserDetailsForImpersonation2());
     }
 
     /**
@@ -389,8 +389,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
+     * @since TODO
      */
-    public @NonNull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
+    public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
                 Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails
         );
@@ -414,6 +415,20 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
+     * @deprecated use {@link #getUserDetailsForImpersonation2}
+     */
+    @Deprecated
+    public @NonNull org.acegisecurity.userdetails.UserDetails getUserDetailsForImpersonation() throws org.acegisecurity.userdetails.UsernameNotFoundException {
+        try {
+            return org.acegisecurity.userdetails.UserDetails.fromSpring(getUserDetailsForImpersonation2());
+        } catch (UserMayOrMayNotExistException2 x) {
+            throw new hudson.security.UserMayOrMayNotExistException(x.toString(), x);
+        } catch (UsernameNotFoundException x) {
+            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+        }
+    }
+
+    /**
      * Only used for a legitimate user we have no idea about. We give it only minimum access
      */
     private static class LegitimateButUnknownUserDetails extends org.springframework.security.core.userdetails.User {
@@ -429,8 +444,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Creates an {@link Authentication} object that represents this user using the given userDetails
      *
-     * @param userDetails Provided by {@link #getUserDetailsForImpersonation()}.
-     * @see #getUserDetailsForImpersonation()
+     * @param userDetails Provided by {@link #getUserDetailsForImpersonation2()}.
+     * @see #getUserDetailsForImpersonation2()
      */
     @Restricted(NoExternalUse.class)
     public @NonNull Authentication impersonate(@NonNull UserDetails userDetails) {

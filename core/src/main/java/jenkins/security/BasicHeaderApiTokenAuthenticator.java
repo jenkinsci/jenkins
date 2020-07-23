@@ -32,7 +32,7 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
         if(u != null) {
             Authentication auth;
             try {
-                UserDetails userDetails = u.getUserDetailsForImpersonation();
+                UserDetails userDetails = u.getUserDetailsForImpersonation2();
                 auth = u.impersonate(userDetails);
 
                 SecurityListener.fireAuthenticated(userDetails);

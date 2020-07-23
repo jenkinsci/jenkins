@@ -140,7 +140,7 @@ public class BasicAuthenticationFilter implements Filter {
         {
             User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
             if(u != null){
-                UserDetails userDetails = u.getUserDetailsForImpersonation();
+                UserDetails userDetails = u.getUserDetailsForImpersonation2();
                 Authentication auth = u.impersonate(userDetails);
 
                 SecurityListener.fireAuthenticated(userDetails);
