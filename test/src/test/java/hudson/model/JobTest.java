@@ -402,7 +402,7 @@ public class JobTest {
         if (dir == null || !dir.isDirectory()) {
             return null;
         }
-        StringBuilder str = new StringBuilder("");
+        StringBuilder str = new StringBuilder();
         final FilePath[] list = new FilePath(dir).list("**/*");
         Arrays.sort(list, Comparator.comparing(FilePath::getRemote));
         for (FilePath path : list) {
