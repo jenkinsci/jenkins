@@ -58,7 +58,7 @@ public interface AccessControlled {
     }
 
     /**
-     * Convenient short-cut for {@code getACL().hasPermission2(permission)}
+     * Convenient short-cut for {@code getACL().hasPermission(permission)}
      */
     default boolean hasPermission(@NonNull Permission permission) {
         return getACL().hasPermission(permission);
