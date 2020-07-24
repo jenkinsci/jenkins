@@ -63,7 +63,7 @@ public class ACLTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new DoNotBotherMe());
         assertTrue(p.hasPermission(Item.CONFIGURE));
-        assertTrue(p.hasPermission(ACL.SYSTEM2, Item.CONFIGURE));
+        assertTrue(p.hasPermission2(ACL.SYSTEM2, Item.CONFIGURE));
         p.checkPermission(Item.CONFIGURE);
         p.checkAbortPermission();
         assertEquals(Collections.singletonList(p), r.jenkins.getAllItems());

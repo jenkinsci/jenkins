@@ -76,13 +76,22 @@ public interface AccessControlled {
 
     /**
      * Convenient short-cut for {@code getACL().hasPermission2(a, permission)}
-     * @since 2.92
+     * @since TODO
      */
-    default boolean hasPermission(@NonNull Authentication a, @NonNull Permission permission) {
+    default boolean hasPermission2(@NonNull Authentication a, @NonNull Permission permission) {
         if (a.equals(ACL.SYSTEM2)) {
             return true;
         }
         return getACL().hasPermission2(a, permission);
+    }
+
+    /**
+     * @deprecated use {@link #hasPermission2}
+     * @since 2.92
+     */
+    @Deprecated
+    default boolean hasPermission(@NonNull org.acegisecurity.Authentication a, @NonNull Permission permission) {
+        return hasPermission2(a.toSpring(), permission);
     }
 
 }
