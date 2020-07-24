@@ -55,7 +55,7 @@ public abstract class SpySecurityListener extends SecurityListener {
     }
     
     @Override
-    protected void authenticated(@NonNull UserDetails details) {
+    protected void authenticated2(@NonNull UserDetails details) {
         this.authenticatedCalls.add(details);
     }
     

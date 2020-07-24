@@ -48,7 +48,7 @@ public class UserSeedSecurityListener extends SecurityListener {
     }
     
     @Override 
-    protected void authenticated(@NonNull UserDetails details) {
+    protected void authenticated2(@NonNull UserDetails details) {
         putUserSeedInSession(details.getUsername(), false);
     }
 
