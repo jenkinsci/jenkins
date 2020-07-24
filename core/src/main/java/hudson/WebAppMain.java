@@ -73,6 +73,9 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.Security;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import static java.util.logging.Level.*;
@@ -123,7 +126,24 @@ public class WebAppMain implements ServletContextListener {
     /**
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
+    @Override
     public void contextInitialized(ServletContextEvent event) {
+        // Nicer console log formatting when using mvn jetty:run.
+        if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {
+            try {
+                Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").newInstance();
+                for (Handler h : java.util.logging.Logger.getLogger("").getHandlers()) {
+                    if (h instanceof ConsoleHandler) {
+                        ((ConsoleHandler) h).setFormatter(formatter);
+                    }
+                }
+            } catch (ClassNotFoundException x) {
+                // ignore
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, null, x);
+            }
+        }
+
         JenkinsJVMAccess._setJenkinsJVM(true);
         final ServletContext context = event.getServletContext();
         File home=null;
