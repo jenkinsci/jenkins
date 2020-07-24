@@ -331,7 +331,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *
      * <p>
      * If the transport doesn't do authentication, this method returns {@link jenkins.model.Jenkins#ANONYMOUS2}.
-     * @@since TODO
+     * @since TODO
      */
     public Authentication getTransportAuthentication2() {
         Authentication a = transportAuth; 
@@ -348,7 +348,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     }
 
     /**
-     * @@since TODO
+     * @since TODO
      */
     public void setTransportAuth2(Authentication transportAuth) {
         this.transportAuth = transportAuth;

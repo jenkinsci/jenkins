@@ -2017,7 +2017,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         /**
-         * @deprecated use {@link getDefaultAuthentication2()}
+         * @deprecated use {@link #getDefaultAuthentication2()}
          * @since 1.520
          */
         @Deprecated
@@ -2051,7 +2051,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         /**
-         * @deprecated use {@link getDefaultAuthentication2(Queue.Item)}
+         * @deprecated use {@link #getDefaultAuthentication2(Queue.Item)}
          * @since 1.592
          */
         @Deprecated

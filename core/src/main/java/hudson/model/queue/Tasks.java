@@ -79,14 +79,14 @@ public class Tasks {
         return p instanceof hudson.model.Item ? (hudson.model.Item)p : null;
     }
 
-    /** @deprecated call {@link Task#getDefaultAuthentication()} directly */
+    /** @deprecated call {@link Queue.Task#getDefaultAuthentication()} directly */
     @Deprecated
     @NonNull
     public static org.acegisecurity.Authentication getDefaultAuthenticationOf(Task t) {
         return t.getDefaultAuthentication();
     }
 
-    /** @deprecated call {@link Task#getDefaultAuthentication(Item)} directly */
+    /** @deprecated call {@link Queue.Task#getDefaultAuthentication(Item)} directly */
     @Deprecated
     @NonNull
     public static org.acegisecurity.Authentication getDefaultAuthenticationOf(Task t, Item item) {

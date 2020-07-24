@@ -384,7 +384,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
-     * @deprecated use {@link loadUserByUsername2}
+     * @deprecated use {@link #loadUserByUsername2}
      */
     @Deprecated
     public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
@@ -436,7 +436,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
-     * @deprecated use {@link loadGroupByGroupname2}
+     * @deprecated use {@link #loadGroupByGroupname2}
      */
     @Deprecated
     public GroupDetails loadGroupByGroupname(String groupname) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
@@ -450,7 +450,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     /**
-     * @deprecated use {@link loadGroupByGroupname2}
+     * @deprecated use {@link #loadGroupByGroupname2}
      * @since 1.549
      */
     @Deprecated
@@ -781,7 +781,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public static final GrantedAuthority AUTHENTICATED_AUTHORITY2 = new SimpleGrantedAuthority("authenticated");
 
     /**
-     * @deprecated use {@link AUTHENTICATED_AUTHORITY2}
+     * @deprecated use {@link #AUTHENTICATED_AUTHORITY2}
      */
     @Deprecated
     public static final org.acegisecurity.GrantedAuthority AUTHENTICATED_AUTHORITY = new org.acegisecurity.GrantedAuthorityImpl("authenticated");

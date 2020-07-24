@@ -110,7 +110,6 @@ public final class UserDetailsCache {
      *
      * @throws UsernameNotFoundException (normally a {@link hudson.security.UserMayOrMayNotExistException2})
      *              if the user could not be found or the user has no GrantedAuthority
-     * @throws DataAccessException if user could not be found for a repository-specific reason
      * @throws ExecutionException if anything else went wrong in the cache lookup/retrieval
      */
     @NonNull

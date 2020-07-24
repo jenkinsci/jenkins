@@ -181,7 +181,7 @@ public abstract class ACL {
     }
 
     /**
-     * @deprecated use {@link hasPermission2}
+     * @deprecated use {@link #hasPermission2}
      */
     @Deprecated
     public boolean hasPermission(@NonNull org.acegisecurity.Authentication a, @NonNull Permission permission) {

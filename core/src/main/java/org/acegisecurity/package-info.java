@@ -23,7 +23,7 @@
  */
 
 /**
- * Façade for {@link org.springframework.security}.
+ * Façade for {@code org.springframework.security}.
  * Should only be used for plugin compatibility.
  */
 package org.acegisecurity;

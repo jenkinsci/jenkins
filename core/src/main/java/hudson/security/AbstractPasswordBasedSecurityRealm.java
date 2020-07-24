@@ -127,7 +127,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     }
 
     /**
-     * @deprecated use {@link loadUserByUsername2}
+     * @deprecated use {@link #loadUserByUsername2}
      */
     @Deprecated
     @Override
@@ -162,7 +162,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     }
 
     /**
-     * @deprecated use {@link loadGroupByGroupname2}
+     * @deprecated use {@link #loadGroupByGroupname2}
      */
     @Deprecated
     @Override

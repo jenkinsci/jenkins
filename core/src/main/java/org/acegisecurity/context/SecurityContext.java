@@ -30,7 +30,7 @@ import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 
 /**
- * @deprecated Use {@link ACL#as2(User)} or {@link org.springframework.security.core.context.SecurityContext}
+ * @deprecated Use {@link ACL#as(User)} or {@link org.springframework.security.core.context.SecurityContext}
  */
 @Deprecated
 public interface SecurityContext {
