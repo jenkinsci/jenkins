@@ -1327,14 +1327,18 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
         }
 
-        Fingerprint loaded = FingerprintStorage.get().load(id);
-        if (loaded == null && !(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
-                FingerprintStorage.getFileFingerprintStorage().isReady()) {
-            loaded = FingerprintStorage.getFileFingerprintStorage().load(id);
+        FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
+        FingerprintStorage fileFingerprintStorage = FileFingerprintStorage.getFileFingerprintStorage();
+
+        Fingerprint loaded = configuredFingerprintStorage.load(id);
+
+        if (loaded == null && !(configuredFingerprintStorage instanceof FileFingerprintStorage) &&
+                fileFingerprintStorage.isReady()) {
+            loaded = fileFingerprintStorage.load(id);
             if (loaded != null) {
                 initFacets(loaded);
-                FingerprintStorage.get().save(loaded);
-                FingerprintStorage.getFileFingerprintStorage().delete(id);
+                configuredFingerprintStorage.save(loaded);
+                fileFingerprintStorage.delete(id);
             }
         } else {
             initFacets(loaded);
@@ -1376,11 +1380,13 @@ public class Fingerprint implements ModelObject, Saveable {
      * @since TODO
      */
     public static void delete(@NonNull String id) throws IOException {
-        FingerprintStorage.get().delete(id);
+        FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
+        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
 
-        if (!(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
-                FingerprintStorage.getFileFingerprintStorage().isReady()) {
-            FingerprintStorage.getFileFingerprintStorage().delete(id);
+        configuredFingerprintStorage.delete(id);
+
+        if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()) {
+            fileFingerprintStorage.delete(id);
         }
     }
 
