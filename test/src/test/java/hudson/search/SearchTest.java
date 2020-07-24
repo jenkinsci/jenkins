@@ -398,7 +398,7 @@ public class SearchTest {
 
 
         // Alice can't
-        assertFalse("no permission", j.jenkins.getView("foo").hasPermission(User.get("alice").impersonate2(), View.READ));
+        assertFalse("no permission", j.jenkins.getView("foo").hasPermission2(User.get("alice").impersonate2(), View.READ));
         ACL.impersonate2(User.get("alice").impersonate2(), new Runnable() {
             @Override
             public void run() {
