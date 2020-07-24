@@ -398,7 +398,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             }
         }
 
-        Authentication identity = item.authenticate();
+        Authentication identity = item.authenticate2();
         if (!(SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !hasPermission2(identity, Computer.BUILD)) {
             // doesn't have a permission
             return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(), getDisplayName()));

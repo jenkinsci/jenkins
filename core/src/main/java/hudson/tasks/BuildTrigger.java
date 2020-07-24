@@ -408,7 +408,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                     if(!(item instanceof ParameterizedJobMixIn.ParameterizedJob))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
                     // check whether the supposed user is expected to be able to build
-                    Authentication auth = Tasks.getAuthenticationOf(project);
+                    Authentication auth = Tasks.getAuthenticationOf2(project);
                     if (!item.hasPermission2(auth, Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }

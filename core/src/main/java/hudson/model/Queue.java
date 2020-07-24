@@ -2004,12 +2004,25 @@ public class Queue extends ResourceController implements Saveable {
          * based on whether this {@link Authentication} is allowed to use them.
          *
          * @return by default, {@link ACL#SYSTEM2}
-         * @since 1.520
+         * @since TODO
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task)
          */
-        default @NonNull Authentication getDefaultAuthentication() {
-            return ACL.SYSTEM2;
+        default @NonNull Authentication getDefaultAuthentication2() {
+            if (Util.isOverridden(Queue.Task.class, getClass(), "getDefaultAuthentication")) {
+                return getDefaultAuthentication().toSpring();
+            } else {
+                return ACL.SYSTEM2;
+            }
+        }
+
+        /**
+         * @deprecated use {@link getDefaultAuthentication2()}
+         * @since 1.520
+         */
+        @Deprecated
+        default @NonNull org.acegisecurity.Authentication getDefaultAuthentication() {
+            return org.acegisecurity.Authentication.fromSpring(getDefaultAuthentication2());
         }
 
         /**
@@ -2025,13 +2038,27 @@ public class Queue extends ResourceController implements Saveable {
          * older versions of Jenkins may not have this method implemented. Called private method _getDefaultAuthenticationOf(Task) on {@link Tasks}
          * to avoid {@link AbstractMethodError}.
          *
-         * @since 1.592
+         * @since TODO
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task, Queue.Item)
          */
-        default @NonNull Authentication getDefaultAuthentication(Queue.Item item) {
-            return getDefaultAuthentication();
+        default @NonNull Authentication getDefaultAuthentication2(Queue.Item item) {
+            if (Util.isOverridden(Queue.Task.class, getClass(), "getDefaultAuthentication", Queue.Item.class)) {
+                return getDefaultAuthentication(item).toSpring();
+            } else {
+                return getDefaultAuthentication2();
+            }
         }
+
+        /**
+         * @deprecated use {@link getDefaultAuthentication2(Queue.Item)}
+         * @since 1.592
+         */
+        @Deprecated
+        default @NonNull org.acegisecurity.Authentication getDefaultAuthentication(Queue.Item item) {
+            return org.acegisecurity.Authentication.fromSpring(getDefaultAuthentication2(item));
+        }
+
     }
 
     /**
@@ -2324,16 +2351,25 @@ public class Queue extends ResourceController implements Saveable {
          * return the identity of the user who queued the task, or {@link ACL#SYSTEM2} to bypass the access control
          * and run as the super user.
          *
-         * @since 1.520
+         * @since TODO
          */
         @NonNull
-        public Authentication authenticate() {
+        public Authentication authenticate2() {
             for (QueueItemAuthenticator auth : QueueItemAuthenticatorProvider.authenticators()) {
                 Authentication a = auth.authenticate2(this);
                 if (a!=null)
                     return a;
             }
-            return task.getDefaultAuthentication(this);
+            return task.getDefaultAuthentication2(this);
+        }
+
+        /**
+         * @deprecated use {@link #authenticate2}
+         * @since 1.520
+         */
+        @Deprecated
+        public org.acegisecurity.Authentication authenticate() {
+            return org.acegisecurity.Authentication.fromSpring(authenticate2());
         }
 
         @Restricted(DoNotUse.class) // only for Stapler export

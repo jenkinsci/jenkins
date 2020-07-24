@@ -82,33 +82,43 @@ public class Tasks {
     /** @deprecated call {@link Task#getDefaultAuthentication()} directly */
     @Deprecated
     @NonNull
-    public static Authentication getDefaultAuthenticationOf(Task t) {
+    public static org.acegisecurity.Authentication getDefaultAuthenticationOf(Task t) {
         return t.getDefaultAuthentication();
     }
 
     /** @deprecated call {@link Task#getDefaultAuthentication(Item)} directly */
     @Deprecated
     @NonNull
-    public static Authentication getDefaultAuthenticationOf(Task t, Item item) {
+    public static org.acegisecurity.Authentication getDefaultAuthenticationOf(Task t, Item item) {
         return t.getDefaultAuthentication(item);
     }
 
     /**
      * Finds what authentication a task is likely to be run under when scheduled.
-     * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate}) might differ,
+     * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate2}) might differ,
      * in case some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Item)} takes (for example) actions into consideration.
      * @param t a task
-     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication()}
-     * @since 1.560
+     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication2()}
+     * @since TODO
      */
-    public static @NonNull Authentication getAuthenticationOf(@NonNull Task t) {
+    public static @NonNull Authentication getAuthenticationOf2(@NonNull Task t) {
         for (QueueItemAuthenticator qia : QueueItemAuthenticatorProvider.authenticators()) {
             Authentication a = qia.authenticate2(t);
             if (a != null) {
                 return a;
             }
         }
-        return t.getDefaultAuthentication();
+        return t.getDefaultAuthentication2();
     }
+
+    /**
+     * @deprecated use {@link #getAuthenticationOf2}
+     * @since 1.560
+     */
+    @Deprecated
+    public static @NonNull org.acegisecurity.Authentication getAuthenticationOf(@NonNull Task t) {
+        return org.acegisecurity.Authentication.fromSpring(getAuthenticationOf2(t));
+    }
+
 
 }

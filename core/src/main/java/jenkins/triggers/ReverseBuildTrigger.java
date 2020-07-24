@@ -145,7 +145,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
         Authentication originalAuth = Jenkins.getAuthentication2();
         Job upstream = upstreamBuild.getParent();
-        Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
+        Authentication auth = Tasks.getAuthenticationOf2((Queue.Task) job);
 
         Item authUpstream = null;
         try (ACLContext ctx = ACL.as2(auth)) {

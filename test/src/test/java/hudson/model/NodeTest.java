@@ -227,7 +227,7 @@ public class NodeTest {
         notTake = false;
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
-        message = Messages._Node_LackingBuildPermission(item.authenticate().getName(),node.getNodeName()).toString();
+        message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(),node.getNodeName()).toString();
         assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());
     }
 
