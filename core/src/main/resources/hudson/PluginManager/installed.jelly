@@ -137,7 +137,7 @@ THE SOFTWARE.
                     </div>
                   </j:if>
                 </td>
-                <td class="center pane" style="white-space:normal">
+                <td class="pane" style="white-space:normal">
                   <a href="plugin/${p.shortName}/thirdPartyLicenses">
                     ${p.version}
                   </a>
@@ -158,7 +158,7 @@ THE SOFTWARE.
                           <j:set var="uninstallPossible" value="false"/>
                       </j:otherwise>
                   </j:choose>
-                  <td class="center pane uninstall" data="${uninstallPossible}">
+                  <td class="pane uninstall" data="${uninstallPossible}">
                     <j:choose>
                       <j:when test="${p.isDeleted()}">
                         <p>${%Uninstallation pending}</p>
