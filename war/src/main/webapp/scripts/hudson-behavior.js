@@ -728,15 +728,15 @@ function expandButton(e) {
     layoutUpdateCallback.call();
 }
 
-function inputHasDefaultTextOnFocus() {
-    if (this.value == defaultValue) {
+function inputHasDefaultTextOnFocus(defaultValue) {
+    if (this.value === defaultValue) {
         this.value = "";
         Element.removeClassName(this, "defaulted");
     }
 }
 
-function inputHasDefaultTextOnBlur() {
-    if (this.value == "") {
+function inputHasDefaultTextOnBlur(defaultValue) {
+    if (this.value === "") {
         this.value = defaultValue;
         Element.addClassName(this, "defaulted");
     }
@@ -895,8 +895,8 @@ function rowvgStartEachRow(recursive,f) {
     Behaviour.specify("INPUT.has-default-text", "input-has-default-text", ++p, function(e) {
         var defaultValue = e.value;
         Element.addClassName(e, "defaulted");
-        e.onfocus = inputHasDefaultTextOnFocus;
-        e.onblur = inputHasDefaultTextOnBlur;
+        e.onfocus = inputHasDefaultTextOnFocus(defaultValue);
+        e.onblur = inputHasDefaultTextOnBlur(defaultValue);
     });
 
     // <label> that doesn't use ID, so that it can be copied in <repeatable>
