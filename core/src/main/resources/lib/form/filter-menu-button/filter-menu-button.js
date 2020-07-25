@@ -1,4 +1,5 @@
 function createFilterMenuButton (button, menu, menuAlignment, menuMinScrollHeight) {
+    var MIN_NUM_OPTIONS = 5;
     var menuButton = new YAHOO.widget.Button(button, {
         type: "menu",
         menu: menu,
@@ -12,6 +13,7 @@ function createFilterMenuButton (button, menu, menuAlignment, menuMinScrollHeigh
     menuButton._menu.showEvent.subscribe(function() {
         filter.firstElementChild.value = '';
         _applyFilterKeyword(menuButton._menu, filter.firstElementChild);
+        filter.style.display = (_getItemList(menuButton._menu).children.length >= MIN_NUM_OPTIONS) ? '' : 'NONE';
     });
     menuButton._menu.setInitialFocus = function () {
         setTimeout(function() {
@@ -40,11 +42,15 @@ function _onFilterKeyUp (evt) {
 
 function _applyFilterKeyword (menu, filterInput) {
     var filterKeyword = filterInput.value;
-    var itemList = menu.body.children[0];
+    var itemList = _getItemList(menu);
     var item, match;
     for (item of itemList.children) {
         match = (item.innerText.toLowerCase().indexOf(filterKeyword) !== -1);
         item.style.display = match ? '' : 'NONE';
     }
     menu.align();
+}
+
+function _getItemList (menu) {
+    return menu.body.children[0];
 }
