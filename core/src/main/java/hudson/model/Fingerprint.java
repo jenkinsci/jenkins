@@ -46,6 +46,7 @@ import hudson.util.XStream2;
 
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
+import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
@@ -1251,9 +1252,20 @@ public class Fingerprint implements ModelObject, Saveable {
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();
 
+        FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
+        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+
         // Implementations are expected to invoke SaveableListener on their own if relevant
         // TODO: Consider improving Saveable Listener API: https://issues.jenkins-ci.org/browse/JENKINS-62543
-        FingerprintStorage.get().save(this);
+        configuredFingerprintStorage.save(this);
+
+        // In the case that fingerprint cleanup is disabled and external fingerprint storage is configured, there may
+        // be some fingerprints in memory that get saved inside the new fingerprint storage, and their cleanup is not
+        // performed (which is ideally done by #load(String id)). This is to ensure that they get cleaned up.
+        if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()
+                && GlobalFingerprintConfiguration.get().isFingerprintCleanupDisabled()) {
+            fileFingerprintStorage.delete(this.getHashString());
+        }
 
         if(logger.isLoggable(Level.FINE))
             logger.fine("Saving fingerprint " + getHashString() + " took " + (System.currentTimeMillis() - start) + "ms");
