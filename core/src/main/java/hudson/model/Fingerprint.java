@@ -1262,6 +1262,7 @@ public class Fingerprint implements ModelObject, Saveable {
         // In the case that external fingerprint storage is configured, there may be some fingerprints in memory that
         // get saved before a load call (because they are already in memory). This ensures that they get deleted from
         // the file fingerprint storage.
+        // TODO: Consider improving KeyedDataStorage so it provides an API for clearing the fingerprints in memory.
         if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()) {
             fileFingerprintStorage.delete(this.getHashString());
         }
