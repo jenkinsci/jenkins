@@ -1980,6 +1980,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * in case there's a fatal problem.
      *
      */
-    public static boolean enabled = !SystemProperties.getBoolean("ProcessTreeKiller.disable")
+    public static boolean enabled = !SystemProperties.getBoolean("hudson.util.ProcessTreeKiller.disable")
             && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
 }
