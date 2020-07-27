@@ -102,11 +102,24 @@ public class FingerprintStorageTest {
     public void testDeletingFingerprintWithExternalStorage() throws IOException {
         configureExternalStorage();
         String id = Util.getDigestOf("testLoadingAndSavingLocalStorageFingerprintWithExternalStorage");
-        configureExternalStorage();
         new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         Fingerprint.delete(id);
         Fingerprint fingerprintLoaded = Fingerprint.load(id);
         assertThat(fingerprintLoaded, is(nullValue()));
+    }
+
+    @Test
+    public void testMigrationDeletesFingerprintsInMemoryFromFileStorage() throws IOException {
+        String id = Util.getDigestOf("testMigrationDeletesFingerprintsInMemoryFromFileStorage");
+        Fingerprint fingerprintSaved = new Fingerprint(null, "foo.jar", Util.fromHexString(id));
+        configureExternalStorage();
+        GlobalFingerprintConfiguration.get().setFingerprintCleanupDisabled(true);
+        fingerprintSaved.add("test", 3);
+        // This fingerprint is now implicitly saved without making a load call.
+        // We want the file storage to not have this fingerprint now.
+        Fingerprint fingerprintLoaded = FingerprintStorage.getFileFingerprintStorage().load(id);
+        assertThat(fingerprintLoaded, is(nullValue()));
+
     }
 
     private FingerprintStorage configureExternalStorage() {
