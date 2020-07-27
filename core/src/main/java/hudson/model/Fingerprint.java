@@ -1262,8 +1262,7 @@ public class Fingerprint implements ModelObject, Saveable {
         // In the case that fingerprint cleanup is disabled and external fingerprint storage is configured, there may
         // be some fingerprints in memory that get saved inside the new fingerprint storage, and their cleanup is not
         // performed (which is ideally done by #load(String id)). This is to ensure that they get cleaned up.
-        if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()
-                && GlobalFingerprintConfiguration.get().isFingerprintCleanupDisabled()) {
+        if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()) {
             fileFingerprintStorage.delete(this.getHashString());
         }
 

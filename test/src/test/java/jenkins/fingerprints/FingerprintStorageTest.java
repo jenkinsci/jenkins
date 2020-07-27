@@ -113,7 +113,6 @@ public class FingerprintStorageTest {
         String id = Util.getDigestOf("testMigrationDeletesFingerprintsInMemoryFromFileStorage");
         Fingerprint fingerprintSaved = new Fingerprint(null, "foo.jar", Util.fromHexString(id));
         configureExternalStorage();
-        GlobalFingerprintConfiguration.get().setFingerprintCleanupDisabled(true);
         fingerprintSaved.add("test", 3);
         // This fingerprint is now implicitly saved without making a load call.
         // We want the file storage to not have this fingerprint now.
