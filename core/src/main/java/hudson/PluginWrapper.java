@@ -1306,12 +1306,15 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     public List<UpdateSite.Deprecation> getDeprecations() {
         /* Would be much nicer to go through getInfoFromAllSites but that only works for currently published plugins */
         List<UpdateSite.Deprecation> deprecations = new ArrayList<>();
-        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
-            final UpdateSite.Data data = site.getData();
-            if (data != null) {
-                for (Map.Entry<String, UpdateSite.Deprecation> entry : data.getDeprecations().entrySet()) {
-                    if (entry.getKey().equals(this.shortName)) {
-                        deprecations.add(entry.getValue());
+        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
+        if (updateCenter.isSiteDataReady()) {
+            for (UpdateSite site : updateCenter.getSites()) {
+                final UpdateSite.Data data = site.getData();
+                if (data != null) {
+                    for (Map.Entry<String, UpdateSite.Deprecation> entry : data.getDeprecations().entrySet()) {
+                        if (entry.getKey().equals(this.shortName)) {
+                            deprecations.add(entry.getValue());
+                        }
                     }
                 }
             }
