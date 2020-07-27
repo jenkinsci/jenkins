@@ -1192,7 +1192,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Returns the persisted facets.
      *
-     * @since TODO
+     * @since 2.242
      */
     public final @NonNull PersistedList<FingerprintFacet> getPersistedFacets() {
         return facets;
@@ -1359,7 +1359,7 @@ public class Fingerprint implements ModelObject, Saveable {
     /**
      * Deletes the {@link Fingerprint} in the Storage with the given unique id.
      *
-     * @since TODO
+     * @since 2.242
      */
     public static void delete(@NonNull String id) throws IOException {
         FingerprintStorage.get().delete(id);

@@ -10,7 +10,7 @@ import hudson.util.FormValidation;
  * Plugins may want to contribute additional restrictions on the use of specific labels for specific context items.
  * This extension point allows such restrictions.
  *
- * @since TODO
+ * @since 2.243
  */
 public interface LabelValidator extends ExtensionPoint {
 
