@@ -1259,9 +1259,9 @@ public class Fingerprint implements ModelObject, Saveable {
         // TODO: Consider improving Saveable Listener API: https://issues.jenkins-ci.org/browse/JENKINS-62543
         configuredFingerprintStorage.save(this);
 
-        // In the case that fingerprint cleanup is disabled and external fingerprint storage is configured, there may
-        // be some fingerprints in memory that get saved inside the new fingerprint storage, and their cleanup is not
-        // performed (which is ideally done by #load(String id)). This is to ensure that they get cleaned up.
+        // In the case that external fingerprint storage is configured, there may be some fingerprints in memory that
+        // get saved before a load call (because they are already in memory). This ensures that they get deleted from
+        // the file fingerprint storage.
         if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()) {
             fileFingerprintStorage.delete(this.getHashString());
         }
