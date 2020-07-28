@@ -373,10 +373,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (Util.isOverridden(SecurityRealm.class, getClass(), "loadUserByUsername", String.class)) {
             try {
                 return loadUserByUsername(username).toSpring();
-            } catch (UserMayOrMayNotExistException | org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException2(x.toString(), x);
             } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-                throw new UsernameNotFoundException(x.toString(), x);
+                throw x.toSpring();
+            } catch (org.springframework.dao.DataAccessException x) {
+                throw x.toSpring();
             }
         } else {
             return getSecurityComponents().userDetails.loadUserByUsername(username);
@@ -390,10 +390,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(loadUserByUsername2(username));
-        } catch (UserMayOrMayNotExistException2 x) {
-            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
-            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
         }
     }
 
@@ -417,18 +415,18 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (Util.isOverridden(SecurityRealm.class, getClass(), "loadGroupByGroupname", String.class)) {
             try {
                 return loadGroupByGroupname(groupname);
-            } catch (UserMayOrMayNotExistException | org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException2(x.toString(), x);
             } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-                throw new UsernameNotFoundException(x.toString(), x);
+                throw x.toSpring();
+            } catch (org.springframework.dao.DataAccessException x) {
+                throw x.toSpring();
             }
         } else if (Util.isOverridden(SecurityRealm.class, getClass(), "loadGroupByGroupname", String.class, boolean.class)) {
             try {
                 return loadGroupByGroupname(groupname, fetchMembers);
             } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-                throw new UsernameNotFoundException(x.toString(), x);
+                throw x.toSpring();
             } catch (org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException2(x.toString(), x);
+                throw x.toSpring();
             }
         } else {
             throw new UserMayOrMayNotExistException2(groupname);
@@ -442,10 +440,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public GroupDetails loadGroupByGroupname(String groupname) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, false);
-        } catch (UserMayOrMayNotExistException2 x) {
-            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
-            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
         }
     }
 
@@ -457,10 +453,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, fetchMembers);
-        } catch (UserMayOrMayNotExistException2 x) {
-            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
-            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
         }
     }
 

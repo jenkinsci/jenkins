@@ -55,4 +55,16 @@ public abstract class AuthenticationException extends AcegiSecurityException {
         return extraInformation;
     }
 
+    public org.springframework.security.core.AuthenticationException toSpring() {
+        return new org.springframework.security.core.AuthenticationException(toString(), this) {};
+    }
+
+    public static AuthenticationException fromSpring(org.springframework.security.core.AuthenticationException x) {
+        if (x instanceof org.springframework.security.authentication.BadCredentialsException) {
+            return BadCredentialsException.fromSpring((org.springframework.security.authentication.BadCredentialsException) x);
+        } else {
+            return new AuthenticationException(x.toString(), x) {};
+        }
+    }
+
 }

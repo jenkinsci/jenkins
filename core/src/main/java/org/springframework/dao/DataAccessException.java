@@ -24,7 +24,9 @@
 
 package org.springframework.dao;
 
+import hudson.security.UserMayOrMayNotExistException2;
 import org.springframework.core.NestedRuntimeException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * @deprecated no replacement
@@ -38,6 +40,10 @@ public class DataAccessException extends NestedRuntimeException {
 
     public DataAccessException(String msg, Throwable cause) {
         super(msg, cause);
+    }
+
+    public UserMayOrMayNotExistException2 toSpring() {
+        return new UserMayOrMayNotExistException2(toString(), this);
     }
 
 }

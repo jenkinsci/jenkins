@@ -24,6 +24,8 @@
 
 package org.acegisecurity;
 
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+
 /**
  * @deprecated use {@link org.springframework.security.authentication.BadCredentialsException}
  */
@@ -40,6 +42,18 @@ public class BadCredentialsException extends AuthenticationException {
 
     public BadCredentialsException(String msg, Throwable t) {
         super(msg, t);
+    }
+
+    public org.springframework.security.core.AuthenticationException toSpring() {
+        return new org.springframework.security.authentication.BadCredentialsException(toString(), this);
+    }
+
+    public static BadCredentialsException fromSpring(org.springframework.security.core.AuthenticationException x) {
+        if (x instanceof org.springframework.security.core.userdetails.UsernameNotFoundException) {
+            return UsernameNotFoundException.fromSpring((org.springframework.security.core.userdetails.UsernameNotFoundException) x);
+        } else {
+            return new BadCredentialsException(x.toString(), x);
+        }
     }
 
 }

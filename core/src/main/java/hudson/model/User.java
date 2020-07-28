@@ -374,10 +374,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @NonNull org.acegisecurity.Authentication impersonate() throws org.acegisecurity.userdetails.UsernameNotFoundException {
         try {
             return org.acegisecurity.Authentication.fromSpring(impersonate2());
-        } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-            throw x;
         } catch (UsernameNotFoundException x) {
-            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
         }
     }
 
@@ -421,10 +419,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @NonNull org.acegisecurity.userdetails.UserDetails getUserDetailsForImpersonation() throws org.acegisecurity.userdetails.UsernameNotFoundException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(getUserDetailsForImpersonation2());
-        } catch (UserMayOrMayNotExistException2 x) {
-            throw new hudson.security.UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
-            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
         }
     }
 

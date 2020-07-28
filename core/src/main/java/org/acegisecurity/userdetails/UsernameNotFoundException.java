@@ -24,11 +24,15 @@
 
 package org.acegisecurity.userdetails;
 
+import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
+import org.acegisecurity.BadCredentialsException;
+
 /**
  * @deprecated use {@link org.springframework.security.core.userdetails.UsernameNotFoundException}
  */
 @Deprecated
-public class UsernameNotFoundException extends org.acegisecurity.BadCredentialsException {
+public class UsernameNotFoundException extends BadCredentialsException {
 
     public UsernameNotFoundException(String msg) {
         super(msg);
@@ -40,6 +44,19 @@ public class UsernameNotFoundException extends org.acegisecurity.BadCredentialsE
 
     public UsernameNotFoundException(String msg, Throwable t) {
         super(msg, t);
+    }
+
+    @Override
+    public org.springframework.security.core.userdetails.UsernameNotFoundException toSpring() {
+        return new org.springframework.security.core.userdetails.UsernameNotFoundException(toString(), this);
+    }
+
+    public static UsernameNotFoundException fromSpring(org.springframework.security.core.userdetails.UsernameNotFoundException x) {
+        if (x instanceof UserMayOrMayNotExistException2) {
+            return UserMayOrMayNotExistException.fromSpring((UserMayOrMayNotExistException2) x);
+        } else {
+            return new UsernameNotFoundException(x.toString(), x);
+        }
     }
 
 }

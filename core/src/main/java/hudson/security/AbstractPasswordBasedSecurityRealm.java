@@ -73,7 +73,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
             try {
                 return authenticate(username, password).toSpring();
             } catch (org.acegisecurity.AuthenticationException x) {
-                throw new AuthenticationException(x.toString(), x) {}; // TODO do subtypes matter here?
+                throw x.toSpring();
             }
         } else {
             throw new AbstractMethodError("Implement authenticate2");
@@ -88,7 +88,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(authenticate2(username, password));
         } catch (AuthenticationException x) {
-            throw new org.acegisecurity.AuthenticationException(x.toString(), x) {}; // TODO as above
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 
@@ -116,10 +116,10 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "loadUserByUsername", String.class)) {
             try {
                 return loadUserByUsername(username).toSpring();
-            } catch (UserMayOrMayNotExistException | org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException2(x.toString(), x);
             } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-                throw new UsernameNotFoundException(x.toString(), x);
+                throw x.toSpring();
+            } catch (org.springframework.dao.DataAccessException x) {
+                throw x.toSpring();
             }
         } else {
             throw new AbstractMethodError("Implement loadUserByUsername2");
@@ -134,10 +134,8 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(loadUserByUsername2(username));
-        } catch (UserMayOrMayNotExistException2 x) {
-            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
-            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
         }
     }
 
@@ -151,10 +149,10 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "loadGroupByGroupname", String.class)) {
             try {
                 return loadGroupByGroupname(groupname);
-            } catch (UserMayOrMayNotExistException | org.springframework.dao.DataAccessException x) {
-                throw new UserMayOrMayNotExistException2(x.toString(), x);
             } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
-                throw new UsernameNotFoundException(x.toString(), x);
+                throw x.toSpring();
+            } catch (org.springframework.dao.DataAccessException x) {
+                throw x.toSpring();
             }
         } else {
             throw new AbstractMethodError("Implement loadGroupByGroupname2");
@@ -169,10 +167,8 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     public GroupDetails loadGroupByGroupname(String groupname) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, false);
-        } catch (UserMayOrMayNotExistException2 x) {
-            throw new UserMayOrMayNotExistException(x.toString(), x);
         } catch (UsernameNotFoundException x) {
-            throw new org.acegisecurity.userdetails.UsernameNotFoundException(x.toString(), x);
+            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
         }
     }
 
