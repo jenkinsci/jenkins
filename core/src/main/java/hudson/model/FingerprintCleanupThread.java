@@ -55,7 +55,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
     }
 
     public long getRecurrencePeriod() {
-        return MIN;
+        return DAY;
     }
 
     public static void invoke() {
