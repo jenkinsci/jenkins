@@ -28,6 +28,7 @@ import hudson.security.ACL;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Objects;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 
@@ -50,6 +51,7 @@ public interface Authentication extends Principal, Serializable {
     void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException;
 
     static @NonNull Authentication fromSpring(@NonNull org.springframework.security.core.Authentication a) {
+        Objects.requireNonNull(a);
         if (a == ACL.SYSTEM2) {
             return ACL.SYSTEM;
         } else if (a instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {

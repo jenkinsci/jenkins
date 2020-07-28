@@ -43,11 +43,12 @@ public interface SecurityContext {
         return new SecurityContext() {
             @Override
             public Authentication getAuthentication() {
-                return Authentication.fromSpring(c.getAuthentication());
+                org.springframework.security.core.Authentication a = c.getAuthentication();
+                return a != null ? Authentication.fromSpring(a) : null;
             }
             @Override
             public void setAuthentication(Authentication a) {
-                c.setAuthentication(a.toSpring());
+                c.setAuthentication(a != null ? a.toSpring() : null);
             }
         };
     }
@@ -56,11 +57,12 @@ public interface SecurityContext {
         return new org.springframework.security.core.context.SecurityContext() {
             @Override
             public org.springframework.security.core.Authentication getAuthentication() {
-                return SecurityContext.this.getAuthentication().toSpring();
+                Authentication a = SecurityContext.this.getAuthentication();
+                return a != null ? a.toSpring() : null;
             }
             @Override
             public void setAuthentication(org.springframework.security.core.Authentication authentication) {
-                SecurityContext.this.setAuthentication(Authentication.fromSpring(authentication));
+                SecurityContext.this.setAuthentication(authentication != null ? Authentication.fromSpring(authentication) : null);
             }
         };
     }
