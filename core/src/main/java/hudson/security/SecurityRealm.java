@@ -570,26 +570,31 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         
         SecurityComponents sc = getSecurityComponents();
         List<Filter> filters = new ArrayList<>();
-        HttpSessionSecurityContextRepository httpSessionSecurityContextRepository = new HttpSessionSecurityContextRepository();
-        httpSessionSecurityContextRepository.setAllowSessionCreation(false);
-        filters.add(new HttpSessionContextIntegrationFilter2(httpSessionSecurityContextRepository));
-        // if any "Authorization: Basic xxx:yyy" is sent this is the filter that processes it
-        BasicHeaderProcessor bhp = new BasicHeaderProcessor();
-        // if basic authentication fails (which only happens incorrect basic auth credential is sent),
-        // respond with 401 with basic auth request, instead of redirecting the user to the login page,
-        // since users of basic auth tends to be a program and won't see the redirection to the form
-        // page as a failure
-        BasicAuthenticationEntryPoint basicAuthenticationEntryPoint = new BasicAuthenticationEntryPoint();
-        basicAuthenticationEntryPoint.setRealmName("Jenkins");
-        bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
-        bhp.setRememberMeServices(sc.rememberMe);
-        filters.add(bhp);
-        AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
-        apf.setAuthenticationManager(sc.manager);
-        apf.setRememberMeServices(sc.rememberMe);
-        // TODO apf.authenticationFailureUrl = "/loginError" try SimpleUrlAuthenticationFailureHandler
-        // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
-        filters.add(apf);
+        {
+            HttpSessionSecurityContextRepository httpSessionSecurityContextRepository = new HttpSessionSecurityContextRepository();
+            httpSessionSecurityContextRepository.setAllowSessionCreation(false);
+            filters.add(new HttpSessionContextIntegrationFilter2(httpSessionSecurityContextRepository));
+        }
+        { // if any "Authorization: Basic xxx:yyy" is sent this is the filter that processes it
+            BasicHeaderProcessor bhp = new BasicHeaderProcessor();
+            // if basic authentication fails (which only happens incorrect basic auth credential is sent),
+            // respond with 401 with basic auth request, instead of redirecting the user to the login page,
+            // since users of basic auth tends to be a program and won't see the redirection to the form
+            // page as a failure
+            BasicAuthenticationEntryPoint basicAuthenticationEntryPoint = new BasicAuthenticationEntryPoint();
+            basicAuthenticationEntryPoint.setRealmName("Jenkins");
+            bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
+            bhp.setRememberMeServices(sc.rememberMe);
+            filters.add(bhp);
+        }
+        {
+            AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
+            apf.setAuthenticationManager(sc.manager);
+            apf.setRememberMeServices(sc.rememberMe);
+            // TODO apf.authenticationFailureUrl = "/loginError" try SimpleUrlAuthenticationFailureHandler
+            // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
+            filters.add(apf);
+        }
         filters.add(new RememberMeAuthenticationFilter(sc.manager, sc.rememberMe));
         filters.addAll(commonFilters());
         return new ChainedServletFilter(filters);
