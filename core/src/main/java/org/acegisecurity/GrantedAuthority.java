@@ -26,6 +26,7 @@ package org.acegisecurity;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -60,7 +61,7 @@ public interface GrantedAuthority {
     }
 
     static @NonNull Collection<? extends org.springframework.security.core.GrantedAuthority> toSpring(@NonNull GrantedAuthority[] gas) {
-        return Stream.of(gas).map(GrantedAuthority::toSpring).collect(Collectors.toList());
+        return gas != null ? Stream.of(gas).map(GrantedAuthority::toSpring).collect(Collectors.toList()) : Collections.emptySet();
     }
 
 }
