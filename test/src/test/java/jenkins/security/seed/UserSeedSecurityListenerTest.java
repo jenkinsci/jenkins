@@ -46,7 +46,7 @@ public class UserSeedSecurityListenerTest {
     @Issue("JENKINS-59107")
     public void authenticateSecondaryUserWhileLoggedIn_shouldNotOverwritePrimaryUserSessionSeed() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        AuthenticationManager authenticationManager = j.jenkins.getSecurityRealm().getSecurityComponents().manager;
+        AuthenticationManager authenticationManager = j.jenkins.getSecurityRealm().getSecurityComponents().manager2;
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("alice").executeOnServer(() -> {
             HttpSession session = Stapler.getCurrentRequest().getSession();
