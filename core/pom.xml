@@ -847,5 +847,41 @@ THE SOFTWARE.
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
       </properties>
     </profile>
+    <profile>
+      <id>japicmp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.siom79.japicmp</groupId>
+            <artifactId>japicmp-maven-plugin</artifactId>
+            <version>0.14.4-20200728.214757-1</version> <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
+            <configuration>
+              <parameter>
+                <!-- see https://siom79.github.io/japicmp/MavenPlugin.html -->
+                <oldVersionPattern>\d+[.]\d+</oldVersionPattern>
+                <!-- <onlyModified>true</onlyModified> -->
+                <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
+              </parameter>
+              <oldClassPathDependencies>
+                <dependency> <!-- provided, so not visible in flattened artifact -->
+                  <groupId>javax.servlet</groupId>
+                  <artifactId>javax.servlet-api</artifactId>
+                  <version>3.1.0</version>
+                  <scope>provided</scope>
+                </dependency>
+              </oldClassPathDependencies>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>cmp</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
