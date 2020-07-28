@@ -173,7 +173,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
         // Ensure this session is linked to the user's seed
         if (!UserSeedProperty.DISABLE_USER_SEED) {
-            User user = User.get(auth);
+            User user = User.get2(auth);
             UserSeedProperty userSeed = user.getProperty(UserSeedProperty.class);
             String sessionSeed = userSeed.getSeed();
             request.getSession().setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);

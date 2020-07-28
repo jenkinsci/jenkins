@@ -586,7 +586,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.172
      */
     public static @CheckForNull User current() {
-        return get(Jenkins.getAuthentication2());
+        return get2(Jenkins.getAuthentication2());
     }
 
     /**
@@ -595,14 +595,23 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param a the supplied {@link Authentication} .
      * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
-     * @since 1.609
+     * @since TODO
      */
-    public static @CheckForNull User get(@CheckForNull Authentication a) {
+    public static @CheckForNull User get2(@CheckForNull Authentication a) {
         if (a == null || a instanceof AnonymousAuthenticationToken)
             return null;
 
         // Since we already know this is a name, we can just call getOrCreateById with the name directly.
         return getById(a.getName(), true);
+    }
+
+    /**
+     * @deprecated use {@link #get2(Authentication)}
+     * @since 1.609
+     */
+    @Deprecated
+    public static @CheckForNull User get(@CheckForNull org.acegisecurity.Authentication a) {
+        return get2(a.toSpring());
     }
 
     /**
