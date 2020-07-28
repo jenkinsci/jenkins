@@ -3,7 +3,6 @@ package jenkins.security;
 import hudson.model.User;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException2;
-import java.util.Arrays;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,7 +42,7 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
             LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
             if (p!=null)
                 return new org.springframework.security.core.userdetails.User(username,"",true,true,true,true,
-                        Arrays.asList(p.getAuthorities()));
+                        p.getAuthorities2());
         }
 
         throw e;

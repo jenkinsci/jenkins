@@ -15,6 +15,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,11 +47,14 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     	return this;
     }
 
-    public GrantedAuthority[] getAuthorities() {
+    /**
+     * @since TODO
+     */
+    public Collection<? extends GrantedAuthority> getAuthorities2() {
         String[] roles = this.roles;    // capture to a variable for immutability
 
         if(roles == null){
-            return new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY2};
+            return Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2);
         }
 
         String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY2.getAuthority();
@@ -63,7 +68,15 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
             }
         }
 
-        return grantedAuthorities.toArray(new GrantedAuthority[0]);
+        return grantedAuthorities;
+    }
+
+    /**
+     * @deprecated use {@link #getAuthorities2}
+     */
+    @Deprecated
+    public org.acegisecurity.GrantedAuthority[] getAuthorities() {
+        return org.acegisecurity.GrantedAuthority.fromSpring(getAuthorities2());
     }
 
     /**

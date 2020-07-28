@@ -66,7 +66,7 @@ public class LastGrantedAuthoritiesPropertyTest {
     }
 
     private void assertAuthorities(LastGrantedAuthoritiesProperty p, String expected) {
-        _assertAuthorities(Arrays.asList(p.getAuthorities()), expected);
+        _assertAuthorities(p.getAuthorities2(), expected);
     }
 
     private void assertAuthorities(Authentication auth, String expected) {
