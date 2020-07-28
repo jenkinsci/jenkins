@@ -379,7 +379,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                 throw x.toSpring();
             }
         } else {
-            return getSecurityComponents().userDetails.loadUserByUsername(username);
+            return getSecurityComponents().userDetails2.loadUserByUsername(username);
         }
     }
 
@@ -578,18 +578,18 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             BasicAuthenticationEntryPoint basicAuthenticationEntryPoint = new BasicAuthenticationEntryPoint();
             basicAuthenticationEntryPoint.setRealmName("Jenkins");
             bhp.setAuthenticationEntryPoint(basicAuthenticationEntryPoint);
-            bhp.setRememberMeServices(sc.rememberMe);
+            bhp.setRememberMeServices(sc.rememberMe2);
             filters.add(bhp);
         }
         {
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
-            apf.setAuthenticationManager(sc.manager);
-            apf.setRememberMeServices(sc.rememberMe);
+            apf.setAuthenticationManager(sc.manager2);
+            apf.setRememberMeServices(sc.rememberMe2);
             // TODO apf.authenticationFailureUrl = "/loginError" try SimpleUrlAuthenticationFailureHandler
             // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
             filters.add(apf);
         }
-        filters.add(new RememberMeAuthenticationFilter(sc.manager, sc.rememberMe));
+        filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
         filters.addAll(commonFilters());
         return new ChainedServletFilter(filters);
     }
@@ -717,9 +717,33 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @see SecurityRealm#createSecurityComponents() 
      */
     public static final class SecurityComponents {
-        public final AuthenticationManager manager;
-        public final UserDetailsService userDetails;
-        public final RememberMeServices rememberMe;
+        /**
+         * @since TODO
+         */
+        public final AuthenticationManager manager2;
+        /**
+         * @deprecated use {@link #manager2}
+         */
+        @Deprecated
+        public final org.acegisecurity.AuthenticationManager manager;
+        /**
+         * @since TODO
+         */
+        public final UserDetailsService userDetails2;
+        /**
+         * @deprecated use {@link #userDetails2}
+         */
+        @Deprecated
+        public final org.acegisecurity.userdetails.UserDetailsService userDetails;
+        /**
+         * @since TODO
+         */
+        public final RememberMeServices rememberMe2;
+        /**
+         * @deprecated use {@link #rememberMe2}
+         */
+        @Deprecated
+        public final org.acegisecurity.ui.remember.RememberMeServices rememberMe;
 
         public SecurityComponents() {
             // we use AuthenticationManagerProxy here just as an implementation that fails all the time,
@@ -727,24 +751,59 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             this(new AuthenticationManagerProxy());
         }
 
+        /**
+         * @since TODO
+         */
         public SecurityComponents(AuthenticationManager manager) {
             // we use UserDetailsServiceProxy here just as an implementation that fails all the time,
             // not as a proxy. No one is supposed to use this as a proxy.
             this(manager,new UserDetailsServiceProxy());
         }
 
+        /**
+         * @deprecated use {@link #SecurityComponents(AuthenticationManager)}
+         */
+        @Deprecated
+        public SecurityComponents(org.acegisecurity.AuthenticationManager manager) {
+            this(manager.toSpring());
+        }
+
+        /**
+         * @since TODO
+         */
         public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails) {
             this(manager,userDetails,createRememberMeService(userDetails));
         }
 
-        public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails, RememberMeServices rememberMe) {
-            assert manager!=null && userDetails!=null && rememberMe!=null;
-            this.manager = manager;
-            this.userDetails = userDetails;
-            this.rememberMe = rememberMe;
+        /**
+         * @deprecated use {@link #SecurityComponents(AuthenticationManager, UserDetailsService)}
+         */
+        @Deprecated
+        public SecurityComponents(org.acegisecurity.AuthenticationManager manager, org.acegisecurity.userdetails.UserDetailsService userDetails) {
+            this(manager.toSpring(), userDetails.toSpring());
         }
 
-        @SuppressWarnings("deprecation")
+        /**
+         * @since TODO
+         */
+        public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails, RememberMeServices rememberMe) {
+            assert manager!=null && userDetails!=null && rememberMe!=null;
+            this.manager2 = manager;
+            this.userDetails2 = userDetails;
+            this.rememberMe2 = rememberMe;
+            this.manager = org.acegisecurity.AuthenticationManager.fromSpring(manager);
+            this.userDetails = org.acegisecurity.userdetails.UserDetailsService.fromSpring(userDetails);
+            this.rememberMe = org.acegisecurity.ui.remember.RememberMeServices.fromSpring(rememberMe);
+        }
+
+        /**
+         * @deprecated use {@link #SecurityComponents(AuthenticationManager, UserDetailsService, RememberMeServices)}
+         */
+        @Deprecated
+        public SecurityComponents(org.acegisecurity.AuthenticationManager manager, org.acegisecurity.userdetails.UserDetailsService userDetails, org.acegisecurity.ui.remember.RememberMeServices rememberMe) {
+            this(manager.toSpring(), userDetails.toSpring(), rememberMe.toSpring());
+        }
+
         private static RememberMeServices createRememberMeService(UserDetailsService uds) {
             // create our default TokenBasedRememberMeServices, which depends on the availability of the secret key
             TokenBasedRememberMeServices2 rms = new TokenBasedRememberMeServices2(uds);

@@ -275,7 +275,7 @@ public class SetupWizard extends PageDecorator {
 
             // ... and then login
             Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
-            auth = securityRealm.getSecurityComponents().manager.authenticate(auth);
+            auth = securityRealm.getSecurityComponents().manager2.authenticate(auth);
             SecurityContextHolder.getContext().setAuthentication(auth);
             
             HttpSession session = req.getSession(false);

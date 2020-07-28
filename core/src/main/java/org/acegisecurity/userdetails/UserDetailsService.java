@@ -24,8 +24,36 @@
 
 package org.acegisecurity.userdetails;
 
+import org.springframework.dao.DataAccessException;
+
 /**
- * @deprecated TODO replacement
+ * @deprecated use {@link org.springframework.security.core.userdetails.UserDetailsService}
  */
 @Deprecated
-public interface UserDetailsService extends org.springframework.security.core.userdetails.UserDetailsService {}
+public interface UserDetailsService {
+
+    UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException;
+
+    static UserDetailsService fromSpring(org.springframework.security.core.userdetails.UserDetailsService uds) {
+        return username -> {
+            try {
+                return UserDetails.fromSpring(uds.loadUserByUsername(username));
+            } catch (org.springframework.security.core.userdetails.UsernameNotFoundException x) {
+                throw UsernameNotFoundException.fromSpring(x);
+            }
+        };
+    }
+
+    default org.springframework.security.core.userdetails.UserDetailsService toSpring() {
+        return username -> {
+            try {
+                return loadUserByUsername(username).toSpring();
+            } catch (UsernameNotFoundException x) {
+                throw x.toSpring();
+            } catch (DataAccessException x) {
+                throw x.toSpring();
+            }
+        };
+    }
+
+}

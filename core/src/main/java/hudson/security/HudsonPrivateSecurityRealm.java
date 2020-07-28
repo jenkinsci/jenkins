@@ -272,7 +272,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         
         // ... and let him login
         Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
-        a = this.getSecurityComponents().manager.authenticate(a);
+        a = this.getSecurityComponents().manager2.authenticate(a);
         SecurityContextHolder.getContext().setAuthentication(a);
 
         SecurityListener.fireLoggedIn(u.getId());

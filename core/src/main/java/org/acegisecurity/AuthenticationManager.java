@@ -25,11 +25,31 @@
 package org.acegisecurity;
 
 /**
- * @deprecated TODO replacement
+ * @deprecated use {@link org.springframework.security.authentication.AuthenticationManager}
  */
 @Deprecated
 public interface AuthenticationManager {
 
     Authentication authenticate(Authentication authentication) throws AuthenticationException;
+
+    static AuthenticationManager fromSpring(org.springframework.security.authentication.AuthenticationManager am) {
+        return authentication -> {
+            try {
+                return Authentication.fromSpring(am.authenticate(authentication.toSpring()));
+            } catch (org.springframework.security.core.AuthenticationException x) {
+                throw AuthenticationException.fromSpring(x);
+            }
+        };
+    }
+
+    default org.springframework.security.authentication.AuthenticationManager toSpring() {
+        return authentication -> {
+            try {
+                return authenticate(Authentication.fromSpring(authentication)).toSpring();
+            } catch (AuthenticationException x) {
+                throw x.toSpring();
+            }
+        };
+    }
 
 }

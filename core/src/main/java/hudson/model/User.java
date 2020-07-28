@@ -391,7 +391,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
-                Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails
+                Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails2
         );
 
         try {

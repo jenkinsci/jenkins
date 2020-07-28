@@ -207,7 +207,7 @@ public class TokenBasedRememberMeServices2Test {
         j.jenkins.setDisableRememberMe(false);
 
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
-        TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe;
+        TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
         j.jenkins.setSecurityRealm(realm);
 
         String username = "alice";
@@ -250,7 +250,7 @@ public class TokenBasedRememberMeServices2Test {
             j.jenkins.setDisableRememberMe(false);
 
             HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
-            TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe;
+            TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
             j.jenkins.setSecurityRealm(realm);
 
             String username = "alice";

@@ -133,9 +133,9 @@ public class HudsonFilter implements Filter {
     public void reset(SecurityRealm securityRealm) throws ServletException {
         if (securityRealm != null) {
             SecurityRealm.SecurityComponents sc = securityRealm.getSecurityComponents();
-            AUTHENTICATION_MANAGER.setDelegate(sc.manager);
-            USER_DETAILS_SERVICE_PROXY.setDelegate(sc.userDetails);
-            REMEMBER_ME_SERVICES_PROXY.setDelegate(sc.rememberMe);
+            AUTHENTICATION_MANAGER.setDelegate(sc.manager2);
+            USER_DETAILS_SERVICE_PROXY.setDelegate(sc.userDetails2);
+            REMEMBER_ME_SERVICES_PROXY.setDelegate(sc.rememberMe2);
             // make sure this.filter is always a valid filter.
             Filter oldf = this.filter;
             Filter newf = securityRealm.createFilter(this.filterConfig);
