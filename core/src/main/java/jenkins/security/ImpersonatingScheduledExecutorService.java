@@ -42,11 +42,20 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
     /**
      * Creates a wrapper service.
      * @param base the base service
-     * @param authentication for example {@link ACL#SYSTEM}
+     * @param authentication for example {@link ACL#SYSTEM2}
+     * @since TODO
      */
     public ImpersonatingScheduledExecutorService(ScheduledExecutorService base, Authentication authentication) {
         super(base);
         this.authentication = authentication;
+    }
+
+    /**
+     * @deprecated use {@link #ImpersonatingScheduledExecutorService(ScheduledExecutorService, Authentication)}
+     */
+    @Deprecated
+    public ImpersonatingScheduledExecutorService(ScheduledExecutorService base, org.acegisecurity.Authentication authentication) {
+        this(base, authentication.toSpring());
     }
 
     @Override

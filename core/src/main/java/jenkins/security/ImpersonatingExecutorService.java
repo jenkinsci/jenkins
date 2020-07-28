@@ -43,11 +43,20 @@ public final class ImpersonatingExecutorService extends InterceptingExecutorServ
     /**
      * Creates a wrapper service.
      * @param base the base service
-     * @param authentication for example {@link ACL#SYSTEM}
+     * @param authentication for example {@link ACL#SYSTEM2}
+     * @since TODO
      */
     public ImpersonatingExecutorService(ExecutorService base, Authentication authentication) {
         super(base);
         this.authentication = authentication;
+    }
+
+    /**
+     * @deprecated use {@link #ImpersonatingExecutorService(ExecutorService, Authentication)}
+     */
+    @Deprecated
+    public ImpersonatingExecutorService(ExecutorService base, org.acegisecurity.Authentication authentication) {
+        this(base, authentication.toSpring());
     }
 
     @Override
