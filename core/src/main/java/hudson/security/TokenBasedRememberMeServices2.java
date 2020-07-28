@@ -26,6 +26,7 @@ package hudson.security;
 import com.google.common.annotations.VisibleForTesting;
 import hudson.model.User;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,7 +46,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.rememberme.InvalidCookieException;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
-import org.springframework.util.Assert;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely
@@ -82,6 +82,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      * (see {@link AbstractPasswordBasedSecurityRealm#createSecurityComponents})
      * and both need to use the same key and various security plugins need to do the same.
      */
+    @SuppressWarnings("deprecation")
     public TokenBasedRememberMeServices2(UserDetailsService userDetailsService) {
         super(Jenkins.get().getSecretKey(), new ImpersonatingUserDetailsService(userDetailsService));
     }
@@ -134,8 +135,8 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 
         // TODO is it really still necessary to reimplement all of the below, or could we simply override rememberMeRequested?
 
-		Assert.notNull(successfulAuthentication.getPrincipal());
-		Assert.isInstanceOf(UserDetails.class, successfulAuthentication.getPrincipal());
+        Objects.requireNonNull(successfulAuthentication.getPrincipal());
+        UserDetails.class.cast(successfulAuthentication.getPrincipal());
 
 		long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(getTokenValiditySeconds());
 		String username = ((UserDetails) successfulAuthentication.getPrincipal()).getUsername();
