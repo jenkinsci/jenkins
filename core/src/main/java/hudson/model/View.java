@@ -1110,7 +1110,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } else {
             ctx = null;
         }
-        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all(Jenkins.getAuthentication2(), getOwner().getItemGroup()))) {
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all2(Jenkins.getAuthentication2(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<>();
 

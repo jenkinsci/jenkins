@@ -163,16 +163,16 @@ public class Items {
      * @since 1.607
      */
     public static List<TopLevelItemDescriptor> all(ItemGroup c) {
-        return all(Jenkins.getAuthentication2(), c);
+        return all2(Jenkins.getAuthentication2(), c);
     }
 
     /**
      * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
      * create within the specified item group.
      *
-     * @since 1.607
+     * @since TODO
      */
-    public static List<TopLevelItemDescriptor> all(Authentication a, ItemGroup c) {
+    public static List<TopLevelItemDescriptor> all2(Authentication a, ItemGroup c) {
         List<TopLevelItemDescriptor> result = new ArrayList<>();
         ACL acl;
         if (c instanceof AccessControlled) {
@@ -187,6 +187,15 @@ public class Items {
             }
         }
         return result;
+    }
+
+    /**
+     * @deprecated use {@link #all2(Authentication, ItemGroup)
+     * @since 1.607
+     */
+    @Deprecated
+    public static List<TopLevelItemDescriptor> all(org.acegisecurity.Authentication a, ItemGroup c) {
+        return all2(a.toSpring(), c);
     }
 
     /**
@@ -450,7 +459,7 @@ public class Items {
      * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type) {
-        return allItems(Jenkins.getAuthentication2(), root, type);
+        return allItems2(Jenkins.getAuthentication2(), root, type);
     }
 
     /**
@@ -469,7 +478,7 @@ public class Items {
      * @since 2.221
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type, Predicate<T> pred) {
-        return allItems(Jenkins.getAuthentication2(), root, type, pred);
+        return allItems2(Jenkins.getAuthentication2(), root, type, pred);
     }
 
     /**
@@ -483,10 +492,19 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
+     * @since TODO
+     */
+    public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type) {
+        return allItems2(authentication, root, type, t -> true);
+    }
+
+    /**
+     * @deprecated use {@link #allItems2(Authentication, ItemGroup, Class)}
      * @since 2.37
      */
-    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
-        return allItems(authentication, root, type, t -> true);
+    @Deprecated
+    public static <T extends Item> Iterable<T> allItems(org.acegisecurity.Authentication authentication, ItemGroup root, Class<T> type) {
+        return allItems2(authentication.toSpring(), root, type);
     }
 
     /**
@@ -502,10 +520,19 @@ public class Items {
      * @param <T> the type.
      * @param pred the predicate.
      * @return An {@link Iterable} for all items.
+     * @since TODO
+     */
+    public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
+        return new AllItemsIterable<>(root, authentication, type, pred);
+    }
+
+    /**
+     * @deprecated use {@link #allItems2(Authentication, ItemGroup, Class, Predicate)}
      * @since 2.221
      */
-    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
-        return new AllItemsIterable<>(root, authentication, type, pred);
+    @Deprecated
+    public static <T extends Item> Iterable<T> allItems(org.acegisecurity.Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
+        return allItems2(authentication.toSpring(), root, type, pred);
     }
 
     /**
