@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-import java.io.IOException;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
@@ -62,16 +61,17 @@ public class RunTest {
             String id;
             TimeZone.setDefault(TimeZone.getTimeZone("America/Chicago"));
             ExecutorService svc = Executors.newSingleThreadExecutor();
+            Job<?,?> job = Mockito.mock(Job.class);
             try {
                 r = svc.submit(new Callable<Run>() {
-                    @Override public Run call() throws Exception {
-                        return new Run(new StubJob(), 1234567890) {};
+                    @Override public Run call() {
+                        return new Run(job, 1234567890) {};
                     }
                 }).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
                 assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override public String call() throws Exception {
+                    @Override public String call() {
                         return r.getId();
                     }
                 }).get());
@@ -84,7 +84,7 @@ public class RunTest {
                 assertEquals(id, r.getId());
                 assertEquals(id, svc.submit(new Callable<String>() {
                     @Override
-                    public String call() throws Exception {
+                    public String call() {
                         return r.getId();
                     }
                 }).get());
@@ -97,8 +97,8 @@ public class RunTest {
     }
     
 
-    private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {
-        Run r = new Run(new StubJob(), 0) {};
+    private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) {
+        Run r = new Run(Mockito.mock(Job.class), 0) {};
         Run.ArtifactList list = r.new ArtifactList();
         for (String p : paths) {
             list.add(r.new Artifact(p, p, p, String.valueOf(p.length()), "n" + list.size()));  // Assuming all test inputs don't need urlencoding
@@ -108,7 +108,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation1() throws Exception {
+    public void artifactListDisambiguation1() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
         assertEquals(a.get(0).getDisplayPath(), "c.xml");
         assertEquals(a.get(1).getDisplayPath(), "g.xml");
@@ -116,7 +116,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation2() throws Exception {
+    public void artifactListDisambiguation2() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
         assertEquals(a.get(0).getDisplayPath(), "c.xml");
         assertEquals(a.get(1).getDisplayPath(), "f/g.xml");
@@ -124,7 +124,7 @@ public class RunTest {
     }
 
     @Test
-    public void artifactListDisambiguation3() throws Exception {
+    public void artifactListDisambiguation3() {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
         assertEquals(a.get(0).getDisplayPath(), "a.xml");
         assertEquals(a.get(1).getDisplayPath(), "a/a.xml");
@@ -133,7 +133,7 @@ public class RunTest {
     @Issue("JENKINS-26777")
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
-    public void getDurationString() throws IOException {
+    public void getDurationString() {
       LocaleProvider providerToRestore = LocaleProvider.getProvider();
       try {
         // This test expects English texts.
@@ -144,7 +144,7 @@ public class RunTest {
             }
         });
         
-        Run r = new Run(new StubJob(), 0) {};
+        Run r = new Run(Mockito.mock(Job.class), 0) {};
         assertEquals("Not started yet", r.getDurationString());
         r.onStartBuilding();
         String msg;
@@ -161,7 +161,7 @@ public class RunTest {
     @Issue("JENKINS-27441")
     @Test
     public void getLogReturnsAnEmptyListWhenCalledWith0() throws Exception {
-        Job j = Mockito.mock(Job.class);
+        Job<?,?> j = Mockito.mock(Job.class);
         File tempBuildDir = tmp.newFolder();
         Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
