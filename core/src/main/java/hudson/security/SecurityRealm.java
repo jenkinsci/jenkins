@@ -258,11 +258,23 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      This parameter allows you to redirect people to different pages depending on who they are.
      * @return
      *      never null.
-     * @since 1.314
+     * @since TODO
      * @see #doLogout(StaplerRequest, StaplerResponse) 
      */
-    protected String getPostLogOutUrl(StaplerRequest req, Authentication auth) {
+    protected String getPostLogOutUrl2(StaplerRequest req, Authentication auth) {
+        if (Util.isOverridden(SecurityRealm.class, getClass(), "getPostLogOutUrl", StaplerRequest.class, org.acegisecurity.Authentication.class)) {
+            return getPostLogOutUrl(req, org.acegisecurity.Authentication.fromSpring(auth));
+        }
         return req.getContextPath()+"/";
+    }
+
+    /**
+     * @deprecated use {@link #getPostLogOutUrl2}
+     * @since 1.314
+     */
+    @Deprecated
+    protected String getPostLogOutUrl(StaplerRequest req, org.acegisecurity.Authentication auth) {
+        return getPostLogOutUrl2(req, auth.toSpring());
     }
 
     public CaptchaSupport getCaptchaSupport() {
@@ -282,7 +294,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *
      * <p>
      * The default implementation erases the session and do a few other clean up, then
-     * redirect the user to the URL specified by {@link #getPostLogOutUrl(StaplerRequest, Authentication)}.
+     * redirect the user to the URL specified by {@link #getPostLogOutUrl2(StaplerRequest, Authentication)}.
      *
      * @since 1.314
      */
@@ -297,7 +309,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         resetRememberMeCookie(req, rsp, contextPath);
         clearStaleSessionCookies(req, rsp, contextPath);
 
-        rsp.sendRedirect2(getPostLogOutUrl(req,auth));
+        rsp.sendRedirect2(getPostLogOutUrl2(req,auth));
     }
 
     private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
