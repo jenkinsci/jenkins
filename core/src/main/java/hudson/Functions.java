@@ -2306,6 +2306,8 @@ public class Functions {
      * Get Locale Display Language depending on the Request's Locale
      * @param request {@link HttpServletRequest}
      * @return {@link String} Locale Display Language
+     
+     @since TODO
      */
     public static String getLocale(HttpServletRequest request){
         return request.getLocale().getDisplayLanguage(request.getLocale());
