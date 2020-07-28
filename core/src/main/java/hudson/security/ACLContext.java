@@ -52,10 +52,19 @@ public class ACLContext implements AutoCloseable {
     /**
      * Accessor for the previous context.
      * @return the previous context.
+     * @since TODO
      */
     @NonNull
-    public SecurityContext getPreviousContext() {
+    public SecurityContext getPreviousContext2() {
         return previousContext;
+    }
+
+    /**
+     * @deprecated use {@link #getPreviousContext2}
+     */
+    @Deprecated
+    public org.acegisecurity.context.SecurityContext getPreviousContext() {
+        return org.acegisecurity.context.SecurityContext.fromSpring(getPreviousContext2());
     }
 
     @Override
