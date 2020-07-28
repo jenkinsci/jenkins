@@ -518,9 +518,19 @@ public abstract class ACL {
      * Checks if the given authentication is anonymous by checking its class.
      * @see Jenkins#ANONYMOUS2
      * @see AnonymousAuthenticationToken
+     * @since TODO
      */
-    public static boolean isAnonymous(@NonNull Authentication authentication) {
+    public static boolean isAnonymous2(@NonNull Authentication authentication) {
         //TODO use AuthenticationTrustResolver instead to be consistent through the application
         return authentication instanceof AnonymousAuthenticationToken;
     }
+
+    /**
+     * @deprecated use {@link #isAnonymous2}
+     */
+    @Deprecated
+    public static boolean isAnonymous(@NonNull org.acegisecurity.Authentication authentication) {
+        return isAnonymous2(authentication.toSpring());
+    }
+
 }

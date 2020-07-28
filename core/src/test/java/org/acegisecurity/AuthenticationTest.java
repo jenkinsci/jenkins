@@ -50,9 +50,12 @@ public class AuthenticationTest {
     @Test
     public void anonymous() {
         assertEquality(Jenkins.ANONYMOUS, Jenkins.ANONYMOUS2);
-        assertTrue(ACL.isAnonymous(Jenkins.ANONYMOUS2));
-        assertTrue(ACL.isAnonymous(Jenkins.ANONYMOUS.toSpring()));
-        assertTrue(ACL.isAnonymous(Authentication.fromSpring(Jenkins.ANONYMOUS2).toSpring()));
+        assertTrue(ACL.isAnonymous(Jenkins.ANONYMOUS));
+        assertTrue(ACL.isAnonymous(Authentication.fromSpring(Jenkins.ANONYMOUS2)));
+        assertTrue(ACL.isAnonymous(Authentication.fromSpring(Jenkins.ANONYMOUS.toSpring())));
+        assertTrue(ACL.isAnonymous2(Jenkins.ANONYMOUS2));
+        assertTrue(ACL.isAnonymous2(Jenkins.ANONYMOUS.toSpring()));
+        assertTrue(ACL.isAnonymous2(Authentication.fromSpring(Jenkins.ANONYMOUS2).toSpring()));
     }
 
     @Test

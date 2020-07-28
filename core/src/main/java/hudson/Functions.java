@@ -1770,7 +1770,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return ACL.isAnonymous(Jenkins.getAuthentication2());
+        return ACL.isAnonymous2(Jenkins.getAuthentication2());
     }
 
     /**
