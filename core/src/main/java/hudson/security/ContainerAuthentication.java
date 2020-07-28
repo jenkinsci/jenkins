@@ -31,6 +31,8 @@ import java.security.Principal;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -45,6 +47,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public final class ContainerAuthentication implements Authentication {
     private final Principal principal;
     private Collection<? extends GrantedAuthority> authorities;
