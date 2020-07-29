@@ -36,6 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Deprecated
 public class AnonymousAuthenticationToken implements Authentication, Serializable {
 
+    // TODO perhaps better to extend AbstractAuthenticationToken
     private final org.springframework.security.authentication.AnonymousAuthenticationToken delegate;
 
     @Restricted(NoExternalUse.class)
@@ -60,6 +61,10 @@ public class AnonymousAuthenticationToken implements Authentication, Serializabl
     @Override
     public Object getDetails() {
         return delegate.getDetails(); // TODO wrap if necessary
+    }
+
+    public void setDetails(Object details) {
+        delegate.setDetails(details); // TODO wrap if necessary
     }
 
     @Override

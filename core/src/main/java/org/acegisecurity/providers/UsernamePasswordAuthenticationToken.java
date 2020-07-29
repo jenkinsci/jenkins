@@ -36,6 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Deprecated
 public class UsernamePasswordAuthenticationToken implements Authentication {
 
+    // TODO perhaps better to extend AbstractAuthenticationToken
     private final org.springframework.security.authentication.UsernamePasswordAuthenticationToken delegate;
 
     @Restricted(NoExternalUse.class)
@@ -64,6 +65,10 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
     @Override
     public Object getDetails() {
         return delegate.getDetails(); // TODO wrap if necessary
+    }
+
+    public void setDetails(Object details) {
+        delegate.setDetails(details); // TODO wrap if necessary
     }
 
     @Override
