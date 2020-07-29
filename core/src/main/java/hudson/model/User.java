@@ -611,7 +611,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Deprecated
     public static @CheckForNull User get(@CheckForNull org.acegisecurity.Authentication a) {
-        return get2(a.toSpring());
+        return get2(a != null ? a.toSpring() : null);
     }
 
     /**
