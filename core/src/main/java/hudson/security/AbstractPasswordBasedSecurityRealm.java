@@ -84,7 +84,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
      * @deprecated use {@link #authenticate2}
      */
     @Deprecated
-    public org.acegisecurity.userdetails.UserDetails authenticate(String username, String password) throws org.acegisecurity.AuthenticationException {
+    protected org.acegisecurity.userdetails.UserDetails authenticate(String username, String password) throws org.acegisecurity.AuthenticationException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(authenticate2(username, password));
         } catch (AuthenticationException x) {
