@@ -485,12 +485,12 @@ public abstract class Cause {
         public String getShortDescription() {
             if(note != null) {
                 try {
-                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(addr, Jenkins.get().getMarkupFormatter().translate(note));
+                    return Messages.Cause_RemoteCause_ShortDescriptionWithNote(Util.xmlEscape(addr), Jenkins.get().getMarkupFormatter().translate(note));
                 } catch (IOException x) {
                     // ignore
                 }
             }
-            return Messages.Cause_RemoteCause_ShortDescription(addr);
+            return Messages.Cause_RemoteCause_ShortDescription(Util.xmlEscape(addr));
         }
         
         @Exported(visibility = 3)
