@@ -26,7 +26,6 @@ package org.acegisecurity.userdetails;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
-import java.util.Collection;
 import org.acegisecurity.GrantedAuthority;
 
 /**
@@ -50,39 +49,13 @@ public interface UserDetails extends Serializable {
     boolean isEnabled();
 
     default @NonNull org.springframework.security.core.userdetails.UserDetails toSpring() {
-        return new org.springframework.security.core.userdetails.UserDetails() {
-            @Override
-            public Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
-                return GrantedAuthority.toSpring(UserDetails.this.getAuthorities());
-            }
-            @Override
-            public String getPassword() {
-                return UserDetails.this.getPassword();
-            }
-            @Override
-            public String getUsername() {
-                return UserDetails.this.getUsername();
-            }
-            @Override
-            public boolean isAccountNonExpired() {
-                return UserDetails.this.isAccountNonExpired();
-            }
-            @Override
-            public boolean isAccountNonLocked() {
-                return UserDetails.this.isAccountNonLocked();
-            }
-            @Override
-            public boolean isCredentialsNonExpired() {
-                return UserDetails.this.isCredentialsNonExpired();
-            }
-            @Override
-            public boolean isEnabled() {
-                return UserDetails.this.isEnabled();
-            }
-        };
+        return new UserDetailsSpringImpl(this);
     }
 
     static @NonNull UserDetails fromSpring(@NonNull org.springframework.security.core.userdetails.UserDetails ud) {
+        if (ud instanceof UserDetailsSpringImpl) {
+            return ((UserDetailsSpringImpl) ud).delegate;
+        }
         return new UserDetails() {
             @Override
             public GrantedAuthority[] getAuthorities() {
