@@ -190,7 +190,7 @@ public class Items {
     }
 
     /**
-     * @deprecated use {@link #all2(Authentication, ItemGroup)
+     * @deprecated use {@link #all2(Authentication, ItemGroup)}
      * @since 1.607
      */
     @Deprecated
