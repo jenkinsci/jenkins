@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
@@ -60,7 +59,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -518,26 +516,6 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
         // If no Captcha Support then bogus validation always returns true
         return true;
-    }
-
-    /**
-     * Picks up the instance of the given type from the spring context.
-     * If there are multiple beans of the same type or if there are none,
-     * this method treats that as an {@link IllegalArgumentException}.
-     *
-     * This method is intended to be used to pick up a Spring Security object from
-     * spring once the bean definition file is parsed.
-     */
-    public static <T> T findBean(Class<T> type, ApplicationContext context) {
-        Map m = context.getBeansOfType(type);
-        switch(m.size()) {
-        case 0:
-            throw new IllegalArgumentException("No beans of "+type+" are defined");
-        case 1:
-            return type.cast(m.values().iterator().next());
-        default:
-            throw new IllegalArgumentException("Multiple beans of "+type+" are defined: "+m);            
-        }
     }
 
     /**
