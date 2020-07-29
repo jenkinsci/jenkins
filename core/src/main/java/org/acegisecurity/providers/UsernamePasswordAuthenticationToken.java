@@ -27,6 +27,7 @@ package org.acegisecurity.providers;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.userdetails.UserDetails;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -45,11 +46,11 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
     }
 
     public UsernamePasswordAuthenticationToken(Object principal, Object credentials) {
-        this(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials));
+        this(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(UserDetails.toSpringPrincipal(principal), credentials));
     }
 
     public UsernamePasswordAuthenticationToken(Object principal, Object credentials, GrantedAuthority[] authorities) {
-        this(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, credentials, GrantedAuthority.toSpring(authorities)));
+        this(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(UserDetails.toSpringPrincipal(principal), credentials, GrantedAuthority.toSpring(authorities)));
     }
 
     @Override
@@ -59,21 +60,21 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
 
     @Override
     public Object getCredentials() {
-        return delegate.getCredentials(); // TODO wrap if necessary
+        return delegate.getCredentials();
     }
 
     @Override
     public Object getDetails() {
-        return delegate.getDetails(); // TODO wrap if necessary
+        return delegate.getDetails();
     }
 
     public void setDetails(Object details) {
-        delegate.setDetails(details); // TODO wrap if necessary
+        delegate.setDetails(details);
     }
 
     @Override
     public Object getPrincipal() {
-        return delegate.getPrincipal(); // TODO wrap UserDetails if necessary
+        return UserDetails.fromSpringPrincipal(delegate.getPrincipal());
     }
 
     @Override

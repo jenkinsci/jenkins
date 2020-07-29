@@ -27,6 +27,7 @@ package org.acegisecurity.providers.anonymous;
 import java.io.Serializable;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.userdetails.UserDetails;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -45,7 +46,7 @@ public class AnonymousAuthenticationToken implements Authentication, Serializabl
     }
 
     public AnonymousAuthenticationToken(String key, Object principal, GrantedAuthority[] authorities) {
-        this(new org.springframework.security.authentication.AnonymousAuthenticationToken(key, /* TODO wrap */principal, GrantedAuthority.toSpring(authorities)));
+        this(new org.springframework.security.authentication.AnonymousAuthenticationToken(key, UserDetails.toSpringPrincipal(principal), GrantedAuthority.toSpring(authorities)));
     }
 
     @Override
@@ -55,21 +56,21 @@ public class AnonymousAuthenticationToken implements Authentication, Serializabl
 
     @Override
     public Object getCredentials() {
-        return delegate.getCredentials(); // TODO wrap if necessary
+        return delegate.getCredentials();
     }
 
     @Override
     public Object getDetails() {
-        return delegate.getDetails(); // TODO wrap if necessary
+        return delegate.getDetails();
     }
 
     public void setDetails(Object details) {
-        delegate.setDetails(details); // TODO wrap if necessary
+        delegate.setDetails(details);
     }
 
     @Override
     public Object getPrincipal() {
-         return delegate.getPrincipal(); // TODO wrap UserDetails if necessary
+        return UserDetails.fromSpringPrincipal(delegate.getPrincipal());
     }
 
     @Override

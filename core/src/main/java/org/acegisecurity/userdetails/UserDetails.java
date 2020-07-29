@@ -24,7 +24,9 @@
 
 package org.acegisecurity.userdetails;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.Serializable;
 import org.acegisecurity.GrantedAuthority;
 
@@ -86,6 +88,22 @@ public interface UserDetails extends Serializable {
                 return ud.isEnabled();
             }
         };
+    }
+
+    static @Nullable Object toSpringPrincipal(@CheckForNull Object acegiPrincipal) {
+        if (acegiPrincipal instanceof UserDetails) {
+            return ((UserDetails) acegiPrincipal).toSpring();
+        } else {
+            return acegiPrincipal;
+        }
+    }
+
+    static @Nullable Object fromSpringPrincipal(@CheckForNull Object springPrincipal) {
+        if (springPrincipal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            return fromSpring((org.springframework.security.core.userdetails.UserDetails) springPrincipal);
+        } else {
+            return springPrincipal;
+        }
     }
 
 }

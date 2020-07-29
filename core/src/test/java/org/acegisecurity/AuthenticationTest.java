@@ -30,6 +30,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.Jenkins;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.acegisecurity.userdetails.User;
+import org.acegisecurity.userdetails.UserDetails;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -87,6 +93,21 @@ public class AuthenticationTest {
             }
         }
         assertAll(checks);
+    }
+
+    @Test
+    public void principal() {
+        User user = new User("bob", "s3cr3t", true, new GrantedAuthority[0]);
+        assertPrincipal(new UsernamePasswordAuthenticationToken(user, "s3cr3t"));
+        assertPrincipal(new AnonymousAuthenticationToken("anonymous", user, new GrantedAuthority[] {new GrantedAuthorityImpl("anonymous")}));
+    }
+
+    private void assertPrincipal(Authentication acegi) {
+        assertThat(acegi.getPrincipal(), instanceOf(UserDetails.class));
+        org.springframework.security.core.Authentication spring = acegi.toSpring();
+        assertThat(spring.getPrincipal(), instanceOf(org.springframework.security.core.userdetails.UserDetails.class));
+        Authentication acegi2 = Authentication.fromSpring(spring);
+        assertThat(acegi2.getPrincipal(), instanceOf(UserDetails.class));
     }
 
 }

@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Objects;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.acegisecurity.userdetails.UserDetails;
 
 /**
  * @deprecated use TODO or {@link org.springframework.security.core.Authentication}
@@ -66,15 +67,16 @@ public interface Authentication extends Principal, Serializable {
                 }
                 @Override
                 public Object getCredentials() {
-                    return a.getCredentials(); // TODO wrap if necessary
+                    return a.getCredentials(); // seems to be String, typically, so nothing to wrap
                 }
                 @Override
                 public Object getDetails() {
-                    return a.getDetails(); // TODO wrap if necessary
+                    // Could try to wrap WebAuthenticationDetails, but it does not appear that any code actual checkcasts this.
+                    return a.getDetails();
                 }
                 @Override
                 public Object getPrincipal() {
-                    return a.getPrincipal(); // TODO wrap UserDetails if necessary
+                    return UserDetails.fromSpringPrincipal(a.getPrincipal());
                 }
                 @Override
                 public boolean isAuthenticated() {
@@ -112,15 +114,15 @@ public interface Authentication extends Principal, Serializable {
             }
             @Override
             public Object getCredentials() {
-                return Authentication.this.getCredentials(); // TODO wrap if necessary
+                return Authentication.this.getCredentials();
             }
             @Override
             public Object getDetails() {
-                return Authentication.this.getDetails(); // TODO wrap if necessary
+                return Authentication.this.getDetails();
             }
             @Override
             public Object getPrincipal() {
-                return Authentication.this.getPrincipal(); // TODO wrap UserDetails if necessary
+                return UserDetails.toSpringPrincipal(Authentication.this.getPrincipal());
             }
             @Override
             public boolean isAuthenticated() {
