@@ -102,6 +102,7 @@ import java.util.logging.SimpleFormatter;
 import java.util.stream.Stream;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import java.util.concurrent.ExecutorService;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 
 
@@ -1026,14 +1027,17 @@ public class SlaveComputer extends Computer {
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
                 ThreadLocal<Formatter> dummy = ThreadLocal.withInitial(() -> new SimpleFormatter());
+                ExecutorService executor = Channel.currentOrFail().executor;
                 @Override
                 public /* not synchronized */ void publish(LogRecord record) {
-                    // see LogRecord.writeObject for dangers of serializing non-String/null parameters
-                    if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
-                        record.setMessage(dummy.get().formatMessage(record));
-                        record.setParameters(null);
-                    }
-                    super.publish(record);
+                    executor.submit(() -> {
+                        // see LogRecord.writeObject for dangers of serializing non-String/null parameters
+                        if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
+                            record.setMessage(dummy.get().formatMessage(record));
+                            record.setParameters(null);
+                        }
+                        super.publish(record);
+                    });
                 }
             };
 
