@@ -1029,17 +1029,17 @@ public class SlaveComputer extends Computer {
 
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
-                ThreadLocal<Formatter> dummy = ThreadLocal.withInitial(() -> new SimpleFormatter());
-                ExecutorService executor = new ScheduledThreadPoolExecutor(1, new NamingThreadFactory(new DaemonThreadFactory(), "SLAVE_LOG_HANDLER")); // inaccessible: Channel.currentOrFail().executor
+                Formatter dummy = new SimpleFormatter(); // only ever accessed from one thread anyway
+                ExecutorService executor = new ScheduledThreadPoolExecutor(1, new NamingThreadFactory(new DaemonThreadFactory(), "SLAVE_LOG_HANDLER"));
                 @Override
-                public /* not synchronized */ void publish(LogRecord record) {
-                    executor.submit(() -> {
+                public synchronized void publish(LogRecord record) {
+                    super.publish(record);
+                    executor.submit(() -> { // JENKINS-63082: unsafe to call methods of LogRecord here
                         // see LogRecord.writeObject for dangers of serializing non-String/null parameters
                         if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
-                            record.setMessage(dummy.get().formatMessage(record));
+                            record.setMessage(dummy.formatMessage(record));
                             record.setParameters(null);
                         }
-                        super.publish(record);
                     });
                 }
             };
