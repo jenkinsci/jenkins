@@ -102,7 +102,10 @@ import java.util.logging.SimpleFormatter;
 import java.util.stream.Stream;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import hudson.util.DaemonThreadFactory;
+import hudson.util.NamingThreadFactory;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 
 
@@ -1027,7 +1030,7 @@ public class SlaveComputer extends Computer {
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
                 ThreadLocal<Formatter> dummy = ThreadLocal.withInitial(() -> new SimpleFormatter());
-                ExecutorService executor = Channel.currentOrFail().executor;
+                ExecutorService executor = new ScheduledThreadPoolExecutor(1, new NamingThreadFactory(new DaemonThreadFactory(), "SLAVE_LOG_HANDLER")); // inaccessible: Channel.currentOrFail().executor
                 @Override
                 public /* not synchronized */ void publish(LogRecord record) {
                     executor.submit(() -> {
