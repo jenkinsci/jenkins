@@ -770,7 +770,7 @@ public class Fingerprint implements ModelObject, Saveable {
             return rs;
         }
 
-        static final class ConverterImpl implements Converter {
+        public static final class ConverterImpl implements Converter {
             private final Converter collectionConv; // used to convert ArrayList in it
 
             public ConverterImpl(Converter collectionConv) {
