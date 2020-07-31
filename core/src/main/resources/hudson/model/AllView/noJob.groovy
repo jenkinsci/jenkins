@@ -4,6 +4,8 @@ import hudson.model.Computer
 import hudson.model.Item
 import jenkins.model.Jenkins
 
+def l = namespace(lib.LayoutTagLib)
+
 def isTopLevelAllView = my.owner == Jenkins.get();
 def canSetUpDistributedBuilds = Jenkins.get().hasPermission(Computer.CREATE) &&
         Jenkins.get().clouds.isEmpty() &&
@@ -12,39 +14,130 @@ def hasAdministerJenkinsPermission = Jenkins.get().hasPermission(Jenkins.ADMINIS
 def hasItemCreatePermission = my.owner.hasPermission(Item.CREATE);
 
 div {
-    h1(_("Welcome to Jenkins!"))
 
-    if (isTopLevelAllView) {
-        // we're a top-level 'All' view
-        if (canSetUpDistributedBuilds) {
-            div(class: 'call-to-action') {
-                if (hasAdministerJenkinsPermission) {
-                    raw(_("distributedBuildsWithCloud"))
-                } else {
-                    raw(_("distributedBuilds"))
+    div(class: "empty-state-block") {
+        h1("Welcome to Jenkins!", class: "h1")
+
+        if (isTopLevelAllView) {
+            if (canSetUpDistributedBuilds || hasItemCreatePermission) {
+                p("This page is where your Jenkins jobs will be displayed. To get started, you can set up distributed builds or start building a software project.\n")
+
+                section(class: "empty-state-section") {
+                    if (canSetUpDistributedBuilds) {
+                        h2("Set up a distributed build", class: "h4")
+                        ul(class: "empty-state-section-list") {
+                            li(class: "content-block") {
+                                a(href: "computer/new", class: "content-block__link") {
+                                    span("Set up an agent")
+                                    span(class: "trailing-icon") {
+                                        l.svgIcon(
+                                                class: "icon-sm",
+                                                href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                    }
+                                }
+                            }
+
+                            if (hasAdministerJenkinsPermission) {
+                                li(class: "content-block") {
+                                    a(href: "computer/new", class: "content-block__link") {
+                                        span("Configure a cloud")
+                                        span(class: "trailing-icon") {
+                                            l.svgIcon(
+                                                    class: "icon-sm",
+                                                    href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                        }
+                                    }
+                                }
+                            }
+
+                            li(class: "content-block") {
+                                a(href: "https://jenkins.io/redirect/distributed-builds",
+                                        target: "_blank",
+                                        class: "content-block__link content-block__help-link") {
+                                    span("Learn more about distributed builds")
+                                    span(class: "trailing-icon") {
+                                        l.svgIcon(
+                                                class: "icon-sm",
+                                                href: "${resURL}/images/material-icons/svg-sprite-content-symbol.svg#ic_link_24px")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                section(class: "empty-state-section") {
+                    h2("Create a job", class: "h4")
+
+                    ul(class: "empty-state-section-list") {
+                        li(class: "content-block") {
+                            a(href: "newJob", class: "content-block__link") {
+                                span("Create a job")
+                                span(class: "trailing-icon") {
+                                    l.svgIcon(
+                                            class: "icon-sm",
+                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (hasItemCreatePermission) {
+            // we're in a folder
+
+            section(class: "empty-state-section") {
+                h2("This folder is empty", class: "h4")
+
+                ul(class: "empty-state-section-list") {
+                    li(class: "content-block") {
+                        a(href: "newJob", class: "content-block__link") {
+                            span("Create a job")
+                            span(class: "trailing-icon") {
+                                l.svgIcon(
+                                        class: "icon-sm",
+                                        href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                            }
+                        }
+                    }
                 }
             }
         }
-        if (hasItemCreatePermission) {
-            div(class: 'call-to-action') {
-                raw(_("newJob"))
-            }
-        }
-    } else {
-        // we're in a folder
-        if (hasItemCreatePermission) {
-            div(class: 'call-to-action') {
-                raw(_("newJob"))
-            }
-        }
-    }
 
-    if (h.isAnonymous() && !hasItemCreatePermission) {
-        div(class:'call-to-action') {
-            raw(_("login", rootURL, app.securityRealm.loginUrl, request.requestURI))
-            if (app.securityRealm.allowsSignup()) {
-                text(" ") // TODO make this nicer
-                raw(_("signup"))
+        // If the user is logged out
+        if (h.isAnonymous() && !hasItemCreatePermission) {
+            def canSignUp = app.securityRealm.allowsSignup()
+
+            p("Log in now to view or create jobs. If you don’t already have an account, you can sign up.")
+
+            section(class: "empty-state-section") {
+                ul(class: "empty-state-section-list") {
+                    li(class: "content-block") {
+                        a(href: "${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}",
+                                class: "content-block__link") {
+                            span("Log in to Jenkins")
+                            span(class: "trailing-icon") {
+                                l.svgIcon(
+                                        class: "icon-sm",
+                                        href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                            }
+                        }
+                    }
+
+                    if (canSignUp) {
+                        li(class: "content-block") {
+                            a(href: "signup", class: "content-block__link") {
+                                span("Sign up for Jenkins")
+                                span(class: "trailing-icon") {
+                                    l.svgIcon(
+                                            class: "icon-sm",
+                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                }
+
+                            }
+                        }
+                    }
+                }
             }
         }
     }
