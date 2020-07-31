@@ -32,6 +32,8 @@ import org.acegisecurity.GrantedAuthority;
 @Deprecated
 public class User implements UserDetails {
 
+    private static final long serialVersionUID = 1;
+
     private final String username;
     private final String password;
     private final boolean enabled;
