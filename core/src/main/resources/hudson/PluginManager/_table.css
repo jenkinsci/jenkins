@@ -8,7 +8,7 @@ time {
 }
 
 #filter-container {
-    margin: 1em;
+    margin: 1em 0;
     font-size: 1em;
 }
 .plugin-manager__categories {
