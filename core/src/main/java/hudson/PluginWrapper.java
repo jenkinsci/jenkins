@@ -368,7 +368,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Is this plugin deprecated?
      *
      * @return {@code true} if and only if an update site reports deprecations for this plugin.
-     * @since TODO
+     * @since 2.246
      */
     @Restricted(NoExternalUse.class)
     public boolean isDeprecated() {

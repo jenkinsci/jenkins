@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 /**
  * Helper class that provide the list of rules (local + global) for a given builder.
  *
- * @since TODO
+ * @since 2.246
  */
 @Restricted(NoExternalUse.class)
 public class EnvVarsFilterRuleWrapper implements Serializable {

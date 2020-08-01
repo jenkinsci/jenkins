@@ -32,7 +32,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Information that is used for the environment filtering process.
  *
- * @since TODO
+ * @since 2.246
  */
 @Restricted(Beta.class)
 public class EnvVarsFilterRuleContext {
