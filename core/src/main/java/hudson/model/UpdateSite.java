@@ -336,6 +336,7 @@ public class UpdateSite {
      *
      * @return  null if no data is available.
      */
+    @CheckForNull
     public Data getData() {
         if (data == null) {
             JSONObject o = getJSONObject();
