@@ -234,7 +234,7 @@ public abstract class LabelExpression extends Label {
      *
      * @param label The (partial) label for which auto-completion is being requested.
      * @return A set of auto-completion candidates.
-     * @since TODO
+     * @since 2.243
      */
     @NonNull
     public static AutoCompletionCandidates autoComplete(@Nullable String label) {
@@ -256,7 +256,7 @@ public abstract class LabelExpression extends Label {
      *
      * @param expression The expression to validate.
      * @return The validation result.
-     * @since TODO
+     * @since 2.243
      */
     @NonNull
     public static FormValidation validate(@Nullable String expression) {
@@ -270,7 +270,7 @@ public abstract class LabelExpression extends Label {
      * @param item       The context item (like a job or a folder), if applicable; used for potential additional
      *                   restrictions via {@link LabelValidator} instances.
      * @return The validation result.
-     * @since TODO
+     * @since 2.243
      */
     // FIXME: Should the messages be moved, or kept where they are for backward compatibility?
     @NonNull

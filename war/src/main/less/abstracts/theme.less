@@ -12,8 +12,10 @@
 
   // Color palette
   --white: #fff;
+  --lightest-grey: #f8f8f8;
   --light-grey: #eaeff2;
   --medium-grey: #9ba7af;
+  --dark-grey: #4d545d;
   --very-light-grey: #f0f0f0;
   --black: #333;
 
@@ -83,29 +85,40 @@
   --alert-default-color: #0c5464;
 
   // Success
-  --alert-success-icon-color: #4caf50;
-  --alert-success-bg-color: #d4edda;
-  --alert-success-border-color: #c3e6cb;
-  --alert-success-color: var(--success);
+  --notification-success-icon-color: #4caf50;
+  --notification-success-bg-color: #d4edda;
+  --notification-success-border-color: #c3e6cb;
+  --notification-success-color: var(--success);
 
   // Warning
-  --alert-warn-icon-color: #ff9800;
-  --alert-warn-bg-color: #fff3cd;
-  --alert-warn-border-color: #ffeeba;
-  --alert-warn-color: #856404;
+  --notification-warning-icon-color: #ff9800;
+  --notification-warning-bg-color: #fff3cd;
+  --notification-warning-border-color: #ffeeba;
+  --notification-warning-color: #856404;
 
   // Error
-  --alert-err-icon-color: #f44336;
-  --alert-err-bg-color: #f8d7da;
-  --alert-err-border-color: #f5c6cb;
-  --alert-err-color: #721c24;
+  --notification-error-icon-color: #f44336;
+  --notification-error-bg-color: #f8d7da;
+  --notification-error-border-color: #f5c6cb;
+  --notification-error-color: #721c24;
 
   // Alert call outs
-  --alert-info-color-call-out: #31708f;
-  --alert-info-bg-color-call-out: #d9edf7;
+  --alert-success-text-color: #155724;
+  --alert-success-bg-color: #d4edda;
+  --alert-success-border-color: #c3e6cb;
+  --alert-info-text-color: #31708f;
+  --alert-info-bg-color: #d9edf7;
+  --alert-info-border-color: #bce8f1;
+  --alert-warning-text-color: #8a6d3b;
+  --alert-warning-bg-color: #fcf8e3;
+  --alert-warning-border-color: #faebcc;
+  --alert-danger-text-color: #a94442;
+  --alert-danger-bg-color: #f2dede;
+  --alert-danger-border-color: #ebccd1;
 
   // Typography
   --text-color: var(--black);
+  --text-color-secondary: var(--secondary);
   --text-color-grey-light: #747c82;
   --text-inactive: var(--text-color-grey-light);
 
@@ -125,11 +138,16 @@
   --configure-job-help-area-bg-color: var(--medium-translucent);
 
   // Table
-  --even-row-color: #fbfbfb;
-  --bigtable-header-color: var(--very-light-grey);
-  --project-status-border-bottom-color: #ddd;
-  --table-parameters-bg-color--hover: var(--very-light-grey);
-  --table-stripped-bg-color--hover: #e8e8e8;
+  --even-row-color: var(--lightest-grey);
+  --bigtable-border-width: var(--pane-border-width);
+  --bigtable-header-bg: var(--dark-grey);
+  --bigtable-header-font-weight: bold; // Does specifying this make sense
+  --bigtable-header-text-color: var(--white);
+  --bigtable-row-border-color: var(--medium-grey);
+  --bigtable-cell-padding-x: 0.75rem;
+  --bigtable-cell-padding-y: 0.5rem;
+  --table-parameters-bg--hover: var(--light-grey);
+  --table-striped-bg--hover: var(--light-grey);
 
   // Link
   --link-color: var(--primary-hover);
@@ -151,23 +169,38 @@
   --link-dark-font-weight: 600;
 
   // Pane
-  --pane-header-color: #eee;
-  --pane-header-border-color: #f3f3f3;
-  --pane-border-color: var(--very-light-grey);
-  --pane-text-color: #3b3b3b;
+  --pane-border-width: 1px;
+  --pane-header-text-color: var(--text-color);
+  --pane-header-bg: var(--light-grey);
+  --pane-header-border-color: var(--light-grey);
+  --pane-header-font-weight: bold;
+  --pane-border-color: var(--light-grey);
+  --pane-text-color: var(--text-color);
   --pane-link-color: black;
   --pane-link-color--visited: black;
 
-  // TabBar
-  --tab-bar-border-color: var(--very-light-grey);
-  --tab-bar-text-color: #999;
-  --tab-bar-bg--checked: #eee;
-  --tab-bar-border-color--checked: var(--very-light-grey);
-  --tab-bar-text-color--checked: #000;
-  --tab-bar-bg-color--hover: #eee;
-  --tab-bar-add-text-color: #0460d1;
-  --tab-bar-add-bg-color--hover: #d8efff;
-  --tab-bar-add-border-color: #d8efff;
+  // TabBar links
+  --tab-link-border-radius: 4px;
+  --tab-link-border-width: 2px;
+  --tab-link-padding-x: 0.75rem;
+  --tab-link-padding-y: 0.375rem;
+  --tab-link-font-weight: bold;
+  --tab-link-text-color: var(--text-color-secondary);
+  --tab-link-bg: transparent;
+  --tab-link-border-color: var(--light-grey);
+  --tab-link-text-color--hover: var(--tab-link-text-color); // Redundant?
+  --tab-link-bg--hover: var(--light-grey);
+  --tab-link-border-color--hover: var(--tab-link-bg--hover); // Redundant?
+  --tab-link-text-color--active: var(--tab-link-text-color); // Redundant?
+  --tab-link-bg--active: var(--light-grey);
+  --tab-link-border-color--active: var(--tab-link-checked-bg); // Redundant?
+  --tab-link-checked-text-color: var(--white);
+  --tab-link-checked-bg: var(--dark-grey);
+  --tab-link-checked-border-color: var(--tab-link-checked-bg);
+  // Tabbar baseline
+  --tab-baseline-width: 2px;
+  --tab-baseline-color: var(--light-grey);
+  --tab-baseline-default-display: none;
 
   // Side panel
   --panel-header-bg-color: var(--light-grey);
@@ -186,7 +219,7 @@
   --menu-text-color: black;
   --menu-bg-color: var(--white);
   --menu-selected-color: #b3d4ff;
-  --menu-box-shadow: 0px 3px 10px #bbb;
+  --menu-box-shadow: 0 3px 10px #bbb;
 
   // Manage component
   --manage-option-bg-color--hover: #f8f8f8;
@@ -213,4 +246,8 @@
 
   // Auto complete
   --auto-complete-bg-color--prehighlight: #b3d4ff;
+  
+  // Call to action
+  --call-to-action-link-color: #000;
+  --call-to-action-text-color: var(--alert-info-text-color);
 }

@@ -42,7 +42,8 @@ import org.jvnet.hudson.test.MockFolder;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 public class ListJobsCommandTest {
@@ -135,7 +136,7 @@ public class ListJobsCommandTest {
 
         CLICommandInvoker.Result result = command.invokeWithArgs("MatrixJob");
         assertThat(result, CLICommandInvoker.Matcher.failedWith(3));
-        assertThat(result.stdout(), isEmptyString());
+        assertThat(result.stdout(), is(emptyString()));
         assertThat(result.stderr(), containsString("No view or item group with the given name 'MatrixJob' found."));
     }
 }

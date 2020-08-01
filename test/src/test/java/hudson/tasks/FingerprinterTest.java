@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -258,8 +259,8 @@ public class FingerprinterTest {
         Collection<Fingerprint> fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
             assertTrue(f.getOriginal().is(upstream));
-            assertTrue(f.getOriginal().getName().equals(renamedProject1));
-            assertFalse(f.getOriginal().getName().equals(oldUpstreamName));
+            assertEquals(f.getOriginal().getName(), renamedProject1);
+            assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
         }
         
         action = downstreamBuild.getAction(Fingerprinter.FingerprintAction.class);
@@ -346,8 +347,8 @@ public class FingerprinterTest {
 
         j.jenkins.rebuildDependencyGraph();
 
-        assertEquals(Arrays.asList(p1), p2.getUpstreamProjects());
-        assertEquals(Arrays.asList(p1), p3.getUpstreamProjects());
+        assertEquals(Collections.singletonList(p1), p2.getUpstreamProjects());
+        assertEquals(Collections.singletonList(p1), p3.getUpstreamProjects());
         assertEquals(new HashSet(Arrays.asList(p2,p3)), new HashSet(p1.getDownstreamProjects()));
 
         // discard the p3 records
@@ -358,8 +359,8 @@ public class FingerprinterTest {
 
         // records for p3 should have been deleted now
         assertEquals(2,f.getUsages().size());
-        assertEquals(Arrays.asList(p1), p2.getUpstreamProjects());
-        assertEquals(Arrays.asList(p2), p1.getDownstreamProjects());
+        assertEquals(Collections.singletonList(p1), p2.getUpstreamProjects());
+        assertEquals(Collections.singletonList(p2), p1.getDownstreamProjects());
 
 
         // do a new build in p2 #2 that points to a separate fingerprints

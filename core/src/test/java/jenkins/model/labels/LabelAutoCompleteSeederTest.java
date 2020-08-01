@@ -24,63 +24,47 @@
 
 package jenkins.model.labels;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  *
  * @author dty
  */
-@RunWith(Parameterized.class)
 public class LabelAutoCompleteSeederTest {
 
-    public static class TestData {
-        private final String seed;
-        private final List<String> expected;
-        
-        public TestData(String seed, String... expected) {
-            this.seed = seed;
-            this.expected = Arrays.asList(expected);
-        }
-    }
-    
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList( new Object[][] {
-                    { new TestData("", "") },
-                    { new TestData("\"", "") },
-                    { new TestData("\"\"", "") },
-                    { new TestData("freebsd", "freebsd") },
-                    { new TestData(" freebsd", "freebsd") },
-                    { new TestData("freebsd ", "") },
-                    { new TestData("freebsd 6", "6") },
-                    { new TestData("\"freebsd", "freebsd") },
-                    { new TestData("\"freebsd ", "freebsd ") },
-                    { new TestData("\"freebsd\"", "") },
-                    { new TestData("\"freebsd\" ", "") },
-                    { new TestData("\"freebsd 6", "freebsd 6") },
-                    { new TestData("\"freebsd 6\"", "") },
-               });
+    static Stream<Arguments> localParameters()
+    {
+        return Stream.of(
+                Arguments.of("", Collections.singletonList("")),
+                Arguments.of("\"", Collections.singletonList("")),
+                Arguments.of("\"\"", Collections.singletonList("")),
+                Arguments.of("freebsd", Collections.singletonList("freebsd")),
+                Arguments.of(" freebsd", Collections.singletonList("freebsd")),
+                Arguments.of("freebsd ", Collections.singletonList("")),
+                Arguments.of("freebsd 6", Collections.singletonList("6")),
+                Arguments.of("\"freebsd", Collections.singletonList("freebsd")),
+                Arguments.of("\"freebsd ", Collections.singletonList("freebsd ")),
+                Arguments.of("\"freebsd\"", Collections.singletonList("")),
+                Arguments.of("\"freebsd\" ", Collections.singletonList("")),
+                Arguments.of("\"freebsd 6", Collections.singletonList("freebsd 6")),
+                Arguments.of("\"freebsd 6\"", Collections.singletonList(""))
+        );
     }
 
-    private final String seed;
-    private final List<String> expected;
-
-    public LabelAutoCompleteSeederTest(TestData dataSet) {
-        this.seed = dataSet.seed;
-        this.expected = dataSet.expected;
-    }
-
-    @Test
-    public void testAutoCompleteSeeds() throws Exception {
-        LabelAutoCompleteSeeder seeder = new LabelAutoCompleteSeeder(seed);
+    @ParameterizedTest( name = "{index}" )
+    @MethodSource( "localParameters" )
+    public void testAutoCompleteSeeds(String underTest, List<String> expected) {
+        LabelAutoCompleteSeeder seeder = new LabelAutoCompleteSeeder(underTest);
         assertEquals(expected, seeder.getSeeds());
-    }
 
+    }
 }

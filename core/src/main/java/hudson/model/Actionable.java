@@ -146,7 +146,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * <strong>Note: this method will always modify the actions</strong>
      */
-    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressWarnings({"ConstantConditions"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void addAction(@NonNull Action a) {
         if(a==null) {

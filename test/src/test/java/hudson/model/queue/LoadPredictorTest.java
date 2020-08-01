@@ -46,6 +46,7 @@ import org.jvnet.hudson.test.TestExtension;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -62,7 +63,7 @@ public class LoadPredictorTest {
     public static class LoadPredictorImpl extends LoadPredictor {
         @Override
         public Iterable<FutureLoad> predict(MappingWorksheet plan, Computer computer, long start, long end) {
-            return asList(new FutureLoad(start+5000, end-(start+5000), 1));
+            return Collections.singletonList(new FutureLoad(start + 5000, end - (start + 5000), 1));
         }
     }
 
@@ -78,13 +79,13 @@ public class LoadPredictorTest {
     public void test1() throws Exception {
         Task t = mock(Task.class);
         when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) asList(t));
+        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
 
         Computer c = createMockComputer(1);
 
         JobOffer o = createMockOffer(c.getExecutors().get(0));
 
-        MappingWorksheet mw = new MappingWorksheet(wrap(t), asList(o));
+        MappingWorksheet mw = new MappingWorksheet(wrap(t), Collections.singletonList(o));
 
         // the test load predictor should have pushed down the executor count to 0
         assertTrue(mw.executors.isEmpty());
@@ -106,7 +107,7 @@ public class LoadPredictorTest {
     public void test2() throws Exception {
         Task t = mock(Task.class);
         when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) asList(t));
+        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
 
         Computer c = createMockComputer(2);
         Executor e = c.getExecutors().get(0);
@@ -116,7 +117,7 @@ public class LoadPredictorTest {
 
         JobOffer o = createMockOffer(c.getExecutors().get(1));
 
-        MappingWorksheet mw = new MappingWorksheet(wrap(t), asList(o));
+        MappingWorksheet mw = new MappingWorksheet(wrap(t), Collections.singletonList(o));
 
         // since the currently busy executor will free up before a future predicted load starts,
         // we should have a valid executor remain in the queue
