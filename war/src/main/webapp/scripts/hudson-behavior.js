@@ -502,6 +502,7 @@ var tooltip;
 function registerValidator(e) {
     var tr = findFollowingTR(e, "validation-error-area");
     if (!tr || !tr.firstChild) {
+      console.warn("Couldn't register validator, start element was", e);
       return;
     }
     e.targetElement = tr.firstChild.nextSibling;
