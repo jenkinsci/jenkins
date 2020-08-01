@@ -500,7 +500,11 @@ var tooltip;
 //========================================================
 // using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
-    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr || !tr.firstChild) {
+      return;
+    }
+    e.targetElement = tr.firstChild.nextSibling;
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
