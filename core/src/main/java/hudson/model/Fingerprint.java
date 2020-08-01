@@ -46,6 +46,7 @@ import hudson.util.XStream2;
 
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
+import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
@@ -1251,9 +1252,20 @@ public class Fingerprint implements ModelObject, Saveable {
         if(logger.isLoggable(Level.FINE))
             start = System.currentTimeMillis();
 
+        FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
+        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+
         // Implementations are expected to invoke SaveableListener on their own if relevant
         // TODO: Consider improving Saveable Listener API: https://issues.jenkins-ci.org/browse/JENKINS-62543
-        FingerprintStorage.get().save(this);
+        configuredFingerprintStorage.save(this);
+
+        // In the case that external fingerprint storage is configured, there may be some fingerprints in memory that
+        // get saved before a load call (because they are already in memory). This ensures that they get deleted from
+        // the file fingerprint storage.
+        // TODO: Consider improving KeyedDataStorage so it provides an API for clearing the fingerprints in memory.
+        if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()) {
+            fileFingerprintStorage.delete(this.getHashString());
+        }
 
         if(logger.isLoggable(Level.FINE))
             logger.fine("Saving fingerprint " + getHashString() + " took " + (System.currentTimeMillis() - start) + "ms");
@@ -1316,6 +1328,10 @@ public class Fingerprint implements ModelObject, Saveable {
      * Loads a {@link Fingerprint} from the Storage with the given unique id.
      * @return Loaded {@link Fingerprint}. {@code null} if the config file does not exist or
      * malformed.
+     *
+     * In case an external storage is configured on top of a file system based storage:
+     * 1. External storage is polled to retrieve the fingerprint
+     * 2. If not found, then the local storage is polled to retrieve the fingerprint
      */
     public static @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
         long start=0;
@@ -1323,8 +1339,22 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
         }
 
-        Fingerprint loaded = FingerprintStorage.get().load(id);
-        initFacets(loaded);
+        FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
+        FingerprintStorage fileFingerprintStorage = FileFingerprintStorage.getFileFingerprintStorage();
+
+        Fingerprint loaded = configuredFingerprintStorage.load(id);
+
+        if (loaded == null && !(configuredFingerprintStorage instanceof FileFingerprintStorage) &&
+                fileFingerprintStorage.isReady()) {
+            loaded = fileFingerprintStorage.load(id);
+            if (loaded != null) {
+                initFacets(loaded);
+                configuredFingerprintStorage.save(loaded);
+                fileFingerprintStorage.delete(id);
+            }
+        } else {
+            initFacets(loaded);
+        }
 
         if(logger.isLoggable(Level.FINE)) {
             logger.fine("Loading fingerprint took " + (System.currentTimeMillis() - start) + "ms");
@@ -1357,12 +1387,19 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     /**
-     * Deletes the {@link Fingerprint} in the Storage with the given unique id.
+     * Deletes the {@link Fingerprint} in the configured storage with the given unique id.
      *
      * @since 2.242
      */
     public static void delete(@NonNull String id) throws IOException {
-        FingerprintStorage.get().delete(id);
+        FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
+        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+
+        configuredFingerprintStorage.delete(id);
+
+        if (!(configuredFingerprintStorage instanceof FileFingerprintStorage) && fileFingerprintStorage.isReady()) {
+            fileFingerprintStorage.delete(id);
+        }
     }
 
     /**
