@@ -19,7 +19,7 @@ time {
 .plugin-manager__category-label:visited {
     display: inline-block;
     border: 1px solid #ccc;
-    border: 1px solid var(--input-border);
+    border: 1px solid var(--plugin-manager-category-link-border-color);
     background-color: #fbfbfb;
     background-color: var(--plugin-manager-category-link-bg-color);
     color: #333;
