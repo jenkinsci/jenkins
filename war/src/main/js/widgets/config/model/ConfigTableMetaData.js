@@ -15,9 +15,9 @@ function markConfigTableParentForm(configTable) {
 
 function findConfigTables() {
     var $ = getJQuery();
-    // The config tables are the immediate child <table> elements of <form> elements
+    // The config tables are the immediate child <div> elements of <form> elements
     // with a name of "config"?
-    return $('form[name="config"] > table');
+    return $('form[name="config"] > div');
 }
 
 function closestTR(node) {
