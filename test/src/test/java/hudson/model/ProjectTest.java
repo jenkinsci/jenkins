@@ -256,7 +256,8 @@ public class ProjectTest {
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
         ((HtmlElement)form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
         // required due to the new default behavior of click
-        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), true);
+//        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), true);
+        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
         form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
