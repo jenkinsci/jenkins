@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
  * @author Sumit Sarin
  */
 @Symbol("fileFingerprintStorage")
-@Restricted(NoExternalUse.class)
+//@Restricted(NoExternalUse.class)
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
