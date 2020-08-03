@@ -102,14 +102,14 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
      * For reference, see {@link FileFingerprintStorage#iterateAndCleanupFingerprints(TaskListener)}
      * For cleaning up the fingerprint {@link #cleanFingerprint(Fingerprint, TaskListener)} may be used.
      *
-     * @since TODO
+     * @since 2.246
      */
     public abstract void iterateAndCleanupFingerprints(TaskListener taskListener);
 
     /**
      * This method performs the cleanup of the given fingerprint.
      *
-     * @since TODO
+     * @since 2.246
      */
     public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
         try {
@@ -140,7 +140,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
     }
 
     /**
-     * @since TODO
+     * @since 2.246
      */
     @Override public FingerprintStorageDescriptor getDescriptor() {
         return (FingerprintStorageDescriptor) super.getDescriptor();

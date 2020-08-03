@@ -76,10 +76,12 @@
        add it in the LI element so that it applies to the menuSeparator */
     text-decoration: underline;
     outline-color: #3FB3F7;
+    outline-color: var(--focus);
 }
 
 #breadcrumbs LI A:active {
     background-color: #C8CEC2;
+    background-color: var(--breadcrumbs-item-bg-color--hover);
 }
 
 #breadcrumbs LI A {

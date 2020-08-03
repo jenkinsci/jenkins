@@ -32,7 +32,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Exception that occurs during the environment filtering process, with helper to track the source.
  *
- * @since TODO
+ * @since 2.246
  */
 @Restricted(Beta.class)
 public class EnvVarsFilterException extends AbortException {
