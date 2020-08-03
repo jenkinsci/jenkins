@@ -35,30 +35,30 @@ public class GrantedAuthorityImpl implements GrantedAuthority, Serializable {
 
     private static final long serialVersionUID = 1;
 
-    private final String authority;
+    private final String role;
 
-    public GrantedAuthorityImpl(String authority) {
-        this.authority = authority;
+    public GrantedAuthorityImpl(String role) {
+        this.role = role;
     }
 
     @Override
     public String getAuthority() {
-        return authority;
+        return role;
     }
 
     @Override
     public String toString() {
-        return authority;
+        return role;
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof GrantedAuthorityImpl && authority.equals(((GrantedAuthorityImpl) o).authority);
+        return o instanceof GrantedAuthorityImpl && role.equals(((GrantedAuthorityImpl) o).role);
     }
 
     @Override
     public int hashCode() {
-        return authority.hashCode();
+        return role.hashCode();
     }
 
 }
