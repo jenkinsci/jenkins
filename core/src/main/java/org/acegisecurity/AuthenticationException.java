@@ -30,11 +30,11 @@ package org.acegisecurity;
 @Deprecated
 public abstract class AuthenticationException extends AcegiSecurityException {
 
-    private final Object extraInformation;
+    private Authentication authentication;
+    private Object extraInformation;
 
     public AuthenticationException(String msg) {
         super(msg);
-        extraInformation = null;
     }
 
     public AuthenticationException(String msg, Object extraInformation) {
@@ -44,15 +44,22 @@ public abstract class AuthenticationException extends AcegiSecurityException {
 
     public AuthenticationException(String msg, Throwable t) {
         super(msg, t);
-        extraInformation = null;
     }
 
     public Authentication getAuthentication() {
-        return null; // TODO in the real thing, there is a setter, but who calls it?
+        return authentication;
+    }
+
+    public void setAuthentication(Authentication authentication) {
+        this.authentication = authentication;
     }
 
     public Object getExtraInformation() {
         return extraInformation;
+    }
+
+    public void clearExtraInformation() {
+        extraInformation = null;
     }
 
     public org.springframework.security.core.AuthenticationException toSpring() {
