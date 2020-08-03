@@ -28,6 +28,7 @@
     
     max-width: 700px;
     border: 1px solid #cccccc;
+    border-color: var(--medium-grey);
     border-radius: 3px;
 } 
 

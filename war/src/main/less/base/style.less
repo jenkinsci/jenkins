@@ -835,8 +835,8 @@ table.parameters > tbody:hover {
     opacity: 0.5;
 }
 #buildHistoryPage .build-search-row .clear:hover {
-    background-color: #d3d3d3;
-    border: 1px solid #bbb;
+    background-color: var(--very-light-grey);
+    border: 1px solid var(--medium-grey);
     padding-right: 3px;
     border-top-right-radius: 2px;
 }
@@ -879,13 +879,13 @@ table.parameters > tbody:hover {
 
 #buildHistoryPageNav.mouseOverSidePanel {
   visibility: visible;
-  border-color: #f0f0f0 !important;
+  border-color: var(--light-grey) !important;
 }
 #buildHistoryPageNav.mouseOverSidePanelBuildHistory {
-  border-color: #bbb !important;
+  border-color: var(--medium-grey) !important;
 }
 #buildHistoryPageNav:hover {
-  border-color: #bbb !important;
+  border-color: var(--medium-grey) !important;
 }
 
 #buildHistoryPageNav .pageOne {
@@ -903,7 +903,7 @@ table.parameters > tbody:hover {
 
 
 .build-row.model-link-active {
-  background: #e8e8e8 !important;
+  background: var(--light-grey) !important;
 }
 
 .build-row-cell {
@@ -1106,7 +1106,7 @@ TABLE.fingerprint-in-build TD {
 #plugins .enable-state-info, #plugins .uninstall-state-info {
     padding: 5px 20px;
     max-width: 70%;
-    border: solid 1px #f0ad4e;
+    border: solid 1px var(--warning);
     border-radius: 3px;
     text-align: center;
 }
@@ -1130,13 +1130,13 @@ TABLE.fingerprint-in-build TD {
 
 #plugins .plugin-dependency-info span {
     margin: 5px 5px 0px 0px;
-    background-color: #337ab7;
+    background-color: var(--primary);
     display: inline-block;
     padding: .2em .6em .3em;
     font-size: var(--font-size-xs);
     font-weight: 700;
     line-height: 1;
-    color: #fff;
+    color: var(--white);
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
@@ -1151,7 +1151,7 @@ TABLE.fingerprint-in-build TD {
 }
 
 .repeated-chunk.hover {
-    border-color: #CCC;
+    border-color: var(--medium-grey);
 }
 
 .repeated-chunk .show-if-last      { visibility: hidden; }
@@ -1261,7 +1261,7 @@ TEXTAREA.rich-editor {
     white-space: normal;
     margin-top: 0.5em;
     padding-left: 2em;
-    color: #888a85;
+    color: var(--text-color-secondary);
 }
 
 #plugins .excerpt a {
@@ -1337,7 +1337,7 @@ table.progress-bar.red td.progress-bar-done {
     left:0;
     font-size: 1.75rem;
     z-index:1000;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid var(--black);
     line-height: 3.5rem;
     height: 3.5rem;
     display: block;
@@ -1480,28 +1480,29 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-  border: 1px #BBBBBB solid;
+  border: 1px var(--medium-grey) solid;
   border-collapse: collapse;
 }
 tr.matrix-row {
-  background: #f0f0f0;
-  font-weight: bold;
+  background-color: var(--bigtable-header-bg);
+  color: var(--bigtable-header-text-color);
+  font-weight: var(--bigtable-header-font-weight);
 }
 td.matrix-header {
-  border: 1px #BBBBBB solid;
+  border: 1px var(--medium-grey) solid;
   padding: 3px;
 }
 td#matrix-title {
   padding: 3px;
 }
 td.matrix-leftcolumn {
-  border: 1px #BBBBBB solid;
+  border: 1px var(--medium-grey) solid;
   font-weight: bold;
-  background: #f0f0f0;
+  background: var(--very-light-grey);
   padding: 3px;
 }
 td.matrix-cell {
-  border: 1px #BBBBBB solid;
+  border: 1px var(--medium-grey) solid;
   text-align: center;
 }
 
@@ -1644,7 +1645,7 @@ body.no-sticker #bottom-sticker {
   width: 24px;
 
   /* default fill fallback */
-  fill: #111;
+  fill: var(--text-color);
   fill: currentColor;
 }
 
