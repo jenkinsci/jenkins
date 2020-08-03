@@ -35,8 +35,19 @@ public class GrantedAuthoritySid implements Sid {
         this.grantedAuthority = grantedAuthority;
     }
 
+    /**
+     * @since TODO
+     */
     public GrantedAuthoritySid(GrantedAuthority ga) {
         grantedAuthority = ga.getAuthority();
+    }
+
+    /**
+     * @deprecated use {@link #GrantedAuthoritySid(GrantedAuthority)}
+     */
+    @Deprecated
+    public GrantedAuthoritySid(org.acegisecurity.GrantedAuthority ga) {
+        this(ga.toSpring());
     }
 
     public String getGrantedAuthority() {

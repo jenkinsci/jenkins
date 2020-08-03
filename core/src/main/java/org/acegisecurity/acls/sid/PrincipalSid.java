@@ -36,9 +36,20 @@ public class PrincipalSid implements Sid {
         this.principal = principal;
     }
 
+    /**
+     * @since TODO
+     */
     public PrincipalSid(Authentication a) {
         Object p = a.getPrincipal();
         this.principal = p instanceof UserDetails ? ((UserDetails) p).getUsername() : p.toString();
+    }
+
+    /**
+     * @deprecated use {@link #PrincipalSid(Authentication)}
+     */
+    @Deprecated
+    public PrincipalSid(org.acegisecurity.Authentication a) {
+        this(a.toSpring());
     }
     
     public String getPrincipal() {
