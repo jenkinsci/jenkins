@@ -48,7 +48,7 @@ public class ViewJobTest {
         assertEquals("[2]", j.getBuildsAsMap().keySet().toString());
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked", "deprecation"})
+    @SuppressWarnings({"rawtypes", "deprecation"})
     public static final class J extends ViewJob<J,R> implements TopLevelItem {
 
         public J(ItemGroup parent, String name) {

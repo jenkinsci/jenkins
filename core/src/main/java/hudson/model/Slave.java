@@ -622,7 +622,6 @@ public abstract class Slave extends Node implements Serializable {
          * @since 2.12
          */
         @NonNull
-        @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, RetentionStrategy.all())
