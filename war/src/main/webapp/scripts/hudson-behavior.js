@@ -500,7 +500,12 @@ var tooltip;
 //========================================================
 // using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
-    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr || !tr.firstChild) {
+      console.warn("Couldn't register validator, start element was", e);
+      return;
+    }
+    e.targetElement = tr.firstChild.nextSibling;
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
@@ -728,20 +733,6 @@ function expandButton(e) {
     layoutUpdateCallback.call();
 }
 
-function inputHasDefaultTextOnFocus() {
-    if (this.value == defaultValue) {
-        this.value = "";
-        Element.removeClassName(this, "defaulted");
-    }
-}
-
-function inputHasDefaultTextOnBlur() {
-    if (this.value == "") {
-        this.value = defaultValue;
-        Element.addClassName(this, "defaulted");
-    }
-}
-
 function labelAttachPreviousOnClick() {
     var e = $(this).previous();
     while (e!=null) {
@@ -889,14 +880,6 @@ function rowvgStartEachRow(recursive,f) {
 
     Behaviour.specify("INPUT.expand-button", "input-expand-button", ++p, function(e) {
         makeButton(e, expandButton);
-    });
-
-    // scripting for having default value in the input field
-    Behaviour.specify("INPUT.has-default-text", "input-has-default-text", ++p, function(e) {
-        var defaultValue = e.value;
-        Element.addClassName(e, "defaulted");
-        e.onfocus = inputHasDefaultTextOnFocus;
-        e.onblur = inputHasDefaultTextOnBlur;
     });
 
     // <label> that doesn't use ID, so that it can be copied in <repeatable>
