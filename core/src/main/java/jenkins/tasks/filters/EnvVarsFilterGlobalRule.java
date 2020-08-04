@@ -42,7 +42,7 @@ import java.io.Serializable;
  *
  * The local rules are applied before the global ones.
  *
- * @since TODO
+ * @since 2.246
  */
 @Restricted(Beta.class)
 public interface EnvVarsFilterGlobalRule extends Describable<EnvVarsFilterGlobalRule>, EnvVarsFilterRule, ExtensionPoint, Serializable {

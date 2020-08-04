@@ -1262,7 +1262,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Deletes all suffixes recursively.
      * @throws IOException if it exists but could not be successfully deleted
-     * @since TODO
+     * @since 2.244
      */
     public void deleteSuffixesRecursive() throws IOException, InterruptedException {
         act(new DeleteSuffixesRecursive());

@@ -53,7 +53,7 @@ import java.util.Map;
 /**
  * Local rule that removes all the non-retained variables for that step.
  *
- * @since TODO
+ * @since 2.246
  */
 @Restricted(NoExternalUse.class)
 public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {

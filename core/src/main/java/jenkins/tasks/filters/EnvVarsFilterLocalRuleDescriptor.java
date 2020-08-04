@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * if the rule is applicable to a given builder and then applied every time. <p>
  * For global rule it's the inverse, the rule itself determines when it's applicable.
  *
- * @since TODO
+ * @since 2.246
  */
 @Restricted(Beta.class)
 public abstract class EnvVarsFilterLocalRuleDescriptor extends Descriptor<EnvVarsFilterLocalRule> {
