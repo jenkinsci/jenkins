@@ -19,8 +19,14 @@ function buildTimeTrend_displayBuilds(data) {
 		tr.insert(new Element('td', {data: e.duration}).
 		update(e.durationString.escapeHTML()));
 		if (isMasterSlaveEnabled) {
-			tr.insert(new Element('td').
-				update(e.builtOn ? new Element('a', {href: rootURL + '/computer/' + e.builtOn, 'class': 'model-link inside'}).update(e.builtOnStr.escapeHTML()) : e.builtOnStr.escapeHTML()));
+			var buildInfo = null;
+			var buildInfoStr = (e.builtOnStr || '').escapeHTML();
+			if(e.builtOn) {
+				buildInfo = new Element('a', {href: rootURL + '/computer/' + e.builtOn, 'class': 'model-link inside'}).update(buildInfoStr);
+			} else {
+				buildInfo = buildInfoStr;
+			}
+			tr.insert(new Element('td').update(buildInfo));
 		}
 		p.insert(tr);
 		Behaviour.applySubtree(tr);
