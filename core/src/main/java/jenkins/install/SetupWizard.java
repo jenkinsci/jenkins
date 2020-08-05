@@ -225,7 +225,7 @@ public class SetupWizard extends PageDecorator {
             HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
             try {
                 if(securityRealm.getAllUsers().size() == 1) {
-                    HudsonPrivateSecurityRealm.Details details = securityRealm.loadUserByUsername2(SetupWizard.initialSetupAdminUserName);
+                    HudsonPrivateSecurityRealm.Details details = securityRealm.load(SetupWizard.initialSetupAdminUserName);
                     FilePath iapf = getInitialAdminPasswordFile();
                     if (iapf.exists()) {
                         if (details.isPasswordCorrect(iapf.readToString().trim())) {

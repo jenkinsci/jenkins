@@ -185,7 +185,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     @Override
-    public Details loadUserByUsername2(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+        return load(username).asUserDetails();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public Details load(String username) throws UsernameNotFoundException {
         User u = User.getById(username, false);
         Details p = u!=null ? u.getProperty(Details.class) : null;
         if(p==null)
@@ -196,12 +201,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     @Override
-    protected Details authenticate2(String username, String password) throws AuthenticationException {
-        Details u = loadUserByUsername2(username);
+    protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
+        Details u = load(username);
         if (!u.isPasswordCorrect(password)) {
             throw new BadCredentialsException("Bad credentials");
         }
-        return u;
+        return u.asUserDetails();
     }
 
     /**
@@ -610,7 +615,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * is sent to the hidden input field by using {@link Protector}, so that
      * the same password can be retained but without leaking information to the browser.
      */
-    public static final class Details extends UserProperty implements UserDetails {
+    public static final class Details extends UserProperty {
         /**
          * Hashed password.
          */
@@ -676,6 +681,59 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         public boolean isEnabled() {
             return true;
+        }
+
+        UserDetails asUserDetails() {
+            return new UserDetailsImpl();
+        }
+
+        private final class UserDetailsImpl implements UserDetails {
+
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return Details.this.getAuthorities();
+            }
+
+            @Override
+            public String getPassword() {
+                return Details.this.getPassword();
+            }
+
+            @Override
+            public String getUsername() {
+                return Details.this.getUsername();
+            }
+
+            @Override
+            public boolean isAccountNonExpired() {
+                return Details.this.isAccountNonExpired();
+            }
+
+            @Override
+            public boolean isAccountNonLocked() {
+                return Details.this.isAccountNonLocked();
+            }
+
+            @Override
+            public boolean isCredentialsNonExpired() {
+                return Details.this.isCredentialsNonExpired();
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return Details.this.isEnabled();
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof UserDetailsImpl && ((UserDetailsImpl) o).getUsername().equals(getUsername());
+            }
+
+            @Override
+            public int hashCode() {
+                return getUsername().hashCode();
+            }
+
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
