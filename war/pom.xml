@@ -308,7 +308,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>1.11</version>
+                  <version>1.25-rc421.f083903ad945</version> <!-- TODO https://github.com/jenkinsci/ldap-plugin/pull/48 -->
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
