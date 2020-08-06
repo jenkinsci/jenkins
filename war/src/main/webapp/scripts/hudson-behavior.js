@@ -803,6 +803,7 @@ function saveAndSubmit() {
 function textAreaScriptEditorOnKeyEvent(editor, event){
   // Mac (Command + Enter)
   if (navigator.userAgent.indexOf('Mac') > -1) {
+      var cmdKeyDown = false;
       if (event.type == 'keydown' && isCommandKey()) {
           cmdKeyDown = true;
       }
@@ -810,14 +811,14 @@ function textAreaScriptEditorOnKeyEvent(editor, event){
           cmdKeyDown = false;
       }
       if (cmdKeyDown && isReturnKeyDown()) {
-          saveAndSubmit();
+          saveAndSubmit(editor);
           return true;
       }
 
   // Windows, Linux (Ctrl + Enter)
   } else {
       if (event.ctrlKey && isReturnKeyDown()) {
-          saveAndSubmit();
+          saveAndSubmit(editor);
           return true;
       }
   }
@@ -955,7 +956,6 @@ function rowvgStartEachRow(recursive,f) {
     // Script Console : settings and shortcut key
     Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function(e) {
         (function() {
-            var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
             
