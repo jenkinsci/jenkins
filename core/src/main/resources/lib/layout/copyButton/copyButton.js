@@ -14,7 +14,7 @@ Behaviour.specify("span.copy-button", 'copyButton', 0, function(e) {
         el.style.position = "absolute";
         el.style.top = "-99999px";
         el.style.left = "-99999px";
-        el.style.tabindex = "-1";
+        el.setAttribute("tabindex", "-1");
         document.body.appendChild(el);
 
         //select the text and copy it to the clipboard
