@@ -39,7 +39,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
-public class AccessDeniedException2Test {
+public class AccessDeniedException3Test {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
