@@ -928,7 +928,7 @@ function rowvgStartEachRow(recursive,f) {
     // Script Console : settings and shortcut key
     Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function(e) {
         (function() {
-	    var cmdKeyDown = false;	
+            var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
             
