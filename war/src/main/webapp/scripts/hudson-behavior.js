@@ -795,34 +795,6 @@ function getParentForm(element) {
 
     return getParentForm(element.parentNode);
 }
-function saveAndSubmit() {
-    editor.save();
-    getParentForm(e).submit();
-    event.stop();
-}
-function textAreaScriptEditorOnKeyEvent(editor, event){
-  // Mac (Command + Enter)
-  if (navigator.userAgent.indexOf('Mac') > -1) {
-      var cmdKeyDown = false;
-      if (event.type == 'keydown' && isCommandKey()) {
-          cmdKeyDown = true;
-      }
-      if (event.type == 'keyup' && isCommandKey()) {
-          cmdKeyDown = false;
-      }
-      if (cmdKeyDown && isReturnKeyDown()) {
-          saveAndSubmit(editor);
-          return true;
-      }
-
-  // Windows, Linux (Ctrl + Enter)
-  } else {
-      if (event.ctrlKey && isReturnKeyDown()) {
-          saveAndSubmit(editor);
-          return true;
-      }
-  }
-}
 
 // figure out the corresponding end marker
 function findEnd(e) {
@@ -956,6 +928,7 @@ function rowvgStartEachRow(recursive,f) {
     // Script Console : settings and shortcut key
     Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function(e) {
         (function() {
+	    var cmdKeyDown = false;	
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
             
@@ -964,7 +937,34 @@ function rowvgStartEachRow(recursive,f) {
               lineNumbers: true,
               matchBrackets: true,
               readOnly: readOnly,
-              onKeyEvent: textAreaScriptEditorOnKeyEvent
+              onKeyEvent: function (editor, event){
+                function saveAndSubmit() {
+                    editor.save();
+                    getParentForm(e).submit();
+                    event.stop();
+                }
+
+                // Mac (Command + Enter)
+                if (navigator.userAgent.indexOf('Mac') > -1) {
+                    if (event.type == 'keydown' && isCommandKey()) {
+                        cmdKeyDown = true;
+                    }
+                    if (event.type == 'keyup' && isCommandKey()) {
+                        cmdKeyDown = false;
+                    }
+                    if (cmdKeyDown && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+
+                // Windows, Linux (Ctrl + Enter)
+                } else {
+                    if (event.ctrlKey && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                }
+              }
             }).getWrapperElement();
             w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
