@@ -48,6 +48,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.security.AcegiSecurityExceptionFilter;
 import jenkins.security.BasicHeaderProcessor;
 import jenkins.security.ExceptionTranslationFilter;
 import net.sf.json.JSONObject;
@@ -590,7 +591,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         ExceptionTranslationFilter etf = new ExceptionTranslationFilter(new HudsonAuthenticationEntryPoint("/" + getLoginUrl() + "?from={0}"));
         etf.setAccessDeniedHandler(new AccessDeniedHandlerImpl());
         UnwrapSecurityExceptionFilter usef = new UnwrapSecurityExceptionFilter();
-        return Arrays.asList(apf, etf, usef);
+        AcegiSecurityExceptionFilter asef = new AcegiSecurityExceptionFilter();
+        return Arrays.asList(apf, etf, usef, asef);
     }
 
     /**

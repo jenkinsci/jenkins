@@ -40,4 +40,10 @@ public abstract class AcegiSecurityException extends NestedRuntimeException {
         super(msg, cause);
     }
 
+    public RuntimeException toSpring() {
+        return new RuntimeException(toString(), this);
+    }
+
+    // TODO fromSpring as needed, delegating to AccessDeniedException or AuthenticationException
+
 }

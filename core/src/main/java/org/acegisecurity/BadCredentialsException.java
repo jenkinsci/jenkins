@@ -44,6 +44,7 @@ public class BadCredentialsException extends AuthenticationException {
         super(msg, t);
     }
 
+    @Override
     public org.springframework.security.core.AuthenticationException toSpring() {
         return new org.springframework.security.authentication.BadCredentialsException(toString(), this);
     }

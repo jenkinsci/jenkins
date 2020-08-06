@@ -38,4 +38,9 @@ public class AccessDeniedException extends AcegiSecurityException {
         super(msg, t);
     }
 
+    @Override
+    public org.springframework.security.access.AccessDeniedException toSpring() {
+        return new org.springframework.security.access.AccessDeniedException(toString(), this);
+    }
+
 }

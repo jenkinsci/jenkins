@@ -31,6 +31,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.InvisibleAction;
+import hudson.model.Item;
+import hudson.model.RootAction;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -38,6 +41,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.HttpResponse;
 
 public class AccessDeniedException3Test {
 
@@ -81,4 +86,41 @@ public class AccessDeniedException3Test {
         Assert.assertTrue(configureSecurity.getUrl().getPath().contains("login"));
         Assert.assertTrue(configureSecurity.getUrl().getQuery().startsWith("from"));
     }
+
+    @Issue("JENKINS-5303")
+    @Test
+    public void captureException() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toEveryone());
+        JenkinsRule.WebClient wc = r.createWebClient().login("user");
+        try {
+            wc.goTo("fails/accessDeniedException3");
+            fail("should report an error from AccessDeniedException3");
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals("should send a 403 from AccessDeniedException3", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
+            assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException3", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
+        }
+        try {
+            wc.goTo("fails/accessDeniedException2");
+            fail("should report an error from AccessDeniedException2");
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals("should send a 403 from AccessDeniedException2", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
+            assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException2", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
+        }
+    }
+    @TestExtension("captureException")
+    public static final class Fails extends InvisibleAction implements RootAction {
+        @Override
+        public String getUrlName() {
+            return "fails";
+        }
+        public HttpResponse doAccessDeniedException3() {
+            throw new AccessDeniedException3(Jenkins.getAuthentication2(), Item.READ);
+        }
+        @SuppressWarnings("deprecation")
+        public HttpResponse doAccessDeniedException2() {
+            throw new AccessDeniedException2(Jenkins.getAuthentication(), Item.READ);
+        }
+    }
+
 }
