@@ -95,6 +95,7 @@
     color: #204A87;
     color: var(--link-color);
     text-decoration: underline;
+    margin-right: 0;
     padding: 0;
     font-weight: 600;
     font-weight: var(--link-font-weight);
@@ -111,4 +112,25 @@
     background-color: transparent;
     text-decoration: underline;
     text-decoration: var(--link-text-decoration--hover);
+}
+
+#visible-am-container #visible-am-list .alert-success a {
+    color: #155724;
+    color: var(--alert-success-text-color);
+}
+
+
+#visible-am-container #visible-am-list .alert-info a {
+    color: #31708f;
+    color: var(--alert-info-text-color);
+}
+
+#visible-am-container #visible-am-list .alert-warning a {
+    color: #8a6d3b;
+    color: var(--alert-warning-text-color);
+}
+
+#visible-am-container #visible-am-list .alert-danger a {
+    color: #a94442;
+    color: var(--alert-danger-text-color);
 }
