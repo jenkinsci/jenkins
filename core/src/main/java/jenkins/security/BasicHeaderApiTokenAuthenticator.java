@@ -27,7 +27,7 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
      * because it will be done in the {@link BasicHeaderRealPasswordAuthenticator} in the case the password is not valid either
      */
     @Override
-    public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
+    public Authentication authenticate2(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
         User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
         if(u != null) {
             Authentication auth;

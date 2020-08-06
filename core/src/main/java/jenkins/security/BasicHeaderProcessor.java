@@ -73,7 +73,7 @@ public class BasicHeaderProcessor implements Filter {
 
                 for (BasicHeaderAuthenticator a : all()) {
                     LOGGER.log(FINER, "Attempting to authenticate with {0}", a);
-                    Authentication auth = a.authenticate(req, rsp, username, password);
+                    Authentication auth = a.authenticate2(req, rsp, username, password);
                     if (auth!=null) {
                         LOGGER.log(FINE, "Request authenticated as {0} by {1}", new Object[]{auth,a});
                         success(req, rsp, chain, auth);
