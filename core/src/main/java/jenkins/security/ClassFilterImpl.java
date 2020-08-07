@@ -123,7 +123,6 @@ public class ClassFilterImpl extends ClassFilter {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public boolean isBlacklisted(Class _c) {
         for (CustomClassFilter f : ExtensionList.lookup(CustomClassFilter.class)) {

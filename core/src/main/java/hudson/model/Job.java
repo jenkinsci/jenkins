@@ -1007,7 +1007,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
      */
-    @SuppressWarnings("unchecked")
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<>(3);
         RunT lastSuccessful = getLastSuccessfulBuild();
