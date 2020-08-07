@@ -71,7 +71,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
      * Initiates the cleanup of fingerprints IF enabled.
      * In case of configured external storage, the file system based storage cleanup is also performed.
      */
-    public void execute(TaskListener listener) throws IOException {
+    public void execute(TaskListener listener) {
         if (GlobalFingerprintConfiguration.get().isFingerprintCleanupDisabled()) {
             LOGGER.fine("Fingerprint cleanup is disabled. Skipping execution");
             return;
