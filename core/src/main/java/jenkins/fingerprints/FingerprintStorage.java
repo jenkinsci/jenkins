@@ -90,8 +90,10 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
 
     /**
      * Returns true if there's some data in the fingerprint database.
+     *
+     * @throws IOException Error in accessing fingerprint data.
      */
-    public abstract boolean isReady();
+    public abstract boolean isReady()  throws IOException;
 
     /**
      * Iterates a set of fingerprints, and cleans them up. Cleaning up a fingerprint implies deleting the builds
