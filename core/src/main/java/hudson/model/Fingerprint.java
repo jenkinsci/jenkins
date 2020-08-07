@@ -771,6 +771,11 @@ public class Fingerprint implements ModelObject, Saveable {
             return rs;
         }
 
+        /**
+         * Converter Implementation for RangeSet.
+         *
+         * @since TODO
+         */
         public static final class ConverterImpl implements Converter {
             private final Converter collectionConv; // used to convert ArrayList in it
 
@@ -778,6 +783,9 @@ public class Fingerprint implements ModelObject, Saveable {
                 this.collectionConv = collectionConv;
             }
 
+            /**
+             * Check if the given class can be converted (i.e. check if it is of type RangeSet).
+             */
             public boolean canConvert(Class type) {
                 return type==RangeSet.class;
             }
@@ -787,7 +795,11 @@ public class Fingerprint implements ModelObject, Saveable {
                 writer.setValue(serialize(src));
             }
 
-            static String serialize(RangeSet src) {
+            /**
+             * Used to serialize the range sets (builds) of the fingerprint using commas and dashes.
+             * For e.g., if used in builds 1,2,3,5, it will be serialized to 1-3,5
+             */
+            public static String serialize(RangeSet src) {
                 StringBuilder buf = new StringBuilder(src.ranges.size()*10);
                 for (Range r : src.ranges) {
                     if(buf.length()>0)  buf.append(',');

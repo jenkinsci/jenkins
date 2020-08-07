@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
  * @author Sumit Sarin
  */
 @Symbol("fileFingerprintStorage")
-//@Restricted(NoExternalUse.class)
+@Restricted(NoExternalUse.class)
 @Extension(ordinal=-100)
 public class FileFingerprintStorage extends FingerprintStorage {
 
@@ -168,7 +168,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
                     w.print(Util.xmlEscape(e.getKey()));
                     w.println("</string>");
                     w.print("      <ranges>");
-                    w.print(serialize(e.getValue()));
+                    w.print(Fingerprint.RangeSet.ConverterImpl.serialize(e.getValue()));
                     w.println("</ranges>");
                     w.println("    </entry>");
                 }
@@ -297,25 +297,6 @@ public class FileFingerprintStorage extends FingerprintStorage {
             return messageOfParseException(causeOfThrowable);
         }
         return null;
-    }
-
-    /**
-     * Used to serialize the range sets (builds) of the fingerprint using commas and dashes.
-     * For e.g., if used in builds 1,2,3,5, it will be serialized to 1-3,5
-     */
-    public static String serialize(Fingerprint.RangeSet src) {
-        StringBuilder buf = new StringBuilder(src.getRanges().size() * 10);
-        for (Fingerprint.Range r : src.getRanges()) {
-            if(buf.length() > 0) {
-                buf.append(',');
-            }
-            if(r.isSingle()) {
-                buf.append(r.getStart());
-            } else {
-                buf.append(r.getStart()).append('-').append(r.getEnd() - 1);
-            }
-        }
-        return buf.toString();
     }
 
     /**
