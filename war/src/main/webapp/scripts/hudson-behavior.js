@@ -567,13 +567,13 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    var settingMain = e.closest('.setting-main')
-    if (!settingMain) {
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr) {
         console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
         return;
     }
     // find the validation-error-area
-    e.targetElement = settingMain.nextElementSibling;
+    e.targetElement = tr.firstChild.nextSibling;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
