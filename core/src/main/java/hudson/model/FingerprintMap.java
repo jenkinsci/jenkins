@@ -49,7 +49,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
     /**
      * Returns true if there's some data in the fingerprint database.
      */
-    public boolean isReady() throws IOException {
+    public boolean isReady() {
         return FingerprintStorage.get().isReady();
     }
 
