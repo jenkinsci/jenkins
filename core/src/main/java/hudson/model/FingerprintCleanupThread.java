@@ -32,7 +32,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
