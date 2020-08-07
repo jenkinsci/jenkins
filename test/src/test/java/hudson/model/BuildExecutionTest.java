@@ -51,8 +51,7 @@ public class BuildExecutionTest {
             assertEquals(ws, lease.path);
         }
     }
-
-    @SuppressWarnings("unchecked") // not my fault
+    
     private static class BrokenPublisher extends Notifier {
         @Override public boolean needsToRunAfterFinalized() {
             throw new IllegalStateException("oops");

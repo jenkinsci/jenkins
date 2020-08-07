@@ -2853,8 +2853,7 @@ public class Queue extends ResourceController implements Saveable {
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 
 			@Override
-			@SuppressWarnings("unchecked")
-			public boolean canConvert(Class klazz) {
+            public boolean canConvert(Class klazz) {
 				return hudson.model.Item.class.isAssignableFrom(klazz);
 			}
 
@@ -2872,7 +2871,6 @@ public class Queue extends ResourceController implements Saveable {
         });
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 
-			@SuppressWarnings("unchecked")
 			@Override
 			public boolean canConvert(Class klazz) {
 				return Run.class.isAssignableFrom(klazz);

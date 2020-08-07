@@ -159,7 +159,6 @@ public abstract class OfflineCause {
         }
 
         // Storing the User in a filed was a mistake, switch to userId
-        @SuppressWarnings("deprecation")
         private Object readResolve() throws ObjectStreamException {
             if (user != null) {
                 String id = user.getId();

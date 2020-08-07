@@ -82,7 +82,6 @@ public class AbstractBuildTest {
     
     @Test
     @Issue("JENKINS-30730")
-    @SuppressWarnings("deprecation")
     public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
         ErroneousJobProperty erroneousJobProperty = new ErroneousJobProperty();
