@@ -108,6 +108,7 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.connectbot.jbcrypt</groupId>
       <artifactId>jbcrypt</artifactId>
