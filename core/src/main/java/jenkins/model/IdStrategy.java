@@ -134,7 +134,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     public abstract int compare(@NonNull String id1, @NonNull String id2);
 
     @Override
-    @SuppressWarnings("unchecked")
     public IdStrategyDescriptor getDescriptor() {
         return (IdStrategyDescriptor) super.getDescriptor();
     }

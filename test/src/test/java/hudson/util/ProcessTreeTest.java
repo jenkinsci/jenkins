@@ -31,14 +31,14 @@ import org.jvnet.hudson.test.TestExtension;
 import com.google.common.collect.ImmutableMap;
 
 
-public class ProcessTreeKillerTest {
+public class ProcessTreeTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
     private Process process;
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ProcessTree.vetoersExist = null;
         if (null != process)
             process.destroy();

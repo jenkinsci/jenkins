@@ -686,7 +686,6 @@ public class SCMTrigger extends Trigger<Item> {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private SCMTriggerItem job() {
         return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
     }
