@@ -312,7 +312,7 @@ public final class WorkspaceList {
 
     /**
      * The token that combines the project name and unique number to create unique workspace directory.
-     * @since TODO
+     * @since 2.244
      */
     public static final String COMBINATOR = SystemProperties.getString(WorkspaceList.class.getName(),"@");
 }

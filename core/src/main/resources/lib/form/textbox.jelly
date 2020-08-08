@@ -28,6 +28,8 @@ THE SOFTWARE.
     Generates an input field <tt>&lt;input type="text" ... /></tt> to be
     used inside &lt;f:entry/>
 
+    For a read only input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+    See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>

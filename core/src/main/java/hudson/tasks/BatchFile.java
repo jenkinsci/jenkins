@@ -59,7 +59,7 @@ public class BatchFile extends CommandInterpreter {
     /**
      * Set local environment variable filter rules
      * @param configuredLocalRules list of local environment filter rules
-     * @since TODO
+     * @since 2.246
      */
     @Restricted(Beta.class)
     @DataBoundSetter

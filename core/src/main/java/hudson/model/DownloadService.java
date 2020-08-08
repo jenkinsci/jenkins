@@ -281,7 +281,7 @@ public class DownloadService {
          * @param clazz The class to use to generate an ID.
          * @return The ID generated based on the specified class.
          *
-         * @since TODO
+         * @since 2.244
          */
         @NonNull
         public static String idFor(@NonNull Class<?> clazz) {
@@ -460,7 +460,7 @@ public class DownloadService {
          *
          * @param clazz The class to use to determine the downloadable's ID.
          *
-         * @since TODO
+         * @since 2.244
          */
         @CheckForNull
         public static Downloadable get(@NonNull Class<?> clazz) {

@@ -1161,7 +1161,7 @@ public class Functions {
     /**
      * Checks if the current security principal has one of the supplied permissions.
      *
-     * @since TODO
+     * @since 2.238
      */
     public static boolean hasAnyPermission(AccessControlled ac, Permission[] permissions) {
         if (permissions == null || permissions.length == 0) {
@@ -1176,7 +1176,7 @@ public class Functions {
      * degrades gracefully if "it" is not an {@link AccessControlled} object.
      * Otherwise it will perform no check and that problem is hard to notice.
      *
-     * @since TODO
+     * @since 2.238
      */
     public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
         if (permissions == null || permissions.length == 0) {
