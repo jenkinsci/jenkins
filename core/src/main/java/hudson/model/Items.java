@@ -468,8 +468,8 @@ public class Items {
      *
      * @param root the root.
      * @param type the type.
+     * @param pred the predicate.
      * @param <T> the type.
-     * @param <T> the predicate.
      * @return An {@link Iterable} for all items.
      * @since 2.221
      */
