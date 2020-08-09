@@ -155,7 +155,7 @@ public class AnnotatedLargeText<T> extends LargeText {
     @Override
     public long writeLogTo(long start, Writer w) throws IOException {
         if (isHtml())
-            return writeHtmlTo(start, w);
+            return writeHtmlTo(start, w, 0);
         else
             return super.writeLogTo(start,w);
     }
@@ -182,7 +182,11 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
-        final int preBuffer = getPreBuffer(start);
+        return writeHtmlTo(start, w, getPreBuffer(start));
+    }
+
+    @CheckReturnValue
+    private long writeHtmlTo(long start, Writer w, int preBuffer) throws IOException {
         ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(w, createAnnotator(Stapler.getCurrentRequest()), context, charset, preBuffer);
         long r = super.writeLogTo(start - preBuffer, caw);
 
