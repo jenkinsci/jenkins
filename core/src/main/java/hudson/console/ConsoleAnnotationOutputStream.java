@@ -24,27 +24,21 @@
 package hudson.console;
 
 import hudson.MarkupText;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
+import org.apache.commons.io.output.ProxyWriter;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.output.ProxyWriter;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
- * Used to convert plain text console output (as byte sequence) + embedded annotations into HTML (as char sequence),
- * by using {@link ConsoleAnnotator}.
+ * Used to convert plain text console output (as byte sequence) + embedded annotations into HTML (as char sequence), by using {@link ConsoleAnnotator}.
  *
- * @param <T>
- *      Context type.
+ * @param <T> Context type.
  * @author Kohsuke Kawaguchi
  * @since 1.349
  */
@@ -62,14 +56,19 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
      */
     private final WriterOutputStream lineOut;
 
-    /**
-     *
-     */
-    public ConsoleAnnotationOutputStream(Writer out, ConsoleAnnotator<? super T> ann, T context, Charset charset) {
+    private final int preBuffer;
+    private int preBufferUsed;
+
+    public ConsoleAnnotationOutputStream(Writer out, ConsoleAnnotator<? super T> ann, T context, Charset charset, int preBuffer) {
         this.out = out;
         this.ann = ConsoleAnnotator.cast(ann);
         this.context = context;
-        this.lineOut = new WriterOutputStream(line,charset);
+        this.lineOut = new WriterOutputStream(line, charset);
+        this.preBuffer = preBuffer;
+    }
+
+    public ConsoleAnnotationOutputStream(Writer out, ConsoleAnnotator<? super T> ann, T context, Charset charset) {
+        this(out, ann, context, charset, 0);
     }
 
     public ConsoleAnnotator<T> getConsoleAnnotator() {
@@ -83,15 +82,29 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
     @SuppressWarnings({"unchecked", "rawtypes"}) // appears to be unsound
     @Override
     protected void eol(byte[] in, int sz) throws IOException {
+        if (preBufferUsed + sz < preBuffer) {
+            preBufferUsed += sz;
+            return;
+        }
         line.reset();
         final StringBuffer strBuf = line.getStringBuffer();
-
-        int next = ConsoleNote.findPreamble(in,0,sz);
-
-        List<ConsoleAnnotator<T>> annotators=null;
+        int next = ConsoleNote.findPreamble(in, 0, sz);
+        int written = 0;
+        if (preBufferUsed < preBuffer) {
+            if (next != -1) {
+                final int remaining = preBuffer - preBufferUsed;
+                if (next > remaining) {
+                    written = remaining;
+                } else {
+                    written = ConsoleNote.findPostamble(in, 0, sz) + ConsoleNote.POSTAMBLE.length;
+                    next = ConsoleNote.findPreamble(in, written, sz - written);
+                }
+            }
+            preBufferUsed += sz;
+        }
+        List<ConsoleAnnotator<T>> annotators = null;
 
         {// perform byte[]->char[] while figuring out the char positions of the BLOBs
-            int written = 0;
             while (next>=0) {
                 if (next>written) {
                     lineOut.write(in,written,next-written);
