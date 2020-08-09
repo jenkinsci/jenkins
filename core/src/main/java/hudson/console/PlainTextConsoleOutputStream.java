@@ -59,7 +59,7 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
         int written = 0;
         if (preBufferUsed < preBuffer) {
             if (next != -1) {
-                written = next;
+                written = Math.min(next, preBuffer - preBufferUsed);
             }
             preBufferUsed += sz;
         }

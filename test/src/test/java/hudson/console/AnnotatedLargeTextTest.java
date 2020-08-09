@@ -127,6 +127,27 @@ public class AnnotatedLargeTextTest {
         assertEquals("build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", w.toString());
     }
 
+    @Test
+    public void willRenderWholeConsoleNote() throws Exception {
+        final String note = TestNote.encodeTo("/test/url", "");
+        ByteBuffer buf = new ByteBuffer();
+        PrintStream ps = new PrintStream(buf, true);
+        ps.print("Sample build output 0.\n");
+        ps.print("Sample build output 1.\n");
+        ps.print("Sample build output 2.\n");
+        ps.print("Sample " + note + "build output 3.\n");
+        ps.print("Sample build output 4.\n");
+        ps.print("Sample build output 5.\n");
+        ps.print("Finished: SUCCESS.\n");
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertEquals(6 * 23 + note.length() + 19, text.writeLogTo(3 * 23 + 3, baos));
+        assertEquals("ple build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", baos.toString());
+        StringWriter w = new StringWriter();
+        assertEquals(6 * 23 + note.length() + 19, text.writeHtmlTo(3 * 23 + 3, w));
+        assertEquals("ple </a><a href='/test/url'>build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", w.toString());
+    }
+
     /** Simplified version of {@link HyperlinkNote}. */
     static class TestNote extends ConsoleNote<Void> {
         private final String url;
