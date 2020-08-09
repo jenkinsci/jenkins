@@ -28,7 +28,9 @@ package hudson.console;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
+
 import java.util.concurrent.TimeUnit;
+
 import jenkins.security.CryptoConfidentialKey;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
@@ -55,6 +57,7 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 import static java.lang.Math.abs;
+
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
@@ -76,6 +79,8 @@ import org.jenkinsci.remoting.util.AnonymousClassWarnings;
  * @since 1.349
  */
 public class AnnotatedLargeText<T> extends LargeText {
+    static final int PRE_BUFFER = 512;
+
     /**
      * Can be null.
      */
@@ -162,7 +167,8 @@ public class AnnotatedLargeText<T> extends LargeText {
     @CheckReturnValue
     @Override
     public long writeLogTo(long start, OutputStream out) throws IOException {
-        return super.writeLogTo(start, new PlainTextConsoleOutputStream(out));
+        final int preBuffer = getPreBuffer(start);
+        return super.writeLogTo(start - preBuffer, new PlainTextConsoleOutputStream(out, preBuffer));
     }
 
     /**
@@ -176,13 +182,13 @@ public class AnnotatedLargeText<T> extends LargeText {
 
     @CheckReturnValue
     public long writeHtmlTo(long start, Writer w) throws IOException {
-        ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(
-                w, createAnnotator(Stapler.getCurrentRequest()), context, charset);
-        long r = super.writeLogTo(start,caw);
+        final int preBuffer = getPreBuffer(start);
+        ConsoleAnnotationOutputStream<T> caw = new ConsoleAnnotationOutputStream<>(w, createAnnotator(Stapler.getCurrentRequest()), context, charset, preBuffer);
+        long r = super.writeLogTo(start - preBuffer, caw);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Cipher sym = PASSING_ANNOTATOR.encrypt();
-        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos,sym)));
+        ObjectOutputStream oos = AnonymousClassWarnings.checkingObjectOutputStream(new GZIPOutputStream(new CipherOutputStream(baos, sym)));
         oos.writeLong(System.currentTimeMillis()); // send timestamp to prevent a replay attack
         oos.writeObject(caw.getConsoleAnnotator());
         oos.close();
@@ -192,8 +198,12 @@ public class AnnotatedLargeText<T> extends LargeText {
         return r;
     }
 
+    private int getPreBuffer(long start) {
+        return start > PRE_BUFFER ? PRE_BUFFER : (int) start;
+    }
+
     /**
      * Used for sending the state of ConsoleAnnotator to the client, because we are deserializing this object later.
      */
-    private static final CryptoConfidentialKey PASSING_ANNOTATOR = new CryptoConfidentialKey(AnnotatedLargeText.class,"consoleAnnotator");
+    private static final CryptoConfidentialKey PASSING_ANNOTATOR = new CryptoConfidentialKey(AnnotatedLargeText.class, "consoleAnnotator");
 }

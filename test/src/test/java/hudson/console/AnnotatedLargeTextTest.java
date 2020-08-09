@@ -106,6 +106,27 @@ public class AnnotatedLargeTextTest {
         assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation from \"\\u001B[8mha:////4ByIhqPpAc43AbrEtyDUDc1/UEOXsoY6LeoHSeSlb1d7AAAAlR+LCAAAAAAAAP9b85aBtbiIQS+jNKU4P08vOT+vOD8nVc8xLy+/JLEkNcUnsSg9NSS1oiQktbhEBUT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VYlqifk5iXrh9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4JABmN28qcAAAA\\u001B[0myour home.\\n\"")); // TODO assert that this is IOException: MAC mismatch
     }
 
+    @Test
+    public void wontRenderPartsOfARawConsoleNote() throws Exception {
+        final String note = TestNote.encodeTo("/test/url", "");
+        ByteBuffer buf = new ByteBuffer();
+        PrintStream ps = new PrintStream(buf, true);
+        ps.print("Sample build output 0.\n");
+        ps.print("Sample build output 1.\n");
+        ps.print("Sample build output 2.\n");
+        ps.print("Sample " + note + "build output 3.\n");
+        ps.print("Sample build output 4.\n");
+        ps.print("Sample build output 5.\n");
+        ps.print("Finished: SUCCESS.\n");
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertEquals(6 * 23 + note.length() + 19, text.writeLogTo(4 * 23, baos));
+        assertEquals("build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", baos.toString());
+        StringWriter w = new StringWriter();
+        assertEquals(6 * 23 + note.length() + 19, text.writeHtmlTo(4 * 23, w));
+        assertEquals("build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", w.toString());
+    }
+
     /** Simplified version of {@link HyperlinkNote}. */
     static class TestNote extends ConsoleNote<Void> {
         private final String url;
