@@ -33,7 +33,7 @@ import org.jvnet.hudson.test.TestExtension;
 import com.google.common.collect.ImmutableMap;
 
 
-public class ProcessTreeKillerTest {
+public class ProcessTreeTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();

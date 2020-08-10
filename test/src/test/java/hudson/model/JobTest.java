@@ -178,7 +178,6 @@ public class JobTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
         public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;

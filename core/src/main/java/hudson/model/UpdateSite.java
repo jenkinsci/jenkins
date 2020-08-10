@@ -336,6 +336,7 @@ public class UpdateSite {
      *
      * @return  null if no data is available.
      */
+    @CheckForNull
     public Data getData() {
         if (data == null) {
             JSONObject o = getJSONObject();
@@ -562,7 +563,7 @@ public class UpdateSite {
         /**
          * Mapping of plugin IDs to deprecation notices
          *
-         * @since TODO
+         * @since 2.246
          */
         private final Map<String, Deprecation> deprecations = new HashMap<>();
 
@@ -650,7 +651,7 @@ public class UpdateSite {
         /**
          * Returns the deprecations provided by the update site
          * @return the deprecations provided by the update site
-         * @since TODO
+         * @since 2.246
          */
         @Restricted(NoExternalUse.class)
         public Map<String, Deprecation> getDeprecations() {
@@ -842,7 +843,7 @@ public class UpdateSite {
     /**
      * Represents a deprecation of a certain component. Jenkins project policy determines exactly what it means.
      *
-     * @since TODO
+     * @since 2.246
      */
     @Restricted(NoExternalUse.class)
     public static final class Deprecation {

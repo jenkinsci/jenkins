@@ -166,7 +166,7 @@ public class UsageStatisticsTest {
 
         Class clazz = this.getClass();
         String fileContent = Resources.toString(clazz.getResource(clazz.getSimpleName() + "/" + fileName), StandardCharsets.UTF_8);
-        fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vendor"));
+        fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
         assertEquals(fileContent, object.toString());
