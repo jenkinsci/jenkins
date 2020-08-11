@@ -39,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenTestHelper;
@@ -291,8 +292,8 @@ public class ItemsTest {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 CLICommand cmd = new CreateJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.get("attacker").impersonate());
-                int status = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs(target).returnCode();
+                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                int status = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs(target).returnCode();
                 if (status != 0) {
                     throw new AbortException("CLI command failed with status " + status);
                 }
@@ -304,7 +305,7 @@ public class ItemsTest {
                 r.createFreeStyleProject("dupe");
                 CLICommand cmd = new CopyJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.get("attacker").impersonate());
+                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
                 int status = invoker.invokeWithArgs("dupe", target).returnCode();
                 r.jenkins.getItem("dupe").delete();
                 if (status != 0) {
@@ -316,7 +317,7 @@ public class ItemsTest {
         MOVE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 try {
-                    SecurityContext orig = ACL.impersonate(User.get("attacker").impersonate());
+                    SecurityContext orig = ACL.impersonate(User.getOrCreateByIdOrFullName("attacker").impersonate());
                     try {
                         Items.move(r.jenkins.getItemByFullName("d", MockFolder.class).createProject(FreeStyleProject.class, target), r.jenkins);
                     } finally {
@@ -330,7 +331,7 @@ public class ItemsTest {
             }
         };
         abstract void run(JenkinsRule r, String target) throws Exception;
-        private static final JenkinsRule.WebClient wc(JenkinsRule r) {
+        private static JenkinsRule.WebClient wc(JenkinsRule r) {
             return r.createWebClient().withBasicApiToken("attacker");
         }
     }

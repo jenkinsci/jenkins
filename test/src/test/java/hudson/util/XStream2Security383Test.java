@@ -19,6 +19,7 @@ import javax.servlet.ServletInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import jenkins.security.ClassFilterImpl;
 
@@ -44,7 +45,7 @@ public class XStream2Security383Test {
     private StaplerResponse rsp;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
@@ -61,11 +62,11 @@ public class XStream2Security383Test {
 
             String exploitXml = IOUtils.toString(
                     XStream2Security383Test.class.getResourceAsStream(
-                            "/hudson/util/XStream2Security383Test/config.xml"), "UTF-8");
+                            "/hudson/util/XStream2Security383Test/config.xml"), StandardCharsets.UTF_8);
 
             exploitXml = exploitXml.replace("@TOKEN@", exploitFile.getAbsolutePath());
 
-            FileUtils.write(new File(tempJobDir, "config.xml"), exploitXml);
+            FileUtils.write(new File(tempJobDir, "config.xml"), exploitXml, StandardCharsets.UTF_8);
 
             try {
                 Items.load(j.jenkins, tempJobDir);
@@ -91,12 +92,12 @@ public class XStream2Security383Test {
 
             String exploitXml = IOUtils.toString(
                     XStream2Security383Test.class.getResourceAsStream(
-                            "/hudson/util/XStream2Security383Test/config.xml"), "UTF-8");
+                            "/hudson/util/XStream2Security383Test/config.xml"), StandardCharsets.UTF_8);
 
             exploitXml = exploitXml.replace("@TOKEN@", exploitFile.getAbsolutePath());
 
             when(req.getMethod()).thenReturn("POST");
-            when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(exploitXml)));
+            when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(exploitXml, StandardCharsets.UTF_8)));
             when(req.getContentType()).thenReturn("application/xml");
             when(req.getParameter("name")).thenReturn("foo");
 
