@@ -34,12 +34,11 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ExtensionList;
 import hudson.model.User;
-import hudson.remoting.Base64;
 import static hudson.security.HudsonPrivateSecurityRealm.CLASSIC;
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
 import hudson.security.pages.SignupPage;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,7 +86,7 @@ public class HudsonPrivateSecurityRealmTest {
     private SpySecurityListenerImpl spySecurityListener;
 
     @Before
-    public void linkExtension() throws Exception {
+    public void linkExtension() {
         spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
 
@@ -203,11 +202,10 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
 
-    private static final String basicHeader(String user, String pass) throws UnsupportedEncodingException {
+    private static String basicHeader(String user, String pass) {
         String str = user +':' + pass;
-        String auth = Base64.encode(str.getBytes("US-ASCII"));
-        String authHeader = "Basic " + auth;
-        return authHeader;
+        String auth = java.util.Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
+        return "Basic " + auth;
     }
 
     @Test
@@ -426,8 +424,8 @@ public class HudsonPrivateSecurityRealmTest {
 
     @TestExtension
     public static class SpySecurityListenerImpl extends SecurityListener {
-        private List<String> loggedInUsernames = new ArrayList<>();
-        private List<String> createdUsers = new ArrayList<String>();
+        private final List<String> loggedInUsernames = new ArrayList<>();
+        private final List<String> createdUsers = new ArrayList<>();
 
         @Override
         protected void loggedIn(@NonNull String username) {
@@ -471,7 +469,6 @@ public class HudsonPrivateSecurityRealmTest {
             checkUserCannotBeCreatedWith(securityRealm, "Stargåte" + i, password, "Test" + i, email);
             i++;
             checkUserCannotBeCreatedWith(securityRealm, "te\u0000st" + i, password, "Test" + i, email);
-            i++;
         }
     }
     
@@ -514,7 +511,6 @@ public class HudsonPrivateSecurityRealmTest {
             assertNotNull(User.getById("125213" + i, false));
             i++;
             checkUserCannotBeCreatedWith_custom(securityRealm, "TEST12" + i, password, "Test" + i, email, currentRegex);
-            i++;
         }
     }
 
