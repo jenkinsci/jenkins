@@ -102,6 +102,10 @@ import java.util.logging.SimpleFormatter;
 import java.util.stream.Stream;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import hudson.util.DaemonThreadFactory;
+import hudson.util.NamingThreadFactory;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 
 
@@ -1025,15 +1029,18 @@ public class SlaveComputer extends Computer {
 
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
-                ThreadLocal<Formatter> dummy = ThreadLocal.withInitial(() -> new SimpleFormatter());
+                Formatter dummy = new SimpleFormatter(); // only ever accessed from one thread anyway
+                ExecutorService executor = new ScheduledThreadPoolExecutor(1, new NamingThreadFactory(new DaemonThreadFactory(), "SLAVE_LOG_HANDLER"));
                 @Override
-                public /* not synchronized */ void publish(LogRecord record) {
-                    // see LogRecord.writeObject for dangers of serializing non-String/null parameters
-                    if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
-                        record.setMessage(dummy.get().formatMessage(record));
-                        record.setParameters(null);
-                    }
+                public synchronized void publish(LogRecord record) {
                     super.publish(record);
+                    executor.submit(() -> { // JENKINS-63082: unsafe to call methods of LogRecord here
+                        // see LogRecord.writeObject for dangers of serializing non-String/null parameters
+                        if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
+                            record.setMessage(dummy.formatMessage(record));
+                            record.setParameters(null);
+                        }
+                    });
                 }
             };
 
