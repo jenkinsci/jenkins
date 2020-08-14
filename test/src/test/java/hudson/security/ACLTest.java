@@ -129,7 +129,7 @@ public class ACLTest {
 
         final User manager = User.getOrCreateByIdOrFullName("manager");
 
-        expectedException.expectMessage("manager is missing the Overall/Administer permission");
+        expectedException.expectMessage("manager is missing a permission, one of Overall/Administer, Overall/SystemRead is required");
         expectedException.expect(AccessDeniedException.class);
         try (ACLContext ignored = ACL.as(manager.impersonate())) {
             jenkins.getACL().checkAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ);

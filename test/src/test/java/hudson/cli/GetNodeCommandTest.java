@@ -51,7 +51,7 @@ public class GetNodeCommandTest {
         command = new CLICommandInvoker(j, new GetNodeCommand());
     }
 
-    @Test public void getNodeShouldFailWithoutComputerReadPermission() throws Exception {
+    @Test public void getNodeShouldFailWithoutComputerExtendedReadPermission() throws Exception {
 
         j.createSlave("MySlave", null, null);
 
@@ -60,7 +60,7 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Configure permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/ExtendedRead permission"));
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
     }
