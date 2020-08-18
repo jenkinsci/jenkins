@@ -150,7 +150,6 @@ public class SimpleJobTest {
         
     }
 
-    @SuppressWarnings("unchecked")
     private class TestJob extends Job implements TopLevelItem {
 
         int i;

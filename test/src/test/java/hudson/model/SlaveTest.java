@@ -41,6 +41,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -110,7 +111,7 @@ public class SlaveTest {
         con.setRequestProperty("Content-Type", "application/xml;charset=UTF-8");
         con.setRequestProperty(CrumbIssuer.DEFAULT_CRUMB_NAME, "test");
         con.setDoOutput(true);
-        con.getOutputStream().write(xml.getBytes("UTF-8"));
+        con.getOutputStream().write(xml.getBytes(StandardCharsets.UTF_8));
         con.getOutputStream().close();
         IOUtils.copy(con.getInputStream(), System.out);
     }
@@ -181,7 +182,7 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void launcherFiltering() throws Exception {
+    public void launcherFiltering() {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> descriptors =
@@ -199,7 +200,7 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void retentionFiltering() throws Exception {
+    public void retentionFiltering() {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<RetentionStrategy<?>, Descriptor<RetentionStrategy<?>>> descriptors = RetentionStrategy.all();
@@ -216,7 +217,7 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void propertyFiltering() throws Exception {
+    public void propertyFiltering() {
         j.jenkins.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy()); // otherwise node descriptor is not available
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
