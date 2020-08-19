@@ -260,7 +260,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      * If the user lacks {@link #CONFIGURE} then any {@link Secret}s must be masked out, even in encrypted form.
      * @see Secret#ENCRYPTED_VALUE_PATTERN
      */
-    Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._AbstractProject_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission", true), new PermissionScope[]{PermissionScope.ITEM});
+    Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._AbstractProject_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.ITEM});
     // TODO the following really belong in Job, not Item, but too late to move since the owner.name is encoded in the ID:
     Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._AbstractProject_BuildPermission_Description(),  Permission.UPDATE, PermissionScope.ITEM);
     Permission WORKSPACE = new Permission(PERMISSIONS, "Workspace", Messages._AbstractProject_WorkspacePermission_Description(), Permission.READ, PermissionScope.ITEM);

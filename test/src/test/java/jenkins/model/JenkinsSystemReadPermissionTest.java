@@ -22,6 +22,16 @@ public class JenkinsSystemReadPermissionTest {
 
     private JenkinsRule.WebClient webClient;
 
+    @BeforeClass
+    public static void enablePermission() {
+        System.setProperty("jenkins.security.SystemReadPermission", "true");
+    }
+
+    @AfterClass
+    public static void disablePermission() {
+        System.clearProperty("jenkins.security.SystemReadPermission");
+    }
+
     @Before
     public void setup() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());

@@ -22,11 +22,13 @@ public class JenkinsSystemReadAndManagePermissionTest {
 
     @BeforeClass
     public static void enablePermissions() {
+        System.setProperty("jenkins.security.SystemReadPermission", "true");
         System.setProperty("jenkins.security.ManagePermission", "true");
     }
 
     @AfterClass
     public static void disablePermissions() {
+        System.clearProperty("jenkins.security.SystemReadPermission");
         System.clearProperty("jenkins.security.ManagePermission");
     }
 

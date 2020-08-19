@@ -5329,7 +5329,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final Permission SYSTEM_READ = new Permission(PERMISSIONS, "SystemRead",
             Messages._Jenkins_SystemRead_Description(),
             ADMINISTER,
-            SystemProperties.getBoolean("jenkins.security.SystemReadPermission", true),
+            SystemProperties.getBoolean("jenkins.security.SystemReadPermission"),
             new PermissionScope[]{PermissionScope.JENKINS});
 
     @Restricted(NoExternalUse.class) // called by jelly
