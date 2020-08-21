@@ -57,7 +57,7 @@ public class User implements UserDetails {
         this.accountNonExpired = accountNonExpired;
         this.credentialsNonExpired = credentialsNonExpired;
         this.accountNonLocked = accountNonLocked;
-        this.authorities = authorities;
+        setAuthorities(authorities);
     }
 
     @Override
