@@ -40,7 +40,7 @@ public class User implements UserDetails {
     private final boolean accountNonExpired;
     private final boolean credentialsNonExpired;
     private final boolean accountNonLocked;
-    private final GrantedAuthority[] authorities;
+    private GrantedAuthority[] authorities;
 
     public User(String username, String password, boolean enabled, GrantedAuthority[] authorities) {
         this(username, password, true, true, true, true, authorities);
@@ -63,6 +63,10 @@ public class User implements UserDetails {
     @Override
     public GrantedAuthority[] getAuthorities() {
         return authorities;
+    }
+
+    protected void setAuthorities(GrantedAuthority[] authorities) {
+        this.authorities = authorities;
     }
 
     @Override
