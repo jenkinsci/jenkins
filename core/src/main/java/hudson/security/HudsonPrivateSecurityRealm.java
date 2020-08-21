@@ -641,9 +641,20 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return new Details(PASSWORD_ENCODER.encode(rawPassword));
         }
 
-        public Collection<? extends GrantedAuthority> getAuthorities() {
+        /**
+         * @since TODO
+         */
+        public Collection<? extends GrantedAuthority> getAuthorities2() {
             // TODO
             return TEST_AUTHORITY;
+        }
+
+        /**
+         * @deprecated use {@link #getAuthorities2}
+         */
+        @Deprecated
+        public org.acegisecurity.GrantedAuthority[] getAuthorities() {
+            return org.acegisecurity.GrantedAuthority.fromSpring(getAuthorities2());
         }
 
         public String getPassword() {
@@ -691,7 +702,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             @Override
             public Collection<? extends GrantedAuthority> getAuthorities() {
-                return Details.this.getAuthorities();
+                return Details.this.getAuthorities2();
             }
 
             @Override
