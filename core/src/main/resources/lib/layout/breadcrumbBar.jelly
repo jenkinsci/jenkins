@@ -34,42 +34,38 @@ THE SOFTWARE.
     use the &lt;l:breadcrumb> tag.
   </st:documentation>
 
-  <tr id="top-nav">
-    <td id="left-top-nav" colspan="2">
-      <st:adjunct includes="lib.layout.breadcrumbs" />
-      <div class="top-sticker noedge">
-        <div class="top-sticker-inner">
-          <div class="breadcrumbs__wrapper">
-            <ul id="breadcrumbs">
-              <j:forEach var="anc" items="${request.ancestors}">
-                <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-                  <li class="item">
-                    <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null} inside">
-                      ${anc.object.displayName}
-                    </a>
+  <st:adjunct includes="lib.layout.breadcrumbs" />
+  <div class="top-sticker noedge">
+    <div class="top-sticker-inner">
+      <div class="breadcrumbs__wrapper">
+        <ul id="breadcrumbs" role="menubar">
+          <j:forEach var="anc" items="${request.ancestors}">
+            <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+              <li class="item" role="menuitem" aria-haspopup="true" aria-expanded="false">
+                <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null} inside">
+                  ${anc.object.displayName}
+                </a>
+              </li>
+              <j:choose>
+                <j:when test="${h.isModelWithChildren(anc.object)}">
+                  <li class="children" href="${anc.url}/" role="button" aria-haspopup="true" aria-expanded="false">
+                    <!-- shows '>' for rendering children -->
                   </li>
-                  <j:choose>
-                    <j:when test="${h.isModelWithChildren(anc.object)}">
-                      <li class="children" href="${anc.url}/">
-                        <!-- shows '>' for rendering children -->
-                      </li>
-                    </j:when>
-                    <j:otherwise>
-                      <li class="separator">
-                      </li>
-                    </j:otherwise>
-                  </j:choose>
-                </j:if>
-              </j:forEach>
+                </j:when>
+                <j:otherwise>
+                  <li class="separator" role="separator">
+                  </li>
+                </j:otherwise>
+              </j:choose>
+            </j:if>
+          </j:forEach>
 
-              <!-- render additional breadcrumb items -->
-              <d:invokeBody />
-            </ul>
+          <!-- render additional breadcrumb items -->
+          <d:invokeBody />
+        </ul>
 
-            <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
-          </div>
-        </div>
+        <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
       </div>
-    </td>
-  </tr>
+    </div>
+  </div>
 </j:jelly>
