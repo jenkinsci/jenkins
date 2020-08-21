@@ -119,11 +119,11 @@ public class ProjectTest {
         j.jenkins.reload();
         assertEquals("All persistent data should be saved.", "description", p.description);
         assertEquals("All persistent data should be saved.", 5, p.nextBuildNumber);
-        assertEquals("All persistent data should be saved", true, p.disabled);
+        assertTrue("All persistent data should be saved", p.disabled);
     }
     
     @Test
-    public void testOnCreateFromScratch() throws IOException, Exception{
+    public void testOnCreateFromScratch() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
         j.buildAndAssertSuccess(p);
         p.removeRun(p.getLastBuild());
@@ -135,15 +135,15 @@ public class ProjectTest {
     }
     
     @Test
-    public void testOnLoad() throws IOException, Exception{
+    public void testOnLoad() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
         j.buildAndAssertSuccess(p);
         p.removeRun(p.getLastBuild());
         createAction = true;
         p.onLoad(j.jenkins, "project");
-        assertTrue("Project should have a build.", p.getLastBuild()!=null);
-        assertTrue("Project should have a scm.", p.getScm()!=null);
-        assertTrue("Project should have Transient Action TransientAction.", p.getAction(TransientAction.class)!=null);
+        assertNotNull("Project should have a build.", p.getLastBuild());
+        assertNotNull("Project should have a scm.", p.getScm());
+        assertNotNull("Project should have Transient Action TransientAction.", p.getAction(TransientAction.class));
         createAction = false;
     }
     
@@ -158,7 +158,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testPerformDelete() throws IOException, Exception{
+    public void testPerformDelete() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.performDelete();
         assertFalse("Project should be deleted from disk.", p.getConfigFile().exists());
@@ -328,7 +328,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testSaveAfterSet() throws Exception, ReactorException {
+    public void testSaveAfterSet() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setScm(new NullSCM());
         p.setScmCheckoutStrategy(new SCMCheckoutStrategyImpl());
@@ -439,7 +439,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testCheckout() throws IOException, Exception{
+    public void testCheckout() throws Exception{
         SCM scm = new NullSCM();
         FreeStyleProject p = j.createFreeStyleProject("project");
         Slave slave = j.createOnlineSlave();
@@ -952,7 +952,7 @@ public class ProjectTest {
         public String projectName;
 
         @Override
-        public Executable createExecutable() throws IOException {
+        public Executable createExecutable() {
             return null;
         }
 

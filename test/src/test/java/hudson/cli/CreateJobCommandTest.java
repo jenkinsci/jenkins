@@ -29,6 +29,8 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import hudson.model.Item;
 import hudson.model.User;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import jenkins.model.Jenkins;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -53,10 +55,10 @@ public class CreateJobCommandTest {
             grant(Jenkins.READ).everywhere().toAuthenticated().
             grant(Item.READ).onItems(d).toAuthenticated(). // including alice
             grant(Item.CREATE).onItems(d).to("bob"));
-        cmd.setTransportAuth2(User.get("alice").impersonate2());
-        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(6));
-        cmd.setTransportAuth2(User.get("bob").impersonate2());
-        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), succeededSilently());
+        cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("alice").impersonate2());
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("d/p"), failedWith(6));
+        cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("bob").impersonate2());
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));
     }
 

@@ -53,7 +53,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
         super.recipe();
         recipes.add(new Runner() {
             @Override
-            public void setup(HudsonTestCase testCase, Annotation recipe) throws Exception {
+            public void setup(HudsonTestCase testCase, Annotation recipe) {
             }
 
             @Override
@@ -70,7 +70,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
             }
 
             @Override
-            public void tearDown(HudsonTestCase testCase, Annotation recipe) throws Exception {
+            public void tearDown(HudsonTestCase testCase, Annotation recipe) {
             }
         });
     }
@@ -94,7 +94,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
         WebClient wc = createWebClient();
 
         // one should see the warning. try scheduling it
-        assertTrue(!monitor.isScanOnBoot());
+        assertFalse(monitor.isScanOnBoot());
         HtmlForm form = getRekeyForm(wc);
         submit(form, "schedule");
         assertTrue(monitor.isScanOnBoot());
@@ -102,7 +102,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
         assertTrue(getButton(form, 1).isDisabled());
 
         // run it now
-        assertTrue(!monitor.getLogFile().exists());
+        assertFalse(monitor.getLogFile().exists());
         submit(form, "background");
         assertTrue(monitor.getLogFile().exists());
 
@@ -152,7 +152,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
 
         // scan on boot should have run the scan
         assertTrue(monitor.getLogFile().exists());
-        assertTrue("scan on boot should have turned this off",!monitor.isScanOnBoot());
+        assertFalse("scan on boot should have turned this off", monitor.isScanOnBoot());
 
         // and data should be migrated
         verifyRewrite(jenkins.getRootDir());
@@ -166,7 +166,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, Util.toAes128Key(TEST_KEY));
-        return new String(Base64.getEncoder().encode(cipher.doFinal((str + "::::MAGIC::::").getBytes("UTF-8"))));
+        return new String(Base64.getEncoder().encode(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8))));
     }
 
     private String encryptNew(String str) {

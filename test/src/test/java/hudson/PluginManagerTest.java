@@ -40,11 +40,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Future;
 
 import jenkins.ClassLoaderReflectionToolkit;
@@ -118,7 +116,7 @@ public class PluginManagerTest {
      * Tests the effect of {@link WithPlugin}.
      */
     @WithPlugin("tasks.jpi")
-    @Test public void withRecipeJpi() throws Exception {
+    @Test public void withRecipeJpi() {
         assertNotNull(r.jenkins.getPlugin("tasks"));
     }
     
@@ -126,7 +124,7 @@ public class PluginManagerTest {
      * Tests the effect of {@link WithPlugin}.
      */
     @WithPlugin("legacy.hpi")
-    @Test public void withRecipeHpi() throws Exception {
+    @Test public void withRecipeHpi() {
         assertNotNull(r.jenkins.getPlugin("legacy"));
     }
 
@@ -178,7 +176,7 @@ public class PluginManagerTest {
                     tested = true;
 
                     // plugins should be already visible in the UberClassLoader
-                    assertTrue(!activePlugins.isEmpty());
+                    assertFalse(activePlugins.isEmpty());
 
                     uberClassLoader.loadClass("hudson.plugins.tasks.Messages");
 
@@ -485,9 +483,9 @@ public class PluginManagerTest {
         // Check that there was some data in the response and that the first entry
         // at least had some of the expected fields.
         JSONObject pluginInfo = data.getJSONObject(0);
-        assertTrue(pluginInfo.getString("name") != null);
-        assertTrue(pluginInfo.getString("title") != null);
-        assertTrue(pluginInfo.getString("dependencies") != null);
+        assertNotNull(pluginInfo.getString("name"));
+        assertNotNull(pluginInfo.getString("title"));
+        assertNotNull(pluginInfo.getString("dependencies"));
     }
 
     @Issue("JENKINS-41684")
@@ -681,7 +679,7 @@ public class PluginManagerTest {
         Assert.assertNull("This test requires the plugin with ID 'legacy' to not exist in update sites", uc.getPlugin("legacy"));
 
         // ensure data is loaded - probably unnecessary, but closer to reality
-        Assert.assertTrue(uc.getSite("default").updateDirectlyNow().kind == FormValidation.Kind.OK);
+        Assert.assertSame(uc.getSite("default").updateDirectlyNow().kind, FormValidation.Kind.OK);
 
         // This would throw NPE
         uc.getPluginsWithUnavailableUpdates();

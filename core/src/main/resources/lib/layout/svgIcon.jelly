@@ -34,7 +34,7 @@
          aria-hidden="${attrs.ariaHidden != null ? attrs.ariaHidden : ''}"
          style="${attrs.style}"
          onclick="${attrs.onclick}"
-         tooltip="${attrs.tooltip}">
+         tooltip="${h.xmlEscape(attrs.tooltip ?: '')}">
 
         <j:choose>
             <j:when test="${attrs.href != null}">
