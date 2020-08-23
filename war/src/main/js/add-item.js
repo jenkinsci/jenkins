@@ -59,7 +59,7 @@ $.when(getItems()).done(function(data) {
 
     function activateValidationMessage(messageId, context, message) {
       if (message !== undefined && message !== '') {
-        $(messageId, context).html('&#187; ' + message);
+        $(messageId, context).text('» ' + message);
       }
       cleanValidationMessages(context);
       hideInputHelp(context);
