@@ -59,6 +59,8 @@ THE SOFTWARE.
 <st:setHeader name="Expires" value="0" />
 <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
 <st:setHeader name="X-Hudson-Theme" value="default" />
+<st:setHeader name="Referrer-Policy" value="same-origin" />
+<st:setHeader name="Cross-Origin-Opener-Policy" value="same-origin" />
 
 <!--
   depending on what tags are used, we can later end up discovering that we needed a session,
