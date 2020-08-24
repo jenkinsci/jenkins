@@ -25,6 +25,7 @@
 package org.acegisecurity;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.security.SecurityRealm;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -49,10 +50,16 @@ public interface GrantedAuthority {
     int hashCode();
 
     static @NonNull GrantedAuthority fromSpring(@NonNull org.springframework.security.core.GrantedAuthority ga) {
+        if (ga == SecurityRealm.AUTHENTICATED_AUTHORITY2) {
+            return SecurityRealm.AUTHENTICATED_AUTHORITY;
+        }
         return new GrantedAuthorityImpl(ga.getAuthority());
     }
 
     default @NonNull org.springframework.security.core.GrantedAuthority toSpring() {
+        if (this == SecurityRealm.AUTHENTICATED_AUTHORITY) {
+            return SecurityRealm.AUTHENTICATED_AUTHORITY2;
+        }
         return new SimpleGrantedAuthority(getAuthority());
     }
 
