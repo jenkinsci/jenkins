@@ -96,7 +96,7 @@ THE SOFTWARE.
                 </td>
                 <td class="pane details">
                   <div>
-                    <a href="${p.url}" target="_blank" class="display-name">
+                    <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="display-name">
                       ${p.updateInfo.displayName?:p.displayName}
                     </a>
                   </div>
@@ -123,7 +123,7 @@ THE SOFTWARE.
                     <div class="alert alert-danger">${%securityWarning}
                       <ul>
                         <j:forEach var="warning" items="${p.getActiveWarnings()}">
-                          <li><a href="${warning.url}" target="_blank">${warning.message}</a></li>
+                          <li><a href="${warning.url}" rel="noopener noreferrer" target="_blank">${warning.message}</a></li>
                         </j:forEach>
                       </ul>
                     </div>
