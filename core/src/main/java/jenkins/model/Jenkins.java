@@ -5326,7 +5326,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * When combined with {@link #MANAGE}, it is expected that everything is shown as if only {@link #SYSTEM_READ} was granted,
      * but that only options editable by users with {@link #MANAGE} are editable.
      */
-    @Restricted(Beta.class)
     public static final Permission SYSTEM_READ = new Permission(PERMISSIONS, "SystemRead",
             Messages._Jenkins_SystemRead_Description(),
             ADMINISTER,
