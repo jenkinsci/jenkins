@@ -3052,7 +3052,7 @@ var notificationBar = {
     show : function (text,options) {
         options = options || {};
         this.init();
-        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' aria-hidden='' focusable='false' class='svg-icon'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
+        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' aria-hidden='undefined' focusable='false' class='svg-icon'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
 
         this.div.className=options.alertClass || this.defaultAlertClass;
         this.div.classList.add("notif-alert-show");
