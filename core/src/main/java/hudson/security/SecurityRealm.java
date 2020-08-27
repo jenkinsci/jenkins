@@ -62,6 +62,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -384,7 +385,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (Util.isOverridden(SecurityRealm.class, getClass(), "loadUserByUsername", String.class)) {
             try {
                 return loadUserByUsername(username).toSpring();
-            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            } catch (org.acegisecurity.AcegiSecurityException x) {
                 throw x.toSpring();
             } catch (org.springframework.dao.DataAccessException x) {
                 throw x.toSpring();
@@ -401,8 +402,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(loadUserByUsername2(username));
-        } catch (UsernameNotFoundException x) {
-            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 
@@ -426,7 +427,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (Util.isOverridden(SecurityRealm.class, getClass(), "loadGroupByGroupname", String.class)) {
             try {
                 return loadGroupByGroupname(groupname);
-            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            } catch (org.acegisecurity.AcegiSecurityException x) {
                 throw x.toSpring();
             } catch (org.springframework.dao.DataAccessException x) {
                 throw x.toSpring();
@@ -434,7 +435,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         } else if (Util.isOverridden(SecurityRealm.class, getClass(), "loadGroupByGroupname", String.class, boolean.class)) {
             try {
                 return loadGroupByGroupname(groupname, fetchMembers);
-            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            } catch (org.acegisecurity.AcegiSecurityException x) {
                 throw x.toSpring();
             } catch (org.springframework.dao.DataAccessException x) {
                 throw x.toSpring();
@@ -451,8 +452,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public GroupDetails loadGroupByGroupname(String groupname) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, false);
-        } catch (UsernameNotFoundException x) {
-            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 
@@ -464,8 +465,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public GroupDetails loadGroupByGroupname(String groupname, boolean fetchMembers) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, fetchMembers);
-        } catch (UsernameNotFoundException x) {
-            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 

@@ -88,6 +88,7 @@ import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -374,8 +375,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @NonNull org.acegisecurity.Authentication impersonate() throws org.acegisecurity.userdetails.UsernameNotFoundException {
         try {
             return org.acegisecurity.Authentication.fromSpring(impersonate2());
-        } catch (UsernameNotFoundException x) {
-            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 
@@ -419,8 +420,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public @NonNull org.acegisecurity.userdetails.UserDetails getUserDetailsForImpersonation() throws org.acegisecurity.userdetails.UsernameNotFoundException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(getUserDetailsForImpersonation2());
-        } catch (UsernameNotFoundException x) {
-            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 

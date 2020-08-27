@@ -72,7 +72,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "authenticate", String.class, String.class)) {
             try {
                 return authenticate(username, password).toSpring();
-            } catch (org.acegisecurity.AuthenticationException x) {
+            } catch (org.acegisecurity.AcegiSecurityException x) {
                 throw x.toSpring();
             }
         } else {
@@ -116,7 +116,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "loadUserByUsername", String.class)) {
             try {
                 return loadUserByUsername(username).toSpring();
-            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            } catch (org.acegisecurity.AcegiSecurityException x) {
                 throw x.toSpring();
             } catch (org.springframework.dao.DataAccessException x) {
                 throw x.toSpring();
@@ -134,8 +134,8 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     public org.acegisecurity.userdetails.UserDetails loadUserByUsername(String username) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return org.acegisecurity.userdetails.UserDetails.fromSpring(loadUserByUsername2(username));
-        } catch (UsernameNotFoundException x) {
-            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 
@@ -149,7 +149,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "loadGroupByGroupname", String.class)) {
             try {
                 return loadGroupByGroupname(groupname);
-            } catch (org.acegisecurity.userdetails.UsernameNotFoundException x) {
+            } catch (org.acegisecurity.AcegiSecurityException x) {
                 throw x.toSpring();
             } catch (org.springframework.dao.DataAccessException x) {
                 throw x.toSpring();
@@ -167,8 +167,8 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
     public GroupDetails loadGroupByGroupname(String groupname) throws org.acegisecurity.userdetails.UsernameNotFoundException, org.springframework.dao.DataAccessException {
         try {
             return loadGroupByGroupname2(groupname, false);
-        } catch (UsernameNotFoundException x) {
-            throw org.acegisecurity.userdetails.UsernameNotFoundException.fromSpring(x);
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
     }
 

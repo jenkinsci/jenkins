@@ -24,6 +24,7 @@
 
 package org.acegisecurity.providers.dao;
 
+import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.providers.AuthenticationProvider;
@@ -41,7 +42,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements Authe
         protected void additionalAuthenticationChecks(org.springframework.security.core.userdetails.UserDetails userDetails, org.springframework.security.authentication.UsernamePasswordAuthenticationToken authentication) throws org.springframework.security.core.AuthenticationException {
             try {
                 AbstractUserDetailsAuthenticationProvider.this.additionalAuthenticationChecks(UserDetails.fromSpring(userDetails), new UsernamePasswordAuthenticationToken(authentication));
-            } catch (AuthenticationException x) {
+            } catch (AcegiSecurityException x) {
                 throw x.toSpring();
             }
         }
@@ -49,7 +50,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements Authe
         protected org.springframework.security.core.userdetails.UserDetails retrieveUser(String username, org.springframework.security.authentication.UsernamePasswordAuthenticationToken authentication) throws org.springframework.security.core.AuthenticationException {
             try {
                 return AbstractUserDetailsAuthenticationProvider.this.retrieveUser(username, new UsernamePasswordAuthenticationToken(authentication)).toSpring();
-            } catch (AuthenticationException x) {
+            } catch (AcegiSecurityException x) {
                 throw x.toSpring();
             }
         }

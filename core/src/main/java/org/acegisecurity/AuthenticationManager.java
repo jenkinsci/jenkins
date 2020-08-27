@@ -46,7 +46,7 @@ public interface AuthenticationManager {
         return authentication -> {
             try {
                 return authenticate(Authentication.fromSpring(authentication)).toSpring();
-            } catch (AuthenticationException x) {
+            } catch (AcegiSecurityException x) {
                 throw x.toSpring();
             }
         };

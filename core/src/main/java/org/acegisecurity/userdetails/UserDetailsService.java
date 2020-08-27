@@ -24,6 +24,8 @@
 
 package org.acegisecurity.userdetails;
 
+import org.acegisecurity.AcegiSecurityException;
+import org.acegisecurity.AuthenticationException;
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -38,8 +40,8 @@ public interface UserDetailsService {
         return username -> {
             try {
                 return UserDetails.fromSpring(uds.loadUserByUsername(username));
-            } catch (org.springframework.security.core.userdetails.UsernameNotFoundException x) {
-                throw UsernameNotFoundException.fromSpring(x);
+            } catch (org.springframework.security.core.AuthenticationException x) {
+                throw AuthenticationException.fromSpring(x);
             }
         };
     }
@@ -48,7 +50,7 @@ public interface UserDetailsService {
         return username -> {
             try {
                 return loadUserByUsername(username).toSpring();
-            } catch (UsernameNotFoundException x) {
+            } catch (AcegiSecurityException x) {
                 throw x.toSpring();
             } catch (DataAccessException x) {
                 throw x.toSpring();
