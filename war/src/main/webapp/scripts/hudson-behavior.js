@@ -567,13 +567,13 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    var settingMain = e.closest('.setting-main')
-    if (!settingMain) {
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr) {
         console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
         return;
     }
     // find the validation-error-area
-    e.targetElement = settingMain.nextElementSibling;
+    e.targetElement = tr.firstChild.nextSibling;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -804,33 +804,6 @@ function getParentForm(element) {
 
     return getParentForm(element.parentNode);
 }
-function saveAndSubmit() {
-    editor.save();
-    getParentForm(e).submit();
-    event.stop();
-}
-function textAreaScriptEditorOnKeyEvent(editor, event){
-  // Mac (Command + Enter)
-  if (navigator.userAgent.indexOf('Mac') > -1) {
-      if (event.type == 'keydown' && isCommandKey()) {
-          cmdKeyDown = true;
-      }
-      if (event.type == 'keyup' && isCommandKey()) {
-          cmdKeyDown = false;
-      }
-      if (cmdKeyDown && isReturnKeyDown()) {
-          saveAndSubmit();
-          return true;
-      }
-
-  // Windows, Linux (Ctrl + Enter)
-  } else {
-      if (event.ctrlKey && isReturnKeyDown()) {
-          saveAndSubmit();
-          return true;
-      }
-  }
-}
 
 // figure out the corresponding end marker
 function findEnd(e) {
@@ -981,7 +954,34 @@ function rowvgStartEachRow(recursive,f) {
               lineNumbers: true,
               matchBrackets: true,
               readOnly: readOnly,
-              onKeyEvent: textAreaScriptEditorOnKeyEvent
+              onKeyEvent: function (editor, event){
+                function saveAndSubmit() {
+                    editor.save();
+                    getParentForm(e).submit();
+                    event.stop();
+                }
+
+                // Mac (Command + Enter)
+                if (navigator.userAgent.indexOf('Mac') > -1) {
+                    if (event.type == 'keydown' && isCommandKey()) {
+                        cmdKeyDown = true;
+                    }
+                    if (event.type == 'keyup' && isCommandKey()) {
+                        cmdKeyDown = false;
+                    }
+                    if (cmdKeyDown && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+
+                // Windows, Linux (Ctrl + Enter)
+                } else {
+                    if (event.ctrlKey && isReturnKeyDown()) {
+                        saveAndSubmit();
+                        return true;
+                    }
+                }
+              }
             }).getWrapperElement();
             w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();

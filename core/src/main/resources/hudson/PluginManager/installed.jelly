@@ -68,9 +68,12 @@ THE SOFTWARE.
       <table id="plugins" class="pane bigtable sortable stripped-odd">
         <j:choose>
           <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
-            <tr><td>
-              ${%No plugins installed.}
-            </td></tr>
+            <tr>
+              <th>${%Installed plugins}</th>
+            </tr>
+            <tr>
+              <td align="center">${%No plugins installed.}</td>
+            </tr>
           </j:when>
           <j:otherwise>
             <tr>
