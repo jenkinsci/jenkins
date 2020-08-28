@@ -25,8 +25,8 @@
 package org.acegisecurity;
 
 import hudson.security.SecurityRealm;
-import static org.junit.Assert.assertSame;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import org.junit.jupiter.api.Test;
 
 public class GrantedAuthorityTest {
 
