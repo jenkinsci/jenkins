@@ -2463,8 +2463,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @param id as produced by {@link #getExternalizableId}
      * @return the same run, or null if the job or run was not found
      * @throws IllegalArgumentException if the ID is malformed
+     * @throws AccessDeniedException as per {@link ItemGroup#getItem}
      */
-    public @CheckForNull static Run<?,?> fromExternalizableId(String id) throws IllegalArgumentException {
+    public @CheckForNull static Run<?,?> fromExternalizableId(String id) throws IllegalArgumentException, AccessDeniedException {
         int hash = id.lastIndexOf('#');
         if (hash <= 0) {
             throw new IllegalArgumentException("Invalid id");
