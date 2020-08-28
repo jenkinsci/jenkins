@@ -24,6 +24,8 @@
 
 package org.acegisecurity;
 
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+
 /**
  * @deprecated use {@link org.springframework.security.core.AuthenticationException}
  */
@@ -72,6 +74,8 @@ public abstract class AuthenticationException extends AcegiSecurityException {
             return BadCredentialsException.fromSpring((org.springframework.security.authentication.BadCredentialsException) x);
         } else if (x instanceof org.springframework.security.authentication.AuthenticationServiceException) {
             return AuthenticationServiceException.fromSpring((org.springframework.security.authentication.AuthenticationServiceException) x);
+        } else if (x instanceof org.springframework.security.core.userdetails.UsernameNotFoundException) {
+            return UsernameNotFoundException.fromSpring((org.springframework.security.core.userdetails.UsernameNotFoundException) x);
         } else {
             return new AuthenticationException(x.toString(), x) {};
         }
