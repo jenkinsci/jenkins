@@ -2007,35 +2007,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return null;
         }
     }
-    
-    // Used on readFromOffset to avoid a warning about serialization of anonymous classes for FilePath$2.
-    private class RandomAccessFileInputStream extends InputStream {
-        final RandomAccessFile raf;
-        
-        public RandomAccessFileInputStream(@NonNull RandomAccessFile raf) {
-            this.raf = raf;
-        }
-        
-        @Override
-        public int read() throws IOException {
-            return raf.read();
-        }
 
-        @Override
-        public void close() throws IOException {
-            raf.close();
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            return raf.read(b, off, len);
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException {
-            return raf.read(b);
-        }
-    }
     /**
      * Reads this file from the specific offset.
      * @since 1.586
@@ -2053,7 +2025,27 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 }
                 throw e;
             }
-            return new RandomAccessFileInputStream(raf);
+            return new InputStream() {
+                @Override
+                public int read() throws IOException {
+                    return raf.read();
+                }
+
+                @Override
+                public void close() throws IOException {
+                    raf.close();
+                }
+
+                @Override
+                public int read(byte[] b, int off, int len) throws IOException {
+                    return raf.read(b, off, len);
+                }
+
+                @Override
+                public int read(byte[] b) throws IOException {
+                    return raf.read(b);
+                }
+            };
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
