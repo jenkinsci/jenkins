@@ -33,6 +33,7 @@ import org.acegisecurity.userdetails.UserDetails;
 /**
  * @deprecated use {@link org.springframework.security.authentication.AbstractAuthenticationToken}
  */
+@Deprecated
 public abstract class AbstractAuthenticationToken implements Authentication {
 
     private final GrantedAuthority[] authorities;
