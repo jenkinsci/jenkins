@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.apache.commons.lang.NotImplementedException;
 
 /**
  * Allows extensions to be notified of events in any {@link Cloud} and to prevent
@@ -35,9 +36,34 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      *
      * @return {@code null} if provisioning can proceed, or a
      * {@link CauseOfBlockage} reason why it cannot be provisioned.
+     *
+     * @deprecated Use {@link #canProvision(Cloud, Cloud.CloudState, int)} instead.
      */
+    @Deprecated
     public CauseOfBlockage canProvision(Cloud cloud, Label label, int numExecutors) {
-        return null;
+        try {
+            // Check if the new method is implemented
+            getClass().getDeclaredMethod("canProvision", Cloud.class, Cloud.CloudState.class, int.class);
+            return canProvision(cloud, new Cloud.CloudState(label, 0), numExecutors);
+        } catch (NoSuchMethodException e) {
+            throw new NotImplementedException("canProvision(Cloud, Label");
+        }
+    }
+
+    /**
+     * Allows extensions to prevent a cloud from provisioning.
+     *
+     * Return null to allow provisioning, or non-null to prevent it.
+     *
+     * @param cloud The cloud being provisioned from.
+     * @param state The current cloud state.
+     * @param numExecutors The number of executors needed.
+     *
+     * @return {@code null} if provisioning can proceed, or a
+     * {@link CauseOfBlockage} reason why it cannot be provisioned.
+     */
+    public CauseOfBlockage canProvision(Cloud cloud, Cloud.CloudState state, int numExecutors) {
+        return canProvision(cloud, state.getLabel(), numExecutors);
     }
 
     /**
