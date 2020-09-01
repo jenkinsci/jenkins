@@ -167,7 +167,8 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
             getClass().getDeclaredMethod("provision", CloudState.class, int.class);
             return provision(new CloudState(label, 0), excessWorkload);
         } catch (NoSuchMethodException e) {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Subclasses of " + Cloud.class.getName()
+                            + " must implement provision(Cloud.CloudState)");
         }
     }
 
@@ -213,7 +214,8 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
             getClass().getDeclaredMethod("canProvision", CloudState.class);
             return canProvision(new CloudState(label, 0));
         } catch (NoSuchMethodException e) {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Subclasses of " + Cloud.class.getName()
+                    + " must implement canProvision(Cloud.CloudState)");
         }
     }
 

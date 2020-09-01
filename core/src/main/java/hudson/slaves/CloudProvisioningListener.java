@@ -46,7 +46,8 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
             getClass().getDeclaredMethod("canProvision", Cloud.class, Cloud.CloudState.class, int.class);
             return canProvision(cloud, new Cloud.CloudState(label, 0), numExecutors);
         } catch (NoSuchMethodException e) {
-            throw new NotImplementedException("canProvision(Cloud, Label");
+            throw new NotImplementedException("Subclasses of " + CloudProvisioningListener.class.getName()
+                    + " must implement canProvision(Cloud, Cloud.CloudState, int)");
         }
     }
 
