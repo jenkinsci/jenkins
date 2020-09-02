@@ -872,8 +872,8 @@ public class Functions {
     }
 
     /**
-     * This version is so that the 'hasPermission2' can degrade gracefully
- if "it" is not an {@link AccessControlled} object.
+     * This version is so that the 'hasPermission' can degrade gracefully
+     * if "it" is not an {@link AccessControlled} object.
      */
     public static boolean hasPermission(Object object, Permission permission) throws IOException, ServletException {
         if (permission == null)
