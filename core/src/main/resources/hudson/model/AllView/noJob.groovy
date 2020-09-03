@@ -16,19 +16,19 @@ def hasItemCreatePermission = my.owner.hasPermission(Item.CREATE);
 div {
 
     div(class: "empty-state-block") {
-        h1("Welcome to Jenkins!", class: "h1")
+        h1(_("Welcome to Jenkins!"))
 
         if (isTopLevelAllView) {
             if (canSetUpDistributedBuilds || hasItemCreatePermission) {
-                p("This page is where your Jenkins jobs will be displayed. To get started, you can set up distributed builds or start building a software project.\n")
+                p(_("noJobDescription"))
 
-                section(class: "empty-state-section") {
-                    if (canSetUpDistributedBuilds) {
-                        h2("Set up a distributed build", class: "h4")
+                if (canSetUpDistributedBuilds) {
+                    section(class: "empty-state-section") {
+                        h2(_("setUpDistributedBuilds"), class: "h4")
                         ul(class: "empty-state-section-list") {
                             li(class: "content-block") {
                                 a(href: "computer/new", class: "content-block__link") {
-                                    span("Set up an agent")
+                                    span(_("setUpAgent"))
                                     span(class: "trailing-icon") {
                                         l.svgIcon(
                                                 class: "icon-sm",
@@ -40,7 +40,7 @@ div {
                             if (hasAdministerJenkinsPermission) {
                                 li(class: "content-block") {
                                     a(href: "computer/new", class: "content-block__link") {
-                                        span("Configure a cloud")
+                                        span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
                                             l.svgIcon(
                                                     class: "icon-sm",
@@ -54,7 +54,7 @@ div {
                                 a(href: "https://jenkins.io/redirect/distributed-builds",
                                         target: "_blank",
                                         class: "content-block__link content-block__help-link") {
-                                    span("Learn more about distributed builds")
+                                    span(_("learnMoreDistributedBuilds"))
                                     span(class: "trailing-icon") {
                                         l.svgIcon(
                                                 class: "icon-sm",
@@ -67,12 +67,12 @@ div {
                 }
 
                 section(class: "empty-state-section") {
-                    h2("Create a job", class: "h4")
+                    h2(_("createJob"), class: "h4")
 
                     ul(class: "empty-state-section-list") {
                         li(class: "content-block") {
                             a(href: "newJob", class: "content-block__link") {
-                                span("Create a job")
+                                span(_("createJob"))
                                 span(class: "trailing-icon") {
                                     l.svgIcon(
                                             class: "icon-sm",
