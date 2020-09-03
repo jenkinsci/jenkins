@@ -27,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.Util;
 import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Slave;
@@ -41,7 +42,6 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.util.DescriptorList;
-import org.apache.commons.lang.NotImplementedException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -161,14 +161,13 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @deprecated Use {@link #provision(CloudState, int)} instead.
      */
     @Deprecated
-    public Collection<PlannedNode> provision(Label label, int excessWorkload){
-        try {
-            // Check if the new method is implemented
-            getClass().getDeclaredMethod("provision", CloudState.class, int.class);
+    public Collection<PlannedNode> provision(Label label, int excessWorkload) {
+        String methodName = "provision";
+        if (Util.isOverridden(Cloud.class, getClass(), methodName, CloudState.class, int.class)) {
             return provision(new CloudState(label, 0), excessWorkload);
-        } catch (NoSuchMethodException e) {
-            throw new NotImplementedException("Subclasses of " + Cloud.class.getName()
-                            + " must implement provision(Cloud.CloudState)");
+        } else {
+            throw new AbstractMethodError("you must override at least one of the "
+                    + Cloud.class.getSimpleName() + "." + methodName + " methods");
         }
     }
 
@@ -209,13 +208,12 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      */
     @Deprecated
     public boolean canProvision(Label label) {
-        try {
-            // Check if the new method is implemented
-            getClass().getDeclaredMethod("canProvision", CloudState.class);
+        String methodName = "canProvision";
+        if (Util.isOverridden(Cloud.class, getClass(), methodName, CloudState.class)) {
             return canProvision(new CloudState(label, 0));
-        } catch (NoSuchMethodException e) {
-            throw new NotImplementedException("Subclasses of " + Cloud.class.getName()
-                    + " must implement canProvision(Cloud.CloudState)");
+        } else {
+            throw new AbstractMethodError("you must override at least one of the "
+                    + Cloud.class.getSimpleName() + "." + methodName + " methods");
         }
     }
 

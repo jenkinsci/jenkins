@@ -2,16 +2,17 @@ package hudson.slaves;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.slaves.Cloud.CloudState;
 import jenkins.model.Jenkins;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.lang.NotImplementedException;
 
 /**
  * Allows extensions to be notified of events in any {@link Cloud} and to prevent
@@ -37,17 +38,16 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @return {@code null} if provisioning can proceed, or a
      * {@link CauseOfBlockage} reason why it cannot be provisioned.
      *
-     * @deprecated Use {@link #canProvision(Cloud, Cloud.CloudState, int)} instead.
+     * @deprecated Use {@link #canProvision(Cloud, CloudState, int)} instead.
      */
     @Deprecated
     public CauseOfBlockage canProvision(Cloud cloud, Label label, int numExecutors) {
-        try {
-            // Check if the new method is implemented
-            getClass().getDeclaredMethod("canProvision", Cloud.class, Cloud.CloudState.class, int.class);
-            return canProvision(cloud, new Cloud.CloudState(label, 0), numExecutors);
-        } catch (NoSuchMethodException e) {
-            throw new NotImplementedException("Subclasses of " + CloudProvisioningListener.class.getName()
-                    + " must implement canProvision(Cloud, Cloud.CloudState, int)");
+        String methodName = "canProvision";
+        if (Util.isOverridden(CloudProvisioningListener.class, getClass(), methodName, CloudState.class)) {
+            return canProvision(cloud, new CloudState(label, 0), numExecutors);
+        } else {
+            throw new AbstractMethodError("you must override at least one of the "
+                    + CloudProvisioningListener.class.getSimpleName() + "." + methodName + " methods");
         }
     }
 
@@ -63,7 +63,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @return {@code null} if provisioning can proceed, or a
      * {@link CauseOfBlockage} reason why it cannot be provisioned.
      */
-    public CauseOfBlockage canProvision(Cloud cloud, Cloud.CloudState state, int numExecutors) {
+    public CauseOfBlockage canProvision(Cloud cloud, CloudState state, int numExecutors) {
         return canProvision(cloud, state.getLabel(), numExecutors);
     }
 
