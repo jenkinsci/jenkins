@@ -290,7 +290,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
          * The additional planned capacity for this {@link #getLabel()} and provisioned by previous strategies during
          * the current updating of the {@link NodeProvisioner}.
          */
-        public synchronized int getAdditionalPlannedCapacity() {
+        public int getAdditionalPlannedCapacity() {
             return additionalPlannedCapacity;
         }
     }
