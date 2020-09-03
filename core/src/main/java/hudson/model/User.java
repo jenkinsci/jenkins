@@ -425,6 +425,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Restricted(NoExternalUse.class)
     public @NonNull Authentication impersonate(@NonNull UserDetails userDetails) {
+        // TODO: L10n and escape hatch
+        if (!userDetails.isAccountNonLocked()) {
+            throw new UsernameNotFoundException(String.format("User %s account is locked", userDetails.getUsername()));
+        }
+        if (!userDetails.isEnabled()) {
+            throw new UsernameNotFoundException(String.format("User %s account is disabled", userDetails.getUsername()));
+        }
+        if (!userDetails.isAccountNonExpired()) {
+            throw new UsernameNotFoundException(String.format("User %s account has expired", userDetails.getUsername()));
+        }
+        if (!userDetails.isCredentialsNonExpired()) {
+            throw new UsernameNotFoundException(String.format("User %s account credentials are expired", userDetails.getUsername()));
+        }
         return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
     }
 
