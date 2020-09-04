@@ -396,7 +396,7 @@ public class Queue extends ResourceController implements Saveable {
                     while ((line = in.readLine()) != null) {
                         AbstractProject j = Jenkins.get().getItemByFullName(line, AbstractProject.class);
                         if (j != null)
-                            j.scheduleBuild(new Cause.UserIdCause());
+                            j.scheduleBuild();
                     }
                 }
                 // discard the queue file now that we are done
