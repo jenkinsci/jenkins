@@ -42,7 +42,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extensible property of {@link Job}.
@@ -131,7 +131,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * @see ProminentProjectAction
      * @see PermalinkProjectAction
      */
-    @Nonnull
+    @NonNull
     public Collection<? extends Action> getJobActions(J job) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getJobAction(job);
@@ -170,7 +170,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
         return getJobAction((J)project);
     }
 
-    @Nonnull
+    @NonNull
     public final Collection<? extends Action> getProjectActions(AbstractProject<?,?> project) {
         return getJobActions((J)project);
     }

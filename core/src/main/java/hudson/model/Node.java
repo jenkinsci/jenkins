@@ -59,8 +59,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
@@ -147,7 +147,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      "" if this is master
      */
     @Exported(visibility=999)
-    @Nonnull
+    @NonNull
     public abstract String getNodeName();
 
     /**
@@ -348,7 +348,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the special label that represents this node itself.
      */
-    @Nonnull
+    @NonNull
     @WithBridgeMethods(Label.class)
     public LabelAtom getSelfLabel() {
         return LabelAtom.get(getNodeName());
@@ -469,7 +469,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the {@link NodeProperty} instances configured for this {@link Node}.
      */
-    public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
+    public abstract @NonNull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
     /**
      * Gets the specified property or null if the property is not configured for this Node.

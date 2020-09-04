@@ -217,4 +217,9 @@ public class ExtensionListTest {
         assertEquals(0, list.size());
     }
 
+    @Issue("JENKINS-62056")
+    @Test
+    public void checkSort() {
+        ExtensionList.lookup(Object.class).get(0); // exceptions are a problem
+    }
 }

@@ -1,0 +1,27 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry title="secretWithStringGetterStringSetter" field="secretWithStringGetterStringSetter">
+        <f:password/>
+    </f:entry>
+    <f:entry title="secretWithSecretGetterStringSetter" field="secretWithSecretGetterStringSetter">
+        <f:password/>
+    </f:entry>
+    <f:entry title="secretWithStringGetterSecretSetter" field="secretWithStringGetterSecretSetter">
+        <f:password/>
+    </f:entry>
+    <f:entry title="secretWithSecretGetterSecretSetter" field="secretWithSecretGetterSecretSetter">
+        <f:password/>
+    </f:entry>
+    <f:entry title="stringWithStringGetterStringSetter" field="stringWithStringGetterStringSetter">
+        <f:password/>
+    </f:entry>
+    <f:entry title="stringWithSecretGetterStringSetter" field="stringWithSecretGetterStringSetter">
+        <f:password/>
+    </f:entry>
+    <f:entry title="stringWithStringGetterSecretSetter" field="stringWithStringGetterSecretSetter">
+        <f:password/>
+    </f:entry>
+    <f:entry title="stringWithSecretGetterSecretSetter" field="stringWithSecretGetterSecretSetter">
+        <f:password/>
+    </f:entry>
+</j:jelly>

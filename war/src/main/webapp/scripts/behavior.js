@@ -95,21 +95,29 @@ var Behaviour = (function() {
                 Behaviour.list._each(function(sheet) {
                     for (var selector in sheet){
                         startNode._each(function (n) {
+                          try {
                             var list = findElementsBySelector(n, selector, includeSelf);
                             if (list.length > 0) { // just to simplify setting of a breakpoint.
                                 //console.log('deprecated:' + selector + ' on ' + list.length + ' elements');
                                 list._each(sheet[selector]);
                             }
+                          } catch (e) {
+                              console.error(e)
+                          }
                         });
                     }
                 });
             } else {
                 startNode._each(function (node) {
+                  try {
                     var list = findElementsBySelector(node, registration.selector, includeSelf);
                     if (list.length > 0) {
                         //console.log(registration.id + ':' + registration.selector + ' @' + registration.priority + ' on ' + list.length + ' elements');
                         list._each(registration.behavior);
                     }
+                  } catch (e) {
+                      console.error(e)
+                  }
                 });
             }
         });

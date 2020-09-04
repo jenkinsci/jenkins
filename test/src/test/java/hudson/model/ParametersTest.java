@@ -8,15 +8,19 @@ import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.httpclient.HttpStatus;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -72,7 +76,7 @@ public class ParametersTest {
         Object o = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
-        assertEquals(true, booleanParameterInput.isChecked());
+        assertTrue(booleanParameterInput.isChecked());
         assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-main']")).getTextContent());
 
         element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
@@ -237,7 +241,7 @@ public class ParametersTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "build?delay=0sec");
-        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpStatus.SC_METHOD_NOT_ALLOWED)); // 405 to dissuade scripts from thinking this triggered the build
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD)); // 405 to dissuade scripts from thinking this triggered the build
         String text = page.getWebResponse().getContentAsString();
         collector.checkThat("build page should escape param name", text, containsString("&lt;param name&gt;"));
         collector.checkThat("build page should not leave param name unescaped", text, not(containsString("<param name>")));
@@ -262,7 +266,7 @@ public class ParametersTest {
     }
     static class MyMarkupFormatter extends MarkupFormatter {
         @Override
-        public void translate(String markup, Writer output) throws IOException {
+        public void translate(String markup, @NonNull Writer output) throws IOException {
             Matcher m = Pattern.compile("[<>]").matcher(markup);
             StringBuffer buf = new StringBuffer();
             while (m.find()) {

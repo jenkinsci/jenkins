@@ -1,5 +1,6 @@
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor.FormException;
 import hudson.model.LoadStatistics.LoadStatisticsUpdater;
 import hudson.model.MultiStageTimeSeries.TimeScale;
@@ -8,7 +9,6 @@ import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.SubTask;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +21,7 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -60,7 +60,7 @@ public class LabelLoadStatisticsQueueLengthTest {
                 LabelLoadStatisticsQueueLengthTest.class.getSimpleName(), "",
                 "", "1", Mode.NORMAL, LABEL_STRING + " " + ALT_LABEL_STRING,
                 null, RetentionStrategy.NOOP,
-                Collections.<NodeProperty<?>> emptyList());
+                Collections.emptyList());
         j.getInstance().addNode(node);
     }
 
@@ -87,9 +87,7 @@ public class LabelLoadStatisticsQueueLengthTest {
         FreeStyleProject project = createTestProject();
 
         // Before queueing the builds the rolling queue length should be 0.
-        assertTrue(
-                "Initially the rolling queue length for the label is 0.",
-                label.loadStatistics.queueLength.getLatest(TimeScale.SEC10) == 0f);
+        assertEquals("Initially the rolling queue length for the label is 0.", 0f, label.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0);
 
         // Add the job to the build queue several times with an assigned label.
         for (int i = 0; i < 3; i++) {
@@ -141,12 +139,8 @@ public class LabelLoadStatisticsQueueLengthTest {
         project.setAssignedLabel(label);
 
         // Before queueing the builds the rolling queue lengths should be 0.
-        assertTrue(
-                "Initially the rolling queue length for the label is 0.",
-                label.loadStatistics.queueLength.getLatest(TimeScale.SEC10) == 0f);
-        assertTrue(
-                "Initially the rolling queue length for the alt label is 0.",
-                altLabel.loadStatistics.queueLength.getLatest(TimeScale.SEC10) == 0f);
+        assertEquals("Initially the rolling queue length for the label is 0.", 0f, label.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0);
+        assertEquals("Initially the rolling queue length for the alt label is 0.", 0f, altLabel.loadStatistics.queueLength.getLatest(TimeScale.SEC10), 0.0);
 
         // Add the job to the build queue several times.
         for (int i = 0; i < 3; i++) {
@@ -237,7 +231,7 @@ public class LabelLoadStatisticsQueueLengthTest {
         }
 
         @Override
-        public Label getAssignedLabel(SubTask p_task) {
+        public Label getAssignedLabel(@NonNull SubTask p_task) {
             return Label.get(LABEL_STRING);
         }
     }

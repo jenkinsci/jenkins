@@ -10,32 +10,37 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import jenkins.model.Jenkins;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
 import org.jvnet.hudson.test.Issue;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class PluginWrapperTest {
 
-    private Locale loc;
+    private static Locale loc;
     
-    @Before
-    public void before() throws Exception {
+    @BeforeAll
+    public static void before() {
         Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
         loc = Locale.getDefault();
         Locale.setDefault(new Locale("en", "GB"));
     }
 
-    @After
-    public void after() {
+    @AfterAll
+    public static void after() {
         Locale.setDefault(loc);
     }
     
@@ -58,7 +63,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void jenkinsCoreTooOld() throws Exception {
+    public void jenkinsCoreTooOld() {
         PluginWrapper pw = pluginWrapper("fake").requiredCoreVersion("3.0").buildLoaded();
         try {
             pw.resolvePluginDependencies();
@@ -69,7 +74,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void dependencyNotInstalled() throws Exception {
+    public void dependencyNotInstalled() {
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:42").buildLoaded();
         try {
             pw.resolvePluginDependencies();
@@ -80,7 +85,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void dependencyOutdated() throws Exception {
+    public void dependencyOutdated() {
         pluginWrapper("dependency").version("3").buildLoaded();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:5").buildLoaded();
         try {
@@ -92,7 +97,7 @@ public class PluginWrapperTest {
     }
 
     @Test
-    public void dependencyFailedToLoad() throws Exception {
+    public void dependencyFailedToLoad() {
         pluginWrapper("dependency").version("5").buildFailed();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:3").buildLoaded();
         try {

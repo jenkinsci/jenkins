@@ -44,7 +44,7 @@ import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Descriptor} for {@link ToolInstallation}.
@@ -116,7 +116,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
 
     @Override
-    public @Nonnull GlobalConfigurationCategory getCategory() {
+    public @NonNull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 

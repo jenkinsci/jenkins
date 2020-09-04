@@ -65,7 +65,7 @@ class DOSToUnixPathHelper {
 
                     tokenizedPathBuilder.append(_dir.replace('\\', '/'));
 
-                    if (checkPrefix(_dir + File.pathSeparator + exe, helper))
+                    if (checkPrefix(_dir + File.separator + exe, helper))
                         return;
                 }
                 tokenizedPathBuilder.append('.');

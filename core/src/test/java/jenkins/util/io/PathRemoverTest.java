@@ -51,10 +51,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -416,6 +423,33 @@ public class PathRemoverTest {
 
         assertTrue("Unable to delete directory: " + d1p, Files.notExists(d1p));
         assertFalse(d1.exists());
+    }
+
+    @Test
+    @Issue("JENKINS-55448")
+    public void testForceRemoveRecursive_TruncatesNumberOfExceptions() throws IOException {
+        assumeTrue(Functions.isWindows());
+        final int maxExceptions = CompositeIOException.EXCEPTION_LIMIT;
+        final int lockedFiles = maxExceptions + 5;
+        final int totalFiles = lockedFiles + 5;
+        File dir = tmp.newFolder();
+        File[] files = new File[totalFiles];
+        for (int i = 0; i < totalFiles; i++) {
+            files[i] = new File(dir, "f" + i);
+        }
+        touchWithFileName(files);
+        for (int i = 0; i < lockedFiles; i++) {
+            locker.acquireLock(files[i]);
+        }
+        try {
+            PathRemover.newSimpleRemover().forceRemoveRecursive(dir.toPath());
+            fail("Deletion should have failed");
+        } catch (CompositeIOException e) {
+            assertThat(e.getSuppressed(), arrayWithSize(maxExceptions));
+            assertThat(e.getMessage(), endsWith("(Discarded " + (lockedFiles + 1 - maxExceptions) + " additional exceptions)"));
+        }
+        assertTrue(dir.exists());
+        assertThat(dir.listFiles().length, equalTo(lockedFiles));
     }
 
     private static void mkdirs(File... dirs) {

@@ -29,11 +29,15 @@ THE SOFTWARE.
     <st:attribute name="class">
       'tabBarFrame' class specification.  This will allow styling.
     </st:attribute>
+
+    <st:attribute name="showBaseline">
+      Set to true to show the baseline
+    </st:attribute>
   </st:documentation>
 
   <!-- Use the current millis time as an id for the tab group -->
   <j:set scope="parent" var="tabBarId" value="${h.getCurrentTime().getTime()}" />
-  <div class="tabBarFrame ${attrs.class}">
+  <div class="tabBarFrame ${attrs.class} ${attrs.showBaseline ? 'showBaseline' : ''}">
     <div class="tabBar">
       <d:invokeBody/>
     </div>

@@ -50,7 +50,7 @@
                 <!-- this div is used to calculate the width of the text box -->
                 <div id="search-box-sizer"/>
                 <div id="searchform">
-                    <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input has-default-text" value="${request.getParameter('q')}" role="searchbox" />
+                    <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input" value="${request.getParameter('q')}" role="searchbox" />
 
                     <span class="main-search__icon-leading">
                         <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />

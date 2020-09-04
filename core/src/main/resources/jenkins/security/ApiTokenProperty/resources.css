@@ -28,6 +28,7 @@
     
     max-width: 700px;
     border: 1px solid #cccccc;
+    border-color: var(--medium-grey);
     border-radius: 3px;
 } 
 
@@ -143,6 +144,7 @@
 }
 .token-list .repeated-chunk {
     border-width: 0;
+    padding-left: 0;
 }
 .token-list .repeatable-add{
     margin: 6px 6px 3px 6px;
