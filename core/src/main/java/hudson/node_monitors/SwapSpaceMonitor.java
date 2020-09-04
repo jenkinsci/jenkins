@@ -85,6 +85,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
      * @deprecated as of 2.0
      *      use injection
      */
+    @Deprecated
     public static /*almost final*/ AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR;
 
     @Extension @Symbol("swapSpace")

@@ -57,7 +57,7 @@ public class MaskingClassLoader extends ClassLoader {
         super(parent);
         this.masksClasses.addAll(masks);
 
-        /**
+        /*
          * The name of a resource is a '/'-separated path name
          */
         for (String mask : masks) {

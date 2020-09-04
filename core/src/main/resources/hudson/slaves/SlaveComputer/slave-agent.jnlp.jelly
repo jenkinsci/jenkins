@@ -63,6 +63,9 @@ THE SOFTWARE.
       <application-desc main-class="hudson.remoting.jnlp.Main">
         <argument>${it.jnlpMac}</argument>
         <argument>${it.node.nodeName}</argument>
+        <j:if test="${launcher.webSocket}">
+          <argument>-webSocket</argument>
+        </j:if>
         <j:if test="${launcher.tunnel!=null}">
           <argument>-tunnel</argument>
           <argument>${launcher.tunnel}</argument>
@@ -86,21 +89,6 @@ THE SOFTWARE.
 
         <argument>-url</argument>
         <argument>${rootURL}</argument>
-
-        <j:if test="${rootURL!=app.rootUrlFromRequest}">
-          <!--
-            rootURL is based on the URL in the system config, but there has been
-            numerous reports about people moving Jenkins to another place but
-            forgetting to update it. To improve the user experience in this regard,
-            let's also pass the URL that the browser sent us as well, so that the
-            JNLP Main class can try both.
-
-            Note that rootURL is still necessary in various situations, such
-            as reverse HTTP proxy situation, which makes rootUrlFromRequest incorrect.
-          -->
-          <argument>-url</argument>
-          <argument>${app.rootUrlFromRequest}</argument>
-        </j:if>
       </application-desc>
     </jnlp>
   </l:view>

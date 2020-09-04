@@ -38,6 +38,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.RobustReflectionConverter;
 import hudson.util.VersionNumber;
 import java.io.IOException;
@@ -52,12 +53,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -87,7 +86,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @throws IllegalStateException Monitor not found.
      *              It should never happen since the monitor is located in the core.
      */
-    @Nonnull
+    @NonNull
     static OldDataMonitor get(Jenkins j) throws IllegalStateException {
         return ExtensionList.lookupSingleton(OldDataMonitor.class);
     }
@@ -119,16 +118,13 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static void remove(Saveable obj, boolean isDelete) {
         Jenkins j = Jenkins.get();
         OldDataMonitor odm = get(j);
-        SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
             odm.data.remove(referTo(obj));
             if (isDelete && obj instanceof Job<?, ?>) {
                 for (Run r : ((Job<?, ?>) obj).getBuilds()) {
                     odm.data.remove(referTo(r));
                 }
             }
-        } finally {
-            SecurityContextHolder.setContext(oldContext);
         }
     }
 
@@ -444,6 +440,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     @Extension @Symbol("oldData")
     public static class ManagementLinkImpl extends ManagementLink {
+        @NonNull
+        @Override
+        public Category getCategory() {
+            return Category.TROUBLESHOOTING;
+        }
+
         @Override
         public String getIconFileName() {
             return "document.png";

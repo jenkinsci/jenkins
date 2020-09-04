@@ -38,9 +38,9 @@ import org.kohsuke.stapler.StaplerRequest;
  * persisted with the view object.
  *
  * <p>
- * Configuration screen should be defined in <code>config.jelly</code>.
+ * Configuration screen should be defined in {@code config.jelly}.
  * Within this page, the {@link ViewProperty} instance is available as
- * the <code>instance</code> EL variable (while the <code>it</code> EL variable
+ * the {@code instance} EL variable (while the {@code it} EL variable
  * refers to the {@link View}.
  *
  * @author Stephen Connolly

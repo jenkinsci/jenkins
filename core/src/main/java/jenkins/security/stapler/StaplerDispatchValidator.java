@@ -36,8 +36,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebApp;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,7 +79,7 @@ import java.util.logging.Logger;
  * {@code jenkins.security.stapler.StaplerDispatchValidator.disabled=true} or setting {@link #DISABLED} to
  * {@code true} in the script console.</p>
  *
- * @since TODO
+ * @since 2.176.2 / 2.186
  */
 @Restricted(NoExternalUse.class)
 public class StaplerDispatchValidator implements DispatchValidator {
@@ -92,7 +92,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
      */
     public static /* script-console editable */ boolean DISABLED = SystemProperties.getBoolean(ESCAPE_HATCH);
 
-    private static @CheckForNull Boolean setStatus(@Nonnull StaplerRequest req, @CheckForNull Boolean status) {
+    private static @CheckForNull Boolean setStatus(@NonNull StaplerRequest req, @CheckForNull Boolean status) {
         if (status == null) {
             return null;
         }
@@ -101,7 +101,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
         return status;
     }
 
-    private static @CheckForNull Boolean computeStatusIfNull(@Nonnull StaplerRequest req, @Nonnull Supplier<Boolean> statusIfNull) {
+    private static @CheckForNull Boolean computeStatusIfNull(@NonNull StaplerRequest req, @NonNull Supplier<Boolean> statusIfNull) {
         Object requestStatus = req.getAttribute(ATTRIBUTE_NAME);
         return requestStatus instanceof Boolean ? (Boolean) requestStatus : setStatus(req, statusIfNull.get());
     }
@@ -114,7 +114,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public @CheckForNull Boolean isDispatchAllowed(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp) {
+    public @CheckForNull Boolean isDispatchAllowed(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp) {
         if (DISABLED) {
             return true;
         }
@@ -132,7 +132,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public @CheckForNull Boolean isDispatchAllowed(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp, @Nonnull String viewName, @CheckForNull Object node) {
+    public @CheckForNull Boolean isDispatchAllowed(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp, @NonNull String viewName, @CheckForNull Object node) {
         if (DISABLED) {
             return true;
         }
@@ -150,7 +150,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public void allowDispatch(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp) {
+    public void allowDispatch(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp) {
         if (DISABLED) {
             return;
         }
@@ -158,7 +158,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @Override
-    public void requireDispatchAllowed(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp) throws CancelRequestHandlingException {
+    public void requireDispatchAllowed(@NonNull StaplerRequest req, @NonNull StaplerResponse rsp) throws CancelRequestHandlingException {
         if (DISABLED) {
             return;
         }
@@ -170,12 +170,12 @@ public class StaplerDispatchValidator implements DispatchValidator {
     }
 
     @VisibleForTesting
-    static StaplerDispatchValidator getInstance(@Nonnull ServletContext context) {
+    static StaplerDispatchValidator getInstance(@NonNull ServletContext context) {
         return (StaplerDispatchValidator) WebApp.get(context).getDispatchValidator();
     }
 
     @VisibleForTesting
-    void loadWhitelist(@Nonnull InputStream in) throws IOException {
+    void loadWhitelist(@NonNull InputStream in) throws IOException {
         cache.loadWhitelist(IOUtils.readLines(in));
     }
 
@@ -185,7 +185,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
 
         // provided as alternative to ConcurrentHashMap.computeIfAbsent which doesn't allow for recursion in the supplier
         // see https://stackoverflow.com/q/28840047
-        private @Nonnull Validator computeIfAbsent(@Nonnull String className, @Nonnull Function<String, Validator> constructor) {
+        private @NonNull Validator computeIfAbsent(@NonNull String className, @NonNull Function<String, Validator> constructor) {
             lock.readLock().lock();
             try {
                 if (validators.containsKey(className)) {
@@ -209,15 +209,15 @@ public class StaplerDispatchValidator implements DispatchValidator {
             }
         }
 
-        private @Nonnull Validator find(@Nonnull Class<?> clazz) {
+        private @NonNull Validator find(@NonNull Class<?> clazz) {
             return computeIfAbsent(clazz.getName(), name -> create(clazz));
         }
 
-        private @Nonnull Validator find(@Nonnull String className) {
+        private @NonNull Validator find(@NonNull String className) {
             return computeIfAbsent(className, this::create);
         }
 
-        private @Nonnull Collection<Validator> findParents(@Nonnull Class<?> clazz) {
+        private @NonNull Collection<Validator> findParents(@NonNull Class<?> clazz) {
             List<Validator> parents = new ArrayList<>();
             Class<?> superclass = clazz.getSuperclass();
             if (superclass != null) {
@@ -229,7 +229,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             return parents;
         }
 
-        private @Nonnull Validator create(@Nonnull Class<?> clazz) {
+        private @NonNull Validator create(@NonNull Class<?> clazz) {
             Set<String> allowed = new HashSet<>();
             StaplerViews views = clazz.getDeclaredAnnotation(StaplerViews.class);
             if (views != null) {
@@ -243,7 +243,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             return new Validator(() -> findParents(clazz), allowed, denied);
         }
 
-        private @Nonnull Validator create(@Nonnull String className) {
+        private @NonNull Validator create(@NonNull String className) {
             ClassLoader loader = Jenkins.get().pluginManager.uberClassLoader;
             return new Validator(() -> {
                 try {
@@ -274,7 +274,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
             }
         }
 
-        private void loadWhitelist(@Nonnull List<String> whitelistLines) {
+        private void loadWhitelist(@NonNull List<String> whitelistLines) {
             for (String line : whitelistLines) {
                 if (line.matches("#.*|\\s*")) {
                     // commented line
@@ -305,17 +305,17 @@ public class StaplerDispatchValidator implements DispatchValidator {
             private final Set<String> allowed = ConcurrentHashMap.newKeySet();
             private final Set<String> denied = ConcurrentHashMap.newKeySet();
 
-            private Validator(@Nonnull Supplier<Collection<Validator>> parentsSupplier) {
+            private Validator(@NonNull Supplier<Collection<Validator>> parentsSupplier) {
                 this.parentsSupplier = parentsSupplier;
             }
 
-            private Validator(@Nonnull Supplier<Collection<Validator>> parentsSupplier, @Nonnull Collection<String> allowed, @Nonnull Collection<String> denied) {
+            private Validator(@NonNull Supplier<Collection<Validator>> parentsSupplier, @NonNull Collection<String> allowed, @NonNull Collection<String> denied) {
                 this(parentsSupplier);
                 this.allowed.addAll(allowed);
                 this.denied.addAll(denied);
             }
 
-            private @Nonnull Collection<Validator> getParents() {
+            private @NonNull Collection<Validator> getParents() {
                 if (parents == null) {
                     synchronized (this) {
                         if (parents == null) {
@@ -326,7 +326,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
                 return parents;
             }
 
-            private @CheckForNull Boolean isViewValid(@Nonnull String viewName) {
+            private @CheckForNull Boolean isViewValid(@NonNull String viewName) {
                 if (allowed.contains(viewName)) {
                     return Boolean.TRUE;
                 }
@@ -342,11 +342,11 @@ public class StaplerDispatchValidator implements DispatchValidator {
                 return null;
             }
 
-            private void allowView(@Nonnull String viewName) {
+            private void allowView(@NonNull String viewName) {
                 allowed.add(viewName);
             }
 
-            private void denyView(@Nonnull String viewName) {
+            private void denyView(@NonNull String viewName) {
                 denied.add(viewName);
             }
         }

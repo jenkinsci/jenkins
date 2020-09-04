@@ -27,87 +27,125 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
+  <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}" />
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
         <st:adjunct includes="hudson.PluginManager._table"/>
-        <div id="filter-container">
-            ${%Filter}:
-            <input type="text" id="filter-box"/>
+      <div id="filter-container">
+        <div class="plugin-manager__search">
+          <input
+              role="searchbox"
+              class="plugin-manager__search-input"
+              type="text"
+              id="filter-box"
+              value="${request.getParameter('filter')}"
+              placeholder="${filtered == 'true' ? '%search' : '%filter'}" />
+          <span class="plugin-manager__icon-leading">
+            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
+          </span>
         </div>
+      </div>
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
-        
-      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
-      <div class="pane-frame">
-        <div class="plugins i18n" 
-             data-cannot-enable="${%This plugin cannot be enabled}" 
-             data-cannot-disable="${%This plugin cannot be disabled}" 
-             data-cannot-uninstall="${%This plugin cannot be uninstalled}" 
-             data-disabled-dependencies="${%It has one or more disabled dependencies}" 
-             data-enabled-dependents="${%It has one or more enabled dependents}" 
-             data-installed-dependents="${%It has one or more installed dependents}" 
-             data-detached-disable="${%detached-disable}"
-             data-detached-uninstall="${%detached-uninstall}"
-             data-detached-possible-dependents="${%detached-possible-dependents}"
-        />
-        <table id="plugins" class="pane bigtable sortable stripped-odd">
-          <j:choose>
-            <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
-              <tr><td>
-                ${%No plugins installed.}
-              </td></tr>
-            </j:when>
-            <j:otherwise>
-              <tr>
-                <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
-                <th initialSortDir="down">${%Name}</th>
-                <th width="1">${%Version}</th>
+      <div class="plugins i18n"
+           data-cannot-enable="${%This plugin cannot be enabled}"
+           data-cannot-disable="${%This plugin cannot be disabled}"
+           data-cannot-uninstall="${%This plugin cannot be uninstalled}"
+           data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
+           data-enabled-dependents="${%It has one or more enabled dependents}"
+           data-installed-dependents="${%It has one or more installed dependents}"
+           data-detached-disable="${%detached-disable}"
+           data-detached-uninstall="${%detached-uninstall}"
+           data-detached-possible-dependents="${%detached-possible-dependents}"
+      />
+
+      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
+        
+      <table id="plugins" class="pane bigtable sortable stripped-odd">
+        <j:choose>
+          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+            <tr>
+              <th>${%Installed plugins}</th>
+            </tr>
+            <tr>
+              <td align="center">${%No plugins installed.}</td>
+            </tr>
+          </j:when>
+          <j:otherwise>
+            <tr>
+              <th width="32" tooltip="${%Uncheck to disable the plugin}">${%Enabled}</th>
+              <th initialSortDir="down">${%Name}</th>
+              <th width="1">${%Version}</th>
+              <l:isAdmin>
                 <th width="1">${%Previously installed version}</th>
                 <th width="1">${%Uninstall}</th>
-              </tr>
-              <j:forEach var="p" items="${app.pluginManager.plugins}">
-                <tr class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.detached and p.enabled ? 'detached' : ''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
-                  <j:set var="state" value="${p.enabled?'true':null}"/>
-                  <td class="center pane enable" data="${state}">
-                    <input type="checkbox" checked="${state}" onclick="flip(event)"
-                           url="plugin/${p.shortName}"
-                           original="${p.active?'true':'false'}"/>
-                  </td>
-                  <td class="pane details">
-                    <div>
-                      <a href="${p.url}" class="display-name">
-                        ${p.updateInfo.displayName?:p.displayName}
-                      </a>
-                    </div>
-                    <div class="excerpt">
-                      <j:set var="indexPage" value="${p.indexPage.toString()}" />
-                      <j:set var="excerpt" value="${app.updateCenter.getPlugin(p.shortName).excerpt}"/>
-                      <j:set var="description" value="${p.manifest.mainAttributes.getValue('Specification-Title')}"/>
-                      <j:choose>
-                        <j:when test="${!empty(indexPage)}"> <!-- src/main/resources/index.jelly, preferred -->
-                          <j:include uri="${indexPage}"/>
-                        </j:when>
-                        <j:when test="${excerpt != null}"> <!-- HTML from {excerpt} in wiki page -->
-                          <j:out value="${excerpt}"/>
-                        </j:when>
-                        <j:when test="${description != null}"> <!-- last resort, from POM -->
-                          ${description}
-                        </j:when>
-                        <j:otherwise>
-                          ${%No description available.}
-                        </j:otherwise>
-                      </j:choose>
-                    </div>
-                  </td>
-                  <td class="center pane" style="white-space:normal">
-                    <a href="plugin/${p.shortName}/thirdPartyLicenses">
-                      ${p.version}
+              </l:isAdmin>
+            </tr>
+            <j:forEach var="p" items="${app.pluginManager.plugins}">
+              <tr class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.hasImpliedDependents() and p.enabled ? 'possibly-has-implied-dependents' : ''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
+                <j:set var="state" value="${p.enabled?'true':null}"/>
+                <td class="center pane enable" data="${state}">
+                  <input type="checkbox" checked="${state}" onclick="flip(event)"
+                         url="plugin/${p.shortName}"
+                         disabled="${readOnlyMode ? 'true' : null}"
+                         original="${p.active?'true':'false'}"/>
+                </td>
+                <td class="pane details">
+                  <div>
+                    <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="display-name">
+                      ${p.updateInfo.displayName?:p.displayName}
                     </a>
-                  </td>
+                  </div>
+                  <div class="excerpt">
+                    <j:set var="indexPage" value="${p.indexPage.toString()}" />
+                    <j:set var="excerpt" value="${app.updateCenter.getPlugin(p.shortName).excerpt}"/>
+                    <j:set var="description" value="${p.manifest.mainAttributes.getValue('Specification-Title')}"/>
+                    <j:choose>
+                      <j:when test="${!empty(indexPage)}"> <!-- src/main/resources/index.jelly, preferred -->
+                        <j:include uri="${indexPage}"/>
+                      </j:when>
+                      <j:when test="${excerpt != null}"> <!-- HTML from {excerpt} in wiki page -->
+                        <j:out value="${excerpt}"/>
+                      </j:when>
+                      <j:when test="${description != null}"> <!-- last resort, from POM -->
+                        ${description}
+                      </j:when>
+                      <j:otherwise>
+                        ${%No description available.}
+                      </j:otherwise>
+                    </j:choose>
+                  </div>
+                  <j:if test="${!p.getActiveWarnings().isEmpty()}">
+                    <div class="alert alert-danger">${%securityWarning}
+                      <ul>
+                        <j:forEach var="warning" items="${p.getActiveWarnings()}">
+                          <li><a href="${warning.url}" rel="noopener noreferrer" target="_blank">${warning.message}</a></li>
+                        </j:forEach>
+                      </ul>
+                    </div>
+                  </j:if>
+                  <j:if test="${p.isDeprecated()}">
+                    <div class="alert alert-warning">
+                      <!-- figure out a way how to present deprecations by multiple update sites instead of just the first one -->
+                      ${%deprecationWarning(p.getDeprecations().get(0).url)}
+                    </div>
+                  </j:if>
+                  <j:if test="${it.hasAdoptThisPluginLabel(p)}">
+                    <div class="alert alert-warning">
+                      ${%adoptThisPlugin}
+                    </div>
+                  </j:if>
+                </td>
+                <td class="pane" style="white-space:normal">
+                  <a href="plugin/${p.shortName}/thirdPartyLicenses">
+                    ${p.version}
+                  </a>
+                </td>
+                <l:isAdmin>
                   <td class="pane">
                     <j:if test="${p.downgradable}">
                       <form method="post" action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
@@ -115,7 +153,15 @@ THE SOFTWARE.
                       </form>
                     </j:if>
                   </td>
-                  <td class="center pane uninstall">
+                  <j:choose>
+                      <j:when test="${p.hasMandatoryDependents() or p.hasMandatoryDependents()}">
+                            <j:set var="uninstallPossible" value="true"/>
+                      </j:when>
+                      <j:otherwise>
+                          <j:set var="uninstallPossible" value="false"/>
+                      </j:otherwise>
+                  </j:choose>
+                  <td class="pane uninstall" data="${uninstallPossible}">
                     <j:choose>
                       <j:when test="${p.isDeleted()}">
                         <p>${%Uninstallation pending}</p>
@@ -131,7 +177,7 @@ THE SOFTWARE.
                           <j:if test="${p.hasMandatoryDependencies()}">
                             <div class="dependency-list">
                               <j:forEach var="dependency" items="${p.mandatoryDependencies}">
-                                <span data-plugin-id="${dependency.shortName}"></span>  
+                                <span data-plugin-id="${dependency.shortName}"></span>
                               </j:forEach>
                             </div>
                           </j:if>
@@ -141,25 +187,31 @@ THE SOFTWARE.
                       </j:otherwise>
                     </j:choose>
                   </td>
-                </tr>
-              </j:forEach>
-              <!-- failed ones -->
-              <j:forEach var="p" items="${it.pluginManager.failedPlugins}">
-                <tr class="hoverback">
-                  <td class="pane" />
-                  <td class="pane">
-                    <h4 class="error">Failed : ${p.name}</h4>
-                    <div style="padding-left: 1em">
-                      <pre>${p.exceptionString}</pre>
-                    </div>
-                  </td>
-                  <td class="pane" />
-                </tr>
-              </j:forEach>
-            </j:otherwise>
-          </j:choose>
-        </table>
-      </div>
+                </l:isAdmin>
+              </tr>
+            </j:forEach>
+            <!-- failed ones -->
+            <j:forEach var="p" items="${it.failedPlugins}">
+              <tr class="hoverback">
+                <td class="center pane enable">
+                  <input type="checkbox" disabled="disabled"/>
+                </td>
+                <td class="pane">
+                  <div>
+                      ${p.name}
+                  </div>
+                  <div class="alert alert-danger">
+                    <pre>${p.cause.message}</pre>
+                  </div>
+                </td>
+                <td class="pane" />
+                <td class="pane" />
+                <td class="pane" />
+              </tr>
+            </j:forEach>
+          </j:otherwise>
+        </j:choose>
+      </table>
 
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
         <form method="post" action="${rootURL}/safeRestart">

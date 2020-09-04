@@ -50,7 +50,8 @@ import java.util.Collections;
 import java.util.Locale;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -126,9 +127,7 @@ public class JnlpAccessWithSecuredHudsonTest {
             cmds(JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(), "-jnlpUrl", r.getURL() + "computer/test/slave-agent.jnlp", "-secret", secret).
             start();
         try {
-            while (!slave.toComputer().isOnline()) { // TODO can use r.waitOnline(slave) after https://github.com/jenkinsci/jenkins-test-harness/pull/80
-                Thread.sleep(100);
-            }
+            r.waitOnline(slave);
             Channel channel = slave.getComputer().getChannel();
             assertFalse("SECURITY-206", channel.isRemoteClassLoadingAllowed());
             r.jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);

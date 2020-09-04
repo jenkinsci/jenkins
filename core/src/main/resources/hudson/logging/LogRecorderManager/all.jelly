@@ -26,11 +26,14 @@ THE SOFTWARE.
   Show all hudson.* logs
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
 <l:layout title="Log">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1><l:icon class="icon-clipboard icon-xlg"/>${%Jenkins Log}</h1>
+    <div class="alert alert-info">
+      Log messages at a level lower than INFO are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
+    </div>
     <t:logRecords logRecords="${h.logRecords}"/>
 
     <st:include page="feeds.jelly" />

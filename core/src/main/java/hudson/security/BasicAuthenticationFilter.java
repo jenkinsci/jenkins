@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
@@ -31,6 +32,8 @@ import org.acegisecurity.Authentication;
 import jenkins.security.BasicApiTokenHelper;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -160,13 +163,18 @@ public class BasicAuthenticationFilter implements Filter {
             path += '?'+q;
 
         // prepare a redirect
-        rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-        rsp.setHeader("Location",path);
+        prepareRedirect(rsp, path);
 
         // ... but first let the container authenticate this request
         RequestDispatcher d = servletContext.getRequestDispatcher("/j_security_check?j_username="+
             URLEncoder.encode(username,"UTF-8")+"&j_password="+URLEncoder.encode(password,"UTF-8"));
         d.include(req,rsp);
+    }
+
+    @SuppressFBWarnings(value = "UNVALIDATED_REDIRECT", justification = "Redirect is validated as processed.")
+    private void prepareRedirect(HttpServletResponse rsp, String path) {
+        rsp.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+        rsp.setHeader("Location",path);
     }
 
     //public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {

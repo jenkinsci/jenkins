@@ -29,7 +29,7 @@ import java.io.SequenceInputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import hudson.model.AperiodicWork;
 import hudson.util.VersionNumber;
@@ -135,7 +135,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     /**
      * Gets the host name that we advertise protocol clients to connect to.
-     * @since TODO
+     * @since 2.198
      */
     public String getAdvertisedHost() {
         if (CLI_HOST_NAME != null) {
@@ -360,7 +360,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     // This is essentially just to be able to pass the parent thread into the callback, as it can't access it otherwise
-    private abstract class ConnectionHandlerFailureCallback {
+    private static abstract class ConnectionHandlerFailureCallback {
         private Thread parentThread;
 
         public ConnectionHandlerFailureCallback(Thread parentThread) {
@@ -390,9 +390,6 @@ public final class TcpSlaveAgentListener extends Thread {
             ping = "Ping\n".getBytes(StandardCharsets.UTF_8);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean isRequired() {
             return true;
@@ -403,9 +400,6 @@ public final class TcpSlaveAgentListener extends Thread {
             return "Ping";
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String getDisplayName() {
             return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
@@ -455,7 +449,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * Reschedules the <code>TcpSlaveAgentListener</code> on demand.  Disables itself after running.
+     * Reschedules the {@code TcpSlaveAgentListener} on demand.  Disables itself after running.
      */
     @Extension
     @Restricted(NoExternalUse.class)

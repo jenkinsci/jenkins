@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.PluginWrapper;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.UpdateSite;
+import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -82,6 +83,9 @@ import java.util.Set;
 public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
+        if (!Jenkins.get().getUpdateCenter().isSiteDataReady()) {
+            return false;
+        }
         return !getActiveCoreWarnings().isEmpty() || !getActivePluginWarningsByPlugin().isEmpty();
     }
 
@@ -138,6 +142,7 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public HttpResponse doForward(@QueryParameter String fix, @QueryParameter String configure) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (fix != null) {
             return HttpResponses.redirectViaContextPath("pluginManager");
         }
@@ -157,6 +162,11 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
     public boolean hasApplicableHiddenWarnings() {
         UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
         return getActiveWarnings().size() < configuration.getApplicableWarnings().size();
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 
     @Override

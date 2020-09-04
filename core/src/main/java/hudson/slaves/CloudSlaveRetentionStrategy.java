@@ -5,7 +5,7 @@ import hudson.model.Node;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 
-import javax.annotation.concurrent.GuardedBy;
+import net.jcip.annotations.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

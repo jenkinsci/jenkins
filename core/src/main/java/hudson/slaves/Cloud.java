@@ -42,7 +42,7 @@ import hudson.security.Permission;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.concurrent.Future;
 
@@ -112,14 +112,11 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @since 2.64
      * @return Jenkins relative URL.
      */
-    public @Nonnull String getUrl() {
+    public @NonNull String getUrl() {
         return "cloud/" + name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public @Nonnull String getSearchUrl() {
+    public @NonNull String getSearchUrl() {
         return getUrl();
     }
 

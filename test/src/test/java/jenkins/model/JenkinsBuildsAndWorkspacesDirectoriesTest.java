@@ -25,12 +25,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Stream;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -287,9 +286,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
 	private boolean logWasFoundAtLevel(String searched, Level level) {
 		return loggerRule.getRecords().stream()
-				.filter(record -> record.getMessage().contains(searched))
-				.filter(record -> record.getLevel().equals(level))
-				.collect(Collectors.toList()).size() > 0;
+                .filter(record -> record.getMessage().contains(searched)).anyMatch(record -> record.getLevel().equals(level));
 	}
 
     @Test

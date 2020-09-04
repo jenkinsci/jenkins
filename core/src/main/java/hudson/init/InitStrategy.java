@@ -72,7 +72,7 @@ public class InitStrategy {
     /**
      * Lists up additional bundled plugins from the system property {@code hudson.bundled.plugins}.
      * Since 1.480 glob syntax is supported.
-     * For use in the "mvn hudson-dev:run".
+     * For use in {@code mvn jetty:run}.
      * TODO: maven-hpi-plugin should inject its own InitStrategy instead of having this in the core.
      */
     protected void getBundledPluginsFromProperty(final List<File> r) {

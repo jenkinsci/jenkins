@@ -112,6 +112,8 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      */
     @RequirePOST
     public HttpResponse doNewLogRecorder(@QueryParameter String name) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         Jenkins.checkGoodName(name);
         
         logRecorders.put(name,new LogRecorder(name));
@@ -157,6 +159,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      */
     /*package*/ static void doRss(StaplerRequest req, StaplerResponse rsp, List<LogRecord> logs) throws IOException, ServletException {
         // filter log records based on the log level
+        String entryType = "all";
         String level = req.getParameter("level");
         if(level!=null) {
             Level threshold = Level.parse(level);
@@ -166,9 +169,10 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
                     filtered.add(r);
             }
             logs = filtered;
+            entryType = level;
         }
 
-        RSS.forwardToRss("Hudson log","", logs, new FeedAdapter<LogRecord>() {
+        RSS.forwardToRss("Jenkins:log (" + entryType + " entries)","", logs, new FeedAdapter<LogRecord>() {
             public String getEntryTitle(LogRecord entry) {
                 return entry.getMessage();
             }
@@ -206,7 +210,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         }
         return this;
     }

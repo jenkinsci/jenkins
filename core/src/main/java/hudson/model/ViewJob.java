@@ -60,9 +60,9 @@ public abstract class ViewJob<JobT extends ViewJob<JobT,RunT>, RunT extends Run<
     /**
      * All {@link Run}s. Copy-on-write semantics.
      */
-    protected transient /*almost final*/ RunMap<RunT> runs = new RunMap<>();
+    protected transient volatile /*almost final*/ RunMap<RunT> runs = new RunMap<>(null, null);
 
-    private transient boolean notLoaded = true;
+    private transient volatile boolean notLoaded = true;
 
     /**
      * If the reloading of runs are in progress (in another thread,

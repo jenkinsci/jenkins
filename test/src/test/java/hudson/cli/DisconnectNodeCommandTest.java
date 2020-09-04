@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-/**
- * @author pjanouse
- */
-
 package hudson.cli;
 
 import hudson.model.Computer;
@@ -46,6 +42,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
+/**
+ * @author pjanouse
+ */
 public class DisconnectNodeCommandTest {
 
     private CLICommandInvoker command;
@@ -266,7 +265,7 @@ public class DisconnectNodeCommandTest {
     }
 
     public void disconnectNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = j.jenkins.getActiveInstance().getComputer("");
+        final Computer masterComputer = j.jenkins.getComputer("");
         assertThat(masterComputer.isOnline(), equalTo(true));
         assertThat(masterComputer.getOfflineCause(), equalTo(null));
 

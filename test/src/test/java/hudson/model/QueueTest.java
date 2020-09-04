@@ -67,6 +67,7 @@ import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisionerRule;
+import hudson.slaves.OfflineCause;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
@@ -131,9 +132,20 @@ import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.jvnet.hudson.test.LoggerRule;
 
@@ -425,7 +437,7 @@ public class QueueTest {
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.<Node>emptyList());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
-        m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
+        m.setAxes(new AxisList(new LabelAxis("label", Collections.singletonList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
@@ -557,6 +569,9 @@ public class QueueTest {
         }
         @Override public Label getAssignedLabel() {
             return assignedLabel;
+        }
+        public Computer getOwner() {
+            return exec == null ? null : exec.getOwner();
         }
     }
 
@@ -829,8 +844,8 @@ public class QueueTest {
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
         
-        projectA.getPublishersList().add(new BuildTrigger(Arrays.asList(projectB), Result.SUCCESS));
-        projectB.getPublishersList().add(new BuildTrigger(Arrays.asList(projectC), Result.SUCCESS));
+        projectA.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectB), Result.SUCCESS));
+        projectB.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectC), Result.SUCCESS));
         
         final QueueTaskFuture<FreeStyleBuild> taskA = projectA.scheduleBuild2(0, new TimerTriggerCause());
         Thread.sleep(1000);
@@ -1079,16 +1094,22 @@ public class QueueTest {
     @Test
     @Issue("SECURITY-891")
     public void doCancelItem_PermissionIsChecked() throws Exception {
-        checkCancelOperationUsingUrl(item -> "queue/cancelItem?id=" + item.getId());
+        checkCancelOperationUsingUrl(item -> "queue/cancelItem?id=" + item.getId(), false);
     }
 
     @Test
     @Issue("SECURITY-891")
     public void doCancelQueue_PermissionIsChecked() throws Exception {
-        checkCancelOperationUsingUrl(item -> "queue/item/" + item.getId() + "/cancelQueue");
+        checkCancelOperationUsingUrl(item -> "queue/item/" + item.getId() + "/cancelQueue", true);
     }
 
-    private void checkCancelOperationUsingUrl(Function<Queue.Item, String> urlProvider) throws Exception {
+    /**
+     *
+     * @param urlProvider the endpoint to query
+     * @param legacyRedirect whether the endpoint has the legacy behavior (ie makes a redirect no matter the result)
+     *                       Or it uses the newer response codes introduced by JENKINS-21311
+     */
+    private void checkCancelOperationUsingUrl(Function<Queue.Item, String> urlProvider, boolean legacyRedirect) throws Exception {
         Queue q = r.jenkins.getQueue();
 
         r.jenkins.setCrumbIssuer(null);
@@ -1117,11 +1138,13 @@ public class QueueTest {
                     .withRedirectEnabled(false)
                     .withThrowExceptionOnFailingStatusCode(false);
             wc.login("user");
-            Page p = wc.getPage(request);
-            // currently the endpoint return a redirection to the previously visited page, none in our case
-            // (so force no redirect to avoid false positive error)
-            assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
-
+            if(legacyRedirect) {
+                Page p = wc.getPage(request);
+                // the legacy endpoint returns a redirection to the previously visited page, none in our case
+                // (so force no redirect to avoid false positive error)
+                // see JENKINS-21311
+                assertThat(p.getWebResponse().getStatusCode(), lessThan(400));
+            }
             assertFalse(currentOne.getFuture().isCancelled());
         }
         { // user with right can
@@ -1134,6 +1157,43 @@ public class QueueTest {
 
             assertTrue(currentOne.getFuture().isCancelled());
         }
+    }
+
+    @Test
+    public void flyweightsRunOnMasterIfPossible() throws Exception {
+        r.createOnlineSlave();
+        r.jenkins.setNumExecutors(0);
+        List<TestFlyweightTask> tasks = new ArrayList<>();
+        Queue q = r.jenkins.getQueue();
+
+        for (int i = 0; i < 100; i++) {
+            TestFlyweightTask task = new TestFlyweightTask(new AtomicInteger(i), null);
+            tasks.add(task);
+            q.schedule2(task, 0);
+        }
+
+        q.maintain();
+        r.waitUntilNoActivityUpTo(10000);
+        assertThat(tasks, everyItem(hasProperty("owner", equalTo(Jenkins.get().toComputer()))));
+    }
+
+    @Test
+    public void flyweightsRunOnAgentIfNecessary() throws Exception {
+        r.createOnlineSlave();
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.toComputer().setTemporarilyOffline(true, new OfflineCause.UserCause(null, null));
+        List<TestFlyweightTask> tasks = new ArrayList<>();
+        Queue q = r.jenkins.getQueue();
+
+        for (int i = 0; i < 10; i++) {
+            TestFlyweightTask task = new TestFlyweightTask(new AtomicInteger(i), null);
+            tasks.add(task);
+            q.schedule2(task, 0);
+        }
+
+        q.maintain();
+        r.waitUntilNoActivityUpTo(10000);
+        assertThat(tasks, everyItem(hasProperty("owner", not(equalTo(Jenkins.get().toComputer())))));
     }
 
     @Test

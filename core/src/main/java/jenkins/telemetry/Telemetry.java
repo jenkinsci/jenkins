@@ -38,8 +38,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -56,8 +56,8 @@ import java.util.logging.Logger;
 /**
  * Extension point for collecting JEP-214 telemetry.
  *
- * Implementations should provide a <code>description.jelly</code> file with additional details about their purpose and
- * behavior which will be included in <code>help-usageStatisticsCollected.jelly</code> for {@link UsageStatistics}.
+ * Implementations should provide a {@code description.jelly} file with additional details about their purpose and
+ * behavior which will be included in {@code help-usageStatisticsCollected.jelly} for {@link UsageStatistics}.
  *
  * @see <a href="https://jenkins.io/jep/214">JEP-214</a>
  *
@@ -81,7 +81,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return ID of the collector, never null or empty
      */
-    @Nonnull
+    @NonNull
     public String getId() {
         return getClass().getName();
     }
@@ -91,7 +91,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return display name, never null or empty
      */
-    @Nonnull
+    @NonNull
     public abstract String getDisplayName();
 
     /**
@@ -101,7 +101,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return collection start date
      */
-    @Nonnull
+    @NonNull
     public abstract LocalDate getStart();
 
     /**
@@ -111,7 +111,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * @return collection end date
      */
-    @Nonnull
+    @NonNull
     public abstract LocalDate getEnd();
 
     /**
@@ -139,6 +139,17 @@ public abstract class Telemetry implements ExtensionPoint {
         Jenkins jenkins = Jenkins.getInstanceOrNull();
 
         return jenkins == null || !jenkins.isUsageStatisticsCollected();
+    }
+
+    /**
+     * Returns true iff we're in the time period during which this is supposed to collect data.
+     * @return true iff we're in the time period during which this is supposed to collect data
+     *
+     * @since 2.202
+     */
+    public boolean isActivePeriod() {
+        LocalDate now = LocalDate.now();
+        return now.isAfter(getStart()) && now.isBefore(getEnd());
     }
 
     @Extension

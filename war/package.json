@@ -9,19 +9,54 @@
     "url": "https://github.com/tfennelly"
   },
   "private": true,
+  "scripts": {
+    "dev": "webpack --config webpack.config.js",
+    "prod": "webpack --config webpack.config.js --mode=production",
+    "build": "yarn prod",
+    "start": "yarn dev --watch",
+    "test": "jest --config=jest.config.json",
+    "lint:js": "eslint . --ext js",
+    "lint:css": "stylelint src/main/less --syntax less",
+    "lint": "yarn lint:js && yarn lint:css"
+  },
   "devDependencies": {
-    "gulp": "^3.9.0",
+    "@babel/cli": "^7.7.4",
+    "@babel/core": "^7.7.4",
+    "@jenkins-cd/js-test": "^1.2.3",
+    "autoprefixer": "^9.8.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "css-loader": "^3.2.0",
+    "eslint": "^7.1.0",
+    "eslint-plugin-only-warn": "^1.0.2",
+    "file-loader": "^6.0.0",
     "handlebars": "^3.0.3",
-    "hbsfy": "^2.4.1",
-    "jenkins-handlebars-rt": "^1.0.1",
-    "jenkins-js-builder": "0.0.40",
-    "jenkins-js-test": "^1.0.0",
-    "gulp-less": "^3.1.0"
+    "handlebars-loader": "^1.7.1",
+    "jest": "^26.0.1",
+    "jest-handlebars": "^1.0.1",
+    "jest-standard-reporter": "^1.0.4",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "postcss-custom-properties": "^9.1.1",
+    "postcss-loader": "^3.0.0",
+    "style-loader": "^1.2.1",
+    "stylelint-config-standard": "^20.0.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-fix-style-only-entries": "^0.5.0"
   },
   "dependencies": {
-    "bootstrap-detached": "^3.3.5-v1",
+    "@babel/preset-env": "^7.7.4",
+    "babel-loader": "^8.0.6",
+    "bootstrap": "3.3.5",
     "jenkins-js-modules": "^1.5.0",
-    "jquery-detached": "^2.1.4-v2",
+    "jquery": "2.1.4",
+    "stylelint": "^13.0.0",
     "window-handle": "^1.0.0"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "IE 11"
+  ]
 }

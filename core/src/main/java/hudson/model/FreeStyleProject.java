@@ -67,6 +67,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
      * @deprecated as of 2.0
      *      Use injection
      */
+    @Deprecated
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ DescriptorImpl DESCRIPTOR;
 

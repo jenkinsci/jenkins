@@ -23,17 +23,21 @@
  */
 package hudson.util;
 
-import static hudson.Util.fixEmpty;
-import hudson.EnvVars;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
 import hudson.model.Item;
-import hudson.security.Permission;
 import hudson.security.AccessControlled;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.ServletException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -43,12 +47,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
 
-import javax.servlet.ServletException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.acegisecurity.AccessDeniedException;
-import org.kohsuke.stapler.Stapler;
+import static hudson.Util.fixEmpty;
 
 /**
  * Base class that provides the framework for doing on-the-fly form field validation.
@@ -147,6 +146,7 @@ public abstract class FormFieldValidator {
     /**
      * Gets the parameter as a file.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Not used.")
     protected final File getFileParameter(String paramName) {
         return new File(Util.fixNull(request.getParameter(paramName)));
     }
@@ -331,7 +331,7 @@ public abstract class FormFieldValidator {
 
             try {
                 URL url = new URL(value);
-                HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                HttpURLConnection con = openConnection(url);
                 con.connect();
                 if(con.getResponseCode()!=200
                 || con.getHeaderField("X-Hudson")==null) {
@@ -343,6 +343,11 @@ public abstract class FormFieldValidator {
             } catch (IOException e) {
                 handleIOException(value,e);
             }
+        }
+
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Not used.")
+        private HttpURLConnection openConnection(URL url) throws IOException {
+            return (HttpURLConnection)url.openConnection();
         }
     }
 
@@ -517,66 +522,53 @@ public abstract class FormFieldValidator {
 
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
-            if(exe==null) {
-                ok(); // nothing entered yet
-                return;
-            }
-
-            if(exe.indexOf(File.separatorChar)>=0) {
-                // this is full path
-                File f = new File(exe);
-                if(f.exists()) {
-                    checkExecutable(f);
-                    return;
-                }
-
-                File fexe = new File(exe+".exe");
-                if(fexe.exists()) {
-                    checkExecutable(fexe);
-                    return;
-                }
-
-                error("There's no such file: "+exe);
-            } else {
-                // look in PATH
-                String path = EnvVars.masterEnvVars.get("PATH");
-                String tokenizedPath;
-                String delimiter = null;
-                if(path!=null) {
-                    StringBuilder tokenizedPathBuilder = new StringBuilder();
-                    for (String _dir : Util.tokenize(path.replace("\\", "\\\\"),File.pathSeparator)) {
-                        if (delimiter == null) {
-                          delimiter = ", ";
-                        }
-                        else {
-                          tokenizedPathBuilder.append(delimiter);
-                        }
-
-                        tokenizedPathBuilder.append(_dir.replace('\\', '/'));
-                        
-                        File dir = new File(_dir);
-
-                        File f = new File(dir,exe);
-                        if(f.exists()) {
-                            checkExecutable(f);
-                            return;
-                        }
-
-                        File fexe = new File(dir,exe+".exe");
-                        if(fexe.exists()) {
-                            checkExecutable(fexe);
-                            return;
-                        }
+            FormFieldValidator.Executable self = this;
+            Exception exceptions[] = {null};
+            DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
+                @Override
+                public void ok() {
+                    try {
+                        self.ok();
+                    } catch (Exception e) {
+                        exceptions[0] = e;
                     }
-                    tokenizedPathBuilder.append('.');
-                    tokenizedPath = tokenizedPathBuilder.toString();
-                }
-                else {
-                  tokenizedPath = "unavailable.";
                 }
 
-                // didn't find it
-                error("There's no such executable "+exe+" in PATH: "+tokenizedPath);
+                @Override
+                public void checkExecutable(File fexe) {
+                    try {
+                        self.checkExecutable(fexe);
+                    } catch (Exception e) {
+                        exceptions[0] = e;
+                    }
+                }
+
+                @Override
+                public void error(String string) {
+                    try {
+                        self.error(string);
+                    } catch (Exception e) {
+                        exceptions[0] = e;
+                    }
+                }
+
+                @Override
+                public void validate(File fexe) {
+                    try {
+                        self.checkExecutable(fexe);
+                    } catch (IOException ioe) {
+                        exceptions[0] = ioe;
+                    } catch (ServletException se) {
+                        exceptions[0] = se;
+                    }
+                }
+            });
+            Exception e = exceptions[0];
+            if (e != null) {
+                if (e instanceof IOException)
+                    throw (IOException)e;
+                if (e instanceof ServletException)
+                    throw (ServletException)e;
             }
         }
 

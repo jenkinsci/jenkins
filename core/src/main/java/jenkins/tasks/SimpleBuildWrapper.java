@@ -45,8 +45,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A generalization of {@link BuildWrapper} that, like {@link SimpleBuildStep}, may be called at various points within a build.
@@ -83,7 +83,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     public static final class Context {
         private Disposer disposer;
         private final Map<String,String> env = new HashMap<>();
-        public @Nonnull Map<String,String> getEnv() {
+        public @NonNull Map<String,String> getEnv() {
             return env;
         }
         /**
@@ -104,7 +104,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * Specify an action to take when the block ends.
          * If not specified, nothing special happens.
          */
-        public void setDisposer(@Nonnull Disposer disposer) {
+        public void setDisposer(@NonNull Disposer disposer) {
             if (this.disposer != null) {
                 throw new IllegalStateException("just one disposer");
             }
@@ -184,7 +184,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @return a filter which ignores its {@code build} parameter and is {@link Serializable}; or null (the default)
      * @since 1.608
      */
-    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@Nonnull Run<?,?> build) {
+    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@NonNull Run<?,?> build) {
         return null;
     }
 
@@ -232,7 +232,6 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     }
 
     /**
-     * {@inheritDoc}
      * @return an empty set; this might never be called if the step is not part of the static configuration of a project; instead, add a {@link SimpleBuildStep.LastBuildAction} to a build when run
      */
     @Override public final Collection<? extends Action> getProjectActions(AbstractProject job) {

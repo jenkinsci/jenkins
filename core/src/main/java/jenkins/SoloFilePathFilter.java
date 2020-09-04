@@ -2,7 +2,7 @@ package jenkins;
 
 import hudson.FilePath;
 
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.io.File;
 
 /**

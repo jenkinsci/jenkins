@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2008-2010 Yahoo! Inc.
  * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -19,10 +19,11 @@ import org.jvnet.hudson.test.recipes.PresetData;
 
 import java.net.HttpURLConnection;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author dty
  */
 public class DefaultCrumbIssuerTest {

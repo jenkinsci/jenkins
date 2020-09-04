@@ -52,7 +52,10 @@ import org.apache.sshd.common.util.io.ModifiableFileWatcher;
 import static org.hamcrest.Matchers.*;
 import org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl;
 import org.jenkinsci.main.modules.sshd.SSHD;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assume.*;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -157,6 +160,7 @@ public class CLITest {
         p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
         doInterrupt(p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
         doInterrupt(p, "-http", "-auth", "admin:admin");
+        doInterrupt(p, "-webSocket", "-auth", "admin:admin");
     }
     private void doInterrupt(FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -191,6 +195,7 @@ public class CLITest {
             assertThat(baos.toString(), containsString("There's no Jenkins running at"));
             assertNotEquals(0, ret);
         }
+        // TODO -webSocket currently produces a stack trace
     }
     @TestExtension("reportNotJenkins")
     public static final class NoJenkinsAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
@@ -240,11 +245,11 @@ public class CLITest {
         
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
-        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins"));
-        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
-        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-SSH-Endpoint"));
+        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));
+        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
+        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-SSH-Endpoint"));
 
-        for (String transport: Arrays.asList("-http", "-ssh")) {
+        for (String transport: Arrays.asList("-http", "-ssh", "-webSocket")) {
 
             String url = r.getURL().toString() + "cli-proxy/";
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -265,7 +270,7 @@ public class CLITest {
         home = tempHome();
         grabCliJar();
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr())
                     .launch()
                     .cmds("java",

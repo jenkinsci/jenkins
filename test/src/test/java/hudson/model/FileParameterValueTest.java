@@ -44,7 +44,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class FileParameterValueTest {
@@ -70,7 +70,7 @@ public class FileParameterValueTest {
         
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent);
+        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
         
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("../../../../../root-level.txt", uploadedFile, "uploaded-file.txt")
@@ -110,7 +110,7 @@ public class FileParameterValueTest {
 
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent);
+        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("dir/../../../pwned", uploadedFile, "uploaded-file.txt")
@@ -137,7 +137,7 @@ public class FileParameterValueTest {
 
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent);
+        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("../pwned", uploadedFile, "uploaded-file.txt")
@@ -175,7 +175,7 @@ public class FileParameterValueTest {
         
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent);
+        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
         
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("..\\..\\..\\..\\..\\root-level.txt", uploadedFile, "uploaded-file.txt")
@@ -204,7 +204,7 @@ public class FileParameterValueTest {
         
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent);
+        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
         
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue(".", uploadedFile, "uploaded-file.txt")
@@ -232,7 +232,7 @@ public class FileParameterValueTest {
         
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent);
+        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
         
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("..", uploadedFile, "uploaded-file.txt")
@@ -266,7 +266,7 @@ public class FileParameterValueTest {
         
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent);
+        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
         
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("../../../../../root-level.txt", uploadedFile, "uploaded-file.txt")
@@ -291,9 +291,9 @@ public class FileParameterValueTest {
         )));
         
         File uploadedFile1 = tmp.newFile();
-        FileUtils.write(uploadedFile1, "test1");
+        FileUtils.write(uploadedFile1, "test1", StandardCharsets.UTF_8);
         File uploadedFile2 = tmp.newFile();
-        FileUtils.write(uploadedFile2, "test2");
+        FileUtils.write(uploadedFile2, "test2", StandardCharsets.UTF_8);
         
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("direct-child1.txt", uploadedFile1, "uploaded-file-1.txt"),
@@ -327,12 +327,12 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_doubleDotsInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("weird..name.txt", null)
         )));
 
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, "test1");
+        FileUtils.write(uploadedFile, "test1", StandardCharsets.UTF_8);
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("weird..name.txt", uploadedFile, "uploaded-file.txt")
@@ -355,12 +355,12 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_TildeInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new FileParameterDefinition("~name", null)
         )));
 
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, "test1");
+        FileUtils.write(uploadedFile, "test1", StandardCharsets.UTF_8);
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("~name", uploadedFile, "uploaded-file.txt")

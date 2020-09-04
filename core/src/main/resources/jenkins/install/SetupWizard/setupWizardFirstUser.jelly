@@ -1,11 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 
-  <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
+  <l:layout type="full-screen" title="${it.displayName}">
     <l:main-panel>
-      <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
       <style type="text/css">
-
         #create-admin-user {
           padding: 20px 100px 20px 100px;
           margin: 8px;
@@ -16,8 +14,8 @@
         }
 
         #create-admin-user h1 {
-          font-family: 'roboto', sans-serif;
           font-size: 48px;
+          line-height: 48px;
           margin-top: 30px;
           font-weight: 500;
         }

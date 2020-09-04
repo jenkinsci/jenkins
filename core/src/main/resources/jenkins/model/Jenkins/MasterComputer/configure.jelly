@@ -28,7 +28,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true" permission="${it.CONFIGURE}" title="${it.displayName}">
+  <l:layout permission="${it.EXTENDED_READ}" title="${it.displayName}">
+    <j:set var="readOnlyMode" value="${!h.hasPermission(it, it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
@@ -53,9 +54,11 @@ THE SOFTWARE.
 
         <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 
-        <f:block>
-          <f:submit value="${%Save}"/>
-        </f:block>
+        <l:hasPermission permission="${it.CONFIGURE}">
+          <f:block>
+            <f:submit value="${%Save}"/>
+          </f:block>
+        </l:hasPermission>
       </f:form>
     </l:main-panel>
   </l:layout>

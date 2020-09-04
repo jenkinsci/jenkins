@@ -27,7 +27,7 @@ import jenkins.model.PeepholePermalink;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Optional interface for {@link Action}s that are attached

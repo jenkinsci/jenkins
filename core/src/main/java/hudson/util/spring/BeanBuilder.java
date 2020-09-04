@@ -297,18 +297,6 @@ public class BeanBuilder extends GroovyObjectSupport {
             }
 		}
 	}
-	/**
-	 * Takes a resource pattern as (@see org.springframework.core.io.support.PathMatchingResourcePatternResolver)
-	 * This allows you load multiple bean resources in this single builder
-	 *
-	 * eg loadBeans("classpath:*Beans.groovy")
-	 *
-	 * @param resourcePattern
-	 * @throws IOException When the path cannot be matched
-	 */
-	public void loadBeans(String resourcePattern) throws IOException {
-		loadBeans(new PathMatchingResourcePatternResolver().getResources(resourcePattern));
-	}
 
 	/**
 	 * Loads a single Resource into the bean builder

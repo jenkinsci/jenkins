@@ -26,9 +26,10 @@ THE SOFTWARE.
   Config page. derived class specific entries should go to configure-entries.jsp
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
 
-  <l:layout norefresh="true" type="one-column" permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
+  <l:layout type="one-column" permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
+    <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
 
     <l:js src="jsbundles/config-scrollspy.js" />
     <l:css src="jsbundles/config-scrollspy.css" />
@@ -56,8 +57,8 @@ THE SOFTWARE.
             <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
               <f:bottomButtonBar>
                 <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-                <f:submit value="${%Save}"/>
-                <f:apply value="${%Apply}"/>
+                <f:submit value="${%Save}" large="true"/>
+                <f:apply value="${%Apply}" large="true" />
               </f:bottomButtonBar>
             </j:if>
           </f:form>

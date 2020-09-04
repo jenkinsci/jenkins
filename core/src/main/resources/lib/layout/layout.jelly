@@ -34,8 +34,7 @@ THE SOFTWARE.
       Title of the HTML page. Rendered into &lt;title> tag.
     </st:attribute>
     <st:attribute name="norefresh">
-      If non-null and not "false", auto refresh is disabled on this page.
-      This is necessary for pages that include forms.
+      Deprecated: Used to disable auto refresh for a page. The feature has been removed.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
       specify path that starts from "/" for loading additional CSS stylesheet.
@@ -49,11 +48,19 @@ THE SOFTWARE.
       in &lt;l:header/> tag.
     </st:attribute>
     <st:attribute name="permission">
-      If given, this page is only made available to users that has the specified permission.
+      If given, this page is only made available to users who have the specified permission.
       (The permission will be checked against the "it" object.)
+    </st:attribute>
+    <st:attribute name="permissions">
+      If given, this page is made available to users who have one or more of the specified permissions.
+      (The permissions will be checked against the "it" object.)
     </st:attribute>
     <st:attribute name="type" use="optional">
       Available values: two-column (by default), one-column (full-width size) or full-screen (since 2.53).
+    </st:attribute>
+    <st:attribute name="nogrid" use="optional">
+      Do not include Bootstrap 3 grid. When a plugin wants to use a more recent version of Bootstrap then
+      the bundled grid will cause conflicts.
     </st:attribute>
   </st:documentation>
 <l:view contentType="text/html;charset=UTF-8">
@@ -61,6 +68,7 @@ THE SOFTWARE.
 <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
 <st:setHeader name="X-Hudson-Theme" value="default" />
 <st:setHeader name="Referrer-Policy" value="same-origin" />
+<st:setHeader name="Cross-Origin-Opener-Policy" value="same-origin" />
 
 <!--
   depending on what tags are used, we can later end up discovering that we needed a session,
@@ -69,6 +77,9 @@ THE SOFTWARE.
   which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
 
+<j:if test="${h.isUserTimeZoneOverride()}">
+  <i:setTimeZone value="${h.getUserTimeZone()}" />
+</j:if>
 <j:if test="${attrs.type==null}">
   <j:set var="layoutType" value="two-column"/>
 </j:if>
@@ -78,7 +89,6 @@ THE SOFTWARE.
 
 <j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
 <j:set var="_" value="${request.getSession()}"/>
-<j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
 <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
 <j:if test="${request.servletPath=='/' || request.servletPath==''}">
   ${h.advertiseHeaders(response)}
@@ -89,27 +99,30 @@ THE SOFTWARE.
   </j:if>
 </j:if>
 <x:doctype name="html" />
-<html>
-  <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+<html class="${h.isUiRefreshEnabled() ? 'ui-refresh' : ''}">
+  <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}"
+        data-extensions-available="${extensionsAvailable}" 
+        data-crumb-header="${h.getCrumbRequestField()}" data-crumb-value="${h.getCrumb(request)}" 
+        data-unit-test="${h.isUnitTest}">
     ${h.checkPermission(it,permission)}
+    ${h.checkAnyPermission(it, permissions)}
 
     <j:if test="${isMSIE}">
       <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
     </j:if>
 
     <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
-    <link rel="stylesheet" href="${resURL}/css/layout-common.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+
+    <link rel="stylesheet" href="${resURL}/jsbundles/base-styles-v2.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
-    <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
+    <j:if test="${attrs.nogrid==null or attrs.nogrid.equals(false)}">
+      <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
+    </j:if>
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
     <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
-
-    <!-- are we running as an unit test? -->
-    <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
@@ -137,21 +150,17 @@ THE SOFTWARE.
     <l:yui module="storage" />
     <!--l:yui module="editor" suffix="-beta" /-->
 
+    <script src="${resURL}/scripts/polyfills.js" type="text/javascript" />
+    
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
 
-    <j:if test="${extensionsAvailable}">
-      <script>
-          crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
-      </script>
-    </j:if>
-
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
-    <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
     <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
+
+    <link rel="stylesheet" href="${resURL}/jsbundles/ui-refresh-overrides.css" type="text/css" />
 
     <l:hasPermission permission="${app.READ}">
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
@@ -170,6 +179,8 @@ THE SOFTWARE.
       <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
     </j:if>
 
+    <!-- The vendors bundle is generated by webpack. It contains vendor scripts common to all JS modules -->
+    <script src="${resURL}/jsbundles/vendors.js" type="text/javascript"/>
     <script src="${resURL}/jsbundles/page-init.js" type="text/javascript"/>
 
   </head>
@@ -180,60 +191,12 @@ THE SOFTWARE.
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
     <div id="page-head">
-      <div id="header">
-        <div class="logo">
-          <a id="jenkins-home-link" href="${rootURL}/">
-            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="[${%jenkinshead.alt}]" />
-            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="${%title}" width="139" height="34" />
-          </a>
-        </div>
-        <div class="login">
-          <!-- login field -->
-          <j:if test="${app.useSecurity}">
-            <st:nbsp/>
-            <j:choose>
-              <j:when test="${!h.isAnonymous()}">
-                <j:invokeStatic var="user" className="hudson.model.User" method="current" />
-                <j:choose>
-                  <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
-                    <j:set var="userName" value="${user.id}"/>
-                  </j:when>
-                  <j:otherwise>
-                    <j:set var="userName" value="${user.fullName}"/>
-                  </j:otherwise>
-                </j:choose>
-                <span style="white-space:nowrap">
-                  <a href="${rootURL}/${user.url}" class="model-link inside inverse"><b>${userName}</b></a>
-                  <j:if test="${app.securityRealm.canLogOut()}">
-                    |
-                    <a href="${rootURL}/logout"><b>${%logout}</b></a>
-                  </j:if>
-                </span>
-              </j:when>
-              <j:otherwise>
-                <st:include it="${app.securityRealm}" page="loginLink.jelly" />
-              </j:otherwise>
-            </j:choose>
-          </j:if>
-        </div>
-        <div class="searchbox hidden-xs">
-          <!-- search box -->
-          <j:set var="searchURL" value="${h.searchURL}"/>
-          <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search" role="search">
-            <!-- this div determines the minimum width -->
-            <div id="search-box-minWidth"/>
-            <!-- this div is used to calculate the width of the text box -->
-            <div id="search-box-sizer"/>
-            <div id="searchform">
-              <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" role="searchbox" />
-              <st:nbsp />
-              <a href="${%searchBox.url}"><l:icon class="icon-help icon-sm" /></a>
-              <div id="search-box-completion" />
-              <script>createSearchBox("${searchURL}");</script>
-            </div>
-          </form>
-        </div>
-      </div>
+      <l:pageHeader title="${%title}"
+                    logoAlt="${%jenkinshead.alt}"
+                    searchPlaceholder="${%search}"
+                    searchHelpUrl="${%searchBox.url}"
+                    logout="${%logout}"/>
+
       <div id="breadcrumbBar">
         <l:breadcrumbBar>
           <j:set var="mode" value="breadcrumbs" />
@@ -251,13 +214,8 @@ THE SOFTWARE.
 
           <!-- add YUI logger if debugging YUI -->
           <j:if test="${h.yuiSuffix=='debug'}">
+          <!-- script to transform this into the Logger Console is done in hudson-behavior.js -->
           <div id="yui-logreader" style="margin-top:1em"/>
-            <script>
-              Behaviour.addLoadEvent(function(){
-                var logReader = new YAHOO.widget.LogReader("yui-logreader");
-                logReader.collapse();
-              });
-            </script>
           </j:if>
         </div>
       </j:if>
@@ -268,27 +226,33 @@ THE SOFTWARE.
     </div>
 
     <j:if test="${layoutType!='full-screen'}">
-    <footer>
+    <footer class="page-footer">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-6" id="footer"></div>
-          <div class="col-md-18">
-            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="long"/></span>
-            <j:if test="${!empty(it.api)}">
-               <span class="rest_api"><a href="api/">REST API</a></span>
-            </j:if>
-            <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
-            <j:if test="${extensionsAvailable}">
-            <j:forEach var="pd" items="${h.pageDecorators}">
-              <st:include it="${pd}" page="footer.jelly" optional="true" />
-            </j:forEach>
-            </j:if>
+        <div class="page-footer__flex-row">
+          <div class="page-footer__footer-id-placeholder" id="footer"></div>
+
+          <j:if test="${!empty(it.api)}">
+            <div class="page-footer__links rest_api hidden-xs">
+              <a href="api/">REST API</a>
+            </div>
+          </j:if>
+
+          <div class="page-footer__links page-footer__links--white jenkins_ver">
+            <a href="${h.getFooterURL()}" rel="noopener noreferrer" target="_blank">Jenkins ${h.version}</a>
           </div>
         </div>
+        <j:if test="${extensionsAvailable}">
+          <j:forEach var="pd" items="${h.pageDecorators}">
+            <st:include it="${pd}" page="footer.jelly" optional="true" />
+          </j:forEach>
+        </j:if>
       </div>
     </footer>
     </j:if>
 
+    <!-- SVG sprite polyfill for IE 11.
+         Loaded at the end in order to not make modern browsers wait for it. This causes a flash-of-no-icons on IE 11  -->
+    <script src="${resURL}/scripts/svgxuse.min.js" type="text/javascript" async="true" />
   </body>
 </html>
 </l:view>

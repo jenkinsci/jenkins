@@ -39,7 +39,7 @@ THE SOFTWARE.
     <d:tag name="dependency">
       <tr>
         <td>
-          <a href="${attrs.url}">${attrs.name}</a>
+          <a href="${attrs.url}" rel="noopener noreferrer" target="_blank">${attrs.name}</a>
         </td>
         <td>
           ${attrs.groupId}:${attrs.artifactId}:${attrs.version}
@@ -51,7 +51,7 @@ THE SOFTWARE.
     </d:tag>
     <d:tag name="description"/>
     <d:tag name="license">
-      <a href="${attrs.url}">${attrs.name}</a><br/>
+      <a href="${attrs.url}" rel="noopener noreferrer" target="_blank">${attrs.name}</a><br/>
     </d:tag>
   </d:taglib>
   <d:invokeBody/>

@@ -29,6 +29,7 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Stapler;
 
@@ -36,7 +37,7 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * List of {@link Descriptor}s.
@@ -109,8 +110,6 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @deprecated
      *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
      *      instead of registering a descriptor manually.
@@ -122,8 +121,6 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @deprecated
      *      As of 1.286. Put {@link Extension} on your descriptor to have it auto-registered,
      *      instead of registering a descriptor manually.
@@ -154,7 +151,8 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * from the structured form submission data posted
      * by a radio button group. 
      * @param config Submitted configuration for Radio List
-     * @return new instance or {@code null} if none was selected in the radio list
+     * @return New instance.
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
      * @throws FormException Data submission error
      */
     @CheckForNull
@@ -171,12 +169,17 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * by a radio button group. 
      * @param parent JSON, which contains the configuration entry for the radio list
      * @param name Name of the configuration entry for the radio list
-     * @return new instance or {@code null} if none was selected in the radio list
+     * @return New instance.
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
      * @throws FormException Data submission error
      */
     @CheckForNull
     public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
-        return newInstanceFromRadioList(parent.getJSONObject(name));
+        try {
+            return newInstanceFromRadioList(parent.getJSONObject(name));
+        } catch (JSONException ex) {
+            throw new FormException(ex, name);
+        }
     }
 
     /**
@@ -217,6 +220,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * Finds the descriptor that has the matching fully-qualified class name.
      * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
+    @Deprecated
     @CheckForNull
     public Descriptor<T> find(String fqcn) {
         return Descriptor.find(this,fqcn);

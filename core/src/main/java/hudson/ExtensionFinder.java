@@ -63,6 +63,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -443,12 +444,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         }
                     }
                     void error(Key<T> key, Throwable x) {
-                        if (verbose) {
-                            LOGGER.log(Level.WARNING, "Failed to instantiate " + key + "; skipping this component", x);
-                        } else {
-                            LOGGER.log(Level.INFO, "Failed to instantiate optional component {0}; skipping", key.getTypeLiteral());
-                            LOGGER.log(Level.FINE, key.toString(), x);
-                        }
+                        LOGGER.log(verbose ? Level.WARNING : Level.FINE, "Failed to instantiate " + key + "; skipping this component", x);
                     }
                 };
             }
@@ -482,26 +478,35 @@ public abstract class ExtensionFinder implements ExtensionPoint {
              * So this is an attempt to detect subset of problems eagerly, by invoking various reflection
              * operations and try to find non-existent classes early.
              */
-            private void resolve(Class c) {
+            private void resolve(Class<?> c) {
+                resolve(c, new HashSet<>());
+            }
+            private void resolve(Class<?> c, Set<Class<?>> encountered) {
+                if (!encountered.add(c)) {
+                    return;
+                }
                 try {
-                    c.getGenericSuperclass();
-                    c.getGenericInterfaces();
                     ClassLoader ecl = c.getClassLoader();
-                    Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
-                    m.setAccessible(true);
-                    m.invoke(ecl, c);
-                    c.getConstructors();
-                    c.getMethods();
-                    for (Field f : c.getFields()) {
-                        if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
-                            resolve(f.getType());
+                    if (ecl != null) { // Not bootstrap classloader
+                        Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
+                        m.setAccessible(true);
+                        m.invoke(ecl, c);
+                    }
+                    for (Class<?> cc = c; cc != Object.class && cc != null; cc = cc.getSuperclass()) {
+                        /**
+                         * See {@link com.google.inject.spi.InjectionPoint#getInjectionPoints(TypeLiteral, boolean, Errors)}
+                         */
+                        cc.getGenericSuperclass();
+                        cc.getGenericInterfaces();
+                        cc.getDeclaredConstructors();
+                        cc.getDeclaredMethods();
+                        for (Field f : cc.getDeclaredFields()) {
+                            if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
+                                resolve(f.getType(), encountered);
+                            }
                         }
                     }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
-                    while (c != Object.class) {
-                        c.getGenericSuperclass();
-                        c = c.getSuperclass();
-                    }
                 } catch (Exception x) {
                     throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
                 }
@@ -600,7 +605,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     /**
      * Returns initial {@link Method} as well as all matching ones found in interfaces.
      * This allows to introspect metadata for a method which is both declared in parent class and in implemented
-     * interface(s). <code>interfaces</code> typically is obtained by {@link ClassUtils#getAllInterfacesAsSet}
+     * interface(s). {@code interfaces} typically is obtained by {@link ClassUtils#getAllInterfacesAsSet}
      */
     Collection<Method> getMethodAndInterfaceDeclarations(Method method, Collection<Class> interfaces) {
         final List<Method> methods = new ArrayList<>();

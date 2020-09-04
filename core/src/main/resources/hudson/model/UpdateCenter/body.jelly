@@ -42,19 +42,27 @@ THE SOFTWARE.
           <a href="${rootURL}/">${%Go back to the top page}</a> <br/>
           (${%you can start using the installed plugins right away}) <!-- leave this text in for a while until users are retrained to expect plugins to work right away without restart -->
         </p>
-        <p class="info" style="font-weight: normal">
-          <j:if test="${app.lifecycle.canRestart()}">
-            <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
-              <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" checked="checked" />
+        <l:isAdmin>
+          <div class="grey-anime-preload" style="display:none">
+            <l:icon class="icon-grey-anime icon-md"/>
+            <l:icon class="icon-blue icon-md"/>
+            <l:icon class="icon-red icon-md"/>
+            <l:icon class="icon-grey icon-md"/>
+          </div>
+          <p class="info" style="font-weight: normal">
+            <j:if test="${app.lifecycle.canRestart()}">
+              <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
+                <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" checked="checked" />
+              </j:if>
+              <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
+                <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" />
+              </j:if>
             </j:if>
-            <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
-              <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" />
-            </j:if>
-          </j:if>
-          <label for="scheduleRestartCheckbox">
-            ${%warning}
-          </label>
-        </p>
+            <label for="scheduleRestartCheckbox">
+              ${%warning}
+            </label>
+          </p>
+        </l:isAdmin>
       </form>
     </div>
   </l:ajax>

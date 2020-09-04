@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Whitelist}" permission="${app.RUN_SCRIPTS}">
+<l:layout title="${%Whitelist}" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" it="${app}"/>
   <l:main-panel>
     <h1>${%Agent &#8594; Master Access Control}</h1>
@@ -94,17 +94,17 @@ THE SOFTWARE.
       </p>
 <pre>
 # deny access to anything in the SkunkWorks folder, regardless of what later rules say
-deny read &lt;JENKINS_HOME>/jobs/SkunkWorks/.*
+deny read &amp;lt;JENKINS_HOME>/jobs/SkunkWorks/.*
 
 # allow any access under builds
-allow all &lt;BUILDDIR>/.*
+allow all &amp;lt;BUILDDIR>/.*
 
 # allow read-only access under userContent
-allow read,stat &lt;JENKINS_HOME>/userContent/.*
-
-# GENERAL SYNTAX: (allow|deny) <i>Op,Op,Op,...</i> <i>PathRegExp</i>
+allow read,stat &amp;lt;JENKINS_HOME>/userContent/.*
 </pre>
-
+<p>
+  General syntax: (allow|deny) <i>Op,Op,Op,...</i> <i>PathRegExp,</i>
+</p>
       <div style="margin:1em">
         <f:submit value="${%Update}"/>
       </div>

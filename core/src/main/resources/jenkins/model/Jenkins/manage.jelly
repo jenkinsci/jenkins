@@ -27,10 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.ADMINISTER}">
-
+<l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
   <l:header>
-     <link rel="stylesheet" href="${resURL}/bootstrap/css/bootstrap.min.css" type="text/css" />
      <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css" />
   </l:header>
 
@@ -48,49 +46,55 @@ THE SOFTWARE.
     <st:include page="downgrade.jelly" />
     </div>
 
-    <j:forEach var="m" items="${it.managementLinks}">
-      <l:hasPermission permission="${m.requiredPermission}">
-        <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
-        <j:if test="${icon!=null}">
-          <div class="manage-option">
-          <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
-          <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
-          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
-          <j:choose>
-            <j:when test="${m.requiresConfirmation}">
-              <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                <img class="icon" src="${iconUrl}" />
-                <dl>
-                  <dt>${m.displayName}</dt>
-                  <dd><j:out value="${m.description}"/></dd>
-                  <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-                </dl>
-              </l:confirmationLink>
-            </j:when>
-            <j:when test="${m.requiresPOST}">
-              <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                <img class="icon" src="${iconUrl}" alt="[${%alt}]"/>
-                <dl>
-                  <dt>${m.displayName}</dt>
-                  <dd><j:out value="${m.description}"/></dd>
-                  <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-                </dl>
-              </f:link>
-            </j:when>
-            <j:otherwise>
-              <a href="${m.urlName}" title="${m.displayName}">
-                <img class="icon" src="${iconUrl}" alt="manage-option"/>
-                <dl>
-                  <dt>${m.displayName}</dt>
-                  <dd><j:out value="${m.description}"/></dd>
-                  <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-                </dl>
-              </a>
-            </j:otherwise>
-          </j:choose>
-          </div>
-        </j:if>
-      </l:hasPermission>
+    <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
+      <section class="manage-page__category">
+        <h2>${category.key.label}</h2>
+        ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
+        <div class="manage-page__row">
+        <j:forEach var="m" items="${category.value}">
+          <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
+          <j:if test="${icon!=null}">
+            <div class="manage-option manage-page__column">
+            <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
+            <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
+            <j:choose>
+              <j:when test="${m.requiresConfirmation}">
+                <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
+                  <img class="icon" src="${iconUrl}" />
+                  <dl>
+                    <dt>${m.displayName}</dt>
+                    <dd><j:out value="${m.description}"/></dd>
+                    <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                  </dl>
+                </l:confirmationLink>
+              </j:when>
+              <j:when test="${m.requiresPOST}">
+                <f:link href="${m.urlName}" post="${m.requiresPOST}">
+                  <img class="icon" src="${iconUrl}" alt="[${%alt}]"/>
+                  <dl>
+                    <dt>${m.displayName}</dt>
+                    <dd><j:out value="${m.description}"/></dd>
+                    <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                  </dl>
+                </f:link>
+              </j:when>
+              <j:otherwise>
+                <a href="${m.urlName}" title="${m.displayName}">
+                  <img class="icon" src="${iconUrl}" alt="manage-option"/>
+                  <dl>
+                    <dt>${m.displayName}</dt>
+                    <dd><j:out value="${m.description}"/></dd>
+                    <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                  </dl>
+                </a>
+              </j:otherwise>
+            </j:choose>
+            </div>
+          </j:if>
+        </j:forEach>
+        </div>
+      </section>
     </j:forEach>
 
   </l:main-panel>

@@ -26,6 +26,7 @@ package hudson.tools;
 import hudson.FilePath;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.tasks.CommandInterpreter;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import org.kohsuke.stapler.QueryParameter;

@@ -1,0 +1,41 @@
+
+<div>
+  Lorsque cette option est coch\u00e9e, plusieurs constructions de ce projet peuvent 
+  \u00eatre ex\u00e9cut\u00e9es en parall\u00e8le.
+  <p>
+  Par d\u00e9faut, une seule construction du projet est ex\u00e9cut\u00e9e \u00E0 la fois &mdash; toutes
+  les autres demandes pour ex\u00e9cuter la construction de ce projet resteront dans la file d'attente
+  jusqu'\u00E0 ce que la premi\u00e8re construction soit termin\u00e9e.<br>
+  Ce choix par d\u00e9faut est une pr\u00e9caution, car les projets exigent souvent un acc\u00e8s exclusif \u00E0
+  certaines ressources, telles qu'une base de donn\u00e9es ou un hardware sp\u00e9cifique.
+  <p>
+  Si cette option est activ\u00e9e, et s'il y a suffisamment d'ex\u00e9cuteurs disponibles
+  sachant g\u00e9rer ce projet, alors les multiples constructions de ce projet tourneront
+  en parall\u00e8le. S'il n'y a pas assez d'ex\u00e9cuteurs disponibles \u00E0 un moment donn\u00e9,
+  toute autre demande de construction sera maintenue dans la file d'attente de construction 
+  comme normalement.
+  <p>
+  Activer les constructions simultan\u00e9es est utile pour les projets qui ex\u00e9cutent de longs tests
+  car elle permet \u00E0 chaque construction de contenir un plus petit nombre de modifications, tandis que
+  le temps d'ex\u00e9cution total diminue car les constructions suivantes n'ont pas besoin d'attendre
+  que les tests pr\u00e9c\u00e9dents soient termin\u00e9s.<br>
+  Cette fonctionnalit\u00e9 est \u00e9galement utile pour les projets param\u00e9tr\u00e9s, 
+  dont les diff\u00e9rentes constructions &mdash; en fonction des param\u00e8tres utilis\u00e9s &mdash; 
+  peuvent \u00eatre totalement ind\u00e9pendantes les unes des autres.
+  <p>
+  Chaque construction ex\u00e9cut\u00e9e en parall\u00e8le se produit dans son propre espace de travail, 
+  isol\u00e9 des autres constructions.
+  Par d\u00e9faut, Jenkins ajoute "<tt>@&lt;num&gt;</tt>" au nom du r\u00e9pertoire de l'espace
+  de travail, par exemple "<tt>@2</tt>".<br>
+  Le s\u00e9parateur "<tt>@</tt>" est modifiable en renseignant la valeur de la propri\u00e9t\u00e9 syst\u00e8me Java
+  <tt>hudson.slaves.WorkspaceList</tt> au d\u00e9marrage de jenkins. 
+  Par exemple, "<tt>hudson.slaves.WorkspaceList=-</tt>" modifierait
+  le s\u00e9parateur \u00E0 un trait d'union.<br>
+  Pour plus d'informations sur le param\u00e9trage des propri\u00e9t\u00e9s syst\u00e8me, voir la <a
+  href="https://jenkins.io/redirect/setting-system-properties"
+  rel="noopener noreferrer" target="_blank">page du wiki</a>.
+  <p>
+  En revanche, si vous activez l'option <i>Utiliser un espace de travail personnalis\u00e9</i>, toutes les constructions 
+  seront ex\u00e9cut\u00e9es  dans le m\u00eame espace de travail. La prudence est donc de mise, car plusieurs 
+  constructions peuvent finir par modifier le m\u00eame r\u00e9pertoire en m\u00eame temps.
+</div>

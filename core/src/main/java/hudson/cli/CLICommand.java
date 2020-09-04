@@ -64,8 +64,8 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Base class for Hudson CLI.
@@ -234,7 +234,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         // add options from the authenticator
         SecurityContext sc = null;
         Authentication old = null;
-        Authentication auth = null;
+        Authentication auth;
         try {
             sc = SecurityContextHolder.getContext();
             old = sc.getAuthentication();
@@ -242,10 +242,8 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             sc.setAuthentication(auth = getTransportAuthentication());
 
             if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
+                Jenkins.get().checkPermission(Jenkins.READ);
             p.parseArgument(args.toArray(new String[0]));
-            if (!(this instanceof HelpCommand || this instanceof WhoAmICommand))
-                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             LOGGER.log(Level.FINE, "Invoking CLI command {0}, with {1} arguments, as user {2}.",
                     new Object[] {getName(), args.size(), auth.getName()});
             int res = run();
@@ -253,57 +251,51 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                     new Object[] {getName(), args.size(), auth.getName(), res});
             return res;
         } catch (CmdLineException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println();
-            stderr.println("ERROR: " + e.getMessage());
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             printUsage(stderr, p);
             return 2;
         } catch (IllegalStateException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println();
-            stderr.println("ERROR: " + e.getMessage());
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 4;
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println();
-            stderr.println("ERROR: " + e.getMessage());
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 3;
         } catch (AbortException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            // signals an error without stack trace
-            stderr.println();
-            stderr.println("ERROR: " + e.getMessage());
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 5;
         } catch (AccessDeniedException e) {
-            LOGGER.log(Level.FINE, String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
-                    getName(), args.size(), auth != null ? auth.getName() : "<unknown>"), e);
-            stderr.println();
-            stderr.println("ERROR: " + e.getMessage());
+            logFailedCommandAndPrintExceptionErrorMessage(args, e);
             return 6;
         } catch (BadCredentialsException e) {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
             String id = UUID.randomUUID().toString();
-            LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
-            stderr.println();
-            stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
+            logAndPrintError(e, "Bad Credentials. Search the server log for " + id + " for more details.",
+                    "CLI login attempt failed: " + id, Level.INFO);
             return 7;
         } catch (Throwable e) {
-            final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
-                    getName());
-            stderr.println();
-            stderr.println("ERROR: " + errorMsg);
-            LOGGER.log(Level.WARNING, errorMsg, e);
+            String errorMsg = "Unexpected exception occurred while performing " + getName() + " command.";
+            logAndPrintError(e, errorMsg, errorMsg, Level.WARNING);
             Functions.printStackTrace(e, stderr);
             return 1;
         } finally {
             if(sc != null)
                 sc.setAuthentication(old); // restore
         }
+    }
+
+    private void logFailedCommandAndPrintExceptionErrorMessage(List<String> args, Throwable e) {
+        Authentication auth = getTransportAuthentication();
+        String logMessage = String.format("Failed call to CLI command %s, with %d arguments, as user %s.",
+                getName(), args.size(), auth != null ? auth.getName() : "<unknown>");
+
+        logAndPrintError(e, e.getMessage(), logMessage, Level.FINE);
+    }
+
+    private void logAndPrintError(Throwable e, String errorMessage, String logMessage, Level logLevel) {
+        LOGGER.log(logLevel, logMessage, e);
+        this.stderr.println();
+        this.stderr.println("ERROR: " + errorMessage);
     }
 
     /**
@@ -463,11 +455,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Define the encoding for the command.
      * @since 2.54
      */
-    public void setClientCharset(@Nonnull Charset encoding) {
+    public void setClientCharset(@NonNull Charset encoding) {
         this.encoding = encoding;
     }
 
-    protected @Nonnull Charset getClientCharset() throws IOException, InterruptedException {
+    protected @NonNull Charset getClientCharset() throws IOException, InterruptedException {
         if (encoding != null) {
             return encoding;
         }
@@ -502,7 +494,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void registerOptionHandlers() {
         try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getActiveInstance().pluginManager.uberClassLoader,Class.class)) {
+            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.get().pluginManager.uberClassLoader,Class.class)) {
                 Type t = Types.getBaseClass(c, OptionHandler.class);
                 CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t,0)), c);
             }

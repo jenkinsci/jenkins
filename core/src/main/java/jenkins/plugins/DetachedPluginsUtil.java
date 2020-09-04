@@ -11,7 +11,7 @@ import jenkins.util.java.JavaUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * <p>
  * This code was originally moved from {@link ClassicPluginStrategy}.
  *
- * @since TODO
+ * @since 2.163
  */
 @Restricted(NoExternalUse.class)
 public class DetachedPluginsUtil {
@@ -79,7 +79,7 @@ public class DetachedPluginsUtil {
      *
      * @since 2.0
      */
-    @Nonnull
+    @NonNull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         List<PluginWrapper.Dependency> out = new ArrayList<>();
         for (DetachedPlugin detached : getDetachedPlugins()) {
@@ -107,7 +107,7 @@ public class DetachedPluginsUtil {
      * @return A {@link List} of {@link DetachedPlugin}s.
      * @see JavaUtils#getCurrentJavaRuntimeVersionNumber()
      */
-    public static @Nonnull
+    public static @NonNull
     List<DetachedPlugin> getDetachedPlugins() {
         return DETACHED_LIST.stream()
                 .filter(plugin -> JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerThanOrEqualTo(plugin.getMinimumJavaVersion()))
@@ -121,8 +121,8 @@ public class DetachedPluginsUtil {
      * @return A {@link List} of {@link DetachedPlugin}s.
      * @see #getDetachedPlugins()
      */
-    public static @Nonnull
-    List<DetachedPlugin> getDetachedPlugins(@Nonnull VersionNumber since) {
+    public static @NonNull
+    List<DetachedPlugin> getDetachedPlugins(@NonNull VersionNumber since) {
         return getDetachedPlugins().stream()
                 .filter(detachedPlugin -> !detachedPlugin.getSplitWhen().isOlderThan(since))
                 .collect(Collectors.toList());
@@ -135,7 +135,7 @@ public class DetachedPluginsUtil {
      * @return {@code true} if the plugin is a plugin that was detached from Jenkins at some
      * point in the past, otherwise {@code false}.
      */
-    public static boolean isDetachedPlugin(@Nonnull String pluginId) {
+    public static boolean isDetachedPlugin(@NonNull String pluginId) {
         for (DetachedPlugin detachedPlugin : getDetachedPlugins()) {
             if (detachedPlugin.getShortName().equals(pluginId)) {
                 return true;
@@ -217,7 +217,7 @@ public class DetachedPluginsUtil {
             return shortName + " " + splitWhen.toString().replace(".*", "") + " " + requiredVersion;
         }
 
-        @Nonnull
+        @NonNull
         public JavaSpecificationVersion getMinimumJavaVersion() {
             return minJavaVersion;
         }

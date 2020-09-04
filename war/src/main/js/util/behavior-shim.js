@@ -1,4 +1,6 @@
+function specify(selector, id, priority, behavior) {
+    // eslint-ignore-next-line
+    Behaviour.specify(selector, id, priority, behavior);
+}
 
-exports.specify = function(selector, id, priority, behavior) {
-    Behaviour.specify(selector, id, priority, behavior); // jshint ignore:line
-};
+export default { specify };

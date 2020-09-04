@@ -42,8 +42,8 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -52,11 +52,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class ZipExtractionInstallerTest {
@@ -104,8 +105,8 @@ public class ZipExtractionInstallerTest {
         
         ZipExtractionInstaller installer = new ZipExtractionInstaller("", VALID_URL, "");
         
-        j.jenkins.getJDKs().add(new JDK("test", tmp.getRoot().getAbsolutePath(), Arrays.asList(
-                new InstallSourceProperty(Arrays.<ToolInstaller>asList(installer)))));
+        j.jenkins.getJDKs().add(new JDK("test", tmp.getRoot().getAbsolutePath(), Collections.singletonList(
+                new InstallSourceProperty(Collections.<ToolInstaller>singletonList(installer)))));
         
         JenkinsRule.WebClient wc = j.createWebClient();
         
@@ -136,7 +137,7 @@ public class ZipExtractionInstallerTest {
         assertThat(lastRequest.getResponseText(), containsString(Messages.ZipExtractionInstaller_malformed_url()));
     }
     
-    private class SpyingJavaScriptEngine extends JavaScriptEngine {
+    private static class SpyingJavaScriptEngine extends JavaScriptEngine {
         private List<XMLHttpRequest> storedRequests = new ArrayList<>();
         private String urlToMatch;
         private HttpMethod method;
@@ -166,7 +167,7 @@ public class ZipExtractionInstallerTest {
             return super.callFunction(page, function, scope, thisObject, args);
         }
         
-        @Nonnull
+        @NonNull
         public XMLHttpRequest getLastRequest() {
             if (storedRequests.isEmpty()) {
                 fail("There is no available requests for the proposed url/method");

@@ -42,8 +42,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * The build outcome.
@@ -54,42 +53,42 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * The build had no errors.
      */
-    public static final @Nonnull Result SUCCESS = new Result("SUCCESS",BallColor.BLUE,0,true);
+    public static final @NonNull Result SUCCESS = new Result("SUCCESS",BallColor.BLUE,0,true);
     /**
      * The build had some errors but they were not fatal.
      * For example, some tests failed.
      */
-    public static final @Nonnull Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,1,true);
+    public static final @NonNull Result UNSTABLE = new Result("UNSTABLE",BallColor.YELLOW,1,true);
     /**
      * The build had a fatal error.
      */
-    public static final @Nonnull Result FAILURE = new Result("FAILURE",BallColor.RED,2,true);
+    public static final @NonNull Result FAILURE = new Result("FAILURE",BallColor.RED,2,true);
     /**
      * The module was not built.
      * <p>
      * This status code is used in a multi-stage build (like maven2)
      * where a problem in earlier stage prevented later stages from building.
      */
-    public static final @Nonnull Result NOT_BUILT = new Result("NOT_BUILT",BallColor.NOTBUILT,3,false);
+    public static final @NonNull Result NOT_BUILT = new Result("NOT_BUILT",BallColor.NOTBUILT,3,false);
     /**
      * The build was manually aborted.
      *
      * If you are catching {@link InterruptedException} and interpreting it as {@link #ABORTED},
      * you should check {@link Executor#abortResult()} instead (starting 1.417.)
      */
-    public static final @Nonnull Result ABORTED = new Result("ABORTED",BallColor.ABORTED,4,false);
+    public static final @NonNull Result ABORTED = new Result("ABORTED",BallColor.ABORTED,4,false);
 
-    private final @Nonnull String name;
+    private final @NonNull String name;
 
     /**
      * Bigger numbers are worse.
      */
-    public final @Nonnegative int ordinal;
+    public final /* @java.annotation.Nonnegative */ int ordinal;
 
     /**
      * Default ball color for this status.
      */
-    public final @Nonnull BallColor color;
+    public final @NonNull BallColor color;
     
     /**
      * Is this a complete build - i.e. did it run to the end (not aborted)?
@@ -97,7 +96,7 @@ public final class Result implements Serializable, CustomExportedBean {
      */
     public final boolean completeBuild;
 
-    private Result(@Nonnull String name, @Nonnull BallColor color, @Nonnegative int ordinal, boolean complete) {
+    private Result(@NonNull String name, @NonNull BallColor color, /*@java.annotation.Nonnegative */int ordinal, boolean complete) {
         this.name = name;
         this.color = color;
         this.ordinal = ordinal;
@@ -107,26 +106,26 @@ public final class Result implements Serializable, CustomExportedBean {
     /**
      * Combines two {@link Result}s and returns the worse one.
      */
-    public @Nonnull Result combine(@Nonnull Result that) {
+    public @NonNull Result combine(@NonNull Result that) {
         if(this.ordinal < that.ordinal)
             return that;
         else
             return this;
     }
 
-    public boolean isWorseThan(@Nonnull Result that) {
+    public boolean isWorseThan(@NonNull Result that) {
         return this.ordinal > that.ordinal;
     }
 
-    public boolean isWorseOrEqualTo(@Nonnull Result that) {
+    public boolean isWorseOrEqualTo(@NonNull Result that) {
         return this.ordinal >= that.ordinal;
     }
 
-    public boolean isBetterThan(@Nonnull Result that) {
+    public boolean isBetterThan(@NonNull Result that) {
         return this.ordinal < that.ordinal;
     }
 
-    public boolean isBetterOrEqualTo(@Nonnull Result that) {
+    public boolean isBetterOrEqualTo(@NonNull Result that) {
         return this.ordinal <= that.ordinal;
     }
     
@@ -139,22 +138,22 @@ public final class Result implements Serializable, CustomExportedBean {
     }
 
     @Override
-    public @Nonnull String toString() {
+    public @NonNull String toString() {
         return name;
     }
 
-    public @Nonnull String toExportedObject() {
+    public @NonNull String toExportedObject() {
         return name;
     }
     
-    public static @Nonnull Result fromString(@Nonnull String s) {
+    public static @NonNull Result fromString(@NonNull String s) {
         for (Result r : all)
             if (s.equalsIgnoreCase(r.name))
                 return r;
         return FAILURE;
     }
 
-    private static @Nonnull List<String> getNames() {
+    private static @NonNull List<String> getNames() {
         List<String> l = new ArrayList<>();
         for (Result r : all)
             l.add(r.name);
@@ -195,9 +194,10 @@ public final class Result implements Serializable, CustomExportedBean {
         public int parseArguments(Parameters params) throws CmdLineException {
             String param = params.getParameter(0);
             Result v = fromString(param.replace('-', '_'));
-            if (v==null)
+            if (v== FAILURE) {
                 throw new CmdLineException(owner,"No such status '"+param+"'. Did you mean "+
                         EditDistance.findNearest(param.replace('-', '_').toUpperCase(), getNames()));
+            }
             setter.addValue(v);
             return 1;
         }

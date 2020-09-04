@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.cli.CLI;
 import hudson.model.Descriptor.FormException;
@@ -63,8 +64,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
@@ -73,6 +74,7 @@ import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
@@ -93,7 +95,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
- * See <a href="https://jenkins-ci.org/issue/27268">JENKINS-27268</a>.
+ * See <a href="https://jenkins.io/issue/27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -124,7 +126,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Number of executors of this node.
      */
-    private int numExecutors = 2;
+    private int numExecutors = 1;
 
     /**
      * Job allocation strategy.
@@ -150,18 +152,14 @@ public abstract class Slave extends Node implements Serializable {
             new DescribableList<>(this);
 
     /**
-     * Lazily computed set of labels from {@link #label}.
+     * Removed with no replacement.
      */
-    private transient volatile Set<Label> labels;
-
-    /**
-     * Id of user which creates this agent {@link User}.
-     */
-    private String userId;
+    @Deprecated
+    private transient String userId;
 
     /**
      * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -178,7 +176,7 @@ public abstract class Slave extends Node implements Serializable {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
 
-    public Slave(@Nonnull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+    public Slave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
         this.name = name;
         this.remoteFS = remoteFS;
         this.launcher = launcher;
@@ -189,7 +187,7 @@ public abstract class Slave extends Node implements Serializable {
      *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
      */
     @Deprecated
-    public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
+    public Slave(@NonNull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
         this.description = nodeDescription;
@@ -204,13 +202,6 @@ public abstract class Slave extends Node implements Serializable {
         this.nodeProperties.replaceBy(nodeProperties);
          Slave node = (Slave) Jenkins.get().getNode(name);
 
-       if(node!=null){
-            this.userId= node.getUserId(); //agent has already existed
-        }
-       else{
-            User user = User.current();
-            userId = user!=null ? user.getId() : "anonymous";
-        }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
@@ -225,13 +216,25 @@ public abstract class Slave extends Node implements Serializable {
      * Return id of user which created this agent
      *
      * @return id of user
+     *
+     * @deprecated Removed with no replacement
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
     public String getUserId() {
         return userId;
     }
 
+    /**
+     * This method no longer does anything.
+     *
+     * @deprecated Removed with no replacement
+     */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("TODO")
     public void setUserId(String userId){
-        this.userId = userId;
     }
 
     public ComputerLauncher getLauncher() {
@@ -407,23 +410,19 @@ public abstract class Slave extends Node implements Serializable {
             if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
-            
+
+            Class<?> owner = null;
             if (name.equals("hudson-cli.jar") || name.equals("jenkins-cli.jar"))  {
-                File cliJar = Which.jarFile(CLI.class);
-                if (cliJar.isFile()) {
-                    name = "jenkins-cli.jar";
-                } else {
-                    URL res = findExecutableJar(cliJar, CLI.class);
-                    if (res != null) {
-                        return res;
-                    }
-                }
+                owner = CLI.class;
             } else if (name.equals("agent.jar") || name.equals("slave.jar") || name.equals("remoting.jar")) {
-                File remotingJar = Which.jarFile(hudson.remoting.Launcher.class);
-                if (remotingJar.isFile()) {
-                    name = "lib/" + remotingJar.getName();
+                owner = hudson.remoting.Launcher.class;
+            }
+            if (owner != null) {
+                File jar = Which.jarFile(owner);
+                if (jar.isFile()) {
+                    name = "lib/" + jar.getName();
                 } else {
-                    URL res = findExecutableJar(remotingJar, hudson.remoting.Launcher.class);
+                    URL res = findExecutableJar(jar, owner);
                     if (res != null) {
                         return res;
                     }
@@ -439,7 +438,7 @@ public abstract class Slave extends Node implements Serializable {
             return res;
         }
 
-        /** Useful for {@code JenkinsRule.createSlave}, {@code hudson-dev:run}, etc. */
+        /** Useful for {@code JenkinsRule.createSlave}, {@code mvn jetty:run}, etc. */
         private @CheckForNull URL findExecutableJar(File notActuallyJAR, Class<?> mainClass) throws IOException {
             if (notActuallyJAR.getName().equals("classes")) {
                 File[] siblings = notActuallyJAR.getParentFile().listFiles();
@@ -475,7 +474,7 @@ public abstract class Slave extends Node implements Serializable {
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
      *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
      */
-    @Nonnull
+    @NonNull
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
         if (c == null) {
@@ -512,7 +511,7 @@ public abstract class Slave extends Node implements Serializable {
             if (isUnix == null) {
                 // isUnix is always set when the channel is not null, so it should never happen
                 reportLauncherCreateError("The agent has not been fully initialized yet",
-                                         "Cannot determing if the agent is a Unix one, the System status request has not completed yet. " +
+                                         "Cannot determine if the agent is a Unix one, the System status request has not completed yet. " +
                                          "It is an invalid channel state, please report a bug to Jenkins if you see it.", 
                                          listener);
                 return new Launcher.DummyLauncher(listener);
@@ -522,7 +521,7 @@ public abstract class Slave extends Node implements Serializable {
         }
     }
     
-    private void reportLauncherCreateError(@Nonnull String humanReadableMsg, @CheckForNull String exceptionDetails, @Nonnull TaskListener listener) {
+    private void reportLauncherCreateError(@NonNull String humanReadableMsg, @CheckForNull String exceptionDetails, @NonNull TaskListener listener) {
         String message = "Issue with creating launcher for agent " + name + ". " + humanReadableMsg;
         listener.error(message);
         if (LOGGER.isLoggable(Level.WARNING)) {
@@ -605,7 +604,7 @@ public abstract class Slave extends Node implements Serializable {
          * @return the filtered list
          * @since 2.12
          */
-        @Nonnull
+        @NonNull
         @Restricted(NoExternalUse.class) // intended for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
         public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
@@ -622,8 +621,7 @@ public abstract class Slave extends Node implements Serializable {
          * @return the filtered list
          * @since 2.12
          */
-        @Nonnull
-        @SuppressWarnings("unchecked") // used by Jelly EL only
+        @NonNull
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, RetentionStrategy.all())
@@ -637,7 +635,7 @@ public abstract class Slave extends Node implements Serializable {
          * @return the filtered list
          * @since 2.12
          */
-        @Nonnull
+        @NonNull
         @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {

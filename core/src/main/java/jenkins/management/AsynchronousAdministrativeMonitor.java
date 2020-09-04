@@ -6,6 +6,7 @@ import hudson.console.AnnotatedLargeText;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 import jenkins.security.RekeySecretAdminMonitor;
@@ -15,7 +16,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Convenient partial implementation of {@link AdministrativeMonitor} that involves a background "fixing" action
@@ -97,9 +98,8 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
 
         @Override
         public void run() {
-            ACL.impersonate(ACL.SYSTEM);
             StreamTaskListener listener = null;
-            try {
+            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
                 listener = new StreamTaskListener(getLogFile());
                 try {
                     doRun(listener);
@@ -120,7 +120,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
          * Runs the monitor and encapsulates all errors within.
          * @since 1.590
          */
-        private void doRun(@Nonnull TaskListener listener) {
+        private void doRun(@NonNull TaskListener listener) {
             try {
                 fix(listener);
             } catch (AbortException e) {

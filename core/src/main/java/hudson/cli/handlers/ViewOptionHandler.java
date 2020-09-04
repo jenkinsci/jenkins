@@ -39,7 +39,7 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Refers to {@link View} by its name.
@@ -94,7 +94,7 @@ public class ViewOptionHandler extends OptionHandler<View> {
     @CheckForNull
     public View getView(final String name) {
 
-        ViewGroup group = Jenkins.getActiveInstance();
+        ViewGroup group = Jenkins.get();
         View view = null;
 
         final StringTokenizer tok = new StringTokenizer(name, "/");

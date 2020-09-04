@@ -35,7 +35,20 @@ THE SOFTWARE.
     <d:tag name="computerCaption">
 
       <a href="${rootURL}/${c.url}" class="model-link inside"><l:icon class="${c.iconClassName} icon-sm" alt="${altText}"/><st:nbsp/>${title}</a>
-      <j:if test="${c.offline}"> <st:nbsp/> (${%offline})</j:if>
+      <j:if test="${c.offline}">
+        <st:nbsp/>
+        <j:choose>
+          <j:when test="${c.offlineCause!=null and !c.connecting}">
+            (<img src="${imagesURL}/16x16/error.png" title="${c.offlineCause}"/> ${%offline})
+          </j:when>
+          <j:when test="${c.connecting}">
+            (<img src="${imagesURL}/16x16/hourglass.gif"/>${%launching})
+          </j:when>
+          <j:otherwise>
+            (${%offline})
+          </j:otherwise>
+        </j:choose>
+      </j:if>
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
     </d:tag>
     <d:tag name="executor">
@@ -110,7 +123,7 @@ THE SOFTWARE.
                 </st:include>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${e.hasStopPermission()}">
-                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
+                    <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
                   </j:if>
                 </td>
               </j:otherwise>
@@ -130,7 +143,7 @@ THE SOFTWARE.
         <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
         <tr>
           <j:if test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
-            <th class="pane" colspan="3">
+            <th class="pane" colspan="4">
               <local:computerCaption title="${c.displayName}" />
             </th>
           </j:if>
@@ -142,7 +155,7 @@ THE SOFTWARE.
       </j:forEach>
     </l:pane>
     <!-- schedule updates only for the full page reload -->
-    <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
+    <j:if test="${ajax==null and h.hasPermission(app.READ)}">
       <script defer="defer">
         refreshPart('executors',"${rootURL}/${h.hasView(it,'ajaxExecutors')?it.url:''}ajaxExecutors");
       </script>

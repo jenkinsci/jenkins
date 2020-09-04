@@ -28,6 +28,8 @@ THE SOFTWARE.
     Generates an input field <tt>&lt;input type="text" ... /></tt> to be
     used inside &lt;f:entry/>
 
+    For a read only input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+    See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>
@@ -65,7 +67,7 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'post' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a GET to a POST. 
+      Specify 'post' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a GET to a POST.
       If any other value is specified then requests will use GET.
     </st:attribute>
     <st:attribute name="autoCompleteDelimChar">
@@ -82,12 +84,15 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
-  <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-         class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
-         name="${name}"
-         value="${value}"
-         type="text"
-         ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+
+  <f:possibleReadOnlyField>
+      <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+               class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
+               name="${name}"
+               value="${value}"
+               type="text"
+               ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+  </f:possibleReadOnlyField>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

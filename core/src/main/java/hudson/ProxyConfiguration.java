@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
@@ -62,7 +62,10 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -94,14 +97,15 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     /**
      * Possibly null proxy user name.
      */
-    private final String userName;
+    private String userName;
 
     /**
      * List of host names that shouldn't use proxy, as typed by users.
      *
      * @see #getNoProxyHostPatterns()
      */
-    public final String noProxyHost;
+    @Restricted(NoExternalUse.class)
+    public String noProxyHost;
 
     @Deprecated
     private String password;
@@ -117,6 +121,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     private transient boolean authCacheSeeded;
 
+    @DataBoundConstructor
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
     }
@@ -129,12 +134,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this(name,port,userName,password,noProxyHost,null);
     }
 
-    @DataBoundConstructor
     public ProxyConfiguration(String name, int port, String userName, String password, String noProxyHost, String testUrl) {
         this.name = Util.fixEmptyAndTrim(name);
         this.port = port;
         this.userName = Util.fixEmptyAndTrim(userName);
-        this.secretPassword = Secret.fromString(password);
+        String tempPassword = Util.fixEmptyAndTrim(password);
+        this.secretPassword = tempPassword != null ? Secret.fromString(tempPassword) : null;
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
         this.testUrl = Util.fixEmptyAndTrim(testUrl);
         this.authenticator = newAuthenticator();
@@ -146,7 +151,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             public PasswordAuthentication getPasswordAuthentication() {
                 String userName = getUserName();
                 if (getRequestorType() == RequestorType.PROXY && userName != null) {
-                    return new PasswordAuthentication(userName, getPassword().toCharArray());
+                    return new PasswordAuthentication(userName, Secret.toString(secretPassword).toCharArray());
                 }
                 return null;
             }
@@ -157,15 +162,26 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return userName;
     }
 
-//    This method is public, if it was public only for jelly, then should make it private (or inline contents)
-//    Have left public, as can't tell if anyone else is using from plugins
+    public Secret getSecretPassword() {
+        return secretPassword;
+    }
+
     /**
-     * @return the password in plain text
+     * @deprecated
+     *      Use {@link #getSecretPassword()}
      */
+    @Deprecated
     public String getPassword() {
         return Secret.toString(secretPassword);
     }
 
+    /**
+     * @deprecated
+     *      Use {@link #getSecretPassword()}
+     *
+     * @return the encrypted proxy password
+     */
+    @Deprecated
     public String getEncryptedPassword() {
         return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
     }
@@ -174,11 +190,23 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return testUrl;
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     /**
      * Returns the list of properly formatted no proxy host names.
      */
     public List<Pattern> getNoProxyHostPatterns() {
         return getNoProxyHostPatterns(noProxyHost);
+    }
+
+    public String getNoProxyHost() {
+        return noProxyHost;
     }
 
     /**
@@ -193,6 +221,26 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));
         }
         return r;
+    }
+
+    @DataBoundSetter
+    public void setSecretPassword(Secret secretPassword) {
+        this.secretPassword = secretPassword;
+    }
+
+    @DataBoundSetter
+    public void setTestUrl(String testUrl) {
+        this.testUrl = testUrl;
+    }
+
+    @DataBoundSetter
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    @DataBoundSetter
+    public void setNoProxyHost(String noProxyHost) {
+        this.noProxyHost = noProxyHost;
     }
 
     /**
@@ -269,7 +317,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
         }
         
-        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
+        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on an agent
             decorate(con);
         }
 
@@ -332,7 +380,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     private static ProxyConfiguration _get() {
         JenkinsJVM.checkJenkinsJVM();
         // this code could be called between the JVM flag being set and theInstance initialized
-        Jenkins jenkins = Jenkins.get();
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
         return jenkins == null ? null : jenkins.proxy;
     }
 
@@ -374,9 +422,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         }
 
         @RequirePOST
+        @Restricted(NoExternalUse.class)
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
-                @QueryParameter("userName") String userName, @QueryParameter("password") String password,
+                @QueryParameter("userName") String userName, @QueryParameter("secretPassword") Secret password,
                 @QueryParameter("noProxyHost") String noProxyHost) {
 
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -401,7 +450,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
                     client.getHostConfiguration().setProxy(name, port);
-                    Credentials credentials = createCredentials(userName, password);
+                    Credentials credentials = createCredentials(userName, password != null ? password.getPlainText() : null);
                     AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
                     client.getState().setProxyCredentials(scope, credentials);
                 }

@@ -201,8 +201,7 @@ class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfiguration {
             applicationContext.registerBeanDefinition(bc.getName(),
                     bc.getBeanDefinition());
         }
-        for (String key : beanDefinitions.keySet()) {
-            BeanDefinition bd = beanDefinitions.get(key);
+        beanDefinitions.forEach((key, bd) -> {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.finer("[RuntimeConfiguration] Registering bean [" + key + "]");
                 if (LOGGER.isLoggable(Level.FINEST)) {
@@ -217,7 +216,7 @@ class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfiguration {
 
             applicationContext.registerBeanDefinition(key, bd);
 
-        }
+        });
     }
 
     /**

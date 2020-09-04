@@ -31,7 +31,7 @@ THE SOFTWARE.
     The submission can be data-bound into List&lt;T&gt; where T is the common base type for the describable instances.
 
     For databinding use, please use &lt;f:repeatableHeteroProperty /&gt;
-    
+
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
     </st:attribute>
@@ -73,6 +73,10 @@ THE SOFTWARE.
       If set to an item of the form <tt>className#classMethod</tt>, it will be used
       to call <tt>className.classMethod(descriptor)</tt> to calculate each item title.
     </st:attribute>
+    <st:attribute name="disableDragAndDrop" type="java.lang.Boolean">
+      If true the drag and drop will not be activated. This just removes the drag and
+      drop UI, it will not prevent users from manually submitting a different order.
+    </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
@@ -81,7 +85,7 @@ THE SOFTWARE.
         <j:if test="${hasHeader}">
           <tr>
             <td colspan="3">
-              <div class="dd-handle">
+              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
                 <b>${descriptor.displayName}</b>
               </div>
             </td>
@@ -96,11 +100,13 @@ THE SOFTWARE.
         <d:invokeBody/>
 
         <f:class-entry descriptor="${descriptor}" />
-        <f:block>
-          <div align="right">
-            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-          </div>
-        </f:block>
+        <j:if test="${!readOnlyMode}">
+          <f:block>
+            <div align="right">
+              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+            </div>
+          </f:block>
+        </j:if>
       </table>
     </d:tag>
   </d:taglib>
@@ -110,11 +116,11 @@ THE SOFTWARE.
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <div class="hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
     <!-- display existing items -->
-    <j:forEach var="i" items="${attrs.items}">
+    <j:forEach var="i" items="${attrs.items}"><!-- TODO consider customizedFields: how to distinguish default items from user-configured items? -->
       <j:set var="descriptor" value="${i.descriptor}" />
       <j:set var="instance" value="${i}" />
       <div name="${attrs.name}" class="repeated-chunk" descriptorId="${descriptor.id}">
-        <local:body deleteCaption="${attrs.deleteCaption}">
+        <local:body deleteCaption="${attrs.deleteCaption}" disableDragAndDrop="${attrs.disableDragAndDrop}">
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
         </local:body>
       </div>
@@ -141,7 +147,7 @@ THE SOFTWARE.
         </j:choose>
         <div name="${attrs.name}" title="${title}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
-          <local:body deleteCaption="${attrs.deleteCaption}">
+          <local:body deleteCaption="${attrs.deleteCaption}" disableDragAndDrop="${attrs.disableDragAndDrop}">
             <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
               <l:ajax>
                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
@@ -152,8 +158,10 @@ THE SOFTWARE.
       </j:forEach>
     </div>
 
-    <div>
-      <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
-    </div>
+    <j:if test="${!readOnlyMode}">
+      <div>
+        <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+      </div>
+    </j:if>
   </div>
 </j:jelly>

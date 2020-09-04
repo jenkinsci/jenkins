@@ -26,13 +26,25 @@ package hudson.model;
 
 import java.util.Arrays;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
+import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.StaplerRequest;
+import net.sf.json.JSONObject;
 
 public class ViewDescriptorTest {
 
@@ -49,7 +61,7 @@ public class ViewDescriptorTest {
         assertContains(r.jenkins.getDescriptorByType(AllView.DescriptorImpl.class).doAutoCompleteCopyNewItemFrom("../d1/", d2), "../d1/prj");
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"}) // the usual API mistakes
+    @SuppressWarnings({"rawtypes"}) // the usual API mistakes
     public static class RestrictiveFolder extends MockFolder {
 
         public RestrictiveFolder(ItemGroup parent, String name) {
@@ -73,6 +85,98 @@ public class ViewDescriptorTest {
 
     private void assertContains(AutoCompletionCandidates c, String... values) {
         assertEquals(new TreeSet<>(Arrays.asList(values)), new TreeSet<>(c.getValues()));
+    }
+
+
+    @Test
+    @Issue("JENKINS-60579")
+    public void invisiblePropertiesOnViewShoudBePersisted() throws Exception {
+
+        //GIVEN a listView that have an invisible property
+        ListView myListView = new ListView("Rock");
+        myListView.setRecurse(true);
+        myListView.setIncludeRegex(".*");
+
+        CustomInvisibleProperty invisibleProperty = new CustomInvisibleProperty();
+        invisibleProperty.setSomeProperty("You cannot see me.");
+        invisibleProperty.setView(myListView);
+        myListView.getProperties().add(invisibleProperty);
+
+        r.jenkins.addView(myListView);
+
+        assertEquals(r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
+                     "You cannot see me.");
+
+        //WHEN the users goes with "Edit View" on the configure page
+        JenkinsRule.WebClient webClient = r.createWebClient();
+        HtmlPage editViewPage = webClient.getPage(myListView, "configure");
+
+        //THEN the invisible property is not displayed on page
+        assertFalse("CustomInvisibleProperty should not be displayed on the View edition page UI.",
+                    editViewPage.asText().contains("CustomInvisibleProperty"));
+
+
+        HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
+        editViewForm.getTextAreaByName("description").type("This list view is awesome !");
+        r.submit(editViewForm);
+
+        //Check that the description is updated on view
+        Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> webClient.getPage(myListView)
+                                                                        .asText()
+                                                                        .contains("This list view is awesome !"));
+
+
+        //AND THEN after View save, the invisible property is still persisted with the View.
+        assertNotNull("The CustomInvisibleProperty should be persisted on the View.",
+                      r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class));
+        assertEquals(r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
+                     "You cannot see me.");
+
+    }
+
+    private static class CustomInvisibleProperty extends ViewProperty {
+
+        private String someProperty;
+
+        public void setSomeProperty(String someProperty) {
+            this.someProperty = someProperty;
+        }
+
+        public String getSomeProperty() {
+            return this.someProperty;
+        }
+
+        public CustomInvisibleProperty() {
+            this.someProperty = "undefined";
+        }
+
+        @Override
+        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
+            return this;
+        }
+
+        @TestExtension
+        public static final class CustomInvisibleDescriptorImpl extends ViewPropertyDescriptor {
+
+            @Override
+            public String getId() {
+                return "CustomInvisibleDescriptorImpl";
+            }
+
+            @Override
+            public boolean isEnabledFor(View view) {
+                return true;
+            }
+        }
+
+        @TestExtension
+        public static final class CustomInvisibleDescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
+
+            @Override
+            public boolean filter(Object context, Descriptor descriptor) {
+                return false;
+            }
+        }
     }
 
 }

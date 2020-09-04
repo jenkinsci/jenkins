@@ -24,6 +24,7 @@ import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.IntByReference;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -352,7 +353,7 @@ typedef struct _SERVICE_TABLE_ENTRY {
 
     @Override
     protected List getFieldOrder() {
-        return Arrays.asList(new String[] {"lpServiceName", "lpServiceProc"});
+        return Arrays.asList("lpServiceName", "lpServiceProc");
     }
   }
 
@@ -360,7 +361,7 @@ typedef struct _SERVICE_TABLE_ENTRY {
 
     @Override
     protected List getFieldOrder() {
-        return Arrays.asList(new String[] {});
+        return Collections.emptyList();
     }
   }
 

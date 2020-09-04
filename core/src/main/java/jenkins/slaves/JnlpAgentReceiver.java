@@ -5,12 +5,15 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.Slave;
 import java.security.SecureRandom;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+
+import jenkins.agents.WebSocketAgents;
+import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionStateListener;
 
 /**
- * Receives incoming agents connecting through {@link JnlpSlaveAgentProtocol2}, {@link JnlpSlaveAgentProtocol3}, {@link JnlpSlaveAgentProtocol4}.
+ * Receives incoming agents connecting through the likes of {@link JnlpSlaveAgentProtocol4} or {@link WebSocketAgents}.
  *
  * <p>
  * This is useful to establish the communication with other JVMs and use them
@@ -28,6 +31,12 @@ import org.jenkinsci.remoting.engine.JnlpConnectionStateListener;
  * @since 1.561
  */
 public abstract class JnlpAgentReceiver extends JnlpConnectionStateListener implements ExtensionPoint {
+
+    /**
+     * This secret value is used as a seed for agents.
+     */
+    public static final HMACConfidentialKey SLAVE_SECRET =
+            new HMACConfidentialKey(JnlpSlaveAgentProtocol.class, "secret");
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -61,8 +70,8 @@ public abstract class JnlpAgentReceiver extends JnlpConnectionStateListener impl
         }
 
         @Override
-        public String getSecretOf(@Nonnull String clientName) {
-            return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(clientName);
+        public String getSecretOf(@NonNull String clientName) {
+            return SLAVE_SECRET.mac(clientName);
         }
     }
 }

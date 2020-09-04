@@ -52,11 +52,17 @@ THE SOFTWARE.
   <div class="container-fluid pane-frame track-mouse ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
     <div class="row">
       <div class="col-xs-24 pane-header">
+        <span class="pane-header-title">
+          <j:out value="${title}"/>
+        </span>
+
         <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
            title="${paneIsCollapsed ? '%expand' : '%collapse'}">
-          <l:icon alt="${paneIsCollapsed ? '%expand' : '%collapse'}" class="${paneIsCollapsed ? 'icon-expand' : 'icon-collapse'} icon-sm"/>
+
+          <j:set var="svgIconId"
+                 value="${paneIsCollapsed ? 'ic_expand_more_24px' : 'ic_expand_less_24px'}" />
+          <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#${svgIconId}" />
         </a>
-        <j:out value="${title}"/>
       </div>
     </div>
     <j:choose>

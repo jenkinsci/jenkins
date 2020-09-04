@@ -2,7 +2,7 @@ package jenkins.security.s2m;
 
 import hudson.Extension;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.inject.Inject;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -25,7 +25,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
     Jenkins jenkins;
 
     @Override
-    public @Nonnull GlobalConfigurationCategory getCategory() {
+    public @NonNull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
@@ -48,7 +48,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
      * Unless this option is relevant, we don't let users choose this.
      */
     public boolean isRelevant() {
-        return jenkins.hasPermission(Jenkins.RUN_SCRIPTS) && jenkins.isUseSecurity();
+        return jenkins.hasPermission(Jenkins.ADMINISTER) && jenkins.isUseSecurity();
     }
 }
 

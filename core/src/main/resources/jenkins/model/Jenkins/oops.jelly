@@ -27,32 +27,22 @@ THE SOFTWARE.
   <!--
     This is the page designated by web.xml and UncaughtExceptionHandler to process an exception thrown by us.
   -->
-  <st:statusCode value="500" />
-  <l:layout title="Jenkins" norefresh="true">
+  <st:statusCode value="${response.getStatus()}" />
+  <l:layout title="Jenkins" type="one-column">
     <l:header />
-    <l:side-panel>
-      <l:task href="https://jenkins.io/" icon="icon-next icon-md" title="${%Jenkins project}"/>
-      <l:task href="https://jenkins.io/redirect/report-an-issue" icon="icon-gear2 icon-md" title="${%Bug tracker}"/>
-      <l:task href="https://jenkins.io/redirect/mailing-lists" icon="icon-search icon-md" title="${%Mailing Lists}"/>
-      <l:task href="https://twitter.com/jenkinsci" icon="icon-user icon-md" title="${%Twitter: @jenkinsci}"/>
-
-    </l:side-panel>
     <l:main-panel>
-      <h1 style="text-align: center">
-        <img src="${imagesURL}/rage.png" height="179" width="154"/> <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
-      </h1>
-      <div id="error-description">
-      <p>
-        ${%problemHappened}
-        ${%checkJIRA}
-        ${%vote}
-        ${%pleaseReport}
-        ${%stackTracePlease}
-        ${%checkML}
-      </p>
-      <h2>${%Stack trace}</h2>
-      <pre style="margin:2em; clear:both">${h.printThrowable(request.getAttribute('javax.servlet.error.exception'))}</pre>
+        <h1 style="text-align: center">
+          <img src="${imagesURL}/rage.png" height="179" width="154"/> <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
+        </h1>
+        <div id="error-description">
+          <h2 style="text-align: center">${%problemHappened}</h2>
+        <p style="text-align: center">Logging ID=${request.getAttribute('jenkins.exception.id')}</p>
       </div>
+      <j:if test="${app.shouldShowStackTrace()}">
+        <p>${%checkJIRA} ${%vote} ${%pleaseReport} ${%stackTracePlease} ${%checkML}</p>
+        <h2>${%Stack trace}</h2>
+        <pre style="margin:2em; clear:both">${h.printThrowable(request.getAttribute('javax.servlet.error.exception'))}</pre>
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

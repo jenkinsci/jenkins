@@ -26,9 +26,12 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.EnvVars;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.WorkspaceList;
+import hudson.tasks.BatchFile;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import java.io.IOException;
@@ -39,15 +42,23 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import hudson.tasks.LogRotatorTest;
 import hudson.tasks.Recorder;
+import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
@@ -62,13 +73,15 @@ import org.xml.sax.SAXException;
  * Unit tests of {@link AbstractBuild}.
  */
 public class AbstractBuildTest {
+
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
     
     @Rule
     public JenkinsRule j = new JenkinsRule();
     
     @Test
     @Issue("JENKINS-30730")
-    @SuppressWarnings("deprecation")
     public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
         ErroneousJobProperty erroneousJobProperty = new ErroneousJobProperty();
@@ -314,6 +327,19 @@ public class AbstractBuildTest {
         assertNotEquals(b1.getStartCondition().get().getWorkspace(), b2.getStartCondition().get().getWorkspace());
 
         done.signal();
+    }
+
+    @Test
+    @Issue("JENKINS-60634")
+    public void tempDirVariable() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        if (Functions.isWindows()) {
+            p.getBuildersList().add(new BatchFile("mkdir \"%WORKSPACE_TMP%\"\r\necho ok > \"%WORKSPACE_TMP%\\x\""));
+        } else {
+            p.getBuildersList().add(new Shell("set -u && mkdir -p \"$WORKSPACE_TMP\" && touch \"$WORKSPACE_TMP/x\""));
+        }
+        j.buildAndAssertSuccess(p);
+        assertTrue(WorkspaceList.tempDir(j.jenkins.getWorkspaceFor(p)).child("x").exists());
     }
 
 }

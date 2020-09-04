@@ -35,7 +35,7 @@ import java.util.ListIterator;
 import java.util.AbstractList;
 import java.util.Set;
 import java.util.HashSet;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -50,7 +50,7 @@ public class Iterators {
      * Returns the empty iterator.
      */
     public static <T> Iterator<T> empty() {
-        return Collections.<T>emptyList().iterator();
+        return Collections.emptyIterator();
     }
 
     /**
@@ -62,7 +62,7 @@ public class Iterators {
 
         protected FlattenIterator(Iterator<? extends T> core) {
             this.core = core;
-            cur = Collections.<U>emptyList().iterator();
+            cur = Collections.emptyIterator();
         }
 
         protected FlattenIterator(Iterable<? extends T> core) {
@@ -413,7 +413,7 @@ public class Iterators {
      * @param count a nonnegative count
      */
     @Restricted(NoExternalUse.class)
-    public static void skip(@Nonnull Iterator<?> iterator, int count) {
+    public static void skip(@NonNull Iterator<?> iterator, int count) {
         if (count < 0) {
             throw new IllegalArgumentException();
         }

@@ -35,8 +35,8 @@ import hudson.remoting.Channel;
 
 import java.io.IOException;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Receives notifications about status changes of {@link Computer}s.
@@ -181,7 +181,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      *
      * @since 1.571
      */
-    public void onOffline(@Nonnull Computer c, @CheckForNull OfflineCause cause) {
+    public void onOffline(@NonNull Computer c, @CheckForNull OfflineCause cause) {
         onOffline(c);
     }
 

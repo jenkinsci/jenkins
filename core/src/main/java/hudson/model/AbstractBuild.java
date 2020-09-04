@@ -83,8 +83,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static java.util.logging.Level.WARNING;
@@ -290,7 +290,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * Normally, a workspace is assigned by {@link hudson.model.Run.RunExecution}, but this lets you set the workspace in case
      * {@link AbstractBuild} is created without a build.
      */
-    protected void setWorkspace(@Nonnull FilePath ws) {
+    protected void setWorkspace(@NonNull FilePath ws) {
         this.workspace = ws.getRemote();
     }
 
@@ -326,7 +326,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     @Override
     @Exported
-    @Nonnull public Set<User> getCulprits() {
+    @NonNull public Set<User> getCulprits() {
         return RunWithSCM.super.getCulprits();
     }
 
@@ -336,7 +336,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @Override
-    @Nonnull
+    @NonNull
     public Set<User> calculateCulprits() {
         Set<User> c = RunWithSCM.super.calculateCulprits();
 
@@ -404,7 +404,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @return Returns the current {@link Node}
          * @throws IllegalStateException if that cannot be determined
          */
-        protected final @Nonnull Node getCurrentNode() throws IllegalStateException {
+        protected final @NonNull Node getCurrentNode() throws IllegalStateException {
             Executor exec = Executor.currentExecutor();
             if (exec == null) {
                 throw new IllegalStateException("not being called from an executor thread");
@@ -433,7 +433,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param wsl
          *      Passed in for the convenience. The returned path must be registered to this object.
          */
-        protected Lease decideWorkspace(@Nonnull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
+        protected Lease decideWorkspace(@NonNull Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String customWorkspace = getProject().getCustomWorkspace();
             if (customWorkspace != null) {
                 FilePath rootPath = n.getRootPath();
@@ -451,7 +451,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return wsl.allocate(ws, getBuild());
         }
 
-        public Result run(@Nonnull BuildListener listener) throws Exception {
+        public Result run(@NonNull BuildListener listener) throws Exception {
             final Node node = getCurrentNode();
             
             assert builtOn==null;
@@ -525,8 +525,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * @param listener
          *      Always non-null. Connected to the main build output.
          */
-        @Nonnull
-        protected Launcher createLauncher(@Nonnull BuildListener listener) throws IOException, InterruptedException {
+        @NonNull
+        protected Launcher createLauncher(@NonNull BuildListener listener) throws IOException, InterruptedException {
             final Node currentNode = getCurrentNode();
             Launcher l = currentNode.createLauncher(listener);
 
@@ -808,7 +808,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return never null.
      */
     @Exported
-    @Nonnull public ChangeLogSet<? extends Entry> getChangeSet() {
+    @NonNull public ChangeLogSet<? extends Entry> getChangeSet() {
         synchronized (changeSetLock) {
             if (scm==null) {
                 scm = NullChangeLogParser.INSTANCE;                
@@ -833,7 +833,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @Override
-    @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+    @NonNull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
         ChangeLogSet<? extends Entry> cs = getChangeSet();
         return cs.isEmptySet() ? Collections.emptyList() : Collections.singletonList(cs);
     }
@@ -863,8 +863,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars env = super.getEnvironment(log);
         FilePath ws = getWorkspace();
-        if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
+        if (ws != null) { // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
+            FilePath tempDir = WorkspaceList.tempDir(ws);
+            if (tempDir != null) {
+                env.put("WORKSPACE_TMP", tempDir.getRemote()); // JENKINS-60634
+            }
+        }
 
         project.getScm().buildEnvVars(this,env);
 

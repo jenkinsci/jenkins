@@ -1,6 +1,3 @@
-/**
- * 
- */
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -15,12 +12,10 @@ import org.jvnet.hudson.test.Issue;
 
 /**
  * @author kingfai
- *
  */
-@SuppressWarnings("unchecked")
 public class AbstractItemTest {
 
-    private class StubAbstractItem extends AbstractItem {
+    private static class StubAbstractItem extends AbstractItem {
 
         protected StubAbstractItem() {
             // sending in null as parent as I don't care for my current tests
@@ -34,7 +29,7 @@ public class AbstractItemTest {
         }
         
         /**
-         * Override save so that nothig happens when setDisplayName() is called
+         * Override save so that nothing happens when setDisplayName() is called
          */
         @Override
         public void save() {
@@ -95,7 +90,7 @@ public class AbstractItemTest {
         assertEquals(displayName, i.getDisplayName());
     }
 
-    private class NameNotEditableItem extends AbstractItem {
+    private static class NameNotEditableItem extends AbstractItem {
 
         protected NameNotEditableItem(ItemGroup parent, String name){
             super(parent, name);

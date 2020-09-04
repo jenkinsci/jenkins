@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import net.jcip.annotations.GuardedBy;
 
 /**
  * A {@link Queue.QueueDecisionHandler} that blocks items being deleted from entering the queue.
@@ -57,7 +57,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
     private final Set<Item> registrations = new HashSet<>();
 
     @GuardedBy("lock")
-    private boolean _contains(@Nonnull Item item) {
+    private boolean _contains(@NonNull Item item) {
         if (registrations.isEmpty()) {
             // no point walking everything if there is nothing in-flight
             return false;
@@ -82,7 +82,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * @param item the item.
      * @return {@code true} if the {@link Item} or any of its {@link Item#getParent()} are being deleted.
      */
-    public static boolean contains(@Nonnull Item item) {
+    public static boolean contains(@NonNull Item item) {
         ItemDeletion instance = instance();
         if (instance == null) {
             return false;
@@ -102,7 +102,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * @return {@code true} if and only if the supplied {@link Item} has been {@linkplain #register(Item)}ed for
      * deletion.
      */
-    public static boolean isRegistered(@Nonnull Item item) {
+    public static boolean isRegistered(@NonNull Item item) {
         ItemDeletion instance = instance();
         if (instance == null) {
             return false;
@@ -122,7 +122,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * @return {@code true} if and only if the {@link Item} was registered and the caller is now responsible to call
      * {@link #deregister(Item)}.
      */
-    public static boolean register(@Nonnull Item item) {
+    public static boolean register(@NonNull Item item) {
         ItemDeletion instance = instance();
         if (instance == null) {
             return false;
@@ -140,7 +140,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      *
      * @param item the {@link Item} that was to be deleted and is now either deleted or the delete was aborted.
      */
-    public static void deregister(@Nonnull Item item) {
+    public static void deregister(@NonNull Item item) {
         ItemDeletion instance = instance();
         if (instance != null) {
             instance.lock.writeLock().lock();
@@ -162,9 +162,6 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
         return ExtensionList.lookup(Queue.QueueDecisionHandler.class).get(ItemDeletion.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean shouldSchedule(Queue.Task p, List<Action> actions) {
         Item item = Tasks.getItemOf(p);

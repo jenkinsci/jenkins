@@ -49,7 +49,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.verb.POST;
 
-import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 
 /**
  * Serves as the top of {@link Computer}s in the URL hierarchy.
@@ -220,7 +220,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     @RequirePOST
     public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.MANAGE);
         
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
             Thread t = nodeMonitor.triggerUpdate();
@@ -258,10 +258,6 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             String xml = Jenkins.XSTREAM.toXML(src);
             Node result = (Node) Jenkins.XSTREAM.fromXML(xml);
             result.setNodeName(name);
-            if(result instanceof Slave){ //change userId too
-                User user = User.current();
-                ((Slave)result).setUserId(user==null ? "anonymous" : user.getId());
-             }
             result.holdOffLaunchUntilSave = true;
 
             app.addNode(result);
@@ -347,7 +343,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public synchronized HttpResponse doConfigSubmit( StaplerRequest req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.MANAGE);
             monitors.rebuild(req,req.getSubmittedForm(),getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances
@@ -406,7 +402,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     public static void initialize() {}
 
-    @Initializer(after= JOB_LOADED)
+    @Initializer(after= JOB_CONFIG_ADAPTED)
     public static void init() {
         // start monitoring nodes, although there's no hurry.
         Timer.get().schedule(new SafeTimerTask() {
@@ -420,7 +416,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * @return The list of strings of computer names (excluding master)
      * @since 2.14
      */
-    @Nonnull
+    @NonNull
     public static List<String> getComputerNames() {
         final ArrayList<String> names = new ArrayList<>();
         for (Computer c : Jenkins.get().getComputers()) {

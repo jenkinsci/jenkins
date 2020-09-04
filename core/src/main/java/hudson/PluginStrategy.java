@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Pluggability point for how to create {@link PluginWrapper}.
@@ -56,7 +56,7 @@ public interface PluginStrategy extends ExtensionPoint {
      * Needed by {@link PluginManager#dynamicLoad} to decide whether such a plugin is already installed.
      * @return the {@link PluginWrapper#getShortName}
      */
-    @Nonnull String getShortName(File archive) throws IOException;
+    @NonNull String getShortName(File archive) throws IOException;
 
 	/**
 	 * Loads the plugin and starts it.

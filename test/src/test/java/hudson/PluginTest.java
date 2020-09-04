@@ -28,6 +28,7 @@ import hudson.model.UpdateCenter;
 import jenkins.model.Jenkins;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.junit.Ignore;
@@ -48,9 +49,11 @@ public class PluginTest {
         ((TestPluginManager) r.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
         r.createWebClient().goTo("plugin/matrix-auth/images/user-disabled.png", "image/png");
         r.createWebClient().goTo("plugin/matrix-auth/images/../images/user-disabled.png", "image/png"); // collapsed somewhere before it winds up in restOfPath
+        /* TODO https://github.com/apache/httpcomponents-client/commit/8c04c6ae5e5ba1432e40684428338ce68431766b#r32873542
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2E%2E/images/user-disabled.png", HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // IAE from TokenList.<init>
         r.createWebClient().assertFails("plugin/matrix-auth/images/%252E%252E/images/user-disabled.png", HttpServletResponse.SC_BAD_REQUEST); // SECURITY-131
         r.createWebClient().assertFails("plugin/matrix-auth/images/%25252E%25252E/images/user-disabled.png", HttpServletResponse.SC_BAD_REQUEST); // just checking
+        */
         // SECURITY-705:
         r.createWebClient().assertFails("plugin/matrix-auth/images/..%2fWEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/matrix-auth/./matrix-auth.jpi", /* Path collapsed to simply `credentials.jpi` before entering */ HttpServletResponse.SC_NOT_FOUND);
@@ -71,7 +74,7 @@ public class PluginTest {
     public void preventTimestamp2_toBeServed() throws Exception {
         // impossible to use installDetachedPlugin("credentials") since we want to have it exploded like with WAR
         Jenkins.get().getUpdateCenter().getSites().get(0).updateDirectlyNow(false);
-        List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(Arrays.asList("credentials"), true);
+        List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(Collections.singletonList("credentials"), true);
 
         for (Future<UpdateCenter.UpdateCenterJob> job : pluginInstalled) {
             job.get();

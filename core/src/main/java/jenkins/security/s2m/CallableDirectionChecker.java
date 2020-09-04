@@ -13,7 +13,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +46,7 @@ public class CallableDirectionChecker extends RoleChecker {
     }
 
     @Override
-    public void check(RoleSensitive subject, @Nonnull Collection<Role> expected) throws SecurityException {
+    public void check(RoleSensitive subject, @NonNull Collection<Role> expected) throws SecurityException {
         final String name = subject.getClass().getName();
 
         if (expected.contains(Roles.MASTER)) {

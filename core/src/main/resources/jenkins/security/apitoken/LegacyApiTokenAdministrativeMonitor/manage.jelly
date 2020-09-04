@@ -46,11 +46,11 @@ THE SOFTWARE.
                         <th>${%NumDaysSinceLastUse}</th>
                         <th title="${%HasFreshToken_tooltip}">
                             ${%HasFreshToken}
-                            <l:icon class="icon-help icon-sm"/>
+                            <l:helpIcon tooltip="${%HasFreshToken_tooltip}" />
                         </th>
                         <th title="${%HasMoreRecentlyUsedToken_tooltip}">
                             ${%HasMoreRecentlyUsedToken}
-                            <l:icon class="icon-help icon-sm"/>
+                            <l:helpIcon tooltip="${%HasMoreRecentlyUsedToken_tooltip}" />
                         </th>
                     </tr>
                     <j:choose>

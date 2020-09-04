@@ -37,19 +37,25 @@ import hudson.security.ACL;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.apache.commons.httpclient.HttpStatus;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
@@ -88,6 +94,27 @@ public class ItemsTest {
         assertEquals(Arrays.<Item>asList(sub2a, sub2ap, sub2alpha, sub2b, sub2bp, sub2BRAVO, sub2c, sub2cp, sub2charlie), sub2.getAllItems(Item.class));
     }
 
+    @Test public void getAllItemsPredicate() throws Exception {
+        MockFolder d = r.createFolder("d");
+        MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
+        MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
+        MockFolder sub2c = sub2.createProject(MockFolder.class, "c");
+        MockFolder sub2b = sub2.createProject(MockFolder.class, "b");
+        MockFolder sub1 = d.createProject(MockFolder.class, "sub1");
+        FreeStyleProject root = r.createFreeStyleProject("root");
+        FreeStyleProject dp = d.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub1q = sub1.createProject(FreeStyleProject.class, "q");
+        FreeStyleProject sub1p = sub1.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2ap = sub2a.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2bp = sub2b.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2cp = sub2c.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2alpha = sub2.createProject(FreeStyleProject.class, "alpha");
+        FreeStyleProject sub2BRAVO = sub2.createProject(FreeStyleProject.class, "BRAVO");
+        FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
+        assertEquals(Arrays.asList(dp, sub1p, sub2ap, sub2bp, sub2cp), d.getAllItems(FreeStyleProject.class, t -> t.getName().equals("p")));
+        assertEquals(Arrays.<Item>asList(sub2a, sub2alpha), sub2.getAllItems(Item.class, t -> t.getName().startsWith("a")));
+    }
+
     @Issue("JENKINS-40252")
     @Test
     public void allItems() throws Exception {
@@ -111,6 +138,27 @@ public class ItemsTest {
                 sub2bp, sub2BRAVO, sub2cp, sub2charlie));
         assertThat(sub2.allItems(Item.class), containsInAnyOrder((Item)sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
                 sub2BRAVO, sub2c, sub2cp, sub2charlie));
+    }
+
+    @Test public void allItemsPredicate() throws Exception {
+        MockFolder d = r.createFolder("d");
+        MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
+        MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
+        MockFolder sub2c = sub2.createProject(MockFolder.class, "c");
+        MockFolder sub2b = sub2.createProject(MockFolder.class, "b");
+        MockFolder sub1 = d.createProject(MockFolder.class, "sub1");
+        FreeStyleProject root = r.createFreeStyleProject("root");
+        FreeStyleProject dp = d.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub1q = sub1.createProject(FreeStyleProject.class, "q");
+        FreeStyleProject sub1p = sub1.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2ap = sub2a.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2bp = sub2b.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2cp = sub2c.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2alpha = sub2.createProject(FreeStyleProject.class, "alpha");
+        FreeStyleProject sub2BRAVO = sub2.createProject(FreeStyleProject.class, "BRAVO");
+        FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
+        assertThat(d.allItems(FreeStyleProject.class, t -> t.getName().equals("p")), containsInAnyOrder(dp, sub1p, sub2ap, sub2bp, sub2cp));
+        assertThat(sub2.allItems(Item.class, t -> t.getName().startsWith("a")), containsInAnyOrder(sub2a, sub2alpha));
     }
 
     @Issue("JENKINS-24825")
@@ -195,7 +243,7 @@ public class ItemsTest {
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
                 WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=hudson.model.FreeStyleProject"), HttpMethod.POST)).getWebResponse();
-                if (webResponse.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
+                if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     throw new FailingHttpStatusCodeException(webResponse);
                 }
             }
@@ -209,7 +257,7 @@ public class ItemsTest {
                         .withThrowExceptionOnFailingStatusCode(false);
                 WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=copy&from=dupe"), HttpMethod.POST)).getWebResponse();
                 r.jenkins.getItem("dupe").delete();
-                if (webResponse.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
+                if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     throw new FailingHttpStatusCodeException(webResponse);
                 }
             }
@@ -232,7 +280,7 @@ public class ItemsTest {
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
                 WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "job/dupe/doRename?newName=" + target), HttpMethod.POST)).getWebResponse();
-                if (webResponse.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
+                if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     r.jenkins.getItem("dupe").delete();
                     throw new FailingHttpStatusCodeException(webResponse);
                 }
@@ -244,8 +292,8 @@ public class ItemsTest {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 CLICommand cmd = new CreateJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.get("attacker").impersonate());
-                int status = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs(target).returnCode();
+                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                int status = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs(target).returnCode();
                 if (status != 0) {
                     throw new AbortException("CLI command failed with status " + status);
                 }
@@ -257,7 +305,7 @@ public class ItemsTest {
                 r.createFreeStyleProject("dupe");
                 CLICommand cmd = new CopyJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.get("attacker").impersonate());
+                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
                 int status = invoker.invokeWithArgs("dupe", target).returnCode();
                 r.jenkins.getItem("dupe").delete();
                 if (status != 0) {
@@ -269,7 +317,7 @@ public class ItemsTest {
         MOVE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 try {
-                    SecurityContext orig = ACL.impersonate(User.get("attacker").impersonate());
+                    SecurityContext orig = ACL.impersonate(User.getOrCreateByIdOrFullName("attacker").impersonate());
                     try {
                         Items.move(r.jenkins.getItemByFullName("d", MockFolder.class).createProject(FreeStyleProject.class, target), r.jenkins);
                     } finally {
@@ -283,7 +331,7 @@ public class ItemsTest {
             }
         };
         abstract void run(JenkinsRule r, String target) throws Exception;
-        private static final JenkinsRule.WebClient wc(JenkinsRule r) throws Exception {
+        private static JenkinsRule.WebClient wc(JenkinsRule r) {
             return r.createWebClient().withBasicApiToken("attacker");
         }
     }

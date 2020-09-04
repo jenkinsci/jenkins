@@ -25,6 +25,7 @@
  */
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +55,7 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 import static java.lang.Math.abs;
-import javax.annotation.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
 
 /**
@@ -128,7 +129,7 @@ public class AnnotatedLargeText<T> extends LargeText {
                     long timestamp = ois.readLong();
                     if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
                         // don't deserialize something too old to prevent a replay attack
-                        return (ConsoleAnnotator) ois.readObject();
+                        return getConsoleAnnotator(ois);
                 } catch (RuntimeException ex) {
                     throw new IOException("Could not decode input", ex);
                 }
@@ -138,6 +139,11 @@ public class AnnotatedLargeText<T> extends LargeText {
         }
         // start from scratch
         return ConsoleAnnotator.initial(context);
+    }
+
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Deserialization is protected by logic.")
+    private ConsoleAnnotator getConsoleAnnotator(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        return (ConsoleAnnotator) ois.readObject();
     }
 
     @CheckReturnValue

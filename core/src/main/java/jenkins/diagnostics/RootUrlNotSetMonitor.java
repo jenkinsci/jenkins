@@ -25,6 +25,8 @@ package jenkins.diagnostics;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.UrlHelper;
 import org.jenkinsci.Symbol;
@@ -60,5 +62,10 @@ public class RootUrlNotSetMonitor extends AdministrativeMonitor {
     public boolean isUrlNull(){
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
         return loc.getUrl() == null;
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 }

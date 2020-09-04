@@ -24,14 +24,13 @@
  */
 package hudson.model;
 
+import hudson.security.ACLContext;
 import jenkins.model.DependencyDeclarer;
 import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import jenkins.util.DirectedGraph;
 import jenkins.util.DirectedGraph.SCC;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,8 +86,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     
     public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
-        SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctx = ACL.as(ACL.SYSTEM)){
             this.computationalData = new HashMap<>();
             for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
@@ -98,8 +96,6 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             topologicalDagSort();
             this.computationalData = null;
             built = true;
-        } finally {
-            SecurityContextHolder.setContext(saveCtx);
         }
     }
 

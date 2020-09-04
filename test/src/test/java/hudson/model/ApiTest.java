@@ -37,7 +37,7 @@ import java.net.HttpURLConnection;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -77,7 +77,7 @@ public class ApiTest {
     }
 
     /**
-     * Test that calling the XML API with the XPath <code>document</code> function fails.
+     * Test that calling the XML API with the XPath {@code document} function fails.
      *
      * @throws Exception if so
      */

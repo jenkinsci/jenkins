@@ -43,12 +43,19 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -59,14 +66,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsConfiguration;
+import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
@@ -164,10 +172,23 @@ public class UpdateSite {
      * Update the data file from the given URL if the file
      * does not exist, or is otherwise due for update.
      * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
+     * @return null if no updates are necessary, or the future result
+     * @since 2.222
+     */
+    public @CheckForNull Future<FormValidation> updateDirectly() {
+        return updateDirectly(DownloadService.signatureCheck);
+    }
+
+    /**
+     * Update the data file from the given URL if the file
+     * does not exist, or is otherwise due for update.
+     * Accepted formats are JSONP or HTML with {@code postMessage}, not raw JSON.
      * @param signatureCheck whether to enforce the signature (may be off only for testing!)
      * @return null if no updates are necessary, or the future result
      * @since 1.502
+     * @deprecated use {@linkplain #updateDirectly()}
      */
+    @Deprecated
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
             return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
@@ -180,8 +201,18 @@ public class UpdateSite {
         }
     }
 
+    /**
+     * Forces an update of the data file from the configured URL, irrespective of the last time the data was retrieved.
+     * @return A {@code FormValidation} indicating the if the update metadata was successfully downloaded from the configured update site
+     * @since 2.222
+     * @throws IOException if there was an error downloading or saving the file.
+     */
+    public @NonNull FormValidation updateDirectlyNow() throws IOException {
+        return updateDirectlyNow(DownloadService.signatureCheck);
+    }
+
     @Restricted(NoExternalUse.class)
-    public @Nonnull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
+    public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
         return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
     }
     
@@ -209,7 +240,7 @@ public class UpdateSite {
             }
         }
 
-        LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
+        LOGGER.finest("Obtained the latest update center data file for UpdateSource " + id);
         retryWindow = 0;
         getDataFile().write(json);
         data = new Data(o);
@@ -244,10 +275,10 @@ public class UpdateSite {
     /**
      * Let sub-classes of UpdateSite provide their own signature validator.
      * @return the signature validator.
-     * @deprecated use {@link #getJsonSignatureValidator(@CheckForNull String)} instead.
+     * @deprecated use {@link #getJsonSignatureValidator(String)} instead.
      */
     @Deprecated
-    @Nonnull
+    @NonNull
     protected JSONSignatureValidator getJsonSignatureValidator() {
         return getJsonSignatureValidator(null);
     }
@@ -260,7 +291,7 @@ public class UpdateSite {
      * @return the signature validator.
      * @since 2.21
      */
-    @Nonnull
+    @NonNull
     protected JSONSignatureValidator getJsonSignatureValidator(@CheckForNull String name) {
         if (name == null) {
             name = signatureValidatorPrefix + " '" + id + "'";
@@ -305,6 +336,7 @@ public class UpdateSite {
      *
      * @return  null if no data is available.
      */
+    @CheckForNull
     public Data getData() {
         if (data == null) {
             JSONObject o = getJSONObject();
@@ -316,13 +348,24 @@ public class UpdateSite {
     }
 
     /**
+     * Whether {@link #getData} might be blocking.
+     */
+    // Internal use only
+    boolean hasUnparsedData() {
+        return data == null && getDataFile().exists();
+    }
+
+    /**
      * Gets the raw update center JSON data.
      */
     public JSONObject getJSONObject() {
         TextFile df = getDataFile();
         if(df.exists()) {
+            long start = System.nanoTime();
             try {
-                return JSONObject.fromObject(df.read());
+                JSONObject o = JSONObject.fromObject(df.read());
+                LOGGER.fine(() -> String.format("Loaded and parsed %s in %.01fs", df, (System.nanoTime() - start) / 1_000_000_000.0));
+                return o;
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.SEVERE,"Failed to parse "+df,e);
                 df.delete(); // if we keep this file, it will cause repeated failures
@@ -346,6 +389,16 @@ public class UpdateSite {
             if(p.getInstalled()==null)
                 r.add(p);
         }
+        r.sort(new Comparator<Plugin>() {
+            @Override
+            public int compare(Plugin plugin, Plugin t1) {
+                final int pop = plugin.popularity.compareTo(t1.popularity);
+                if (pop != 0) {
+                    return -pop; // highest popularity first
+                }
+                return plugin.getDisplayName().compareTo(plugin.getDisplayName());
+            }
+        });
         return r;
     }
 
@@ -508,6 +561,13 @@ public class UpdateSite {
         private final Set<Warning> warnings = new HashSet<>();
 
         /**
+         * Mapping of plugin IDs to deprecation notices
+         *
+         * @since 2.246
+         */
+        private final Map<String, Deprecation> deprecations = new HashMap<>();
+
+        /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
          * the network connection is up. Null to skip the check.
          */
@@ -533,6 +593,24 @@ public class UpdateSite {
                 }
             }
 
+            JSONObject deprecations = o.optJSONObject("deprecations");
+            if (deprecations != null) {
+                for (Iterator it = deprecations.keys(); it.hasNext(); ) {
+                    try {
+                        String pluginId = it.next().toString();
+                        JSONObject entry = deprecations.getJSONObject(pluginId); // additional level of indirection to support future extensibility
+                        if (entry != null) {
+                            String referenceUrl = entry.getString("url");
+                            if (referenceUrl != null) {
+                                this.deprecations.put(pluginId, new Deprecation(referenceUrl));
+                            }
+                        }
+                    } catch (RuntimeException ex) {
+                        LOGGER.log(Level.WARNING, "Failed to parse JSON for deprecation", ex);
+                    }
+                }
+            }
+
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
@@ -545,6 +623,16 @@ public class UpdateSite {
                     }
                 }
                 plugins.put(Util.intern(e.getKey()), p);
+
+                // compatibility with update sites that have no separate 'deprecated' top-level entry.
+                // Also do this even if there are deprecations to potentially allow limiting the top-level entry to overridden URLs.
+                if (p.categories != null) {
+                    if (Arrays.asList(p.categories).contains("deprecated")) {
+                        if (!this.deprecations.containsKey(p.name)) {
+                            this.deprecations.put(p.name, new Deprecation(p.wiki));
+                        }
+                    }
+                }
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -558,6 +646,16 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
             return this.warnings;
+        }
+
+        /**
+         * Returns the deprecations provided by the update site
+         * @return the deprecations provided by the update site
+         * @since 2.246
+         */
+        @Restricted(NoExternalUse.class)
+        public Map<String, Deprecation> getDeprecations() {
+            return this.deprecations;
         }
 
         /**
@@ -720,7 +818,7 @@ public class UpdateSite {
         /**
          * Regular expression pattern for this version range that matches all included version numbers.
          */
-        @Nonnull
+        @NonNull
         private final Pattern pattern;
 
         public WarningVersionRange(JSONObject o) {
@@ -739,6 +837,37 @@ public class UpdateSite {
 
         public boolean includes(VersionNumber number) {
             return pattern.matcher(number.toString()).matches();
+        }
+    }
+
+    /**
+     * Represents a deprecation of a certain component. Jenkins project policy determines exactly what it means.
+     *
+     * @since 2.246
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class Deprecation {
+        /**
+         * URL for this deprecation.
+         *
+         * Jenkins will show a link to this URL when displaying the deprecation message.
+         */
+        public final String url;
+        public Deprecation(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Deprecation that = (Deprecation) o;
+            return Objects.equals(url, that.url);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url);
         }
     }
 
@@ -762,7 +891,7 @@ public class UpdateSite {
         /**
          * The type classifier for this warning.
          */
-        @Nonnull
+        @NonNull
         public /* final */ Type type;
 
         /**
@@ -772,7 +901,7 @@ public class UpdateSite {
          * possibly with a unique suffix (e.g. artifactId) if either applies to multiple components.</p>
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String id;
 
         /**
@@ -783,14 +912,14 @@ public class UpdateSite {
          * </ul>
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String component;
 
         /**
          * A short, English language explanation for this warning.
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String message;
 
         /**
@@ -798,7 +927,7 @@ public class UpdateSite {
          * only, so
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final String url;
 
         /**
@@ -807,7 +936,7 @@ public class UpdateSite {
          * If this list is empty, all versions of the component are considered to be affected by this warning.
          */
         @Exported
-        @Nonnull
+        @NonNull
         public final List<WarningVersionRange> versionRanges;
 
         /**
@@ -861,7 +990,7 @@ public class UpdateSite {
             return id.hashCode();
         }
 
-        public boolean isPluginWarning(@Nonnull String pluginName) {
+        public boolean isPluginWarning(@NonNull String pluginName) {
             return type == Type.PLUGIN && pluginName.equals(this.component);
         }
 
@@ -898,7 +1027,7 @@ public class UpdateSite {
             }
         }
 
-        public boolean isRelevantToVersion(@Nonnull VersionNumber version) {
+        public boolean isRelevantToVersion(@NonNull VersionNumber version) {
             if (this.versionRanges.isEmpty()) {
                 // no version ranges specified, so all versions are affected
                 return true;
@@ -956,7 +1085,7 @@ public class UpdateSite {
         /**
          * Version of Java this plugin requires to run.
          *
-         * @since TODO
+         * @since 2.158
          */
         @Exported
         public final String minimumJavaVersion;
@@ -979,6 +1108,33 @@ public class UpdateSite {
         @Exported
         public final Map<String,String> optionalDependencies;
 
+        /**
+         * Set of plugins, this plugin is a incompatible dependency to.
+         */
+        private Set<Plugin> incompatibleParentPlugins;
+
+        /**
+         * Date when this plugin was released.
+         * @since 2.224
+         */
+        @Exported
+        public final Date releaseTimestamp;
+
+        /**
+         * Popularity of this plugin.
+         *
+         * @since 2.233
+         */
+        @Restricted(NoExternalUse.class)
+        public final Double popularity;
+
+        /**
+         * The latest existing version of this plugin. May be different from the version being offered by the
+         * update site, which will result in a notice on the UI.
+         */
+        @Restricted(NoExternalUse.class)
+        public String latest;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -987,7 +1143,28 @@ public class UpdateSite {
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
             this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
+            this.latest = get(o, "latest");
             this.requiredCore = Util.intern(get(o,"requiredCore"));
+            final String releaseTimestamp = get(o, "releaseTimestamp");
+            Date date = null;
+            if (releaseTimestamp != null) {
+                try {
+                    date = Date.from(Instant.parse(releaseTimestamp));
+                } catch (Exception ex) {
+                    LOGGER.log(Level.FINE, "Failed to parse releaseTimestamp for " + title + " from " + sourceId, ex);
+                }
+            }
+            final String popularityFromJson = get(o, "popularity");
+            Double popularity = 0.0;
+            if (popularityFromJson != null) {
+                try {
+                    popularity = Double.parseDouble(popularityFromJson);
+                } catch (NumberFormatException nfe) {
+                    LOGGER.log(Level.FINE, "Failed to parse popularity: '" + popularityFromJson + "' for plugin " + this.title);
+                }
+            }
+            this.popularity = popularity;
+            this.releaseTimestamp = date;
             this.categories = o.has("labels") ? internInPlace((String[])o.getJSONArray("labels").toArray(EMPTY_STRING_ARRAY)) : null;
             JSONArray ja = o.getJSONArray("dependencies");
             int depCount = (int)(ja.stream().filter(IS_DEP_PREDICATE.and(IS_NOT_OPTIONAL)).count());
@@ -1010,7 +1187,15 @@ public class UpdateSite {
 
         }
 
+        @Restricted(NoExternalUse.class)
+        public boolean isDeprecated() {
+            return getDeprecation() != null;
+        }
 
+        @Restricted(NoExternalUse.class)
+        public UpdateSite.Deprecation getDeprecation() {
+            return Jenkins.get().getUpdateCenter().getSite(sourceId).getData().getDeprecations().get(this.name);
+        }
 
         public String getDisplayName() {
             String displayName;
@@ -1033,11 +1218,12 @@ public class UpdateSite {
 
         /**
          * Returns true if the plugin and its dependencies are fully compatible with the current installation
-         * This is set to restricted for now, since it is only being used by Jenkins UI at the moment.
+         * This is set to restricted for now, since it is only being used by Jenkins UI or Restful API at the moment.
          *
-         * @since TODO
+         * @since 2.175
          */
         @Restricted(NoExternalUse.class)
+        @Exported
         public boolean isCompatible() {
             return isCompatible(new PluginManager.MetadataCache());
         }
@@ -1120,7 +1306,7 @@ public class UpdateSite {
 
             return deps;
         }
-        
+
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
@@ -1132,7 +1318,7 @@ public class UpdateSite {
 
         /**
          * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
-         * @since TODO
+         * @since 2.158
          */
         public boolean isForNewerJava() {
             try {
@@ -1161,7 +1347,7 @@ public class UpdateSite {
 
         /**
          * Returns the minimum Java version needed to use the plugin and all its dependencies.
-         * @since TODO
+         * @since 2.158
          * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
          */
         @CheckForNull
@@ -1208,7 +1394,7 @@ public class UpdateSite {
         /**
          * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
          *
-         * @since TODO
+         * @since 2.158
          */
         public boolean isNeededDependenciesForNewerJava() {
             for (Plugin p: getNeededDependencies()) {
@@ -1233,14 +1419,66 @@ public class UpdateSite {
 
         @Restricted(NoExternalUse.class) // table.jelly
         public boolean isNeededDependenciesCompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
-            return cache.of("isNeededDependenciesCompatibleWithInstalledVersion:" + name, Boolean.class, () -> {
-                for (Plugin p : getNeededDependencies()) {
-                    if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion()) {
-                        return false;
+            return getDependenciesIncompatibleWithInstalledVersion(cache).isEmpty();
+        }
+
+        /**
+         * Returns true if and only if this update addressed a currently active security vulnerability.
+         *
+         * @return true if and only if this update addressed a currently active security vulnerability.
+         */
+        @Restricted(NoExternalUse.class) // Jelly
+        public boolean fixesSecurityVulnerabilities() {
+            final PluginWrapper installed = getInstalled();
+            if (installed == null) {
+                return false;
+            }
+            boolean allWarningsStillApply = true;
+            for (Warning warning : ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class).getActivePluginWarningsByPlugin().getOrDefault(installed, Collections.emptyList())) {
+                boolean thisWarningApplies = false;
+                for (WarningVersionRange range : warning.versionRanges) {
+                    if (range.includes(new VersionNumber(version))) {
+                        thisWarningApplies = true;
                     }
                 }
-                return true;
+                if (!thisWarningApplies) {
+                    allWarningsStillApply = false;
+                }
+            }
+            return !allWarningsStillApply;
+        }
+
+        /**
+         * Get the list of incompatible dependencies (if there are any, as determined by isNeededDependenciesCompatibleWithInstalledVersion)
+         *
+         * @since 2.203
+         */
+        @Restricted(NoExternalUse.class) // table.jelly
+        @SuppressWarnings("unchecked")
+        public List<Plugin> getDependenciesIncompatibleWithInstalledVersion(PluginManager.MetadataCache cache) {
+            return cache.of("getDependenciesIncompatibleWithInstalledVersion:" + name, List.class, () -> {
+                List<Plugin> incompatiblePlugins = new ArrayList<>();
+                for (Plugin p : getNeededDependencies()) {
+                    if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion()) {
+                        incompatiblePlugins.add(p);
+                    }
+                }
+                return incompatiblePlugins;
             });
+        }
+
+        public void setIncompatibleParentPlugins(Set<Plugin> incompatibleParentPlugins) {
+            this.incompatibleParentPlugins = incompatibleParentPlugins;
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public Set<Plugin> getIncompatibleParentPlugins() {
+            return this.incompatibleParentPlugins;
+        }
+
+        @Restricted(NoExternalUse.class) // table.jelly
+        public boolean hasIncompatibleParentPlugins() {
+            return this.incompatibleParentPlugins != null && !this.incompatibleParentPlugins.isEmpty();
         }
 
         /**

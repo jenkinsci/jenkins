@@ -1,0 +1,86 @@
+@import '../abstracts/theme.less';
+
+body,
+p {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  color: var(--text-color);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+table,
+td,
+th,
+form,
+input,
+textarea,
+select {
+  font-size: var(--font-size-sm);
+}
+
+// Reset monospaced font-size, because browsers reduce it by default to ~81%
+pre,
+code,
+kbd,
+samp,
+tt {
+  font-size: var(--font-size-monospace);
+}
+
+/*
+ * Headings
+ */
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  line-height: var(--line-height-heading);
+  font-weight: bold;
+  display: block;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+h1,
+.h1 {
+  font-size: 2rem;
+}
+
+h2,
+.h2 {
+  font-size: 1.75rem;
+}
+
+h3,
+.h3 {
+  font-size: 1.5rem;
+}
+
+h4,
+.h4 {
+  font-size: 1.25rem;
+}
+
+h5,
+.h5 {
+  font-size: 1rem;
+}
+
+h6,
+.h6 {
+  font-size: 0.875rem;
+}

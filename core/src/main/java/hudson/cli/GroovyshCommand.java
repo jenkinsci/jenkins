@@ -60,7 +60,7 @@ public class GroovyshCommand extends CLICommand {
     @Override
     protected int run() {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
-        Jenkins.getActiveInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         // this being remote means no jline capability is available
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
@@ -78,19 +78,19 @@ public class GroovyshCommand extends CLICommand {
         return shell.run(commandLine.toString());
     }
 
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({"rawtypes"})
     protected Groovysh createShell(InputStream stdin, PrintStream stdout,
         PrintStream stderr) {
 
         Binding binding = new Binding();
         // redirect "println" to the CLI
         binding.setProperty("out", new PrintWriter(stdout,true));
-        binding.setProperty("hudson", Jenkins.getActiveInstance()); // backward compatibility
-        binding.setProperty("jenkins", Jenkins.getActiveInstance());
+        binding.setProperty("hudson", Jenkins.get()); // backward compatibility
+        binding.setProperty("jenkins", Jenkins.get());
 
         IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
 
-        final ClassLoader cl = Jenkins.getActiveInstance().pluginManager.uberClassLoader;
+        final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
             private static final long serialVersionUID = 1L;
 

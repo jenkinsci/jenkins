@@ -31,7 +31,7 @@ import java.util.SortedMap;
  * @deprecated Does not behave very consistently. Either write a real functional test with {@code JenkinsRule}, or use PowerMock/Mockito.
  */
 @Deprecated
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes" })
 class StubJob extends Job {
 
     public final static String DEFAULT_STUB_JOB_NAME = "StubJob";

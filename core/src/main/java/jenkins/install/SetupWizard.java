@@ -4,6 +4,7 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -11,7 +12,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -23,6 +24,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
@@ -51,7 +54,6 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
 import hudson.util.VersionNumber;
@@ -92,7 +94,13 @@ public class SetupWizard extends PageDecorator {
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
-    
+
+    @NonNull
+    @Override
+    public String getDisplayName() {
+        return Messages.SetupWizard_DisplayName();
+    }
+
     /**
      * Initialize the setup wizard, this will process any current state initializations
      */
@@ -132,7 +140,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
                     // require a crumb issuer
-                    jenkins.setCrumbIssuer(new DefaultCrumbIssuer(SystemProperties.getBoolean(Jenkins.class.getName() + ".crumbIssuerProxyCompatibility",false)));
+                    jenkins.setCrumbIssuer(GlobalCrumbIssuerConfiguration.createDefaultCrumbIssuer());
     
                     // set master -> slave security:
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)
@@ -453,7 +461,7 @@ public class SetupWizard extends PageDecorator {
                         }
                     }
                     
-                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), "utf-8");
+                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
                     initialPluginList = JSONArray.fromObject(initialPluginJson);
                     break updateSiteList;
                 } catch(Exception e) {
@@ -470,7 +478,7 @@ public class SetupWizard extends PageDecorator {
             try {
                 ClassLoader cl = getClass().getClassLoader();
                 URL localPluginData = cl.getResource("jenkins/install/platform-plugins.json");
-                String initialPluginJson = IOUtils.toString(localPluginData.openStream(), "utf-8");
+                String initialPluginJson = IOUtils.toString(localPluginData.openStream(), StandardCharsets.UTF_8);
                 initialPluginList =  JSONArray.fromObject(initialPluginJson);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);

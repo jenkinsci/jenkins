@@ -1,4 +1,4 @@
-/**
+/*
  * (C) Copyright 2004-2005 Mort Bay Consulting Pty. Ltd.
  *
  *   Parts of this code was taken from the Jetty project, which can be
@@ -129,7 +129,7 @@ public class QuotedStringTokenizer
     }
 
     public String[] toArray() {
-        List<String> r = new ArrayList<String>();
+        List<String> r = new ArrayList<>();
         while(hasMoreTokens())
             r.add(nextToken());
         return r.toArray(new String[r.size()]);

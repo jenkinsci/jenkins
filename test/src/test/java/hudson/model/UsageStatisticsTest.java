@@ -46,7 +46,6 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
@@ -55,7 +54,7 @@ import java.util.zip.GZIPInputStream;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.jvnet.hudson.test.TestPluginManager;
 
@@ -88,9 +87,9 @@ public class UsageStatisticsTest {
 
         byte[] cipherText = Base64.getDecoder().decode(data.getBytes(StandardCharsets.UTF_8));
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
-                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), "UTF-8");
+                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), StandardCharsets.UTF_8);
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
-        Jenkins jenkins = Jenkins.getActiveInstance();
+        Jenkins jenkins = j.jenkins;
         // A bit intrusive with UsageStatistics internals, but done to prevent undetected changes
         // that would cause issues with parsing/analyzing uploaded usage statistics
         assertEquals(1, o.getInt("stat"));
@@ -136,13 +135,12 @@ public class UsageStatisticsTest {
      * @throws InterruptedException
      */
     private void warmUpNodeMonitorCache() throws InterruptedException {
-        Jenkins j = Jenkins.getActiveInstance();
-        ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
+        ArchitectureMonitor.DescriptorImpl descriptor = j.jenkins.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
         String value = null;
         int count = 1;
         while (value == null && count++ <= 5)  // If for some reason the cache doesn't get populated, don't loop forever
         {
-            final Computer master = j.getComputers()[0];
+            final Computer master = j.jenkins.getComputers()[0];
             value = descriptor.get(master);
             Thread.sleep(200);
         }
@@ -151,11 +149,7 @@ public class UsageStatisticsTest {
     // Plugins can be retrieved in any order, so sorting them so that the test is stable
     private List<JSONObject> sortPlugins(List<JSONObject> list) {
         List<JSONObject> sorted = new ArrayList<>(list);
-        Collections.sort(sorted, new Comparator<JSONObject>() {
-            public int compare(JSONObject j1, JSONObject j2) {
-                return j1.getString("name").compareTo(j2.getString("name"));
-            }
-        });
+        sorted.sort(Comparator.comparing(j -> j.getString("name")));
         return sorted;
     }
 
@@ -172,7 +166,7 @@ public class UsageStatisticsTest {
 
         Class clazz = this.getClass();
         String fileContent = Resources.toString(clazz.getResource(clazz.getSimpleName() + "/" + fileName), StandardCharsets.UTF_8);
-        fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vendor"));
+        fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
         assertEquals(fileContent, object.toString());

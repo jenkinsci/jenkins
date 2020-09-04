@@ -27,7 +27,7 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.Recorder;
 import hudson.tasks.Builder;
 import hudson.scm.SCM;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Provides a mechanism for synchronizing build executions in the face of concurrent builds.
@@ -101,7 +101,7 @@ public final class CheckPoint {
     }
 
     /**
-     * Records that the execution of the build has reached to a check point, idenified
+     * Records that the execution of the build has reached to a check point, identified
      * by the given identifier.
      *
      * <p>
@@ -153,7 +153,7 @@ public final class CheckPoint {
      * @throws InterruptedException if the build is aborted while waiting
      * @since 1.528
      */
-    public void block(@Nonnull BuildListener listener, @Nonnull String waiter) throws InterruptedException {
+    public void block(@NonNull BuildListener listener, @NonNull String waiter) throws InterruptedException {
         Run.waitForCheckpoint(this, listener, waiter);
     }
 

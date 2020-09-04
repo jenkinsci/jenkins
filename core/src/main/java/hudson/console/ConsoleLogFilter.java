@@ -33,7 +33,7 @@ import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.util.ArgumentListBuilder;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -60,6 +60,7 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      *
      * @deprecated as of 1.632. Use {@link #decorateLogger(Run, OutputStream)}
      */
+    @Deprecated
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
         if (Util.isOverridden(ConsoleLogFilter.class, getClass(), "decorateLogger", Run.class, OutputStream.class)) {
             // old client calling newer implementation. forward the call.
@@ -101,7 +102,7 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      *      contextual decoration.
      * @since 1.632
      */
-    public OutputStream decorateLogger(@Nonnull Computer computer, OutputStream logger) throws IOException, InterruptedException {
+    public OutputStream decorateLogger(@NonNull Computer computer, OutputStream logger) throws IOException, InterruptedException {
         return logger;      // by default no-op
     }
 

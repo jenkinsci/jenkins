@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Signature;
 import java.util.Base64;
 import static org.junit.Assert.assertTrue;
@@ -44,7 +45,7 @@ public class RSADigitalSignatureConfidentialKeyTest {
 
         Signature sig = Signature.getInstance("SHA256withRSA");
         sig.initVerify(key.getPublicKey());
-        sig.update(plainText.getBytes("UTF-8"));
+        sig.update(plainText.getBytes(StandardCharsets.UTF_8));
 
         assertTrue(sig.verify(Base64.getDecoder().decode(msg)));
     }

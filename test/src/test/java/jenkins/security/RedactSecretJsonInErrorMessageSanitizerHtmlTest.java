@@ -55,7 +55,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @Restricted(NoExternalUse.class)
 public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
@@ -82,10 +82,9 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         
         String textLevelOne = "plain-2";
         String pwdLevelOneA = "secret-2";
-        String pwdLevelOneB = "secret-3";
+        String pwdLevelOneB = "pre-set secret"; // set in Jelly
         ((HtmlInput) page.getElementById("text-level-one")).setValueAttribute(textLevelOne);
         ((HtmlInput) page.getElementById("pwd-level-one-a")).setValueAttribute(pwdLevelOneA);
-        ((HtmlInput) page.getElementById("pwd-level-one-b")).setValueAttribute(pwdLevelOneB);
         
         HtmlForm form = page.getFormByName("config");
         Page formSubmitPage = j.submit(form);

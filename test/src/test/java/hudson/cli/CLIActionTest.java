@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
@@ -30,7 +29,7 @@ import jenkins.util.FullDuplexHttpService;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,8 +51,6 @@ public class CLIActionTest {
 
     @Rule
     public LoggerRule logging = new LoggerRule();
-
-    private ExecutorService pool;
 
     @Test
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
@@ -87,7 +84,6 @@ public class CLIActionTest {
         // @CLIMethod:
         assertExitCode(6, false, jar, "disable-job", "p"); // AccessDeniedException from CLIRegisterer?
         assertExitCode(0, true, jar, "disable-job", "p");
-        // If we have anonymous read access, then the situation is simpler.
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN).grant(Jenkins.READ, Item.READ).everywhere().toEveryone());
         assertExitCode(6, false, jar, "get-job", "p"); // AccessDeniedException from AbstractItem.writeConfigDotXml
         assertExitCode(0, true, jar, "get-job", "p"); // works with API tokens
@@ -98,7 +94,7 @@ public class CLIActionTest {
     private static final String ADMIN = "admin@mycorp.com";
 
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
-        List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* not covering SSH keys in this test */ "-noKeyAuth");
+        List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* TODO until it is the default */ "-webSocket");
         if (useApiToken) {
             commands.add("-auth");
             commands.add(ADMIN + ":" + User.get(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
@@ -137,7 +133,8 @@ public class CLIActionTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(),
-                "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "-noKeyAuth", "test-diagnostic").
+                "-webSocket", // TODO as above
+                "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "test-diagnostic").
             stdout(baos).stderr(System.err).join());
         assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString().trim());
         // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)
@@ -155,7 +152,9 @@ public class CLIActionTest {
         PipedOutputStream pos = new PipedOutputStream(pis);
         PrintWriter pw = new PrintWriter(new TeeOutputStream(pos, System.err), true);
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
-            "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), "-noKeyAuth", "groovysh").
+            "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(),
+                "-webSocket", // TODO as above
+                "groovysh").
             stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).stdin(pis).start();
         while (!baos.toString().contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
             Thread.sleep(100);
@@ -164,7 +163,6 @@ public class CLIActionTest {
         while (!baos.toString().contains("121")) { // ditto not "===> 121"
             Thread.sleep(100);
         }
-        Thread.sleep(31_000); // aggravate org.eclipse.jetty.io.IdleTimeout (cf. AbstractConnector._idleTimeout)
         pw.println("11 * 11 * 11");
         while (!baos.toString().contains("1331")) {
             Thread.sleep(100);

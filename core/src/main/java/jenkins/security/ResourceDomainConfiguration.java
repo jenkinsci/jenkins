@@ -33,9 +33,10 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.UrlHelper;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -48,9 +49,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
 
@@ -61,21 +65,23 @@ import static jenkins.security.ResourceDomainFilter.ERROR_RESPONSE;
  * @see ResourceDomainFilter
  * @see ResourceDomainRootAction
  *
- * @since TODO
+ * @since 2.200, unrestricted since 2.203
  */
 @Extension(ordinal = JenkinsLocationConfiguration.ORDINAL-1) // sort just below the regular location config
-@Restricted(NoExternalUse.class)
+@Restricted(Beta.class)
 @Symbol("resourceRoot")
-public class ResourceDomainConfiguration extends GlobalConfiguration {
+public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainConfiguration.class.getName());
 
     private String url;
 
+    @Restricted(NoExternalUse.class)
     public ResourceDomainConfiguration() {
         load();
     }
 
+    @Restricted(NoExternalUse.class)
     @POST
     public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
@@ -154,7 +160,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
                     // URL points to a Jenkins instance
                     RSAPublicKey publicKey = InstanceIdentityProvider.RSA.getPublicKey();
                     if (publicKey != null) {
-                        String identity = Base64.encodeBase64String(publicKey.getEncoded());
+                        String identity = Base64.getEncoder().encodeToString(publicKey.getEncoded());
                         if (identity.equals(identityHeader)) {
                             return FormValidation.ok(Messages.ResourceDomainConfiguration_ThisJenkins());
                         }
@@ -164,8 +170,11 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
                 }
                 // response is error
                 String responseMessage = httpURLConnection.getResponseMessage();
-                if (responseCode == 404 && responseMessage.equals(ERROR_RESPONSE)) {
-                    return FormValidation.ok(Messages.ResourceDomainConfiguration_ResourceResponse());
+                if (responseCode == 404) {
+                    String responseBody = String.join("", IOUtils.readLines(httpURLConnection.getErrorStream(), StandardCharsets.UTF_8));
+                    if (responseMessage.contains(ERROR_RESPONSE) || responseBody.contains(ERROR_RESPONSE)) {
+                        return FormValidation.ok(Messages.ResourceDomainConfiguration_ResourceResponse());
+                    }
                 }
                 return FormValidation.error(Messages.ResourceDomainConfiguration_FailedIdentityCheck(responseCode, responseMessage));
             }
@@ -180,11 +189,12 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
         }
     }
 
+    @CheckForNull
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(@CheckForNull String url) {
         if (checkUrl(url, false).kind == FormValidation.Kind.OK) {
             // only accept valid configurations, both with and without URL, but allow for networking issues
             url = Util.fixEmpty(url);
@@ -205,6 +215,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
      * @param req the request to check
      * @return whether the request is a resource URL request
      */
+    @Restricted(NoExternalUse.class)
     public static boolean isResourceRequest(HttpServletRequest req) {
         if (!isResourceDomainConfigured()) {
             return false;
@@ -241,6 +252,7 @@ public class ResourceDomainConfiguration extends GlobalConfiguration {
      *
      * @return whether a domain has been configured
      */
+    @Restricted(NoExternalUse.class)
     public static boolean isResourceDomainConfigured() {
         String resourceRootUrl = get().getUrl();
         if (resourceRootUrl == null || resourceRootUrl.isEmpty()) {

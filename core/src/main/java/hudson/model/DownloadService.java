@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
@@ -43,6 +45,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -111,7 +114,7 @@ public class DownloadService {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
         try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, "UTF-8");
+            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             int start = jsonp.indexOf('{');
             int end = jsonp.lastIndexOf('}');
             if (start >= 0 && end > start) {
@@ -136,7 +139,7 @@ public class DownloadService {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
         }
         try (InputStream is = con.getInputStream()) {
-            String jsonp = IOUtils.toString(is, "UTF-8");
+            String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             String preamble = "window.parent.postMessage(JSON.stringify(";
             int start = jsonp.indexOf(preamble);
             int end = jsonp.lastIndexOf("),'*');");
@@ -204,7 +207,9 @@ public class DownloadService {
         private volatile long lastAttempt=Long.MIN_VALUE;
 
         /**
+         * Creates a new downloadable.
          *
+         * @param id The ID to use.
          * @param url
          *      URL relative to {@link UpdateCenter#getDefaultBaseUrl()}.
          *      So if this string is "foo.json", the ultimate URL will be
@@ -212,36 +217,75 @@ public class DownloadService {
          *
          *      For security and privacy reasons, we don't allow the retrieval
          *      from random locations.
+         * @param interval The interval, in milliseconds, between attempts to update this downloadable's data.
          */
-        public Downloadable(String id, String url, long interval) {
+        public Downloadable(@NonNull String id, @NonNull String url, long interval) {
             this.id = id;
             this.url = url;
             this.interval = interval;
         }
 
+        /**
+         * Creates a new downloadable.
+         * This will generate an ID based on this downloadable's class (using {@link #idFor(Class)}. The URL will be set
+         * to that ID, with an added {@code .json} extension, and the default interval will be used.
+         */
         public Downloadable() {
-            this.id = getClass().getName().replace('$','.');
-            this.url = this.id+".json";
+            this.id = Downloadable.idFor(this.getClass());
+            this.url = this.id + ".json";
             this.interval = DEFAULT_INTERVAL;
         }
 
         /**
-         * Uses the class name as an ID.
+         * Creates a new downloadable.
+         * This will generate an ID based on the specified class (using {@link #idFor(Class)}. The URL will be set to
+         * that ID, with an added {@code .json} extension, and the default interval will be used.
+         *
+         * @param clazz The class to use to generate the ID.
          */
-        public Downloadable(Class id) {
-            this(id.getName().replace('$','.'));
+        public Downloadable(@NonNull Class<?> clazz) {
+            this(Downloadable.idFor(clazz));
         }
 
-        public Downloadable(String id) {
-            this(id,id+".json");
+        /**
+         * Creates a new downloadable with a specific ID. The URL will be set to that ID, with an added {@code .json}
+         * extension, and the default interval will be used.
+         *
+         * @param id The ID to use.
+         */
+        public Downloadable(@NonNull String id) {
+            this(id, id + ".json");
         }
 
-        public Downloadable(String id, String url) {
-            this(id,url, DEFAULT_INTERVAL);
+        /**
+         * Creates a new downloadable with a specific ID and URL. The default interval will be used.
+         *
+         * @param id  The ID to use.
+         * @param url URL relative to {@link UpdateCenter#getDefaultBaseUrl()}. So if this string is "foo.json", the
+         *            ultimate URL will be something like "http://updates.jenkins-ci.org/updates/foo.json".
+         *            <p>
+         *            For security and privacy reasons, we don't allow the retrieval from random locations.
+         */
+        public Downloadable(@NonNull String id, @NonNull String url) {
+            this(id, url, DEFAULT_INTERVAL);
         }
 
+        @NonNull
         public String getId() {
             return id;
+        }
+
+        /**
+         * Generates an ID based on a class.
+         *
+         * @param clazz The class to use to generate an ID.
+         * @return The ID generated based on the specified class.
+         *
+         * @since 2.244
+         */
+        @NonNull
+        public static String idFor(@NonNull Class<?> clazz) {
+            return clazz.getName().replace('$','.');
         }
 
         /**
@@ -256,7 +300,7 @@ public class DownloadService {
          */
         public List<String> getUrls() {
             List<String> updateSites = new ArrayList<>();
-            for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
                 String siteUrl = site.getUrl();
                 int baseUrlEnd = siteUrl.indexOf("update-center.json");
                 if (baseUrlEnd != -1) {
@@ -326,7 +370,7 @@ public class DownloadService {
         public FormValidation updateNow() throws IOException {
             List<JSONObject> jsonList = new ArrayList<>();
             boolean toolInstallerMetadataExists = false;
-            for (UpdateSite updatesite : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+            for (UpdateSite updatesite : Jenkins.get().getUpdateCenter().getSiteList()) {
                 String site = updatesite.getMetadataUrlForDownloadable(url);
                 if (site == null) {
                     return FormValidation.warning("The update site " + updatesite.getId() + " does not look like an update center");
@@ -405,13 +449,30 @@ public class DownloadService {
         /**
          * Returns all the registered {@link Downloadable}s.
          */
+        @NonNull
         public static ExtensionList<Downloadable> all() {
             return ExtensionList.lookup(Downloadable.class);
         }
 
         /**
-         * Returns the {@link Downloadable} that has the given ID.
+         * Returns the {@link Downloadable} that has an ID associated with the specified class (as computed via
+         * {@link #idFor(Class)}).
+         *
+         * @param clazz The class to use to determine the downloadable's ID.
+         *
+         * @since 2.244
          */
+        @CheckForNull
+        public static Downloadable get(@NonNull Class<?> clazz) {
+            return Downloadable.get(Downloadable.idFor(clazz));
+        }
+
+        /**
+         * Returns the {@link Downloadable} that has the given ID.
+         *
+         * @param id The ID to look for.
+         */
+        @CheckForNull
         public static Downloadable get(String id) {
             for (Downloadable d : all()) {
                 if(d.id.equals(id))

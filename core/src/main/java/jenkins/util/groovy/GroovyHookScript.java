@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 
@@ -46,14 +46,14 @@ public class GroovyHookScript {
 
     @Deprecated
     public GroovyHookScript(String hook) {
-        this(hook, Jenkins.getActiveInstance());
+        this(hook, Jenkins.get());
     }
 
     private GroovyHookScript(String hook, Jenkins j) {
         this(hook, j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader);
     }
 
-    public GroovyHookScript(String hook, @Nonnull ServletContext servletContext, @Nonnull File home, @Nonnull ClassLoader loader) {
+    public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File home, @NonNull ClassLoader loader) {
         this.hook = hook;
         this.servletContext = servletContext;
         this.home = home;

@@ -66,6 +66,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
      * @deprecated as of 2.0
      *      Use injection
      */
+    @Deprecated
     public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
 
     @Extension @Symbol("tmpSpace")
@@ -93,6 +94,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
     /**
      * @deprecated as of 2.0
      */
+    @Deprecated
     public static DiskSpaceMonitorDescriptor install() {
         return DESCRIPTOR;
     }

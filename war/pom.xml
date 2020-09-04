@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -40,9 +39,10 @@ THE SOFTWARE.
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
     <contextPath>/jenkins</contextPath><!-- context path during test -->
+    <host>localhost</host><!-- HTTP listener host/interface -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>6.10.2</node.version>
-    <yarn.version>0.24.5</yarn.version>
+    <node.version>12.14.1</node.version>
+    <yarn.version>1.21.1</yarn.version>
   </properties>
 
   <dependencyManagement>
@@ -81,6 +81,10 @@ THE SOFTWARE.
           <artifactId>metainf-services</artifactId>
           <groupId>org.kohsuke.metainf-services</groupId>
         </exclusion>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -91,9 +95,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
-      <classifier>jar-with-dependencies</classifier>
       <version>${project.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <!--
@@ -101,48 +103,40 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.3</version>
+      <version>5.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>2.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
-      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>slave-installer</artifactId>
-      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>launchd-slave-installer</artifactId>
-      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>upstart-slave-installer</artifactId>
-      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>systemd-slave-installer</artifactId>
-      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -263,13 +257,6 @@ THE SOFTWARE.
               <artifactItems>
                 <!-- dependencies that goes to unusual locations -->
                 <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>cli</artifactId>
-                  <classifier>jar-with-dependencies</classifier>
-                  <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
-                  <destFileName>jenkins-cli.jar</destFileName>
-                </artifactItem>
-                <artifactItem>
                   <groupId>org.jenkins-ci</groupId>
                   <artifactId>winstone</artifactId>
                   <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
@@ -321,7 +308,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>1.11</version>
+                  <version>1.22</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -369,27 +356,27 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.65</version>
+                  <version>1.73</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1.26.1</version>
+                  <version>1.29</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>2.35</version>
+                  <version>2.40</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>2.20</version>
+                  <version>2.22</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -403,7 +390,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>structs</artifactId>
-                  <version>1.18</version>
+                  <version>1.20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -444,6 +431,27 @@ THE SOFTWARE.
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
+          <execution> <!-- see jetty-maven-plugin config and WebAppMain -->
+            <id>support-log-formatter</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.jenkins.lib</groupId>
+                  <artifactId>support-log-formatter</artifactId>
+                  <version>1.0</version>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <stripVersion>true</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin><!-- generate licenses.xml -->
@@ -466,28 +474,18 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-jenkins-dev-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.4.22.v20191022</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
           -->
           <reload>manual</reload>
           <httpConnector>
-              <port>${port}</port>
+            <host>${host}</host>
+            <port>${port}</port>
           </httpConnector>
-          <additionalClassesDirectories>
-            <!-- load resources straight from source -->
-            <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
-
-            <!--
-              read directly from core module's output directory,
-              so that changes are picked up right away without running mvn.
-            -->
-            <additionalClassesDirectory>../core/target/classes</additionalClassesDirectory>
-          </additionalClassesDirectories>
           <loginServices>
             <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
@@ -507,6 +505,11 @@ THE SOFTWARE.
             <systemProperty>
               <!-- show the stapler evaluation during execution -->
               <name>stapler.trace</name>
+              <value>true</value>
+            </systemProperty>
+            <systemProperty>
+              <!-- show the full stack trace on errors (the oops page) -->
+              <name>jenkins.model.Jenkins.SHOW_STACK_TRACE</name>
               <value>true</value>
             </systemProperty>
             <systemProperty>
@@ -537,13 +540,10 @@ THE SOFTWARE.
               <name>hudson.Main.development</name>
               <value>true</value>
             </systemProperty>
-            <systemProperty>
-              <!-- this adds 3 sec to the shutdown, and most likely pointless, too -->
-              <name>hudson.DNSMultiCast.disabled</name>
-              <value>true</value>
-            </systemProperty>
           </systemProperties>
           <webApp>
+            <!-- Allows resources to be reloaded, and enable nicer console logging. -->
+            <extraClasspath>${project.basedir}/../core/src/main/resources,${project.basedir}/../core/target/classes,${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
             <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern><!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
@@ -572,7 +572,7 @@ THE SOFTWARE.
                   <archive>${project.build.directory}/${project.build.finalName}.war</archive>
                   <arguments>
                     <argument>-tsa</argument>
-                    <argument>http://timestamp.comodoca.com/rfc3161</argument>
+                    <argument>http://timestamp.digicert.com</argument>
                   </arguments>
                 </configuration>
               </execution>
@@ -584,16 +584,14 @@ THE SOFTWARE.
 
 
     <!--
-        The following profiles are required to integration the node/gulp build into this maven build.
+        The following profiles are required to integration the node/yarn build into this maven build.
         Hopefully we can push these profiles down into a parent pom.
-        See https://github.com/tfennelly/jenkins-js-builder#maven-integration
     -->
-
     <profile>
-      <id>gulp-execution</id>
+      <id>yarn-execution</id>
       <activation>
         <file>
-          <exists>gulpfile.js</exists>
+          <exists>package.json</exists>
         </file>
       </activation>
       <build>
@@ -656,27 +654,38 @@ THE SOFTWARE.
 
               <execution>
                 <phase>generate-sources</phase>
-                <id>gulp bundle</id>
+                <id>yarn build</id>
                 <goals>
-                  <goal>gulp</goal>
+                  <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>jshint bundle</arguments>
+                  <arguments>build</arguments>
                 </configuration>
               </execution>
 
               <execution>
                 <phase>test</phase>
-                <id>gulp test</id>
+                <id>yarn test</id>
                 <goals>
-                  <goal>gulp</goal>
+                  <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>bundle test</arguments>
+                  <arguments>test</arguments>
                   <skip>${skipTests}</skip>
                 </configuration>
               </execution>
 
+              <execution>
+                <phase>test</phase>
+                <id>yarn lint</id>
+                <goals>
+                  <goal>yarn</goal>
+                </goals>
+                <configuration>
+                  <arguments>lint</arguments>
+                  <skip>${skipTests}</skip>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
         </plugins>

@@ -7,53 +7,51 @@ function checkPluginsWithoutWarnings() {
         }
     }
 }
-function showhideCategories(hdr,on) {
-  var table = hdr.parentNode.parentNode.parentNode,
-      newDisplay = on ? '' : 'none',
-      nameList = new Array(), id;
-  for (var i = 1; i < table.rows.length; i++) {
-    if (on || table.rows[i].cells.length == 1)
-      table.rows[i].style.display = newDisplay;
-     else {
-      // Hide duplicate rows for a plugin:version when not viewing by-category
-      id = table.rows[i].cells[1].getAttribute('data-id');
-      if (nameList[id] == 1) table.rows[i].style.display = 'none';
-      nameList[id] = 1;
-    }
-  }
-}
-function showhideCategory(col) {
-  var row = col.parentNode.nextSibling;
-  var newDisplay = row && row.style.display == 'none' ? '' : 'none';
-  for (; row && row.cells.length > 1; row = row.nextSibling)
-    row.style.display = newDisplay;
-}
 
 Behaviour.specify("#filter-box", '_table', 0, function(e) {
-      function applyFilter() {
-          var filter = e.value.toLowerCase();
-          ["TR.plugin","TR.plugin-category"].each(function(clz) {
-            var encountered = {};
-            var items = document.getElementsBySelector(clz);
-            for (var i=0; i<items.length; i++) {
-                var visible = (filter=="" || items[i].innerHTML.toLowerCase().indexOf(filter)>=0);
-                var name = items[i].cells && items[i].cells.length > 1
-                        ? items[i].cells[1].getAttribute('data-id')
-                        : items[i].getAttribute("name");
-                if (visible && name != null) {
-                    if (encountered[name]) {
-                        visible = false;
-                    }
-                    encountered[name] = true;
-                }
-                items[i].style.display = (visible ? "" : "none");
+    function applyFilter() {
+        var filter = e.value.toLowerCase().trim();
+        var filterParts = filter.split(/ +/).filter (function(word) { return word.length > 0; });
+        var items = document.getElementsBySelector("TR.plugin");
+        var anyVisible = false;
+        for (var i=0; i<items.length; i++) {
+            if ((filterParts.length < 1 || filter.length < 2) && items[i].hasClassName("hidden-by-default")) {
+                items[i].addClassName("hidden");
+                continue;
             }
-          });
+            var makeVisible = true;
 
-          layoutUpdateCallback.call();
-      }
+            var content = items[i].innerHTML.toLowerCase();
+            for (var j = 0; j < filterParts.length; j++) {
+                var part = filterParts[j];
+                if (content.indexOf(part) < 0) {
+                    makeVisible = false;
+                    break;
+                }
+            }
+            if (makeVisible) {
+                items[i].removeClassName("hidden");
+                anyVisible = true;
+            } else {
+                items[i].addClassName("hidden");
+            }
+        }
+        var instructions = document.getElementById("hidden-by-default-instructions")
+        if (instructions) {
+            instructions.style.display = anyVisible ? 'none' : '';
+        }
 
-      e.onkeyup = applyFilter;
+        layoutUpdateCallback.call();
+    }
+    e.onkeyup = applyFilter;
+
+    (function() {
+        var instructionsTd = document.getElementById("hidden-by-default-instructions-td");
+        if (instructionsTd) { // only on Available tab
+            instructionsTd.innerText = instructionsTd.getAttribute("data-loaded-text");
+        }
+        applyFilter();
+    }());
 });
 
 /**
@@ -230,8 +228,12 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     var dependencySpan = dependencySpans[i];
                     var pluginId = dependencySpan.getAttribute('data-plugin-id');
                     var depPluginTR = getPluginTR(pluginId);
-                    var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
-                    if (depPluginMetadata.enableInput.checked) {
+                    var enabled = false;
+                    if (depPluginTR) {
+                        var depPluginMetadata = depPluginTR.jenkinsPluginMetadata;
+                        enabled = depPluginMetadata.enableInput.checked;
+                    }
+                    if (enabled) {
                         // It's enabled ... hide the span
                         dependencySpan.setStyle({display: 'none'});
                     } else {
@@ -291,7 +293,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 }
             }
 
-            if (pluginTR.hasClassName('detached')) {
+            if (pluginTR.hasClassName('possibly-has-implied-dependents')) {
                 infoContainer.update('<div class="title">' + i18n('detached-disable') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
                 return true;
             }
@@ -323,7 +325,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 return true;
             }
             
-            if (pluginTR.hasClassName('detached')) {
+            if (pluginTR.hasClassName('possibly-has-implied-dependents')) {
                 infoContainer.update('<div class="title">' + i18n('detached-uninstall') + '</div><div class="subtitle">' + i18n('detached-possible-dependents') + '</div>');
                 return true;
             }
@@ -354,12 +356,13 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
             
             // Setup event handlers...
-            
-            // Toggling of the enable/disable checkbox requires a check and possible
-            // change of visibility on the same checkbox on other plugins.
-            Element.observe(enableInput, 'click', function() {
-                setEnableWidgetStates();
-            });
+            if (enableInput) {
+                // Toggling of the enable/disable checkbox requires a check and possible
+                // change of visibility on the same checkbox on other plugins.
+                Element.observe(enableInput, 'click', function() {
+                    setEnableWidgetStates();
+                });
+            }
             
             // 
             var infoTR = document.createElement("tr");
@@ -382,34 +385,38 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
             
             // Handle mouse in/out of the enable/disable cell (left most cell).
-            Element.observe(enableTD, 'mouseenter', function() {
-                showInfoTimeout = setTimeout(function() {
-                    showInfoTimeout = undefined;
-                    infoDiv.update('');
-                    if (populateEnableDisableInfo(pluginTR, infoDiv)) {
-                        addDependencyInfoRow(pluginTR, infoTR);
-                    }
-                }, 1000);
-            });
-            Element.observe(enableTD, 'mouseleave', function() {
-                clearShowInfoTimeout();
-                removeDependencyInfoRow(pluginTR);
-            });
+            if (enableTD) {
+                Element.observe(enableTD, 'mouseenter', function() {
+                    showInfoTimeout = setTimeout(function() {
+                        showInfoTimeout = undefined;
+                        infoDiv.update('');
+                        if (populateEnableDisableInfo(pluginTR, infoDiv)) {
+                            addDependencyInfoRow(pluginTR, infoTR);
+                        }
+                    }, 1000);
+                });
+                Element.observe(enableTD, 'mouseleave', function() {
+                    clearShowInfoTimeout();
+                    removeDependencyInfoRow(pluginTR);
+                });
+            }
 
             // Handle mouse in/out of the uninstall cell (right most cell).
-            Element.observe(uninstallTD, 'mouseenter', function() {
-                showInfoTimeout = setTimeout(function() {
-                    showInfoTimeout = undefined;
-                    infoDiv.update('');
-                    if (populateUninstallInfo(pluginTR, infoDiv)) {
-                        addDependencyInfoRow(pluginTR, infoTR);
-                    }
-                }, 1000);
-            });
-            Element.observe(uninstallTD, 'mouseleave', function() {
-                clearShowInfoTimeout();
-                removeDependencyInfoRow(pluginTR);
-            });
+            if (uninstallTD) {
+                Element.observe(uninstallTD, 'mouseenter', function() {
+                    showInfoTimeout = setTimeout(function() {
+                        showInfoTimeout = undefined;
+                        infoDiv.update('');
+                        if (populateUninstallInfo(pluginTR, infoDiv)) {
+                            addDependencyInfoRow(pluginTR, infoTR);
+                        }
+                    }, 1000);
+                });
+                Element.observe(uninstallTD, 'mouseleave', function() {
+                    clearShowInfoTimeout();
+                    removeDependencyInfoRow(pluginTR);
+                });
+            }
         }
 
         for (var i = 0; i < pluginTRs.length; i++) {
@@ -419,3 +426,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         setEnableWidgetStates();
     });
 }());
+
+Element.observe(window, "load", function() {
+    document.getElementById('filter-box').focus();
+});

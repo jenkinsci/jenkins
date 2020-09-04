@@ -36,7 +36,10 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadPendingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.CountingInputStream;
 
 /**
@@ -76,111 +79,143 @@ class PlainCLIProtocol {
         }
     }
 
-    static abstract class EitherSide implements Closeable {
+    interface Output extends Closeable {
+        void send(byte[] data) throws IOException;
+    }
 
-        private final CountingInputStream cis;
-        private final FlightRecorderInputStream flightRecorder;
-        final DataInputStream dis;
-        final DataOutputStream dos;
+    static final class FramedOutput implements Output {
 
-        protected EitherSide(InputStream is, OutputStream os) {
-            cis = new CountingInputStream(is);
-            flightRecorder = new FlightRecorderInputStream(cis);
-            dis = new DataInputStream(flightRecorder);
+        private final DataOutputStream dos;
+
+        FramedOutput(OutputStream os) {
             dos = new DataOutputStream(os);
         }
 
-        final void begin() {
-            new Reader().start();
+        @Override
+        public void send(byte[] data) throws IOException {
+            dos.writeInt(data.length - 1); // not counting the opcode
+            dos.write(data);
+            dos.flush();
         }
 
-        private class Reader extends Thread {
+        @Override
+        public void close() throws IOException {
+            dos.close();
+        }
 
-            Reader() {
-                super("PlainCLIProtocol"); // TODO set distinctive Thread.name
-            }
+    }
 
-            @Override
-            public void run() {
-                try {
-                    while (true) {
-                        LOGGER.finest("reading frame");
-                        int framelen;
-                        try {
-                            framelen = dis.readInt();
-                        } catch (EOFException x) {
-                            handleClose();
-                            break; // TODO verify that we hit EOF immediately, not partway into framelen
-                        }
-                        if (framelen < 0) {
-                            throw new IOException("corrupt stream: negative frame length");
-                        }
-                        byte b = dis.readByte();
-                        if (b < 0) { // i.e., >127
-                            throw new IOException("corrupt stream: negative operation code");
-                        }
-                        if (b >= Op.values().length) {
-                            LOGGER.log(Level.WARNING, "unknown operation #{0}: {1}", new Object[] {b, HexDump.toHex(flightRecorder.getRecord())});
-                            IOUtils.skipFully(dis, framelen);
-                            continue;
-                        }
-                        Op op = Op.values()[b];
-                        long start = cis.getByteCount();
-                        LOGGER.log(Level.FINEST, "handling frame with {0} of length {1}", new Object[] {op, framelen});
-                        boolean handled = handle(op, framelen);
-                        if (handled) {
-                            long actuallyRead = cis.getByteCount() - start;
-                            if (actuallyRead != framelen) {
-                                throw new IOException("corrupt stream: expected to read " + framelen + " bytes from " + op + " but read " + actuallyRead);
-                            }
-                        } else {
-                            LOGGER.log(Level.WARNING, "unexpected {0}: {1}", new Object[] {op, HexDump.toHex(flightRecorder.getRecord())});
-                            IOUtils.skipFully(dis, framelen);
+    static final class FramedReader extends Thread {
+
+        private final EitherSide side;
+        private final CountingInputStream cis;
+        private final FlightRecorderInputStream flightRecorder;
+        private final DataInputStream dis;
+
+        FramedReader(EitherSide side, InputStream is) {
+            super("PlainCLIProtocol"); // TODO set distinctive Thread.name
+            this.side = side;
+            cis = new CountingInputStream(is);
+            flightRecorder = new FlightRecorderInputStream(cis);
+            dis = new DataInputStream(flightRecorder);
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (true) {
+                    LOGGER.finest("reading frame");
+                    int framelen;
+                    try {
+                        framelen = dis.readInt();
+                    } catch (EOFException x) {
+                        side.handleClose();
+                        break; // TODO verify that we hit EOF immediately, not partway into framelen
+                    }
+                    if (framelen < 0) {
+                        throw new IOException("corrupt stream: negative frame length");
+                    }
+                    LOGGER.finest("read frame length " + framelen);
+                    long start = cis.getByteCount();
+                    try {
+                        side.handle(new DataInputStream(new BoundedInputStream(dis, /* op byte not counted */framelen + 1)));
+                    } catch (ProtocolException x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                        // but read another frame
+                    } finally {
+                        long actuallyRead = cis.getByteCount() - start;
+                        long unread = framelen + 1 - actuallyRead;
+                        if (unread > 0) {
+                            LOGGER.warning(() -> "Did not read " + unread + " bytes");
+                            IOUtils.skipFully(dis, unread);
                         }
                     }
-                } catch (ClosedChannelException x) {
-                    LOGGER.log(Level.FINE, null, x);
-                    handleClose();
-                } catch (IOException x) {
-                    LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
-                } catch (ReadPendingException x) {
-                    // in case trick in CLIAction does not work
-                    LOGGER.log(Level.FINE, null, x);
-                    handleClose();
-                } catch (RuntimeException x) {
-                    LOGGER.log(Level.WARNING, null, x);
-                    handleClose();
                 }
+            } catch (ClosedChannelException x) {
+                LOGGER.log(Level.FINE, null, x);
+                side.handleClose();
+            } catch (IOException x) {
+                LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
+            } catch (ReadPendingException x) {
+                // in case trick in CLIAction does not work
+                LOGGER.log(Level.FINE, null, x);
+                side.handleClose();
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, null, x);
+                side.handleClose();
             }
+        }
 
+    }
+
+    private static final class ProtocolException extends IOException {
+        ProtocolException(String message) {
+            super(message);
+        }
+    }
+
+    static abstract class EitherSide implements Closeable {
+
+        private final Output out;
+
+        protected EitherSide(Output out) {
+            this.out = out;
         }
 
         protected abstract void handleClose();
 
-        protected abstract boolean handle(Op op, int framelen) throws IOException;
-
-        private void writeOp(Op op) throws IOException {
-            dos.writeByte((byte) op.ordinal());
+        final void handle(DataInputStream dis) throws IOException {
+            byte b = dis.readByte();
+            if (b < 0) { // i.e., >127
+                throw new IOException("corrupt stream: negative operation code");
+            }
+            if (b >= Op.values().length) {
+                throw new ProtocolException("unknown operation #" + b);
+            }
+            Op op = Op.values()[b];
+            LOGGER.finest(() -> "handling frame with " + op);
+            if (!handle(op, dis)) {
+                throw new ProtocolException("unhandled: " + op);
+            }
         }
+
+        protected abstract boolean handle(Op op, DataInputStream dis) throws IOException;
 
         protected final synchronized void send(Op op) throws IOException {
-            dos.writeInt(0);
-            writeOp(op);
-            dos.flush();
+            send(op, new byte[0], 0, 0);
         }
 
-        protected final synchronized void send(Op op, int number) throws IOException {
-            dos.writeInt(4);
-            writeOp(op);
-            dos.writeInt(number);
-            dos.flush();
+        protected final synchronized void send(Op op, int v) throws IOException {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(4);
+            new DataOutputStream(baos).writeInt(v);
+            send(op, baos.toByteArray());
         }
 
         protected final synchronized void send(Op op, byte[] chunk, int off, int len) throws IOException {
-            dos.writeInt(len);
-            writeOp(op);
-            dos.write(chunk, off, len);
-            dos.flush();
+            byte[] data = new byte[len + 1];
+            data[0] = (byte) op.ordinal();
+            System.arraycopy(chunk, off, data, 1, len);
+            out.send(data);
         }
 
         protected final void send(Op op, byte[] chunk) throws IOException {
@@ -193,13 +228,6 @@ class PlainCLIProtocol {
             send(op, buf.toByteArray());
         }
 
-        protected final byte[] readChunk(int framelen) throws IOException {
-            assert Thread.currentThread() instanceof EitherSide.Reader;
-            byte[] buf = new byte[framelen];
-            dis.readFully(buf);
-            return buf;
-        }
-
         protected final OutputStream stream(final Op op) {
             return new OutputStream() {
                 @Override
@@ -207,11 +235,11 @@ class PlainCLIProtocol {
                     send(op, new byte[] {(byte) b});
                 }
                 @Override
-                public void write(byte[] b, int off, int len) throws IOException {
+                public void write(@NonNull byte[] b, int off, int len) throws IOException {
                     send(op, b, off, len);
                 }
                 @Override
-                public void write(byte[] b) throws IOException {
+                public void write(@NonNull byte[] b) throws IOException {
                     send(op, b);
                 }
             };
@@ -219,20 +247,19 @@ class PlainCLIProtocol {
 
         @Override
         public synchronized void close() throws IOException {
-            dos.close();
+            out.close();
         }
 
     }
 
     static abstract class ServerSide extends EitherSide {
 
-        ServerSide(InputStream is, OutputStream os) {
-            super(is, os);
+        ServerSide(Output out) {
+            super(out);
         }
 
         @Override
-        protected final boolean handle(Op op, int framelen) throws IOException {
-            assert Thread.currentThread() instanceof EitherSide.Reader;
+        protected final boolean handle(Op op, DataInputStream dis) throws IOException {
             assert op.clientSide;
             switch (op) {
             case ARG:
@@ -248,7 +275,7 @@ class PlainCLIProtocol {
                 onStart();
                 return true;
             case STDIN:
-                onStdin(readChunk(framelen));
+                onStdin(IOUtils.toByteArray(dis));
                 return true;
             case END_STDIN:
                 onEndStdin();
@@ -286,23 +313,22 @@ class PlainCLIProtocol {
 
     static abstract class ClientSide extends EitherSide {
 
-        ClientSide(InputStream is, OutputStream os) {
-            super(is, os);
+        ClientSide(Output out) {
+            super(out);
         }
 
         @Override
-        protected boolean handle(Op op, int framelen) throws IOException {
-            assert Thread.currentThread() instanceof EitherSide.Reader;
+        protected boolean handle(Op op, DataInputStream dis) throws IOException {
             assert !op.clientSide;
             switch (op) {
             case EXIT:
                 onExit(dis.readInt());
                 return true;
             case STDOUT:
-                onStdout(readChunk(framelen));
+                onStdout(IOUtils.toByteArray(dis));
                 return true;
             case STDERR:
-                onStderr(readChunk(framelen));
+                onStderr(IOUtils.toByteArray(dis));
                 return true;
             default:
                 return false;
@@ -311,6 +337,7 @@ class PlainCLIProtocol {
 
         protected abstract void onExit(int code);
 
+        // TODO more efficient to change signature to InputStream, then use IOUtils.copy
         protected abstract void onStdout(byte[] chunk) throws IOException;
 
         protected abstract void onStderr(byte[] chunk) throws IOException;

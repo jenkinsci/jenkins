@@ -47,7 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Extensible property of {@link Node}.
@@ -57,7 +57,7 @@ import javax.annotation.Nonnull;
  * {@link NodeProperty}s show up in the configuration screen of a node, and they are persisted with the {@link Node} object.
  * 
  * <p>
- * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page (<code>./computer/&lt;a node&gt;</code>), see instead {@link hudson.model.TransientComputerActionFactory}.
+ * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page ({@code ./computer/<a node>}), see instead {@link hudson.model.TransientComputerActionFactory}.
  *
  *
  * <h2>Views</h2>
@@ -90,11 +90,11 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * Called by the {@link Node} to help determine whether or not it should
      * take the given task. Individual properties can return a non-null value
      * here if there is some reason the given task should not be run on its
-     * associated node. By default, this method returns <code>null</code>.
+     * associated node. By default, this method returns {@code null}.
      *
      * @since 1.360
      * @deprecated as of 1.413
-     *      Use {@link #canTake(Queue.BuildableItem)}
+     *      Use {@link #canTake(BuildableItem)}
      */
     @Deprecated
     public CauseOfBlockage canTake(Task task) {
@@ -105,7 +105,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * Called by the {@link Node} to help determine whether or not it should
      * take the given task. Individual properties can return a non-null value
      * here if there is some reason the given task should not be run on its
-     * associated node. By default, this method returns <code>null</code>.
+     * associated node. By default, this method returns {@code null}.
      *
      * @since 1.413
      */
@@ -166,7 +166,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *
      * @since 1.489
      */
-    public void buildEnvVars(@Nonnull EnvVars env, @Nonnull TaskListener listener) throws IOException,InterruptedException {
+    public void buildEnvVars(@NonNull EnvVars env, @NonNull TaskListener listener) throws IOException,InterruptedException {
         // default is no-op
     }
 

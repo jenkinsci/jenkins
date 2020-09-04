@@ -35,8 +35,9 @@ import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import org.jenkinsci.Symbol;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import net.jcip.annotations.GuardedBy;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collections;
@@ -126,6 +127,7 @@ public class NodeProvisioner {
      * Null if this {@link NodeProvisioner} is working for the entire Hudson,
      * for jobs that are unassigned to any particular node.
      */
+    @CheckForNull
     private final Label label;
 
     private final AtomicReference<List<PlannedNode>> pendingLaunches
@@ -149,7 +151,7 @@ public class NodeProvisioner {
     private final MultiStageTimeSeries plannedCapacitiesEMA =
             new MultiStageTimeSeries(Messages._NodeProvisioner_EmptyString(),Color.WHITE,0,DECAY);
 
-    public NodeProvisioner(Label label, LoadStatistics loadStatistics) {
+    public NodeProvisioner(@CheckForNull Label label, LoadStatistics loadStatistics) {
         this.label = label;
         this.stat = loadStatistics;
     }
@@ -380,9 +382,9 @@ public class NodeProvisioner {
          * @param state the current state.
          * @return the decision.
          */
-        @Nonnull
+        @NonNull
         @GuardedBy("NodeProvisioner.this")
-        public abstract StrategyDecision apply(@Nonnull StrategyState state);
+        public abstract StrategyDecision apply(@NonNull StrategyState state);
 
     }
 
@@ -395,6 +397,7 @@ public class NodeProvisioner {
         /**
          * The label under consideration.
          */
+        @CheckForNull
         private final Label label;
         /**
          * The planned capacity for this {@link #label}.
@@ -416,7 +419,7 @@ public class NodeProvisioner {
          * @param label the label.
          * @param plannedCapacitySnapshot the planned executor count.
          */
-        private StrategyState(LoadStatistics.LoadStatisticsSnapshot snapshot, Label label, int plannedCapacitySnapshot) {
+        private StrategyState(LoadStatistics.LoadStatisticsSnapshot snapshot, @CheckForNull Label label, int plannedCapacitySnapshot) {
             this.snapshot = snapshot;
             this.label = label;
             this.plannedCapacitySnapshot = plannedCapacitySnapshot;
@@ -425,6 +428,7 @@ public class NodeProvisioner {
         /**
          * The label under consideration.
          */
+        @CheckForNull
         public Label getLabel() {
             return label;
         }
@@ -608,9 +612,6 @@ public class NodeProvisioner {
             }
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String toString() {
             String sb = "StrategyState{" + "label=" + label +
@@ -630,10 +631,9 @@ public class NodeProvisioner {
     @Extension @Symbol("standard")
     public static class StandardStrategyImpl extends Strategy {
 
-        /** {@inheritDoc} */
-        @Nonnull
+        @NonNull
         @Override
-        public StrategyDecision apply(@Nonnull StrategyState state) {
+        public StrategyDecision apply(@NonNull StrategyState state) {
         /*
             Here we determine how many additional agents we need to keep up with the load (if at all),
             which involves a simple math.

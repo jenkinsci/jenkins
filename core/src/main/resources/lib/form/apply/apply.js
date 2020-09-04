@@ -40,10 +40,15 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                     // otherwise this is possibly an error from the server, so we need to render the whole content.
                     var doc = target.contentDocument || target.contentWindow.document;
                     var error = doc.getElementById('error-description');
+                    var r = YAHOO.util.Dom.getClientRegion();
+                    var contentHeight = r.height/5;
+                    var contentWidth = r.width/2;
                     if (!error) {
                         // fallback if it's not a regular error dialog from oops.jelly: use the entire body
                         error = Element('div', {id: 'error-description'});
                         error.appendChild(doc.getElementsByTagName('body')[0]);
+                        contentHeight = r.height*3/4;
+                        contentWidth = r.width*3/4;
                     }
 
                     if (oldError = $('error-description')) {
@@ -52,11 +57,8 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                     }
 
                     $(containerId).appendChild(error);
-                    var r = YAHOO.util.Dom.getClientRegion();
 
-                    var contentHeight = r.height*3/4;
                     var dialogStyleHeight = contentHeight+40;
-                    var contentWidth = r.width*3/4;
                     var dialogStyleWidth = contentWidth+20;
 
                     $(containerId).style.height = contentHeight+"px";

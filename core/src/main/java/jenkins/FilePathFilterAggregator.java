@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 class FilePathFilterAggregator extends FilePathFilter {
     private final CopyOnWriteArrayList<Entry> all = new CopyOnWriteArrayList<>();
 
-    private class Entry implements Comparable<Entry> {
+    private static class Entry implements Comparable<Entry> {
         final FilePathFilter filter;
         final double ordinal;
 
@@ -31,9 +31,10 @@ class FilePathFilterAggregator extends FilePathFilter {
 
         @Override
         public int compareTo(Entry that) {
-            double d = this.ordinal - that.ordinal;
-            if (d<0)    return -1;
-            if (d>0)    return 1;
+            double result = Double.compare(this.ordinal, that.ordinal);
+
+            if (result < 0) return -1;
+            if (result > 0) return 1;
 
             // to create predictable order that doesn't depend on the insertion order, use class name
             // to break a tie

@@ -5,8 +5,8 @@ import hudson.model.TaskListener;
 import hudson.Launcher;
 import hudson.FilePath;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
 
 /**
@@ -41,7 +41,7 @@ public final class PollingResult implements Serializable {
      * the immediate rebuild, and (2) allow SCM to ignore some changes in the repository to implement
      * exclusion feature.
      */
-    public final @Nonnull Change change;
+    public final @NonNull Change change;
 
     /**
      * Degree of changes between the previous state and this state.
@@ -79,14 +79,14 @@ public final class PollingResult implements Serializable {
         INCOMPARABLE
     }
 
-    public PollingResult(@CheckForNull SCMRevisionState baseline, @CheckForNull SCMRevisionState remote, @Nonnull Change change) {
+    public PollingResult(@CheckForNull SCMRevisionState baseline, @CheckForNull SCMRevisionState remote, @NonNull Change change) {
         if (change==null)   throw new IllegalArgumentException();
         this.baseline = baseline;
         this.remote = remote;
         this.change = change;
     }
 
-    public PollingResult(@Nonnull Change change) {
+    public PollingResult(@NonNull Change change) {
         this(null,null,change);
     }
 

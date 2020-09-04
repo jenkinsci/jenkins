@@ -16,8 +16,8 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -94,7 +94,7 @@ public class AdminWhitelistRule implements StaplerProxy {
      * @return {@code true} if the file was loaded, {@code false} otherwise
      */
     @CheckReturnValue
-    private boolean loadMasterKillSwitchFile(@Nonnull File f) {
+    private boolean loadMasterKillSwitchFile(@NonNull File f) {
         try {
             if (!f.exists())    return true;
             return Boolean.parseBoolean(FileUtils.readFileToString(f, Charset.defaultCharset()).trim());
@@ -104,8 +104,8 @@ public class AdminWhitelistRule implements StaplerProxy {
         }
     }
 
-    @Nonnull
-    private File getMasterKillSwitchFile(@Nonnull Jenkins jenkins) {
+    @NonNull
+    private File getMasterKillSwitchFile(@NonNull Jenkins jenkins) {
         return new File(jenkins.getRootDir(),"secrets/slave-to-master-security-kill-switch");
     }
 
@@ -162,7 +162,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     @RequirePOST
     public HttpResponse doSubmit(StaplerRequest req) throws IOException {
         StringBuilder whitelist = new StringBuilder(Util.fixNull(req.getParameter("whitelist")));
-        if (whitelist.charAt(whitelist.length() - 1) != '\n')
+        if ((whitelist.length() > 0) && (whitelist.charAt(whitelist.length() - 1) != '\n'))
             whitelist.append("\n");
 
         Enumeration e = req.getParameterNames();
@@ -212,7 +212,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     public void setMasterKillSwitch(boolean state) {
         final Jenkins jenkins = Jenkins.get();
         try {
-            jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
+            jenkins.checkPermission(Jenkins.ADMINISTER);
             File f = getMasterKillSwitchFile(jenkins);
             FileUtils.writeStringToFile(f, Boolean.toString(state), Charset.defaultCharset());
             // treat the file as the canonical source of information in case write fails
@@ -227,7 +227,7 @@ public class AdminWhitelistRule implements StaplerProxy {
      */
     @Override
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         return this;
     }
 

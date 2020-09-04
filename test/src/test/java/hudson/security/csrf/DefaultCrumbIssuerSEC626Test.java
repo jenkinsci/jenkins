@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2008-2010 Yahoo! Inc.
  * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -10,6 +10,11 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
+import javax.servlet.http.HttpServletResponse;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,16 +22,10 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
- *
  * @author dty
  */
-//TODO merge back to DefaultCrumbIssuerTest
-public class DefaultCrumbIssuerSEC626Test {
+public class DefaultCrumbIssuerSEC626Test { //TODO merge back to DefaultCrumbIssuerTest
     
     @Rule public JenkinsRule r = new JenkinsRule();
 
@@ -76,7 +75,8 @@ public class DefaultCrumbIssuerSEC626Test {
                 r.submit(p.getFormByName("config"));
                 fail();
             } catch (FailingHttpStatusCodeException e) {
-                assertTrue(e.getMessage().contains("No valid crumb"));
+                assertEquals(HttpServletResponse.SC_FORBIDDEN, e.getStatusCode());
+                assertThat(e.getResponse().getContentAsString(), containsString("No valid crumb"));
             }
         }
     }

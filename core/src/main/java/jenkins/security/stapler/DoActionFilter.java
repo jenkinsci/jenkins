@@ -31,7 +31,7 @@ import org.kohsuke.stapler.FunctionList;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.interceptor.InterceptorAnnotation;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,11 +45,11 @@ public class DoActionFilter implements FunctionList.Filter {
      * if a method has "do" as name (not possible in pure Java but doable in Groovy or other JVM languages)
      * the new system does not consider it as a web method. 
      * <p>
-     * Use <code>@WebMethod(name="")</code> or <code>doIndex</code> in such case.
+     * Use {@code @WebMethod(name="")} or {@code doIndex} in such case.
      */
     private static final Pattern DO_METHOD_REGEX = Pattern.compile("^do[^a-z].*");
     
-    public boolean keep(@Nonnull Function m) {
+    public boolean keep(@NonNull Function m) {
 
         if (m.getAnnotation(StaplerNotDispatchable.class) != null) {
             return false;

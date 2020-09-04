@@ -42,7 +42,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.tasks.SimpleBuildStep;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
@@ -65,7 +65,6 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     }
 
     /**
-     * {@inheritDoc}
      * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
      */
     @Override
@@ -76,7 +75,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             if (workspace == null) {
                 throw new AbortException("no workspace for " + build);
             }
-            ((SimpleBuildStep) this).perform(build, workspace, launcher, listener);
+            ((SimpleBuildStep) this).perform(build, workspace, build.getEnvironment(listener), launcher, listener);
             return true;
         } else if (build instanceof Build) {
             // delegate to the legacy signature deprecated in 1.312
@@ -93,7 +92,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return null;
     }
 
-    @Nonnull
+    @NonNull
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(project);

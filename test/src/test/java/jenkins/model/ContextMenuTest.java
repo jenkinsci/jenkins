@@ -35,6 +35,8 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import static jenkins.model.ModelObjectWithContextMenu.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -64,7 +66,7 @@ public class ContextMenuTest {
         f.visible = false;
         menu = j.executeOnServer(doContextMenu);
         parsed = parse(menu);
-        assertEquals(parsed.toString(), null, parsed.get("testing"));
+        assertNull(parsed.toString(), parsed.get("testing"));
     }
 
     @TestExtension public static class ActionFactory extends TransientProjectActionFactory {

@@ -173,7 +173,7 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
 
     /**
      * @deprecated
-     *      Exposed for stapler. Not meant for programatic consumption.
+     *      Exposed for stapler. Not meant for programmatic consumption.
      */
     @Exported
     @Deprecated
