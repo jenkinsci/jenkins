@@ -24,7 +24,7 @@
 
 package jenkins.telemetry.impl.java11;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -53,7 +53,7 @@ class MissingClassEvent {
         this.className = className;
     }
 
-    MissingClassEvent(@Nonnull String name, @Nonnull Throwable t) {
+    MissingClassEvent(@NonNull String name, @NonNull Throwable t) {
         this.className = name;
 
         StringWriter stackTrace = new StringWriter();

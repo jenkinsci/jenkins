@@ -1,5 +1,19 @@
 <div>
-    Questo token API può essere utilizzato per l'autenticazione nelle chiamate REST alle API.
-    Si veda <a href="https://jenkins.io/redirect/api-token">il wiki</a> per ulteriori dettagli.
-    Il token API dovrebbe essere protetto come la propria password, in quanto consente ad altre persone di accedere a Jenkins con la propria identità.
+  I token API offrono un modo di eseguire chiamate autenticate dall'interfaccia
+  a riga di comando o tramite API REST. Si veda
+  <a href="https://jenkins.io/redirect/api-token">il nostro wiki</a> per
+  ulteriori informazioni.<br/>
+  Il nome utente associato con ogni token è il nome utente di Jenkins.<br/>
+  <br/>
+  Per mantenere al sicuro i propri token API è opportuno:
+  <ul>
+    <li>Utilizzare un token differente per ogni applicazione in modo che, se un'applicazione viene compromessa, si possa revocare il suo token individualmente.</li>
+    <li>Rigenerare i token ogni sei mesi (a seconda del contesto). Visualizziamo un indicatore relativo all'età del token.</li>
+    <li>Proteggerlo come la propria password, perché consente di accedere a Jenkins con le proprie credenziali.</li>
+  </ul>
+  <div class="warning">
+    A ogni riavvio di Jenkins, le date di creazione per i token legacy non
+    utilizzati sono reimpostate, il che significa che le date potrebbero non
+    essere accurate.
+  </div>
 </div>

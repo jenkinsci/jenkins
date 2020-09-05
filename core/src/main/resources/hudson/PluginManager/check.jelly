@@ -26,7 +26,7 @@ THE SOFTWARE.
 
   ${%lastUpdated(app.updateCenter.lastUpdatedString)}
   <f:link href="checkUpdatesServer" post="true" clazz="yui-button yui-submit-button submit-button primary">
-    <button>${%Check now}</button>
+    ${%Check now}
   </f:link>
   <j:if test="${app.pluginManager.lastErrorCheckUpdateCenters != null}">
     <div class="error">

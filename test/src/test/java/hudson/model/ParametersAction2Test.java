@@ -12,7 +12,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -123,7 +126,7 @@ public class ParametersAction2Test {
 
         // remove bar and undef from parameters definition
         p.removeProperty(ParametersDefinitionProperty.class);
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new StringParameterDefinition("foo", "foo"))));
 
         assertEquals("the build still have 2 parameters", 2, build.getAction(ParametersAction.class).getParameters().size());

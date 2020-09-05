@@ -35,8 +35,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Represents a stream over the lines of a text file.
@@ -63,7 +63,7 @@ import javax.annotation.Nullable;
 @CleanupObligation
 public class LinesStream implements Closeable, Iterable<String> {
 
-    private final @Nonnull BufferedReader in;
+    private final @NonNull BufferedReader in;
     private transient @Nullable Iterator<String> iterator;
 
     /**
@@ -73,7 +73,7 @@ public class LinesStream implements Closeable, Iterable<String> {
      * @throws IOException if the file at {@code path} cannot be opened for
      * reading.
      */
-    public LinesStream(@Nonnull Path path) throws IOException {
+    public LinesStream(@NonNull Path path) throws IOException {
         in = Files.newBufferedReader(path); // uses UTF-8 by default
     }
 

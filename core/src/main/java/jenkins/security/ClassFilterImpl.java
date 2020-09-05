@@ -51,8 +51,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
@@ -123,7 +123,6 @@ public class ClassFilterImpl extends ClassFilter {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public boolean isBlacklisted(Class _c) {
         for (CustomClassFilter f : ExtensionList.lookup(CustomClassFilter.class)) {
@@ -264,7 +263,7 @@ public class ClassFilterImpl extends ClassFilter {
      * @return something typically like {@code file:/…/plugins/structs/WEB-INF/lib/structs-1.10.jar};
      *         or null for classes in the Java Platform, some generated classes, etc.
      */
-    private static @CheckForNull String codeSource(@Nonnull Class<?> c) {
+    private static @CheckForNull String codeSource(@NonNull Class<?> c) {
         CodeSource cs = c.getProtectionDomain().getCodeSource();
         if (cs == null) {
             return null;

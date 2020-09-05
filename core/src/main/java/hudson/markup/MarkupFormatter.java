@@ -29,8 +29,8 @@ import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -69,9 +69,9 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
      * @param output
      *      Formatted HTML should be sent to this output.
      */
-    public abstract void translate(@CheckForNull String markup, @Nonnull Writer output) throws IOException;
+    public abstract void translate(@CheckForNull String markup, @NonNull Writer output) throws IOException;
 
-    public final @Nonnull String translate(@CheckForNull String markup) throws IOException {
+    public final @NonNull String translate(@CheckForNull String markup) throws IOException {
         StringWriter w = new StringWriter();
         translate(markup,w);
         return w.toString();

@@ -107,8 +107,9 @@ It is a good practice is to create branches instead of pushing to master.
 4. Fill in the Pull Request description according to the [proposed template].
 5. Click _Create Pull Request_
 6. Wait for CI results/reviews, process the feedback.
-  * If you do not get feedback after 3 days, feel free to ping `@jenkinsci/code-reviewers` to CC.
-  * Usually we merge pull requests after 2 votes from reviewers or after 1 vote and 1-week delay without extra reviews.
+  * If you do not get feedback after 3 days, feel free to ping `@jenkinsci/core-pr-reviewers` in the comments.
+  * Usually we merge pull requests after 2 approvals from reviewers, no requested changes, and having waited some more time to give others an opportunity to provide more feedback.
+    See [this page](/docs/MAINTAINERS.adoc) for more information about our review process
 
 Once your Pull Request is ready to be merged,
 the repository maintainers will integrate it, prepare changelogs and

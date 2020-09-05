@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.security.Permission;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 
@@ -74,6 +75,14 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * </dd>
  * </dl>
  *
+ * <h3>Use with System Read permission</h3>
+ * <p>
+ *     By default administrative monitors are visible only to users with Administer permission.
+ *     Users with {@link Jenkins#SYSTEM_READ} permission can access administrative monitors that override {@link #getRequiredPermission()}.
+ *     Care needs to be taken to ensure users with that permission don't have access to actions modifying system state.
+ *     For more details, see {@link #getRequiredPermission()}.
+ * </p>
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.273
  * @see Jenkins#administrativeMonitors
@@ -118,8 +127,12 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     public void disable(boolean value) throws IOException {
         AbstractCIBase jenkins = Jenkins.get();
         Set<String> set = jenkins.getDisabledAdministrativeMonitors();
-        if(value)   set.add(id);
-        else        set.remove(id);
+        if (value) {
+            set.add(id);
+        } else {
+            set.remove(id);
+        }
+        jenkins.setDisabledAdministrativeMonitors(set);
         jenkins.save();
     }
 
@@ -149,16 +162,37 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     @RequirePOST
     public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath()+"/manage");
     }
 
     /**
-     * Requires ADMINISTER permission for any operation in here.
+     * Required permission to view this admin monitor.
+     * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} is also supported.
+     * <p>
+     *     Changing this permission check to return {@link Jenkins#SYSTEM_READ} will make the active
+     *     administrative monitor appear on {@code manage.jelly} and on the globally visible
+     *     {@link jenkins.management.AdministrativeMonitorsDecorator} to users without Administer permission.
+     *     {@link #doDisable(StaplerRequest, StaplerResponse)} will still always require Administer permission.
+     * </p>
+     * <p>
+     *     Implementers need to ensure that {@code doAct} and other web methods perform necessary permission checks:
+     *     Users with System Read permissions are expected to be limited to read-only access.
+     *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
+     *     lacking Administer permission.
+     * </p>
+     */
+    public Permission getRequiredPermission() {
+        return Jenkins.ADMINISTER;
+    }
+
+    /**
+     * Ensure that URLs in this administrative monitor are only accessible to users with {@link #getRequiredPermission()}.
      */
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(getRequiredPermission());
         return this;
     }
 

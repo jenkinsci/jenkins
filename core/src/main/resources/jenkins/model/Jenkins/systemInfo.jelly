@@ -27,13 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.SYSTEM_READ}" title="${%System Information}">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%System Information}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-        <h1>${%System Properties}</h1>
-        <t:propertyTable items="${h.systemProperties}" />
-        <h1>${%Environment Variables}</h1>
-        <t:propertyTable items="${h.envVars}" />
+        <l:hasPermission permission="${app.SYSTEM_READ}">
+            <h1>${%System Properties}</h1>
+            <t:propertyTable items="${h.systemProperties}" />
+        </l:hasPermission>
+        <l:hasPermission permission="${app.SYSTEM_READ}">
+            <h1>${%Environment Variables}</h1>
+            <t:propertyTable items="${h.envVars}" />
+        </l:hasPermission>
         <h1>${%Plugins}</h1>
         <table class="pane sortable bigtable">
           <j:choose>

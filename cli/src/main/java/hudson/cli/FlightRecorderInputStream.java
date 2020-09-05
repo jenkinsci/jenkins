@@ -1,5 +1,7 @@
 package hudson.cli;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,7 +94,7 @@ class FlightRecorderInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(@NonNull byte[] b, int off, int len) throws IOException {
         len = source.read(b, off, len);
         if (len>0)
             recorder.write(b,off,len);
@@ -157,7 +159,7 @@ class FlightRecorderInputStream extends InputStream {
         }
         
         /** @author @roadrunner2 */
-        @Override public synchronized void write(byte[] buf, int off, int len) {
+        @Override public synchronized void write(@NonNull byte[] buf, int off, int len) {
             // no point in trying to copy more than capacity; this also simplifies logic below
             if (len > capacity) {
                 off += (len - capacity);

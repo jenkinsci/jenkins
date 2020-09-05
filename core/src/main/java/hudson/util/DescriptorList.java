@@ -37,7 +37,7 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * List of {@link Descriptor}s.
@@ -151,7 +151,8 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * from the structured form submission data posted
      * by a radio button group. 
      * @param config Submitted configuration for Radio List
-     * @return new instance or {@code null} if none was selected in the radio list
+     * @return New instance.
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
      * @throws FormException Data submission error
      */
     @CheckForNull
@@ -168,7 +169,8 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * by a radio button group. 
      * @param parent JSON, which contains the configuration entry for the radio list
      * @param name Name of the configuration entry for the radio list
-     * @return new instance or {@code null} if none was selected in the radio list
+     * @return New instance.
+     *         {@code null} if none was selected in the radio list or if the value is filtered by a {@link hudson.model.DescriptorVisibilityFilter}
      * @throws FormException Data submission error
      */
     @CheckForNull

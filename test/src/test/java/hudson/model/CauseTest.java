@@ -31,13 +31,19 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import hudson.util.StreamTaskListener;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
+import org.xml.sax.SAXException;
 
 public class CauseTest {
 
@@ -119,5 +125,20 @@ public class CauseTest {
 
         assertThat(baos.toString(), containsString(user.getDisplayName()));
         baos.reset();
+    }
+
+    @Test
+    @Issue("SECURITY-1960")
+    @LocalData
+    public void xssInRemoteCause() throws IOException, SAXException {
+        final Item item = j.jenkins.getItemByFullName("fs");
+        Assert.assertTrue(item instanceof FreeStyleProject);
+        FreeStyleProject fs = (FreeStyleProject) item;
+        final FreeStyleBuild build = fs.getBuildByNumber(1);
+
+        final JenkinsRule.WebClient wc = j.createWebClient();
+        final String content = wc.getPage(build).getWebResponse().getContentAsString();
+        Assert.assertFalse(content.contains("Started by remote host <img"));
+        Assert.assertTrue(content.contains("Started by remote host &lt;img"));
     }
 }

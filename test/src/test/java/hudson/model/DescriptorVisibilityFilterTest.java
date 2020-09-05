@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.ACL;
@@ -18,8 +18,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -66,7 +66,7 @@ public class DescriptorVisibilityFilterTest {
 
         @TestExtension
         public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
-            @Nonnull
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "TestSecurityRealm";
@@ -76,7 +76,7 @@ public class DescriptorVisibilityFilterTest {
         @TestExtension
         public static final class HideDescriptor extends DescriptorVisibilityFilter {
             @Override
-            public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
+            public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
                 return !(descriptor instanceof DescriptorImpl);
             }
         }
@@ -84,17 +84,17 @@ public class DescriptorVisibilityFilterTest {
 
     public static final class TestAuthStrategy extends AuthorizationStrategy {
 
-        @Nonnull
+        @NonNull
         @Override
         public ACL getRootACL() { return null; }
 
-        @Nonnull
+        @NonNull
         @Override
         public Collection<String> getGroups() { return null; }
 
         @TestExtension
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
-            @Nonnull
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "TestAuthStrategy";
@@ -104,7 +104,7 @@ public class DescriptorVisibilityFilterTest {
         @TestExtension
         public static final class HideDescriptor extends DescriptorVisibilityFilter {
             @Override
-            public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
+            public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
                 return !(descriptor instanceof DescriptorImpl);
             }
         }

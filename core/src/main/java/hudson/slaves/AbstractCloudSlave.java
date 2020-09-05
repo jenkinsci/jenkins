@@ -30,7 +30,7 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -45,14 +45,14 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractCloudSlave extends Slave {
 
-    public AbstractCloudSlave(@Nonnull String name, String remoteFS, ComputerLauncher launcher)
+    public AbstractCloudSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher)
             throws FormException, IOException {
         super(name, remoteFS, launcher);
     }
 
     /**
      * Use {@link #AbstractCloudSlave(java.lang.String, java.lang.String, hudson.slaves.ComputerLauncher)}
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -64,7 +64,7 @@ public abstract class AbstractCloudSlave extends Slave {
 
     /**
      * Use {@link #AbstractCloudSlave(java.lang.String, java.lang.String, hudson.slaves.ComputerLauncher)}
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors,

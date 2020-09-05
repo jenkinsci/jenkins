@@ -66,7 +66,12 @@ import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 /**
@@ -173,7 +178,6 @@ public class JobTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
         public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;
@@ -397,7 +401,7 @@ public class JobTest {
         if (dir == null || !dir.isDirectory()) {
             return null;
         }
-        StringBuilder str = new StringBuilder("");
+        StringBuilder str = new StringBuilder();
         final FilePath[] list = new FilePath(dir).list("**/*");
         Arrays.sort(list, Comparator.comparing(FilePath::getRemote));
         for (FilePath path : list) {
