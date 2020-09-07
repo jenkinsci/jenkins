@@ -16,10 +16,10 @@ def hasItemCreatePermission = my.owner.hasPermission(Item.CREATE);
 div {
 
     div(class: "empty-state-block") {
-        h1(_("Welcome to Jenkins!"))
-
         if (isTopLevelAllView) {
             if (canSetUpDistributedBuilds || hasItemCreatePermission) {
+                h1(_("Welcome to Jenkins!"))
+
                 p(_("noJobDescription"))
 
                 if (canSetUpDistributedBuilds) {
@@ -107,6 +107,8 @@ div {
         // If the user is logged out
         if (h.isAnonymous() && !hasItemCreatePermission) {
             def canSignUp = app.securityRealm.allowsSignup()
+
+            h1(_("Welcome to Jenkins!"))
 
             p("Log in now to view or create jobs. If you don’t already have an account, you can sign up.")
 
