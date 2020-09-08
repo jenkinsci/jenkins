@@ -57,8 +57,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
@@ -160,8 +160,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     @SuppressWarnings("unchecked")
-    @Nonnull
-    public List<Job<?, ?>> getChildJobs(@Nonnull AbstractProject<?, ?> owner) {
+    @NonNull
+    public List<Job<?, ?>> getChildJobs(@NonNull AbstractProject<?, ?> owner) {
         return Items.fromNameList(owner.getParent(), childProjects, (Class<Job<?, ?>>) (Class) Job.class);
     }
 

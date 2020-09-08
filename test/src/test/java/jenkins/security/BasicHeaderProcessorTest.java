@@ -22,7 +22,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -118,7 +119,7 @@ public class BasicHeaderProcessorTest {
         ApiTokenTestHelper.enableLegacyBehavior();
         
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.get("foo");
+        User foo = User.getOrCreateByIdOrFullName("foo");
         wc = j.createWebClient();
 
         String[] basicCandidates = {"Basic", "BASIC", "basic", "bASIC"};
@@ -155,7 +156,7 @@ public class BasicHeaderProcessorTest {
         return prefix + " " + Base64.getEncoder().encodeToString(userAndPass.getBytes(StandardCharsets.UTF_8));
     }
 
-    private void makeRequestWithAuthCodeAndVerify(String authCode, String expectedLogin) throws IOException, SAXException {
+    private void makeRequestWithAuthCodeAndVerify(String authCode, String expectedLogin) throws IOException {
         WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
         req.setEncodingType(null);
         if (authCode!=null)

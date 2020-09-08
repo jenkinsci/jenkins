@@ -25,12 +25,19 @@ package hudson;
 
 import hudson.EnvVars.OverrideOrderCalculator;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.TreeMap;
 
 import com.google.common.collect.Sets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * @author Kohsuke Kawaguchi
@@ -116,7 +123,7 @@ public class EnvVarsTest {
 
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
-        assertEquals(Arrays.asList("PATH"), order);
+        assertEquals(Collections.singletonList("PATH"), order);
     }
 
     @Test

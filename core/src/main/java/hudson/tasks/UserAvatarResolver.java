@@ -33,7 +33,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.model.User;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Infers avatar image URLs for users

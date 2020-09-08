@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Convenient partial implementation of {@link AdministrativeMonitor} that involves a background "fixing" action
@@ -120,7 +120,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
          * Runs the monitor and encapsulates all errors within.
          * @since 1.590
          */
-        private void doRun(@Nonnull TaskListener listener) {
+        private void doRun(@NonNull TaskListener listener) {
             try {
                 fix(listener);
             } catch (AbortException e) {

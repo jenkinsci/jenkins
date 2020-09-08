@@ -30,8 +30,8 @@ import hudson.util.ProcessTreeRemoting.IOSProcess;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.util.JenkinsJVM;
 
@@ -58,14 +58,14 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
         /**
          * @param message A string describing the reason for the veto
          */
-        public VetoCause(@Nonnull String message) {
+        public VetoCause(@NonNull String message) {
             this.message = message;
         }
 
         /**
          * @return A string describing the reason for the veto.
          */
-        public @Nonnull String getMessage() {
+        public @NonNull String getMessage() {
             return message;
         }
     }
@@ -99,5 +99,5 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
      *         null else.
      */
     @CheckForNull
-    public abstract VetoCause vetoProcessKilling(@Nonnull IOSProcess p);
+    public abstract VetoCause vetoProcessKilling(@NonNull IOSProcess p);
 }

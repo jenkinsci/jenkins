@@ -26,7 +26,9 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.DirectoryBrowserSupport;
+import hudson.security.Permission;
 import hudson.util.HttpResponses;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -63,6 +65,7 @@ public class ResourceDomainRecommendation extends AdministrativeMonitor {
 
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String redirect, @QueryParameter String dismiss) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (dismiss != null) {
             disable(true);
             return HttpResponses.redirectViaContextPath("manage");
@@ -71,5 +74,10 @@ public class ResourceDomainRecommendation extends AdministrativeMonitor {
             return HttpResponses.redirectViaContextPath("configure");
         }
         return HttpResponses.forwardToPreviousPage();
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 }

@@ -27,22 +27,53 @@ package jenkins.util.io;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Restricted(NoExternalUse.class)
 public class CompositeIOException extends IOException {
+    private static final long serialVersionUID = 121943141387608148L;
+
+    /**
+     * The maximum number of exceptions that can be reported by a single
+     * {@code CompositeIOException}.
+     * <p>
+     * The number of exceptions is limited to avoid pathological cases where
+     * a huge number of exceptions could lead to excessive memory usage.
+     * For example, if the number of exceptions was unlimited, a call to
+     * {@code Util.deleteRecursive} could fail with a
+     * {@code CompositeIOException} that contains an exception for every
+     * single file inside of the directory.
+     */
+    public static final int EXCEPTION_LIMIT = 10;
+
     private final List<IOException> exceptions;
 
-    public CompositeIOException(String message, @Nonnull List<IOException> exceptions) {
-        super(message);
-        this.exceptions = exceptions;
-        exceptions.forEach(this::addSuppressed);
+    /**
+     * Construct a new {@code CompositeIOException} where the given list of
+     * exceptions are added as suppressed exceptions to the new exception.
+     * <p>
+     * If the given list of exceptions is longer than {@link #EXCEPTION_LIMIT},
+     * the list will be truncated to that length, and a message indicating the
+     * number of discarded exceptions will be appended to the original message.
+     */
+    public CompositeIOException(String message, @NonNull List<IOException> exceptions) {
+        super(message + getDiscardedExceptionsMessage(exceptions));
+        if (exceptions.size() > EXCEPTION_LIMIT) {
+            this.exceptions = new ArrayList<>(exceptions.subList(0, EXCEPTION_LIMIT));
+        } else {
+            this.exceptions = exceptions;
+        }
+        this.exceptions.forEach(this::addSuppressed);
     }
 
+    /**
+     * @see CompositeIOException(String, List)
+     */
     public CompositeIOException(String message, IOException... exceptions) {
         this(message, Arrays.asList(exceptions));
     }
@@ -53,5 +84,13 @@ public class CompositeIOException extends IOException {
 
     public UncheckedIOException asUncheckedIOException() {
         return new UncheckedIOException(this);
+    }
+
+    private static String getDiscardedExceptionsMessage(List<IOException> exceptions) {
+        if (exceptions.size() > EXCEPTION_LIMIT) {
+            return " (Discarded " + (exceptions.size() - EXCEPTION_LIMIT) + " additional exceptions)";
+        } else {
+            return "";
+        }
     }
 }

@@ -1,0 +1,123 @@
+@import '../abstracts/theme.less';
+
+#tasks {
+  margin-bottom: 20px;
+  display: inline-block;
+
+  width: 100%;
+}
+
+#tasks .task {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  position: relative;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+.task.disabled {
+  opacity: 0.5;
+  background-color: transparent;
+}
+
+.task-link-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 2px 0;
+}
+
+.task-link,
+.task-disabled-link {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  padding: 0.5rem 1rem 0.5rem 1.25rem;
+  max-width: 100%;
+}
+.task-link:link,
+.task-link:visited {
+  color: var(--link-dark-color);
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover,
+  &:focus {
+    text-decoration: none;
+    background-color: var(--task-link-bg-color--hover);
+  }
+
+  &:active {
+    text-decoration: none;
+    background-color: var(--task-link-bg-color--active);
+  }
+
+  &:focus {
+    outline: 0;
+    // Use a box-shadow instead of an outline or a border because the alternatives
+    // are hidden behind the parent container
+    box-shadow: inset 0 0 0 3px var(--focus);
+  }
+}
+.task-link--active {
+  background-color: var(--task-link-bg-color--active);
+  position: relative;
+
+  &:before {
+    position: absolute;
+    left: 0;
+    height: 100%;
+    content: '';
+    border-left: 4px solid var(--primary-hover);
+  }
+}
+.task-link--active:link,
+.task-link--active:visited {
+  &:hover,
+  &:focus {
+    background-color: var(--task-link-bg-color--active);
+  }
+}
+
+// Target only icons withink task link in order to keep backwards compatibility
+.task .task-icon-link {
+  display: inline-block;
+  margin: 0;
+  margin-right: 0.5rem;
+}
+// Reset the margin for the icon links
+.task .task-icon-link img,
+.task img.task-icon-link {
+  margin: 0;
+  // Dimensions have !important to override inline styles set by <l:icon>
+  height: 1.5rem !important;
+  width: 1.5rem !important;
+}
+
+.task-link-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.subtasks {
+  padding-left: 1.25rem;
+  width: 100%;
+}
+.subtasks .task {
+  &:first-of-type {
+    border-top: 2px solid #eaeff2;
+  }
+  &:last-of-type {
+    border-bottom: 2px solid #eaeff2;
+  }
+}
+// Some styles should not be applied to tasks or subtasks in nested levels,
+// such as border values
+.subtasks .subtasks .task {
+  border: none;
+}

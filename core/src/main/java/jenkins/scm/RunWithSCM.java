@@ -34,8 +34,8 @@ import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,7 +57,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      *
      * @return A possibly empty list of {@link ChangeLogSet}s.
      */
-    @Nonnull
+    @NonNull
     List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets();
 
     /**
@@ -90,7 +90,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      *      can be empty but never null.
      */
     @Exported
-    @Nonnull default Set<User> getCulprits() {
+    @NonNull default Set<User> getCulprits() {
         if (shouldCalculateCulprits()) {
             return calculateCulprits();
         }
@@ -120,7 +120,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      * @return a non-null {@link Set} of {@link User}s associated with this item.
      */
     @SuppressWarnings("unchecked")
-    @Nonnull
+    @NonNull
     default Set<User> calculateCulprits() {
         Set<User> r = new HashSet<>();
         RunT p = ((RunT)this).getPreviousCompletedBuild();

@@ -29,7 +29,7 @@ import java.io.SequenceInputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import hudson.model.AperiodicWork;
 import hudson.util.VersionNumber;
@@ -360,7 +360,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     // This is essentially just to be able to pass the parent thread into the callback, as it can't access it otherwise
-    private abstract class ConnectionHandlerFailureCallback {
+    private static abstract class ConnectionHandlerFailureCallback {
         private Thread parentThread;
 
         public ConnectionHandlerFailureCallback(Thread parentThread) {

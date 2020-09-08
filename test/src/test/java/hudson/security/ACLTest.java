@@ -24,8 +24,12 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Build;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,12 +37,17 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 public class ACLTest {
 
@@ -62,7 +71,7 @@ public class ACLTest {
     }
 
     @Test
-    public void checkAnyPermissionPassedIfOneIsValid() throws Exception {
+    public void checkAnyPermissionPassedIfOneIsValid() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -76,7 +85,7 @@ public class ACLTest {
     }
 
     @Test
-    public void checkAnyPermissionThrowsIfPermissionIsMissing() throws Exception {
+    public void checkAnyPermissionThrowsIfPermissionIsMissing() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -93,7 +102,7 @@ public class ACLTest {
     }
 
     @Test
-    public void checkAnyPermissionThrowsIfMissingMoreThanOne() throws Exception {
+    public void checkAnyPermissionThrowsIfMissingMoreThanOne() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -110,6 +119,42 @@ public class ACLTest {
     }
 
     @Test
+    @Issue("JENKINS-61467")
+    public void checkAnyPermissionDoesNotShowDisabledPermissionsInError() {
+        Jenkins jenkins = r.jenkins;
+        jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("manager")
+        );
+
+        final User manager = User.getOrCreateByIdOrFullName("manager");
+
+        expectedException.expectMessage("manager is missing the Overall/Administer permission");
+        expectedException.expect(AccessDeniedException.class);
+        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+            jenkins.getACL().checkAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-61467")
+    public void checkAnyPermissionShouldShowDisabledPermissionsIfNotImplied() {
+        Jenkins jenkins = r.jenkins;
+        jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("manager")
+        );
+
+        final User manager = User.getOrCreateByIdOrFullName("manager");
+
+        expectedException.expectMessage("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required");
+        expectedException.expect(AccessDeniedException.class);
+        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+            jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Build.ARTIFACTS);
+        }
+    }
+
+    @Test
     public void hasAnyPermissionThrowsIfNoPermissionProvided() {
         expectedException.expect(IllegalArgumentException.class);
         r.jenkins.getACL().hasAnyPermission();
@@ -119,6 +164,29 @@ public class ACLTest {
     public void checkAnyPermissionThrowsIfNoPermissionProvided() {
         expectedException.expect(IllegalArgumentException.class);
         r.jenkins.getACL().checkAnyPermission();
+    }
+
+    @Test
+    @Issue("JENKINS-61465")
+    public void checkAnyPermissionOnNonAccessControlled() throws Exception {
+        expectedException = ExpectedException.none();
+
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone());
+
+        JenkinsRule.WebClient wc = r.createWebClient();
+        try {
+            wc.goTo("either");
+            fail();
+        } catch (FailingHttpStatusCodeException ex) {
+            assertEquals(403, ex.getStatusCode());
+        }
+
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().toEveryone());
+
+        wc.goTo("either"); // expected to work
     }
 
     private static class DoNotBotherMe extends AuthorizationStrategy {
@@ -133,11 +201,34 @@ public class ACLTest {
             };
         }
 
+        @NonNull
         @Override
         public Collection<String> getGroups() {
             return Collections.emptySet();
         }
 
+    }
+
+    @TestExtension
+    public static class EitherPermission implements UnprotectedRootAction {
+
+        @CheckForNull
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @CheckForNull
+        @Override
+        public String getUrlName() {
+            return "either";
+        }
     }
 
 }

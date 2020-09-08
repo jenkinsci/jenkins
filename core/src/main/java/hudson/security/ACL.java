@@ -27,10 +27,11 @@ import hudson.model.User;
 import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
-import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.model.Item;
 import hudson.remoting.Callable;
@@ -66,7 +67,7 @@ public abstract class ACL {
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
      */
-    public final void checkPermission(@Nonnull Permission p) {
+    public final void checkPermission(@NonNull Permission p) {
         Authentication a = Jenkins.getAuthentication();
         if (a == SYSTEM) {
             return;
@@ -89,9 +90,9 @@ public abstract class ACL {
      * @throws IllegalArgumentException
      *      if no permissions are provided
      *
-     * @since TODO
+     * @since 2.222
      */
-    public final void checkAnyPermission(@Nonnull Permission... permissions) {
+    public final void checkAnyPermission(@NonNull Permission... permissions) {
         if (permissions.length == 0) {
             throw new IllegalArgumentException("At least one permission must be provided");
         }
@@ -99,13 +100,20 @@ public abstract class ACL {
         boolean failed = !hasAnyPermission(permissions);
 
         Authentication authentication = Jenkins.getAuthentication();
-        if (failed) {
-            String permissionsDisplayName = Arrays.stream(permissions)
+        if (failed) { // we know that none of the permissions are granted
+            Set<Permission> enabledPermissions = new LinkedHashSet<>();
+            for (Permission p : permissions) {
+                while (!p.enabled && p.impliedBy != null) {
+                    p = p.impliedBy;
+                }
+                enabledPermissions.add(p);
+            }
+            String permissionsDisplayName = enabledPermissions.stream()
                     .map(p -> p.group.title + "/" + p.name)
                     .collect(Collectors.joining(", "));
 
             String errorMessage;
-            if (permissions.length == 1) {
+            if (enabledPermissions.size() == 1) {
                 errorMessage = Messages.AccessDeniedException2_MissingPermission(authentication.getName(), permissionsDisplayName);
             } else {
                 errorMessage = Messages.AccessDeniedException_MissingPermissions(authentication.getName(), permissionsDisplayName);
@@ -121,7 +129,7 @@ public abstract class ACL {
      * @return false
      *      if the user doesn't have the permission.
      */
-    public final boolean hasPermission(@Nonnull Permission p) {
+    public final boolean hasPermission(@NonNull Permission p) {
         Authentication a = Jenkins.getAuthentication();
         if (a == SYSTEM) {
             return true;
@@ -138,7 +146,7 @@ public abstract class ACL {
      * @throws IllegalArgumentException
      *      if no permissions are provided
      */
-    public final boolean hasAnyPermission(@Nonnull Permission... permissions) {
+    public final boolean hasAnyPermission(@NonNull Permission... permissions) {
         if (permissions.length == 0) {
             throw new IllegalArgumentException("At least one permission must be provided");
         }
@@ -163,7 +171,7 @@ public abstract class ACL {
      * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
      * in which case you should probably just assume it has every permission.
      */
-    public abstract boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission);
+    public abstract boolean hasPermission(@NonNull Authentication a, @NonNull Permission permission);
 
     /**
      * Creates a simple {@link ACL} implementation based on a “single-abstract-method” easily implemented via lambda syntax.
@@ -191,8 +199,8 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      * @since 1.607
      */
-    public final void checkCreatePermission(@Nonnull ItemGroup c,
-                                            @Nonnull TopLevelItemDescriptor d) {
+    public final void checkCreatePermission(@NonNull ItemGroup c,
+                                            @NonNull TopLevelItemDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
         if (a == SYSTEM) {
             return;
@@ -214,8 +222,8 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      * @since 1.607
      */
-    public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
-                                       @Nonnull TopLevelItemDescriptor d) {
+    public boolean hasCreatePermission(@NonNull Authentication a, @NonNull ItemGroup c,
+                                       @NonNull TopLevelItemDescriptor d) {
         return true;
     }
 
@@ -229,8 +237,8 @@ public abstract class ACL {
      * @throws AccessDeniedException if the user doesn't have the permission.
      * @since 1.607
      */
-    public final void checkCreatePermission(@Nonnull ViewGroup c,
-                                            @Nonnull ViewDescriptor d) {
+    public final void checkCreatePermission(@NonNull ViewGroup c,
+                                            @NonNull ViewDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
         if (a == SYSTEM) {
             return;
@@ -253,8 +261,8 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      * @since 2.37
      */
-    public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ViewGroup c,
-                                       @Nonnull ViewDescriptor d) {
+    public boolean hasCreatePermission(@NonNull Authentication a, @NonNull ViewGroup c,
+                                       @NonNull ViewDescriptor d) {
         return true;
     }
 
@@ -322,7 +330,7 @@ public abstract class ACL {
      * @deprecated use try with resources and {@link #as(Authentication)}
      */
     @Deprecated
-    public static @Nonnull SecurityContext impersonate(@Nonnull Authentication auth) {
+    public static @NonNull SecurityContext impersonate(@NonNull Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
         SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
         return old;
@@ -336,7 +344,7 @@ public abstract class ACL {
      * @deprecated use try with resources and {@link #as(Authentication)}
      */
     @Deprecated
-    public static void impersonate(@Nonnull Authentication auth, @Nonnull Runnable body) {
+    public static void impersonate(@NonNull Authentication auth, @NonNull Runnable body) {
         SecurityContext old = impersonate(auth);
         try {
             body.run();
@@ -377,8 +385,8 @@ public abstract class ACL {
      * @return the previous authentication context
      * @since 2.14
      */
-    @Nonnull
-    public static ACLContext as(@Nonnull Authentication auth) {
+    @NonNull
+    public static ACLContext as(@NonNull Authentication auth) {
         final ACLContext context = new ACLContext(SecurityContextHolder.getContext());
         SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
         return context;
@@ -400,7 +408,7 @@ public abstract class ACL {
      * @return the previous authentication context
      * @since 2.14
      */
-    @Nonnull
+    @NonNull
     public static ACLContext as(@CheckForNull User user) {
         return as(user == null ? Jenkins.ANONYMOUS : user.impersonate());
     }
@@ -410,7 +418,7 @@ public abstract class ACL {
      * @see Jenkins#ANONYMOUS
      * @see AnonymousAuthenticationToken
      */
-    public static boolean isAnonymous(@Nonnull Authentication authentication) {
+    public static boolean isAnonymous(@NonNull Authentication authentication) {
         //TODO use AuthenticationTrustResolver instead to be consistent through the application
         return authentication instanceof AnonymousAuthenticationToken;
     }
