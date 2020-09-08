@@ -297,7 +297,6 @@ public class TokenBasedRememberMeServices2Test {
         User alice = User.getOrCreateByIdOrFullName("alice");
         realm.verifyInvocations(1);
 
-        UserDetailsCache.get().invalidate("alice");
         // first, start a session with a remember me token
         Cookie cookie = getRememberMeCookie(j.createWebClient().login("alice", "alice", true));
         // next, start a new session with that token
