@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +55,7 @@ import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 
+import jenkins.security.UserDetailsCache;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 
 import static org.hamcrest.Matchers.*;
@@ -64,9 +66,11 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -90,7 +94,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public class UserTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
-
+    
+    @After
+    public void tearDown() {
+        System.clearProperty(User.class.getName() + ".disableImpersonationCache");
+    }
+    
     public static class UserPropertyImpl extends UserProperty implements Action {
 
         private final String testString;
@@ -782,5 +791,109 @@ public class UserTest {
         wc.login("alice").goTo("me/configure");
         assertThat(failingResources, empty());
     }
+    
+    @Test
+    @Issue("JENKINS-61211")
+    public void getUserDetailsForImpersonationLoadUserDetailsFromCache() {
+        LoadUserCountingSecurityRealm realm = new LoadUserCountingSecurityRealm();
+        j.jenkins.setSecurityRealm(realm);
+        // Alice gets created, this calls loadUserByUsername once
+        User testUser = User.getOrCreateByIdOrFullName("alice");
+        assertThat(realm.getCount(), is(1));
 
+        UserDetails userDetails = testUser.getUserDetailsForImpersonation2();
+        assertThat(realm.getCount(), is(1));
+        assertThat(userDetails, notNullValue());
+        assertThat(userDetails.getUsername(), is("alice"));
+
+        // Bob gets created, this calls loadUserByUsername once more
+        testUser = User.getOrCreateByIdOrFullName("bob");
+        assertThat(realm.getCount(), is(2));
+
+        userDetails = testUser.getUserDetailsForImpersonation2();
+        assertThat(realm.getCount(), is(2));
+        assertThat(userDetails, notNullValue());
+        assertThat(userDetails.getUsername(), is("bob"));
+
+        // If we invalidate the cache for a user, then the realm load the user again
+        UserDetailsCache.get().invalidate("bob");
+        userDetails = testUser.getUserDetailsForImpersonation2();
+        assertThat(realm.getCount(), is(3));
+        assertThat(userDetails, notNullValue());
+        assertThat(userDetails.getUsername(), is("bob"));
+
+        final User notExistUser = User.getOrCreateByIdOrFullName(UsernameNotFoundException.class.getCanonicalName());
+        assertThat(realm.getCount(), is(6));
+        assertThrows(UsernameNotFoundException.class, () -> notExistUser.getUserDetailsForImpersonation2());
+        assertThat(realm.getCount(), is(6));
+
+        testUser = User.getOrCreateByIdOrFullName(UserMayOrMayNotExistException2.class.getCanonicalName());
+        assertThat(realm.getCount(), is(7));
+        userDetails = testUser.getUserDetailsForImpersonation2();
+        assertThat(realm.getCount(), is(8));
+        assertThat(userDetails, notNullValue());
+        assertThat(userDetails.getUsername(), is(UserMayOrMayNotExistException2.class.getCanonicalName()));
+    }
+
+    @Test
+    @Issue("JENKINS-61211")
+    public void getUserDetailsForImpersonationNoCache() {
+        User.DISABLE_CACHE_FOR_IMPERSONATION=true;
+        LoadUserCountingSecurityRealm realm = new LoadUserCountingSecurityRealm();
+        j.jenkins.setSecurityRealm(realm);
+        // alice is looked up and created 
+        User testUser = User.getOrCreateByIdOrFullName("alice");
+        assertThat(realm.getCount(), is(1));
+
+        // alice get looked up again
+        UserDetails userDetails = testUser.getUserDetailsForImpersonation2();
+        assertThat(realm.getCount(), is(2));
+        assertThat(userDetails, notNullValue());
+        assertThat(userDetails.getUsername(), is("alice"));
+
+        // bob is looked up and created
+        testUser = User.getOrCreateByIdOrFullName("bob");
+        assertThat(realm.getCount(), is(3));
+
+        // bob get looked up again
+        userDetails = testUser.getUserDetailsForImpersonation2();
+        assertThat(realm.getCount(), is(4));
+        assertThat(userDetails, notNullValue());
+        assertThat(userDetails.getUsername(), is("bob"));
+    }
+
+    private static class LoadUserCountingSecurityRealm extends AbstractPasswordBasedSecurityRealm {
+
+        private int counter = 0;
+
+        @Override
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+            ++counter;
+
+            if (UsernameNotFoundException.class.getCanonicalName().equalsIgnoreCase(username)) {
+                throw new UsernameNotFoundException("Test UsernameNotFoundException");
+            }
+
+            if (UserMayOrMayNotExistException2.class.getCanonicalName().equalsIgnoreCase(username)) {
+                throw new UserMayOrMayNotExistException2("Test UserMayOrMayNotExistException");
+            }
+
+            return new org.springframework.security.core.userdetails.User(username, "", true, true, true, true,
+                Arrays.asList(AUTHENTICATED_AUTHORITY2));
+        }
+
+        @Override
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchByMembers) throws UsernameNotFoundException {
+            return null;
+        }
+
+        @Override
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
+            return null;
+        }
+
+        public int getCount() {
+            return counter;
+        }
+    }
 }
