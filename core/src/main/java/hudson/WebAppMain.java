@@ -48,6 +48,8 @@ import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
 import jenkins.util.JenkinsJVM;
 import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
@@ -94,7 +96,9 @@ public class WebAppMain implements ServletContextListener {
      * Written for the requirements of JENKINS-50669
      * @return int This returns DEFAULT_RING_BUFFER_SIZE
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @since 2.255
      */
+    @Restricted(NoExternalUse.class)
     public static int getDefaultRingBufferSize() {
         return RingBufferLogHandler.getDefaultRingBufferSize();
     }
