@@ -3,7 +3,10 @@ package hudson.slaves;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Action;
@@ -22,7 +25,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,7 +101,7 @@ public class CloudTest {
             return Cloud.class;
         }
 
-        @Nonnull @Override public Collection<? extends Action> createFor(@Nonnull Cloud target) {
+        @NonNull @Override public Collection<? extends Action> createFor(@NonNull Cloud target) {
             return Arrays.asList(new TaskCloudAction(), new ReportingCloudAction());
         }
     }

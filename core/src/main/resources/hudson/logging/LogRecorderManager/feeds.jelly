@@ -24,14 +24,28 @@ THE SOFTWARE.
 
 <!-- list of feed links -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div align="right" style="margin:1em">
-    <img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/>
-    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-    <a href="rss">${%All}</a>
-    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-    <a href="rss?level=SEVERE">${%&gt; SEVERE}</a>
-    <st:nbsp/><st:nbsp/><st:nbsp/><st:nbsp/>
-    <a href="rss?level=WARNING">${%&gt; WARNING}</a>
-  </div>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <div align="right">
+        <a href="rss" class="yui-button link-button">
+            <span class="leading-icon">
+                <l:svgIcon class="icon-small" tooltip="Atom feed"
+                           href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
+            </span>
+            <span>${%All}</span>
+        </a>
+        <a href="rss?level=SEVERE" class="yui-button link-button">
+            <span class="leading-icon">
+                <l:svgIcon class="icon-small" tooltip="Atom feed"
+                           href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
+            </span>
+            <span>${%SEVERE}</span>
+        </a>
+        <a href="rss?level=WARNING" class="yui-button link-button">
+            <span class="leading-icon">
+                <l:svgIcon class="icon-small" tooltip="Atom feed"
+                           href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px"/>
+            </span>
+            <span>${%WARNING}</span>
+        </a>
+    </div>
 </j:jelly>

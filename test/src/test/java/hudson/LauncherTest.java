@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -53,9 +54,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -93,7 +98,7 @@ public class LauncherTest {
     @Issue("JENKINS-19926")
     @Test
     public void overwriteSystemEnvVars() throws Exception {
-        Map<String, String> env = new HashMap<String,String>();
+        Map<String, String> env = new HashMap<>();
         env.put("jenkins_19926", "original value");
         Slave slave = rule.createSlave(new EnvVars(env));
         
@@ -200,6 +205,7 @@ public class LauncherTest {
             this.logFile = logFile;
             this.id = id;
         }
+        @NonNull
         @Override public PrintStream getLogger() {
             if (logger == null) {
                 final OutputStream fos;
@@ -270,10 +276,10 @@ public class LauncherTest {
         assertEquals(message, 0, ps.join());
         if (outputIn2) {
             assertThat(message, baos2.toString(), containsString("hello"));
-            assertThat(message, baos1.toString(), isEmptyString());
+            assertThat(message, baos1.toString(), is(emptyString()));
         } else {
             assertThat(message, baos1.toString(), containsString("hello"));
-            assertThat(message, baos2.toString(), isEmptyString());
+            assertThat(message, baos2.toString(), is(emptyString()));
         }
     }
 

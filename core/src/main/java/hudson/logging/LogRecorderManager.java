@@ -112,6 +112,8 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      */
     @RequirePOST
     public HttpResponse doNewLogRecorder(@QueryParameter String name) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         Jenkins.checkGoodName(name);
         
         logRecorders.put(name,new LogRecorder(name));
@@ -208,7 +210,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         }
         return this;
     }

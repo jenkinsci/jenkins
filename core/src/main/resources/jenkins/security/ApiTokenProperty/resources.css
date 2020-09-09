@@ -28,13 +28,14 @@
     
     max-width: 700px;
     border: 1px solid #cccccc;
+    border-color: var(--medium-grey);
     border-radius: 3px;
 } 
 
 .token-list .token-list-item {
     min-height: inherit;
     padding: 8px 10px;
-    font-size: 13px;
+    font-size: 0.875rem;
     line-height: 26px;
 }
 .token-list .token-list-item.legacy-token {
@@ -56,7 +57,7 @@
 }
 .token-list .token-list-item .token-creation{
     margin-left: 5px;
-    font-size: 90%;
+    font-size: 0.75rem;
 }
 .token-list .token-list-item .token-creation.age-ok{
     color: #6d7680;
@@ -74,11 +75,11 @@
     float: right;
 }
 .token-list .token-list-item .token-use-counter{
-    font-size: 90%;
+    font-size: 0.75rem;
     color: #6d7680;
 }
 .token-list .token-list-item .no-statistics{
-    font-size: 90%;
+    font-size: 0.75rem;
     color: #6d7680;
 }
 .token-list .token-list-item .token-revoke{
@@ -105,8 +106,8 @@
     width: 40%; 
     display: none;
     font-family: monospace;
-    font-size: 14px;
     margin-right: 2px; 
+    font-size: 1em;
 }
 .token-list .token-list-new-item .new-token-value.visible{
     display: inline-block;
@@ -143,6 +144,7 @@
 }
 .token-list .repeated-chunk {
     border-width: 0;
+    padding-left: 0;
 }
 .token-list .repeatable-add{
     margin: 6px 6px 3px 6px;

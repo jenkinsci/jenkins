@@ -38,7 +38,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -101,7 +101,7 @@ public class LoadStatisticsTest {
         assertThat(LoadStatistics.isModern(LoadStatistics.class), is(false));
     }
 
-    private class Modern extends LoadStatistics {
+    private static class Modern extends LoadStatistics {
 
         protected Modern(int initialOnlineExecutors, int initialBusyExecutors) {
             super(initialOnlineExecutors, initialBusyExecutors);

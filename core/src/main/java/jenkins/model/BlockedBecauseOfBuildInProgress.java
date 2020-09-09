@@ -28,7 +28,7 @@ import hudson.model.Executor;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.queue.CauseOfBlockage;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Indicates that a new build is blocked because the previous build is already in progress.
@@ -37,14 +37,14 @@ import javax.annotation.Nonnull;
  */
 public class BlockedBecauseOfBuildInProgress extends CauseOfBlockage {
     
-    @Nonnull
+    @NonNull
     private final Run<?, ?> build;
 
     /**
      * Creates a cause for the specified build.
      * @param build Build, which is already in progress
      */
-    public BlockedBecauseOfBuildInProgress(@Nonnull Run<?, ?> build) {
+    public BlockedBecauseOfBuildInProgress(@NonNull Run<?, ?> build) {
         this.build = build;
     }
 

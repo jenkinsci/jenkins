@@ -31,14 +31,18 @@ import hudson.model.PersistentDescriptor;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.IOException;
-import java.io.ObjectStreamException;
+
 import hudson.util.LineEndingConversion;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.tasks.filters.EnvVarsFilterLocalRule;
+import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.SystemUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -50,7 +54,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Executes a series of commands by using a shell.
@@ -64,9 +68,18 @@ public class Shell extends CommandInterpreter {
         super(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Unix));
     }
 
+    /**
+     * Set local environment variable filter rules
+     * @param configuredLocalRules list of local environment filter rules
+     * @since 2.246
+     */
+    @Restricted(Beta.class)
+    @DataBoundSetter
+    public void setConfiguredLocalRules(List<EnvVarsFilterLocalRule> configuredLocalRules) {
+        this.configuredLocalRules = configuredLocalRules;
+    }
+
     private Integer unstableReturn;
-
-
 
     /**
      * Older versions of bash have a bug where non-ASCII on the first line
@@ -124,9 +137,11 @@ public class Shell extends CommandInterpreter {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         Shell shell = new Shell(command);
         shell.setUnstableReturn(unstableReturn);
+        // backward compatibility
+        shell.setConfiguredLocalRules(configuredLocalRules == null ? new ArrayList<>() : configuredLocalRules);
         return shell;
     }
 
@@ -139,6 +154,12 @@ public class Shell extends CommandInterpreter {
 
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
+        }
+
+        // used by Jelly view
+        @Restricted(NoExternalUse.class)
+        public List<EnvVarsFilterLocalRuleDescriptor> getApplicableLocalRules() {
+            return EnvVarsFilterLocalRuleDescriptor.allApplicableFor(Shell.class);
         }
 
         public String getShell() {

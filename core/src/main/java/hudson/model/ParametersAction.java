@@ -52,8 +52,8 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.Lists;
 import static com.google.common.collect.Sets.newHashSet;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.util.SystemProperties;
 
 /**
@@ -87,7 +87,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private Set<String> safeParameters;
 
-    private @Nonnull List<ParameterValue> parameters;
+    private @NonNull List<ParameterValue> parameters;
 
     private List<String> parameterDefinitionNames;
 
@@ -99,7 +99,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private transient Run<?, ?> run;
 
-    public ParametersAction(@Nonnull List<ParameterValue> parameters) {
+    public ParametersAction(@NonNull List<ParameterValue> parameters) {
         this.parameters = new ArrayList<>(parameters);
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
@@ -235,7 +235,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * with the overrides / new values given as parameters.
      * @return New {@link ParametersAction}. The result may contain null {@link ParameterValue}s
      */
-    @Nonnull
+    @NonNull
     public ParametersAction createUpdated(Collection<? extends ParameterValue> overrides) {
         if(overrides == null) {
             ParametersAction parametersAction = new ParametersAction(parameters);
@@ -265,7 +265,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * with the overrides / new values given as another {@link ParametersAction}.
      * @return New {@link ParametersAction}. The result may contain null {@link ParameterValue}s
      */
-    @Nonnull
+    @NonNull
     public ParametersAction merge(@CheckForNull ParametersAction overrides) {
         if (overrides == null) {
             return new ParametersAction(parameters, this.safeParameters);

@@ -43,7 +43,7 @@ import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SecurityRealmTest {
 
@@ -72,7 +72,7 @@ public class SecurityRealmTest {
         assertThat(response.getResponseHeaderValue("Expires"), is("0"));
     }
 
-    private class DummyCaptcha extends CaptchaSupport {
+    private static class DummyCaptcha extends CaptchaSupport {
         @Override
         public boolean validateCaptcha(String id, String text) {
             return false;

@@ -24,7 +24,7 @@
 
 package hudson.util;
 
-import hudson.console.ConsoleNote;
+import hudson.console.PlainTextConsoleOutputStream;
 import hudson.model.TaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -47,7 +47,7 @@ public class LogTaskListener extends AbstractTaskListener implements TaskListene
     private final TaskListener delegate;
 
     public LogTaskListener(Logger logger, Level level) {
-        delegate = new StreamTaskListener(new LogOutputStream(logger, level, new Throwable().getStackTrace()[1]));
+        delegate = new StreamTaskListener(new PlainTextConsoleOutputStream(new LogOutputStream(logger, level, new Throwable().getStackTrace()[1])));
     }
 
     @Override
@@ -56,16 +56,11 @@ public class LogTaskListener extends AbstractTaskListener implements TaskListene
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public void annotate(ConsoleNote ann) {
-        // no annotation support
-    }
-
-    @Override
     public void close() {
         delegate.getLogger().close();
     }
 
+    // TODO a bit simpler to use LineTransformationOutputStream
     private static class LogOutputStream extends OutputStream {
 
         private final Logger logger;

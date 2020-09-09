@@ -1,0 +1,12 @@
+<div>
+    Il componente di rilevazione delle impronte digitali utilizza la classe
+    <code>org.apache.tools.ant.DirectoryScanner</code> di Ant che, per
+    impostazione predefinita, fa differenza tra maiuscole e minuscole.
+    Ad esempio, se il processo produce file *.hpi, il pattern "**/*.HPI" non
+    riuscirà a rilevarli.<br/><br/>
+    Quest'opzione può essere utilizzata per disattivare il rilevamento della
+    differenza fra maiuscole e minuscole. Quando è deselezionata, il
+    pattern "**/*.HPI" corrisponderà a tutti i file *.hpi, e il pattern
+    "**/mAiUsColeMiNuScOlE.jar" corrisponderà a un file di nome
+    maiuscoleMinuscole.jar.
+</div>

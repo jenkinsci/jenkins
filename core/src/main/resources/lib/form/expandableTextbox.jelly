@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
   <st:documentation>
-    single-line textbox that can be expanded into a multi-line textarea.
+    A single-line textbox that can be expanded into a multi-line textarea.
 
     This control is useful for a field that expects multiple whitespace-separated tokens
     (such as URLs, glob patterns, etc.) When the user only enters a few tokens,
@@ -63,23 +63,25 @@ THE SOFTWARE.
       <f:textarea name='${attrs.name}' value="${value}" field="${attrs.field}"/>
     </j:when>
     <j:otherwise>
-      <!-- single line textbox with expand button -->
-      <table border="0" style="width:100%" cellspacing="0" cellpadding="0">
-        <tr>
-          <td width="*">
-            <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
-            <input class="setting-input" type="text"
-                   name="${name}" value="${value}"
-                   id="textarea.${name}" />
-            <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
-              <j:mute>${customizedFields.add(name)}</j:mute>
-            </j:if>
-          </td><td width="1">
-            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
-                tooltip="${%tooltip}"/>
-          </td>
-        </tr>
-      </table>
+      <f:possibleReadOnlyField>
+        <!-- single line textbox with expand button -->
+        <table border="0" style="width:100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="*">
+              <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
+              <input class="setting-input" type="text"
+                    name="${name}" value="${value}"
+                    id="textarea.${name}" />
+              <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
+                <j:mute>${customizedFields.add(name)}</j:mute>
+              </j:if>
+            </td><td width="1">
+              <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
+                  tooltip="${%tooltip}"/>
+            </td>
+          </tr>
+        </table>
+      </f:possibleReadOnlyField>
     </j:otherwise>
   </j:choose>
 </j:jelly>

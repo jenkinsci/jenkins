@@ -41,7 +41,7 @@ THE SOFTWARE.
       <table>
         <j:forEach items="${h.getCLICommands()}" var="command">
           <tr>
-            <td><a href="command/${command.name}" style="color: black; font-weight: bold">${command.name}</a></td>
+            <td><a href="command/${command.name}">${command.name}</a></td>
             <td>${command.shortDescription}</td>
           </tr>
         </j:forEach>

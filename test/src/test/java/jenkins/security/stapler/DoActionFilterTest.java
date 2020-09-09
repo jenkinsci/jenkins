@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -73,7 +72,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         
         private TestAccessModifier getPrivate() {return new TestAccessModifier();}
         
-        public class TestAccessModifier {
+        public static class TestAccessModifier {
             @GET
             public String doValue() {
                 return "hello";
@@ -350,7 +349,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJavascriptScriptMethod/"));
         settings.setAdditionalHeader("Content-Type", "application/x-stapler-method-invocation");
         settings.setHttpMethod(HttpMethod.POST);
-        settings.setRequestBody(JSONArray.fromObject(Arrays.asList()).toString());
+        settings.setRequestBody(JSONArray.fromObject(Collections.emptyList()).toString());
         assertReachableWithSettings(settings);
     }
     
@@ -415,7 +414,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamSubmittedForm/"));
         settings.setHttpMethod(HttpMethod.POST);
         
-        settings.setRequestParameters(Arrays.asList(
+        settings.setRequestParameters(Collections.singletonList(
                 new NameValuePair(
                         "json",
                         JSONObject.fromObject(new HashMap<String, Object>() {{
