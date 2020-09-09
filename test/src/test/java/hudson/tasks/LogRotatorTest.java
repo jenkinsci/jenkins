@@ -27,7 +27,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Launcher;
@@ -76,8 +77,8 @@ public class LogRotatorTest {
         project.getBuildersList().replaceBy(Collections.<Builder>emptySet());
         assertEquals(Result.SUCCESS, build(project)); // #4
         assertEquals(4, numberOf(project.getLastSuccessfulBuild()));
-        assertEquals(null, project.getBuildByNumber(1));
-        assertEquals(null, project.getBuildByNumber(2));
+        assertNull(project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(2));
         assertEquals(3, numberOf(project.getLastFailedBuild()));
     }
 
@@ -93,8 +94,8 @@ public class LogRotatorTest {
         assertEquals(1, numberOf(project.getLastStableBuild()));
         project.getPublishersList().replaceBy(Collections.<Publisher>emptySet());
         assertEquals(Result.SUCCESS, build(project)); // #4
-        assertEquals(null, project.getBuildByNumber(1));
-        assertEquals(null, project.getBuildByNumber(2));
+        assertNull(project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(2));
     }
 
     @Test
@@ -129,7 +130,7 @@ public class LogRotatorTest {
         assertTrue(project.getBuildByNumber(5).getHasArtifacts());
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
         assertEquals(Result.SUCCESS, build(project)); // #7
-        assertEquals(null, project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(1));
         assertNotNull(project.getBuildByNumber(2));
         assertFalse("lastSuccessful was #6 for ArtifactArchiver", project.getBuildByNumber(2).getHasArtifacts());
         assertFalse(project.getBuildByNumber(3).getHasArtifacts());
@@ -138,7 +139,7 @@ public class LogRotatorTest {
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
         assertTrue(project.getBuildByNumber(7).getHasArtifacts());
         assertEquals(Result.SUCCESS, build(project)); // #8
-        assertEquals(null, project.getBuildByNumber(2));
+        assertNull(project.getBuildByNumber(2));
         assertNotNull(project.getBuildByNumber(3));
         assertFalse(project.getBuildByNumber(3).getHasArtifacts());
         assertFalse(project.getBuildByNumber(4).getHasArtifacts());

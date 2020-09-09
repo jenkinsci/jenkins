@@ -23,7 +23,10 @@
  */
 package hudson.model.labels;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import antlr.ANTLRException;
@@ -34,7 +37,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.FreeStyleProject.DescriptorImpl;
 import hudson.model.Label;
 import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
@@ -252,15 +254,13 @@ public class LabelExpressionTest {
     public void formValidation() throws Exception {
         j.executeOnServer(new Callable<Object>() {
             public Object call() throws Exception {
-                DescriptorImpl d = j.jenkins.getDescriptorByType(DescriptorImpl.class);
-
                 Label l = j.jenkins.getLabel("foo");
                 DumbSlave s = j.createSlave(l);
-                String msg = d.doCheckLabel(null, "goo").renderHtml();
+                String msg = LabelExpression.validate("goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
 
-                msg = d.doCheckLabel(null, "master && goo").renderHtml();
+                msg = LabelExpression.validate("master && goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
                 return null;

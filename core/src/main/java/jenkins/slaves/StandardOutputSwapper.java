@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -31,8 +32,8 @@ public class StandardOutputSwapper extends ComputerListener {
         try {
             if (channel.call(new ChannelSwapper()))
                 listener.getLogger().println("Evacuated stdout");
-        } catch (Throwable e) {
-            LOGGER.fine("Fatal problem swapping file descriptors " + c.getName());
+        } catch (Exception x) {
+            LOGGER.log(Level.FINE, "Fatal problem swapping file descriptors " + c.getName(), x);
         }
     }
 
@@ -42,20 +43,28 @@ public class StandardOutputSwapper extends ComputerListener {
             Channel c = getOpenChannelOrFail();
             StandardOutputStream sos = (StandardOutputStream) c.getProperty(StandardOutputStream.class);
             if (sos!=null) {
-                swap(sos);
+                _swap(sos);
                 return true;
             }
 
             OutputStream o = c.getUnderlyingOutput();
             if (o instanceof StandardOutputStream) {
-                swap((StandardOutputStream) o);
+                _swap((StandardOutputStream) o);
                 return true;
             }
 
             return false;
         }
 
-        private void swap(StandardOutputStream stdout) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+        private void _swap(StandardOutputStream stdout) throws Exception {
+            try {
+                swap(stdout);
+            } catch (LinkageError x) {
+                throw new Exception(x);
+            }
+        }
+
+        private void swap(StandardOutputStream stdout) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, UnsatisfiedLinkError {
             // duplicate the OS file descriptor and create FileOutputStream around it
             int out = GNUCLibrary.LIBC.dup(1);
             if (out<0)      throw new IOException("Failed to dup(1)");

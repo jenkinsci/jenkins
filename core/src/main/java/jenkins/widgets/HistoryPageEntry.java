@@ -26,7 +26,7 @@ package jenkins.widgets;
 import hudson.model.Queue;
 import hudson.model.Run;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Represents an entry used by the {@link HistoryPageFilter}.
@@ -54,7 +54,7 @@ public class HistoryPageEntry<T> {
         return getEntryId(entry);
     }
 
-    protected static long getEntryId(@Nonnull Object entry) {
+    protected static long getEntryId(@NonNull Object entry) {
         if (entry instanceof Queue.Item) {
             return ((Queue.Item) entry).getId();
         } else if (entry instanceof Run) {

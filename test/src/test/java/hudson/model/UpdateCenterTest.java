@@ -33,7 +33,11 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Date;
-import static org.junit.Assert.*;
+
+import static java.util.Objects.requireNonNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import org.junit.Test;
 
@@ -59,7 +63,7 @@ public class UpdateCenterTest {
 
         UpdateSite us = new UpdateSite("default", url.toExternalForm());
         UpdateSite.Data data = us.new Data(json);
-        assertTrue(data.core.url.startsWith("http://updates.jenkins-ci.org/"));
+        assertThat(requireNonNull(data.core).url, startsWith("https://updates.jenkins.io/"));
         assertTrue(data.plugins.containsKey("rake"));
         System.out.println(data.core.url);
 

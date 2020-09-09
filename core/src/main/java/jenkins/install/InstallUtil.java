@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.inject.Provider;
 
 import org.apache.commons.io.FileUtils;
@@ -221,7 +221,7 @@ public class InstallUtil {
      * @return The last saved Jenkins instance version.
      * @see #saveLastExecVersion()
      */
-    public static @Nonnull String getLastExecVersion() {
+    public static @NonNull String getLastExecVersion() {
         File lastExecVersionFile = getLastExecVersionFile();
         if (lastExecVersionFile.exists()) {
             try {
@@ -265,7 +265,7 @@ public class InstallUtil {
      * Save a specific version as the last execute version.
      * @param version The version to save.
      */
-    static void saveLastExecVersion(@Nonnull String version) {
+    static void saveLastExecVersion(@NonNull String version) {
         File lastExecVersionFile = getLastExecVersionFile();
         try {
             FileUtils.write(lastExecVersionFile, version, Charset.defaultCharset());

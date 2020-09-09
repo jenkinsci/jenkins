@@ -5,8 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Reflective access to various {@link ClassLoader} methods which are otherwise {@code protected}.
@@ -76,7 +76,7 @@ public class ClassLoaderReflectionToolkit {
      * Calls {@link ClassLoader#findClass} while holding {@link ClassLoader#getClassLoadingLock}.
      * @since 1.553
      */
-    public static @Nonnull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
+    public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(cl, name)) {
             return (Class) invoke(FIND_CLASS, ClassNotFoundException.class, cl, name);
         }
@@ -94,7 +94,7 @@ public class ClassLoaderReflectionToolkit {
      * Calls {@link ClassLoader#findResources}.
      * @since 1.553
      */
-    public static @Nonnull Enumeration<URL> _findResources(ClassLoader cl, String name) throws IOException {
+    public static @NonNull Enumeration<URL> _findResources(ClassLoader cl, String name) throws IOException {
         return (Enumeration<URL>) invoke(FIND_RESOURCES, IOException.class, cl, name);
     }
 

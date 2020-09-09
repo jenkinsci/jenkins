@@ -7,7 +7,7 @@ import hudson.model.Queue;
 import hudson.model.Queue.QueueDecisionHandler;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Action} that can be submitted to {@link Queue} that controls where
@@ -36,5 +36,5 @@ public interface LabelAssignmentAction extends Action {
      *      null to let other {@link LabelAssignmentAction}s take control, eventually to {@link SubTask#getAssignedLabel()}.
      *      If non-null value is returned, that label will be authoritative.
      */
-    Label getAssignedLabel(@Nonnull SubTask task);
+    Label getAssignedLabel(@NonNull SubTask task);
 }

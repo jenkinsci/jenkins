@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,7 +53,7 @@ public class TriggerTest {
 
         private static final Logger LOGGER = Logger.getLogger(BadTimerTrigger.class.getName());
 
-        BadTimerTrigger(@Nonnull final String specs) throws ANTLRException {
+        BadTimerTrigger(@NonNull final String specs) throws ANTLRException {
             super(specs);
         }
 

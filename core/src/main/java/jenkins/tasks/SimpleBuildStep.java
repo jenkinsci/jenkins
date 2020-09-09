@@ -25,9 +25,11 @@
 package jenkins.tasks;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -47,7 +49,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
@@ -80,9 +82,38 @@ public interface SimpleBuildStep extends BuildStep {
      * @param listener a place to send output
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
+     * @deprecated Use {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener) instead.}
      */
-    void perform(@Nonnull Run<?,?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
-                 @Nonnull TaskListener listener) throws InterruptedException, IOException;
+    @Deprecated
+    default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher,
+                         @NonNull TaskListener listener) throws InterruptedException, IOException {
+        // No additional environment available; just use that from the Run.
+        this.perform(run, workspace, run.getEnvironment(listener), launcher, listener);
+    }
+
+    /**
+     * Run this step.
+     * @param run a build this is running as a part of
+     * @param workspace a workspace to use for any file operations
+     * @param env environment variables applicable to this step
+     * @param launcher a way to start processes
+     * @param listener a place to send output
+     * @throws InterruptedException if the step is interrupted
+     * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
+     * @since 2.241
+     */
+    default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher,
+                         @NonNull TaskListener listener) throws InterruptedException, IOException {
+        // If this is called, this must be an implementer of the previous API, in which case we call that, discarding
+        // the environment we were given.
+        // But for that to work, that API method must have been implemented.
+        if (Util.isOverridden(SimpleBuildStep.class, this.getClass(),
+                "perform", Run.class, FilePath.class, Launcher.class, TaskListener.class)) {
+            this.perform(run, workspace, launcher, listener);
+        } else {
+            throw new AbstractMethodError();
+        }
+    }
 
     /**
      * Marker for explicitly added build actions (as {@link Run#addAction}) which should imply a transient project
@@ -112,9 +143,9 @@ public interface SimpleBuildStep extends BuildStep {
             return Job.class;
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public Collection<? extends Action> createFor(@Nonnull Job j) {
+        public Collection<? extends Action> createFor(@NonNull Job j) {
             List<Action> actions = new LinkedList<>();
             Run r = j.getLastSuccessfulBuild();
             if (r != null) {

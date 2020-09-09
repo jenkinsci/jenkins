@@ -11,7 +11,7 @@
       </j:otherwise>
     </j:choose>
     <l:main-panel>
-      <h1><l:icon class="icon-help icon-xlg"/> ${%Instance Identity}</h1>
+      <h1>${%Instance Identity}</h1>
       <p>${%blurb}</p>
       <h2>${%Public Key}</h2>
       <pre id="key">${it.publicKey}</pre>

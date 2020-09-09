@@ -11,7 +11,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,15 +25,15 @@ import java.util.logging.Logger;
 @Extension
 public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
 
-    @Nonnull
+    @NonNull
     private final Map<String, Value> errors = new ConcurrentHashMap<>();
 
     public static int MAX_ENTRIES = 10;
 
-    @Nonnull
+    @NonNull
     private static final Logger LOGGER = Logger.getLogger(SlowTriggerAdminMonitor.class.getName());
 
-    @Nonnull
+    @NonNull
     public static SlowTriggerAdminMonitor getInstance() {
         return ExtensionList.lookup(SlowTriggerAdminMonitor.class).get(0);
     }
@@ -47,7 +47,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     }
 
     @Override
-    @Nonnull
+    @NonNull
     public String getDisplayName() {
         return Messages.SlowTriggerAdminMonitor_DisplayName();
     }
@@ -58,7 +58,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         }
     }
 
-    public void report(@Nonnull final String trigger, @Nonnull final String msg) {
+    public void report(@NonNull final String trigger, @NonNull final String msg) {
 
         synchronized (errors) {
             if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger)) {
@@ -78,14 +78,14 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         errors.put(trigger, new Value(msg));
     }
 
-    @Nonnull
+    @NonNull
     public Map<String, Value> getErrors() {
         return new HashMap<>(errors);
     }
 
     @Restricted(DoNotUse.class)
     @RequirePOST
-    @Nonnull
+    @NonNull
     public HttpResponse doClear() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         clear();
@@ -97,22 +97,22 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         private final LocalDateTime time;
         private final String msg;
 
-        Value(@Nonnull String msg) {
+        Value(@NonNull String msg) {
             this.msg = msg;
             this.time = LocalDateTime.now();
         }
 
-        @Nonnull
+        @NonNull
         public String getTime() {
             return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(time);
         }
 
-        @Nonnull
+        @NonNull
         protected LocalDateTime getTimeLDT() {
             return time;
         }
 
-        @Nonnull
+        @NonNull
         public String getMsg() {
             return msg;
         }

@@ -38,7 +38,10 @@ import org.apache.commons.io.FileUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,6 +56,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class ItemGroupMixInTest {
 
@@ -207,4 +212,52 @@ public class ItemGroupMixInTest {
         assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
     }
 
+  @Issue("JENKINS-61956")
+  @Test
+  public void copy_checkGoodName() throws Failure, IOException {
+    final String goodName = "calvin-jenkins";
+    final String badName = "calvin@jenkins";
+
+    Project goodProject = r.jenkins.createProject(FreeStyleProject.class, goodName);
+
+    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.copy(goodProject, badName); });
+    assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
+  }
+
+  @Issue("JENKINS-61956")
+  @Test
+  public void createProject_checkGoodName() throws Failure, IOException {
+    final String badName = "calvin@jenkins";
+
+    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.createProject(MockFolder.class, badName); });
+    assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
+  }
+
+  @Issue("JENKINS-61956")
+  @Test
+  public void createProjectFromXML_checkGoodName() throws Failure, IOException {
+    final String badName = "calvin@jenkins";
+
+    final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+            "<!DOCTYPE project[\n" +
+            "  <!ENTITY foo SYSTEM \"file:///\">\n" +
+            "]>\n" +
+            "<project>\n" +
+            "  <actions/>\n" +
+            "  <description>&foo;</description>\n" +
+            "  <keepDependencies>false</keepDependencies>\n" +
+            "  <properties/>\n" +
+            "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
+            "  <canRoam>true</canRoam>\n" +
+            "  <triggers/>\n" +
+            "  <builders/>\n" +
+            "  <publishers/>\n" +
+            "  <buildWrappers/>\n" +
+            "</project>";
+
+    Failure exception = assertThrows(Failure.class, () -> {
+      r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes()));
+    });
+    assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
+  }
 }
