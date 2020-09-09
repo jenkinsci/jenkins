@@ -68,20 +68,20 @@ public class AutoCompletionCandidatesTest {
 
         AutoCompletionCandidates c;
 
-        c = AutoCompletionCandidates.ofJobNames("", j.jenkins);
+        c = AutoCompletionCandidates.ofJobNames("", j.jenkins,10);
         assertContains(c, "foo", "bar", "bar/x=1", "bar/x=2", "bar/x=3");
 
-        c = AutoCompletionCandidates.ofJobNames("ba", j.jenkins);
+        c = AutoCompletionCandidates.ofJobNames("ba", j.jenkins,10);
         assertContains(c,  "bar", "bar/x=1", "bar/x=2", "bar/x=3");
 
-        c = AutoCompletionCandidates.ofJobNames("bar/", j.jenkins);
+        c = AutoCompletionCandidates.ofJobNames("bar/", j.jenkins, 10);
         assertContains(c, "bar/x=1", "bar/x=2", "bar/x=3");
 
-        c = AutoCompletionCandidates.ofJobNames("", x3.getParent());
+        c = AutoCompletionCandidates.ofJobNames("", x3.getParent(), 10);
         assertContains(c, "../foo", "../bar", "x=1", "x=2", "x=3");
 
         // relative path
-        c = AutoCompletionCandidates.ofJobNames("../", x3.getParent());
+        c = AutoCompletionCandidates.ofJobNames("../", x3.getParent(),10);
         assertContains(c, "../bar", "../foo");
     }
 

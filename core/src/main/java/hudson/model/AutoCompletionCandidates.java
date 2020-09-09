@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -179,17 +181,24 @@ public class AutoCompletionCandidates implements HttpResponse {
      * Inspired from hudson.plugins.parameterizedtrigger.BuildTriggerConfig
      * @param value The value the user has typed in.
      * @param container The nearby contextual {@link ItemGroup} to resolve relative job names from.
+     * @param count The limit of how many candidates you want to get.
      */
 
-    public static AutoCompletionCandidates ofJobNames(final String value, ItemGroup container) {
-        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-        List<Job> jobs = Jenkins.get().getAllItems(Job.class);
-        for (Job job: jobs) {
-            String relativeName = job.getRelativeNameFrom(container);
-            if (relativeName.startsWith(value) && job.hasPermission(Item.READ)) {
-                candidates.add(relativeName);
+    public static AutoCompletionCandidates ofJobNames(final String value, ItemGroup container, int count) {
+        AtomicInteger atomicInteger = new AtomicInteger();
+        Predicate<Job> jobPredicate =  job -> {
+            if (job.getRelativeNameFrom(container).startsWith(value)) {
+                return atomicInteger.incrementAndGet() < count;
             }
+            return false;
+        };
+        List<Job> jobs = Jenkins.get().getAllItems(Job.class, jobPredicate);
+
+        AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+        for (Job job: jobs) {
+            candidates.add(job.getRelativeNameFrom(container));
         }
+
         return candidates;
     }
 }

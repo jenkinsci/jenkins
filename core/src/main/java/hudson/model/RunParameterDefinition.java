@@ -155,7 +155,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
 
         public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value, @AncestorInPath ItemGroup context) {
-            return AutoCompletionCandidates.ofJobNames(value, context);
+            return AutoCompletionCandidates.ofJobNames(value, context, 10);
         }
 
     }
