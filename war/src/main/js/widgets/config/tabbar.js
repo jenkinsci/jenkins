@@ -30,7 +30,7 @@ export var addPageTabs = function(configSelector, onEachConfigTable, options) {
         page.onload('.block-control', function() {
             // Only do job configs for now.
             var configTables = $(configSelector);
-            if (configTables.size() > 0) {
+            if (configTables.length > 0) {
                 var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(tabBarShowPreferenceKey, "yes");
 
                 page.fixDragEvent(configTables);
@@ -78,7 +78,7 @@ export var addTabs = function(configTable, options) {
     } else if (typeof configTable === 'string') {
         // It's a config <table> selector
         var configTableEl = $(configTable);
-        if (configTableEl.size() === 0) {
+        if (configTableEl.length === 0) {
             throw "No config table found using selector '" + configTable + "'";
         } else {
             configTableMetadata = tableMetadata.fromConfigTable(configTableEl);

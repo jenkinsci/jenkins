@@ -55,7 +55,7 @@ describe("tabbar-spec tests", function () {
 
             expect(firstTableMetadata.configTable.find('.section-header-row').length).toBe(4);
             expect(firstTableMetadata.sectionCount()).toBe(4);
-            expect($('.tabBar .tab').size()).toBe(4);
+            expect($('.tabBar .tab').length).toBe(4);
 
             expect(firstTableMetadata.sectionIds()).toEqual([
                 'config_general',
@@ -87,7 +87,7 @@ describe("tabbar-spec tests", function () {
                 var activeSection = firstTableMetadata.activeSection();
                 expect(activeSection.id).toBe('config__build');
                 expect(activeSection.activeRowCount()).toBe(2);
-                expect(firstTableMetadata.getTopRows().filter('.active').size()).toBe(1); // should be activeSection.activeRowCount() - 1
+                expect(firstTableMetadata.getTopRows().filter('.active').length).toBe(1); // should be activeSection.activeRowCount() - 1
 
                 done();
             });
@@ -133,11 +133,11 @@ describe("tabbar-spec tests", function () {
             var tabBar = $('.tabBar');
 
             // All tabs should be visible...
-            expect($('.tab', tabBar).size()).toBe(4);
-            expect($('.tab.hidden', tabBar).size()).toBe(0);
+            expect($('.tab', tabBar).length).toBe(4);
+            expect($('.tab.hidden', tabBar).length).toBe(0);
 
             var finder = configTabBar.findInput;
-            expect(finder.size()).toBe(1);
+            expect(finder.length).toBe(1);
 
             // Find sections that have the text "trigger" in them...
             keydowns('trigger', finder);
@@ -145,7 +145,7 @@ describe("tabbar-spec tests", function () {
             // Need to wait for the change to happen ... there's a 300ms delay.
             // We could just call configTabBar.showSections(), but ...
             setTimeout(function() {
-                expect($('.tab.hidden', tabBar).size()).toBe(3);
+                expect($('.tab.hidden', tabBar).length).toBe(3);
                 expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Advanced Project Options|#Build');
 
                 var activeSection = configTabBar.activeSection();
@@ -167,7 +167,7 @@ describe("tabbar-spec tests", function () {
             var tabBar = $('.tabBar');
 
             configTabBar.showSections('quiet period');
-            expect($('.tab.hidden', tabBar).size()).toBe(3);
+            expect($('.tab.hidden', tabBar).length).toBe(3);
             expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Build Triggers|#Build');
 
             var activeSection = configTabBar.activeSection();
@@ -186,7 +186,7 @@ describe("tabbar-spec tests", function () {
             var tabBar = $('.tabBar');
 
             configTabBar.showSections('Strategy');
-            expect($('.tab.hidden', tabBar).size()).toBe(3);
+            expect($('.tab.hidden', tabBar).length).toBe(3);
             expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Advanced Project Options|#Build Triggers|#Build');
 
             var activeSection = configTabBar.activeSection();
@@ -210,14 +210,14 @@ describe("tabbar-spec tests", function () {
 
             // Only 3 tabs should be visible
             // (used to be 4 before the merge/adopt)...
-            expect($('.tab', tabBar).size()).toBe(3);
+            expect($('.tab', tabBar).length).toBe(3);
             expect(textCleanup($('.tab', tabBar).text())).toBe('General|#Build Triggers|#Build');
 
             // And if we try to use the finder now to find something
             // that was in the advanced section, it should now appear in the
             // General section ...
             configTabBar.showSections('quiet period');
-            expect($('.tab.hidden', tabBar).size()).toBe(2);
+            expect($('.tab.hidden', tabBar).length).toBe(2);
             expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('#Build Triggers|#Build');
 
             var activeSection = configTabBar.activeSection();

@@ -412,9 +412,9 @@ var createPluginSetupWizard = function(appendTarget) {
 			installPlugins(pluginManager.recommendedPluginNames());
 		});
 	};
-	
+
 	var enableButtonsAfterFrameLoad = function() {
-		$('iframe[src]').load(function() {
+		$('iframe[src]').on('load', function() {
 			$('button').prop({disabled:false});
 		});
 	};
