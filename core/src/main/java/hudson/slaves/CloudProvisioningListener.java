@@ -42,13 +42,11 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      */
     @Deprecated
     public CauseOfBlockage canProvision(Cloud cloud, Label label, int numExecutors) {
-        String methodName = "canProvision";
-        if (Util.isOverridden(CloudProvisioningListener.class, getClass(), methodName, CloudState.class)) {
-            return canProvision(cloud, new CloudState(label, 0), numExecutors);
-        } else {
-            throw new AbstractMethodError("you must override at least one of the "
-                    + CloudProvisioningListener.class.getSimpleName() + "." + methodName + " methods");
-        }
+        return Util.ifOverridden(() -> canProvision(cloud, new CloudState(label, 0), numExecutors),
+                CloudProvisioningListener.class,
+                getClass(),
+                "canProvision",
+                CloudState.class);
     }
 
     /**

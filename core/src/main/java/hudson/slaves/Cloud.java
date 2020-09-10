@@ -162,13 +162,12 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      */
     @Deprecated
     public Collection<PlannedNode> provision(Label label, int excessWorkload) {
-        String methodName = "provision";
-        if (Util.isOverridden(Cloud.class, getClass(), methodName, CloudState.class, int.class)) {
-            return provision(new CloudState(label, 0), excessWorkload);
-        } else {
-            throw new AbstractMethodError("you must override at least one of the "
-                    + Cloud.class.getSimpleName() + "." + methodName + " methods");
-        }
+        return Util.ifOverridden(() -> provision(new CloudState(label, 0), excessWorkload),
+                Cloud.class,
+                getClass(),
+                "provision",
+                CloudState.class,
+                int.class);
     }
 
     /**
@@ -208,13 +207,11 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      */
     @Deprecated
     public boolean canProvision(Label label) {
-        String methodName = "canProvision";
-        if (Util.isOverridden(Cloud.class, getClass(), methodName, CloudState.class)) {
-            return canProvision(new CloudState(label, 0));
-        } else {
-            throw new AbstractMethodError("you must override at least one of the "
-                    + Cloud.class.getSimpleName() + "." + methodName + " methods");
-        }
+        return Util.ifOverridden(() -> canProvision(new CloudState(label, 0)),
+                Cloud.class,
+                getClass(),
+                "canProvision",
+                CloudState.class);
     }
 
     /**
