@@ -260,6 +260,8 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         } else {
             cause = new Cause.UserIdCause();
         }
+        
+        cause.setCorrelationId(req!=null?req.getHeader("X-Correlation-ID"):null);
         return new CauseAction(cause);
     }
 
