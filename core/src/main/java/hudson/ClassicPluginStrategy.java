@@ -389,6 +389,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 if (plugin != null) {
                     plugin.setServletContext(pluginManager.context);
                 }
+                else {
+                    throw new NullPointerException("Failed to initialize Plugin, because it is null");
+                }
                 startPlugin(wrapper);
             } catch(Throwable t) {
                 // gracefully handle any error in plugin.
@@ -403,6 +406,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         final Plugin plugin1 = plugin.getPlugin();
         if (plugin1 != null) {
             plugin1.start();
+        }
+        else {
+            throw new Exception("Failed to start plugin: " + plugin.getDisplayName());
         }
     }
 

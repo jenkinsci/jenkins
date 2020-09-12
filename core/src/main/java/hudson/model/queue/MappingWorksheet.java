@@ -121,7 +121,7 @@ public class MappingWorksheet {
             assert !base.isEmpty();
             computer = base.get(0).getExecutor().getOwner();
             node = computer.getNode();
-            nodeAcl = node != null ? node.getACL() : null;
+            nodeAcl = node.getACL();
         }
 
         /**
