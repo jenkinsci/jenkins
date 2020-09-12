@@ -39,7 +39,7 @@ div {
 
                             if (hasAdministerJenkinsPermission) {
                                 li(class: "content-block") {
-                                    a(href: "computer/new", class: "content-block__link") {
+                                    a(href: "configureClouds", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
                                             l.svgIcon(
