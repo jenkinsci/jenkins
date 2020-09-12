@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import java.util.logging.SimpleFormatter;
 import static org.junit.Assert.assertEquals;
