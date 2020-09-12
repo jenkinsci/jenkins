@@ -21,6 +21,23 @@ div {
                 h1(_("Welcome to Jenkins!"))
 
                 p(_("noJobDescription"))
+                
+                section(class: "empty-state-section") {
+                    h2(_("startBuilding"), class: "h4")
+
+                    ul(class: "empty-state-section-list") {
+                        li(class: "content-block") {
+                            a(href: "newJob", class: "content-block__link") {
+                                span(_("createJob"))
+                                span(class: "trailing-icon") {
+                                    l.svgIcon(
+                                            class: "icon-sm",
+                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                }
+                            }
+                        }
+                    }
+                }
 
                 if (canSetUpDistributedBuilds) {
                     section(class: "empty-state-section") {
@@ -66,22 +83,6 @@ div {
                     }
                 }
 
-                section(class: "empty-state-section") {
-                    h2(_("createJob"), class: "h4")
-
-                    ul(class: "empty-state-section-list") {
-                        li(class: "content-block") {
-                            a(href: "newJob", class: "content-block__link") {
-                                span(_("createJob"))
-                                span(class: "trailing-icon") {
-                                    l.svgIcon(
-                                            class: "icon-sm",
-                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
-                                }
-                            }
-                        }
-                    }
-                }
             }
         } else if (hasItemCreatePermission) {
             // we're in a folder
