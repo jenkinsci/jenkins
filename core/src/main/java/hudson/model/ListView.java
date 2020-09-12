@@ -37,6 +37,7 @@ import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.views.ListViewColumn;
+import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
 
 import java.io.IOException;
@@ -53,6 +54,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 
 import net.sf.json.JSONObject;
+import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -101,8 +103,10 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
+     * Deprecated see {@link StatusFilter}
      */
-    private Boolean statusFilter;
+    @Deprecated
+    private transient Boolean statusFilter;
 
     @DataBoundConstructor
     public ListView(String name) {
@@ -145,6 +149,9 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         initColumns();
         initJobFilters();
+        if (statusFilter != null) {
+            jobFilters.add(0, new StatusFilter(statusFilter));
+        }
         return this;
     }
 
@@ -211,31 +218,47 @@ public class ListView extends View implements DirectlyModifiableView {
         }
 
         ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
-        List<TopLevelItem> parentItems = new ArrayList<>(parent.getItems());
-        includeItems(parent, parentItems, names);
 
-        Boolean statusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
-        Iterable<? extends TopLevelItem> candidates;
         if (recurse) {
-            candidates = parent.getAllItems(TopLevelItem.class);
+            if (!names.isEmpty() || includePattern != null) {
+                items.addAll(parent.getAllItems(TopLevelItem.class, item -> {
+                    String itemName = item.getRelativeNameFrom(parent);
+                    if (names.contains(itemName)) {
+                        return true;
+                    }
+                    if (includePattern != null) {
+                        return includePattern.matcher(itemName).matches();
+                    }
+                    return false;
+                }));
+            }
         } else {
-            candidates = parentItems;
-        }
-        for (TopLevelItem item : candidates) {
-            if (!names.contains(item.getRelativeNameFrom(getOwner().getItemGroup()))) continue;
-            // Add if no status filter or filter matches enabled/disabled status:
-            if(statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                              || ((ParameterizedJobMixIn.ParameterizedJob)item).isDisabled() ^ statusFilter)
-                items.add(item);
+            for (String name : names) {
+                try {
+                    TopLevelItem i = parent.getItem(name);
+                    if (i != null) {
+                        items.add(i);
+                    }
+                } catch (AccessDeniedException e) {
+                    //Ignore
+                }
+            }
+            if (includePattern != null) {
+                items.addAll(parent.getItems(item -> {
+                    String itemName = item.getRelativeNameFrom(parent);
+                    return includePattern.matcher(itemName).matches();
+                }));
+            }
         }
 
-        // check the filters
-        Iterable<ViewJobFilter> jobFilters = getJobFilters();
-        List<TopLevelItem> allItems = new ArrayList<>(parentItems);
-        if (recurse) allItems = expand(allItems, new ArrayList<>());
-    	for (ViewJobFilter jobFilter: jobFilters) {
-    		items = jobFilter.filter(items, allItems, this);
-    	}
+        Collection<ViewJobFilter> jobFilters = getJobFilters();
+        if (!jobFilters.isEmpty()) {
+            List<TopLevelItem> candidates = recurse ? parent.getAllItems(TopLevelItem.class) : new ArrayList<>(parent.getItems());
+            // check the filters
+            for (ViewJobFilter jobFilter : jobFilters) {
+                items = jobFilter.filter(items, candidates, this);
+            }
+        }
         // for sanity, trim off duplicates
         items = new ArrayList<>(new LinkedHashSet<>(items));
         
@@ -251,37 +274,9 @@ public class ListView extends View implements DirectlyModifiableView {
         return sib;
     }
 
-    private List<TopLevelItem> expand(Collection<TopLevelItem> items, List<TopLevelItem> allItems) {
-        for (TopLevelItem item : items) {
-            if (item instanceof ItemGroup) {
-                ItemGroup<? extends Item> ig = (ItemGroup<? extends Item>) item;
-                expand(Util.filter(ig.getItems(), TopLevelItem.class), allItems);
-            }
-            allItems.add(item);
-        }
-        return allItems;
-    }
-    
     @Override
     public boolean contains(TopLevelItem item) {
       return getItems().contains(item);
-    }
-    
-    private void includeItems(ItemGroup<? extends TopLevelItem> root, Collection<? extends Item> parentItems, SortedSet<String> names) {
-        if (includePattern != null) {
-            for (Item item : parentItems) {
-                if (recurse && item instanceof ItemGroup) {
-                    ItemGroup<?> ig = (ItemGroup<?>) item;
-                    includeItems(root, ig.getItems(), names);
-                }
-                if (item instanceof TopLevelItem) {
-                    String itemName = item.getRelativeNameFrom(root);
-                    if (includePattern.matcher(itemName).matches()) {
-                        names.add(itemName);
-                    }
-                }
-            }
-        }
     }
     
     public synchronized boolean jobNamesContains(TopLevelItem item) {
@@ -336,7 +331,9 @@ public class ListView extends View implements DirectlyModifiableView {
     /**
      * Filter by enabled/disabled status of jobs.
      * Null for no filter, true for enabled-only, false for disabled-only.
+     * Status filter is now controlled via a JobViewFilter, see {@link StatusFilter}
      */
+    @Deprecated
     public Boolean getStatusFilter() {
         return statusFilter;
     }
@@ -488,6 +485,11 @@ public class ListView extends View implements DirectlyModifiableView {
         this.jobNames = new TreeSet<>(jobNames);
     }
 
+    /**
+     * Deprecated see, {@link StatusFilter}
+     * @param statusFilter
+     */
+    @Deprecated
     @DataBoundSetter
     public void setStatusFilter(Boolean statusFilter) {
         this.statusFilter = statusFilter;
@@ -613,5 +615,4 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
     }
-
 }

@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Build;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.FreeStyleProject;
@@ -36,7 +37,9 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.Issue;
@@ -68,7 +71,7 @@ public class ACLTest {
     }
 
     @Test
-    public void checkAnyPermissionPassedIfOneIsValid() throws Exception {
+    public void checkAnyPermissionPassedIfOneIsValid() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -82,7 +85,7 @@ public class ACLTest {
     }
 
     @Test
-    public void checkAnyPermissionThrowsIfPermissionIsMissing() throws Exception {
+    public void checkAnyPermissionThrowsIfPermissionIsMissing() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -99,7 +102,7 @@ public class ACLTest {
     }
 
     @Test
-    public void checkAnyPermissionThrowsIfMissingMoreThanOne() throws Exception {
+    public void checkAnyPermissionThrowsIfMissingMoreThanOne() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -117,7 +120,7 @@ public class ACLTest {
 
     @Test
     @Issue("JENKINS-61467")
-    public void checkAnyPermissionDoesNotShowDisabledPermissionsInError() throws Exception {
+    public void checkAnyPermissionDoesNotShowDisabledPermissionsInError() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -135,7 +138,7 @@ public class ACLTest {
 
     @Test
     @Issue("JENKINS-61467")
-    public void checkAnyPermissionShouldShowDisabledPermissionsIfNotImplied() throws Exception {
+    public void checkAnyPermissionShouldShowDisabledPermissionsIfNotImplied() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -198,6 +201,7 @@ public class ACLTest {
             };
         }
 
+        @NonNull
         @Override
         public Collection<String> getGroups() {
             return Collections.emptySet();

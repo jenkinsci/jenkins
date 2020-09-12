@@ -107,7 +107,9 @@ public class MissingClassTelemetry extends Telemetry {
             {"org.codehaus.groovy.control.ClassNodeResolver", "tryAsLoaderClassOrScript"},
             {"org.kohsuke.stapler.RequestImpl$TypePair", "convertJSON"},
             {"net.bull.javamelody.FilterContext", "isMojarraAvailable"}, // JENKINS-60725
-            {"hudson.remoting.RemoteClassLoader$ClassLoaderProxy", "fetch3"} // JENKINS-61521
+            {"hudson.remoting.RemoteClassLoader$ClassLoaderProxy", "fetch3"}, // JENKINS-61521
+            //Don't add "java.base/" before sun.reflect.generics.factory.CoreReflectionFactory
+            {"sun.reflect.generics.factory.CoreReflectionFactory", "makeNamedType"}, // JENKINS-61920
             
     };
 
@@ -239,13 +241,18 @@ public class MissingClassTelemetry extends Telemetry {
             // We call the methods in this order because if the missing class is not java related, we don't loop over the
             // stack trace to look if it's not thrown from an ignored place avoiding an impact on performance.
             if (isFromMovedPackage(name) && !calledFromIgnoredPlace(e)) {
-                events.put(name, e);
-                if (LOGGER.isLoggable(Level.WARNING))
+                if (LOGGER.isLoggable(Level.WARNING) && !wasAlreadyReported(name)) {
                     LOGGER.log(Level.WARNING, "Added a missed class for missing class telemetry. Class: " + name, e);
+                }
+                events.put(name, e);
             }
         }
     }
 
+    private static boolean wasAlreadyReported(@NonNull String className) {
+        return events.alreadyRegistered(className);
+    }
+    
     /**
      * Determine if the exception specified was thrown from an ignored place
      * @param throwable The exception thrown

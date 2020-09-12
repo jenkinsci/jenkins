@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -36,6 +37,7 @@ import hudson.tasks.Fingerprinter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -43,10 +45,13 @@ import java.util.Map;
 import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.fingerprints.FileFingerprintStorage;
+import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Before;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.CreateFileBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.Issue;
@@ -55,7 +60,14 @@ import org.jvnet.hudson.test.SecuredMockFolder;
 import org.jvnet.hudson.test.WorkspaceCopyFileBuilder;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -66,15 +78,56 @@ import static org.hamcrest.Matchers.nullValue;
  * @author Oleg Nenashev
  */
 public class FingerprintTest {
-    
+
+    private static final String SOME_MD5 = Util.getDigestOf("whatever");
+
     @Rule
     public JenkinsRule rule = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
     
     @Before
     public void setupRealm() {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
     }
-    
+
+    @Test
+    public void roundTrip() throws Exception {
+        Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff&more.jar",
+                Util.fromHexString(SOME_MD5));
+        f.addWithoutSaving("some", 1);
+        f.addWithoutSaving("some", 2);
+        f.addWithoutSaving("some", 3);
+        f.addWithoutSaving("some", 10);
+        f.addWithoutSaving("other", 6);
+        f.save();
+        Fingerprint f2 = Fingerprint.load(SOME_MD5);
+        assertNotNull(f2);
+        assertEquals(f.toString(), f2.toString());
+        f.facets.setOwner(Saveable.NOOP);
+        f.facets.add(new TestFacet(f, 123, "val"));
+        f.save();
+        //System.out.println(FileUtils.readFileToString(xml));
+        f2 = Fingerprint.load(SOME_MD5);
+        assertEquals(f.toString(), f2.toString());
+        assertEquals(1, f2.facets.size());
+        TestFacet facet = (TestFacet) f2.facets.get(0);
+        assertEquals(f2, facet.getFingerprint());
+    }
+
+    public static final class TestFacet extends FingerprintFacet {
+        final String property;
+        public TestFacet(Fingerprint fingerprint, long timestamp, String property) {
+            super(fingerprint, timestamp);
+            this.property = property;
+        }
+        @Override public String toString() {
+            return "TestFacet[" + property + "@" + getTimestamp() + "]";
+        }
+    }
+
+
     @Test
     public void shouldCreateFingerprintsForWorkspace() throws Exception {
         FreeStyleProject project = rule.createFreeStyleProject();
@@ -127,7 +180,7 @@ public class FingerprintTest {
         XmlFile f = new XmlFile(new File(rule.jenkins.getRootDir(), "foo.xml"));
         f.write("Hello, world!");
         try {
-            Fingerprint.load(f.getFile());
+            FileFingerprintStorage.load(f.getFile());
         } catch (IOException ex) {
             assertThat(ex.getMessage(), containsString("Unexpected Fingerprint type"));
             return;
@@ -294,6 +347,25 @@ public class FingerprintTest {
             assertEquals("user1 should be able to see the job in usages", 1, fingerprint._getUsages().size());
         }
     }
+
+    @Test
+    public void shouldDeleteFingerprint() throws IOException {
+        String id = SOME_MD5;
+        Fingerprint fingerprintSaved = new Fingerprint(new Fingerprint.BuildPtr("foo", 3),
+                "stuff&more.jar", Util.fromHexString(id));
+        fingerprintSaved.save();
+
+        Fingerprint fingerprintLoaded = Fingerprint.load(id);
+        assertThat(fingerprintLoaded, is(not(nullValue())));
+
+        Fingerprint.delete(id);
+        fingerprintLoaded = Fingerprint.load(id);
+        assertThat(fingerprintLoaded, is(nullValue()));
+
+        Fingerprint.delete(id);
+        fingerprintLoaded = Fingerprint.load(id);
+        assertThat(fingerprintLoaded, is(nullValue()));
+    }
     
     @NonNull
     private Fingerprint getFingerprint(@CheckForNull Run<?, ?> run, @NonNull String filename) {
@@ -348,7 +420,7 @@ public class FingerprintTest {
         assertThat("Cannot assign the property twice", job.getProperty(AuthorizationMatrixProperty.class), nullValue());
         
         Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>(); 
-        HashSet<String> userSpec = new HashSet<String>(Arrays.asList(username));
+        HashSet<String> userSpec = new HashSet<>(Collections.singletonList(username));
 
         for (Permission p : s) {
             permissions.put(p, userSpec);

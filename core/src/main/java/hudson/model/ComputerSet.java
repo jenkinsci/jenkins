@@ -220,7 +220,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     @RequirePOST
     public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.MANAGE);
         
         for (NodeMonitor nodeMonitor : NodeMonitor.getAll()) {
             Thread t = nodeMonitor.triggerUpdate();
@@ -343,7 +343,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public synchronized HttpResponse doConfigSubmit( StaplerRequest req) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.MANAGE);
             monitors.rebuild(req,req.getSubmittedForm(),getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances

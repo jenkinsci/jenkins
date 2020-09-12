@@ -1,12 +1,12 @@
 <div>
-    Steuert, wann Jenkins einen Slave-Knoten startet und stoppt.
+    Steuert, wann Jenkins einen Agenten-Knoten startet und stoppt.
     <dl>
         <dt><b>
-            Slave immer angeschaltet lassen
+            Agent immer angeschaltet lassen
         </b></dt>
         <dd>
             Dies ist der Vorgabewert und die übliche Einstellung.
-            In diesem Modus versucht Jenkins, den Slave-Knoten online zu halten.
+            In diesem Modus versucht Jenkins, den Agenten-Knoten online zu halten.
             Falls Jenkins den Knoten ohne weiteres Zutun des Benutzers starten kann,
             wird Jenkins in regelmäßigen Abständen versuchen, den Knoten neu zu
             starten, falls er nicht verfügbar ist. Jenkins wird den Knoten nie
@@ -14,7 +14,7 @@
         </dd>
 
         <dt><b>
-            Slave nur bei Bedarf anschalten, ansonsten abschalten
+            Agent nur bei Bedarf anschalten, ansonsten abschalten
         </b></dt>
         <dd>
             Fall Jenkins den Knoten ohne weiteres Zutun des Benutzers starten
@@ -25,10 +25,10 @@
                 <li>Die Jobs können auf diesem Knoten ausgeführt werden.</li>
             </ul>
 
-            Der Slave-Knoten wird wieder offline geschaltet sobald...
+            Der Knoten wird wieder offline geschaltet sobald...
             <ul>
                 <li>keine aktiven Jobs auf dem Knoten ausgeführt werden und</li>
-                <li>der Slave-Knoten länger als die Mindestruhezeit inaktiv war.</li>
+                <li>der Knoten länger als die Mindestruhezeit inaktiv war.</li>
             </ul>
         </dd>
     </dl>

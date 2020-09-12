@@ -1,15 +1,11 @@
-@import '../abstracts/font.less';
-@import '../abstracts/colors.less';
+@import '../abstracts/theme.less';
 
 .page-footer {
-  background-color: @breadcrumbs-bg;
-  border-top: 1px solid @breadcrumbs-border;
+  background-color: var(--breadcrumbs-bg);
+  border-top: 1px solid var(--breadcrumbs-border);
   width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
   clear: both;
-  font-size: @font-size-sm;
+  font-size: var(--font-size-sm);
 }
 
 .page-footer .container-fluid {
@@ -39,43 +35,13 @@
   display: inline-block;
 }
 
-.page-footer__generated {
-  font-size: @font-size-xs;
-  font-weight: bold;
-}
-
-.page-footer .page-footer__generated-timestamp {
-  display: block;
-  font-weight: normal;
-  margin: 0;
-}
-
 .page-footer__links {
   &:not(:last-child) {
-    border-right: 1px solid @breadcrumbs-bg;
-  }
-
-  &--white {
-    background: @white;
+    border-right: 1px solid var(--breadcrumbs-bg);
   }
 }
 
 .page-footer a {
-  &:link,
-  &:visited {
-    font-weight: 600;
-    text-decoration: none;
-    color: @text-color;
-  }
-
-  &:focus,
-  &:hover {
-    color: @text-color-primary;
-    text-decoration: underline;
-  }
-
-  &:active {
-    color: @text-color-primary-accent;
-    text-decoration: underline;
-  }
+  .link-dark();
+  font-weight: 600;
 }

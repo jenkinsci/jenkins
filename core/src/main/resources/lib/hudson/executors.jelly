@@ -39,7 +39,7 @@ THE SOFTWARE.
         <st:nbsp/>
         <j:choose>
           <j:when test="${c.offlineCause!=null and !c.connecting}">
-            (<img src="${imagesURL}/16x16/error.gif" title="${c.offlineCause}"/> ${%offline})
+            (<img src="${imagesURL}/16x16/error.png" title="${c.offlineCause}"/> ${%offline})
           </j:when>
           <j:when test="${c.connecting}">
             (<img src="${imagesURL}/16x16/hourglass.gif"/>${%launching})
@@ -143,7 +143,7 @@ THE SOFTWARE.
         <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
         <tr>
           <j:if test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
-            <th class="pane" colspan="3">
+            <th class="pane" colspan="4">
               <local:computerCaption title="${c.displayName}" />
             </th>
           </j:if>

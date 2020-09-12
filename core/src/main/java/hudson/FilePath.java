@@ -48,6 +48,7 @@ import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.AccessControlled;
+import hudson.slaves.WorkspaceList;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.DirScanner;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -1257,6 +1258,44 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return mkdirs(f) || f.exists();
         }
     }
+    
+    /**
+     * Deletes all suffixes recursively.
+     * @throws IOException if it exists but could not be successfully deleted
+     * @since 2.244
+     */
+    public void deleteSuffixesRecursive() throws IOException, InterruptedException {
+        act(new DeleteSuffixesRecursive());
+    }
+
+    /**
+     * Deletes all suffixed directories that are separated by {@link WorkspaceList#COMBINATOR}, including all its contents recursively.
+     */
+    private class DeleteSuffixesRecursive extends SecureFileCallable<Void> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
+            for (File file : listParentFiles(f)) {
+                if (file.getName().startsWith(f.getName() + WorkspaceList.COMBINATOR)) {
+                    Util.deleteRecursive(file.toPath(), path -> deleting(path.toFile()));
+                }
+            }
+            
+            return null;
+        }
+    }
+
+    private static File[] listParentFiles(File f) {
+        File parentFile = f.getParentFile();
+        if (parentFile != null) {
+            File[] files = parentFile.listFiles();
+            if (files != null) {
+                return files;
+            }
+        }
+        return new File[0];
+    }
 
     /**
      * Deletes this directory, including all its contents recursively.
@@ -2010,25 +2049,35 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
-        actAsync(new SecureFileCallable<Void>() {
-            private static final long serialVersionUID = 1L;
-
-            public Void invoke(File f, VirtualChannel channel) throws IOException {
-                try (OutputStream os = p.getOut();
-                     OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
-                     RandomAccessFile raf = new RandomAccessFile(reading(f), "r")) {
-                    raf.seek(offset);
-                    byte[] buf = new byte[8192];
-                    int len;
-                    while ((len = raf.read(buf)) >= 0) {
-                        out.write(buf, 0, len);
-                    }
-                    return null;
-                }
-            }
-        });
-
+        actAsync(new OffsetPipeSecureFileCallable(p, offset));
         return new java.util.zip.GZIPInputStream(p.getIn());
+    }
+    
+    private class OffsetPipeSecureFileCallable extends SecureFileCallable<Void> {
+        private static final long serialVersionUID = 1L;
+        
+        private Pipe p;
+        private long offset;
+        
+        private OffsetPipeSecureFileCallable(Pipe p, long offset) {
+            this.p = p;
+            this.offset = offset;
+        }
+        
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
+            try (OutputStream os = p.getOut();
+                 OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
+                 RandomAccessFile raf = new RandomAccessFile(reading(f), "r")) {
+                raf.seek(offset);
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = raf.read(buf)) >= 0) {
+                    out.write(buf, 0, len);
+                }
+                return null;
+            }
+        }
     }
 
     /**

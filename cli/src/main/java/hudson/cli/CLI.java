@@ -121,6 +121,7 @@ public class CLI {
 
         String user = null;
         String auth = null;
+        String bearer = null;
 
         String userIdEnv = System.getenv("JENKINS_USER_ID");
         String tokenEnv = System.getenv("JENKINS_API_TOKEN");
@@ -216,6 +217,11 @@ public class CLI {
                 args = args.subList(2, args.size());
                 continue;
             }
+            if (head.equals("-bearer") && args.size() >= 2) {
+                bearer = args.get(1);
+                args = args.subList(2, args.size());
+                continue;
+            }
             if (head.equals("-logger") && args.size() >= 2) {
                 Level level = parse(args.get(1));
                 for (Handler h : Logger.getLogger("").getHandlers()) {
@@ -235,7 +241,11 @@ public class CLI {
             return -1;
         }
 
-        if (auth == null) {
+        if (auth != null && bearer != null) {
+            LOGGER.warning("-auth and -bearer are mutually exclusive");
+        }
+
+        if (auth == null && bearer == null) {
             // -auth option not set
             if (StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv)) {
                 auth = StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
@@ -251,7 +261,7 @@ public class CLI {
         }
 
         if(args.isEmpty())
-            args = Arrays.asList("help"); // default to help
+            args = Collections.singletonList("help"); // default to help
 
         if (mode == null) {
             mode = Mode.HTTP;
@@ -293,7 +303,10 @@ public class CLI {
             factory = factory.basicAuth(userInfo);
         } else if (auth != null) {
             factory = factory.basicAuth(auth.startsWith("@") ? readAuthFromFile(auth).trim() : auth);
+        } else if (bearer != null) {
+            factory = factory.bearerAuth(bearer.startsWith("@") ? readAuthFromFile(bearer).trim() : bearer);
         }
+
 
         if (mode == Mode.HTTP) {
             return plainHttpConnection(url, args, factory);

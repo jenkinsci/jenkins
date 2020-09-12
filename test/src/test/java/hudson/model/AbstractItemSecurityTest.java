@@ -27,6 +27,8 @@ package hudson.model;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.io.StringReader;
@@ -35,8 +37,8 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.text.IsEmptyString.emptyOrNullString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.jvnet.hudson.test.Issue;
 
 public class AbstractItemSecurityTest {
@@ -59,9 +61,9 @@ public class AbstractItemSecurityTest {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.setDescription("Wibble");
         try {
-            project.updateByXml(new StreamSource(new StringReader(xml)));
+            project.updateByXml((Source)new StreamSource(new StringReader(xml)));
             // if we didn't fail JAXP has thrown away the entity.
-            assertThat(project.getDescription(), isEmptyOrNullString());
+            assertThat(project.getDescription(), emptyOrNullString());
         } catch (IOException ex) {
             assertThat(ex.getCause(), not(nullValue()));
             assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity"));
@@ -80,7 +82,7 @@ public class AbstractItemSecurityTest {
                 "</project>";
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
-        project.updateByXml((StreamSource) new StreamSource(new StringReader(xml)));
+        project.updateByXml((Source) new StreamSource(new StringReader(xml)));
         assertThat(project.getDescription(), is("&")); // the entity is transformed
     }
 

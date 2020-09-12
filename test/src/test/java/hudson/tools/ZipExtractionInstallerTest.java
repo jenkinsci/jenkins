@@ -52,11 +52,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class ZipExtractionInstallerTest {
@@ -104,8 +105,8 @@ public class ZipExtractionInstallerTest {
         
         ZipExtractionInstaller installer = new ZipExtractionInstaller("", VALID_URL, "");
         
-        j.jenkins.getJDKs().add(new JDK("test", tmp.getRoot().getAbsolutePath(), Arrays.asList(
-                new InstallSourceProperty(Arrays.<ToolInstaller>asList(installer)))));
+        j.jenkins.getJDKs().add(new JDK("test", tmp.getRoot().getAbsolutePath(), Collections.singletonList(
+                new InstallSourceProperty(Collections.<ToolInstaller>singletonList(installer)))));
         
         JenkinsRule.WebClient wc = j.createWebClient();
         

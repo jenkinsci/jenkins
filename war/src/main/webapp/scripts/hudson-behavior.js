@@ -41,6 +41,16 @@ function object(o) {
     return new F();
 }
 
+function TryEach(fn) {
+    return function(name) {
+        try {
+            fn(name);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+}
+
 /**
  * A function that returns false if the page is known to be invisible.
  */
@@ -130,7 +140,50 @@ var crumb = {
             }
         }
     }
-}
+};
+
+(function initializeCrumb() {
+    var extensionsAvailable = document.head.getAttribute('data-extensions-available');
+    if (extensionsAvailable === 'true') {
+        var crumbHeaderName = document.head.getAttribute('data-crumb-header');
+        var crumbValue = document.head.getAttribute('data-crumb-value');
+        if (crumbHeaderName && crumbValue) {
+            crumb.init(crumbHeaderName, crumbValue);
+        }
+    }
+    // else, the instance is starting, restarting, etc.
+})();
+
+var isRunAsTest = undefined; 
+// Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
+// but the contextPath only, like /jenkins
+var rootURL = 'not-defined-yet';
+var resURL = 'not-defined-yet';
+
+(function initializeUnitTestAndURLs() {
+    var dataUnitTest = document.head.getAttribute('data-unit-test');
+    if (dataUnitTest !== null) {
+        isRunAsTest = dataUnitTest === 'true';
+    }
+    var dataRootURL = document.head.getAttribute('data-rooturl');
+    if (dataRootURL !== null) {
+        rootURL = dataRootURL;
+    }
+    var dataResURL = document.head.getAttribute('data-resurl');
+    if (dataResURL !== null) {
+        resURL = dataResURL;
+    }
+})();
+
+(function initializeYUIDebugLogReader(){
+    Behaviour.addLoadEvent(function(){
+        var logReaderElement = document.getElementById('yui-logreader');
+        if (logReaderElement !== null) {
+            var logReader = new YAHOO.widget.LogReader('yui-logreader');
+            logReader.collapse();
+        }
+    });
+})();
 
 // Form check code
 //========================================================
@@ -301,18 +354,44 @@ function findAncestorClass(e, cssClass) {
     return e;
 }
 
-function findFollowingTR(input, className) {
+function isTR(tr, nodeClass) {
+    return tr.tagName == 'TR' || tr.classList.contains(nodeClass || 'tr');
+}
+
+function findFollowingTR(node, className, nodeClass) {
     // identify the parent TR
-    var tr = input;
-    while (tr.tagName != "TR")
+    var tr = node;
+    while (!isTR(tr, nodeClass)) {
         tr = tr.parentNode;
+        if (!(tr instanceof Element))
+            return null;
+    }
 
     // then next TR that matches the CSS
     do {
+        // Supports plugins with custom variants of <f:entry> that call
+        // findFollowingTR(element, 'validation-error-area') and haven't migrated
+        // to use querySelector
+        if (className === 'validation-error-area' || className === 'help-area') {
+            var queryChildren = tr.getElementsByClassName(className);
+            if (queryChildren.length > 0 && (isTR(queryChildren[0]) || Element.hasClassName(queryChildren[0], className) ))
+                return queryChildren[0];
+        }
+
         tr = $(tr).next();
-    } while (tr != null && (tr.tagName != "TR" || !Element.hasClassName(tr,className)));
+    } while (tr != null && (!isTR(tr) || !Element.hasClassName(tr,className)));
 
     return tr;
+}
+
+function findInFollowingTR(input, className) {
+    var node = findFollowingTR(input, className);
+    if (node.tagName == 'TR') {
+        node = node.firstChild.nextSibling;
+    } else {
+        node = node.firstChild;
+    }
+    return node;
 }
 
 function find(src,filter,traversalF) {
@@ -421,7 +500,12 @@ var tooltip;
 //========================================================
 // using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
-    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr || !tr.firstChild) {
+      console.warn("Couldn't register validator, start element was", e);
+      return;
+    }
+    e.targetElement = tr.firstChild.nextSibling;
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
@@ -437,9 +521,9 @@ function registerValidator(e) {
         } else {
             var q = qs(this).addThis();
             if (depends.length>0)
-                depends.split(" ").each(function (n) {
+                depends.split(" ").each(TryEach(function (n) {
                     q.nearBy(n);
-                });
+                }));
             return url+ q.toString();
         }
     };
@@ -473,7 +557,7 @@ function registerValidator(e) {
 
     var v = e.getAttribute("checkDependsOn");
     if (v) {
-        v.split(" ").each(function (name) {
+        v.split(" ").each(TryEach(function (name) {
             var c = findNearBy(e,name);
             if (c==null) {
                 if (window.console!=null)  console.warn("Unable to find nearby "+name);
@@ -481,14 +565,20 @@ function registerValidator(e) {
                 return;
             }
             $(c).observe("change",checker.bind(e));
-        });
+        }));
     }
 
     e = null; // avoid memory leak
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    e.targetElement = findFollowingTR(e, "validation-error-area").firstChild.nextSibling;
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr) {
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        return;
+    }
+    // find the validation-error-area
+    e.targetElement = tr.firstChild.nextSibling;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -629,96 +719,173 @@ function sequencer(fs) {
     return next();
 }
 
-/** @deprecated Use {@link Behaviour.specify} instead. */
-var jenkinsRules = {
-// TODO convert as many as possible to Behaviour.specify calls; some seem to have an implicit order dependency, but what?
-    "BODY" : function() {
-        tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
-    },
+function progressBarOnClick() {
+    var href = this.getAttribute("href");
+    if(href!=null)      window.location = href;
+}
 
-    "TABLE.sortable" : function(e) {// sortable table
-        e.sortable = new Sortable.Sortable(e);
-    },
+function expandButton(e) {
+    var link = e.target;
+    while(!Element.hasClassName(link,"advancedLink"))
+        link = link.parentNode;
+    link.style.display = "none";
+    $(link).next().style.display="block";
+    layoutUpdateCallback.call();
+}
 
-    "TABLE.progress-bar" : function(e) { // progressBar.jelly
-        e.onclick = function() {
-            var href = this.getAttribute("href");
-            if(href!=null)      window.location = href;
+function labelAttachPreviousOnClick() {
+    var e = $(this).previous();
+    while (e!=null) {
+        if (e.tagName=="INPUT") {
+            e.click();
+            break;
         }
-        e = null; // avoid memory leak
-    },
+        e = e.previous();
+    }
+}
 
-    "INPUT.expand-button" : function(e) {
-        makeButton(e,function(e) {
-            var link = e.target;
-            while(!Element.hasClassName(link,"advancedLink"))
-                link = link.parentNode;
-            link.style.display = "none";
-            $(link).next().style.display="block";
-            layoutUpdateCallback.call();
+function helpButtonOnClick() {
+    var tr = findFollowingTR(this, "help-area", "help-sibling") ||
+             findFollowingTR(this, "help-area", "setting-help");
+    var div = $(tr).down();
+    if (!div.hasClassName("help"))
+        div = div.next().down();
+
+    if (div.style.display != "block") {
+        div.style.display = "block";
+        // make it visible
+        new Ajax.Request(this.getAttribute("helpURL"), {
+            method : 'get',
+            onSuccess : function(x) {
+                var from = x.getResponseHeader("X-Plugin-From");
+                div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
+                layoutUpdateCallback.call();
+            },
+            onFailure : function(x) {
+                div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
+                layoutUpdateCallback.call();
+            }
         });
-        e = null; // avoid memory leak
-    },
+    } else {
+        div.style.display = "none";
+        layoutUpdateCallback.call();
+    }
 
-// scripting for having default value in the input field
-    "INPUT.has-default-text" : function(e) {
-        var defaultValue = e.value;
-        Element.addClassName(e, "defaulted");
-        e.onfocus = function() {
-            if (this.value == defaultValue) {
-                this.value = "";
-                Element.removeClassName(this, "defaulted");
-            }
+    return false;
+}
+
+function isGeckoCommandKey() {
+    return Prototype.Browser.Gecko && event.keyCode == 224
+}
+function isOperaCommandKey() {
+    return Prototype.Browser.Opera && event.keyCode == 17
+}
+function isWebKitCommandKey() {
+    return Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
+}
+function isCommandKey() {
+    return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+}
+function isReturnKeyDown() {
+    return event.type == 'keydown' && event.keyCode == Event.KEY_RETURN;
+}
+function getParentForm(element) {
+    if (element == null) throw 'not found a parent form';
+    if (element instanceof HTMLFormElement) return element;
+
+    return getParentForm(element.parentNode);
+}
+
+// figure out the corresponding end marker
+function findEnd(e) {
+    for( var depth=0; ; e=$(e).next()) {
+        if(Element.hasClassName(e,"rowvg-start"))    depth++;
+        if(Element.hasClassName(e,"rowvg-end"))      depth--;
+        if(depth==0)    return e;
+    }
+}
+
+function makeOuterVisible(b) {
+    this.outerVisible = b;
+    this.updateVisibility();
+}
+
+function makeInnerVisible(b) {
+    this.innerVisible = b;
+    this.updateVisibility();
+}
+
+function updateVisibility() {
+    var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+    for (var e=this.start; e!=this.end; e=$(e).next()) {
+        if (e.rowVisibilityGroup && e!=this.start) {
+            e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
+            e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
+        } else {
+            e.style.display = display;
         }
-        e.onblur = function() {
-            if (this.value == "") {
-                this.value = defaultValue;
-                Element.addClassName(this, "defaulted");
-            }
-        }
-        e = null; // avoid memory leak
-    },
+    }
+    layoutUpdateCallback.call();
+}
 
-// <label> that doesn't use ID, so that it can be copied in <repeatable>
-    "LABEL.attach-previous" : function(e) {
-        e.onclick = function() {
-            var e = $(this).previous();
-            while (e!=null) {
-                if (e.tagName=="INPUT") {
-                    e.click();
-                    break;
-                }
-                e = e.previous();
-            }
-        }
-        e = null;
-    },
+function rowvgStartEachRow(recursive,f) {
+    if (recursive) {
+        for (var e=this.start; e!=this.end; e=$(e).next())
+            f(e);
+    } else {
+        throw "not implemented yet";
+    }
+}
 
-// form fields that are validated via AJAX call to the server
-// elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
-    "INPUT.validated" : registerValidator,
-    "SELECT.validated" : registerValidator,
-    "TEXTAREA.validated" : registerValidator,
+(function () {
+    var p = 20;
+    Behaviour.specify("BODY", "body", ++p, function() {
+        tooltip = new YAHOO.widget.Tooltip("tt", {context:[], zindex:999});
+    });
 
-// validate required form values
-    "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
+    Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function(e) {// sortable table
+        e.sortable = new Sortable.Sortable(e);
+    });
 
-// validate form values to be an integer
-    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
-    "INPUT.number-required" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
+    Behaviour.specify("TABLE.progress-bar", "table-progress-bar", ++p, function(e) { // progressBar.jelly
+        e.onclick = progressBarOnClick;
+    });
 
-    "INPUT.non-negative-number-required" : function(e) {
+    Behaviour.specify("INPUT.expand-button", "input-expand-button", ++p, function(e) {
+        makeButton(e, expandButton);
+    });
+
+    // <label> that doesn't use ID, so that it can be copied in <repeatable>
+    Behaviour.specify("LABEL.attach-previous", "label-attach-previous", ++p, function(e) {
+        e.onclick = labelAttachPreviousOnClick;
+    });
+
+    // form fields that are validated via AJAX call to the server
+    // elements with this class should have two attributes 'checkUrl' that evaluates to the server URL.
+    Behaviour.specify("INPUT.validated", "input-validated", ++p, registerValidator);
+    Behaviour.specify("SELECT.validated", "select-validated", ++p, registerValidator);
+    Behaviour.specify("TEXTAREA.validated", "textarea-validated", ++p, registerValidator);
+
+    // validate required form values
+    Behaviour.specify("INPUT.required", "input-required", ++p, function(e) { registerRegexpValidator(e,/./,"Field is required"); });
+
+    // validate form values to be an integer
+    Behaviour.specify("INPUT.number", "input-number", ++p, function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); });
+    Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); });
+
+    Behaviour.specify("INPUT.non-negative-number-required", "input-non-negative-number-required", ++p, function(e) {
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
-    },
+    });
 
-    "INPUT.positive-number" : function(e) {
+    Behaviour.specify("INPUT.positive-number", "input-positive-number", ++p, function(e) {
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
-    },
-    "INPUT.positive-number-required" : function(e) {
-        registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
-    },
+    });
 
-    "INPUT.auto-complete": function(e) {// form field with auto-completion support 
+    Behaviour.specify("INPUT.positive-number-required", "input-positive-number-required", ++p, function(e) {
+        registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
+    });
+
+    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support 
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -736,6 +903,7 @@ var jenkinsRules = {
         ac.generateRequest = function(query) {
             return "?value=" + query;
         };
+        ac.autoHighlight = false;
         ac.prehighlightClassName = "yui-ac-prehighlight";
         ac.animSpeed = 0;
         ac.formatResult = ac.formatEscapedResult;
@@ -748,41 +916,17 @@ var jenkinsRules = {
             Dom.setXY(container, [Dom.getX(textbox), Dom.getY(textbox) + textbox.offsetHeight] );
             return true;
         }
-    },
+    });
 
-    "A.help-button" : function(e) {
-        e.onclick = function() {
-            var tr = findFollowingTR(this, "help-area");
-            var div = $(tr).down().next().down();
 
-            if (div.style.display != "block") {
-                div.style.display = "block";
-                // make it visible
-                new Ajax.Request(this.getAttribute("helpURL"), {
-                    method : 'get',
-                    onSuccess : function(x) {
-                        var from = x.getResponseHeader("X-Plugin-From");
-                        div.innerHTML = x.responseText+(from?"<div class='from-plugin'>"+from+"</div>":"");
-                        layoutUpdateCallback.call();
-                    },
-                    onFailure : function(x) {
-                        div.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
-                        layoutUpdateCallback.call();
-                    }
-                });
-            } else {
-                div.style.display = "none";
-                layoutUpdateCallback.call();
-            }
-
-            return false;
-        };
+    Behaviour.specify("A.help-button", "a-help-button", ++p, function(e) {
+        e.onclick = helpButtonOnClick;
         e.tabIndex = 9999; // make help link unnavigable from keyboard
-        e = null; // avoid memory leak
-    },
+        e.parentNode.parentNode.addClassName('has-help');
+    });
 
     // Script Console : settings and shortcut key
-    "TEXTAREA.script" : function(e) {
+    Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function(e) {
         (function() {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
@@ -793,34 +937,13 @@ var jenkinsRules = {
               lineNumbers: true,
               matchBrackets: true,
               readOnly: readOnly,
-              onKeyEvent: function(editor, event){
-                function isGeckoCommandKey() {
-                    return Prototype.Browser.Gecko && event.keyCode == 224
-                }
-                function isOperaCommandKey() {
-                    return Prototype.Browser.Opera && event.keyCode == 17
-                }
-                function isWebKitCommandKey() {
-                    return Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
-                }
-                function isCommandKey() {
-                    return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
-                }
-                function isReturnKeyDown() {
-                    return event.type == 'keydown' && event.keyCode == Event.KEY_RETURN;
-                }
-                function getParentForm(element) {
-                    if (element == null) throw 'not found a parent form';
-                    if (element instanceof HTMLFormElement) return element;
-                    
-                    return getParentForm(element.parentNode);
-                }
+              onKeyEvent: function (editor, event){
                 function saveAndSubmit() {
                     editor.save();
                     getParentForm(e).submit();
                     event.stop();
                 }
-                
+
                 // Mac (Command + Enter)
                 if (navigator.userAgent.indexOf('Mac') > -1) {
                     if (event.type == 'keydown' && isCommandKey()) {
@@ -833,7 +956,7 @@ var jenkinsRules = {
                         saveAndSubmit();
                         return true;
                     }
-                  
+
                 // Windows, Linux (Ctrl + Enter)
                 } else {
                     if (event.ctrlKey && isReturnKeyDown()) {
@@ -845,11 +968,11 @@ var jenkinsRules = {
             }).getWrapperElement();
             w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
-	},
+    });
 
-// deferred client-side clickable map.
-// this is useful where the generation of <map> element is time consuming
-    "IMG[lazymap]" : function(e) {
+    // deferred client-side clickable map.
+    // this is useful where the generation of <map> element is time consuming
+    Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function(e) {
         new Ajax.Request(
             e.getAttribute("lazymap"),
             {
@@ -863,10 +986,10 @@ var jenkinsRules = {
                     e.setAttribute("usemap", "#" + id);
                 }
             });
-    },
+    });
 
     // resizable text area
-    "TEXTAREA" : function(textarea) {
+    Behaviour.specify("TEXTAREA", "textarea", ++p, function(textarea) {
         if(Element.hasClassName(textarea,"rich-editor")) {
             // rich HTML editor
             try {
@@ -922,10 +1045,10 @@ var jenkinsRules = {
             s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
             s.style.height = s.scrollHeight + 'px';
         }
-    },
+    });
 
     // structured form submission
-    "FORM" : function(form) {
+    Behaviour.specify("FORM", "form", ++p, function(form) {
         crumb.appendToForm(form);
         if(Element.hasClassName(form, "no-json"))
             return;
@@ -942,39 +1065,30 @@ var jenkinsRules = {
         }
 
         form = null; // memory leak prevention
-    },
+    });
 
     // hook up tooltip.
     //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
-    "[tooltip]" : function(e) {
+    Behaviour.specify("[tooltip]", "-tooltip-", ++p, function(e) {
         applyTooltip(e,e.getAttribute("tooltip"));
-    },
+    });
 
-    "INPUT.submit-button" : function(e) {
+    Behaviour.specify("INPUT.submit-button", "input-submit-button", ++p, function(e) {
         makeButton(e);
-    },
+    });
 
-    "INPUT.yui-button" : function(e) {
+    Behaviour.specify("INPUT.yui-button", "input-yui-button", ++p, function(e) {
         makeButton(e);
-    },
+    });
 
-    "TR.optional-block-start": function(e) { // see optionalBlock.jelly
+    Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly
         // set start.ref to checkbox in preparation of row-set-end processing
         var checkbox = e.down().down();
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
-    },
+    });
 
     // see RowVisibilityGroupTest
-    "TR.rowvg-start" : function(e) {
-        // figure out the corresponding end marker
-        function findEnd(e) {
-            for( var depth=0; ; e=$(e).next()) {
-                if(Element.hasClassName(e,"rowvg-start"))    depth++;
-                if(Element.hasClassName(e,"rowvg-end"))      depth--;
-                if(depth==0)    return e;
-            }
-        }
-
+    Behaviour.specify("TR.rowvg-start,DIV.tr.rowvg-start", "tr-rowvg-start-div-tr-rowvg-start", ++p, function(e) {
         e.rowVisibilityGroup = {
             outerVisible: true,
             innerVisible: true,
@@ -991,10 +1105,7 @@ var jenkinsRules = {
              * Considers the visibility of the row group from the point of view of outside.
              * If you think of a row group like a logical DOM node, this is akin to its .style.display.
              */
-            makeOuterVisible : function(b) {
-                this.outerVisible = b;
-                this.updateVisibility();
-            },
+            makeOuterVisible: makeOuterVisible,
 
             /**
              * Considers the visibility of the rows in this row group. Since all the rows in a rowvg
@@ -1002,26 +1113,12 @@ var jenkinsRules = {
              *
              * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
              */
-            makeInnerVisible : function(b) {
-                this.innerVisible = b;
-                this.updateVisibility();
-            },
+            makeInnerVisible: makeInnerVisible,
 
             /**
              * Based on innerVisible and outerVisible, update the relevant rows' actual CSS display attribute.
              */
-            updateVisibility : function() {
-                var display = (this.outerVisible && this.innerVisible) ? "" : "none";
-                for (var e=this.start; e!=this.end; e=$(e).next()) {
-                    if (e.rowVisibilityGroup && e!=this.start) {
-                        e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
-                        e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
-                    } else {
-                        e.style.display = display;
-                    }
-                }
-                layoutUpdateCallback.call();
-            },
+            updateVisibility: updateVisibility,
 
             /**
              * Enumerate each row and pass that to the given function.
@@ -1029,18 +1126,11 @@ var jenkinsRules = {
              * @param {boolean} recursive
              *      If true, this visits all the rows from nested visibility groups.
              */
-            eachRow : function(recursive,f) {
-                if (recursive) {
-                    for (var e=this.start; e!=this.end; e=$(e).next())
-                        f(e);
-                } else {
-                    throw "not implemented yet";
-                }
-            }
+            eachRow: rowvgStartEachRow
         };
-    },
+    });
 
-    "TR.row-set-end": function(e) { // see rowSet.jelly and optionalBlock.jelly
+    Behaviour.specify("TR.row-set-end,DIV.tr.row-set-end", "tr-row-set-end-div-tr-row-set-end", ++p, function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
         e = $(e);
         var end = e;
@@ -1060,19 +1150,19 @@ var jenkinsRules = {
             start.id = ref = "rowSetStart"+(iota++);
 
         applyNameRef(start,end,ref);
-    },
+    });
 
-    "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
+    Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start-2", ++p, function(e) { // see optionalBlock.jelly
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
-    },
+    });
 
     // image that shows [+] or [-], with hover effect.
     // oncollapsed and onexpanded will be called when the button is triggered.
-    "IMG.fold-control" : function(e) {
+    Behaviour.specify("IMG.fold-control", "img-fold-control", ++p, function(e) {
         function changeTo(e,img) {
             var src = e.src;
             e.src = src.substring(0,src.lastIndexOf('/'))+"/"+e.getAttribute("state")+img;
@@ -1098,10 +1188,10 @@ var jenkinsRules = {
             return false;
         };
         e = null; // memory leak prevention
-    },
+    });
 
     // editableComboBox.jelly
-    "INPUT.combobox" : function(c) {
+    Behaviour.specify("INPUT.combobox", "input-combobox", ++p, function(c) {
         // Next element after <input class="combobox"/> should be <div class="combobox-values">
         var vdiv = $(c).next();
         if (vdiv.hasClassName("combobox-values")) {
@@ -1111,15 +1201,16 @@ var jenkinsRules = {
                 });
             });
         }
-    },
+    });
 
     // dropdownList.jelly
-    "SELECT.dropdownList" : function(e) {
+    Behaviour.specify("SELECT.dropdownList", "select-dropdownlist", ++p, function(e) {
         if(isInsideRemovable(e))    return;
 
         var subForms = [];
-        var start = $(findFollowingTR(e, 'dropdownList-container')).down().next(), end;
-        do { start = start.firstChild; } while (start && start.tagName != 'TR');
+        var start = findInFollowingTR(e, 'dropdownList-container'), end;
+
+        do { start = start.firstChild; } while (start && !isTR(start));
 
         if (start && !Element.hasClassName(start,'dropdownList-start'))
             start = findFollowingTR(start, 'dropdownList-start');
@@ -1150,9 +1241,9 @@ var jenkinsRules = {
         e.onchange = updateDropDownList;
 
         updateDropDownList();
-    },
+    });
 
-    "A.showDetails" : function(e) {
+    Behaviour.specify("A.showDetails", "a-showdetails", ++p, function(e) {
         e.onclick = function() {
             this.style.display = 'none';
             $(this).next().style.display = 'block';
@@ -1160,17 +1251,17 @@ var jenkinsRules = {
             return false;
         };
         e = null; // avoid memory leak
-    },
+    });
 
-    "DIV.behavior-loading" : function(e) {
+    Behaviour.specify("DIV.behavior-loading", "div-behavior-loading", ++p, function(e) {
         e.style.display = 'none';
-    },
+    });
 
-    ".button-with-dropdown" : function (e) {
+    Behaviour.specify(".button-with-dropdown", "-button-with-dropdown", ++p, function (e) {
         new YAHOO.widget.Button(e, { type: "menu", menu: $(e).next() });
-    },
+    });
 
-    ".track-mouse" : function (element) {
+    Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
         var DOM = YAHOO.util.Dom;
 
         $(element).observe("mouseenter",function () {
@@ -1186,14 +1277,14 @@ var jenkinsRules = {
             };
             Element.observe(document, "mousemove", mousemoveTracker);
         });
-    },
+    });
 
     /*
         Use on div tag to make it sticky visible on the bottom of the page.
         When page scrolls it remains in the bottom of the page
         Convenient on "OK" button and etc for a long form page
      */
-    "#bottom-sticker" : function(sticker) {
+    Behaviour.specify("#bottom-sticker", "-bottom-sticker", ++p, function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1225,16 +1316,16 @@ var jenkinsRules = {
         Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
         adjustSticker();
         layoutUpdateCallback.add(adjustSticker);
-    },
+    });
 
-    "#top-sticker" : function(sticker) {// legacy
+    Behaviour.specify("#top-sticker", "-top-sticker", ++p, function(sticker) {// legacy
         this[".top-sticker"](sticker);
-    },
+    });
 
     /**
      * @param {HTMLElement} sticker
      */
-    ".top-sticker" : function(sticker) {
+    Behaviour.specify(".top-sticker", "-top-sticker-2", ++p, function(sticker) {
         var DOM = YAHOO.util.Dom;
 
         var shadow = document.createElement("div");
@@ -1264,17 +1355,51 @@ var jenkinsRules = {
         // initial positioning
         Element.observe(window,"load",adjustSticker);
         adjustSticker();
-    }
-};
-/** @deprecated Use {@link Behaviour.specify} instead. */
-var hudsonRules = jenkinsRules; // legacy name
-(function() {
-    var p = 20;
-    for (var selector in jenkinsRules) {
-        Behaviour.specify(selector, 'hudson-behavior', p++, jenkinsRules[selector]);
-        delete jenkinsRules[selector];
-    }
+    });
+
+    /**
+     * Function that provides compatibility to the checkboxes without title on an f:entry
+     *
+     * When a checkbox is generated by setting the title on the f:entry like
+     *     <f:entry field="rebaseBeforePush"title="${%Rebase Before Push}">
+     *         <f:checkbox />
+     *     </f:entry>
+     * This function will copy the title from the .setting-name field to the checkbox label.
+     * It will also move the help button.
+     *
+     * @param {HTMLLabelElement} label
+     */
+    Behaviour.specify('label.js-checkbox-label-empty', 'form-fallbacks', 1000, function(label) {
+        var labelParent = label.parentElement;
+        if (!labelParent.classList.contains('setting-main')) return;
+
+        function findSettingName(formGroup) {
+            for (var i=0; i<formGroup.childNodes.length; i++) {
+                var child = formGroup.childNodes[i];
+                if (child.classList.contains('setting-name')) return child;
+            }
+        }
+
+        var settingName = findSettingName(labelParent.parentNode);
+        if (settingName == undefined) return
+        var helpLink = settingName.querySelector('.setting-help');
+
+        // Copy setting-name text and append it to the checkbox label
+        var labelText = settingName.innerText;
+        var spanTag = document.createElement('span')
+        spanTag.innerHTML = labelText
+        label.appendChild(spanTag)
+
+        if (helpLink) {
+            labelParent.classList.add('help-sibling');
+            labelParent.appendChild(helpLink);
+        }
+
+        labelParent.parentNode.removeChild(settingName);
+    });
 })();
+
+var hudsonRules = {}; // legacy name
 // now empty, but plugins can stuff things in here later:
 Behaviour.register(hudsonRules);
 
@@ -1308,14 +1433,14 @@ function refillOnChange(e,onChange) {
 
     function h() {
         var params = {};
-        deps.each(function (d) {
+        deps.each(TryEach(function (d) {
             params[d.name] = controlValue(d.control);
-        });
+        }));
         onChange(params);
     }
     var v = e.getAttribute("fillDependsOn");
     if (v!=null) {
-        v.split(" ").each(function (name) {
+        v.split(" ").each(TryEach(function (name) {
             var c = findNearBy(e,name);
             if (c==null) {
                 if (window.console!=null)  console.warn("Unable to find nearby "+name);
@@ -1324,7 +1449,7 @@ function refillOnChange(e,onChange) {
             }
             $(c).observe("change",h);
             deps.push({name:Path.tail(name),control:c});
-        });
+        }));
     }
     h();   // initial fill
 }
@@ -1361,10 +1486,19 @@ function replaceDescription() {
 function applyNameRef(s,e,id) {
     $(id).groupingNode = true;
     // s contains the node itself
+    applyNameRefHelper(s,e,id);
+}
+
+function applyNameRefHelper(s,e,id) {
+    if (s===null)
+        return;
     for(var x=$(s).next(); x!=e; x=x.next()) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
-        if(x.getAttribute("nameRef")==null)
+        if(x.getAttribute("nameRef")==null) {
             x.setAttribute("nameRef",id);
+            if (x.hasClassName('tr'))
+                applyNameRefHelper(x.firstChild,null,id);
+        }
     }
 }
 
@@ -1398,7 +1532,7 @@ function updateOptionalBlock(c,scroll) {
         // Hack to hide tool home when "Install automatically" is checked.
         var homeField = findPreviousFormItem(c, 'home');
         if (homeField != null && homeField.value == '') {
-            var tr = findAncestor(homeField, 'TR');
+            var tr = findAncestor(homeField, 'TR') || findAncestorClass(homeField, 'tr');
             if (tr != null) {
                 tr.style.display = c.checked ? 'none' : '';
                 layoutUpdateCallback.call();
@@ -1500,7 +1634,7 @@ function expandTextArea(button,id) {
     var value = field.value.replace(/ +/g,'\n');
     
     var n = button; 
-    while (n.tagName != "TABLE")
+    while (!n.classList.contains("expanding-input") && n.tagName != "TABLE")
     {
         n = n.parentNode;
     }
@@ -2352,7 +2486,7 @@ function ensureVisible(e) {
     function handleStickers(name,f) {
         var e = $(name);
         if (e) f(e);
-        document.getElementsBySelector("."+name).each(f);
+        document.getElementsBySelector("."+name).each(TryEach(f));
     }
 
     // if there are any stickers around, subtract them from the viewport

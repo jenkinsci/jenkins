@@ -168,15 +168,17 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     }
 
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public void perform(Run<?,?> build, FilePath workspace, EnvVars environment, Launcher launcher, TaskListener listener) throws InterruptedException {
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
             Map<String,String> record = new HashMap<>();
             
-            EnvVars environment = build.getEnvironment(listener);
             if(targets.length()!=0) {
-                String expandedTargets = environment.expand(targets);
+                String expandedTargets = targets;
+                if (build instanceof AbstractBuild) { // no expansion for pipelines
+                    expandedTargets = environment.expand(expandedTargets);
+                }
                 record(build, workspace, listener, record, expandedTargets);
             }
 

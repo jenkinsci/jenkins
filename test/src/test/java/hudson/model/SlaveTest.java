@@ -41,6 +41,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -51,8 +52,10 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import org.junit.Rule;
 import org.junit.Test;
@@ -108,7 +111,7 @@ public class SlaveTest {
         con.setRequestProperty("Content-Type", "application/xml;charset=UTF-8");
         con.setRequestProperty(CrumbIssuer.DEFAULT_CRUMB_NAME, "test");
         con.setDoOutput(true);
-        con.getOutputStream().write(xml.getBytes("UTF-8"));
+        con.getOutputStream().write(xml.getBytes(StandardCharsets.UTF_8));
         con.getOutputStream().close();
         IOUtils.copy(con.getInputStream(), System.out);
     }
@@ -179,7 +182,7 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void launcherFiltering() throws Exception {
+    public void launcherFiltering() {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> descriptors =
@@ -197,7 +200,7 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void retentionFiltering() throws Exception {
+    public void retentionFiltering() {
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
         DescriptorExtensionList<RetentionStrategy<?>, Descriptor<RetentionStrategy<?>>> descriptors = RetentionStrategy.all();
@@ -214,7 +217,7 @@ public class SlaveTest {
 
     @Test
     @Issue("JENKINS-36280")
-    public void propertyFiltering() throws Exception {
+    public void propertyFiltering() {
         j.jenkins.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy()); // otherwise node descriptor is not available
         DumbSlave.DescriptorImpl descriptor =
                 j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
