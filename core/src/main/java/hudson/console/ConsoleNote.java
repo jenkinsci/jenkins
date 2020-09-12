@@ -332,22 +332,14 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * Locates the preamble in the given buffer.
      */
     public static int findPreamble(byte[] buf, int start, int len) {
-        return find(PREAMBLE, buf, start, len);
-    }
-
-    public static int findPostamble(byte[] buf, int start, int len) {
-        return find(POSTAMBLE, buf, start, len);
-    }
-
-    private static int find(byte[] needle, byte[] buf, int start, int len) {
-        int e = start + len - needle.length + 1;
+        int e = start + len - PREAMBLE.length + 1;
 
         OUTER:
         for (int i=start; i<e; i++) {
-            if (buf[i]==needle[0]) {
+            if (buf[i]==PREAMBLE[0]) {
                 // check for the rest of the match
-                for (int j=1; j<needle.length; j++) {
-                    if (buf[i+j]!=needle[j])
+                for (int j=1; j<PREAMBLE.length; j++) {
+                    if (buf[i+j]!=PREAMBLE[j])
                         continue OUTER;
                 }
                 return i; // found it

@@ -107,7 +107,7 @@ public class AnnotatedLargeTextTest {
     }
 
     @Test
-    public void wontRenderPartsOfARawConsoleNote() throws Exception {
+    public void willStartWithNextLineNoConsoleNote() throws Exception {
         final String note = TestNote.encodeTo("/test/url", "");
         ByteBuffer buf = new ByteBuffer();
         PrintStream ps = new PrintStream(buf, true);
@@ -121,14 +121,14 @@ public class AnnotatedLargeTextTest {
         AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(6 * 23 + note.length() + 19, text.writeLogTo(4 * 23, baos));
-        assertEquals("build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", baos.toString());
+        assertEquals("Sample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", baos.toString());
         StringWriter w = new StringWriter();
         assertEquals(6 * 23 + note.length() + 19, text.writeHtmlTo(4 * 23, w));
-        assertEquals("build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", w.toString());
+        assertEquals("Sample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", w.toString());
     }
 
     @Test
-    public void willRenderWholeConsoleNote() throws Exception {
+    public void willStartWithNextLineWithConsoleNote() throws Exception {
         final String note = TestNote.encodeTo("/test/url", "");
         ByteBuffer buf = new ByteBuffer();
         PrintStream ps = new PrintStream(buf, true);
@@ -141,11 +141,11 @@ public class AnnotatedLargeTextTest {
         ps.print("Finished: SUCCESS.\n");
         AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        assertEquals(6 * 23 + note.length() + 19, text.writeLogTo(3 * 23 + 3, baos));
-        assertEquals("ple build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", baos.toString());
+        assertEquals(6 * 23 + note.length() + 19, text.writeLogTo(2 * 23 + 3, baos));
+        assertEquals("Sample build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", baos.toString());
         StringWriter w = new StringWriter();
         assertEquals(6 * 23 + note.length() + 19, text.writeHtmlTo(3 * 23 + 3, w));
-        assertEquals("ple </a><a href='/test/url'>build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", w.toString());
+        assertEquals("Sample </a><a href='/test/url'>build output 3.\nSample build output 4.\nSample build output 5.\nFinished: SUCCESS.\n", w.toString());
     }
 
     /** Simplified version of {@link HyperlinkNote}. */

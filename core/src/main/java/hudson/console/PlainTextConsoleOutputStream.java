@@ -35,36 +35,23 @@ import java.io.OutputStream;
  * @author Kohsuke Kawaguchi
  */
 public class PlainTextConsoleOutputStream extends LineTransformationOutputStream.Delegating {
-    private final int preBuffer;
-    private int preBufferUsed;
 
-    public PlainTextConsoleOutputStream(OutputStream out, int preBuffer) {
-        super(out);
-        this.preBuffer = preBuffer;
-    }
-
+    /**
+     *
+     */
     public PlainTextConsoleOutputStream(OutputStream out) {
-        this(out, 0);
+        super(out);
     }
 
     /**
      * Called after we read the whole line of plain text.
      */
     protected void eol(byte[] in, int sz) throws IOException {
-        if (preBufferUsed + sz < preBuffer) {
-            preBufferUsed += sz;
-            return;
-        }
-        int next = ConsoleNote.findPreamble(in, 0, sz);
-        int written = 0;
-        if (preBufferUsed < preBuffer) {
-            if (next != -1) {
-                written = Math.min(next, preBuffer - preBufferUsed);
-            }
-            preBufferUsed += sz;
-        }
+
+        int next = ConsoleNote.findPreamble(in,0,sz);
 
         // perform byte[]->char[] while figuring out the char positions of the BLOBs
+        int written = 0;
         while (next>=0) {
             if (next>written) {
                 out.write(in,written,next-written);
