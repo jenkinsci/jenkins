@@ -277,8 +277,8 @@ public class RunTest {
     }
 
     @Test
-    public void willRenderWholeLogIfOffsetSetOnLastLine() throws Exception {
-        assertWriteLogToEquals("Sample build output 0.\nSample build output 1.\nSample build output 2.\nSample build output 3.\nSample build output 4.\nFinished: SUCCESS.\n", 5 * 23 + 6);
+    public void willRenderNothingIfOffsetSetOnLastLine() throws Exception {
+        assertWriteLogToEquals("", 5 * 23 + 6);
     }
 
     private void assertWriteLogToEquals(String expectedOutput, long offset) throws Exception {

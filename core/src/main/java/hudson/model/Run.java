@@ -1533,12 +1533,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         long start = offset;
         if (offset > 0) {
             try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
-                bufferedInputStream.skip(offset);
-                int r;
-                do {
-                    r = bufferedInputStream.read();
-                    start = (r == -1 || r == '\n' && bufferedInputStream.read() == -1)? 0 : start + 1;
-                } while (r != -1 && r != '\n');
+                if (offset == bufferedInputStream.skip(offset)) {
+                    int r;
+                    do {
+                        r = bufferedInputStream.read();
+                        start = (r == -1)? 0 : start + 1;
+                    } while (r != -1 && r != '\n');
+                }
             }
         }
         getLogText().writeHtmlTo(start, out.asWriter());
