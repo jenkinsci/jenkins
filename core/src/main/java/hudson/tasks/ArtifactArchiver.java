@@ -260,7 +260,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     f.setExcludes(excludes);
                     f.setDefaultExcludes(defaultExcludes);
                     f.setCaseSensitive(caseSensitive);
-                    f.perform(build, ws, launcher, listener);
+                    f.perform(build, ws, build.getEnvironment(listener), launcher, listener);
                 }
             } else {
                 result = build.getResult();

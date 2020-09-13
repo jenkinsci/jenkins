@@ -184,7 +184,7 @@ public class JSONSignatureValidator {
         //
         // Jenkins should ignore "digest"/"signature" pair. Accepting it creates a vulnerability that allows
         // the attacker to inject a fragment at the end of the json.
-        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos), Charsets.UTF_8)).close();
+        json.writeCanonical(new OutputStreamWriter(new TeeOutputStream(dos,sos), StandardCharsets.UTF_8)).close();
 
         // did the digest match? this is not a part of the signature validation, but if we have a bug in the c14n
         // (which is more likely than someone tampering with update center), we can tell
