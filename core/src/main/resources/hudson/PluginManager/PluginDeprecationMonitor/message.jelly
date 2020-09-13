@@ -28,7 +28,7 @@ THE SOFTWARE.
     <dl>
       <dt>${%DeprecatedPlugins}</dt>
       <j:forEach var="e" items="${it.getDeprecatedPlugins()}">
-        <dd><a href="${e.value}" target="_blank">${e.key.displayName}</a></dd>
+        <dd><a href="${e.value}" rel="noopener noreferrer" target="_blank">${e.key.displayName}</a></dd>
       </j:forEach>
     </dl>
     <p>${%DeprecatedPluginsDescription}</p>

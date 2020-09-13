@@ -7,7 +7,7 @@
       <span class="title">
         <input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
         {{plugin.title}}
-        <a href="{{plugin.website}}" target="_blank" class="website-link" title="{{plugin.title}} {{../../translations.installWizard_websiteLinkLabel}}"></a>
+        <a href="{{plugin.website}}" target="_blank" class="website-link" rel="noopener noreferrer" title="{{plugin.title}} {{../../translations.installWizard_websiteLinkLabel}}"></a>
       </span>
       {{#hasDependencies plugin.name}}
         <a href="#" class="btn btn-link toggle-dependency-list" type="button" data-plugin-name="{{../plugin.name}}" title="{{../plugin.title}} {{../../../translations.installWizard_installIncomplete_dependenciesLabel}}">
@@ -21,7 +21,7 @@
         <div class="dep-list">
           <h3 class="dep-title">{{../../../translations.installWizard_installIncomplete_dependenciesLabel}}</h3>
           {{#eachDependency ../plugin.name}}
-          <a class="dep badge" href="{{website}}" target="_blank">
+          <a class="dep badge" href="{{website}}" rel="noopener noreferrer" target="_blank">
           {{title}}
           </a>
           {{/eachDependency}}

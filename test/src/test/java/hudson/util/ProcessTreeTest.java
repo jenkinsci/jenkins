@@ -1,5 +1,6 @@
 package hudson.util;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.*;
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
@@ -31,14 +33,14 @@ import org.jvnet.hudson.test.TestExtension;
 import com.google.common.collect.ImmutableMap;
 
 
-public class ProcessTreeKillerTest {
+public class ProcessTreeTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
     private Process process;
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         ProcessTree.vetoersExist = null;
         if (null != process)
             process.destroy();
@@ -103,7 +105,7 @@ public class ProcessTreeKillerTest {
             assertTrue("Process should be running", spawner.proc.isAlive());
         } finally {
             spawner.proc.kill();
-            assertTrue("Process should be dead", !spawner.proc.isAlive());
+            assertFalse("Process should be dead", spawner.proc.isAlive());
         }
     }
 
@@ -190,7 +192,7 @@ public class ProcessTreeKillerTest {
     @TestExtension({"considersKillingVetos", "considersKillingVetosOnSlave"})
     public static class VetoAllKilling extends ProcessKillingVeto {
         @Override
-        public VetoCause vetoProcessKilling(IOSProcess p) {
+        public VetoCause vetoProcessKilling(@NonNull IOSProcess p) {
             return new VetoCause("Peace on earth");
         }
     }

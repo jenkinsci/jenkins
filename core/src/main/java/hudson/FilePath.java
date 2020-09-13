@@ -2049,25 +2049,35 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
-        actAsync(new SecureFileCallable<Void>() {
-            private static final long serialVersionUID = 1L;
-
-            public Void invoke(File f, VirtualChannel channel) throws IOException {
-                try (OutputStream os = p.getOut();
-                     OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
-                     RandomAccessFile raf = new RandomAccessFile(reading(f), "r")) {
-                    raf.seek(offset);
-                    byte[] buf = new byte[8192];
-                    int len;
-                    while ((len = raf.read(buf)) >= 0) {
-                        out.write(buf, 0, len);
-                    }
-                    return null;
-                }
-            }
-        });
-
+        actAsync(new OffsetPipeSecureFileCallable(p, offset));
         return new java.util.zip.GZIPInputStream(p.getIn());
+    }
+    
+    private class OffsetPipeSecureFileCallable extends SecureFileCallable<Void> {
+        private static final long serialVersionUID = 1L;
+        
+        private Pipe p;
+        private long offset;
+        
+        private OffsetPipeSecureFileCallable(Pipe p, long offset) {
+            this.p = p;
+            this.offset = offset;
+        }
+        
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
+            try (OutputStream os = p.getOut();
+                 OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
+                 RandomAccessFile raf = new RandomAccessFile(reading(f), "r")) {
+                raf.seek(offset);
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = raf.read(buf)) >= 0) {
+                    out.write(buf, 0, len);
+                }
+                return null;
+            }
+        }
     }
 
     /**
