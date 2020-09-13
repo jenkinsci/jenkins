@@ -24,9 +24,8 @@
 
 package hudson.model;
 
-import java.io.IOException;
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -40,12 +39,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.console.AnnotatedLargeText;
 import jenkins.model.Jenkins;
+import org.apache.commons.jelly.XMLOutput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.mockito.Mockito;
 
 
@@ -261,5 +264,53 @@ public class RunTest {
 
         assertTrue(r1.compareTo(r2) != 0);
         assertTrue(treeSet.size() == 2);
+    }
+
+    @Test
+    public void willTriggerLogToStartWithNextFullLine() throws Exception {
+        assertWriteLogToEquals("Sample build output 3.\nSample build output 4.\nFinished: SUCCESS.\n", 2 * 23 + 10);
+    }
+
+    @Test
+    public void wontPushOffsetOnRenderingFromBeginning() throws Exception {
+        assertWriteLogToEquals("Sample build output 0.\nSample build output 1.\nSample build output 2.\nSample build output 3.\nSample build output 4.\nFinished: SUCCESS.\n", 0);
+    }
+
+    @Test
+    public void willRenderWholeLogIfOffsetSetOnLastLine() throws Exception {
+        assertWriteLogToEquals("Sample build output 0.\nSample build output 1.\nSample build output 2.\nSample build output 3.\nSample build output 4.\nFinished: SUCCESS.\n", 5 * 23 + 6);
+    }
+
+    private void assertWriteLogToEquals(String expectedOutput, long offset) throws Exception {
+        try (
+            ByteBuffer buf = new ByteBuffer();
+            PrintStream ps = new PrintStream(buf, true);
+            StringWriter writer = new StringWriter()
+        ) {
+            ps.print("Sample build output 0.\n");
+            ps.print("Sample build output 1.\n");
+            ps.print("Sample build output 2.\n");
+            ps.print("Sample build output 3.\n");
+            ps.print("Sample build output 4.\n");
+            ps.print("Finished: SUCCESS.\n");
+
+            final Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(Mockito.mock(Job.class)) {
+                @NonNull
+                @Override
+                public AnnotatedLargeText<?> getLogText() {
+                    return new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+                }
+
+                @NonNull
+                @Override
+                public InputStream getLogInputStream() throws IOException {
+                    return buf.newInputStream();
+                }
+            };
+            final XMLOutput xmlOutput = Mockito.mock(XMLOutput.class);
+            Mockito.when(xmlOutput.asWriter()).thenReturn(writer);
+            r.writeLogTo(offset, xmlOutput);
+            assertEquals(expectedOutput, writer.toString());
+        }
     }
 }

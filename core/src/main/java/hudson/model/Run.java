@@ -1532,10 +1532,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 int r;
                 do {
                     r = bufferedInputStream.read();
-                    start++;
-                    if (r == -1) {
-                        start = 0;
-                    }
+                    start = (r == -1 || r == '\n' && bufferedInputStream.read() == -1)? 0 : start + 1;
                 } while (r != -1 && r != '\n');
             }
         }
