@@ -41,6 +41,8 @@ import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
@@ -65,18 +67,8 @@ import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.io.Reader;
 import java.lang.UnsupportedOperationException;
 import java.lang.SecurityException;
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
@@ -1533,7 +1525,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public void writeLogTo(long offset, @NonNull XMLOutput out) throws IOException {
-        getLogText().writeHtmlTo(offset, out.asWriter());
+        long start = offset;
+        if (offset > 0) {
+            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
+                bufferedInputStream.skip(offset);
+                int r;
+                do {
+                    r = bufferedInputStream.read();
+                    start++;
+                    if (r == -1) {
+                        start = 0;
+                    }
+                } while (r != -1 && r != '\n');
+            }
+        }
+        getLogText().writeHtmlTo(start, out.asWriter());
     }
 
     /**
