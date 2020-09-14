@@ -126,7 +126,6 @@ a.ygtvspacer {
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover { 
     margin-left:2px;
     text-decoration: none;
-    background-color: var(--background, white);
     cursor:pointer;
 }
 
@@ -137,11 +136,7 @@ a.ygtvspacer {
 .ygtvspacer { height: 22px; width: 18px; }
 
 .ygtvfocus {
-	background-color: var(--panel-header-bg-color, #c0e0e0);
 	border: none;
-}
-.ygtvfocus .ygtvlabel, .ygtvfocus .ygtvlabel:link, .ygtvfocus .ygtvlabel:visited, .ygtvfocus .ygtvlabel:hover {
-	background-color: var(--panel-header-bg-color, #c0e0e0);
 }
 
 .ygtvfocus  a  {
