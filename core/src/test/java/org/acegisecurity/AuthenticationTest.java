@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.Jenkins;
+import org.acegisecurity.providers.AbstractAuthenticationToken;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.User;
@@ -108,6 +109,28 @@ public class AuthenticationTest {
         assertThat(spring.getPrincipal(), instanceOf(org.springframework.security.core.userdetails.UserDetails.class));
         Authentication acegi2 = Authentication.fromSpring(spring);
         assertThat(acegi2.getPrincipal(), instanceOf(UserDetails.class));
+    }
+
+    @Test
+    public void custom() {
+        class CustomAuth extends AbstractAuthenticationToken {
+            final int x;
+            CustomAuth(int x) {
+                this.x = x;
+            }
+            @Override
+            public Object getCredentials() {
+                return null;
+            }
+            @Override
+            public Object getPrincipal() {
+                return "xxx";
+            }
+        }
+        CustomAuth ca = new CustomAuth(23);
+        Authentication a = Authentication.fromSpring(ca.toSpring());
+        assertThat(a, instanceOf(CustomAuth.class));
+        assertEquals(23, ((CustomAuth) a).x);
     }
 
 }
