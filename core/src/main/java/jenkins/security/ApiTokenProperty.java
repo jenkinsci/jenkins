@@ -208,23 +208,27 @@ public class ApiTokenProperty extends UserProperty {
      */
     private boolean hasPermissionToSeeToken() {
         // Administrators can do whatever they want
-        if (SHOW_LEGACY_TOKEN_TO_ADMINS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+        return canCurrentUserControlObject(SHOW_LEGACY_TOKEN_TO_ADMINS, user);
+    }
+
+    private static boolean canCurrentUserControlObject(boolean trustAdmins, User propertyOwner) {
+        if (trustAdmins && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return true;
         }
-        
+
         User current = User.current();
         if (current == null) { // Anonymous
             return false;
         }
-        
-        // SYSTEM2 user is always eligible to see tokens
+
+        // SYSTEM user is always eligible to see tokens
         if (Jenkins.getAuthentication2().equals(ACL.SYSTEM2)) {
             return true;
         }
-        
-        return User.idStrategy().equals(user.getId(), current.getId());
+
+        return User.idStrategy().equals(propertyOwner.getId(), current.getId());
     }
-    
+
     // only for Jelly
     @Restricted(NoExternalUse.class)
     public Collection<TokenInfoAndStats> getTokenList() {
@@ -414,23 +418,8 @@ public class ApiTokenProperty extends UserProperty {
     
         // for Jelly view
         @Restricted(NoExternalUse.class)
-        public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner){
-            if (ADMIN_CAN_GENERATE_NEW_TOKENS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-                return true;
-            }
-
-            User currentUser = User.current();
-            if (currentUser == null) {
-                // Anonymous
-                return false;
-            }
-
-            if (Jenkins.getAuthentication2().equals(ACL.SYSTEM2)) {
-                // SYSTEM2 user is always eligible to see tokens
-                return true;
-            }
-
-            return User.idStrategy().equals(propertyOwner.getId(), currentUser.getId());
+        public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner) {
+            return canCurrentUserControlObject(ADMIN_CAN_GENERATE_NEW_TOKENS, propertyOwner);
         }
 
         /**
