@@ -87,8 +87,8 @@ THE SOFTWARE.
                                             <j:when test="${useCounter > 0}">
                                                 <j:if test="${token.lastUseDate == null}">
                                                     <!--Should normally never happen without manual XML modification-->
-                                                    <span class="token-use-counter" title="${$TokenNeverUsedTooltip}">
-                                                        ${%TokenNeverUsedValue}
+                                                    <span class="token-use-counter" title="${%TokenNeverUsedTooltip}">
+                                                        ${%TokenNeverUsed}
                                                     </span>
                                                 </j:if>
                                                 <j:if test="${token.lastUseDate != null}">

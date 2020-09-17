@@ -170,7 +170,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
      * and there is a desire to elide unnecessary persistence of unmodified objects.
      */
-    @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void replaceAction(@NonNull Action a) {
         addOrReplaceAction(a);
@@ -189,7 +188,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressWarnings({"ConstantConditions"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean addOrReplaceAction(@NonNull Action a) {
         if (a == null) {
@@ -226,7 +225,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings("deprecation")
     public boolean removeAction(@Nullable Action a) {
         if (a == null) {
             return false;
@@ -248,7 +246,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressWarnings({"ConstantConditions"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean removeActions(@NonNull Class<? extends Action> clazz) {
         if (clazz == null) {
@@ -280,7 +278,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressWarnings({"ConstantConditions"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean replaceActions(@NonNull Class<? extends Action> clazz, @NonNull Action a) {
         if (clazz == null) {

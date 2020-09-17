@@ -30,7 +30,7 @@ def l = namespace(lib.LayoutTagLib)
 def listWarnings(warnings) {
     warnings.each { warning ->
         dd {
-            a(warning.message, href: warning.url, target: "_blank")
+            a(warning.message, href: warning.url, rel: 'noopener noreferrer', target: "_blank")
         }
     }
 }
@@ -63,7 +63,7 @@ div(class: "alert alert-danger", role: "alert") {
         dl {
             pluginWarnings.each { plugin, warnings ->
                 dt {
-                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, target: "_blank")
+                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, rel: 'noopener noreferrer', target: "_blank")
                 }
                 listWarnings(warnings)
             }
