@@ -53,6 +53,7 @@ import org.mockito.Mockito;
 
 
 public class RunTest {
+    private static final String SAMPLE_BUILD_OUTPUT = "Sample build output abc123.\n";
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
@@ -98,7 +99,7 @@ public class RunTest {
             TimeZone.setDefault(origTZ);
         }
     }
-    
+
 
     private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {
         Run r = new Run(new StubJob(), 0) {};
@@ -146,7 +147,7 @@ public class RunTest {
                 return Locale.ENGLISH;
             }
         });
-        
+
         Run r = new Run(new StubJob(), 0) {};
         assertEquals("Not started yet", r.getDurationString());
         r.onStartBuilding();
@@ -268,17 +269,17 @@ public class RunTest {
 
     @Test
     public void willTriggerLogToStartWithNextFullLine() throws Exception {
-        assertWriteLogToEquals("Sample build output 3.\nSample build output 4.\nFinished: SUCCESS.\n", 2 * 23 + 10);
+        assertWriteLogToEquals(new String(new char[2]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 2 * SAMPLE_BUILD_OUTPUT.length() + 10);
     }
 
     @Test
     public void wontPushOffsetOnRenderingFromBeginning() throws Exception {
-        assertWriteLogToEquals("Sample build output 0.\nSample build output 1.\nSample build output 2.\nSample build output 3.\nSample build output 4.\nFinished: SUCCESS.\n", 0);
+        assertWriteLogToEquals(new String(new char[5]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 0);
     }
 
     @Test
     public void willRenderNothingIfOffsetSetOnLastLine() throws Exception {
-        assertWriteLogToEquals("", 5 * 23 + 6);
+        assertWriteLogToEquals("", 5 * SAMPLE_BUILD_OUTPUT.length() + 6);
     }
 
     private void assertWriteLogToEquals(String expectedOutput, long offset) throws Exception {
@@ -287,11 +288,9 @@ public class RunTest {
             PrintStream ps = new PrintStream(buf, true);
             StringWriter writer = new StringWriter()
         ) {
-            ps.print("Sample build output 0.\n");
-            ps.print("Sample build output 1.\n");
-            ps.print("Sample build output 2.\n");
-            ps.print("Sample build output 3.\n");
-            ps.print("Sample build output 4.\n");
+            for (int i = 0; i < 5; i++) {
+                ps.print(SAMPLE_BUILD_OUTPUT);
+            }
             ps.print("Finished: SUCCESS.\n");
 
             final Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(Mockito.mock(Job.class)) {
