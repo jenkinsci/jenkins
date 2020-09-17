@@ -20,7 +20,7 @@ var radioBlockSupport = {
         while((n = n.next()) != blockEnd) {
             if (show) {
                 n.style.visibility = "visible";
-                n.style.position = "";
+                n.style.position = "static";
             } else {
                 n.style.visibility = "hidden";
                 n.style.position = "absolute";
