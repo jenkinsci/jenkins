@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019, CloudBees, Inc.
+ * Copyright (c) 2020, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,10 @@ package jenkins.security.apitoken;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.concurrent.Immutable;
-
 /**
  * Contains information about the token and the secret value.
  * It should not be stored as is, but just displayed once to the user and then forget about it.
  */
-@Immutable
 @Restricted(NoExternalUse.class)
 public class TokenUuidAndPlainValue {
     /**

@@ -361,7 +361,7 @@ public class ApiTokenProperty extends UserProperty {
 
     // essentially meant for scripting
     @Restricted(NoExternalUse.class)
-    public @Nonnull String addFixedNewToken(@Nonnull String name, @Nonnull String tokenPlainValue) throws IOException {
+    public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) throws IOException {
         String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue);
         user.save();
         return tokenUuid;
@@ -369,7 +369,7 @@ public class ApiTokenProperty extends UserProperty {
     
     // essentially meant for scripting
     @Restricted(NoExternalUse.class)
-    public @Nonnull TokenUuidAndPlainValue generateNewToken(@Nonnull String name) throws IOException {
+    public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) throws IOException {
         TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name);
         user.save();
         return tokenUuidAndPlainValue;
@@ -385,7 +385,7 @@ public class ApiTokenProperty extends UserProperty {
     
     // essentially meant for scripting
     @Restricted(NoExternalUse.class)
-    public void revokeAllTokensExceptOne(@Nonnull String tokenUuid) throws IOException {
+    public void revokeAllTokensExceptOne(@NonNull String tokenUuid) throws IOException {
         tokenStats.removeAllExcept(tokenUuid);
         tokenStore.revokeAllTokensExcept(tokenUuid);
         user.save();
@@ -516,8 +516,8 @@ public class ApiTokenProperty extends UserProperty {
         }
     
         /**
-         * This method is dangerous and should not be used without caution. The token passed here could have been tracked
-         * by different network system during its path.
+         * This method is dangerous and should not be used without caution. 
+         * The token passed here could have been tracked by different network system during its trip.
          * It is recommended to revoke this token after the generation of a new one.
          */
         @RequirePOST

@@ -119,7 +119,7 @@ public class SetupWizard extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static /* not final */ String ADMIN_INITIAL_API_TOKEN =
+    private static /* not final */ String ADMIN_INITIAL_API_TOKEN =
             SystemProperties.getString(SetupWizard.class.getName() + ".adminInitialApiToken");
 
     @NonNull
@@ -230,6 +230,7 @@ public class SetupWizard extends PageDecorator {
         } else {
             String plainText;
             if (sysProp.startsWith("@")) {
+                // no need for path traversal check as it's coming from the instance creator only
                 File apiTokenFile = new File(sysProp.substring(1));
                 if (!apiTokenFile.exists()) {
                     LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from a inexistent file: {0}", apiTokenFile);
@@ -357,6 +358,7 @@ public class SetupWizard extends PageDecorator {
             }
             try {
                 FilePath fp = getInitialAdminApiTokenFile();
+                // no care about TOCTOU as it's done during instance creation process only (i.e. not yet user reachable)
                 if (fp.exists()) {
                     fp.delete();
                 }

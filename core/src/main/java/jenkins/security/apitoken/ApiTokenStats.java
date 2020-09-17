@@ -141,7 +141,7 @@ public class ApiTokenStats implements Saveable {
         }
     }
     
-    public synchronized void removeAllExcept(@Nonnull String tokenUuid) {
+    public synchronized void removeAllExcept(@NonNull String tokenUuid) {
         int sizeBefore = tokenStats.size();
         tokenStats.removeIf(s -> !s.tokenUuid.equals(tokenUuid));
         int sizeAfter = tokenStats.size();

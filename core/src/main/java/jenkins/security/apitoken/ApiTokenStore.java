@@ -195,7 +195,7 @@ public class ApiTokenStore {
      * Be careful with this method. Depending on how the tokenPlainValue was stored/sent to this method, 
      * it could be a good idea to generate a new token randomly and revoke this one.
      */
-    public synchronized @Nonnull String addFixedNewToken(@Nonnull String name, @Nonnull String tokenPlainValue) {
+    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) {
         if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
             LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
             throw new IllegalArgumentException("The token must consist of 2 characters for the version and 32 hex-characters for the secret");
@@ -217,7 +217,7 @@ public class ApiTokenStore {
         return token.uuid;
     }
     
-    private @Nonnull HashedToken prepareAndStoreToken(@Nonnull String name, @Nonnull String tokenPlainValue) {
+    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue) {
         String secretValueHashed = this.plainSecretToHashInHex(tokenPlainValue);
         
         HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
@@ -322,7 +322,7 @@ public class ApiTokenStore {
         tokenList.clear();
     }
     
-    public synchronized void revokeAllTokensExcept(@Nonnull String tokenUuid) {
+    public synchronized void revokeAllTokensExcept(@NonNull String tokenUuid) {
         tokenList.removeIf(token -> !token.uuid.equals(tokenUuid));
     }
     
