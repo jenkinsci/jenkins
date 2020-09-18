@@ -57,6 +57,7 @@ import org.springframework.security.web.authentication.rememberme.TokenBasedReme
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices {
 
     private static final Logger LOGGER = Logger.getLogger(TokenBasedRememberMeServices2.class.getName());
@@ -64,7 +65,6 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     /**
      * Escape hatch for the check on the maximum date for the expiration duration of the remember me cookie
      */
-    @Restricted(NoExternalUse.class)
     public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK = 
             SystemProperties.getBoolean(TokenBasedRememberMeServices2.class.getName() + ".skipTooFarExpirationDateCheck");
 
