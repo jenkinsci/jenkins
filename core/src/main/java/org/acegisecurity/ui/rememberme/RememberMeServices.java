@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.acegisecurity.ui.remember;
+package org.acegisecurity.ui.rememberme;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -737,7 +737,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          * @deprecated use {@link #rememberMe2}
          */
         @Deprecated
-        public final org.acegisecurity.ui.remember.RememberMeServices rememberMe;
+        public final org.acegisecurity.ui.rememberme.RememberMeServices rememberMe;
 
         public SecurityComponents() {
             // we use AuthenticationManagerProxy here just as an implementation that fails all the time,
@@ -787,14 +787,14 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             this.rememberMe2 = rememberMe;
             this.manager = org.acegisecurity.AuthenticationManager.fromSpring(manager);
             this.userDetails = org.acegisecurity.userdetails.UserDetailsService.fromSpring(userDetails);
-            this.rememberMe = org.acegisecurity.ui.remember.RememberMeServices.fromSpring(rememberMe);
+            this.rememberMe = org.acegisecurity.ui.rememberme.RememberMeServices.fromSpring(rememberMe);
         }
 
         /**
          * @deprecated use {@link #SecurityComponents(AuthenticationManager, UserDetailsService, RememberMeServices)}
          */
         @Deprecated
-        public SecurityComponents(org.acegisecurity.AuthenticationManager manager, org.acegisecurity.userdetails.UserDetailsService userDetails, org.acegisecurity.ui.remember.RememberMeServices rememberMe) {
+        public SecurityComponents(org.acegisecurity.AuthenticationManager manager, org.acegisecurity.userdetails.UserDetailsService userDetails, org.acegisecurity.ui.rememberme.RememberMeServices rememberMe) {
             this(manager.toSpring(), userDetails.toSpring(), rememberMe.toSpring());
         }
 
