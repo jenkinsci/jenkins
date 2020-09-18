@@ -41,6 +41,9 @@ public interface RememberMeServices {
     void loginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication successfulAuthentication);
 
     static RememberMeServices fromSpring(org.springframework.security.web.authentication.RememberMeServices rms) {
+        if (rms instanceof RememberMeServicesSpringImpl) {
+            return ((RememberMeServicesSpringImpl) rms).delegate;
+        }
         return new RememberMeServices() {
             @Override
             public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
@@ -59,21 +62,7 @@ public interface RememberMeServices {
     }
 
     default org.springframework.security.web.authentication.RememberMeServices toSpring() {
-        return new org.springframework.security.web.authentication.RememberMeServices() {
-            @Override
-            public org.springframework.security.core.Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
-                Authentication a = RememberMeServices.this.autoLogin(request, response);
-                return a != null ? a.toSpring() : null;
-            }
-            @Override
-            public void loginFail(HttpServletRequest request, HttpServletResponse response) {
-                RememberMeServices.this.loginFail(request, response);
-            }
-            @Override
-            public void loginSuccess(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.Authentication successfulAuthentication) {
-                RememberMeServices.this.loginSuccess(request, response, Authentication.fromSpring(successfulAuthentication));
-            }
-        };
+        return new RememberMeServicesSpringImpl(this);
     }
 
 }
