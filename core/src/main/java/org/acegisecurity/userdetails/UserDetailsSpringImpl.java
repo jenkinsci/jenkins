@@ -27,6 +27,7 @@ package org.acegisecurity.userdetails;
 import java.util.Collection;
 import org.acegisecurity.GrantedAuthority;
 
+@Deprecated
 final class UserDetailsSpringImpl implements org.springframework.security.core.userdetails.UserDetails {
 
     final UserDetails delegate;
