@@ -53,7 +53,8 @@ THE SOFTWARE.
       Used for databinding.
     </st:attribute>
   </st:documentation>
-
+  <f:prepareDatabinding/>
+  ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <st:once>
     <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
     <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
@@ -64,9 +65,6 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
-
-  <f:prepareDatabinding/>
-  ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
 
   <f:possibleReadOnlyField>
     <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
