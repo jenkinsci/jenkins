@@ -168,15 +168,6 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 throw e;
             } finally {
                 if (r != null) setResult(r);
-                // tear down in reverse order
-                boolean failed=false;
-                for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
-                    if (!buildEnvironments.get(i).tearDown(Build.this,listener)) {
-                        failed=true;
-                    }                    
-                }
-                // WARNING The return in the finally clause will trump any return before
-                if (failed) return FAILURE;
             }
 
             return r;
