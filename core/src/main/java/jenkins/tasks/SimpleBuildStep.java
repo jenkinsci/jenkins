@@ -82,7 +82,7 @@ public interface SimpleBuildStep extends BuildStep {
      * @param listener a place to send output
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
-     * @deprecated Use {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener) instead.}
+     * @deprecated Use {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)} instead.
      */
     @Deprecated
     default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher,
