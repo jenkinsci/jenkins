@@ -140,10 +140,9 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
         if (build instanceof Build)
             return setUp((Build)build,launcher,listener);
-        else
-            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
-                    "deprecated setUp(Build,Launcher,BuildListener) method. " +
-                    "Update the plugin to use setUp(AbstractBuild, Launcher, BuildListener) instead.");
+        else // neither overload was overridden
+            throw new AbstractMethodError("Plugin class '" + this.getClass().getName() + "' does not override " +
+                    "either overload of the setUp method.");
     }
 
     /**

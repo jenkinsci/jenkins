@@ -67,9 +67,8 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
             return decorateLogger((Run) build, logger);
         } else {
             // happens only if the subtype fails to override either decorateLogger method
-            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
-                    "deprecated decorateLogger(AbstractBuild,OutputStream) method. " +
-                    "Update the plugin to use decorateLogger(Run,OutputStream) instead.");
+            throw new AbstractMethodError("Plugin class '" + this.getClass().getName() + "' does not override " +
+                    "either overload of the decorateLogger method.");
         }
     }
 
