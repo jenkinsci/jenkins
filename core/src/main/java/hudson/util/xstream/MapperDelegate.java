@@ -150,4 +150,15 @@ public class MapperDelegate extends MapperWrapper {
     public SingleValueConverter getConverterFromAttribute(Class definedIn, String attribute, Class type) {
         return delegate.getConverterFromAttribute(definedIn, attribute, type);
     }
+
+    @Override
+    public boolean isIgnoredElement(String name) {
+        return delegate.isIgnoredElement(name);
+    }
+
+    @Override
+    public boolean isReferenceable(Class type) {
+        return delegate.isReferenceable(type);
+    }
+
 }
