@@ -150,7 +150,7 @@ public class ListView extends View implements DirectlyModifiableView {
         initColumns();
         initJobFilters();
         if (statusFilter != null) {
-            jobFilters.add(0, new StatusFilter(statusFilter));
+            jobFilters.add(new StatusFilter(statusFilter));
         }
         return this;
     }
