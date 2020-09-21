@@ -30,16 +30,17 @@ import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
-import com.thoughtworks.xstream.mapper.XStream11XmlFriendlyMapper;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
+import com.thoughtworks.xstream.converters.ConverterRegistry;
 import com.thoughtworks.xstream.converters.DataHolder;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.SingleValueConverterWrapper;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.extended.DynamicProxyConverter;
+import com.thoughtworks.xstream.core.ClassLoaderReference;
 import com.thoughtworks.xstream.core.JVM;
 import com.thoughtworks.xstream.core.util.Fields;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
@@ -212,10 +213,11 @@ public class XStream2 extends XStream {
     }
 
     @Override
-    protected Converter createDefaultConverter() {
+    protected void setupConverters() {
+        super.setupConverters();
         // replace default reflection converter
-        reflectionConverter = new RobustReflectionConverter(getMapper(),new JVM().bestReflectionProvider(), new PluginClassOwnership());
-        return reflectionConverter;
+        reflectionConverter = new RobustReflectionConverter(getMapper(), JVM.newReflectionProvider(), new PluginClassOwnership());
+        registerConverter(reflectionConverter, PRIORITY_VERY_LOW + 1);
     }
 
     /**
@@ -235,7 +237,7 @@ public class XStream2 extends XStream {
 
     private void init() {
         // list up types that should be marshalled out like a value, without referential integrity tracking.
-        addImmutableType(Result.class);
+        addImmutableType(Result.class, false);
 
         // http://www.openwall.com/lists/oss-security/2017/04/03/4
         denyTypes(new Class[] { void.class, Void.class });
@@ -258,7 +260,7 @@ public class XStream2 extends XStream {
 
         registerConverter(new BlacklistedTypesConverter(), PRIORITY_VERY_HIGH); // SECURITY-247 defense
 
-        registerConverter(new DynamicProxyConverter(getMapper()) { // SECURITY-105 defense
+        registerConverter(new DynamicProxyConverter(getMapper(), new ClassLoaderReference(getClassLoader())) { // SECURITY-105 defense
             @Override public boolean canConvert(Class type) {
                 return /* this precedes NullConverter */ type != null && super.canConvert(type);
             }
@@ -281,7 +283,15 @@ public class XStream2 extends XStream {
                     return super.serializedClass(type);
             }
         });
-        AnnotationMapper a = new AnnotationMapper(m, getConverterRegistry(), getConverterLookup(), getClassLoader(), getReflectionProvider(), getJvm());
+        ConverterRegistry converterRegistry;
+        try {
+            Field converterRegistryF = XStream.class.getDeclaredField("converterRegistry");
+            converterRegistryF.setAccessible(true);
+            converterRegistry = (ConverterRegistry) converterRegistryF.get(this);
+        } catch (Exception x) {
+            throw new AssertionError(x);
+        }
+        AnnotationMapper a = new AnnotationMapper(m, converterRegistry, getConverterLookup(), new ClassLoaderReference(getClassLoader()), getReflectionProvider());
         // TODO JENKINS-19561 this is unsafe:
         a.autodetectAnnotations(true);
 
@@ -361,7 +371,7 @@ public class XStream2 extends XStream {
     /**
      * Prior to Hudson 1.106, XStream 1.1.x was used which encoded "$" in class names
      * as "-" instead of "_-" that is used now.  Up through Hudson 1.348 compatibility
-     * for old serialized data was maintained via {@link XStream11XmlFriendlyMapper}.
+     * for old serialized data was maintained via {@link com.thoughtworks.xstream.mapper.XStream11XmlFriendlyMapper}.
      * However, it was found (HUDSON-5768) that this caused fields with "__" to fail
      * deserialization due to double decoding.  Now this class is used for compatibility.
      */

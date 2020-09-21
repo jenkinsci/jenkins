@@ -326,9 +326,9 @@ THE SOFTWARE.
 
       <!--XStream-->
       <dependency>
-        <groupId>org.jvnet.hudson</groupId>
+        <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.7-jenkins-1</version>
+        <version>1.4.13</version>
       </dependency>
       <dependency>
         <groupId>net.sf.kxml</groupId>

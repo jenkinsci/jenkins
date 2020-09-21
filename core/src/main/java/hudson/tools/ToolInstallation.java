@@ -38,7 +38,6 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.util.List;
 
-import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -82,8 +81,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * {@link ToolProperty}s that are associated with this tool.
      */
-    @XStreamSerializable
-    private transient /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
+    private /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
             = new DescribableList<>(Saveable.NOOP);
 
     /**
