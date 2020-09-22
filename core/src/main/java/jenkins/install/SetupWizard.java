@@ -98,6 +98,8 @@ public class SetupWizard extends PageDecorator {
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
+    private static final String ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME = SetupWizard.class.getName() + ".adminInitialApiToken";
+
     /**
      * This property determines the behavior during the SetupWizard install phase concerning the API Token creation 
      * for the initial admin account.
@@ -119,8 +121,8 @@ public class SetupWizard extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    private static /* not final */ String ADMIN_INITIAL_API_TOKEN =
-            SystemProperties.getString(SetupWizard.class.getName() + ".adminInitialApiToken");
+    private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties.getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
+    
 
     @NonNull
     @Override
@@ -233,19 +235,19 @@ public class SetupWizard extends PageDecorator {
                 // no need for path traversal check as it's coming from the instance creator only
                 File apiTokenFile = new File(sysProp.substring(1));
                 if (!apiTokenFile.exists()) {
-                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from a inexistent file: {0}", apiTokenFile);
+                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from a non-existing file: {0}", apiTokenFile);
                     return;
                 }
 
                 try {
                     plainText = FileUtils.readFileToString(apiTokenFile, StandardCharsets.UTF_8);
-                    LOGGER.log(Level.INFO, "The API Token was generated using the file referenced by the given system property");
+                    LOGGER.log(Level.INFO, "API Token generated using contents of file: {0}", apiTokenFile.getAbsolutePath());
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, String.format("The API Token cannot be retrieved from the file: %s", apiTokenFile), e);
                     return;
                 }
             } else {
-                LOGGER.log(Level.INFO, "The API Token was generated using directly the given system property");
+                LOGGER.log(Level.INFO, "API Token generated using system property: {0}", ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
                 plainText = sysProp;
             }
 

@@ -42,6 +42,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -360,7 +361,7 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     // essentially meant for scripting
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) throws IOException {
         String tokenUuid = this.tokenStore.addFixedNewToken(name, tokenPlainValue);
         user.save();
@@ -368,7 +369,7 @@ public class ApiTokenProperty extends UserProperty {
     }
     
     // essentially meant for scripting
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) throws IOException {
         TokenUuidAndPlainValue tokenUuidAndPlainValue = tokenStore.generateNewToken(name);
         user.save();
@@ -376,7 +377,7 @@ public class ApiTokenProperty extends UserProperty {
     }
     
     // essentially meant for scripting
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public void revokeAllTokens() throws IOException {
         tokenStats.removeAll();
         tokenStore.revokeAllTokens();
@@ -384,11 +385,25 @@ public class ApiTokenProperty extends UserProperty {
     }
     
     // essentially meant for scripting
-    @Restricted(NoExternalUse.class)
+    @Restricted(Beta.class)
     public void revokeAllTokensExceptOne(@NonNull String tokenUuid) throws IOException {
         tokenStats.removeAllExcept(tokenUuid);
         tokenStore.revokeAllTokensExcept(tokenUuid);
         user.save();
+    }
+    
+    // essentially meant for scripting
+    @Restricted(Beta.class)
+    public void revokeToken(@NonNull String tokenUuid) throws IOException {
+        ApiTokenStore.HashedToken revoked = tokenStore.revokeToken(tokenUuid);
+        if (revoked != null) {
+            if (revoked.isLegacy()) {
+                // if the user revoked the API Token, we can delete it
+                apiToken = null;
+            }
+            tokenStats.removeId(revoked.getUuid());
+            user.save();
+        }
     }
 
     @Extension
@@ -598,15 +613,7 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
             }
             
-            ApiTokenStore.HashedToken revoked = p.tokenStore.revokeToken(tokenUuid);
-            if(revoked != null){
-                if(revoked.isLegacy()){
-                    // if the user revoked the API Token, we can delete it
-                    p.apiToken = null;
-                }
-                p.tokenStats.removeId(revoked.getUuid());
-            }
-            u.save();
+            p.revokeToken(tokenUuid);
             
             return HttpResponses.ok();
         }
