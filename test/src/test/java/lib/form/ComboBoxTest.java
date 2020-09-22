@@ -156,7 +156,7 @@ public class ComboBoxTest extends HudsonTestCase {
     }
 
     @Issue("SECURITY-1525")
-    public void testEnsureXSSnotPossible() throws Exception {
+    public void testEnsureXssNotPossible() throws Exception {
         XssProperty xssProperty = new XssProperty();
         FreeStyleProject p = createFreeStyleProject();
         p.addProperty(xssProperty);
