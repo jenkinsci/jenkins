@@ -230,25 +230,20 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(old); // restore
                                 }
                             } catch (CmdLineException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 printUsage(stderr, parser);
                                 return 2;
                             } catch (IllegalStateException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 4;
                             } catch (IllegalArgumentException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 3;
                             } catch (AbortException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 5;
                             } catch (AccessDeniedException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 6;
                             } catch (BadCredentialsException e) {
                                 // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
@@ -265,10 +260,14 @@ public class CLIRegisterer extends ExtensionFinder {
                             }
                         }
 
-                        private void logAndPrintError(Throwable e, String errorMessage, String logMessage, Level logLevel) {
-                            LOGGER.log(logLevel, logMessage, e);
+                        private void printError(String errorMessage) {
                             this.stderr.println();
                             this.stderr.println("ERROR: " + errorMessage);
+                        }
+
+                        private void logAndPrintError(Throwable e, String errorMessage, String logMessage, Level logLevel) {
+                            LOGGER.log(logLevel, logMessage, e);
+                            printError(errorMessage);
                         }
 
                         protected int run() throws Exception {
