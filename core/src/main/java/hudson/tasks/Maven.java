@@ -608,24 +608,29 @@ public class Maven extends Builder {
          * Gets the executable path of this maven on the given target system.
          */
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
-            return launcher.getChannel().call(new GetExecutable());
+            return launcher.getChannel().call(new GetExecutable(getHome()));
         }
-        private class GetExecutable extends MasterToSlaveCallable<String, IOException> {
-                private static final long serialVersionUID = 2373163112639943768L;
-                @Override
-                public String call() throws IOException {
-                    File exe = getExeFile("mvn");
-                    if(exe.exists())
-                        return exe.getPath();
-                    exe = getExeFile("maven");
-                    if(exe.exists())
-                        return exe.getPath();
-                    return null;
+        private static class GetExecutable extends MasterToSlaveCallable<String, IOException> {
+            private final String rawHome;
+            GetExecutable(String rawHome) {
+                this.rawHome = rawHome;
+            }
+            @Override
+            public String call() throws IOException {
+                File exe = getExeFile("mvn", rawHome);
+                if (exe.exists()) {
+                    return exe.getPath();
                 }
+                exe = getExeFile("maven", rawHome);
+                if (exe.exists()) {
+                    return exe.getPath();
+                }
+                return null;
+            }
         }
 
-        private File getExeFile(String execName) {
-            String m2Home = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
+        private static File getExeFile(String execName, String home) {
+            String m2Home = Util.replaceMacro(home, EnvVars.masterEnvVars);
 
             if(Functions.isWindows()) {
                 File exeFile = new File(m2Home, "bin/" + execName + ".bat");

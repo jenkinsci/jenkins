@@ -74,7 +74,7 @@ import jenkins.model.Jenkins;
  * @author huybrechts
  * @since 1.286
  */
-public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements Serializable, ExtensionPoint {
+public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements ExtensionPoint {
     private final String name;
     private /*almost final*/ String home;
 
@@ -242,5 +242,4 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
         return Jenkins.get().getDescriptorList(ToolInstallation.class);
     }
 
-    private static final long serialVersionUID = 1L;
 }
