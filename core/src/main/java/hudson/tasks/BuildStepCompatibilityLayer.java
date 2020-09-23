@@ -71,11 +71,16 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (this instanceof SimpleBuildStep) {
             // delegate to the overloaded version defined in SimpleBuildStep
-            FilePath workspace = build.getWorkspace();
-            if (workspace == null) {
+            final SimpleBuildStep step = (SimpleBuildStep) this;
+            final FilePath workspace = build.getWorkspace();
+            if (step.requiresWorkspace() && workspace == null) {
                 throw new AbortException("no workspace for " + build);
             }
-            ((SimpleBuildStep) this).perform(build, workspace, build.getEnvironment(listener), launcher, listener);
+            if (workspace != null) { // if we have one, provide it regardless of whether it's _required_
+                step.perform(build, workspace, build.getEnvironment(listener), launcher, listener);
+            } else {
+                step.perform(build, build.getEnvironment(listener), listener);
+            }
             return true;
         } else if (build instanceof Build) {
             // delegate to the legacy signature deprecated in 1.312
