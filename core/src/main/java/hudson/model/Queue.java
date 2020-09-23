@@ -2352,7 +2352,7 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
 
-        private Object readResolve() {
+        protected Object readResolve() {
             this.future = new FutureImpl(task);
             return this;
         }

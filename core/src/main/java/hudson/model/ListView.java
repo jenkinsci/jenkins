@@ -133,7 +133,7 @@ public class ListView extends View implements DirectlyModifiableView {
         this.jobFilters.replaceBy(jobFilters);
     }
 
-    private Object readResolve() {
+    protected Object readResolve() {
         if(includeRegex!=null) {
             try {
                 includePattern = Pattern.compile(includeRegex);
