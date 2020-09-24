@@ -227,7 +227,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *      or the computer already marked offline.)
      */
     protected boolean markOffline(Computer c, OfflineCause oc) {
-        if(isIgnored() || c.isOffline()) return false; // noop
+        if(isIgnored() || c.isTemporarilyOffline()) return false; // noop
 
         c.setTemporarilyOffline(true, oc);
 
