@@ -141,7 +141,7 @@ public class ComboBoxTest extends HudsonTestCase {
     }
 
     public static class XssProperty extends OptionalJobProperty<Job<?,?>> {
-        @TestExtension("testEnsureXSSnotPossible")
+        @TestExtension("testEnsureXssNotPossible")
         public static class DescriptorImpl extends OptionalJobProperty.OptionalJobPropertyDescriptor {
 
             @Override
