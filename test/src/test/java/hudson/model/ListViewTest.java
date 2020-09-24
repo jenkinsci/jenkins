@@ -48,12 +48,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -349,6 +350,16 @@ public class ListViewTest {
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2));
         lv.setRecurse(true);
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2, p3, p4));
+    }
+
+    @Issue("JENKINS-62661")
+    @Test @LocalData public void migrateStatusFilter() {
+        View v = j.jenkins.getView("testview");
+        assertThat(v, notNullValue());
+        assertThat(v, instanceOf(ListView.class));
+        ListView lv = (ListView) v;
+        StatusFilter sf = lv.getJobFilters().get(StatusFilter.class);
+        assertThat(sf.getStatusFilter(), is(true));
     }
 
     private static final class AllFilter extends ViewJobFilter {
