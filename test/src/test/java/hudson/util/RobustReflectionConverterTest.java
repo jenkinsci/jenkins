@@ -81,7 +81,7 @@ public class RobustReflectionConverterTest {
         Map<Saveable,OldDataMonitor.VersionRange> data = odm.getData();
         assertEquals(Collections.singleton(p), data.keySet());
         String text = data.values().iterator().next().extra;
-        assertTrue(text, text.contains("Could not call hudson.triggers.TimerTrigger.readResolve"));
+        assertTrue(text, text.contains("hudson.triggers.TimerTrigger.readResolve"));
     }
     
     // Testing describable object to demonstrate what is expected with RobustReflectionConverter#addCriticalField
