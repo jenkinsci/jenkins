@@ -1035,7 +1035,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Maintains backwards compatibility. Invoked by XStream when this object is de-serialized.
      */
     @SuppressWarnings({"unused"})
-    private Object readResolve() {
+    protected Object readResolve() {
         if (jdks == null) {
             jdks = new ArrayList<>();
         }
