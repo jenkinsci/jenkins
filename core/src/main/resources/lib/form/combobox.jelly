@@ -44,7 +44,7 @@ THE SOFTWARE.
       which is the recommended approach.
     </st:attribute>
     <st:attribute name="default">
-      The default value of the combo box, in case both @value is and 'instance[field]' is null.
+      The default value of the combo box, in case both @value and 'instance[field]' are null.
     </st:attribute>
     <st:attribute name="clazz">
       Additional CSS classes that the control gets.
