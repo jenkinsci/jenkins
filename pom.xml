@@ -90,7 +90,7 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <matrix-auth.version>2.6.2</matrix-auth.version>
+    <matrix-auth.version>2.6.4-rc330.062fa8d38aa3</matrix-auth.version> <!-- TODO https://github.com/jenkinsci/matrix-auth-plugin/pull/89 -->
     <matrix-project.version>1.17</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
