@@ -553,7 +553,7 @@ public class Maven extends Builder {
         public boolean meetsMavenReqVersion(Launcher launcher, int mavenReqVersion) throws IOException, InterruptedException {
             // FIXME using similar stuff as in the maven plugin could be better 
             // olamy : but will add a dependency on maven in core -> so not so good 
-            String mavenVersion = launcher.getChannel().call(new GetMavenVersion());
+            String mavenVersion = launcher.getChannel().call(new GetMavenVersion(getHome()));
 
             if (!mavenVersion.equals("")) {
                 if (mavenReqVersion == MAVEN_20) {
@@ -572,11 +572,14 @@ public class Maven extends Builder {
             return false;
             
         }
-        private class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
-            private static final long serialVersionUID = -4143159957567745621L;
+        private static class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
+            private final String home;
+            GetMavenVersion(String home) {
+                this.home = home;
+            }
             @Override
             public String call() throws IOException {
-                File[] jars = new File(getHomeDir(), "lib").listFiles();
+                File[] jars = new File(home, "lib").listFiles();
                 if (jars != null) { // be defensive
                     for (File jar : jars) {
                         if (jar.getName().startsWith("maven-")) {
