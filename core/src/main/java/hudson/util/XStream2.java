@@ -48,6 +48,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import com.thoughtworks.xstream.security.AnyTypePermission;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.XmlFile;
@@ -259,6 +260,7 @@ public class XStream2 extends XStream {
         registerConverter(new AssociatedConverterImpl(this), -10);
 
         registerConverter(new BlacklistedTypesConverter(), PRIORITY_VERY_HIGH); // SECURITY-247 defense
+        addPermission(AnyTypePermission.ANY); // covered by JEP-200, avoid securityWarningGiven
 
         registerConverter(new DynamicProxyConverter(getMapper(), new ClassLoaderReference(getClassLoader())) { // SECURITY-105 defense
             @Override public boolean canConvert(Class type) {
