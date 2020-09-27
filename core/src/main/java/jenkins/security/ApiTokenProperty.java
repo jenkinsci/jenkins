@@ -60,9 +60,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import net.jcip.annotations.Immutable;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
@@ -153,7 +153,7 @@ public class ApiTokenProperty extends UserProperty {
      *         if the user has no appropriate permissions.
      * @since 1.426, and since 1.638 the method performs security checks
      */
-    @Nonnull
+    @NonNull
     public String getApiToken() {
         LOGGER.log(Level.FINE, "Deprecated usage of getApiToken");
         if(LOGGER.isLoggable(Level.FINER)){
@@ -172,7 +172,7 @@ public class ApiTokenProperty extends UserProperty {
         return apiToken != null;
     }
     
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
     /*package*/ String getApiTokenInsecure() {
         if(apiToken == null){
@@ -208,23 +208,27 @@ public class ApiTokenProperty extends UserProperty {
      */
     private boolean hasPermissionToSeeToken() {
         // Administrators can do whatever they want
-        if (SHOW_LEGACY_TOKEN_TO_ADMINS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+        return canCurrentUserControlObject(SHOW_LEGACY_TOKEN_TO_ADMINS, user);
+    }
+
+    private static boolean canCurrentUserControlObject(boolean trustAdmins, User propertyOwner) {
+        if (trustAdmins && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return true;
         }
-        
+
         User current = User.current();
         if (current == null) { // Anonymous
             return false;
         }
-        
+
         // SYSTEM user is always eligible to see tokens
         if (Jenkins.getAuthentication() == ACL.SYSTEM) {
             return true;
         }
-        
-        return User.idStrategy().equals(user.getId(), current.getId());
+
+        return User.idStrategy().equals(propertyOwner.getId(), current.getId());
     }
-    
+
     // only for Jelly
     @Restricted(NoExternalUse.class)
     public Collection<TokenInfoAndStats> getTokenList() {
@@ -251,7 +255,7 @@ public class ApiTokenProperty extends UserProperty {
         public final Date lastUseDate;
         public final long numDaysUse;
         
-        public TokenInfoAndStats(@Nonnull ApiTokenStore.HashedToken token, @Nonnull ApiTokenStats.SingleTokenStats stats) {
+        public TokenInfoAndStats(@NonNull ApiTokenStore.HashedToken token, @NonNull ApiTokenStats.SingleTokenStats stats) {
             this.uuid = token.getUuid();
             this.name = token.getName();
             this.creationDate = token.getCreationDate();
@@ -414,23 +418,8 @@ public class ApiTokenProperty extends UserProperty {
     
         // for Jelly view
         @Restricted(NoExternalUse.class)
-        public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner){
-            if (ADMIN_CAN_GENERATE_NEW_TOKENS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-                return true;
-            }
-
-            User currentUser = User.current();
-            if (currentUser == null) {
-                // Anonymous
-                return false;
-            }
-
-            if (Jenkins.getAuthentication() == ACL.SYSTEM) {
-                // SYSTEM user is always eligible to see tokens
-                return true;
-            }
-
-            return User.idStrategy().equals(propertyOwner.getId(), currentUser.getId());
+        public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner) {
+            return canCurrentUserControlObject(ADMIN_CAN_GENERATE_NEW_TOKENS, propertyOwner);
         }
 
         /**

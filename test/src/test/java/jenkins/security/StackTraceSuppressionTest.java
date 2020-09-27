@@ -74,7 +74,7 @@ public class StackTraceSuppressionTest {
         HtmlPage page = wc.goTo("manage");
 
         String content = page.getWebResponse().getContentAsString();
-        assertThat(content, containsString(alice.getId() + " is missing a permission"));
+        assertThat(content, containsString(alice.getId() + " is missing the Overall/Administer permission"));
         assertThat(content, not(containsString("Caused by")));
     }
 
@@ -86,7 +86,9 @@ public class StackTraceSuppressionTest {
 
         String relativePath = "adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js";
         String detailString = "AdjunctManager.doDynamic";
+        SuspiciousRequestFilter.allowSemicolonsInPath = true;
         checkSuppressedStack(relativePath, detailString);
+        SuspiciousRequestFilter.allowSemicolonsInPath = false;
     }
 
     @Test
@@ -96,7 +98,9 @@ public class StackTraceSuppressionTest {
            If Stapler is improved to better handle this error, this test may erroneously fail. */
         String relativePath = "adjuncts/40331c1bldu3i%3b//'%3b//\"%3b//%25>%3f>uezm3<script>alert(1)</script>foo/org/kohsuke/stapler/jquery/jquery.full.js";
         String detailString = "AdjunctManager.doDynamic";
+        SuspiciousRequestFilter.allowSemicolonsInPath = true;
         checkDisplayedStackTrace(relativePath, detailString);
+        SuspiciousRequestFilter.allowSemicolonsInPath = false;
     }
 
     @Test

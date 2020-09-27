@@ -48,6 +48,10 @@ public class GlobalBuildDiscarderConfiguration extends GlobalConfiguration {
         return ExtensionList.lookupSingleton(GlobalBuildDiscarderConfiguration.class);
     }
 
+    public GlobalBuildDiscarderConfiguration() {
+        load();
+    }
+
     private final DescribableList<GlobalBuildDiscarderStrategy, GlobalBuildDiscarderStrategyDescriptor> configuredBuildDiscarders =
             new DescribableList<>(this, Collections.singletonList(new JobGlobalBuildDiscarderStrategy()));
 

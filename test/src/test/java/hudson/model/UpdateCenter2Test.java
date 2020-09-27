@@ -26,8 +26,10 @@ package hudson.model;
 import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateCenter.DownloadJob.Success;
 import hudson.model.UpdateCenter.DownloadJob.Failure;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeNotNull;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -45,7 +47,7 @@ public class UpdateCenter2Test {
     /**
      * Makes sure a plugin installs fine.
      */
-    // TODO randomly fails: SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…
+    @Ignore("TODO randomly fails: SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…; or: Downloaded file …/changelog-history.jpi.tmp does not match expected SHA-256, expected '…', actual '…'")
     @Test public void install() throws Exception {
         UpdateSite.neverUpdate = false;
         j.jenkins.pluginManager.doCheckUpdatesServer(); // load the metadata

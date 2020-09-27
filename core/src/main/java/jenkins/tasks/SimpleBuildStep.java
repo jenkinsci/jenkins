@@ -25,9 +25,11 @@
 package jenkins.tasks;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -47,7 +49,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;
@@ -80,9 +82,86 @@ public interface SimpleBuildStep extends BuildStep {
      * @param listener a place to send output
      * @throws InterruptedException if the step is interrupted
      * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
+     * @deprecated Use {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)} instead.
      */
-    void perform(@Nonnull Run<?,?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
-                 @Nonnull TaskListener listener) throws InterruptedException, IOException;
+    @Deprecated
+    default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull Launcher launcher,
+                         @NonNull TaskListener listener) throws InterruptedException, IOException {
+        // No additional environment available; just use that from the Run.
+        this.perform(run, workspace, run.getEnvironment(listener), launcher, listener);
+    }
+
+    /**
+     * Run this step.
+     * <p>
+     * This method <strong>must</strong> be overridden when this step requires a workspace context. If such a context is
+     * <em>not</em> required, it does not need to be overridden; it will then forward to
+     * {@link #perform(Run, EnvVars, TaskListener)}.
+     *
+     * @param run a build this is running as a part of
+     * @param workspace a workspace to use for any file operations
+     * @param env environment variables applicable to this step
+     * @param launcher a way to start processes
+     * @param listener a place to send output
+     * @throws AbstractMethodError if this step requires a workspace context and neither this method nor {@link #perform(Run, FilePath, Launcher, TaskListener)} is overridden
+     * @throws InterruptedException if the step is interrupted
+     * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
+     * @since 2.241
+     */
+    default void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher,
+                         @NonNull TaskListener listener) throws InterruptedException, IOException {
+        // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
+        if (!this.requiresWorkspace()) {
+            this.perform(run, env, listener);
+            return;
+        }
+        // If we get here, this must be an implementer of the previous API, in which case we call that, discarding
+        // the environment we were given.
+        // But for that to work, that API method must have been implemented.
+        if (Util.isOverridden(SimpleBuildStep.class, this.getClass(),
+                "perform", Run.class, FilePath.class, Launcher.class, TaskListener.class)) {
+            this.perform(run, workspace, launcher, listener);
+        } else {
+            throw new AbstractMethodError("Unless a build step is marked as not requiring a workspace context, you must implement the overload of the perform() method that takes both a workspace and a launcher.");
+        }
+    }
+
+    /**
+     * Run this step, without a workspace context.
+     * <p>
+     * This method <strong>must</strong> be overridden when this step does not require a workspace context, and will not
+     * be called when such a context <em>is</em> required.
+     *
+     * @param run a build this is running as a part of
+     * @param env environment variables applicable to this step
+     * @param listener a place to send output
+     * @throws AbstractMethodError if this method is not overridden
+     * @throws IllegalStateException if this step requires a workspace context
+     * @throws InterruptedException if the step is interrupted
+     * @throws IOException if something goes wrong; use {@link AbortException} for a polite error
+     * @since TODO
+     */
+    default void perform(@NonNull Run<?, ?> run, @NonNull EnvVars env, @NonNull TaskListener listener) throws InterruptedException, IOException {
+        // If this step requires a workspace, this is the wrong method to call.
+        if (this.requiresWorkspace()) {
+            throw new IllegalStateException("This build step requires a workspace context, but none was provided.");
+        }
+        // Otherwise, this method must have an implementation.
+        throw new AbstractMethodError("When a build step is marked as not requiring a workspace context, you must implement the overload of the perform() method that does not take a workspace or launcher.");
+    }
+
+    /**
+     * Determines whether or not this step requires a workspace context (working directory and launcher).
+     * <p>
+     * When such a context is required (the default), {@link #perform(Run, FilePath, EnvVars, Launcher, TaskListener)}
+     * applies. Otherwise, {@link #perform(Run, EnvVars, TaskListener)} applies.
+     *
+     * @return {@code true} if this step requires a workspace context; {@code false} otherwise.
+     * @since TODO
+     */
+    default boolean requiresWorkspace() {
+        return true;
+    }
 
     /**
      * Marker for explicitly added build actions (as {@link Run#addAction}) which should imply a transient project
@@ -112,9 +191,9 @@ public interface SimpleBuildStep extends BuildStep {
             return Job.class;
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public Collection<? extends Action> createFor(@Nonnull Job j) {
+        public Collection<? extends Action> createFor(@NonNull Job j) {
             List<Action> actions = new LinkedList<>();
             Run r = j.getLastSuccessfulBuild();
             if (r != null) {

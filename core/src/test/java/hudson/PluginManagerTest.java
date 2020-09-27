@@ -28,33 +28,40 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import org.apache.tools.ant.filters.StringInputStream;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.jvnet.hudson.test.Issue;
+
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.*;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
- 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Tests of {@link PluginManager}.
  */
 public class PluginManagerTest {
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir Path tmp;
 
-    @Test public void parseRequestedPlugins() throws Exception {
-        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(tmp.getRoot())
+    @Test
+    public void parseRequestedPlugins() throws Exception {
+        Path output = Files.createFile(
+                tmp.resolve("output.txt")
+        );
+        assertEquals("{other=2.0, stuff=1.2}", new LocalPluginManager(output.toFile())
                 .parseRequestedPlugins(new StringInputStream("<root><stuff plugin='stuff@1.0'><more plugin='other@2.0'><things plugin='stuff@1.2'/></more></stuff></root>")).toString());
     }
 
@@ -143,12 +150,11 @@ public class PluginManagerTest {
                 "Plugin-Developers: ";
     
     private File createHpiWithManifest() throws IOException {
-        File newFolder = tmp.newFolder("myJar");
         String manifestPath = "META-INF/MANIFEST.MF";
         new File("META-INF").mkdir();
-        FileUtils.write(new File(newFolder, manifestPath), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
+        FileUtils.write(new File(tmp.toFile(), manifestPath), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
         
-        final File f = new File(tmp.getRoot(), "my.hpi");
+        final File f = new File(tmp.toFile(), "my.hpi");
         try(ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {
             ZipEntry e = new ZipEntry(manifestPath);
             out.putNextEntry(e);

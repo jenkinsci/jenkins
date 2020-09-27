@@ -3,8 +3,8 @@
   <div class="alert alert-warning">
       ${%blurb(app.initLevel)}
       ${%Example: usage of} <code>@Initializer(after = InitMilestone.COMPLETED)</code> ${%in a plugin}
-      (<a href="https://jenkins.io/redirect/troubleshooting/initialization-not-completed" target="_blank">${%See documentation}</a>).
-      ${%Please} <a href="https://jenkins.io/redirect/report-an-issue" target="_blank">${%report a bug}</a> ${%in the Jenkins bugtracker}.
+      (<a href="https://jenkins.io/redirect/troubleshooting/initialization-not-completed" rel="noopener noreferrer" target="_blank">${%See documentation}</a>).
+      ${%Please} <a href="https://jenkins.io/redirect/report-an-issue" rel="noopener noreferrer" target="_blank">${%report a bug}</a> ${%in the Jenkins bugtracker}.
       <!--TODO: Nice2have: cause diagnostics-->
       <!-- FIXME TODO XXX i18n does not take into account different sentence structure, rewrite with arguments -->
   </div>

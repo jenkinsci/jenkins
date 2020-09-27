@@ -53,7 +53,7 @@ public class FilteredFunctionContext implements FunctionContext {
      * Default set of "bad" function names.
      */
     private static final Set<String> DEFAULT_ILLEGAL_FUNCTIONS = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList("document")
+            Collections.singletonList("document")
     ));
     private final FunctionContext base;
     private final Set<String> illegalFunctions;

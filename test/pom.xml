@@ -51,12 +51,6 @@ THE SOFTWARE.
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>com.google.code.findbugs</groupId>
-        <artifactId>annotations</artifactId>
-        <version>3.0.1</version>
-        <scope>provided</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -70,7 +64,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.62</version>
+      <version>2.63</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -147,13 +141,23 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.26.1</version>
+      <version>1.29</version>
+      <!-- TODO define property for this and share with war/pom.xml-->
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.7</version>
+      <version>1.20</version>
+      <!-- TODO define property for this and share with war/pom.xml-->
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- requireUpperBounds via matrix-project and junit -->
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>script-security</artifactId>
+      <version>1.75</version>
+      <!-- TODO define property for this and share with war/pom.xml-->
       <scope>test</scope>
     </dependency>
     <dependency>

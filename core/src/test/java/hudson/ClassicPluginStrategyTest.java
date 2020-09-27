@@ -25,12 +25,14 @@ package hudson;
 
 import hudson.util.VersionNumber;
 import jenkins.plugins.DetachedPluginsUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -41,21 +43,21 @@ public class ClassicPluginStrategyTest {
     public void test_getDetachedPlugins() {
         List<DetachedPlugin> list = DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("1.296"));
 
-        Assert.assertTrue(list.size() >= 14); // There were 14 at the time of writing this test
-        Assert.assertNotNull(findPlugin("maven-plugin", list));
-        Assert.assertNotNull(findPlugin("subversion", list));
+        assertTrue(list.size() >= 14); // There were 14 at the time of writing this test
+        assertNotNull(findPlugin("maven-plugin", list));
+        assertNotNull(findPlugin("subversion", list));
 
         // Narrow the list to since "1.310" (the subversion detach version).
         list = DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("1.310"));
         // Maven should no longer be in the list, but subversion should.
-        Assert.assertNull(findPlugin("maven-plugin", list));
-        Assert.assertNotNull(findPlugin("subversion", list));
+        assertNull(findPlugin("maven-plugin", list));
+        assertNotNull(findPlugin("subversion", list));
 
         // Narrow the list to since "1.311" (after the subversion detach version).
         list = DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("1.311"));
         // Neither Maven or subversion should be in the list.
-        Assert.assertNull(findPlugin("maven-plugin", list));
-        Assert.assertNull(findPlugin("subversion", list));
+        assertNull(findPlugin("maven-plugin", list));
+        assertNull(findPlugin("subversion", list));
     }
 
     private DetachedPlugin findPlugin(String shortName, List<DetachedPlugin> list) {

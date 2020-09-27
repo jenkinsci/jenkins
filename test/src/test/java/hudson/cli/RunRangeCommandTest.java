@@ -75,7 +75,7 @@ public class RunRangeCommandTest {
         }
     }
 
-    @Test public void dummyRangeShouldFailWithoutJobReadPermission() throws Exception {
+    @Test public void dummyRangeShouldFailWithoutJobReadPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invokeWithArgs(PROJECT_NAME, "1");
@@ -85,7 +85,7 @@ public class RunRangeCommandTest {
                 containsString(String.format("ERROR: No such job '%s'", PROJECT_NAME)));
     }
 
-    @Test public void dummyRangeShouldFailIfJobDesNotExist() throws Exception {
+    @Test public void dummyRangeShouldFailIfJobDesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("never_created", "1");
@@ -94,7 +94,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
 
-    @Test public void dummyRangeShouldFailIfJobNameIsEmpty() throws Exception {
+    @Test public void dummyRangeShouldFailIfJobNameIsEmpty() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("", "1");
@@ -104,7 +104,7 @@ public class RunRangeCommandTest {
                 containsString(String.format("ERROR: No such job ''; perhaps you meant '%s'?", PROJECT_NAME)));
     }
 
-    @Test public void dummyRangeShouldFailIfJobNameIsSpace() throws Exception {
+    @Test public void dummyRangeShouldFailIfJobNameIsSpace() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(" ", "1");
@@ -114,7 +114,7 @@ public class RunRangeCommandTest {
                 containsString(String.format("ERROR: No such job ' '; perhaps you meant '%s'?", PROJECT_NAME)));
     }
 
-    @Test public void dummyRangeShouldSuccessIfBuildDoesNotExist() throws Exception {
+    @Test public void dummyRangeShouldSuccessIfBuildDoesNotExist() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, String.valueOf(BUILDS+1));
@@ -128,7 +128,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
     }
 
-    @Test public void dummyRangeNumberSingleShouldSuccess() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldSuccess() {
         // First
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
@@ -163,7 +163,7 @@ public class RunRangeCommandTest {
                 .invokeWithArgs(PROJECT_NAME, String.valueOf(BUILDS));
         assertThat(result, succeeded());
         assertThat(result.stdout(),
-                containsString(String.format("Builds: %s"+System.lineSeparator(), String.valueOf(BUILDS))));
+                containsString(String.format("Builds: %s"+System.lineSeparator(), BUILDS)));
 
         // Last with the plus symbol '+'
         result = command
@@ -171,10 +171,10 @@ public class RunRangeCommandTest {
                 .invokeWithArgs(PROJECT_NAME, '+' + String.valueOf(BUILDS));
         assertThat(result, succeeded());
         assertThat(result.stdout(),
-                containsString(String.format("Builds: %s"+System.lineSeparator(), String.valueOf(BUILDS))));
+                containsString(String.format("Builds: %s"+System.lineSeparator(), BUILDS)));
     }
 
-    @Test public void dummyRangeNumberSingleShouldSuccessIfBuildNumberIsZero() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldSuccessIfBuildNumberIsZero() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "0");
@@ -188,7 +188,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
     }
 
-    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsNegative() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsNegative() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "-1");
@@ -197,7 +197,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: \"-1\" is not a valid option"));
     }
 
-    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsTooBig() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsTooBig() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "2147483648");
@@ -206,7 +206,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '2147483648', expected number"));
     }
 
-    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsInvalid() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsInvalid() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1a");
@@ -222,7 +222,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse 'aa', expected number"));
     }
 
-    @Test public void dummyRangeNumberSingleShouldSuccessIfBuildNumberIsEmpty() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldSuccessIfBuildNumberIsEmpty() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "");
@@ -230,7 +230,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
     }
 
-    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsSpace() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsSpace() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, " ");
@@ -239,7 +239,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse ' ', expected number"));
     }
 
-    @Test public void dummyRangeNumberSingleShouldSuccessIfBuildNumberIsComma() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldSuccessIfBuildNumberIsComma() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, ",");
@@ -247,7 +247,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
     }
 
-    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsHyphen() throws Exception {
+    @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsHyphen() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "-");
@@ -256,7 +256,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: \"-\" is not a valid option"));
     }
 
-    @Test public void dummyRangeNumberMultiShouldSuccess() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldSuccess() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,2");
@@ -297,7 +297,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
     }
 
-    @Test public void dummyRangeNumberMultiShouldSuccessIfSomeBuildDoesNotExist() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldSuccessIfSomeBuildDoesNotExist() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,2,"+deleted[0]);
@@ -317,7 +317,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString(String.format("Builds: %d,%d"+System.lineSeparator(), deleted[0]-1, deleted[0]+1)));
     }
 
-    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsNegative() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsNegative() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "-1,2,3");
@@ -340,7 +340,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse \'1,2,-3\', expected string with a range M-N"));
     }
 
-    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsTooBig() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsTooBig() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "2147483648,2,3");
@@ -363,7 +363,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2,2147483648', expected number"));
     }
 
-    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsInvalid() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsInvalid() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1a,2,3");
@@ -407,7 +407,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2,aa', expected number"));
     }
 
-    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsEmpty() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsEmpty() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, ",2,3");
@@ -430,7 +430,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2,', expected correct notation M,N or M-N"));
     }
 
-    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsSpace() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsSpace() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, " ,2,3");
@@ -453,7 +453,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2, ', expected number"));
     }
 
-    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsComma() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsComma() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, ",,2,3");
@@ -476,7 +476,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2,,', expected correct notation M,N or M-N"));
     }
 
-    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsHyphen() throws Exception {
+    @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsHyphen() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "-,2,3");
@@ -499,7 +499,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2,-', expected string with a range M-N"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldSuccess() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldSuccess() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-2");
@@ -581,7 +581,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
     }
 
-    @Test public void dummyRangeRangeSingleShouldSuccessIfSomeBuildDoesNotExist() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldSuccessIfSomeBuildDoesNotExist() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, String.format("%d-%d", deleted[0], deleted[0]+1));
@@ -601,7 +601,7 @@ public class RunRangeCommandTest {
         assertThat(result.stdout(), containsString(String.format("Builds: %d"+System.lineSeparator(), deleted[0]-1)));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsZeroAndNegative() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsZeroAndNegative() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "0--1");
@@ -687,7 +687,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: \"-2-+0\" is not a valid option"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsANegativeNumber() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsANegativeNumber() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "-1-1");
@@ -759,7 +759,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: \"-2--1\" is not a valid option"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsTooBigNumber() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsTooBigNumber() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-2147483648");
@@ -782,7 +782,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '2147483648-2147483648', expected number"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsInvalidNumber() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsInvalidNumber() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-2a");
@@ -826,7 +826,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse 'aa-aa', expected number"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsEmptyNumber() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsEmptyNumber() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "-1");
@@ -849,7 +849,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: \"-\" is not a valid option"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsSpace() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsSpace() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, " -1");
@@ -872,7 +872,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse ' - ', expected string with a range M-N"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsComma() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsComma() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, ",-1");
@@ -895,7 +895,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse ',-,', expected string with a range M-N"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsHyphen() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsHyphen() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "--1");
@@ -918,7 +918,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: \"---\" is not a valid option"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeIsInverse() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeIsInverse() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "2-1");
@@ -941,7 +941,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: \"-1--2\" is not a valid option"));
     }
 
-    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeIsInvalid() throws Exception {
+    @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeIsInvalid() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-3-");
@@ -950,7 +950,7 @@ public class RunRangeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Unable to parse '1-3-', expected correct notation M,N or M-N"));
     }
 
-    @Test public void dummyRangeRangeMultiShouldSuccess() throws Exception {
+    @Test public void dummyRangeRangeMultiShouldSuccess() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-2,3-4");
@@ -984,7 +984,7 @@ public class RunRangeCommandTest {
         }
 
         @Override
-        protected int act(List<Run<?, ?>> builds) throws IOException {
+        protected int act(List<Run<?, ?>> builds) {
             boolean comma = false;
 
             stdout.print("Builds: ");
@@ -995,7 +995,7 @@ public class RunRangeCommandTest {
                     comma = true;
                 stdout.print(build.getNumber());
             }
-            stdout.println("");
+            stdout.println();
 
             return 0;
         }

@@ -47,7 +47,9 @@ import org.acegisecurity.Authentication;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.ClassRule;
 
@@ -97,7 +99,7 @@ public class ReverseBuildTriggerTest {
                 .grant(Computer.BUILD).everywhere().to("alice", "bob")
                 .grant(Jenkins.ADMINISTER).everywhere().to("admin");
         r.jenkins.setAuthorizationStrategy(auth);
-        String upstreamName = "upstr3@m"; // do not clash with English messages!
+        String upstreamName = "upstr3am"; // do not clash with English messages!
         final FreeStyleProject upstream = r.createFreeStyleProject(upstreamName);
         String downstreamName = "d0wnstr3am";
         FreeStyleProject downstream = r.createFreeStyleProject(downstreamName);

@@ -31,7 +31,6 @@ THE SOFTWARE.
     <version>${revision}${changelist}</version>
   </parent>
 
-  <groupId>org.jenkins-ci.main</groupId>
   <artifactId>jenkins-bom</artifactId>
   <packaging>pom</packaging>
 
@@ -42,6 +41,9 @@ THE SOFTWARE.
   <properties>
     <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.26</slf4jVersion>
+    <stapler.version>1.260</stapler.version>
+    <spring.version>2.5.6.SEC03</spring.version>
+    <groovy.version>2.4.12</groovy.version>
   </properties>
 
   <dependencyManagement>
@@ -49,7 +51,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
-        <version>3.1.11</version>
+        <version>${spotbugs-annotations.version}</version>
       </dependency>
       <dependency>
         <groupId>net.jcip</groupId>
@@ -59,12 +61,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.9.14</version>
+        <version>1.10.8</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.6</version>
+        <version>2.8.0</version>
       </dependency>
       <dependency>
         <groupId>commons-lang</groupId>
@@ -74,7 +76,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-httpclient</groupId>
         <artifactId>commons-httpclient</artifactId>
-        <version>3.1-jenkins-1</version>
+        <version>3.1-jenkins-2</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
@@ -162,13 +164,328 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.12</version>
+        <version>1.14</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
         <version>1.12</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>version-number</artifactId>
+        <version>1.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>crypto-util</artifactId>
+        <version>1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.hudson</groupId>
+        <artifactId>jtidy</artifactId>
+        <version>4aug2000r7-dev-hudson-1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.connectbot.jbcrypt</groupId>
+        <artifactId>jbcrypt</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.jnr</groupId>
+        <artifactId>jnr-posix</artifactId>
+        <version>3.0.45</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>windows-package-checker</artifactId>
+        <version>1.2</version>
+      </dependency>
+      <dependency><!-- JENKINS-21160: remoting also depends on args4j, please update accordingly -->
+        <groupId>args4j</groupId>
+        <artifactId>args4j</artifactId>
+        <version>2.33</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>bytecode-compatibility-transformer</artifactId>
+        <version>2.0-beta-2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>task-reactor</artifactId>
+        <version>1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.localizer</groupId>
+        <artifactId>localizer</artifactId>
+        <version>1.26</version>
+      </dependency>
+      <dependency>
+        <groupId>antlr</groupId>
+        <artifactId>antlr</artifactId>
+        <version>2.7.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jfree</groupId>
+        <artifactId>jfreechart</artifactId>
+        <version>1.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-digester</groupId>
+        <artifactId>commons-digester</artifactId>
+        <version>2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>1.9.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.19</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-collections</groupId>
+        <artifactId>commons-collections</artifactId>
+        <version>3.2.2</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-fileupload</groupId>
+        <artifactId>commons-fileupload</artifactId>
+        <version>1.3.1-jenkins-2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.txw2</groupId>
+        <artifactId>txw2</artifactId>
+        <version>20110809</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.winp</groupId>
+        <artifactId>winp</artifactId>
+        <version>1.28</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>memory-monitor</artifactId>
+        <version>1.9</version>
+      </dependency>
+      <dependency><!-- StAX implementation. See HUDSON-2547. -->
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>wstx-asl</artifactId>
+        <version>3.2.9</version>
+      </dependency>
+      <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna</artifactId>
+        <version>5.3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>akuma</artifactId>
+        <version>1.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>libpam4j</artifactId>
+        <version>1.11</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>libzfs</artifactId>
+        <version>0.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.solaris</groupId>
+        <artifactId>embedded_su4j</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>net.java.sezpoz</groupId>
+        <artifactId>sezpoz</artifactId>
+        <version>1.13</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.jinterop</groupId>
+        <artifactId>j-interop</artifactId>
+        <version>2.0.6-kohsuke-1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.robust-http-client</groupId>
+        <artifactId>robust-http-client</artifactId>
+        <version>1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.mail</groupId>
+        <artifactId>jakarta.mail</artifactId>
+        <version>1.6.5</version>
+      </dependency>
+
+      <!--XStream-->
+      <dependency>
+        <groupId>org.jvnet.hudson</groupId>
+        <artifactId>xstream</artifactId>
+        <version>1.4.7-jenkins-1</version>
+      </dependency>
+      <dependency>
+        <groupId>net.sf.kxml</groupId>
+        <artifactId>kxml2</artifactId>
+        <version>2.3.0</version>
+      </dependency>
+
+      <!--Groovy-->
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-all</artifactId>
+        <version>${groovy.version}</version>
+      </dependency>
+      <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>1.11</version>
+      </dependency>
+
+      <!--Stapler-->
+      <dependency>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>stapler-groovy</artifactId>
+        <version>${stapler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>stapler-jrebel</artifactId>
+        <version>${stapler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>stapler-adjunct-zeroclipboard</artifactId>
+        <version>1.3.5-1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>stapler-adjunct-timeline</artifactId>
+        <version>1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>stapler-adjunct-codemirror</artifactId>
+        <version>1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.stapler</groupId>
+        <artifactId>jenkins-stapler-support</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency><!-- until we get this version through Stapler -->
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>json-lib</artifactId>
+        <version>2.4-jenkins-2</version>
+      </dependency>
+      <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
+      <dependency>
+        <groupId>com.jcraft</groupId>
+        <artifactId>jzlib</artifactId>
+        <version>1.1.3-kohsuke-1</version>
+      </dependency>
+
+      <!--Jelly-->
+      <dependency>
+        <groupId>commons-jelly</groupId>
+        <artifactId>commons-jelly-tags-fmt</artifactId>
+        <version>1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-jelly</groupId>
+        <artifactId>commons-jelly-tags-xml</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.hudson</groupId>
+        <artifactId>commons-jelly-tags-define</artifactId>
+        <version>1.0.1-hudson-20071021</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>commons-jexl</artifactId>
+        <version>1.1-jenkins-20111212</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.servlet.jsp.jstl</groupId>
+        <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+        <version>1.2.7</version>
+      </dependency>
+      <dependency>
+        <groupId>jaxen</groupId>
+        <artifactId>jaxen</artifactId>
+        <version>1.1-beta-11</version>
+      </dependency>
+
+      <!--Spring-->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency><!-- Jenkins core doesn't use it but JENKINS-3881 requires us to put it. -->
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.acegisecurity</groupId>
+        <artifactId>acegi-security</artifactId>
+        <version>1.0.7</version>
+      </dependency>
+
+
+      <!-- Modules -->
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>instance-identity</artifactId>
+        <version>2.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>ssh-cli-auth</artifactId>
+        <version>1.8</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>slave-installer</artifactId>
+        <version>1.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>windows-slave-installer</artifactId>
+        <version>2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>launchd-slave-installer</artifactId>
+        <version>1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>upstart-slave-installer</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>systemd-slave-installer</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.modules</groupId>
+        <artifactId>sshd</artifactId>
+        <version>2.6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

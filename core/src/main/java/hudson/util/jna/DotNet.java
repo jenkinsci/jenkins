@@ -30,8 +30,6 @@ import org.jinterop.winreg.JIPolicyHandle;
 import org.jinterop.winreg.JIWinRegFactory;
 
 import java.net.UnknownHostException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * .NET related code.
@@ -39,74 +37,183 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 public class DotNet {
+    private static final String PATH20 = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v2.0.50727";
+    private static final String PATH30 = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.0\\Setup";
+    private static final String PATH35 = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
+    private static final String PATH4  = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
+
+    private static final String VALUE_INSTALL = "Install";
+    private static final String VALUE_INSTALL_SUCCESS = "InstallSuccess";
+    private static final String VALUE_RELEASE = "Release";
+
     /**
-     * Returns true if the .NET framework of the given version (or greater) is installed.
+     * Returns true if the .NET framework of a compatible version is installed.
      */
     public static boolean isInstalled(int major, int minor) {
         try {
-            // see http://support.microsoft.com/?scid=kb;en-us;315291 for the basic algorithm
-            // observation in my registry shows that the actual key name can be things like "v2.0 SP1"
-            // or "v2.0.50727", so the regexp is written to accommodate this.
-            RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly("SOFTWARE\\Microsoft\\.NETFramework");
-            try {
-                for( String keyName : key.getSubKeys() ) {
-                    if (matches(keyName, major, minor))
-                        return true;
-                }
+            if (major == 4 && minor >= 5) {
+                return isV45PlusInstalled(minor);
+            } else if (major == 4 && minor == 0) {
+                return isV40Installed();
+            } else if (major == 3 && minor == 5) {
+                return isV35Installed();
+            } else if (major == 3 && minor == 0) {
+                return isV35Installed() || isV30Installed();
+            } else if (major == 2 && minor == 0) {
+                return isV35Installed() || isV30Installed() || isV20Installed();
+            } else {
                 return false;
-            } finally {
-                key.dispose();
             }
         } catch (JnaException e) {
-            if(e.getErrorCode()==2) // thrown when openReadonly fails because the key doesn't exist.
+            if (e.getErrorCode() == 2) {
+                // thrown when openReadonly fails because the key doesn't exist.
                 return false;
+            }
             throw e;
         }
     }
 
+    private static boolean isV45PlusInstalled(int minor) {
+        try (RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(PATH4)) {
+            return key.getIntValue(VALUE_RELEASE) >= GetV45PlusMinRelease(minor);
+        }
+    }
+
+    private static boolean isV40Installed() {
+        try (RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(PATH4)) {
+            return key.getIntValue(VALUE_INSTALL) == 1;
+        }
+    }
+
+    private static boolean isV35Installed() {
+        try (RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(PATH35)) {
+            return key.getIntValue(VALUE_INSTALL) == 1;
+        }
+    }
+
+    private static boolean isV30Installed() {
+        try (RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(PATH30)) {
+            return key.getIntValue(VALUE_INSTALL_SUCCESS) == 1;
+        }
+    }
+
+    private static boolean isV20Installed() {
+        try (RegistryKey key = RegistryKey.LOCAL_MACHINE.openReadonly(PATH20)) {
+            return key.getIntValue(VALUE_INSTALL) == 1;
+        }
+    }
+
     /**
-     * Returns true if the .NET framework of the given version (or grater) is installed
-     * on a remote machine. 
+     * Returns true if the .NET framework of a compatible version is installed on a remote machine. 
      */
     public static boolean isInstalled(int major, int minor, String targetMachine, IJIAuthInfo session) throws JIException, UnknownHostException {
-        IJIWinReg registry = JIWinRegFactory.getSingleTon().getWinreg(session,targetMachine,true);
-        JIPolicyHandle hklm=null;
-        JIPolicyHandle key=null;
-
+        IJIWinReg registry = JIWinRegFactory.getSingleTon().getWinreg(session, targetMachine, true);
+        JIPolicyHandle hklm = null;
         try {
             hklm = registry.winreg_OpenHKLM();
-            key = registry.winreg_OpenKey(hklm,"SOFTWARE\\Microsoft\\.NETFramework", IJIWinReg.KEY_READ );
-
-            for( int i=0; ; i++ ) {
-                String keyName = registry.winreg_EnumKey(key,i)[0];
-                if(matches(keyName,major,minor))
-                    return true;
+            if (major == 4 && minor >= 5) {
+                return isV45PlusInstalled(minor, registry, hklm);
+            } else if (major == 4 && minor == 0) {
+                return isV40Installed(registry, hklm);
+            } else if (major == 3 && minor == 5) {
+                return isV35Installed(registry, hklm);
+            } else if (major == 3 && minor == 0) {
+                return isV35Installed(registry, hklm) || isV30Installed(registry, hklm);
+            } else if (major == 2 && minor == 0) {
+                return isV35Installed(registry, hklm) || isV30Installed(registry, hklm) || isV20Installed(registry, hklm);
+            } else {
+                return false;
             }
         } catch (JIException e) {
-            if(e.getErrorCode()==2)
-                return false;       // not found
+            if (e.getErrorCode() == 2) {
+                // not found
+                return false;
+            }
             throw e;
         } finally {
-            if(hklm!=null)
+            if (hklm != null) {
                 registry.winreg_CloseKey(hklm);
-            if(key!=null)
-                registry.winreg_CloseKey(key);
+            }
             registry.closeConnection();
         }
     }
 
-    private static boolean matches(String keyName, int major, int minor) {
-        Matcher m = VERSION_PATTERN.matcher(keyName);
-        if(m.matches()) {
-            int mj = Integer.parseInt(m.group(1));
-            if(mj>=major) {
-                int mn = Integer.parseInt(m.group(2));
-                if(mn>=minor)
-                    return true;
+    private static boolean isV45PlusInstalled(int minor, IJIWinReg registry, JIPolicyHandle hklm) throws JIException {
+        JIPolicyHandle key = null;
+        try {
+            key = registry.winreg_OpenKey(hklm, PATH4, IJIWinReg.KEY_READ);
+            return GetIntValue(registry, key, VALUE_RELEASE) >= GetV45PlusMinRelease(minor);
+        } finally {
+            if (key != null) {
+                registry.winreg_CloseKey(key);
             }
         }
-        return false;
     }
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("v(\\d+)\\.(\\d+).*");
+    private static boolean isV40Installed(IJIWinReg registry, JIPolicyHandle hklm) throws JIException {
+        JIPolicyHandle key = null;
+        try {
+            key = registry.winreg_OpenKey(hklm, PATH4, IJIWinReg.KEY_READ);
+            return GetIntValue(registry, key, VALUE_INSTALL) == 1;
+        } finally {
+            if (key != null) {
+                registry.winreg_CloseKey(key);
+            }
+        }
+    }
+
+    private static boolean isV35Installed(IJIWinReg registry, JIPolicyHandle hklm) throws JIException {
+        JIPolicyHandle key = null;
+        try {
+            key = registry.winreg_OpenKey(hklm, PATH35, IJIWinReg.KEY_READ);
+            return GetIntValue(registry, key, VALUE_INSTALL) == 1;
+        } finally {
+            if (key != null) {
+                registry.winreg_CloseKey(key);
+            }
+        }
+    }
+
+    private static boolean isV30Installed(IJIWinReg registry, JIPolicyHandle hklm) throws JIException {
+        JIPolicyHandle key = null;
+        try {
+            key = registry.winreg_OpenKey(hklm, PATH30, IJIWinReg.KEY_READ);
+            return GetIntValue(registry, key, VALUE_INSTALL_SUCCESS) == 1;
+        } finally {
+            if (key != null) {
+                registry.winreg_CloseKey(key);
+            }
+        }
+    }
+
+    private static boolean isV20Installed(IJIWinReg registry, JIPolicyHandle hklm) throws JIException {
+        JIPolicyHandle key = null;
+        try {
+            key = registry.winreg_OpenKey(hklm, PATH20, IJIWinReg.KEY_READ);
+            return GetIntValue(registry, key, VALUE_INSTALL) == 1;
+        } finally {
+            if (key != null) {
+                registry.winreg_CloseKey(key);
+            }
+        }
+    }
+
+    private static int GetIntValue(IJIWinReg registry, JIPolicyHandle key, String name) throws JIException {
+        return RegistryKey.convertBufferToInt((byte[])registry.winreg_QueryValue(key, name, Integer.BYTES)[1]);
+    }
+
+    private static int GetV45PlusMinRelease(int minor) {
+        switch (minor) {
+            case 5:
+                return 378389;
+            case 6:
+                return 393295;
+            case 7:
+                return 460798;
+            case 8:
+                return 528040;
+            default:
+                return Integer.MAX_VALUE;
+        }
+    }
 }

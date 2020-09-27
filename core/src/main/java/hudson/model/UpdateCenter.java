@@ -32,6 +32,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.security.ACLContext;
+import hudson.security.Permission;
 import hudson.util.VersionNumber;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -77,7 +78,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
@@ -116,7 +117,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.util.Timer;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
@@ -263,7 +264,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         configure(new UpdateCenterConfiguration());
     }
 
-    UpdateCenter(@Nonnull UpdateCenterConfiguration configuration) {
+    UpdateCenter(@NonNull UpdateCenterConfiguration configuration) {
         configure(configuration);
     }
     
@@ -273,7 +274,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return Created Update center. {@link UpdateCenter} by default, but may be overridden
      * @since 2.4
      */
-    @Nonnull
+    @NonNull
     public static UpdateCenter createUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         String requiredClassName = SystemProperties.getString(UpdateCenter.class.getName()+".className", null);
         if (requiredClassName == null) {
@@ -307,7 +308,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return createDefaultUpdateCenter(config);
     }
     
-    @Nonnull
+    @NonNull
     private static UpdateCenter createDefaultUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         return config != null ? new UpdateCenter(config) : new UpdateCenter();
     }
@@ -385,6 +386,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
+        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
@@ -677,7 +679,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @return list of plugins
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull List<Plugin> getPluginFromAllSites(String artifactId,
+    public @NonNull List<Plugin> getPluginFromAllSites(String artifactId,
             @CheckForNull VersionNumber minVersion) {
         ArrayList<Plugin> result = new ArrayList<>();
         for (UpdateSite s : sites) {
@@ -699,6 +701,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Jenkins.getAuthentication());
         if(!Lifecycle.get().canRewriteHudsonWar()) {
             sendError("Jenkins upgrade not supported in this running mode");
@@ -730,6 +733,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         synchronized (jobs) {
             if (!isRestartScheduled()) {
                 addJob(new RestartJenkinsJob(getCoreSource()));
@@ -744,6 +748,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doCancelRestart(StaplerResponse response) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {
                 if (job instanceof RestartJenkinsJob) {
@@ -802,6 +807,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doDowngrade(StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if(!isDowngradable()) {
             sendError("Jenkins downgrade is not possible, probably backup does not exist");
             return;
@@ -818,6 +824,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @RequirePOST
     public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication());
         LOGGER.info("Scheduling the core downgrade");
 
@@ -851,7 +858,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return job.submit();
     }
 
-    private @Nonnull ConnectionCheckJob addConnectionCheckJob(@Nonnull UpdateSite site) {
+    private @NonNull ConnectionCheckJob addConnectionCheckJob(@NonNull UpdateSite site) {
         // Create a connection check job if the site was not already in the sourcesUsed set i.e. the first
         // job (in the jobs list) relating to a site must be the connection check job.
         if (sourcesUsed.add(site)) {
@@ -882,7 +889,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return new ConnectionCheckJob(site);
     }
 
-    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull String siteId) {
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@NonNull String siteId) {
         UpdateSite site = getSite(siteId);
         if (site == null) {
             return null;
@@ -890,7 +897,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return getConnectionCheckJob(site);
     }
 
-    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull UpdateSite site) {
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@NonNull UpdateSite site) {
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {
                 if (job instanceof ConnectionCheckJob && job.site != null && job.site.getId().equals(site.getId())) {
@@ -1053,6 +1060,28 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return new ArrayList<>(pluginMap.values());
     }
 
+    @Restricted(NoExternalUse.class)
+    public List<Plugin> getPluginsWithUnavailableUpdates() {
+        Map<String,Plugin> pluginMap = new LinkedHashMap<>();
+        for (PluginWrapper wrapper : Jenkins.get().getPluginManager().getPlugins()) {
+            for (UpdateSite site : sites) {
+                UpdateSite.Plugin plugin = site.getPlugin(wrapper.getShortName());
+                if (plugin == null) {
+                    // Plugin not distributed by this update site
+                    continue;
+                }
+                final Plugin existing = pluginMap.get(plugin.name);
+                if (existing == null) { // TODO better support for overlapping update sites
+                    if (plugin.latest != null && !plugin.latest.equalsIgnoreCase(plugin.version) && !plugin.latest.equalsIgnoreCase(wrapper.getVersion())) {
+                        pluginMap.put(plugin.name, plugin);
+                    }
+                }
+            }
+        }
+        final ArrayList<Plugin> unavailable = new ArrayList<>(pluginMap.values());
+        return unavailable;
+    }
+
     /**
      * Ensure that all UpdateSites are up to date, without requiring a user to
      * browse to the instance.
@@ -1104,6 +1133,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             UpdateSite cs = Jenkins.get().getUpdateCenter().getCoreSource();
             if (cs!=null)   return cs.getData();
             return null;
+        }
+
+        @Override
+        public Permission getRequiredPermission() {
+            return Jenkins.SYSTEM_READ;
         }
     }
 
@@ -1642,7 +1676,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Enables a required plugin, provides feedback in the update center
      */
     public class EnableJob extends InstallationJob {
-        public EnableJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin, boolean dynamicLoad) {
+        public EnableJob(UpdateSite site, Authentication auth, @NonNull Plugin plugin, boolean dynamicLoad) {
             super(plugin, site, auth, dynamicLoad);
         }
         
@@ -1695,7 +1729,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * A no-op, e.g. this plugin is already installed
      */
     public class NoOpJob extends EnableJob {
-        public NoOpJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin) {
+        public NoOpJob(UpdateSite site, Authentication auth, @NonNull Plugin plugin) {
             super(site, auth, plugin, false);
         }
         @Override
@@ -2531,7 +2565,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         }
         return this;
     }

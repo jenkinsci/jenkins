@@ -15,8 +15,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.util.SystemProperties;
@@ -83,7 +83,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterProperties(@Nonnull JnlpConnectionState event) {
+    public void afterProperties(@NonNull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.get().getComputer(clientName);
         if (computer == null) {
@@ -145,7 +145,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void beforeChannel(@Nonnull JnlpConnectionState event) {
+    public void beforeChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
@@ -163,7 +163,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void afterChannel(@Nonnull JnlpConnectionState event) {
+    public void afterChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         try {
@@ -180,7 +180,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
-    public void channelClosed(@Nonnull JnlpConnectionState event) {
+    public void channelClosed(@NonNull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
         if (cause instanceof ClosedChannelException) {
@@ -192,16 +192,16 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     private static class State implements JnlpConnectionState.ListenerState {
-        @Nonnull
+        @NonNull
         private final SlaveComputer node;
         @CheckForNull
         private OutputStream log;
 
-        public State(@Nonnull SlaveComputer node) {
+        public State(@NonNull SlaveComputer node) {
             this.node = node;
         }
 
-        @Nonnull
+        @NonNull
         public SlaveComputer getNode() {
             return node;
         }
@@ -211,7 +211,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             return log;
         }
 
-        public void setLog(@Nonnull OutputStream log) {
+        public void setLog(@NonNull OutputStream log) {
             this.log = log;
         }
     }

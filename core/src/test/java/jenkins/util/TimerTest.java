@@ -1,17 +1,17 @@
 package jenkins.util;
 
-import static org.junit.Assert.fail;
-
 import groovy.lang.GroovyClassLoader;
 import hudson.triggers.SafeTimerTask;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TimerTest {
 
@@ -35,7 +35,7 @@ public class TimerTest {
 
         SafeTimerTask task2 = new SafeTimerTask() {
             @Override
-            protected void doRun() throws Exception {
+            protected void doRun() {
                 stopLatch.countDown();
             }
         };
@@ -60,7 +60,7 @@ public class TimerTest {
         final CountDownLatch startLatch = new CountDownLatch(threadCount);
 
         final ClassLoader[] contextClassloaders = new ClassLoader[threadCount];
-        ScheduledFuture[] futures = new ScheduledFuture[threadCount];
+        ScheduledFuture<?>[] futures = new ScheduledFuture[threadCount];
         final ClassLoader bogusClassloader = new GroovyClassLoader();
 
         Runnable timerTest = new Runnable() {
@@ -88,12 +88,12 @@ public class TimerTest {
         };
 
         Thread t = new Thread(timerTest);
-        t.run();
+        t.start();
         t.join(1000L);
 
         for (int i=0; i<threadCount; i++) {
             futures[i].get();
-            Assert.assertEquals(Timer.class.getClassLoader(), contextClassloaders[i]);
+            assertEquals(Timer.class.getClassLoader(), contextClassloaders[i]);
         }
     }
 }

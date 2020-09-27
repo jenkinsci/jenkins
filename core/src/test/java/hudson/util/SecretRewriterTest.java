@@ -14,16 +14,14 @@ import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class SecretRewriterTest {
-
-    @Rule
-    public MockSecretRule mockSecretRule = new MockSecretRule();
 
     @Rule
     public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();

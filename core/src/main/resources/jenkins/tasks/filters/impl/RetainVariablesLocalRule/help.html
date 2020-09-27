@@ -1,0 +1,48 @@
+<div>
+    <p>Limit which environment variables are passed to a build step.</p>
+
+    <p>Environment variables passed to the build step are filtered, unless listed below.</p>
+
+    <p>The behavior of this filter depends on whether the environment variable is originally defined outside Jenkins:</p>
+    <ul>
+        <li>If the environment variable originates from Jenkins configuration, such as <code>JOB_URL</code>,
+            it will not be passed to the build step unless specified here.</li>
+        <li>If the environment variable originates from outside Jenkins, such as <code>PATH</code>,
+            the behavior depends on the option <em>Process environment variables handling</em>:
+            If that option is set to <em>Retain</em>, the original value will be passed to the build step, discarding any modifications inside Jenkins.
+            If that option is set to <em>Remove</em>, the variable will not be passed to the build step.
+        </li>
+    </ul>
+    <p>
+        The following table shows the effect of filtering on an environment variable:
+    </p>
+    <table width="100%">
+        <tr>
+            <th>Behavior</th>
+            <th>Originally defined outside Jenkins</th>
+            <th>Originally defined inside Jenkins</th>
+        </tr>
+        <tr>
+            <th>
+                <em>Process environment variables handling:</em> reset
+            </th>
+            <td>
+                Variable is reset to original value
+            </td>
+            <td>
+                Variable is removed
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <em>Process environment variables handling:</em> removed
+            </th>
+            <td>
+                Variable is removed
+            </td>
+            <td>
+                Variable is removed
+            </td>
+        </tr>
+    </table>
+</div>
