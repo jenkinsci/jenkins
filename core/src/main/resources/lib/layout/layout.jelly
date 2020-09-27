@@ -240,12 +240,14 @@ THE SOFTWARE.
           <div class="page-footer__links page-footer__links--white jenkins_ver">
             <a href="${h.getFooterURL()}" rel="noopener noreferrer" target="_blank">Jenkins ${h.version}</a>
           </div>
+
+          <j:if test="${extensionsAvailable}">
+            <j:forEach var="pd" items="${h.pageDecorators}">
+              <st:include it="${pd}" page="footer.jelly" optional="true" />
+            </j:forEach>
+          </j:if>
         </div>
-        <j:if test="${extensionsAvailable}">
-          <j:forEach var="pd" items="${h.pageDecorators}">
-            <st:include it="${pd}" page="footer.jelly" optional="true" />
-          </j:forEach>
-        </j:if>
+
       </div>
     </footer>
     </j:if>
