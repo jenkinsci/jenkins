@@ -73,7 +73,7 @@ public class ShutdownLink extends ManagementLink {
         JSONObject submittedForm = req.getSubmittedForm();
         String inputReason = submittedForm.getString("shutdownReason");
         String shutdownReason = inputReason.isEmpty() ? null : inputReason;
-        LOGGER.log(Level.FINE, "Shutdown requested");
+        LOGGER.log(Level.FINE, "Shutdown requested by user {0}", Jenkins.getAuthentication().getName());
         Jenkins.get().doQuietDown(false, 0, shutdownReason).generateResponse(req, rsp, null);
     }
 
@@ -81,7 +81,7 @@ public class ShutdownLink extends ManagementLink {
     public synchronized void doCancel(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.MANAGE);
 
-        LOGGER.log(Level.FINE, "Shutdown cancel requested");
+        LOGGER.log(Level.FINE, "Shutdown cancel requested by user {0}", Jenkins.getAuthentication().getName());
         Jenkins.get().doCancelQuietDown().generateResponse(req, rsp, null);
     }
 

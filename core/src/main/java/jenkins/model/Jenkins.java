@@ -3909,7 +3909,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
-     * @deprecated TODO
+     * @deprecated since TODO; use {@link #doQuietDown(boolean, int, String)} instead.
      */
     @Deprecated
     public synchronized HttpRedirect doQuietDown(boolean block, int timeout) {

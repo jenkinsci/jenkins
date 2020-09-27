@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <h2>Restarting Jenkins</h2>
   <p>
-    Jenkins will enter into the "quiet down" mode by sending a request to <a href="../quietDown">this URL</a>.
+    Jenkins will enter into the "quiet down" mode by sending a request with reason query parameter to <a href="../quietDown?reason=Experiment">this URL</a>.
     You can cancel this mode by sending a request to <a href="../cancelQuietDown">this URL</a>. On environments
     where Jenkins can restart itself (such as when Jenkins is installed as a Windows service), POSTing to
     <a href="../restart">this URL</a> will start the restart sequence, or
