@@ -85,6 +85,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.springframework.dao.DataAccessException;
 
 @Category(SmokeTest.class)
 public class UserTest {
@@ -781,6 +782,137 @@ public class UserTest {
         };
         wc.login("alice").goTo("me/configure");
         assertThat(failingResources, empty());
+    }
+
+    private static class DisabledAccountsRealm extends AbstractPasswordBasedSecurityRealm {
+        private static class UserStub implements UserDetails {
+            private final String username;
+
+            private UserStub(String username) {
+                this.username = username;
+            }
+
+            @Override
+            public GrantedAuthority[] getAuthorities() {
+                return new GrantedAuthority[0];
+            }
+
+            @Override
+            public String getPassword() {
+                return "";
+            }
+
+            @Override
+            public String getUsername() {
+                return username;
+            }
+
+            @Override
+            public boolean isAccountNonExpired() {
+                return true;
+            }
+
+            @Override
+            public boolean isAccountNonLocked() {
+                return true;
+            }
+
+            @Override
+            public boolean isCredentialsNonExpired() {
+                return true;
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return true;
+            }
+        }
+
+        @Override
+        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+            return loadUserByUsername(username);
+        }
+
+        @Override
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+            switch (username) {
+                case "locked":
+                    return new UserStub(username) {
+                        @Override
+                        public boolean isAccountNonLocked() {
+                            return false;
+                        }
+                    };
+
+                case "disabled":
+                    return new UserStub(username) {
+                        @Override
+                        public boolean isEnabled() {
+                            return false;
+                        }
+                    };
+
+                case "expired":
+                    return new UserStub(username) {
+                        @Override
+                        public boolean isAccountNonExpired() {
+                            return false;
+                        }
+                    };
+
+                case "password_expired":
+                    return new UserStub(username) {
+                        @Override
+                        public boolean isCredentialsNonExpired() {
+                            return false;
+                        }
+                    };
+
+                default:
+                    return new UserStub(username);
+            }
+        }
+
+        @Override
+        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @Issue("JENKINS-55813")
+    @Test
+    public void impersonateShouldCheckUserDetailAttributes() {
+        j.jenkins.setSecurityRealm(new DisabledAccountsRealm());
+        User locked = User.getOrCreateByIdOrFullName("locked");
+        try {
+            locked.impersonate();
+            fail("Expected UsernameNotFoundException");
+        } catch (UsernameNotFoundException e) {
+            assertThat(e.getMessage(), containsString("user is locked"));
+        }
+        User disabled = User.getOrCreateByIdOrFullName("disabled");
+        try {
+            disabled.impersonate();
+            fail("Expected UsernameNotFoundException");
+        } catch (UsernameNotFoundException e) {
+            assertThat(e.getMessage(), containsString("user is disabled"));
+        }
+        User expired = User.getOrCreateByIdOrFullName("expired");
+        try {
+            expired.impersonate();
+            fail("Expected UsernameNotFoundException");
+        } catch (UsernameNotFoundException e) {
+            assertThat(e.getMessage(), containsString("user expired or inactive"));
+        }
+        User passwordExpired = User.getOrCreateByIdOrFullName("password_expired");
+        try {
+            passwordExpired.impersonate();
+            fail("Expected UsernameNotFoundException");
+        } catch (UsernameNotFoundException e) {
+            assertThat(e.getMessage(), containsString("user credentials expired"));
+        }
+        User enabled = User.getOrCreateByIdOrFullName("enabled");
+        assertNotNull(enabled.impersonate());
     }
 
 }
