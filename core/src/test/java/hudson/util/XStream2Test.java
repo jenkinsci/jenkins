@@ -530,8 +530,8 @@ public class XStream2Test {
     public void crashXstream() throws Exception {
         try {
             new XStream2().fromXML("<void/>");
-            fail("expected to throw ForbiddenClassException, but why are we still alive?");
-        } catch (ForbiddenClassException ex) {
+            fail("expected to throw ConversionException, but why are we still alive?");
+        } catch (XStreamException ex) {
             // pass
         }
     }
