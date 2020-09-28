@@ -263,11 +263,17 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @see #doLogout(StaplerRequest, StaplerResponse) 
      */
     protected String getPostLogOutUrl2(StaplerRequest req, Authentication auth) {
-        if (Util.isOverridden(SecurityRealm.class, getClass(), "getPostLogOutUrl", StaplerRequest.class, org.acegisecurity.Authentication.class)) {
-            return getPostLogOutUrl(req, org.acegisecurity.Authentication.fromSpring(auth));
+        if (Util.isOverridden(SecurityRealm.class, getClass(), "getPostLogOutUrl", StaplerRequest.class, org.acegisecurity.Authentication.class) && !insideGetPostLogOutUrl.get()) {
+            insideGetPostLogOutUrl.set(true);
+            try {
+                return getPostLogOutUrl(req, org.acegisecurity.Authentication.fromSpring(auth));
+            } finally {
+                insideGetPostLogOutUrl.set(false);
+            }
         }
         return req.getContextPath()+"/";
     }
+    private static final ThreadLocal<Boolean> insideGetPostLogOutUrl = ThreadLocal.withInitial(() -> false);
 
     /**
      * @deprecated use {@link #getPostLogOutUrl2}

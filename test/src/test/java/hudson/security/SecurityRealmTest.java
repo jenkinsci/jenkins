@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
+import hudson.model.Descriptor;
 import hudson.security.captcha.CaptchaSupport;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,10 +41,16 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class SecurityRealmTest {
 
@@ -138,4 +145,35 @@ public class SecurityRealmTest {
         System.err.println(builder.toString());
         assertThat(unexpectedSessionCookies, is(0));
     }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void getPostLogOutUrl() throws Exception {
+        OldSecurityRealm osr = new OldSecurityRealm();
+        j.jenkins.setSecurityRealm(osr);
+        j.executeOnServer(() -> {
+            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
+            assertEquals("/jenkins/", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            osr.special = true;
+            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS));
+            assertEquals("/jenkins/custom", j.jenkins.getSecurityRealm().getPostLogOutUrl2(Stapler.getCurrentRequest(), Jenkins.ANONYMOUS2));
+            return null;
+        });
+    }
+    @SuppressWarnings("deprecation")
+    public static final class OldSecurityRealm extends SecurityRealm {
+        boolean special;
+        @DataBoundConstructor public OldSecurityRealm() {}
+        @Override
+        public SecurityRealm.SecurityComponents createSecurityComponents() {
+            return new SecurityComponents();
+        }
+        @Override
+        protected String getPostLogOutUrl(StaplerRequest req, org.acegisecurity.Authentication auth) {
+            return special ? req.getContextPath() + "/custom" : super.getPostLogOutUrl(req, auth);
+        }
+        @TestExtension("getPostLogOutUrl")
+        public static final class DescriptorImpl extends Descriptor<SecurityRealm> {}
+    }
+
 }
