@@ -104,6 +104,9 @@ public class SetupWizard extends PageDecorator {
      * This property determines the behavior during the SetupWizard install phase concerning the API Token creation 
      * for the initial admin account.
      * The behavior depends on the provided value:
+     * - true
+     *      A token is generated using random value at startup and the information is put 
+     *      in the file "$JENKINS_HOME/secrets/initialAdminApiToken".
      * - [2-char hash version][32-hex-char of secret], where the hash version is currently only 11. 
      *      E.g. 110123456789abcdef0123456789abcdef.
      *      A fixed API Token will be created for the user with that plain value as the token.
@@ -114,15 +117,19 @@ public class SetupWizard extends PageDecorator {
      *      /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/revokeAllExcept 
      * - @[file-location] where the file contains plain text value of the token, all stuff explained above is applicable
      *      The application will not delete the file after read, so the script is responsible to clean up the stuff
-     * - true
-     *      A token is generated using random value at startup and the information is put 
-     *      in the file "$JENKINS_HOME/secrets/initialAdminApiToken"
+     *
+     * When the API Token is generated using this system property, it's strongly recommended that you are revoking it
+     * during your installation script using the other ways at your disposal so that you have a fresh token
+     * with less traces for your script.
+     *
+     * If you do not provide any value to that system property, the default admin account will not have an API Token,
+     * it's the default behavior.
+     *
      * @since TODO (for the existence of the sysprop, not the availability to plugin)
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties.getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
-    
 
     @NonNull
     @Override
