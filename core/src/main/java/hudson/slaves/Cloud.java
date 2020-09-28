@@ -23,9 +23,11 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.Util;
 import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Slave;
@@ -156,13 +158,68 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      *      just needs to return {@link PlannedNode}s that each contain an object that implements {@link Future}.
      *      When the {@link Future} has completed its work, {@link Future#get} will be called to obtain the
      *      provisioned {@link Node} object.
+     * @deprecated Use {@link #provision(CloudState, int)} instead.
      */
-    public abstract Collection<PlannedNode> provision(Label label, int excessWorkload);
+    @Deprecated
+    public Collection<PlannedNode> provision(Label label, int excessWorkload) {
+        return Util.ifOverridden(() -> provision(new CloudState(label, 0), excessWorkload),
+                Cloud.class,
+                getClass(),
+                "provision",
+                CloudState.class,
+                int.class);
+    }
+
+    /**
+     * Provisions new {@link Node}s from this cloud.
+     *
+     * <p>
+     * {@link NodeProvisioner} performs a trend analysis on the load,
+     * and when it determines that it <b>really</b> needs to bring up
+     * additional nodes, this method is invoked.
+     *
+     * <p>
+     * The implementation of this method asynchronously starts
+     * node provisioning.
+     *
+     * @param state the current state.
+     * @param excessWorkload
+     *      Number of total executors needed to meet the current demand.
+     *      Always ≥ 1. For example, if this is 3, the implementation
+     *      should launch 3 agents with 1 executor each, or 1 agent with
+     *      3 executors, etc.
+     * @return
+     *      {@link PlannedNode}s that represent asynchronous {@link Node}
+     *      provisioning operations. Can be empty but must not be null.
+     *      {@link NodeProvisioner} will be responsible for adding the resulting {@link Node}s
+     *      into Hudson via {@link jenkins.model.Jenkins#addNode(Node)}, so a {@link Cloud} implementation
+     *      just needs to return {@link PlannedNode}s that each contain an object that implements {@link Future}.
+     *      When the {@link Future} has completed its work, {@link Future#get} will be called to obtain the
+     *      provisioned {@link Node} object.
+     */
+    public Collection<PlannedNode> provision(CloudState state, int excessWorkload) {
+        return provision(state.getLabel(), excessWorkload);
+    }
+
+    /**
+     * Returns true if this cloud is capable of provisioning new nodes for the given label.
+     * @deprecated Use {@link #canProvision(CloudState)} instead.
+     */
+    @Deprecated
+    public boolean canProvision(Label label) {
+        return Util.ifOverridden(() -> canProvision(new CloudState(label, 0)),
+                Cloud.class,
+                getClass(),
+                "canProvision",
+                CloudState.class);
+    }
 
     /**
      * Returns true if this cloud is capable of provisioning new nodes for the given label.
      */
-    public abstract boolean canProvision(Label label);
+    public boolean canProvision(CloudState state) {
+        return canProvision(state.getLabel());
+    }
 
     public Descriptor<Cloud> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
@@ -194,4 +251,42 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public static final Permission PROVISION = new Permission(
             Computer.PERMISSIONS, "Provision", Messages._Cloud_ProvisionPermission_Description(), Jenkins.ADMINISTER, PERMISSION_SCOPE
     );
+
+    /**
+     * Parameter object for {@link hudson.slaves.Cloud}.
+     * @since TODO
+     */
+    public static final class CloudState {
+        /**
+         * The label under consideration.
+         */
+        @CheckForNull
+        private final Label label;
+        /**
+         * The additional planned capacity for this {@link #label} and provisioned by previous strategies during the
+         * current updating of the {@link NodeProvisioner}.
+         */
+        private final int additionalPlannedCapacity;
+
+        public CloudState(@CheckForNull Label label, int additionalPlannedCapacity) {
+            this.label = label;
+            this.additionalPlannedCapacity = additionalPlannedCapacity;
+        }
+
+        /**
+         * The label under consideration.
+         */
+        @CheckForNull
+        public Label getLabel() {
+            return label;
+        }
+
+        /**
+         * The additional planned capacity for this {@link #getLabel()} and provisioned by previous strategies during
+         * the current updating of the {@link NodeProvisioner}.
+         */
+        public int getAdditionalPlannedCapacity() {
+            return additionalPlannedCapacity;
+        }
+    }
 }
