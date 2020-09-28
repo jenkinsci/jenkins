@@ -33,7 +33,6 @@ import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
-import com.thoughtworks.xstream.converters.ConverterRegistry;
 import com.thoughtworks.xstream.converters.DataHolder;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
@@ -285,15 +284,7 @@ public class XStream2 extends XStream {
                     return super.serializedClass(type);
             }
         });
-        ConverterRegistry converterRegistry;
-        try {
-            Field converterRegistryF = XStream.class.getDeclaredField("converterRegistry");
-            converterRegistryF.setAccessible(true);
-            converterRegistry = (ConverterRegistry) converterRegistryF.get(this);
-        } catch (Exception x) {
-            throw new AssertionError(x);
-        }
-        AnnotationMapper a = new AnnotationMapper(m, converterRegistry, getConverterLookup(), new ClassLoaderReference(getClassLoader()), getReflectionProvider());
+        AnnotationMapper a = new AnnotationMapper(m, this::registerConverter, getConverterLookup(), new ClassLoaderReference(getClassLoader()), getReflectionProvider());
         // TODO JENKINS-19561 this is unsafe:
         a.autodetectAnnotations(true);
 
