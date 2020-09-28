@@ -705,9 +705,10 @@ public class NodeProvisioner {
                         if (excessWorkload < 0) {
                             break;  // enough agents allocated
                         }
+                        Cloud.CloudState cloudState = new Cloud.CloudState(state.getLabel(), state.getAdditionalPlannedCapacity());
 
                         // Make sure this cloud actually can provision for this label.
-                        if (c.canProvision(state.getLabel())) {
+                        if (c.canProvision(cloudState)) {
                             // provisioning a new node should be conservative --- for example if excessWorkload is 1.4,
                             // we don't want to allocate two nodes but just one.
                             // OTOH, because of the exponential decay, even when we need one agent,
@@ -719,14 +720,13 @@ public class NodeProvisioner {
                             int workloadToProvision = (int) Math.round(Math.floor(excessWorkload + m));
 
                             for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                if (cl.canProvision(c, state.getLabel(), workloadToProvision) != null) {
+                                if (cl.canProvision(c, cloudState, workloadToProvision) != null) {
                                     // consider displaying reasons in a future cloud ux
                                     continue CLOUD;
                                 }
                             }
 
-                            Collection<PlannedNode> additionalCapacities =
-                                    c.provision(state.getLabel(), workloadToProvision);
+                            Collection<PlannedNode> additionalCapacities = c.provision(cloudState, workloadToProvision);
 
                             fireOnStarted(c, state.getLabel(), additionalCapacities);
 
