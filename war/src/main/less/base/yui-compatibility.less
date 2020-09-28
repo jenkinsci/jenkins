@@ -91,8 +91,18 @@
   }
 }
 
+/* Overrides for treeview-skin.css */
+
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
   color: inherit;
+}
+
+.ygtvfocus {
+  background-color: var(--panel-header-bg-color, #c0e0e0) !important;
+}
+
+.ygtvfocus .ygtvlabel, .ygtvfocus .ygtvlabel:link, .ygtvfocus .ygtvlabel:visited, .ygtvfocus .ygtvlabel:hover {
+  background-color: var(--panel-header-bg-color, #c0e0e0) !important;
 }
 
 DIV.yahooTree td {
