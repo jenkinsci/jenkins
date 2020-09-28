@@ -53,12 +53,12 @@ public class ShutdownLink extends ManagementLink {
     }
 
     public String getDisplayName() {
-        return Messages.ShutdownLink_DisplayName_prepare();
+        return Jenkins.get().isQuietingDown() ? Messages.ShutdownLink_DisplayName_update() : Messages.ShutdownLink_DisplayName_prepare();
     }
 
     @Override
     public String getDescription() {
-        return Messages.ShutdownLink_Description();
+        return Jenkins.get().isQuietingDown() ? Messages.ShutdownLink_ShuttingDownInProgressDescription() : Messages.ShutdownLink_Description();
     }
 
     @Override
