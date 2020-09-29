@@ -183,7 +183,7 @@ public class PersistedList<T> extends AbstractList<T> {
         } catch (IOException x) {
             Optional<T> ignored = stream().filter(PersistedList::ignoreSerializationErrors).findAny();
             if (ignored.isPresent()) {
-                LOGGER.log(Level.WARNING, "Ignoring serialization errors in " + ignored.get() + "; update your parent POM", x);
+                LOGGER.log(Level.WARNING, "Ignoring serialization errors in " + ignored.get() + "; update your parent POM to 4.8 or newer", x);
             } else {
                 throw x;
             }
