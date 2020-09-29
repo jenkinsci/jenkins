@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.KXml2Driver;
-import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 import com.thoughtworks.xstream.converters.ConversionException;
@@ -284,11 +283,8 @@ public class XStream2 extends XStream {
                     return super.serializedClass(type);
             }
         });
-        AnnotationMapper a = new AnnotationMapper(m, this::registerConverter, getConverterLookup(), new ClassLoaderReference(getClassLoader()), getReflectionProvider());
-        // TODO JENKINS-19561 this is unsafe:
-        a.autodetectAnnotations(true);
 
-        mapperInjectionPoint = new MapperInjectionPoint(a);
+        mapperInjectionPoint = new MapperInjectionPoint(m);
 
         return mapperInjectionPoint;
     }
