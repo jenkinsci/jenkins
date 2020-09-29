@@ -25,6 +25,7 @@
 package org.acegisecurity;
 
 import hudson.security.UserMayOrMayNotExistException2;
+import org.acegisecurity.providers.ProviderNotFoundException;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.springframework.dao.DataAccessException;
 
@@ -85,6 +86,8 @@ public abstract class AuthenticationException extends AcegiSecurityException {
             return CredentialsExpiredException.fromSpring((org.springframework.security.authentication.CredentialsExpiredException) x);
         } else if (x instanceof org.springframework.security.authentication.InsufficientAuthenticationException) {
             return InsufficientAuthenticationException.fromSpring((org.springframework.security.authentication.InsufficientAuthenticationException) x);
+        } else if (x instanceof org.springframework.security.authentication.ProviderNotFoundException) {
+            return ProviderNotFoundException.fromSpring((org.springframework.security.authentication.ProviderNotFoundException) x);
         } else if (x instanceof UserMayOrMayNotExistException2 && x.getCause() instanceof DataAccessException) {
             return (DataAccessException) x.getCause();
         } else if (x instanceof org.springframework.security.core.userdetails.UsernameNotFoundException) {
