@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
@@ -31,29 +32,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 import hudson.ExtensionList;
-
-import hudson.security.ACL;
-import hudson.security.ACLContext;
-import hudson.security.AbstractPasswordBasedSecurityRealm;
-import hudson.security.AccessDeniedException2;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.GroupDetails;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.Permission;
-import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.*;
 import hudson.tasks.MailAddressResolver;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
@@ -63,29 +46,35 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.future.ConnectFuture;
+import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
+import org.apache.sshd.client.session.ClientSession;
+import org.jenkinsci.main.modules.cli.auth.ssh.PublicKeySignatureWriter;
+import org.jenkinsci.main.modules.sshd.SSHD;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.FakeChangeLogSCM;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.SmokeTest;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.*;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.springframework.dao.DataAccessException;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URL;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 @Category(SmokeTest.class)
 public class UserTest {
@@ -784,6 +773,7 @@ public class UserTest {
         assertThat(failingResources, empty());
     }
 
+    @Issue("JENKINS-55813")
     private static class DisabledAccountsRealm extends AbstractPasswordBasedSecurityRealm {
         private static class UserStub implements UserDetails {
             private final String username;
@@ -879,40 +869,90 @@ public class UserTest {
         }
     }
 
-    @Issue("JENKINS-55813")
     @Test
-    public void impersonateShouldCheckUserDetailAttributes() {
+    @Issue("JENKINS-55813")
+    public void lockedUser() throws Exception {
+        checkUserImpersonationOperations("locked", "user is locked");
+    }
+
+    @Test
+    @Issue("JENKINS-55813")
+    public void disabledUser() throws Exception {
+        checkUserImpersonationOperations("disabled", "user is disabled");
+    }
+
+    @Test
+    @Issue("JENKINS-55813")
+    public void expiredUser() throws Exception {
+        checkUserImpersonationOperations("expired", "user expired or inactive");
+    }
+
+    @Test
+    @Issue("JENKINS-55813")
+    public void passwordExpired() throws Exception {
+        checkUserImpersonationOperations("password_expired", "user credentials expired");
+    }
+
+    @Test
+    @Issue("JENKINS-55813")
+    public void enabledUser() throws Exception {
         j.jenkins.setSecurityRealm(new DisabledAccountsRealm());
-        User locked = User.getOrCreateByIdOrFullName("locked");
-        try {
-            locked.impersonate();
-            fail("Expected UsernameNotFoundException");
-        } catch (UsernameNotFoundException e) {
-            assertThat(e.getMessage(), containsString("user is locked"));
+        User user = User.getOrCreateByIdOrFullName("enabled");
+        assertNotNull("Expected user impersonation to work for enabled users",
+                user.impersonate());
+        assertNotNull("Expected login to work for enabled users",
+                j.createWebClient().login("enabled"));
+        assertNotNull("Expected API tokens to work for enabled users",
+                j.createWebClient().withBasicApiToken(user).getPage(j.jenkins));
+
+        SSHD sshd = SSHD.get();
+        sshd.setPort(0);
+        sshd.start();
+        try (SshClient client = SshClient.setUpDefaultClient()) {
+            client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+            client.start();
+            ConnectFuture future = client.connect("enabled", new InetSocketAddress(sshd.getActualPort()));
+            try (ClientSession session = future.verify(10, TimeUnit.SECONDS).getSession()) {
+                session.addPublicKeyIdentity(generateUserSshKey(user));
+                assertTrue("Expected successful SSH authentication", session.auth().await(10, TimeUnit.SECONDS));
+            }
         }
-        User disabled = User.getOrCreateByIdOrFullName("disabled");
-        try {
-            disabled.impersonate();
-            fail("Expected UsernameNotFoundException");
-        } catch (UsernameNotFoundException e) {
-            assertThat(e.getMessage(), containsString("user is disabled"));
+    }
+
+    private void checkUserImpersonationOperations(String username, String expectedErrorMessageSubstring) throws Exception {
+        j.jenkins.setSecurityRealm(new DisabledAccountsRealm());
+        User user = User.getOrCreateByIdOrFullName(username);
+        String message = assertThrows("Expected UsernameNotFoundException while impersonating user " + username,
+                UsernameNotFoundException.class, user::impersonate).getMessage();
+        assertThat(message, containsString(expectedErrorMessageSubstring));
+
+        assertThrows("Expected HTTP error when logging in with user " + username,
+                FailingHttpStatusCodeException.class, () -> j.createWebClient().login(username));
+        assertThrows("Expected HTTP error when using API token for user " + username,
+                FailingHttpStatusCodeException.class, () -> j.createWebClient().withBasicApiToken(user).getPage(j.jenkins));
+
+        SSHD sshd = SSHD.get();
+        sshd.setPort(0);
+        sshd.start();
+        try (SshClient client = SshClient.setUpDefaultClient()) {
+            client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+            client.start();
+            ConnectFuture future = client.connect(username, new InetSocketAddress(sshd.getActualPort()));
+            try (ClientSession session = future.verify(10, TimeUnit.SECONDS).getSession()) {
+                session.addPublicKeyIdentity(generateUserSshKey(user));
+                assertThrows("Expected SSH authentication error for user " + username,
+                        IOException.class, () -> session.auth().verify(10, TimeUnit.SECONDS));
+            }
         }
-        User expired = User.getOrCreateByIdOrFullName("expired");
-        try {
-            expired.impersonate();
-            fail("Expected UsernameNotFoundException");
-        } catch (UsernameNotFoundException e) {
-            assertThat(e.getMessage(), containsString("user expired or inactive"));
-        }
-        User passwordExpired = User.getOrCreateByIdOrFullName("password_expired");
-        try {
-            passwordExpired.impersonate();
-            fail("Expected UsernameNotFoundException");
-        } catch (UsernameNotFoundException e) {
-            assertThat(e.getMessage(), containsString("user credentials expired"));
-        }
-        User enabled = User.getOrCreateByIdOrFullName("enabled");
-        assertNotNull(enabled.impersonate());
+    }
+
+    private static KeyPair generateUserSshKey(User user) throws IOException, NoSuchAlgorithmException {
+        KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA");
+        kpGen.initialize(2048);
+        KeyPair keyPair = kpGen.generateKeyPair();
+        String publicKey = new PublicKeySignatureWriter().asString(keyPair.getPublic());
+        user.addProperty(new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl(publicKey));
+        return keyPair;
     }
 
 }
