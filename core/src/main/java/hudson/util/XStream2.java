@@ -83,8 +83,8 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * {@link XStream} enhanced for additional Java5 support and improved robustness.
- * @author Kohsuke Kawaguchi
+ * {@link XStream} customized in various ways for Jenkins’ needs.
+ * Most importantly, integrates {@link RobustReflectionConverter}.
  */
 public class XStream2 extends XStream {
 
