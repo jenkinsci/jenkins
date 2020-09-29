@@ -122,8 +122,7 @@ public class SetupWizard extends PageDecorator {
      * during your installation script using the other ways at your disposal so that you have a fresh token
      * with less traces for your script.
      *
-     * If you do not provide any value to that system property, the default admin account will not have an API Token,
-     * it's the default behavior.
+     * If you do not provide any value to that system property, the default admin account will not have an API Token.
      *
      * @since TODO (for the existence of the sysprop, not the availability to plugin)
      */
