@@ -58,6 +58,9 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
      * Called on the start of each build, giving extensions a chance to intercept
      * the data that is written to the log.
      *
+     * @throws AbstractMethodError
+     *     when a plugin overrides neither this method nor {@link #decorateLogger(Run, OutputStream)}.
+     *
      * @deprecated as of 1.632. Use {@link #decorateLogger(Run, OutputStream)}
      */
     @Deprecated
