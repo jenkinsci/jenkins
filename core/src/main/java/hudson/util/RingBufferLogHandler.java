@@ -23,6 +23,9 @@
  */
 package hudson.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -52,6 +55,15 @@ public class RingBufferLogHandler extends Handler {
 
     public RingBufferLogHandler(int ringSize) {
         records = new LogRecord[ringSize];
+    }
+
+    /**
+     * @return int DEFAULT_RING_BUFFER_SIZE
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @since TODO
+     */
+    public static int getDefaultRingBufferSize() {
+        return DEFAULT_RING_BUFFER_SIZE;
     }
 
     public synchronized void publish(LogRecord record) {

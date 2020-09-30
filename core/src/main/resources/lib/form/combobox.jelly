@@ -31,6 +31,21 @@ THE SOFTWARE.
     representation of the items in your combo box, and your instance field should
     hold the current value.
 
+    For a read only input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+    See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
+    <st:attribute name="name">
+      This becomes @name of the &lt;input> tag.
+      If @field is specified, this value is inferred from it.
+    </st:attribute>
+    <st:attribute name="value">
+      The initial value of the field. This becomes the @value of the &lt;input> tag.
+      If @field is specified, the current property from the "instance" object
+      will be set as the initial value automatically,
+      which is the recommended approach.
+    </st:attribute>
+    <st:attribute name="default">
+      The default value of the combo box, in case both @value and 'instance[field]' are null.
+    </st:attribute>
     <st:attribute name="clazz">
       Additional CSS classes that the control gets.
     </st:attribute>
@@ -38,19 +53,26 @@ THE SOFTWARE.
       Used for databinding.
     </st:attribute>
   </st:documentation>
-
+  <f:prepareDatabinding/>
+  ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <st:once>
     <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
     <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
   </st:once>
   <st:adjunct includes="lib.form.combobox.combobox"/>
 
-  <f:prepareDatabinding/>
-  ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
+  <!-- mostly pass-through all the attributes -->
+  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
+  <j:set var="default" value="${attrs.default ?: ''}"/>
+  <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
 
-  <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary" ATTRIBUTES="${attrs}" EXCEPT="field items clazz"
-         autocomplete="off" class="combobox2 setting-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
-         name="${attrs.name ?: '_.'+attrs.field}"
-         value="${attrs.value ?: instance[attrs.field]}" />
+  <f:possibleReadOnlyField>
+    <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+             autocomplete="off"
+             class="combobox2 setting-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
+             name="${name}"
+             value="${value}"
+             ATTRIBUTES="${attrs}" EXCEPT="field items clazz" />
+  </f:possibleReadOnlyField>
   <!-- TODO consider customizedFields -->
 </j:jelly>
