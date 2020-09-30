@@ -142,7 +142,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      */
     public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
         // If it's a Build, and the plugin implements the deprecated API, use it.
-        if (build instanceof Build && Util.isOverridden(BuildWrapper.class, getClass(), "setUp", Build.class, Launcher.class, OutputStream.class))
+        if (build instanceof Build && Util.isOverridden(BuildWrapper.class, getClass(), "setUp", Build.class, Launcher.class, BuildListener.class))
             return setUp((Build)build,launcher,listener);
         else // not a supported build type
             throw new UnsupportedOperationException("Plugin class '" + this.getClass().getName() +
