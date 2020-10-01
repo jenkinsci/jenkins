@@ -230,43 +230,44 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(old); // restore
                                 }
                             } catch (CmdLineException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 printUsage(stderr, parser);
                                 return 2;
                             } catch (IllegalStateException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 4;
                             } catch (IllegalArgumentException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 3;
                             } catch (AbortException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 5;
                             } catch (AccessDeniedException e) {
-                                stderr.println();
-                                stderr.println("ERROR: " + e.getMessage());
+                                printError(e.getMessage());
                                 return 6;
                             } catch (BadCredentialsException e) {
                                 // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
                                 // do that to the server log instead
                                 String id = UUID.randomUUID().toString();
-                                LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
-                                stderr.println();
-                                stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
+                                logAndPrintError(e, "Bad Credentials. Search the server log for " + id + " for more details.",
+                                        "CLI login attempt failed: " + id, Level.INFO);
                                 return 7;
                             } catch (Throwable e) {
-                                final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
-                                        getName());
-                                stderr.println();
-                                stderr.println("ERROR: " + errorMsg);
-                                LOGGER.log(Level.WARNING, errorMsg, e);
+                                final String errorMsg = "Unexpected exception occurred while performing " + getName() + " command.";
+                                logAndPrintError(e, errorMsg, errorMsg, Level.WARNING);
                                 Functions.printStackTrace(e, stderr);
                                 return 1;
                             }
+                        }
+
+                        private void printError(String errorMessage) {
+                            this.stderr.println();
+                            this.stderr.println("ERROR: " + errorMessage);
+                        }
+
+                        private void logAndPrintError(Throwable e, String errorMessage, String logMessage, Level logLevel) {
+                            LOGGER.log(logLevel, logMessage, e);
+                            printError(errorMessage);
                         }
 
                         protected int run() throws Exception {
