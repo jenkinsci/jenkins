@@ -144,7 +144,7 @@ public class SlaveComputer extends Computer {
      * Escape hatch for rejecting connections from agents with unsupported Remoting versions
      */
     @Restricted(NoExternalUse.class)
-    public static boolean REJECT_CONNECTION = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedAgentConnection");
+    private static boolean REJECT_CONNECTION = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedAgentConnection");
 
     /**
      * Tracks the status of the last launch operation, which is always asynchronous.
