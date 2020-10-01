@@ -75,12 +75,7 @@ public class MyView extends View {
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        List<TopLevelItem> items = new ArrayList<>();
-        for (TopLevelItem item : getOwner().getItemGroup().getItems()) {
-            if (item.hasPermission(Item.CONFIGURE)) {
-                items.add(item);
-            }
-        }
+        List<TopLevelItem> items = new ArrayList<>(getOwner().getItemGroup().getItems(item -> item.hasPermission(Item.CONFIGURE)));
         return Collections.unmodifiableList(items);
     }
 
