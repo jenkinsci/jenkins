@@ -3,6 +3,7 @@ package hudson.slaves;
 import hudson.model.queue.CauseOfBlockage;
 import org.junit.Assert;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -17,6 +18,7 @@ public class CloudProvisioningListenerTest {
         }
     }
 
+    @Issue("JENKINS-63828")
     @Test
     public void failing(){
         Cloud.CloudState state = new Cloud.CloudState(null, 0);
@@ -26,6 +28,7 @@ public class CloudProvisioningListenerTest {
         assertEquals("You must override at least one of the CloudProvisioningListener.canProvision methods", error.getMessage());
     }
 
+    @Issue("JENKINS-63828")
     @Test
     public void success() {
         Cloud.CloudState state = new Cloud.CloudState(null, 0);
