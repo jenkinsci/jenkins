@@ -253,7 +253,7 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public String getShortDescription() {
-            User user = User.get(startedBy, false, Collections.emptyMap());
+            User user = User.getById(startedBy, false);
             String userName = user != null ? user.getDisplayName() : startedBy;
             return Messages.BuildCommand_CLICause_ShortDescription(userName);
         }
@@ -275,4 +275,3 @@ public class BuildCommand extends CLICommand {
         }
     }
 }
-
