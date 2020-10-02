@@ -38,7 +38,7 @@ import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.AntClassLoader;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
-import jenkins.util.java.ClassNotFoundNoStacktraceException;
+import jenkins.util.java.ClassNotFoundNoStackTraceException;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -93,7 +93,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     };
 
     private PluginManager pluginManager;
-    private boolean omitStacktracesOnClassNotFoundException;
+    private boolean fillInStackTracesOnClassNotFoundException;
 
     /**
      * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
@@ -107,12 +107,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Sets whether the classloader should include stacktraces on {@link ClassNotFoundException}s.
      *
-     * @param skipStacktraces {@link false} to skip stacktraces.
-     *        The classloader injects stacktraces by default.
+     * @param fillInStackTraces {@link true} to fill in stacktraces.
+     *        The classloader does not inject stacktraces by default.
      * @since TODO
      */
-    public ClassicPluginStrategy withOmitStacktracesOnClassNotFoundException(boolean skipStacktraces) {
-        this.omitStacktracesOnClassNotFoundException = skipStacktraces;
+    public ClassicPluginStrategy withFillInStackTracesOnClassNotFoundException(boolean fillInStackTraces) {
+        this.fillInStackTracesOnClassNotFoundException = fillInStackTraces;
         return this;
     }
 
@@ -310,13 +310,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );
                 classLoader.addPathFiles( paths );
-                classLoader.withOmitStacktracesOnClassNotFound(omitStacktracesOnClassNotFoundException);
+                classLoader.withFillInStackTracesOnClassNotFound(fillInStackTracesOnClassNotFoundException);
                 return classLoader;
             }
         }
 
         AntClassLoader2 classLoader = new AntClassLoader2(parent);
-        classLoader.withOmitStacktracesOnClassNotFound(omitStacktracesOnClassNotFoundException);
+        classLoader.withFillInStackTracesOnClassNotFound(fillInStackTracesOnClassNotFoundException);
         classLoader.addPathFiles(paths);
         return classLoader;
     }
@@ -665,8 +665,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
 
-            throw omitStacktracesOnClassNotFoundException ?
-                    new ClassNotFoundNoStacktraceException(name) : new ClassNotFoundException(name);
+            throw fillInStackTracesOnClassNotFoundException ?
+                    new ClassNotFoundException(name) : new ClassNotFoundNoStackTraceException(name);
         }
 
         @Override

@@ -32,8 +32,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * e.g. like in {@link hudson.ClassicPluginStrategy}.
  */
 @Restricted(NoExternalUse.class)
-public class ClassNotFoundNoStacktraceException extends ClassNotFoundException {
-    public ClassNotFoundNoStacktraceException(String className) {
+public class ClassNotFoundNoStackTraceException extends ClassNotFoundException {
+    public ClassNotFoundNoStackTraceException(String className) {
         super(className);
     }
 

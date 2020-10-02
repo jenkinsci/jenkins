@@ -18,7 +18,7 @@
 package jenkins.util;
 
 import jenkins.telemetry.impl.java11.MissingClassTelemetry;
-import jenkins.util.java.ClassNotFoundNoStacktraceException;
+import jenkins.util.java.ClassNotFoundNoStackTraceException;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -246,7 +246,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Whether or not to include stacktraces in {@link ClassNotFoundException}.
      * @since TODO
      */
-    private boolean omitStacktracesOnClassNotFoundException;
+    private boolean fillInStackTracesOnClassNotFoundException;
 
     /**
      * Create an Ant ClassLoader for a given project, with
@@ -578,12 +578,12 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
     /**
      * Sets whether the classloader should include stacktraces on {@link ClassNotFoundException}s.
      *
-     * @param skipStacktraces {@link true} to skip stacktraces.
-     *        The classloader adds stacktraces by default.
+     * @param fillInStackTraces {@link true} to fill in stacktraces.
+     *        The classloader does not add stacktraces by default.
      * @since TODO
      */
-    public AntClassLoader withOmitStacktracesOnClassNotFound(boolean skipStacktraces) {
-        this.omitStacktracesOnClassNotFoundException = skipStacktraces;
+    public AntClassLoader withFillInStackTracesOnClassNotFound(boolean fillInStackTraces) {
+        this.fillInStackTracesOnClassNotFoundException = fillInStackTraces;
         return this;
     }
 
@@ -1404,8 +1404,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
             }
         }
 
-        throw omitStacktracesOnClassNotFoundException
-                ? new ClassNotFoundNoStacktraceException(name) : new ClassNotFoundException(name);
+        throw fillInStackTracesOnClassNotFoundException
+                ? new ClassNotFoundException(name) : new ClassNotFoundNoStackTraceException(name);
     }
 
     /**
