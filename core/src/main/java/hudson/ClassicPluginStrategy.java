@@ -38,6 +38,7 @@ import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.AntClassLoader;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
+import jenkins.util.java.ClassNotFoundNoStacktraceException;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -92,6 +93,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     };
 
     private PluginManager pluginManager;
+    private boolean omitStacktracesOnClassNotFoundException;
 
     /**
      * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
@@ -100,6 +102,18 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     public ClassicPluginStrategy(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
+    }
+
+    /**
+     * Sets whether the classloader should include stacktraces on {@link ClassNotFoundException}s.
+     *
+     * @param skipStacktraces {@link false} to skip stacktraces.
+     *        The classloader injects stacktraces by default.
+     * @since TODO
+     */
+    public ClassicPluginStrategy withOmitStacktracesOnClassNotFoundException(boolean skipStacktraces) {
+        this.omitStacktracesOnClassNotFoundException = skipStacktraces;
+        return this;
     }
 
     @Override public String getShortName(File archive) throws IOException {
@@ -296,11 +310,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );
                 classLoader.addPathFiles( paths );
+                classLoader.withOmitStacktracesOnClassNotFound(omitStacktracesOnClassNotFoundException);
                 return classLoader;
             }
         }
 
         AntClassLoader2 classLoader = new AntClassLoader2(parent);
+        classLoader.withOmitStacktracesOnClassNotFound(omitStacktracesOnClassNotFoundException);
         classLoader.addPathFiles(paths);
         return classLoader;
     }
@@ -649,7 +665,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
 
-            throw new ClassNotFoundException(name);
+            throw omitStacktracesOnClassNotFoundException ?
+                    new ClassNotFoundNoStacktraceException(name) : new ClassNotFoundException(name);
         }
 
         @Override

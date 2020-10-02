@@ -18,6 +18,7 @@
 package jenkins.util;
 
 import jenkins.telemetry.impl.java11.MissingClassTelemetry;
+import jenkins.util.java.ClassNotFoundNoStacktraceException;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -240,6 +241,12 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Whether or not the context loader is currently saved.
      */
     private boolean isContextLoaderSaved = false;
+
+    /**
+     * Whether or not to include stacktraces in {@link ClassNotFoundException}.
+     * @since TODO
+     */
+    private boolean omitStacktracesOnClassNotFoundException;
 
     /**
      * Create an Ant ClassLoader for a given project, with
@@ -566,6 +573,18 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      */
     public synchronized void setIsolated(boolean isolated) {
         ignoreBase = isolated;
+    }
+
+    /**
+     * Sets whether the classloader should include stacktraces on {@link ClassNotFoundException}s.
+     *
+     * @param skipStacktraces {@link true} to skip stacktraces.
+     *        The classloader adds stacktraces by default.
+     * @since TODO
+     */
+    public AntClassLoader withOmitStacktracesOnClassNotFound(boolean skipStacktraces) {
+        this.omitStacktracesOnClassNotFoundException = skipStacktraces;
+        return this;
     }
 
     /**
@@ -1384,7 +1403,9 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                         + ioe.getMessage() + ")", Project.MSG_VERBOSE);
             }
         }
-        throw new ClassNotFoundException(name);
+
+        throw omitStacktracesOnClassNotFoundException
+                ? new ClassNotFoundNoStacktraceException(name) : new ClassNotFoundException(name);
     }
 
     /**
