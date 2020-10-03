@@ -87,6 +87,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.RssFeedItem;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
@@ -1076,21 +1077,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since 2.60
      */
     public void doRssChangelog(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        class FeedItem {
-            ChangeLogSet.Entry e;
-            int idx;
 
-            public FeedItem(ChangeLogSet.Entry e, int idx) {
-                this.e = e;
-                this.idx = idx;
-            }
-
-            Run<?, ?> getBuild() {
-                return e.getParent().build;
-            }
-        }
-
-        List<FeedItem> entries = new ArrayList<>();
+        List<RssFeedItem> entries;
         String scmDisplayName = "";
         if (this instanceof SCMTriggerItem) {
             SCMTriggerItem scmItem = (SCMTriggerItem) this;
@@ -1101,50 +1089,68 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             scmDisplayName = " " + Util.join(scmNames, ", ");
         }
 
-        for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
-            int idx = 0;
-            if (r instanceof RunWithSCM) {
-                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?,?>) r).getChangeSets()) {
-                    for (ChangeLogSet.Entry e : c) {
-                        entries.add(new FeedItem(e, idx++));
-                    }
-                }
-            }
-        }
+        // TODO: Make the limit optional
+        entries = getEntries(20);
+        
         RSS.forwardToRss(
                 getDisplayName() + scmDisplayName + " changes",
                 getUrl() + "changes",
-                entries, new FeedAdapter<FeedItem>() {
-                    public String getEntryTitle(FeedItem item) {
-                        return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
+                entries, new FeedAdapter<RssFeedItem>() {
+                    public String getEntryTitle(RssFeedItem item) {
+                        return "#" + item.getRun().number + ' ' + item.getEntry().getMsg() + " (" + item.getEntry().getAuthor() + ")";
                     }
 
-                    public String getEntryUrl(FeedItem item) {
-                        return item.getBuild().getUrl() + "changes#detail" + item.idx;
+                    public String getEntryUrl(RssFeedItem item) {
+                        return item.getRun().getUrl() + "changes#detail" + item.getIndex();
                     }
 
-                    public String getEntryID(FeedItem item) {
+                    public String getEntryID(RssFeedItem item) {
                             return getEntryUrl(item);
                         }
 
-                    public String getEntryDescription(FeedItem item) {
+                    public String getEntryDescription(RssFeedItem item) {
                         StringBuilder buf = new StringBuilder();
-                        for (String path : item.e.getAffectedPaths())
+                        for (String path : item.getEntry().getAffectedPaths())
                             buf.append(path).append('\n');
                         return buf.toString();
                     }
 
-                    public Calendar getEntryTimestamp(FeedItem item) {
-                            return item.getBuild().getTimestamp();
+                    public Calendar getEntryTimestamp(RssFeedItem item) {
+                            return item.getRun().getTimestamp();
                         }
 
-                    public String getEntryAuthor(FeedItem entry) {
+                    public String getEntryAuthor(RssFeedItem entry) {
                         return JenkinsLocationConfiguration.get().getAdminAddress();
                     }
                 },
                 req, rsp);
     }
 
+    /**
+     * Gets Rss Feed entries.
+     *
+     * @param limit limits the number of entries, in case of 0 unlimited.
+     * 
+     * @return The entries (never null).
+     */
+    @NonNull
+    private List<RssFeedItem> getEntries(int limit) {
+        List<RssFeedItem> result = new ArrayList<>();
+        for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
+            int idx = 0;
+            if (r instanceof RunWithSCM) {
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?,?>) r).getChangeSets()) {
+                    for (ChangeLogSet.Entry e : c) {
+                        result.add(new RssFeedItem(e, idx++));
+                        if (limit != 0 && result.size() >= limit) {
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
 
     @Override public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
