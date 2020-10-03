@@ -56,7 +56,7 @@ public class ExitLifecycle extends Lifecycle {
     private Integer exitOnRestart;
 
     public ExitLifecycle() {
-        exitOnRestart = Integer.parseInt(SystemProperties.getString(EXIT_CODE_ON_RESTART, DEFAULT_EXIT_CODE));
+        exitOnRestart = Integer.parseInt(SystemProperties.getString(Jenkins.class.getName() + "." + EXIT_CODE_ON_RESTART, DEFAULT_EXIT_CODE));
     }
 
     @Override

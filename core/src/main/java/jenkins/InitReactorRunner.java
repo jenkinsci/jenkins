@@ -63,7 +63,7 @@ public class InitReactorRunner {
     private ReactorListener buildReactorListener() throws IOException {
         List<ReactorListener> r = Lists.newArrayList(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()));
         r.add(new ReactorListener() {
-            final Level level = Level.parse( SystemProperties.getString("initLogLevel", "FINE") );
+            final Level level = Level.parse( SystemProperties.getString(Jenkins.class.getName() + "." + "initLogLevel", "FINE") );
             public void onTaskStarted(Task t) {
                 LOGGER.log(level, "Started {0}", getDisplayName(t));
             }
