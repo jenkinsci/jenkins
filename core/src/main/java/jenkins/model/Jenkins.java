@@ -456,9 +456,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private static Jenkins theInstance;
 
-    private transient volatile boolean isQuietingDown;
     @CheckForNull
-    private transient volatile String quietDownReason;
+    private transient volatile QuietDownInfo quietDownInfo;
     private transient volatile boolean terminating;
     @GuardedBy("Jenkins.class")
     private transient boolean cleanUpStarted;
@@ -2807,7 +2806,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Exported
     public boolean isQuietingDown() {
-        return isQuietingDown;
+        return quietDownInfo != null;
     }
 
     /**
@@ -2819,7 +2818,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Exported
     @CheckForNull
     public String getQuietDownReason() {
-        return quietDownReason;
+        final QuietDownInfo info = quietDownInfo;
+        return info != null ? info.reason : null;
     }
 
     /**
@@ -3934,13 +3934,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                                     @QueryParameter @CheckForNull String reason) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(MANAGE);
-            isQuietingDown = true;
-            quietDownReason = reason;
+            quietDownInfo = new QuietDownInfo(reason);
         }
         if (block) {
             long waitUntil = timeout;
             if (timeout > 0) waitUntil += System.currentTimeMillis();
-            while (isQuietingDown
+            while (isQuietingDown()
                    && (timeout <= 0 || System.currentTimeMillis() < waitUntil)
                    && !RestartListener.isAllReady()) {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(1));
@@ -3955,8 +3954,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(MANAGE);
-        isQuietingDown = false;
-        quietDownReason = null;
+        quietDownInfo = null;
         getQueue().scheduleMaintenance();
         return new HttpRedirect(".");
     }
@@ -4377,7 +4375,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void safeRestart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = restartableLifecycle();
         // Quiet down so that we won't launch new builds.
-        isQuietingDown = true;
+        quietDownInfo = new QuietDownInfo();
 
         new Thread("safe-restart thread") {
             final String exitUser = getAuthentication().getName();
@@ -4389,7 +4387,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     doQuietDown(true, 0, null);
 
                     // Make sure isQuietingDown is still true.
-                    if (isQuietingDown) {
+                    if (isQuietingDown()) {
                         servletContext.setAttribute("app",new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
                         LOGGER.info("Restart in 10 seconds");
@@ -4474,7 +4472,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
         checkPermission(ADMINISTER);
-        isQuietingDown = true;
+        quietDownInfo = new QuietDownInfo();
         final String exitUser = getAuthentication().getName();
         final String exitAddr = req!=null ? req.getRemoteAddr() : "unknown";
         new Thread("safe-exit thread") {
@@ -4487,7 +4485,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     // Wait 'til we have no active executors.
                     doQuietDown(true, 0, null);
                     // Make sure isQuietingDown is still true.
-                    if (isQuietingDown) {
+                    if (isQuietingDown()) {
                         cleanUp();
                         System.exit(0);
                     }
@@ -5450,4 +5448,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    private static final class QuietDownInfo {
+
+        @CheckForNull
+        final String reason;
+
+        QuietDownInfo() {
+            this(null);
+        }
+
+        QuietDownInfo(final String reason) {
+            this.reason = reason;
+        }
+    }
 }
