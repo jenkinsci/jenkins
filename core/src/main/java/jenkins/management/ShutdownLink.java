@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 @Extension(ordinal = Integer.MIN_VALUE)
-@Symbol("prepareShutdown")
+@Symbol("prepareQuietDown")
 public class ShutdownLink extends ManagementLink {
 
     private static final Logger LOGGER = Logger.getLogger(ShutdownLink.class.getName());
