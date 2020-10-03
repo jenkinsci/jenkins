@@ -98,8 +98,6 @@ THE SOFTWARE.
 
     <changelog.url>https://jenkins.io/changelog</changelog.url>
 
-    <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
-
     <!-- Bundled Remoting version -->
     <remoting.version>4.5</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
