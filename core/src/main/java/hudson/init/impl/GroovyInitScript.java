@@ -28,6 +28,8 @@ import jenkins.model.Jenkins;
 import jenkins.util.groovy.GroovyHookScript;
 
 
+import java.io.File;
+
 import static hudson.init.InitMilestone.*;
 
 /**
@@ -37,8 +39,17 @@ import static hudson.init.InitMilestone.*;
  * @author Kohsuke Kawaguchi
  */
 public class GroovyInitScript {
+    private static final String PATH = System.getProperty(GroovyInitScript.class.getName() + ".PATH");
+    private static final String DIRECTORY_PATH = System.getProperty(GroovyInitScript.class.getName() + ".DIRECTORY_PATH");
+
     @Initializer(after=JOB_CONFIG_ADAPTED)
     public static void init(Jenkins j) {
-        new GroovyHookScript("init", j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader).run();
+        new GroovyHookScript("init",
+              PATH != null ? new File(PATH) : null,
+              DIRECTORY_PATH != null ? new File(DIRECTORY_PATH) : null,
+              j.servletContext,
+              j.getRootDir(),
+              j.getPluginManager().uberClassLoader
+        ).run();
     }
 }
