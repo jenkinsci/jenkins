@@ -1301,10 +1301,10 @@ public class Functions {
         }
 
         Item i=p;
-        String url = "";
+        StringBuilder url = new StringBuilder();
         while(true) {
             ItemGroup ig = i.getParent();
-            url = i.getShortUrl()+url;
+            url.insert(0, i.getShortUrl());
 
             if(ig== Jenkins.get() || (view != null && ig == view.getOwner().getItemGroup())) {
                 assert i instanceof TopLevelItem;
@@ -1515,11 +1515,10 @@ public class Functions {
                                              (grp != null ? grp : "?") + " " +
                                              ti.getThreadState());
         if (ti.getLockName() != null) {
-            sb.append(" on " + ti.getLockName());
+            sb.append(" on ").append(ti.getLockName());
         }
         if (ti.getLockOwnerName() != null) {
-            sb.append(" owned by \"" + ti.getLockOwnerName() +
-                      "\" Id=" + ti.getLockOwnerId());
+            sb.append(" owned by \"").append(ti.getLockOwnerName()).append("\" Id=").append(ti.getLockOwnerId());
         }
         if (ti.isSuspended()) {
             sb.append(" (suspended)");
@@ -1562,7 +1561,7 @@ public class Functions {
 
        LockInfo[] locks = ti.getLockedSynchronizers();
        if (locks.length > 0) {
-           sb.append("\n\tNumber of locked synchronizers = " + locks.length);
+           sb.append("\n\tNumber of locked synchronizers = ").append(locks.length);
            sb.append('\n');
            for (LockInfo li : locks) {
                sb.append("\t- ").append(li);
