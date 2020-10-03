@@ -3494,7 +3494,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     command.run();
                 }
             }, new ReactorListener() {
-                final Level level = Level.parse(Configuration.getStringConfigParameter("termLogLevel", "FINE"));
+                final Level level = Level.parse(SystemProperties.getString("termLogLevel", "FINE"));
 
                 public void onTaskStarted(Task t) {
                     LOGGER.log(level, "Started {0}", InitReactorRunner.getDisplayName(t));
@@ -5234,8 +5234,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
-    public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
-    public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
+    public static boolean PARALLEL_LOAD = SystemProperties.getBoolean("parallelLoad", true);
+    public static boolean KILL_AFTER_LOAD = SystemProperties.getBoolean("killAfterLoad", false);
     /**
      * @deprecated No longer used.
      */
@@ -5257,7 +5257,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Switch to enable people to use a shorter workspace name.
      */
-    private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
+    private static final String WORKSPACE_DIRNAME = SystemProperties.getString("workspaceDirName", "workspace");
 
     /**
      * Default value of job's builds dir.
