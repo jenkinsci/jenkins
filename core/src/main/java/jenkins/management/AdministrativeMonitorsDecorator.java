@@ -123,6 +123,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
             }
         }
 
-        return getActiveAdministrativeMonitorsCount() != 0;
+        return getActiveAdministrativeMonitorsCount() > 0;
     }
 }
