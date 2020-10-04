@@ -4887,10 +4887,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     boolean isNameUnique(String name, String currentJobName) {
         Item item = getItem(name);
-
-        // the candidate name returned an item, but the item is the item
-        // that the user is configuring so this is ok
-        // the candidate name returned an item, so it is not unique
+        
         if(null==item) {
             // the candidate name didn't return any items so the name is unique
             return true;
