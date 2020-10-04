@@ -4820,12 +4820,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
-        if (restOfPath.matches("/computer/[^/]+/slave-agent[.]jnlp")
-            && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
-            return false;
-        }
-
-        return true;
+        return !restOfPath.matches("/computer/[^/]+/slave-agent[.]jnlp")
+                || !"true".equals(Stapler.getCurrentRequest().getParameter("encrypt"));
     }
 
     /**
@@ -4892,19 +4888,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     boolean isNameUnique(String name, String currentJobName) {
         Item item = getItem(name);
 
+        // the candidate name returned an item, but the item is the item
+        // that the user is configuring so this is ok
+        // the candidate name returned an item, so it is not unique
         if(null==item) {
             // the candidate name didn't return any items so the name is unique
             return true;
         }
-        else if(item.getName().equals(currentJobName)) {
-            // the candidate name returned an item, but the item is the item
-            // that the user is configuring so this is ok
-            return true;
-        }
-        else {
-            // the candidate name returned an item, so it is not unique
-            return false;
-        }
+        else return item.getName().equals(currentJobName);
     }
 
     /**
