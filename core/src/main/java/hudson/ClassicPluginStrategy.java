@@ -107,7 +107,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Sets whether the classloader should include stacktraces on {@link ClassNotFoundException}s.
      *
-     * @param fillInStackTraces {@link true} to fill in stacktraces.
+     * @param fillInStackTraces {@code true} to fill in stacktraces.
      *        The classloader does not inject stacktraces by default.
      * @since TODO
      */
