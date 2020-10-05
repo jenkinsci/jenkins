@@ -663,7 +663,7 @@ THE SOFTWARE.
                 </configuration>
               </execution>
 
-              <!-- <execution>
+              <execution>
                 <phase>test</phase>
                 <id>yarn test</id>
                 <goals>
@@ -673,7 +673,7 @@ THE SOFTWARE.
                   <arguments>test</arguments>
                   <skip>${skipTests}</skip>
                 </configuration>
-              </execution> -->
+              </execution>
 
               <execution>
                 <phase>test</phase>

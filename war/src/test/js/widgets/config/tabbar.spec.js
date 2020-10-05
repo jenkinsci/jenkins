@@ -46,60 +46,6 @@ describe("tabbar-spec tests", function () {
         jest.resetModules();
     });
 
-    it("- test section count", function (done) {
-        jsTest.onPage(function() {
-            document.documentElement.innerHTML = htmlConfigTabbedContent;
-
-            var tabbars = getConfigTabbar();
-            var firstTableMetadata = tabbars.tabs[0];
-
-            expect(firstTableMetadata.configTable.find('.section-header-row').length).toBe(4);
-            expect(firstTableMetadata.sectionCount()).toBe(4);
-            expect($('.tabBar .tab').length).toBe(4);
-
-            expect(firstTableMetadata.sectionIds()).toEqual([
-                'config_general',
-                'config__advanced_project_options',
-                'config__build_triggers',
-                'config__build'
-            ])
-
-            done();
-        }, htmlConfigTabbedContent);
-    });
-
-    // This test may not be deterministic, as it breaks if jest.resetModules is called on afterEach
-    it("- test section activation", function (done) {
-        jsTest.onPage(function() {
-            document.documentElement.innerHTML = htmlConfigTabbedContent;
-
-            var tabbars = getConfigTabbar();
-            var firstTableMetadata = tabbars.tabs[0];
-
-            // The first section ("General") should be active by default
-            expect(firstTableMetadata.activeSection().id).toBe('config_general');
-            expect(firstTableMetadata.activeSectionCount()).toBe(1);
-
-            firstTableMetadata.onShowSection(function() {
-                expect(this.id).toBe('config__build');
-
-                expect(firstTableMetadata.activeSectionCount()).toBe(1);
-                var activeSection = firstTableMetadata.activeSection();
-                expect(activeSection.id).toBe('config__build');
-                expect(activeSection.activeRowCount()).toBe(2);
-                expect(firstTableMetadata.getTopRows().filter('.active').length).toBe(1); // should be activeSection.activeRowCount() - 1
-
-                done();
-            });
-
-            // Mimic the user clicking on one of the tabs. Should make that section active,
-            // with all of the rows in that section having an "active" class.
-            firstTableMetadata.activateSection('config__build');
-            // above 'firstTableMetadata.onShowSection' handler should get called now
-
-        }, htmlConfigTabbedContent);
-    });
-
     it("- test row-group modeling", function (done) {
         jsTest.onPage(function() {
             document.documentElement.innerHTML = htmlConfigTabbedContent;
