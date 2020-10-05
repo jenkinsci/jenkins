@@ -89,6 +89,7 @@ THE SOFTWARE.
                     name="j_username"
                     id="j_username"
                     autocorrect="off"
+                    autocomplete="off"
                     autocapitalize="off"
                     placeholder="${%Username}"
                   />

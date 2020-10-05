@@ -46,7 +46,9 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
                 CloudProvisioningListener.class,
                 getClass(),
                 "canProvision",
-                CloudState.class);
+                Cloud.class,
+                CloudState.class,
+                int.class);
     }
 
     /**
