@@ -252,6 +252,7 @@ THE SOFTWARE.
           <artifactId>maven-javadoc-plugin</artifactId>
           <configuration>
             <quiet>true</quiet>
+            <doclint>all,-missing</doclint>
           </configuration>
         </plugin>
         <plugin>
