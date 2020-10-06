@@ -27,6 +27,7 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.cli.CLICommand;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.security.FederatedLoginService.FederatedIdentity;
@@ -186,6 +187,14 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public IdStrategy getGroupIdStrategy() {
         return getUserIdStrategy();
+    }
+
+    /**
+     * @deprecated No longer used.
+     */
+    @Deprecated
+    public CliAuthenticator createCliAuthenticator(final CLICommand command) {
+        throw new UnsupportedOperationException();
     }
 
     /**
