@@ -17,6 +17,8 @@ package jenkins.security;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.servlet.http.HttpSession;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
@@ -42,6 +44,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @since 1.509
  */
 @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "It is not intended to be serialized. Default values will be used in case of deserialization")
+@Restricted(NoExternalUse.class)
 public class NonSerializableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
 

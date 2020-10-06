@@ -30,10 +30,10 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import jenkins.security.ExceptionTranslationFilter;
 import org.apache.commons.jelly.JellyTagException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 
 /**
  * If a security exception caused {@link JellyTagException},

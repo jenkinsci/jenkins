@@ -23,6 +23,8 @@
  */
 package hudson.security;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,6 +34,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * 
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public class UserDetailsServiceProxy implements UserDetailsService {
     private volatile UserDetailsService delegate;
 

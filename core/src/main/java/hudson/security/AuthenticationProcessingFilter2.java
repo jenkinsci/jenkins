@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import jenkins.security.SecurityListener;
 import jenkins.security.seed.UserSeedProperty;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -46,6 +48,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  * 
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
 
     public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {

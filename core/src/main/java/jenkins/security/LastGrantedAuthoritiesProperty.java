@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -82,6 +84,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     /**
      * Persist the information with the new {@link UserDetails}.
      */
+    @Restricted(NoExternalUse.class)
     public void update(@NonNull Authentication auth) throws IOException {
         List<String> roles = new ArrayList<>();
         for (GrantedAuthority ga : auth.getAuthorities()) {
