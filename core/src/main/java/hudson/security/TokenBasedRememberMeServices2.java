@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
-import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
@@ -72,10 +72,10 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      * Decorate {@link UserDetailsService} so that we can use information stored in
      * {@link LastGrantedAuthoritiesProperty}.
      * <p>
-     * We wrap by {@link ImpersonatingUserDetailsService} in other places too,
+     * We wrap by {@link ImpersonatingUserDetailsService2} in other places too,
      * so this is possibly redundant, but there are many {@link AbstractPasswordBasedSecurityRealm#loadUserByUsername2(String)}
      * implementations that do not do it, so doing it helps retrofit old plugins to benefit from
-     * the user impersonation improvements. Plus multiple {@link ImpersonatingUserDetailsService}
+     * the user impersonation improvements. Plus multiple {@link ImpersonatingUserDetailsService2}
      * do not incur any real performance penalty.
      * <p>
      * {@link TokenBasedRememberMeServices} needs to be used in conjunction with {@link RememberMeAuthenticationProvider}
@@ -84,7 +84,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
      */
     @SuppressWarnings("deprecation")
     public TokenBasedRememberMeServices2(UserDetailsService userDetailsService) {
-        super(Jenkins.get().getSecretKey(), new ImpersonatingUserDetailsService(userDetailsService));
+        super(Jenkins.get().getSecretKey(), new ImpersonatingUserDetailsService2(userDetailsService));
     }
 
     @Override

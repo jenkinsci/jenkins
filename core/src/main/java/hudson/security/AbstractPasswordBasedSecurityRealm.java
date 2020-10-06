@@ -2,7 +2,7 @@ package hudson.security;
 
 import hudson.Util;
 import jenkins.model.Jenkins;
-import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.SecurityListener;
 import org.springframework.security.authentication.AnonymousAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,7 +41,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
         AuthenticationManager authenticationManager = new ProviderManager(authenticator, rmap, aap);
         return new SecurityComponents(
                 authenticationManager,
-                new ImpersonatingUserDetailsService(this::loadUserByUsername2));
+                new ImpersonatingUserDetailsService2(this::loadUserByUsername2));
     }
 
     /**

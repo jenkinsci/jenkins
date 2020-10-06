@@ -69,7 +69,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
-import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
@@ -391,7 +391,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since TODO
      */
     public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
-        ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
+        ImpersonatingUserDetailsService2 userDetailsService = new ImpersonatingUserDetailsService2(
                 Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails2
         );
 
