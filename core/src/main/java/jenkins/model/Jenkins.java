@@ -4259,7 +4259,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CLIMethod(name="restart")
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
-        checkPermission(ADMINISTER);
+        checkPermission(MANAGE);
         if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
             return;
@@ -4283,7 +4283,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CLIMethod(name="safe-restart")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
-        checkPermission(ADMINISTER);
+        checkPermission(MANAGE);
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this,"_safeRestart.jelly");
 

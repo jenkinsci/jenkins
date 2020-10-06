@@ -63,7 +63,7 @@ public class MyViewTest {
         
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);
-        User user = User.get("User1");
+        User user = User.getOrCreateByIdOrFullName("User1");
         FreeStyleProject job = rule.createFreeStyleProject("job");
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);
@@ -95,7 +95,7 @@ public class MyViewTest {
     
     @Test
     public void testGetItems() throws IOException, InterruptedException{
-        User user = User.get("User1");
+        User user = User.getOrCreateByIdOrFullName("User1");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);   
         FreeStyleProject job2 = rule.createFreeStyleProject("job2");
