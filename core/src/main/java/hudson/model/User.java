@@ -446,6 +446,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * 
      * @return userDetails for the user, null if the user or a {@link LastGrantedAuthoritiesProperty} cannot be found
      */
+    @Restricted(NoExternalUse.class)
     public @Nullable UserDetails getUserDetailsBase() {
         LastGrantedAuthoritiesProperty p = this.getProperty(LastGrantedAuthoritiesProperty.class);
         if (p != null)
