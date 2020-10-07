@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import hudson.model.User;
 import java.util.Collections;
 import jenkins.model.Jenkins;
-import jenkins.security.UserDetailsCache;
 import jenkins.security.seed.UserSeedProperty;
 
 import static org.hamcrest.Matchers.emptyString;
