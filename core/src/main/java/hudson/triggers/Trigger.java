@@ -254,7 +254,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {
-                                LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                                if (t.job != null) {
+                                    LOGGER.fine("synchronously triggering SCMTrigger for project " + t.job.getName());
+                                }
                                 t.run();
                             }
                         }
