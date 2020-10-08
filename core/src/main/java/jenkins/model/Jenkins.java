@@ -4891,7 +4891,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // the candidate name didn't return any items so the name is unique
             return true;
         }
-        else return item.getName().equals(currentJobName);
+        else {
+            return item.getName().equals(currentJobName);
+        }    
     }
 
     /**
