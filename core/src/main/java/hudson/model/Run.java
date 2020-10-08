@@ -65,6 +65,7 @@ import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -1538,7 +1539,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public void writeLogTo(long offset, @NonNull XMLOutput out) throws IOException {
-        getLogText().writeHtmlTo(offset, out.asWriter());
+        long start = offset;
+        if (offset > 0) {
+            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
+                if (offset == bufferedInputStream.skip(offset)) {
+                    int r;
+                    do {
+                        r = bufferedInputStream.read();
+                        start = (r == -1)? 0 : start + 1;
+                    } while (r != -1 && r != '\n');
+                }
+            }
+        }
+        getLogText().writeHtmlTo(start, out.asWriter());
     }
 
     /**
