@@ -24,6 +24,7 @@
 package hudson.model;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -33,9 +34,13 @@ public class DisplayNameListenerTest {
     @Test
     public void testOnCopied() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();
-        StubJob src = new StubJob();
+        Job<?,?> src = Mockito.mock(Job.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.doNothing().when(src).save();
+        Mockito.doReturn(null).when(src).getParent();
         src.doSetName("src");
-        StubJob dest = new StubJob();
+        Job<?,?> dest = Mockito.mock(Job.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.doNothing().when(dest).save();
+        Mockito.doReturn(null).when(dest).getParent();
         dest.doSetName("dest");
         dest.setDisplayName("this should be cleared");
         
@@ -52,7 +57,8 @@ public class DisplayNameListenerTest {
         DisplayNameListener listener = new DisplayNameListener();
         final String oldName = "old job name";
         final String newName = "new job name";
-        StubJob src = new StubJob();       
+        Job<?,?> src = Mockito.mock(Job.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.doNothing().when(src).save();
         src.doSetName(newName);
         src.setDisplayName(oldName);
         
@@ -67,7 +73,8 @@ public class DisplayNameListenerTest {
         final String oldName = "old job name";
         final String newName = "new job name";
         final String displayName = "the display name";
-        StubJob src = new StubJob();       
+        Job<?,?> src = Mockito.mock(Job.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.doNothing().when(src).save();      
         src.doSetName(newName);
         src.setDisplayName(displayName);
         

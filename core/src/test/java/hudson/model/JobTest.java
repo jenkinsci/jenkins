@@ -2,6 +2,7 @@ package hudson.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 
 import org.hamcrest.CoreMatchers;
@@ -26,24 +27,21 @@ public class JobTest {
     @Test
     public void testSetDisplayName() throws Exception {
        final String displayName = "testSetDisplayName";
-
-       StubJob j = new StubJob();      
+       Job<?,?> j = Mockito.mock(Job.class, Mockito.CALLS_REAL_METHODS);
+       Mockito.doNothing().when(j).save();
        // call setDisplayNameFromRequest
        j.setDisplayNameOrNull(displayName);
        
        // make sure the displayname has been set
        assertEquals(displayName, j.getDisplayName());
     }
-
+    
     @Test
-    public void testSetDisplayNameZeroLength() throws Exception {
-        StubJob j = new StubJob();
-        // call setDisplayNameFromRequest
-        j.setDisplayNameOrNull("");
-
-        // make sure the getDisplayName returns the project name
-        assertEquals(StubJob.DEFAULT_STUB_JOB_NAME, j.getDisplayName());
+    public void testIsNameEditable() {
+       Job<?,?> j = Mockito.mock(Job.class, Mockito.CALLS_REAL_METHODS);
+       assertTrue(j.isNameEditable());
     }
+
     
     @Issue("JENKINS-14807")
     @Test
