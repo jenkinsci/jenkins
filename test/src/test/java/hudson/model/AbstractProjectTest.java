@@ -53,15 +53,17 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
+
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.ResourceBundle;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
@@ -633,7 +635,48 @@ public class AbstractProjectTest {
         assertThat(responseContent, containsString("ok"));
     }
 
+    @Test
+    public void autoCompleteUpstreamProjects() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        FreeStyleProject p1 = j.createFreeStyleProject("p1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "").getJSONObject(), "p1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "z").getJSONObject());
+        j.createFreeStyleProject("z1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "").getJSONObject(), "p1", "z1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "z").getJSONObject(), "z1");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+                grant(Jenkins.READ).everywhere().toEveryone().
+                grant(Item.READ).everywhere().to("alice").
+                grant(Item.READ).onItems(p1).to("bob"));
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjectsWithUser(p1, "", "alice").getJSONObject(), "p1", "z1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjectsWithUser(p1, "", "bob").getJSONObject(), "p1");
+    }
+
     private HtmlPage requestCheckAssignedLabelString(FreeStyleProject p, String label) throws Exception {
         return j.createWebClient().goTo(p.getUrl() + p.getDescriptor().getDescriptorUrl() + "/checkAssignedLabelString?value=" + Util.rawEncode(label));
+    }
+
+    private JenkinsRule.JSONWebResponse requestAutoCompleteUpstreamProjects(FreeStyleProject p, String value) throws Exception {
+        return j.getJSON(p.getUrl() + p.getDescriptor().getDescriptorUrl() + "/autoCompleteUpstreamProjects?value=" + Util.rawEncode(value));
+    }
+
+    private JenkinsRule.JSONWebResponse requestAutoCompleteUpstreamProjectsWithUser(FreeStyleProject p, String value, String user) throws Exception {
+        String relativeUrl = p.getUrl() + p.getDescriptor().getDescriptorUrl() + "/autoCompleteUpstreamProjects?value=" + Util.rawEncode(value);
+        Page page = j.createWebClient().withBasicCredentials(user).goTo( relativeUrl, "application/json");
+        return new JenkinsRule.JSONWebResponse(page.getWebResponse());
+    }
+
+    private void testAutoCompleteResponse(JSONObject responseBody, String... projects) {
+        assertThat(responseBody.containsKey("suggestions"), is(true));
+        JSONArray suggestions = responseBody.getJSONArray("suggestions");
+        assertThat(suggestions.size(), is(projects.length));
+        List<JSONObject> expected = new ArrayList<>();
+        for (String p : projects) {
+            JSONObject o = new JSONObject();
+            o.put("name", p);
+            expected.add(o);
+        }
+        assertThat(suggestions.containsAll(expected), is(true));
     }
 }
