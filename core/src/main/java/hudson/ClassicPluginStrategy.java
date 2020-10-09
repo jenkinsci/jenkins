@@ -56,6 +56,9 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.jenkinsci.bytecode.Transformer;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -111,6 +114,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      *        The classloader does not inject stacktraces by default.
      * @since TODO
      */
+    @Restricted(Beta.class)
     public ClassicPluginStrategy withFillInStackTracesOnClassNotFoundException(boolean fillInStackTraces) {
         this.fillInStackTracesOnClassNotFoundException = fillInStackTraces;
         return this;

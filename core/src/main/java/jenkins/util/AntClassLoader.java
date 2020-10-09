@@ -31,6 +31,7 @@ import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.util.LoaderUtils;
 import org.apache.tools.ant.util.ReflectUtil;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -582,6 +583,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      *        The classloader does not add stacktraces by default.
      * @since TODO
      */
+    @Restricted(Beta.class)
     public AntClassLoader withFillInStackTracesOnClassNotFound(boolean fillInStackTraces) {
         this.fillInStackTracesOnClassNotFoundException = fillInStackTraces;
         return this;
