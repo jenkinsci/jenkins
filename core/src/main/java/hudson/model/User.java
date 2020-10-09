@@ -155,7 +155,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-55813">JENKINS-55813</a>
      */
     @Restricted(NoExternalUse.class)
-    public static boolean ALLOW_IMPERSONATION_OF_DISABLED_USERS = SystemProperties.getBoolean(User.class.getName() + ".allowImpersonationOfDisabledUsers");
+    private static boolean ALLOW_IMPERSONATION_OF_DISABLED_USERS = SystemProperties.getBoolean(User.class.getName() + ".allowImpersonationOfDisabledUsers");
 
     /**
      * Jenkins historically created a (usually) ephemeral user record when an user with Overall/Administer permission
