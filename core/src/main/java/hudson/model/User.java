@@ -143,6 +143,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
 
     /**
+     * Jenkins does not allow users to be {@linkplain #impersonate(UserDetails)} impersonated} if its UserDetails
+     * return false for any of its validity attributes. These include {@link UserDetails#isEnabled()},
+     * {@link UserDetails#isAccountNonLocked()}, {@link UserDetails#isAccountNonExpired()}, and
+     * {@link UserDetails#isCredentialsNonExpired()}. These attributes are normally enforced either by the underlying
+     * {@link SecurityRealm} service or by the AuthenticationManager. Some realms return user details for these types
+     * of accounts rather than throwing an exception beforehand which are validated before the user can be
+     * impersonated. The system property {@code hudson.model.User.allowImpersonationOfDisabledUsers} can be set to
+     * {@code true} to disable this behavior.
+     *
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-55813">JENKINS-55813</a>
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean ALLOW_IMPERSONATION_OF_DISABLED_USERS = SystemProperties.getBoolean(User.class.getName() + ".allowImpersonationOfDisabledUsers");
+
+    /**
      * Jenkins historically created a (usually) ephemeral user record when an user with Overall/Administer permission
      * accesses a /user/arbitraryName URL.
      * <p>
@@ -425,17 +440,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Restricted(NoExternalUse.class)
     public @NonNull Authentication impersonate(@NonNull UserDetails userDetails) {
-        if (!userDetails.isAccountNonLocked()) {
-            throw new UsernameNotFoundException(Messages.User_Locked(userDetails.getUsername()));
-        }
-        if (!userDetails.isEnabled()) {
-            throw new UsernameNotFoundException(Messages.User_Disabled(userDetails.getUsername()));
-        }
-        if (!userDetails.isAccountNonExpired()) {
-            throw new UsernameNotFoundException(Messages.User_AccountExpired(userDetails.getUsername()));
-        }
-        if (!userDetails.isCredentialsNonExpired()) {
-            throw new UsernameNotFoundException(Messages.User_CredentialsExpired(userDetails.getUsername()));
+        if (!ALLOW_IMPERSONATION_OF_DISABLED_USERS) {
+            if (!userDetails.isAccountNonLocked()) {
+                throw new UsernameNotFoundException(Messages.User_Locked(userDetails.getUsername()));
+            }
+            if (!userDetails.isEnabled()) {
+                throw new UsernameNotFoundException(Messages.User_Disabled(userDetails.getUsername()));
+            }
+            if (!userDetails.isAccountNonExpired()) {
+                throw new UsernameNotFoundException(Messages.User_AccountExpired(userDetails.getUsername()));
+            }
+            if (!userDetails.isCredentialsNonExpired()) {
+                throw new UsernameNotFoundException(Messages.User_CredentialsExpired(userDetails.getUsername()));
+            }
         }
         return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
     }
