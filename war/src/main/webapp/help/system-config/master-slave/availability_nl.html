@@ -1,45 +1,45 @@
 <div>
-    Controleert de beschikbaarheid van een slaafnode.
+    Controleert de beschikbaarheid van een agent node.
 
     <dl>
         <dt><b>
-            Hou deze slaafnode zoveel mogelijk beschikbaar.
+            Hou deze agent node zoveel mogelijk beschikbaar.
         </b></dt>
         <dd>
             Dit is de standaard instelling.
-            In deze modus zal Jenkins de slaafnode altijd beschikbaar proberen te houden.
-            Indien Jenkins deze slaafnode automatisch can starten, dan zal een poging ondernomen
+            In deze modus zal Jenkins de agent node altijd beschikbaar proberen te houden.
+            Indien Jenkins deze agent node automatisch can starten, dan zal een poging ondernomen
 	    worden om deze, bij onbeschikbaarheid, periodisch te herstarten.
-            Jenkins zal de slaafnode niet onbeschikbaar maken.
+            Jenkins zal de agent node niet onbeschikbaar maken.
         </dd>
 
         <!--dt><b>
-            Maak de slaafnode beschikbaar op tussen specifieke tijdstippen.
+            Maak de agent node beschikbaar op tussen specifieke tijdstippen.
         </b></dt>
         <dd>
-            In deze mode zal Jenkins de slaafnode beschikbaar stellen in functie van een opgesteld tijdsschema.
-            Indien Jenkins deze slaafnode automatisch can starten, dan zal een poging ondernomen
+            In deze mode zal Jenkins de agent node beschikbaar stellen in functie van een opgesteld tijdsschema.
+            Indien Jenkins deze agent node automatisch can starten, dan zal een poging ondernomen
 	    worden om deze, bij onbeschikbaarheid tijdens een actieve periode, periodisch te herstarten.
 
-            Gedurende de periode waarin de slaafnode niet actief hoort te zijn, zal de slaafnode onbeschikbaar
+            Gedurende de periode waarin de agent node niet actief hoort te zijn, zal de agent node onbeschikbaar
 	    gesteld worden indien er geen actieve jobs aanwezig zijn op de node.
         </dd-->
 
         <dt><b>
-            Maak de slaafnode op vraag beschikbaar en onbeschikbaar indien de slaafnode onbenut is.
+            Maak de agent node op vraag beschikbaar en onbeschikbaar indien de agent node onbenut is.
         </b></dt>
         <dd>
-            In deze mode zal Jenkins, indien mogelijk, de slaafnode periodisch (her-)starten zolang er jobs zijn
+            In deze mode zal Jenkins, indien mogelijk, de agent node periodisch (her-)starten zolang er jobs zijn
 	    die aan de volgende criteria voldoen:
             <ul>
                 <li>Ze staan al minstens voor de opgegeven opstartperiode in de wachtrij.</li>
-                <li>Ze zijn uitvoerbaar op deze slaafnode</li>
+                <li>Ze zijn uitvoerbaar op deze agent node</li>
             </ul>
 
-            De slaafnode zal onbeschikbaar gemaakt worden indien:
+            De agent node zal onbeschikbaar gemaakt worden indien:
             <ul>
-                <li>Er geen actieve jobs aanwezig zijn op de slaafnode</li>
-                <li>De slaafnode inactief is voor minstens de opgegeven periode</li>
+                <li>Er geen actieve jobs aanwezig zijn op de agent node</li>
+                <li>De agent node inactief is voor minstens de opgegeven periode</li>
             </ul>
         </dd>
     </dl>
