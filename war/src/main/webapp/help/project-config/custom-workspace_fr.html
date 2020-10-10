@@ -1,5 +1,5 @@
 ﻿<div>
-  Pour chaque job, Jenkins alloue un "répertoire de travail" unique. Il s'agit du répertoire
+  Pour chaque projet, Jenkins alloue un "répertoire de travail" unique. Il s'agit du répertoire
   où le code est placé en provenance de l'outil de gestion de configuration et où les builds ont lieu.
   En règle générale, vous devriez laisser Jenkins allouer et nettoyer les répertoires de travail, mais
   dans certaines circonstances, cela peut poser problème. Cette option vous permet de spécifier
@@ -20,10 +20,10 @@
   facilement.
 
   <p>
-  Si vous êtes dans un environnement distribué, à moins d'associer un job à un noeud (une machine) spécifique,
-  Jenkins sera toujours capable de déporter des jobs sur différentes machines esclaves, même si cette option
+  Si vous êtes dans un environnement distribué, à moins d'associer un projet à un noeud (une machine) spécifique,
+  Jenkins sera toujours capable de déporter des projets sur différents agents, même si cette option
   est utilisée. Parfois, cela est souhaitable; parfois, non.<br>
   Par ailleurs, il est possible d'associer plusieurs projets à un même répertoire de travail;
-  assurez-vous dans ce cas que des exécutions concurrentes de ces jobs n'interfèrent pas de façon
+  assurez-vous dans ce cas que des exécutions concurrentes de ces projets n'interfèrent pas de façon
   adverse les unes avec les autres.
 </div>
