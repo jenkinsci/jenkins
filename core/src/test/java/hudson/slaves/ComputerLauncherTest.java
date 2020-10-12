@@ -52,7 +52,7 @@ public class ComputerLauncherTest {
     }
 
     @Test public void jdk5() {
-        assertThrows(IOException.class, () -> ComputerLauncher.checkJavaVersion(new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM, "-", new BufferedReader(new StringReader("java version \"1.5.0_22\"\nJava(TM) 2 Runtime Environment, Standard Edition (build 1.5.0_22-b03)\nJava HotSpot(TM) Server VM (build 1.5.0_22-b03, mixed mode)\n"))));
+        assertThrows(IOException.class, () -> ComputerLauncher.checkJavaVersion(new PrintStream(NullOutputStream.NULL_OUTPUT_STREAM), "-", new BufferedReader(new StringReader("java version \"1.5.0_22\"\nJava(TM) 2 Runtime Environment, Standard Edition (build 1.5.0_22-b03)\nJava HotSpot(TM) Server VM (build 1.5.0_22-b03, mixed mode)\n"))));
     }
 
     @Test public void j2sdk4() {
