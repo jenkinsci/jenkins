@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Restricted(NoExternalUse.class)
@@ -176,18 +177,54 @@ public class ApiTokenStore {
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
+        // 32-char in hex
         String secretValue = Util.toHexString(random);
         String tokenTheUserWillUse = HASH_VERSION + secretValue;
         assert tokenTheUserWillUse.length() == 2 + 32;
         
-        String secretValueHashed = this.plainSecretToHashInHex(secretValue);
+        HashedToken token = prepareAndStoreToken(name, secretValue);
+        
+        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
+    }
+    
+    private static final int VERSION_LENGTH = 2; 
+    private static final int HEX_CHAR_LENGTH = 32; 
+    private static final Pattern CHECK_32_HEX_CHAR = Pattern.compile("[a-f0-9]{32}");
+    
+    /**
+     * Be careful with this method. Depending on how the tokenPlainValue was stored/sent to this method, 
+     * it could be a good idea to generate a new token randomly and revoke this one.
+     */
+    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) {
+        if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
+            LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
+            throw new IllegalArgumentException("The token must consist of 2 characters for the version and 32 hex-characters for the secret");
+        }
+        
+        String hashVersion = tokenPlainValue.substring(0, VERSION_LENGTH);
+        if (!HASH_VERSION.equals(hashVersion)) {
+            throw new IllegalArgumentException("The given version is not recognized: " + hashVersion);
+        }
+        
+        String tokenPlainHexValue = tokenPlainValue.substring(VERSION_LENGTH);
+        tokenPlainHexValue = tokenPlainHexValue.toLowerCase();
+        if (!CHECK_32_HEX_CHAR.matcher(tokenPlainHexValue).matches()) {
+            throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
+        }
+        
+        HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue);
+        
+        return token.uuid;
+    }
+    
+    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue) {
+        String secretValueHashed = this.plainSecretToHashInHex(tokenPlainValue);
         
         HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
         HashedToken token = HashedToken.buildNew(name, hashValue);
         
         this.addToken(token);
-        
-        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
+        return token;
     }
     
     private @NonNull String plainSecretToHashInHex(@NonNull String secretValueInPlainText) {
@@ -281,6 +318,14 @@ public class ApiTokenStore {
         return null;
     }
     
+    public synchronized void revokeAllTokens() {
+        tokenList.clear();
+    }
+    
+    public synchronized void revokeAllTokensExcept(@NonNull String tokenUuid) {
+        tokenList.removeIf(token -> !token.uuid.equals(tokenUuid));
+    }
+    
     /**
      * Given a token identifier and a name, the system will try to find a corresponding token and rename it
      * @return {@code true} iff the token was found and the rename was successful
@@ -314,29 +359,6 @@ public class ApiTokenStore {
         private HashValue(String version, String hash) {
             this.version = version;
             this.hash = hash;
-        }
-    }
-    
-    /**
-     * Contains information about the token and the secret value.
-     * It should not be stored as is, but just displayed once to the user and then forget about it.
-     */
-    @Immutable
-    public static class TokenUuidAndPlainValue {
-        /**
-         * The token identifier to allow manipulation of the token
-         */
-        public final String tokenUuid;
-        
-        /**
-         * Confidential information, must not be stored.<p>
-         * It's meant to be send only one to the user and then only store the hash of this value.
-         */
-        public final String plainValue;
-        
-        private TokenUuidAndPlainValue(String tokenUuid, String plainValue) {
-            this.tokenUuid = tokenUuid;
-            this.plainValue = plainValue;
         }
     }
     

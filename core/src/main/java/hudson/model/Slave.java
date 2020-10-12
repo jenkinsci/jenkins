@@ -200,7 +200,6 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
 
         this.nodeProperties.replaceBy(nodeProperties);
-         Slave node = (Slave) Jenkins.get().getNode(name);
 
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
