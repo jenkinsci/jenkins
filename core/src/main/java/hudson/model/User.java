@@ -77,6 +77,7 @@ import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
@@ -154,7 +155,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-55813">JENKINS-55813</a>
      */
-    @Restricted(NoExternalUse.class)
     private static boolean ALLOW_IMPERSONATION_OF_DISABLED_USERS = SystemProperties.getBoolean(User.class.getName() + ".allowImpersonationOfDisabledUsers");
 
     /**
