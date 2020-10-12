@@ -32,7 +32,15 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 import hudson.ExtensionList;
-import hudson.security.*;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.security.AbstractPasswordBasedSecurityRealm;
+import hudson.security.AccessDeniedException2;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.GroupDetails;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.Permission;
+import hudson.security.UserMayOrMayNotExistException;
 import hudson.tasks.MailAddressResolver;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
@@ -55,7 +63,12 @@ import org.jenkinsci.main.modules.sshd.SSHD;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.jvnet.hudson.test.*;
+import org.jvnet.hudson.test.FakeChangeLogSCM;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.springframework.dao.DataAccessException;
 
@@ -775,49 +788,6 @@ public class UserTest {
 
     @Issue("JENKINS-55813")
     private static class DisabledAccountsRealm extends AbstractPasswordBasedSecurityRealm {
-        private static class UserStub implements UserDetails {
-            private final String username;
-
-            private UserStub(String username) {
-                this.username = username;
-            }
-
-            @Override
-            public GrantedAuthority[] getAuthorities() {
-                return new GrantedAuthority[0];
-            }
-
-            @Override
-            public String getPassword() {
-                return "";
-            }
-
-            @Override
-            public String getUsername() {
-                return username;
-            }
-
-            @Override
-            public boolean isAccountNonExpired() {
-                return true;
-            }
-
-            @Override
-            public boolean isAccountNonLocked() {
-                return true;
-            }
-
-            @Override
-            public boolean isCredentialsNonExpired() {
-                return true;
-            }
-
-            @Override
-            public boolean isEnabled() {
-                return true;
-            }
-        }
-
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
             return loadUserByUsername(username);
@@ -825,42 +795,9 @@ public class UserTest {
 
         @Override
         public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-            switch (username) {
-                case "locked":
-                    return new UserStub(username) {
-                        @Override
-                        public boolean isAccountNonLocked() {
-                            return false;
-                        }
-                    };
-
-                case "disabled":
-                    return new UserStub(username) {
-                        @Override
-                        public boolean isEnabled() {
-                            return false;
-                        }
-                    };
-
-                case "expired":
-                    return new UserStub(username) {
-                        @Override
-                        public boolean isAccountNonExpired() {
-                            return false;
-                        }
-                    };
-
-                case "password_expired":
-                    return new UserStub(username) {
-                        @Override
-                        public boolean isCredentialsNonExpired() {
-                            return false;
-                        }
-                    };
-
-                default:
-                    return new UserStub(username);
-            }
+            return new org.acegisecurity.userdetails.User(username, username, !username.equals("disabled"),
+                    !username.equals("expired"), !username.equals("password_expired"), !username.equals("locked"),
+                    new GrantedAuthority[0]);
         }
 
         @Override
@@ -900,8 +837,11 @@ public class UserTest {
         User user = User.getOrCreateByIdOrFullName("enabled");
         assertNotNull("Expected user impersonation to work for enabled users",
                 user.impersonate());
+
+        // check that common authentication methods are covered by these checks
         assertNotNull("Expected login to work for enabled users",
                 j.createWebClient().login("enabled"));
+
         assertNotNull("Expected API tokens to work for enabled users",
                 j.createWebClient().withBasicApiToken(user).getPage(j.jenkins));
 
@@ -926,8 +866,10 @@ public class UserTest {
                 UsernameNotFoundException.class, user::impersonate).getMessage();
         assertThat(message, containsString(expectedErrorMessageSubstring));
 
+        // check that common authentication methods are covered by these checks
         assertThrows("Expected HTTP error when logging in with user " + username,
                 FailingHttpStatusCodeException.class, () -> j.createWebClient().login(username));
+
         assertThrows("Expected HTTP error when using API token for user " + username,
                 FailingHttpStatusCodeException.class, () -> j.createWebClient().withBasicApiToken(user).getPage(j.jenkins));
 
