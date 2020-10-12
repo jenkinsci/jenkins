@@ -42,7 +42,7 @@ public class RemotingJarSignatureTest {
             if (name.startsWith("META-INF/") && name.endsWith(".DSA")) continue;
 
             // make sure bits are signed
-            IOUtils.copy(myJar.getInputStream(entry), new NullOutputStream());
+            IOUtils.copy(myJar.getInputStream(entry), NullOutputStream.NULL_OUTPUT_STREAM);
             if (entry.getCodeSigners()==null) {
                 fail("No signature for " + name);
             }
