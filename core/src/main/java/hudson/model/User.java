@@ -143,11 +143,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
 
     /**
-     * Jenkins does not allow users to be {@linkplain #impersonate(UserDetails)} impersonated} if its UserDetails
+     * Jenkins does not allow users to be {@linkplain #impersonate(UserDetails)} impersonated} if its {@link UserDetails}
      * return false for any of its validity attributes. These include {@link UserDetails#isEnabled()},
      * {@link UserDetails#isAccountNonLocked()}, {@link UserDetails#isAccountNonExpired()}, and
      * {@link UserDetails#isCredentialsNonExpired()}. These attributes are normally enforced either by the underlying
-     * {@link SecurityRealm} service or by the AuthenticationManager. Some realms return user details for these types
+     * {@link SecurityRealm} service or by the {@link AuthenticationManager}. Some realms return user details for these types
      * of accounts rather than throwing an exception beforehand which are validated before the user can be
      * impersonated. The system property {@code hudson.model.User.allowImpersonationOfDisabledUsers} can be set to
      * {@code true} to disable this behavior.
