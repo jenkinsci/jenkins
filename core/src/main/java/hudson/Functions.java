@@ -2302,6 +2302,7 @@ public class Functions {
      * @return Time interval in seconds between two ajax call, minimum and default is 5.
      * Made to be set in jelly for the script hudson-behavior.js refreshPart().
      */
+    @Restricted(NoExternalUse.class)
     public static int getAjaxRefreshInterval() {
         int ajaxRefresh = SystemProperties.getInteger("jenkins.ui.ajaxRefreshInterval",5);
         return ajaxRefresh >= 5 ? ajaxRefresh : 5;
