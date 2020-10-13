@@ -45,7 +45,7 @@ THE SOFTWARE.
       <j:set var="title" value="${%Build Queue(items.size())}" />
     </j:otherwise>
   </j:choose>
-  <l:pane title="${title}" width="2" id="buildQueue">
+  <l:pane title="${title} ${app.ajaxRefreshInterval}" width="2" id="buildQueue">
     <st:adjunct includes="lib.form.link.link"/>
     <j:if test="${app.quietingDown}">
       <tr>
@@ -103,7 +103,8 @@ THE SOFTWARE.
   <!-- schedule updates only for the full page reload -->
   <j:if test="${ajax==null and h.hasPermission(app.READ)}">
     <script defer="defer">
-      refreshPart('buildQueue',"${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue");
+      refreshPart('buildQueue',"${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue",
+      ${app.ajaxRefreshInterval});
     </script>
   </j:if>
 </j:jelly>

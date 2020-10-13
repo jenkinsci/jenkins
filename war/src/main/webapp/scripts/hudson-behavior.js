@@ -1650,8 +1650,16 @@ function expandTextArea(button,id) {
 
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
-function refreshPart(id,url) {
+// - id: component id
+// - url: url to call to refresh the html piece for the component
+// - refreshIntervalInSeconds: (optional, 5 by default) define the interval in seconds between 2 ajax calls.
+function refreshPart(id,url,refreshIntervalInSeconds) {
     var intervalID = null;
+    var refreshInterval = 5000; //default is 5s
+    if(refreshIntervalInSeconds != undefined && refreshIntervalInSeconds > 3){
+        refreshInterval = 1000 * refreshIntervalInSeconds;
+    }
+
     var f = function() {
         if(isPageVisible()) {
             new Ajax.Request(url, {
@@ -1684,7 +1692,7 @@ function refreshPart(id,url) {
     // if run as test, just do it once and do it now to make sure it's working,
     // but don't repeat.
     if(isRunAsTest) f();
-    else intervalID = window.setInterval(f, 5000);
+    else intervalID = window.setInterval(f, refreshInterval);
 }
 
 
