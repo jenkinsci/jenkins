@@ -1480,7 +1480,7 @@ public class Util {
         if (isOverridden(base, derived, methodName, types)) {
             return supplier.get();
         } else {
-            throw new AbstractMethodError("You must override at least one of the "
+            throw new AbstractMethodError("The class " + derived.getName() + " must override at least one of the "
                     + base.getSimpleName() + "." + methodName + " methods");
         }
     }
