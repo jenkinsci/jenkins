@@ -1652,11 +1652,12 @@ function expandTextArea(button,id) {
 // by using the contents fetched from the given URL.
 // - id: component id
 // - url: url to call to refresh the html piece for the component
-// - refreshIntervalInSeconds: (optional, 5 by default) define the interval in seconds between 2 ajax calls.
+// - refreshIntervalInSeconds: (optional) 5 by default and as minimum - define the interval in seconds between 2 ajax
+calls.
 function refreshPart(id,url,refreshIntervalInSeconds) {
     var intervalID = null;
     var refreshInterval = 5000; //default is 5s
-    if(refreshIntervalInSeconds != undefined && refreshIntervalInSeconds > 3){
+    if(refreshIntervalInSeconds != undefined && refreshIntervalInSeconds >= 5) {
         refreshInterval = 1000 * refreshIntervalInSeconds;
     }
 
