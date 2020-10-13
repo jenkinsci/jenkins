@@ -734,15 +734,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient final AdjunctManager adjuncts;
 
     /**
-     * Interval in seconds between 2 ajax calls.
-     */
-    private int ajaxRefreshInterval = 6;
-    public int getAjaxRefreshInterval() { return this.ajaxRefreshInterval;}
-    public void setAjaxRefreshInterval(int interval) {
-        this.ajaxRefreshInterval = interval;
-    }
-
-    /**
      * Code that handles {@link ItemGroup} work.
      */
     private transient final ItemGroupMixIn itemGroupMixIn = new ItemGroupMixIn(this,this) {

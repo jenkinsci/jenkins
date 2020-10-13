@@ -104,7 +104,7 @@ THE SOFTWARE.
   <j:if test="${ajax==null and h.hasPermission(app.READ)}">
     <script defer="defer">
       refreshPart('buildQueue',"${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue",
-      ${app.ajaxRefreshInterval});
+      ${h.ajaxRefreshInterval});
     </script>
   </j:if>
 </j:jelly>
