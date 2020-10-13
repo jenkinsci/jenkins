@@ -14,7 +14,7 @@ This page provides information about contributing code to the Jenkins core codeb
     * For JDK 11 there might be some compatibility issues in developer tools,
       please see [this page](https://wiki.jenkins.io/display/JENKINS/Java+11+Developer+Guidelines#Java11DeveloperGuidelines-Knowndevelopertoolsissues) for more info.
       If you hit a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
-  * Maven 3.5.4 or above. You can [download maven] here.
+  * Maven 3.5.4 or above. You can [download Maven here].
   * Any IDE which supports importing Maven projects.
   * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
     * Frontend tasks are run using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
@@ -27,8 +27,8 @@ You can find them by using this query (check the link) for [newbie friendly issu
 
 ## Building and Debugging
 
-The core of Jenkins' build flow is built around Maven.
-Here is a description of the [building and debugging process].
+The Jenkins core build flow is built around Maven.
+You can read a description of the [building and debugging process here].
 
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
@@ -98,7 +98,7 @@ To submit a pull request:
 
 1. Commit your changes and push them to your fork on GitHub.
 It is a good practice is to create branches instead of pushing to master.
-2. In GitHub Web UI, click the _New Pull Request_ button.
+2. In the GitHub Web UI, click the _New Pull Request_ button.
 3. Select `jenkinsci` as _base fork_ and `master` as `base`, then click _Create Pull Request_.
   * We integrate all changes into the master branch towards the Weekly releases.
   * After that, the changes may be backported to the current LTS baseline by the LTS Team.
@@ -144,13 +144,13 @@ just submit a pull request.
 * [Jenkins Contribution Landing Page](https://jenkins.io/participate/)
 * [Jenkins IRC Channel](https://jenkins.io/chat/)
 * [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
-* [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
+* [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20coavenponent%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
-[download maven]: https://maven.apache.org/download.cgi
+[download Maven]: https://maven.apache.org/download.cgi
 [Preparing for Plugin Development]: https://jenkins.io/doc/developer/tutorial/prepare/
 [newbie friendly issues]: https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
 [Participate]: https://jenkins.io/participate/
-[building and debugging process]: https://jenkins.io/doc/developer/building/
+[building and debugging process here]: https://jenkins.io/doc/developer/building/
 [guide]: https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins
 [Remote Debug Flags]: https://stackoverflow.com/questions/975271/remote-debugging-a-java-application
 [Acceptance Test Harness (ATH)]: https://github.com/jenkinsci/acceptance-test-harness

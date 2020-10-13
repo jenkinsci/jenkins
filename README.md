@@ -62,7 +62,7 @@ Jenkins Code of Conduct can be found [here](https://www.jenkins.io/project/condu
 
 # Adopters
 
-Jenkins is used by millions of users, and thousands of companies.
+Jenkins is used by millions of user and thousands of companies.
 See [adopters](https://www.jenkins.io/project/adopters/) for the list of Jenkins adopters and their success stories.
 
 # License
