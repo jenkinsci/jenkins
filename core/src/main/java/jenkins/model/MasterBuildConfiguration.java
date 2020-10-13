@@ -39,10 +39,6 @@ import java.io.IOException;
 @Extension(ordinal=500) @Symbol("masterBuild")
 public class MasterBuildConfiguration extends GlobalConfiguration {
 
-    public int getRefreshInterval() {
-        return Jenkins.get().getAjaxRefreshInterval();
-    }
-
     public int getNumExecutors() {
         return Jenkins.get().getNumExecutors();
     }
