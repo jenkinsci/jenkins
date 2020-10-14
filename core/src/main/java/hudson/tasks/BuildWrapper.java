@@ -27,6 +27,7 @@ import hudson.ExtensionPoint;
 import hudson.Launcher;
 import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
+import hudson.Util;
 import hudson.console.ConsoleLogFilter;
 import hudson.model.*;
 import hudson.model.Run.RunnerAbortedException;
@@ -133,26 +134,38 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *      non-null if the build can continue, null if there was an error
      *      and the build needs to be aborted.
      * @throws IOException
-     *      terminates the build abnormally. Hudson will handle the exception
-     *      and reports a nice error message.
+     *      terminates the build abnormally. Jenkins will handle the exception
+     *      and report a nice error message.
+     * @throws UnsupportedOperationException
+     *      when a plugin does not support this type of build.
      * @since 1.150
      */
     public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
-        if (build instanceof Build)
+        // If it's a Build, and the plugin implements the deprecated API, use it.
+        if (build instanceof Build && Util.isOverridden(BuildWrapper.class, getClass(), "setUp", Build.class, Launcher.class, BuildListener.class))
             return setUp((Build)build,launcher,listener);
-        else
-            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
-                    "deprecated setUp(Build,Launcher,BuildListener) method. " +
-                    "Update the plugin to use setUp(AbstractBuild, Launcher, BuildListener) instead.");
+        else // not a supported build type
+            throw new UnsupportedOperationException("Plugin class '" + this.getClass().getName() +
+                    "' does not support a build of type '" + build.getClass().getName() + "'.");
     }
 
     /**
+     * @throws AbstractMethodError
+     *     when a plugin overrides neither this method nor {@link #setUp(AbstractBuild, Launcher, BuildListener)}.
+     *
      * @deprecated since 2007-10-28.
      *      Use {@link #setUp(AbstractBuild, Launcher, BuildListener)} instead.
      */
     @Deprecated
     public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
-        throw new UnsupportedOperationException(getClass()+" needs to implement the setUp method");
+        if (Util.isOverridden(BuildWrapper.class, getClass(), "setUp", AbstractBuild.class, Launcher.class, BuildListener.class)) {
+            // old client calling newer implementation. forward the call.
+            return setUp((AbstractBuild)build, launcher, listener);
+        } else {
+            // happens only if the subtype fails to override either setUp method
+            throw new AbstractMethodError("Plugin class '" + this.getClass().getName() + "' does not override " +
+                    "either overload of the setUp method.");
+        }
     }
 
     /**
