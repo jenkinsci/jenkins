@@ -1213,8 +1213,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 			LOGGER.info("Falling back to ClassicPluginStrategy");
 		}
 
-		// default and fallback
-		return new ClassicPluginStrategy(this);
+		// Default and fallback strategy
+        // The default Plugin Manager implementation does not propagate/log stacktraces for ClassNotFoundExceptions,
+        // hence stacktraces are omitted by default for better performance.
+        boolean fillInClassNotFoundExceptionStackTraces =SystemProperties.getBoolean(
+                ClassicPluginStrategy.class.getName() + ".fillInClassNotFoundExceptionStackTraces", false);
+		return new ClassicPluginStrategy(this)
+                .withFillInStackTracesOnClassNotFoundException(fillInClassNotFoundExceptionStackTraces);
     }
 
     public PluginStrategy getPluginStrategy() {

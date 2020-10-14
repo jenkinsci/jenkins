@@ -38,6 +38,7 @@ import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.AntClassLoader;
 import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
+import jenkins.util.java.ClassNotFoundNoStackTraceException;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -55,6 +56,9 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.jenkinsci.bytecode.Transformer;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -92,6 +96,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     };
 
     private PluginManager pluginManager;
+    private boolean fillInStackTracesOnClassNotFoundException;
 
     /**
      * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
@@ -100,6 +105,19 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     public ClassicPluginStrategy(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
+    }
+
+    /**
+     * Sets whether the classloader should include stacktraces on {@link ClassNotFoundException}s.
+     *
+     * @param fillInStackTraces {@code true} to fill in stacktraces.
+     *        The classloader does not inject stacktraces by default.
+     * @since TODO
+     */
+    @Restricted(Beta.class)
+    public ClassicPluginStrategy withFillInStackTracesOnClassNotFoundException(boolean fillInStackTraces) {
+        this.fillInStackTracesOnClassNotFoundException = fillInStackTraces;
+        return this;
     }
 
     @Override public String getShortName(File archive) throws IOException {
@@ -296,11 +314,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 classLoader.setParentFirst( false );
                 classLoader.setParent( parent );
                 classLoader.addPathFiles( paths );
+                classLoader.withFillInStackTracesOnClassNotFound(fillInStackTracesOnClassNotFoundException);
                 return classLoader;
             }
         }
 
         AntClassLoader2 classLoader = new AntClassLoader2(parent);
+        classLoader.withFillInStackTracesOnClassNotFound(fillInStackTracesOnClassNotFoundException);
         classLoader.addPathFiles(paths);
         return classLoader;
     }
@@ -515,7 +535,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         final long dirTime = archive.lastModified();
         // this ZipOutputStream is reused and not created for each directory
-        try (ZipOutputStream wrappedZOut = new ZipOutputStream(new NullOutputStream()) {
+        try (ZipOutputStream wrappedZOut = new ZipOutputStream(NullOutputStream.NULL_OUTPUT_STREAM) {
             @Override
             public void putNextEntry(ZipEntry ze) throws IOException {
                 ze.setTime(dirTime+1999);   // roundup
@@ -649,7 +669,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
 
-            throw new ClassNotFoundException(name);
+            throw fillInStackTracesOnClassNotFoundException ?
+                    new ClassNotFoundException(name) : new ClassNotFoundNoStackTraceException(name);
         }
 
         @Override

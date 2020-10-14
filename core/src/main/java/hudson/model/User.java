@@ -711,9 +711,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public @NonNull Set<AbstractProject<?, ?>> getProjects() {
         Set<AbstractProject<?, ?>> r = new HashSet<>();
-        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class))
-            if (p.hasParticipant(this))
-                r.add(p);
+        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class, p -> p.hasParticipant(this)))
+            r.add(p);
         return r;
     }
 
