@@ -6,6 +6,7 @@ import hudson.scm.ChangeLogSet;
 /**
  * The type Rss feed item for Rss changelog.
  */
+@Restricted(NoExternalUse.class)
 public class RssFeedItem {
     private final ChangeLogSet.Entry entry;
     private final int index;
