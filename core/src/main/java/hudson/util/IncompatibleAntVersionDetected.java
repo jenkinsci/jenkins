@@ -54,6 +54,6 @@ public class IncompatibleAntVersionDetected extends BootFailure {
     }
 
     public URL getWhereAntIsLoaded() throws IOException {
-        return Which.jarURL(antClass);
+        return Which.classFileUrl(antClass);
     }
 }
