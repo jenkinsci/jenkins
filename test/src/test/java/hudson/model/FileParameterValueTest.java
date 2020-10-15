@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -45,6 +46,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class FileParameterValueTest {
@@ -378,5 +381,33 @@ public class FileParameterValueTest {
         HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
         String workspaceContent = workspacePage.getWebResponse().getContentAsString();
         assertThat(workspaceContent, containsString("~name"));
+    }
+
+    @Issue("SECURITY-1793")
+    @Test
+    @LocalData
+    public void contentSecurityPolicy() throws Exception {
+        FreeStyleProject p = j.jenkins.getItemByFullName("SECURITY-1793", FreeStyleProject.class);
+
+        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
+        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+            assertEquals("Header set: " + header, DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header));
+        }
+
+        String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
+        String initialValue = System.getProperty(propName);
+        try {
+            System.setProperty(propName, "");
+            page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/parameters/parameter/html.html/html.html");
+            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                assertFalse("Header not set: " + header, page.getWebResponse().getResponseHeaders().contains(header));
+            }
+        } finally {
+            if (initialValue == null) {
+                System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
+            } else {
+                System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", initialValue);
+            }
+        }
     }
 }

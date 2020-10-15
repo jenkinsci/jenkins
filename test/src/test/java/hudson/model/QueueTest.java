@@ -28,6 +28,9 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
@@ -88,6 +91,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -131,6 +135,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasProperty;
@@ -1203,6 +1208,48 @@ public class QueueTest {
         // Before the JENKINS-57805 fix, the test times out because the `NullPointerException` repeatedly thrown from
         // `BrokenAffinityKeyProject.getAffinityKey()` prevents `Queue.maintain()` from completing.
         r.buildAndAssertSuccess(brokenProject);
+    }
+
+    @Test
+    @Issue("SECURITY-1537")
+    public void regularTooltipDisplayedCorrectly() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+
+        String expectedLabel = "\"expected label\"";
+        p.setAssignedLabel(Label.get(expectedLabel));
+
+        p.scheduleBuild2(0);
+
+        String tooltip = buildAndExtractTooltipAttribute();
+        assertThat(tooltip, containsString(expectedLabel.substring(1, expectedLabel.length() - 1)));
+    }
+
+    @Test
+    @Issue("SECURITY-1537")
+    public void preventXssInCauseOfBlocking() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setAssignedLabel(Label.get("\"<img/src='x' onerror=alert(123)>xss\""));
+
+        p.scheduleBuild2(0);
+
+        String tooltip = buildAndExtractTooltipAttribute();
+        assertThat(tooltip, not(containsString("<img")));
+        assertThat(tooltip, containsString("&lt;"));
+    }
+
+    private String buildAndExtractTooltipAttribute() throws Exception {
+        JenkinsRule.WebClient wc = r.createWebClient();
+
+        HtmlPage page = wc.goTo("");
+
+        DomElement buildQueue = page.getElementById("buildQueue");
+        DomNodeList<HtmlElement> anchors = buildQueue.getElementsByTagName("a");
+        HtmlAnchor anchorWithTooltip = (HtmlAnchor) anchors.stream()
+                .filter(a -> StringUtils.isNotEmpty(a.getAttribute("tooltip")))
+                .findFirst().orElseThrow(IllegalStateException::new);
+
+        String tooltip = anchorWithTooltip.getAttribute("tooltip");
+        return tooltip;
     }
 
     public static class BrokenAffinityKeyProject extends Project<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> implements TopLevelItem {

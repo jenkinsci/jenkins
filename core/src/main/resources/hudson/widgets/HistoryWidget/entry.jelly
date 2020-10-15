@@ -74,7 +74,7 @@ THE SOFTWARE.
           </div>
         </j:if>
       </div>
-      <j:if test="${!empty build.description}">
+      <j:if test="${!empty build.truncatedDescription}">
         <div class="pane desc indent-multiline">
           <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
         </div>

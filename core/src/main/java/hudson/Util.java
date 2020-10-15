@@ -79,6 +79,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -1458,6 +1459,30 @@ public class Util {
         // the lookup will either return null or the base method when no override has been found (depending on whether
         // the base is an interface)
         return derivedMethod != null && derivedMethod != baseMethod;
+    }
+
+    /**
+     * Calls the given supplier if the method defined on the base type with the given arguments is overridden in the
+     * given derived type.
+     *
+     * @param supplier   The supplier to call if the method is indeed overridden.
+     * @param base       The base type.
+     * @param derived    The derived type.
+     * @param methodName The name of the method.
+     * @param types      The types of the arguments for the method.
+     * @return {@code true} when {@code derived} provides the specified method other than as inherited from {@code base}.
+     * @throws IllegalArgumentException When {@code derived} does not derive from {@code base}, or when {@code base}
+     *                                  does not contain the specified method.
+     * @throws AbstractMethodError If the derived class doesn't override the given method.
+     * @since TODO
+     */
+    public static <T> T ifOverridden(Supplier<T> supplier, @NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
+        if (isOverridden(base, derived, methodName, types)) {
+            return supplier.get();
+        } else {
+            throw new AbstractMethodError("The class " + derived.getName() + " must override at least one of the "
+                    + base.getSimpleName() + "." + methodName + " methods");
+        }
     }
 
     private static Method getMethod(@NonNull Class<?> clazz, @Nullable Class<?> base, @NonNull String methodName, @NonNull Class<?>... types) {

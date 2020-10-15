@@ -30,6 +30,7 @@ import hudson.model.User;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.apitoken.ApiTokenStore;
+import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.userdetails.UserDetails;
@@ -181,7 +182,7 @@ public class WhoAmITest {
 
         User user = User.getById("user", true);
         ApiTokenProperty prop = user.getProperty(ApiTokenProperty.class);
-        ApiTokenStore.TokenUuidAndPlainValue token = prop.getTokenStore().generateNewToken("test");
+        TokenUuidAndPlainValue token = prop.getTokenStore().generateNewToken("test");
 
         JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("user", token.plainValue);
         String base64ApiToken = new String(Base64.getEncoder().encode(("user:" + token.plainValue).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);

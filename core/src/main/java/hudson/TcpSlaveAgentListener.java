@@ -345,7 +345,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 }
 
                 InputStream i = s.getInputStream();
-                IOUtils.copy(i, new NullOutputStream());
+                IOUtils.copy(i, NullOutputStream.NULL_OUTPUT_STREAM);
                 s.shutdownInput();
             } finally {
                 s.close();

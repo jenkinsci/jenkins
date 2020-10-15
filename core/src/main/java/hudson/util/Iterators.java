@@ -169,23 +169,21 @@ public class Iterators {
      * @since 1.150
      */
     public static <T> Iterable<T> reverse(final List<T> lst) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                final ListIterator<T> itr = lst.listIterator(lst.size());
-                return new Iterator<T>() {
-                    public boolean hasNext() {
-                        return itr.hasPrevious();
-                    }
+        return () -> {
+            final ListIterator<T> itr = lst.listIterator(lst.size());
+            return new Iterator<T>() {
+                public boolean hasNext() {
+                    return itr.hasPrevious();
+                }
 
-                    public T next() {
-                        return itr.previous();
-                    }
+                public T next() {
+                    return itr.previous();
+                }
 
-                    public void remove() {
-                        itr.remove();
-                    }
-                };
-            }
+                public void remove() {
+                    itr.remove();
+                }
+            };
         };
     }
 
@@ -196,23 +194,21 @@ public class Iterators {
      * @since 1.492
      */
     public static <T> Iterable<T> wrap(final Iterable<T> base) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                final Iterator<T> itr = base.iterator();
-                return new Iterator<T>() {
-                    public boolean hasNext() {
-                        return itr.hasNext();
-                    }
+        return () -> {
+            final Iterator<T> itr = base.iterator();
+            return new Iterator<T>() {
+                public boolean hasNext() {
+                    return itr.hasNext();
+                }
 
-                    public T next() {
-                        return itr.next();
-                    }
+                public T next() {
+                    return itr.next();
+                }
 
-                    public void remove() {
-                        itr.remove();
-                    }
-                };
-            }
+                public void remove() {
+                    itr.remove();
+                }
+            };
         };
     }
 
@@ -320,13 +316,9 @@ public class Iterators {
      */
     @SafeVarargs
     public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
-                    protected Iterator<T> expand(Iterable<? extends T> iterable) {
-                        return Iterators.<T>cast(iterable).iterator();
-                    }
-                };
+        return () -> new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
+            protected Iterator<T> expand(Iterable<? extends T> iterable) {
+                return Iterators.<T>cast(iterable).iterator();
             }
         };
     }
@@ -348,11 +340,7 @@ public class Iterators {
      * Filters another iterator by eliminating duplicates.
      */
     public static <T> Iterable<T> removeDups(final Iterable<T> base) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return removeDups(base.iterator());
-            }
-        };
+        return () -> removeDups(base.iterator());
     }
 
     @SafeVarargs
