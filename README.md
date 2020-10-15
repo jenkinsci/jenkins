@@ -40,7 +40,7 @@ Latest releases:
 
 
 # Source
-Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
+Our latest and greatest source of Jenkins can be found on [GitHub]. Feel free to fork us!
 
 # Contributing to Jenkins
 
