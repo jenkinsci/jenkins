@@ -18,7 +18,6 @@
 package jenkins.util;
 
 import jenkins.telemetry.impl.java11.MissingClassTelemetry;
-import jenkins.util.java.ClassNotFoundNoStackTraceException;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -31,7 +30,6 @@ import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.util.LoaderUtils;
 import org.apache.tools.ant.util.ReflectUtil;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -242,12 +240,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * Whether or not the context loader is currently saved.
      */
     private boolean isContextLoaderSaved = false;
-
-    /**
-     * Whether or not to include stacktraces in {@link ClassNotFoundException}.
-     * @since TODO
-     */
-    private boolean fillInStackTracesOnClassNotFoundException;
 
     /**
      * Create an Ant ClassLoader for a given project, with
@@ -574,19 +566,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      */
     public synchronized void setIsolated(boolean isolated) {
         ignoreBase = isolated;
-    }
-
-    /**
-     * Sets whether the classloader should include stacktraces on {@link ClassNotFoundException}s.
-     *
-     * @param fillInStackTraces {@code true} to fill in stacktraces.
-     *        The classloader does not add stacktraces by default.
-     * @since TODO
-     */
-    @Restricted(Beta.class)
-    public AntClassLoader withFillInStackTracesOnClassNotFound(boolean fillInStackTraces) {
-        this.fillInStackTracesOnClassNotFoundException = fillInStackTraces;
-        return this;
     }
 
     /**
@@ -1405,9 +1384,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
                         + ioe.getMessage() + ")", Project.MSG_VERBOSE);
             }
         }
-
-        throw fillInStackTracesOnClassNotFoundException
-                ? new ClassNotFoundException(name) : new ClassNotFoundNoStackTraceException(name);
+        throw new ClassNotFoundException(name);
     }
 
     /**
