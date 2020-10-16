@@ -203,7 +203,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     public boolean isSelfLabel() {
         Set<Node> nodes = getNodes();
-        return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
+        return nodes.size() == 1 && nodes.iterator().next().getSelfLabel().equals(this);
     }
 
     private static class NodeSorter implements Comparator<Node>, Serializable {
