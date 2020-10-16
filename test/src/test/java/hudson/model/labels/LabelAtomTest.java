@@ -13,6 +13,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.empty;
 
 public class LabelAtomTest {
 
@@ -42,7 +43,7 @@ public class LabelAtomTest {
         assertThat(l.getNodes(), containsInAnyOrder(n1,n2));
         assertThat(l2.getNodes().size(), is(2));
         assertThat(l2.getNodes(), containsInAnyOrder(n3,n2));
-        assertThat(l3.getNodes().isEmpty(), is(true));
+        assertThat(l3.getNodes(), is(empty()));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class LabelAtomTest {
         Label l2 = new LabelAtom("label2");
         assertThat(l.getClouds().size(), is(1));
         assertThat(l.getClouds(), containsInAnyOrder(test));
-        assertThat(l2.getClouds().isEmpty(), is(true));
+        assertThat(l2.getClouds(), is(empty()));
     }
 
     private static class TestCloud extends Cloud {
