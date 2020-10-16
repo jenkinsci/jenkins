@@ -313,16 +313,6 @@ pre.console {
   float: right;
 }
 
-.setting-main > .yui-button {
-  clear: both;
-  float: right;
-}
-
-.setting-name, .setting-main > input, .setting-main > textarea {
-  //vertical-align: middle; // TODO tables to divs needs this
-  margin-top: 0;
-}
-
 .expanding-input {
   display: flex;
 }
@@ -1417,13 +1407,11 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= YUI dialog ========================= */
 
-.dialog .hd {
-    font-size: var(--font-size-xs) !important;
-}
 /* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
  to the latest YUI will fix this? */
 .dialog .hd {
     margin: 0 !important;
+    font-size: var(--font-size-xs) !important;
 }
 
 .dialog .bd {
