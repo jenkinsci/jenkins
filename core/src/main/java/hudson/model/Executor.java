@@ -36,6 +36,7 @@ import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -892,6 +893,12 @@ public class Executor extends Thread implements ModelObject {
         lock.readLock().lock();
         try {
             return executable != null && getParentOf(executable).getOwnerTask().hasAbortPermission();
+        } catch(Exception ex) {
+            if (!(ex instanceof AccessDeniedException)) {
+                // Prevents UI from exploding in the case of unexpected runtime exceptions
+                LOGGER.log(WARNING, "Unhandled exception", ex);
+            }
+            return false;
         } finally {
             lock.readLock().unlock();
         }
