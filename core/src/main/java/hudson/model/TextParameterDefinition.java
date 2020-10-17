@@ -69,7 +69,9 @@ public class TextParameterDefinition extends StringParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (TextParameterDefinition.class != obj.getClass())
+        if(TextParameterDefinition.class != getClass())
+            return false;
+        if (getClass() != obj.getClass())
             return false;
         TextParameterDefinition other = (TextParameterDefinition) obj;
         if(!Objects.equals(getName(), other.getName()))

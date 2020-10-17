@@ -128,7 +128,9 @@ public class FileParameterDefinition extends ParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (FileParameterDefinition.class != obj.getClass())
+        if(FileParameterDefinition.class != getClass())
+            return false;
+        if (getClass() != obj.getClass())
             return false;
         FileParameterDefinition other = (FileParameterDefinition) obj;
         if(!Objects.equals(getName(), other.getName()))

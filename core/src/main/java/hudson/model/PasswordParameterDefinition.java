@@ -113,7 +113,9 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (PasswordParameterDefinition.class != obj.getClass())
+        if(PasswordParameterDefinition.class != getClass())
+            return false;
+        if (getClass() != obj.getClass())
             return false;
         PasswordParameterDefinition other = (PasswordParameterDefinition) obj;
         if(!Objects.equals(getName(), other.getName()))

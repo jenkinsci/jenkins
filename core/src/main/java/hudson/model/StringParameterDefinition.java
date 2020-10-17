@@ -149,7 +149,9 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (StringParameterDefinition.class != obj.getClass())
+        if(StringParameterDefinition.class != getClass())
+            return false;
+        if (getClass() != obj.getClass())
             return false;
         StringParameterDefinition other = (StringParameterDefinition) obj;
         if(!Objects.equals(getName(), other.getName()))

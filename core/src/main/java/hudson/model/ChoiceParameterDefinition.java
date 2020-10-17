@@ -176,7 +176,9 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (ChoiceParameterDefinition.class != obj.getClass())
+        if(ChoiceParameterDefinition.class != getClass())
+            return false;
+        if (getClass() != obj.getClass())
             return false;
         ChoiceParameterDefinition other = (ChoiceParameterDefinition) obj;
         if(!Objects.equals(getName(), other.getName()))

@@ -216,7 +216,9 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (RunParameterDefinition.class != obj.getClass())
+        if(RunParameterDefinition.class != getClass())
+            return false;
+        if (getClass() != obj.getClass())
             return false;
         RunParameterDefinition other = (RunParameterDefinition) obj;
         if(!Objects.equals(getName(), other.getName()))
