@@ -261,9 +261,6 @@ public final class TcpSlaveAgentListener extends Thread {
                 LOGGER.log(Level.FINE, "Accepted connection #{0} from {1}", new Object[] {id, s.getRemoteSocketAddress()});
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
-                PrintWriter out = new PrintWriter(
-                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8)),
-                        true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
                 // peek the first few bytes to determine what to do with this client
                 byte[] head = new byte[10];
@@ -287,12 +284,12 @@ public final class TcpSlaveAgentListener extends Thread {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
-                            error(out, "Disabled protocol:" + s);
+                            error("Disabled protocol:" + s, this.s);
                         }
                     } else
-                        error(out, "Unknown protocol:" + s);
+                        error("Unknown protocol:", this.s);
                 } else {
-                    error(out, "Unrecognized protocol: "+s);
+                    error("Unrecognized protocol: " + s, this.s);
                 }
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
@@ -352,7 +349,10 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
-        private void error(PrintWriter out, String msg) throws IOException {
+        private void error(String msg, Socket s) throws IOException {
+            PrintWriter out = new PrintWriter(
+                    new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8)),
+                    true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
             out.println(msg);
             LOGGER.log(Level.WARNING, "Connection #{0} is aborted: {1}", new Object[]{id, msg});
             s.close();
