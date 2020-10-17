@@ -157,7 +157,7 @@ public class LogRotator extends BuildDiscarder {
             // and we would need to load the rest anyway, to delete them.
             // (Using RunMap.headMap would not suffice, since we do not know if some recent builds have been deleted for other reasons,
             // so simply subtracting numToKeep from the currently last build number might cause us to delete too many.)
-            List<? extends Run<?,?>> builds = job.getBuilds();
+            RunList<? extends Run<?,?>> builds = job.getBuilds();
             for (Run r : builds.subList(Math.min(builds.size(), numToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
@@ -186,7 +186,7 @@ public class LogRotator extends BuildDiscarder {
         }
 
         if(artifactNumToKeep!=null && artifactNumToKeep!=-1) {
-            List<? extends Run<?,?>> builds = job.getBuilds();
+            RunList<? extends Run<?,?>> builds = job.getBuilds();
             for (Run r : builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
