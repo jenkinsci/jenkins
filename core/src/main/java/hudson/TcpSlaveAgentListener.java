@@ -25,7 +25,9 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
+import java.io.OutputStreamWriter;
 import java.io.SequenceInputStream;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -283,12 +285,12 @@ public final class TcpSlaveAgentListener extends Thread {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
-                            error("Disabled protocol:" + s);
+                            error("Disabled protocol:" + s, this.s);
                         }
                     } else
-                        error("Unknown protocol:");
+                        error("Unknown protocol:", this.s);
                 } else {
-                    error("Unrecognized protocol: " + s);
+                    error("Unrecognized protocol: " + s, this.s);
                 }
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
@@ -332,7 +334,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 } else {
                     response = DEFAULT_RESPONSE_404;
                 }
-                out.writeUTF(response);
+                out.write(response.getBytes(StandardCharsets.UTF_8));
                 out.flush();
                 s.shutdownOutput();
 
@@ -344,9 +346,10 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
-        private void error(String msg) throws IOException {
+        private void error(String msg, Socket s) throws IOException {
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            out.writeUTF(msg + System.lineSeparator());
+            String response = msg + System.lineSeparator();
+            out.write(response.getBytes(StandardCharsets.UTF_8));
             out.flush();
             s.shutdownOutput();
             LOGGER.log(Level.WARNING, "Connection #{0} is aborted: {1}", new Object[]{id, msg});
