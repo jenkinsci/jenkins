@@ -34,7 +34,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.logging.Logger;
 
 import hudson.util.RunList;
