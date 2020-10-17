@@ -33,6 +33,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.Objects;
+
 /**
  * Parameter whose value is a string value.
  */
@@ -136,5 +138,26 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
             value.doTrim();
         }
         return value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getDescription(), defaultValue, trim);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (StringParameterDefinition.class != obj.getClass())
+            return false;
+        StringParameterDefinition other = (StringParameterDefinition) obj;
+        if(!Objects.equals(getName(), other.getName()))
+            return false;
+        if(!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        if(!Objects.equals(defaultValue, other.defaultValue))
+            return false;
+        return trim == other.trim;
     }
 }

@@ -33,6 +33,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import java.util.Objects;
+
 /**
  * Parameter whose value is a {@link Secret} and is hidden from the UI.
  *
@@ -100,6 +102,25 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     // kept for backward compatibility
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = Secret.fromString(defaultValue);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getDescription(), defaultValue);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (PasswordParameterDefinition.class != obj.getClass())
+            return false;
+        PasswordParameterDefinition other = (PasswordParameterDefinition) obj;
+        if(!Objects.equals(getName(), other.getName()))
+            return false;
+        if(!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        return Objects.equals(defaultValue, other.defaultValue);
     }
 
     @Extension @Symbol({"password"})
