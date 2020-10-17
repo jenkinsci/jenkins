@@ -58,7 +58,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -266,7 +265,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 byte[] head = new byte[10];
                 in.readFully(head);
 
-                String header = new String(head, Charsets.US_ASCII);
+                String header = new String(head, StandardCharsets.US_ASCII);
                 if (header.startsWith("GET ")) {
                     // this looks like an HTTP client
                     respondHello(header,s);
