@@ -284,12 +284,12 @@ public final class TcpSlaveAgentListener extends Thread {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
-                            error("Disabled protocol:" + s, this.s);
+                            error("Disabled protocol:" + s);
                         }
                     } else
-                        error("Unknown protocol:", this.s);
+                        error("Unknown protocol:");
                 } else {
-                    error("Unrecognized protocol: " + s, this.s);
+                    error("Unrecognized protocol: " + s);
                 }
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
@@ -349,11 +349,11 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
-        private void error(String msg, Socket s) throws IOException {
-            PrintWriter out = new PrintWriter(
-                    new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8)),
-                    true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
-            out.println(msg);
+        private void error(String msg) throws IOException {
+            DataOutputStream out = new DataOutputStream(s.getOutputStream());
+            out.writeUTF(msg + System.lineSeparator());
+            out.flush();
+            s.shutdownOutput();
             LOGGER.log(Level.WARNING, "Connection #{0} is aborted: {1}", new Object[]{id, msg});
             s.close();
         }
