@@ -254,7 +254,10 @@ public class WebAppMain implements ServletContextListener {
             // check that and report an error
             try {
                 File f = File.createTempFile("test", "test");
-                f.delete();
+                boolean result = f.delete();
+                if (!result) {
+                    LOGGER.log(FINE, "Temp file test.test could not be deleted.");
+                }
             } catch (IOException e) {
                 throw new NoTempDir(e);
             }
