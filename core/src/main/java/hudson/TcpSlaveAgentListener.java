@@ -25,9 +25,7 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
-import java.io.OutputStreamWriter;
 import java.io.SequenceInputStream;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import edu.umd.cs.findbugs.annotations.Nullable;
