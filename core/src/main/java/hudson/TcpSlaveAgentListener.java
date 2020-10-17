@@ -26,7 +26,6 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -48,12 +47,9 @@ import java.util.Arrays;
 import java.util.Base64;
 import jenkins.AgentProtocol;
 
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -232,6 +228,10 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     private final class ConnectionHandler extends Thread {
+        private static final String DEFAULT_RESPONSE_404 = "HTTP/1.0 404 Not Found\r\n" +
+                        "Content-Type: text/plain;charset=UTF-8\r\n" +
+                        "\r\n" +
+                        "Not Found\r\n";
         private final Socket s;
         /**
          * Unique number to identify this connection. Used in the log.
@@ -318,28 +318,24 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private void respondHello(String header, Socket s) throws IOException {
             try {
-                Writer o = new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8);
-                
+                DataOutputStream out = new DataOutputStream(s.getOutputStream());
+                String response;
                 if (header.startsWith("GET / ")) {
-                    o.write("HTTP/1.0 200 OK\r\n");
-                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
-                    o.write("\r\n");
-                    o.write("Jenkins-Agent-Protocols: " + getAgentProtocolNames()+"\r\n");
-                    o.write("Jenkins-Version: " + Jenkins.VERSION + "\r\n");
-                    o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
-                    o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
-                    o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
-                    o.write("Remoting-Minimum-Version: " + getRemotingMinimumVersion() + "\r\n");
-                    o.flush();
-                    s.shutdownOutput();
+                    response = "HTTP/1.0 200 OK\r\n" +
+                            "Content-Type: text/plain;charset=UTF-8\r\n" +
+                            "\r\n" +
+                            "Jenkins-Agent-Protocols: " + getAgentProtocolNames()+"\r\n" +
+                            "Jenkins-Version: " + Jenkins.VERSION + "\r\n" +
+                            "Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n" +
+                            "Client: " + s.getInetAddress().getHostAddress() + "\r\n" +
+                            "Server: " + s.getLocalAddress().getHostAddress() + "\r\n" +
+                            "Remoting-Minimum-Version: " + getRemotingMinimumVersion() + "\r\n";
                 } else {
-                    o.write("HTTP/1.0 404 Not Found\r\n");
-                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
-                    o.write("\r\n");
-                    o.write("Not Found\r\n");
-                    o.flush();
-                    s.shutdownOutput();
+                    response = DEFAULT_RESPONSE_404;
                 }
+                out.writeUTF(response);
+                out.flush();
+                s.shutdownOutput();
 
                 InputStream i = s.getInputStream();
                 IOUtils.copy(i, new NullOutputStream());
