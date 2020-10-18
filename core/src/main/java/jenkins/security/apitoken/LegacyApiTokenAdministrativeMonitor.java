@@ -71,7 +71,12 @@ public class LegacyApiTokenAdministrativeMonitor extends AdministrativeMonitor {
                     return (apiTokenProperty != null && apiTokenProperty.hasLegacyToken());
                 });
     }
-    
+
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     public HttpResponse doIndex() throws IOException {
         return new HttpRedirect("manage");
     }

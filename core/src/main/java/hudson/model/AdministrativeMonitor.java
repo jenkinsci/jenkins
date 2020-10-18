@@ -158,6 +158,17 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     public abstract boolean isActivated();
 
     /**
+     * Returns true if this monitor is security related.
+     *
+     * This will be used to determine which icon will be used in the navigation bar.
+     *
+     * @since TODO
+     */
+    public boolean isSecurity() {
+        return false;
+    }
+
+    /**
      * URL binding to disable this monitor.
      */
     @RequirePOST
