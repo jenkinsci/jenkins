@@ -36,7 +36,7 @@
         </b></dt>
         <dd>
             Dans ce mode, si Jenkins peut démarrer l'agent sans l'aide de l'utilisateur, il
-            cherchera régulièrement à l'activer tant qu'il y aura des builds en attente
+            cherchera régulièrement à l'activer tant qu'il y aura des jobs en attente
             respectant les critères suivants&nbsp;:
             <ul>
                 <li>Ils sont dans la file d'attente depuis au moins aussi longue que le <i>Délai d'attente lors d'une demande</i> spécifié</li>
@@ -45,7 +45,7 @@
 
             L'agent sera désactivé si&nbsp;:
             <ul>
-                <li>Il n'y a plus de builds en cours sur cet agent</li>
+                <li>Il n'y a plus de jobs en cours sur cet agent</li>
                 <li>L'agent a été inactif depuis au moins le <i>Délai d'inactivité</i> spécifié</li>
             </ul>
         </dd>
