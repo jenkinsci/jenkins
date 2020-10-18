@@ -242,8 +242,8 @@ public class FilePathTest {
     @Test public void archiveBug() throws Exception {
             FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
             d.child("test").touch(0);
-            d.zip(new NullOutputStream());
-            d.zip(new NullOutputStream(),"**/*");
+            d.zip(NullOutputStream.NULL_OUTPUT_STREAM);
+            d.zip(NullOutputStream.NULL_OUTPUT_STREAM,"**/*");
     }
 
     @Test public void normalization() throws Exception {

@@ -1751,11 +1751,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
             DisplayExecutor that = (DisplayExecutor) o;
 
-            if (!executor.equals(that.executor)) {
-                return false;
-            }
-
-            return true;
+            return executor.equals(that.executor);
         }
 
         @Extension(ordinal = Double.MAX_VALUE)

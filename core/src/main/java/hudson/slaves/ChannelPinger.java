@@ -166,10 +166,7 @@ public class ChannelPinger extends ComputerListener {
             if (pingIntervalSeconds != other.pingIntervalSeconds) {
                 return false;
             }
-            if (pingTimeoutSeconds != other.pingTimeoutSeconds) {
-                return false;
-            }
-            return true;
+            return pingTimeoutSeconds == other.pingTimeoutSeconds;
         }
 
         protected Object readResolve() {
