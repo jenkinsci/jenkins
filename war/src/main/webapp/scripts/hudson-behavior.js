@@ -1765,7 +1765,17 @@ function fireBuildHistoryChanged() {
     Event.fire(window, 'jenkins:buildHistoryChanged');
 }
 
-function updateBuildHistory(ajaxUrl,nBuild) {
+/**
+ * @param ajaxUrl The URL to call to refresh the HTML part
+ * @param nBuild The expected next build id, to retrieve only information not yet present
+ * @param refreshIntervalInSeconds (optional) 5 by default and as minimum - define the interval in seconds between 2 ajax calls.
+ */
+function updateBuildHistory(ajaxUrl, nBuild, refreshIntervalInSeconds) {
+    var refreshInterval = 5000; //default is 5s
+    if(refreshIntervalInSeconds != undefined && refreshIntervalInSeconds >= 5) {
+        refreshInterval = 1000 * refreshIntervalInSeconds;
+    }
+    
     if(isRunAsTest) return;
     var bh = $('buildHistory');
     
@@ -2076,7 +2086,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         }
     }
 
-    var updateBuildsRefreshInterval = 5000;
     function updateBuilds() {
         if(isPageVisible()){
             if (bh.headers == null) {
@@ -2136,7 +2145,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
     var buildRefreshTimeout;
     function createRefreshTimeout() {
         cancelRefreshTimeout();
-        buildRefreshTimeout = window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
+        buildRefreshTimeout = window.setTimeout(updateBuilds, refreshInterval);
     }
     function cancelRefreshTimeout() {
         if (buildRefreshTimeout) {
