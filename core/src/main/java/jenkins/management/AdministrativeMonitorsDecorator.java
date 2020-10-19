@@ -142,6 +142,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
             }
         }
 
-        return getActiveAdministrativeMonitorsCount();
+        return getAllActiveAdministrativeMonitors();
     }
 }
