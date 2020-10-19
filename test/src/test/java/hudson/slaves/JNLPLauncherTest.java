@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
 import hudson.Util;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -297,4 +299,21 @@ public class JNLPLauncherTest {
         j.assertEqualBeans(original,s.getLauncher(),"tunnel,vmargs");
         j.assertEqualDataBoundBeans(((JNLPLauncher) s.getLauncher()).getWorkDirSettings(), custom);
     }
+
+    @Test
+    public void testJnlpFileDownload() throws Exception {
+        assertJnlpFileDownload("/jenkins-agent.jnlp");
+    }
+
+    @Test
+    public void testObsoletedJnlpFileDownload() throws Exception {
+        assertJnlpFileDownload("/slave-agent.jnlp");
+    }
+
+    private void assertJnlpFileDownload(String filename) throws Exception {
+        Computer c = addTestAgent(false);
+        Page p = j.createWebClient().getPage(j.getURL() + "computer/" + c.getName() + filename);
+        assertThat(p.getWebResponse().getStatusCode(), is(200));
+    }
+
 }

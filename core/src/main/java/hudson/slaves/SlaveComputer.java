@@ -814,7 +814,6 @@ public class SlaveComputer extends Computer {
 
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
-
         return doJenkinsAgentJnlp(req, res);
     }
 
