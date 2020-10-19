@@ -392,9 +392,9 @@ public class UpdateSite {
         r.sort(new Comparator<Plugin>() {
             @Override
             public int compare(Plugin plugin, Plugin t1) {
-                final int pop = plugin.popularity.compareTo(t1.popularity);
+                final int pop = t1.popularity.compareTo(plugin.popularity);
                 if (pop != 0) {
-                    return -pop; // highest popularity first
+                    return pop; // highest popularity first
                 }
                 return plugin.getDisplayName().compareTo(plugin.getDisplayName());
             }

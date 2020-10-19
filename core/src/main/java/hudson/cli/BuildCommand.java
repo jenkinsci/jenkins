@@ -49,6 +49,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -252,7 +253,7 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public String getShortDescription() {
-            User user = User.get(startedBy, false);
+            User user = User.getById(startedBy, false);
             String userName = user != null ? user.getDisplayName() : startedBy;
             return Messages.BuildCommand_CLICause_ShortDescription(userName);
         }
@@ -274,4 +275,3 @@ public class BuildCommand extends CLICommand {
         }
     }
 }
-
