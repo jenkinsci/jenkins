@@ -84,8 +84,12 @@ public abstract class AuthenticationException extends AcegiSecurityException {
             return AccountExpiredException.fromSpring((org.springframework.security.authentication.AccountExpiredException) x);
         } else if (x instanceof org.springframework.security.authentication.CredentialsExpiredException) {
             return CredentialsExpiredException.fromSpring((org.springframework.security.authentication.CredentialsExpiredException) x);
+        } else if (x instanceof org.springframework.security.authentication.DisabledException) {
+            return DisabledException.fromSpring((org.springframework.security.authentication.DisabledException) x);
         } else if (x instanceof org.springframework.security.authentication.InsufficientAuthenticationException) {
             return InsufficientAuthenticationException.fromSpring((org.springframework.security.authentication.InsufficientAuthenticationException) x);
+        } else if (x instanceof org.springframework.security.authentication.LockedException) {
+            return LockedException.fromSpring((org.springframework.security.authentication.LockedException) x);
         } else if (x instanceof org.springframework.security.authentication.ProviderNotFoundException) {
             return ProviderNotFoundException.fromSpring((org.springframework.security.authentication.ProviderNotFoundException) x);
         } else if (x instanceof UserMayOrMayNotExistException2 && x.getCause() instanceof DataAccessException) {
