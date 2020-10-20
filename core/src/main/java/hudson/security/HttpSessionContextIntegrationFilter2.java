@@ -32,8 +32,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -41,7 +39,6 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
 
-@Restricted(NoExternalUse.class)
 public class HttpSessionContextIntegrationFilter2 extends SecurityContextPersistenceFilter {
     public HttpSessionContextIntegrationFilter2(SecurityContextRepository securityContextRepository) {
         super(securityContextRepository);
