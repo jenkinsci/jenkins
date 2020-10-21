@@ -1408,7 +1408,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     }
                 } else {
                     try (InputStream is = connection.getInputStream()) {
-                        IOUtils.copy(is, new NullOutputStream());
+                        IOUtils.copy(is, NullOutputStream.NULL_OUTPUT_STREAM);
                     }
                 }
             } catch (SSLHandshakeException e) {

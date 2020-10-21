@@ -68,8 +68,7 @@
             { "name": "gitlab-plugin" },
             { "name": "p4" },
             { "name": "repo" },
-            { "name": "subversion" },
-            { "name": "tfs" }
+            { "name": "subversion" }
         ]
     },
     {

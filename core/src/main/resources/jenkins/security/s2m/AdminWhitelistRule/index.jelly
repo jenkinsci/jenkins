@@ -26,14 +26,14 @@ THE SOFTWARE.
 <l:layout title="${%Whitelist}" permission="${app.ADMINISTER}">
   <st:include page="sidepanel.jelly" it="${app}"/>
   <l:main-panel>
-    <h1>${%Agent &#8594; Master Access Control}</h1>
+    <h1>${%Agent &#8594; Controller Access Control}</h1>
 
     <p>
-      Jenkins master is now more strict about what commands its agents can send to the master.
+      The Jenkins controller is now more strict about what commands its agents can send to the controller.
       Unfortunately, this prevents some plugins from functioning correctly, as those plugins do not
       specify which commands are open for agents to execute and which ones are not.
       While plugin developers work on improving this,
-      as an administrator, you can mark commands as OK for agents to execute (aka "whitelisting").
+      as an administrator, you can mark commands as OK for agents to execute.
     </p>
     <div class="warning" style="margin:1em">
       Please see <a href="https://jenkins.io/redirect/security-144">the discussion of this feature</a> to
@@ -41,17 +41,16 @@ THE SOFTWARE.
     </div>
     <j:if test="${it.masterKillSwitch}">
       <div class="warning" style="margin:1em">
-        The agent &#8594; master access control subsystem is currently disabled.
+        The agent &#8594; controller access control subsystem is currently disabled.
         This is unsafe if you have agents from other less trusted people.
         You can turn it back on from <a href="${rootURL}/configureSecurity">Global Security Configuration UI</a>.
       </div>
     </j:if>
 
     <form method="post" action="submit">
-      <h2>Currently Whitelisted Commands</h2>
+      <h2>Currently Allowed Commands</h2>
       <p>
-        The following commands are currently whitelisted for agents to execute on the master.
-        Type in any fully-qualified class names to whitelist them:
+        Agents are currently allowed to execute the following commands on the controller.
       </p>
       <textarea id="whitelist" name="whitelist" style="width:100%; height:5em">${it.whitelisted.exists() ? it.whitelisted.read() : ""}</textarea>
 
@@ -61,7 +60,7 @@ THE SOFTWARE.
         <h2>Currently Rejected Commands</h2>
         <p>
           Agents have attempted to use the following functionalities but the plugins that implement them
-          did not specify whether or not they should be usable from agents. Check ones you want to whitelist:
+          did not specify whether or not they should be usable from agents. Check ones you want to allow to be executed:
         </p>
         <ul style="list-style:none">
           <j:forEach var="r" items="${rejectedList}">
