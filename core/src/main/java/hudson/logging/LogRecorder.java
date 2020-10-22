@@ -25,6 +25,7 @@ package hudson.logging;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
@@ -33,7 +34,6 @@ import hudson.XmlFile;
 import hudson.model.AbstractModelObject;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Computer;
-import hudson.model.Failure;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SaveableListener;
@@ -41,6 +41,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
+import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
@@ -143,6 +144,29 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             }
         }
         return relevantPrefixes;
+    }
+
+    /**
+     * Validate the name.
+     * @return {@link FormValidation#ok} if the log target is not empty, otherwise
+     * {@link FormValidation#warning} with a message explaining the problem.
+     */
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    public @NonNull FormValidation doCheckName(@QueryParameter String value, @QueryParameter String level) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        try {
+            if( (Util.fixEmpty(level) == null || Level.parse(level).intValue() <= Level.FINE.intValue()) 
+                && Util.fixEmpty(value) == null) {
+                return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
+            }
+        } catch (IllegalArgumentException iae) {
+            // We cannot figure out the level, if the name is empty show a warning
+            if(Util.fixEmpty(value) == null) {
+                return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
+            }
+        }
+        return FormValidation.ok();
     }
 
     @Restricted(NoExternalUse.class)
@@ -360,23 +384,19 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         String newName = src.getString("name"), redirect = ".";
         XmlFile oldFile = null;
-        if (!name.equals(newName)) {
+        if(!name.equals(newName)) {
             Jenkins.checkGoodName(newName);
             oldFile = getConfigFile();
             // rename
             getParent().logRecorders.remove(name);
             this.name = newName;
-            getParent().logRecorders.put(name, this);
+            getParent().logRecorders.put(name,this);
             redirect = "../" + Util.rawEncode(newName) + '/';
         }
 
         List<Target> newTargets = req.bindJSONToList(Target.class, src.get("targets"));
-        if (newTargets.stream().anyMatch(target ->
-                Util.fixEmpty(target.getName()) == null && target.getLevel().intValue() <= Level.FINE.intValue()) ) {
-
-            throw new Failure(Messages.LogRecorder_Target_Empty_Error());
-        }
-        newTargets.forEach(Target::enable);
+        for (Target t : newTargets)
+            t.enable();
         targets.replaceBy(newTargets);
 
         save();
