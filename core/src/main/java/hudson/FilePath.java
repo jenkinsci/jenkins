@@ -2676,9 +2676,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // process this later
             throw new IOException("Failed to extract " + name, e);
-        }finally {
-            return files;
         }
+        return files;
     }
 
     /**
