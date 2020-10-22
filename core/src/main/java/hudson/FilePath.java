@@ -564,17 +564,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      Compression mode of this tar file.
      * @since 1.292
      * @see #untarFrom(InputStream, TarCompression)
+     * @return
      */
-    public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
+    public List<File> untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
-            target.act(new UntarRemote(compression, in));
+            return target.act(new UntarRemote(compression, in));
         } else {// local -> local or remote->remote
-            target.act(new UntarLocal(compression));
+            return target.act(new UntarLocal(compression));
         }
     }
-    private class UntarRemote extends SecureFileCallable<Void> {
+    private class UntarRemote extends SecureFileCallable<List<File>> {
         private final TarCompression compression;
         private final RemoteInputStream in;
         UntarRemote(TarCompression compression, RemoteInputStream in) {
@@ -582,21 +583,19 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.in = in;
         }
         @Override
-        public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            readFromTar(FilePath.this.getName(), dir, compression.extract(in));
-            return null;
+        public List<File> invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+            return readFromTar(FilePath.this.getName(), dir, compression.extract(in));
         }
         private static final long serialVersionUID = 1L;
     }
-    private class UntarLocal extends SecureFileCallable<Void> {
+    private class UntarLocal extends SecureFileCallable<List<File>> {
         private final TarCompression compression;
         UntarLocal(TarCompression compression) {
             this.compression = compression;
         }
         @Override
-        public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read()));
-            return null;
+        public List<File> invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+            return readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read()));
         }
         private static final long serialVersionUID = 1L;
     }
@@ -2627,7 +2626,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
-    private void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+    private List<File> readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        List<File> files = new ArrayList<>();
 
         // TarInputStream t = new TarInputStream(in);
         try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
@@ -2655,6 +2655,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         if (mode != 0 && !Functions.isWindows()) // be defensive
                             _chmod(f, mode);
                     }
+                    files.add(f);
                 }
             }
         } catch (IOException e) {
@@ -2662,6 +2663,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // process this later
             throw new IOException("Failed to extract " + name, e);
+        }finally {
+            return files;
         }
     }
 
