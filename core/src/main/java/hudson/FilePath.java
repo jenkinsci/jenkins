@@ -563,10 +563,23 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param compression
      *      Compression mode of this tar file.
      * @since 1.292
-     * @see #untarFrom(InputStream, TarCompression)
-     * @return
+     * @see #untar2(FilePath, TarCompression)
      */
-    public List<File> untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
+    public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
+        untar2(target, compression);
+    }
+    /**
+     * When this {@link FilePath} represents a tar file, extracts that tar file.
+     *
+     * @param target
+     *      Target directory to expand files to. All the necessary directories will be created.
+     * @param compression
+     *      Compression mode of this tar file.
+     * @since 2.264
+     * @see #untarFrom(InputStream, TarCompression)
+     * @return a list of uncompressed files
+     */
+    public List<File> untar2(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
