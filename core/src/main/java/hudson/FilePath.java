@@ -606,7 +606,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @see #untarFrom(InputStream, TarCompression)
      * @return a list of uncompressed files
      */
-    public List<File> untar2(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
+    public List<String> untar2(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
@@ -615,7 +615,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return target.act(new UntarLocal(compression));
         }
     }
-    private class UntarRemote extends SecureFileCallable<List<File>> {
+    private class UntarRemote extends SecureFileCallable<List<String>> {
         private final TarCompression compression;
         private final RemoteInputStream in;
         UntarRemote(TarCompression compression, RemoteInputStream in) {
@@ -623,18 +623,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.in = in;
         }
         @Override
-        public List<File> invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+        public List<String> invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
             return readFromTar(FilePath.this.getName(), dir, compression.extract(in));
         }
         private static final long serialVersionUID = 1L;
     }
-    private class UntarLocal extends SecureFileCallable<List<File>> {
+    private class UntarLocal extends SecureFileCallable<List<String>> {
         private final TarCompression compression;
         UntarLocal(TarCompression compression) {
             this.compression = compression;
         }
         @Override
-        public List<File> invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+        public List<String> invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
             return readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read()));
         }
         private static final long serialVersionUID = 1L;
@@ -2666,8 +2666,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
-    private List<File> readFromTar(String name, File baseDir, InputStream in) throws IOException {
-        List<File> files = new ArrayList<>();
+    private List<String> readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        List<String> files = new ArrayList<>();
 
         // TarInputStream t = new TarInputStream(in);
         try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
@@ -2695,7 +2695,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         if (mode != 0 && !Functions.isWindows()) // be defensive
                             _chmod(f, mode);
                     }
-                    files.add(f);
+                    files.add(f.getAbsolutePath());
                 }
             }
         } catch (IOException e) {
