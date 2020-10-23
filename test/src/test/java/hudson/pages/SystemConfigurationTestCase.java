@@ -57,7 +57,7 @@ public class SystemConfigurationTestCase {
         PageDecorator.ALL.add(pageDecoratorImpl);
 
         HtmlPage page = j.createWebClient().goTo("configure");
-        j.assertXPath(page, "//tr[@name='hudson-pages-SystemConfigurationTestCase$PageDecoratorImpl']");
+        j.assertXPath(page, "//div[@name='hudson-pages-SystemConfigurationTestCase$PageDecoratorImpl']");
 
         HtmlForm form = page.getFormByName("config");
         form.getInputByName("_.decoratorId").setValueAttribute("this_is_a_profile");
