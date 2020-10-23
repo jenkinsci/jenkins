@@ -108,6 +108,30 @@ public final class XMLUtils {
      * @return The XML {@link Document}.
      * @throws SAXException Error parsing the XML stream data e.g. badly formed XML.
      * @throws IOException Error reading from the steam.
+     * @since TODO
+     */
+    public static @NonNull Document parse(@NonNull InputStream stream) throws SAXException, IOException {
+        DocumentBuilder docBuilder;
+
+        try {
+            docBuilder = newDocumentBuilderFactory().newDocumentBuilder();
+            docBuilder.setEntityResolver(RestrictiveEntityResolver.INSTANCE);
+        } catch (ParserConfigurationException e) {
+            throw new IllegalStateException("Unexpected error creating DocumentBuilder.", e);
+        }
+
+        return docBuilder.parse(new InputSource(stream));
+    }
+
+    /**
+     * Parse the supplied XML stream data to a {@link Document}.
+     * <p>
+     * This function does not close the stream.
+     * <p>In most cases you should prefer {@link #parse(InputStream)}.
+     * @param stream The XML stream.
+     * @return The XML {@link Document}.
+     * @throws SAXException Error parsing the XML stream data e.g. badly formed XML.
+     * @throws IOException Error reading from the steam.
      * @since 2.0
      */
     public static @NonNull Document parse(@NonNull Reader stream) throws SAXException, IOException {
@@ -126,12 +150,28 @@ public final class XMLUtils {
     /**
      * Parse the supplied XML file data to a {@link Document}.
      * @param file The file to parse.
-     * @param encoding The encoding of the XML in the file.
      * @return The parsed document.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws IOException Error reading from the file.
+     * @since TODO
+     */
+    public static @NonNull Document parse(@NonNull File file) throws SAXException, IOException {
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException(String.format("File %s does not exist or is not a 'normal' file.", file.getAbsolutePath()));
+        }
+
+        try (InputStream fileInputStream = Files.newInputStream(file.toPath())) {
+            return parse(fileInputStream);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #parse(File)}
      * @since 2.0
      */
+    @Deprecated
     public static @NonNull Document parse(@NonNull File file, @NonNull String encoding) throws SAXException, IOException {
         if (!file.exists() || !file.isFile()) {
             throw new IllegalArgumentException(String.format("File %s does not exist or is not a 'normal' file.", file.getAbsolutePath()));
