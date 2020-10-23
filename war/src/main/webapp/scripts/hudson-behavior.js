@@ -1658,9 +1658,25 @@ function expandTextArea(button,id) {
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
     var intervalID = null;
+    var refreshInterval = 5000; //default is 5s
+
     var f = function() {
         if(isPageVisible()) {
             new Ajax.Request(url, {
+                onCreate: function() {
+                    requestStartTime = new Date().getTime();
+                    console.log("onCreate send of id:"+id+", url:"+url+", start time:"+requestStartTime);
+                },
+                onComplete: function() {
+                    var requestDuration = new Date().getTime() - requestStartTime;
+                    if(requestDuration > refreshInterval) {
+                        //server or network has issues, slowing ajax calls. Will be reset by a page refresh (F5)
+                        refreshInterval = 2 * refreshInterval;
+                        window.clearInterval(intervalID);
+                        intervalID = window.setInterval(f, refreshInterval);
+                    }
+                    console.log("Complete send of id:"+id+", url:"+url+" -- duration is "+ requestDuration );
+                },
                 onSuccess: function(rsp) {
                     var hist = $(id);
                     if (hist == null) {
@@ -1690,7 +1706,7 @@ function refreshPart(id,url) {
     // if run as test, just do it once and do it now to make sure it's working,
     // but don't repeat.
     if(isRunAsTest) f();
-    else intervalID = window.setInterval(f, 5000);
+    else intervalID = window.setInterval(f, refreshInterval);
 }
 
 
