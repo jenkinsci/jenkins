@@ -485,6 +485,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
         return act(new Archive(factory, out, scanner));
     }
+
+    public List<String> archive2(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
+        final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
+        return act(new Archive2(factory, out, scanner));
+    }
     private class Archive extends SecureFileCallable<Integer> {
         private final ArchiverFactory factory;
         private final OutputStream out;
@@ -503,6 +508,28 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     a.close();
                 }
                 return a.countEntries();
+            }
+
+            private static final long serialVersionUID = 1L;
+    }
+    private class Archive2 extends SecureFileCallable<List<String>> {
+        private final ArchiverFactory factory;
+        private final OutputStream out;
+        private final DirScanner scanner;
+        Archive2(ArchiverFactory factory, OutputStream out, DirScanner scanner) {
+            this.factory = factory;
+            this.out = out;
+            this.scanner = scanner;
+        }
+        @Override
+            public List<String> invoke(File f, VirtualChannel channel) throws IOException {
+                Archiver a = factory.create(out);
+                try {
+                    scanner.scan(f,reading(a));
+                } finally {
+                    a.close();
+                }
+            return a.getFiles();
             }
 
             private static final long serialVersionUID = 1L;
