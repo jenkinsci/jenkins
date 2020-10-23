@@ -2,7 +2,7 @@
 
 This page provides information about contributing code to the Jenkins core codebase.
 
-:exclamation: There's a lot more to the Jenkins project than just code. For information on contributing to the Jenkins project overall, here's a page on how to [Participate].
+:exclamation: There's a lot more to the Jenkins project than just code. For more information on the ways that you can contribute to the Jenkins project, see [Participate].
 
 ## Getting started
 
@@ -13,12 +13,12 @@ This page provides information about contributing code to the Jenkins core codeb
     In the Jenkins project we usually use [OpenJDK](http://openjdk.java.net/) or [AdoptOpenJDK](https://adoptopenjdk.net/), but you can use other JDKs as well.
     * For JDK 11 there might be some compatibility issues in developer tools,
       please see [this page](https://wiki.jenkins.io/display/JENKINS/Java+11+Developer+Guidelines#Java11DeveloperGuidelines-Knowndevelopertoolsissues) for more info.
-      If you hit a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
+      If you find a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
   * Maven 3.5.4 or above. You can [download Maven here].
   * Any IDE which supports importing Maven projects.
   * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
     * Frontend tasks are run using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
-4. Setup your development environment as described in [Preparing for Plugin Development]
+4. Set up your development environment as described in [Preparing for Plugin Development]
 
 If you want to contribute to Jenkins, or just learn about the project,
 you can start by fixing some easier issues.
