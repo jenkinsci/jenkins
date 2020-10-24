@@ -68,6 +68,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.nio.file.Files;
 
+import hudson.security.Permission;
 import hudson.util.Futures;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -820,7 +821,7 @@ public class Queue extends ResourceController implements Saveable {
         if (t.task instanceof AccessControlled) {
             AccessControlled taskAC = (AccessControlled) t.task;
             if (taskAC.hasPermission(hudson.model.Item.READ)
-                    || taskAC.hasPermission(hudson.security.Permission.READ)) {
+                    || taskAC.hasPermission(Permission.READ)) {
                 r.add(t);
             }
         }
