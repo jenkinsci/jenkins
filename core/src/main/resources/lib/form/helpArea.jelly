@@ -27,11 +27,7 @@ THE SOFTWARE.
   <st:documentation>
     Place holder to lazy-load help text via AJAX.
   </st:documentation>
-  <tr class="help-area">
-    <td/>
-    <td colspan="2">
+  <div class="help-area tr">
       <div class="help">${%Loading...}</div>
-    </td>
-    <td/>
-  </tr>
+  </div>
 </j:jelly>
