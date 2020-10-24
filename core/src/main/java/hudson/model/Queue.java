@@ -358,7 +358,6 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     public void setLoadBalancer(@NonNull LoadBalancer loadBalancer) {
-        if(loadBalancer==null)  throw new IllegalArgumentException();
         this.loadBalancer = loadBalancer.sanitize();
     }
 
@@ -691,11 +690,11 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Deprecated
     public boolean add(Task p, int quietPeriod) {
-    	return schedule(p, quietPeriod)!=null;
+        return schedule(p, quietPeriod)!=null;
     }
 
     public @CheckForNull WaitingItem schedule(Task p, int quietPeriod) {
-    	return schedule(p, quietPeriod, new Action[0]);
+        return schedule(p, quietPeriod, new Action[0]);
     }
 
     /**
@@ -704,21 +703,21 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Deprecated
     public boolean add(Task p, int quietPeriod, Action... actions) {
-    	return schedule(p, quietPeriod, actions)!=null;
+        return schedule(p, quietPeriod, actions)!=null;
     }
 
     /**
      * Convenience wrapper method around {@link #schedule(Task, int, List)}
      */
     public @CheckForNull WaitingItem schedule(Task p, int quietPeriod, Action... actions) {
-    	return schedule2(p, quietPeriod, actions).getCreateItem();
+        return schedule2(p, quietPeriod, actions).getCreateItem();
     }
 
     /**
      * Convenience wrapper method around {@link #schedule2(Task, int, List)}
      */
     public @NonNull ScheduleResult schedule2(Task p, int quietPeriod, Action... actions) {
-    	return schedule2(p, quietPeriod, Arrays.asList(actions));
+        return schedule2(p, quietPeriod, Arrays.asList(actions));
     }
 
     /**
@@ -810,7 +809,7 @@ public class Queue extends ResourceController implements Saveable {
             r = checkPermissionsAndAddToList(r, p);
         }
         for (BuildableItem p : reverse(s.pendings)) {
-            r= checkPermissionsAndAddToList(r, p);
+            r = checkPermissionsAndAddToList(r, p);
         }
         Item[] items = new Item[r.size()];
         r.toArray(items);
@@ -818,9 +817,10 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<Item> checkPermissionsAndAddToList(List<Item> r, Item t) {
-        if (t.task instanceof hudson.security.AccessControlled) {
-            if (((hudson.security.AccessControlled)t.task).hasPermission(hudson.model.Item.READ)
-                    || ((hudson.security.AccessControlled) t.task).hasPermission(hudson.security.Permission.READ)) {
+        if (t.task instanceof AccessControlled) {
+            AccessControlled taskAC = (AccessControlled) t.task;
+            if (taskAC.hasPermission(hudson.model.Item.READ)
+                    || taskAC.hasPermission(hudson.security.Permission.READ)) {
                 r.add(t);
             }
         }
@@ -849,7 +849,7 @@ public class Queue extends ResourceController implements Saveable {
             r = filterDiscoverableItemListBasedOnPermissions(r, p);
         }
         for (BuildableItem p : reverse(s.pendings)) {
-            r= filterDiscoverableItemListBasedOnPermissions(r, p);
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
         }
         StubItem[] items = new StubItem[r.size()];
         r.toArray(items);
@@ -858,7 +858,9 @@ public class Queue extends ResourceController implements Saveable {
 
     private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
         if (t.task instanceof hudson.model.Item) {
-            if (!((hudson.model.Item)t.task).hasPermission(hudson.model.Item.READ) && ((hudson.model.Item)t.task).hasPermission(hudson.model.Item.DISCOVER)) {
+            hudson.model.Item taskAsItem = (hudson.model.Item) t.task;
+            if (!taskAsItem.hasPermission(hudson.model.Item.READ) 
+                    && taskAsItem.hasPermission(hudson.model.Item.DISCOVER)) {
                 r.add(new StubItem(new StubTask(t.task)));
             }
         }
@@ -1779,19 +1781,13 @@ public class Queue extends ResourceController implements Saveable {
             LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}",
                     new Object[]{p.task.getFullDisplayName(), c.getName()});
         }
-        return new Runnable() {
-            @Override public void run() {
-                c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                makePending(p);
-            }
+        return () -> {
+            c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+            makePending(p);
         };
     }
 
-    private static Hash<Node> NODE_HASH = new Hash<Node>() {
-        public String hash(Node node) {
-            return node.getNodeName();
-        }
-    };
+    private final static Hash<Node> NODE_HASH = Node::getNodeName;
 
     private boolean makePending(BuildableItem p) {
         // LOGGER.info("Making "+p.task+" pending"); // REMOVE
@@ -2109,7 +2105,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
 
-		/**
+        /**
          * Project to be built.
          */
         @Exported
@@ -2279,13 +2275,13 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Exported
         public String getParams() {
-        	StringBuilder s = new StringBuilder();
-        	for (ParametersAction pa : getActions(ParametersAction.class)) {
+            StringBuilder s = new StringBuilder();
+            for (ParametersAction pa : getActions(ParametersAction.class)) {
                 for (ParameterValue p : pa.getParameters()) {
                     s.append('\n').append(p.getShortDescription());
                 }
-        	}
-        	return s.toString();
+            }
+            return s.toString();
         }
 
         /**
@@ -2297,14 +2293,12 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         public String getDisplayName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+            return null;
+        }
 
-		public String getSearchUrl() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+        public String getSearchUrl() {
+            return null;
+        }
 
         /** @deprecated Use {@link #doCancelItem} instead. */
         @Deprecated
@@ -2399,7 +2393,7 @@ public class Queue extends ResourceController implements Saveable {
     @ExportedBean(defaultVisibility = 999)
     public static class StubTask {
 
-        private String name;
+        private final String name;
 
         public StubTask(@NonNull Queue.Task base) {
             this.name = base.getName();
@@ -2435,11 +2429,11 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.300-ish.
      */
     public interface QueueAction extends Action {
-    	/**
-    	 * Returns whether the new item should be scheduled.
-    	 * An action should return true if the associated task is 'different enough' to warrant a separate execution.
-    	 */
-	    boolean shouldSchedule(List<Action> actions);
+        /**
+         * Returns whether the new item should be scheduled.
+         * An action should return true if the associated task is 'different enough' to warrant a separate execution.
+         */
+        boolean shouldSchedule(List<Action> actions);
     }
 
     /**
@@ -2457,28 +2451,28 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.316
      */
     public static abstract class QueueDecisionHandler implements ExtensionPoint {
-    	/**
-    	 * Returns whether the new item should be scheduled.
+        /**
+         * Returns whether the new item should be scheduled.
          *
          * @param actions
          *      List of actions that are to be made available as {@link AbstractBuild#getActions()}
          *      upon the start of the build. This list is live, and can be mutated.
-    	 */
-    	public abstract boolean shouldSchedule(Task p, List<Action> actions);
+         */
+        public abstract boolean shouldSchedule(Task p, List<Action> actions);
 
-    	/**
-    	 * All registered {@link QueueDecisionHandler}s
-    	 */
-    	public static ExtensionList<QueueDecisionHandler> all() {
-    		return ExtensionList.lookup(QueueDecisionHandler.class);
-    	}
+        /**
+         * All registered {@link QueueDecisionHandler}s
+         */
+        public static ExtensionList<QueueDecisionHandler> all() {
+            return ExtensionList.lookup(QueueDecisionHandler.class);
+        }
     }
 
     /**
      * {@link Item} in the {@link Queue#waitingList} stage.
      */
     public static final class WaitingItem extends Item implements Comparable<WaitingItem> {
-	private static final AtomicLong COUNTER = new AtomicLong(0);
+        private static final AtomicLong COUNTER = new AtomicLong(0);
 
         /**
          * This item can be run after this time.
@@ -2816,67 +2810,67 @@ public class Queue extends ResourceController implements Saveable {
     static {
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 
-			@Override
+            @Override
             public boolean canConvert(Class klazz) {
-				return hudson.model.Item.class.isAssignableFrom(klazz);
-			}
+                return hudson.model.Item.class.isAssignableFrom(klazz);
+            }
 
-			@Override
-			public Object fromString(String string) {
+            @Override
+            public Object fromString(String string) {
                 Object item = Jenkins.get().getItemByFullName(string);
                 if(item==null)  throw new NoSuchElementException("No such job exists: "+string);
                 return item;
-			}
+            }
 
-			@Override
-			public String toString(Object item) {
-				return ((hudson.model.Item) item).getFullName();
-			}
+            @Override
+            public String toString(Object item) {
+                return ((hudson.model.Item) item).getFullName();
+            }
         });
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 
-			@Override
-			public boolean canConvert(Class klazz) {
-				return Run.class.isAssignableFrom(klazz);
-			}
+            @Override
+            public boolean canConvert(Class klazz) {
+                return Run.class.isAssignableFrom(klazz);
+            }
 
-			@Override
-			public Object fromString(String string) {
-				String[] split = string.split("#");
-				String projectName = split[0];
-				int buildNumber = Integer.parseInt(split[1]);
-				Job<?,?> job = (Job<?,?>) Jenkins.get().getItemByFullName(projectName);
+            @Override
+            public Object fromString(String string) {
+                String[] split = string.split("#");
+                String projectName = split[0];
+                int buildNumber = Integer.parseInt(split[1]);
+                Job<?,?> job = (Job<?,?>) Jenkins.get().getItemByFullName(projectName);
                 if(job==null)  throw new NoSuchElementException("No such job exists: "+projectName);
-				Run<?,?> run = job.getBuildByNumber(buildNumber);
+                Run<?,?> run = job.getBuildByNumber(buildNumber);
                 if(run==null)  throw new NoSuchElementException("No such build: "+string);
-				return run;
-			}
+                return run;
+            }
 
-			@Override
-			public String toString(Object object) {
-				Run<?,?> run = (Run<?,?>) object;
-				return run.getParent().getFullName() + "#" + run.getNumber();
-			}
+            @Override
+            public String toString(Object object) {
+                Run<?,?> run = (Run<?,?>) object;
+                return run.getParent().getFullName() + "#" + run.getNumber();
+            }
         });
 
         /*
          * Reconnect every reference to Queue by the singleton.
          */
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
-			@Override
-			public boolean canConvert(Class klazz) {
-				return Queue.class.isAssignableFrom(klazz);
-			}
+            @Override
+            public boolean canConvert(Class klazz) {
+                return Queue.class.isAssignableFrom(klazz);
+            }
 
-			@Override
-			public Object fromString(String string) {
+            @Override
+            public Object fromString(String string) {
                 return Jenkins.get().getQueue();
-			}
+            }
 
-			@Override
-			public String toString(Object item) {
+            @Override
+            public String toString(Object item) {
                 return "queue";
-			}
+            }
         });
     }
 
@@ -2909,49 +2903,49 @@ public class Queue extends ResourceController implements Saveable {
      * {@link ArrayList} of {@link Item} with more convenience methods.
      */
     private class ItemList<T extends Item> extends ArrayList<T> {
-    	public T get(Task task) {
-    		for (T item: this) {
-    			if (item.task.equals(task)) {
-    				return item;
-    			}
-    		}
-    		return null;
-    	}
+        public T get(Task task) {
+            for (T item: this) {
+                if (item.task.equals(task)) {
+                    return item;
+                }
+            }
+            return null;
+        }
 
-    	public List<T> getAll(Task task) {
-    		List<T> result = new ArrayList<>();
-    		for (T item: this) {
-    			if (item.task.equals(task)) {
-    				result.add(item);
-    			}
-    		}
-    		return result;
-    	}
+        public List<T> getAll(Task task) {
+            List<T> result = new ArrayList<>();
+            for (T item: this) {
+                if (item.task.equals(task)) {
+                    result.add(item);
+                }
+            }
+            return result;
+        }
 
-    	public boolean containsKey(Task task) {
-    		return get(task) != null;
-    	}
+        public boolean containsKey(Task task) {
+            return get(task) != null;
+        }
 
-    	public T remove(Task task) {
-    		Iterator<T> it = iterator();
-    		while (it.hasNext()) {
-    			T t = it.next();
-    			if (t.task.equals(task)) {
-    				it.remove();
-    				return t;
-    			}
-    		}
-    		return null;
-    	}
+        public T remove(Task task) {
+            Iterator<T> it = iterator();
+            while (it.hasNext()) {
+                T t = it.next();
+                if (t.task.equals(task)) {
+                    it.remove();
+                    return t;
+                }
+            }
+            return null;
+        }
 
-    	public void put(Task task, T item) {
-    		assert item.task.equals(task);
-    		add(item);
-    	}
+        public void put(Task task, T item) {
+            assert item.task.equals(task);
+            add(item);
+        }
 
-    	public ItemList<T> values() {
-    		return this;
-    	}
+        public ItemList<T> values() {
+            return this;
+        }
 
         /**
          * Works like {@link #remove(Task)} but also marks the {@link Item} as cancelled.
