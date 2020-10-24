@@ -598,7 +598,7 @@ public class UtilTest {
         AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> {
             Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method");
         });
-        assertEquals("You must override at least one of the BaseClass.method methods", error.getMessage());
+        assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
     }
 
     public static class BaseClass {

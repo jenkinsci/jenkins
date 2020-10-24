@@ -66,7 +66,6 @@ import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.apache.tools.ant.types.selectors.TokenizedPath;
 import org.apache.tools.ant.types.selectors.TokenizedPattern;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -154,7 +153,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if reading the link, or even determining whether this file is a link, failed
      * @since 2.118
      */
-    @Restricted(Beta.class)
     public @CheckForNull String readLink() throws IOException {
         return null;
     }
@@ -219,7 +217,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
      * @since 2.118
      */
-    @Restricted(Beta.class)
     public @NonNull Collection<String> list(@NonNull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
         Collection<String> r = run(new CollectFiles(this));
         List<TokenizedPattern> includePatterns = patterns(includes);
@@ -297,7 +294,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if checking the mode failed
      * @since 2.118
      */
-    @Restricted(Beta.class)
     public int mode() throws IOException {
         return -1;
     }
@@ -379,7 +375,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @since 2.118
      * @see #toURI
      */
-    @Restricted(Beta.class)
     public @CheckForNull URL toExternalURL() throws IOException {
         return null;
     }

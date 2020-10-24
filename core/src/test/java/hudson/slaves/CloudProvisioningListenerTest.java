@@ -1,37 +1,36 @@
 package hudson.slaves;
 
+import hudson.model.Messages;
 import hudson.model.queue.CauseOfBlockage;
-import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.localizer.Localizable;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class CloudProvisioningListenerTest {
-    public static class CloudProvisioningListenerFailing extends CloudProvisioningListener {}
+    public static class CloudProvisioningListenerNoOverride extends CloudProvisioningListener {}
 
-    public static class CloudProvisioningListenerSuccess extends CloudProvisioningListener {
+    public static class CloudProvisioningListenerOverride extends CloudProvisioningListener {
         @Override
         public CauseOfBlockage canProvision(Cloud cloud, Cloud.CloudState state, int numExecutors) {
-            return null;
+            return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
         }
     }
 
     @Issue("JENKINS-63828")
     @Test
-    public void failing(){
+    public void noOverride(){
         Cloud.CloudState state = new Cloud.CloudState(null, 0);
-        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> {
-            new CloudProvisioningListenerFailing().canProvision(null, state, 0);
-        });
-        assertEquals("You must override at least one of the CloudProvisioningListener.canProvision methods", error.getMessage());
+        assertNull(new CloudProvisioningListenerNoOverride().canProvision(null, state, 0));
     }
 
     @Issue("JENKINS-63828")
     @Test
-    public void success() {
+    public void override() {
         Cloud.CloudState state = new Cloud.CloudState(null, 0);
-        assertNull(new CloudProvisioningListenerSuccess().canProvision(null, state, 0));
+        assertNotNull(new CloudProvisioningListenerOverride().canProvision(null, state, 0));
     }
 }
