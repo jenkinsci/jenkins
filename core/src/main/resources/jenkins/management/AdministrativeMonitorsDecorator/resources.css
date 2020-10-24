@@ -50,6 +50,7 @@
     z-index: 1000;
 }
 .am-container.visible .am-button {
+    background-color: #404040;
     background-color: var(--header-link-bg-classic-active);
     text-decoration: none;
 }
