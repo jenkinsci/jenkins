@@ -66,6 +66,7 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: false}"/>
   <j:set var="value" value="${attrs.checked ?: instance[attrs.field] ?: default}"/>
+
   <input type="checkbox"
          name="${name}"
          value="${attrs.value}"
@@ -74,10 +75,8 @@ THE SOFTWARE.
          checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
          disabled="${readOnlyMode ? 'true' : null}"
          checked="${value ? 'true' : null}"/>
-  <j:if test="${attrs.title!=null}">
-    <label class="attach-previous"
-           title="${attrs.tooltip}">${attrs.title}</label>
-  </j:if>
+  <label class="attach-previous setting-checkbox ${attrs.title == null ? 'js-checkbox-label-empty' : ''}"
+         title="${attrs.tooltip}">${attrs.title}</label>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

@@ -32,7 +32,7 @@ THE SOFTWARE.
                         noAddButton="${readOnlyMode ? 'true' : null}"
           >
             <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
-            <table width="100%">
+            <div>
               <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
               <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
               <l:isAdmin>
@@ -42,7 +42,7 @@ THE SOFTWARE.
                   </div>
                 </f:entry>
               </l:isAdmin>
-            </table>
+            </div>
           </f:repeatable>
         </f:entry>
       </d:tag>
@@ -52,19 +52,19 @@ THE SOFTWARE.
         <local:section/>
       </j:when>
       <j:otherwise>
-        <tr> <!-- f:advanced does not work well here because of placement in third column -->
-          <td colspan="3">
+        <div class="tr"> <!-- f:advanced does not work well here because of placement in third column -->
+          <div>
             <st:adjunct includes="lib.form.advanced.advanced"/>
             <div class="advancedLink" style="text-align:left">
               <input type="button" value="${%title(descriptor.displayName)}..." class="advanced-button advancedButton"/>
             </div>
-            <table class="advancedBody">
-              <tbody>
+            <div class="advancedBody">
+              <div class="tbody">
                 <local:section/>
-              </tbody>
-            </table>
-          </td>
-        </tr>
+              </div>
+            </div>
+          </div>
+        </div>
       </j:otherwise>
     </j:choose>
   </f:section>

@@ -63,24 +63,23 @@ THE SOFTWARE.
       <f:textarea name='${attrs.name}' value="${value}" field="${attrs.field}"/>
     </j:when>
     <j:otherwise>
+      <!-- single line textbox with expand button -->
       <f:possibleReadOnlyField>
-        <!-- single line textbox with expand button -->
-        <table border="0" style="width:100%" cellspacing="0" cellpadding="0">
-          <tr>
-            <td width="*">
-              <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
-              <input class="setting-input" type="text"
-                    name="${name}" value="${value}"
-                    id="textarea.${name}" />
-              <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
-                <j:mute>${customizedFields.add(name)}</j:mute>
-              </j:if>
-            </td><td width="1">
-              <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
-                  tooltip="${%tooltip}"/>
-            </td>
-          </tr>
-        </table>
+        <div class="expanding-input">
+          <div class="expanding-input__input">
+            <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
+            <input class="setting-input" type="text"
+                   name="${name}" value="${value}"
+                   id="textarea.${name}" />
+            <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
+              <j:mute>${customizedFields.add(name)}</j:mute>
+            </j:if>
+          </div>
+          <div class="expanding-input__button">
+            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
+                   tooltip="${%tooltip}"/>
+          </div>
+        </div>
       </f:possibleReadOnlyField>
     </j:otherwise>
   </j:choose>
