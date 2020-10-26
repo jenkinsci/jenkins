@@ -1869,7 +1869,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         // Undo everything from the previous poll.
         resetCellOverflows();
 
-        // Mark the text as multiline, if it is so
+        // Mark the text as multiline, if it has more than one line
         if (desc) {
             markMultiline();
         }
