@@ -40,7 +40,7 @@ var DragDrop = function(id, sGroup, config) {
             // set Y constraint to be within the container
             var totalHeight = el.parentNode.offsetHeight;
             var blockHeight = el.offsetHeight;
-            this.setYConstraint(el.offsetTop, totalHeight-blockHeight-el.offsetTop);
+            this.setYConstraint(el.offsetTop, el.offsetTop - totalHeight - blockHeight);
 
             el.style.visibility = "hidden";
 
