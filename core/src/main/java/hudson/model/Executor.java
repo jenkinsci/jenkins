@@ -74,6 +74,7 @@ import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
 
@@ -892,6 +893,12 @@ public class Executor extends Thread implements ModelObject {
         lock.readLock().lock();
         try {
             return executable != null && getParentOf(executable).getOwnerTask().hasAbortPermission();
+        } catch(Exception ex) {
+            if (!(ex instanceof AccessDeniedException)) {
+                // Prevents UI from exploding in the case of unexpected runtime exceptions
+                LOGGER.log(WARNING, "Unhandled exception", ex);
+            }
+            return false;
         } finally {
             lock.readLock().unlock();
         }

@@ -58,7 +58,7 @@ for(j = 0; j < jdks.size(); j++) {
                 // Once we've built, archive the artifacts and the test results.
                 stage("${buildType} Publishing") {
                     if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
+                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     }
                     if (buildType == 'Linux' && jdk == jdks[0]) {
