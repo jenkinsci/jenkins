@@ -83,7 +83,7 @@ final class ZipArchiver extends Archiver {
             zip.closeEntry();
         }
         entriesWritten++;
-        files.add(f.getAbsolutePath());
+        files.add(relativePath);
     }
 
     public void close() throws IOException {

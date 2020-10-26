@@ -29,8 +29,10 @@ import hudson.os.PosixAPI;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
+import hudson.util.DirScanner;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
+import hudson.util.io.ArchiverFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
@@ -54,6 +56,7 @@ import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -349,8 +352,31 @@ public class FilePathTest {
         final String filePrefix = "JENKINS-10629";
         checkTarUntarRoundTrip(filePrefix, largeFileSize);
     }
-     
+
+    private void checkUntar2Path(String filePrefix, long fileSize) throws IOException, InterruptedException {
+
+        final File tmpDir = temp.newFolder(filePrefix);
+        tmpDir.mkdirs();
+        final File tempFile =  new File(tmpDir, filePrefix + ".log");
+        RandomAccessFile file = new RandomAccessFile(tempFile, "rw");
+
+        file.setLength(fileSize);
+        assumeTrue(fileSize == file.length());
+        file.close();
+
+        final FilePath tmpDirPath = new FilePath(tmpDir);
+        try (OutputStream os = new FileOutputStream(tempFile)) {
+            DirScanner.Glob scanner = new DirScanner.Glob("**", "");
+            List<String> files = tmpDirPath.archive2(ArchiverFactory.TARGZ, os, scanner);
+            assertThat(files.size(), is(1));
+            assertThat(files.get(0), is(format("%s.log", filePrefix,filePrefix)));
+        }
+    }
+
+
     private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
+
+        checkUntar2Path(filePrefix+"2", fileSize);
         final File tmpDir = temp.newFolder(filePrefix);
         final File tempFile =  new File(tmpDir, filePrefix + ".log");
         RandomAccessFile file = new RandomAccessFile(tempFile, "rw");
@@ -372,8 +398,9 @@ public class FilePathTest {
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
 
-        List<File> files = tmpDirPath.child(tarFile.getName()).untar2(outDir, TarCompression.NONE);
-        assertThat( files.size(), is(1));
+        List<?> files = tmpDirPath.child(tarFile.getName()).untar2(outDir, TarCompression.NONE);
+        assertThat(files.size(), is(1));
+        assertThat(files.get(0), is(format("%s.log", filePrefix)));
     }
 
     @Test public void list() throws Exception {

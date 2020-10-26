@@ -2695,7 +2695,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         if (mode != 0 && !Functions.isWindows()) // be defensive
                             _chmod(f, mode);
                     }
-                    files.add(f.getAbsolutePath());
+                    files.add(f.getName());
                 }
             }
         } catch (IOException e) {
