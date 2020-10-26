@@ -517,9 +517,9 @@ public class FunctionsTest {
         Stack stack2 = new Stack("p.Exc2", "p.C.method2:27");
         stack1.cause(stack2);
         stack2.cause(stack1);
-        //Format changed in 11.0.9 (JDK-8226809 / JDK-8252444 / JDK-8252489)
-        if (getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9")) ||
-                getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272"))) {
+        //Format changed in 11.0.9 / 8.0.272 (JDK-8226809 / JDK-8252444 / JDK-8252489)
+        if ((getVersion().getDigitAt(0) == 11 && getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9"))) ||
+                (getVersion().getDigitAt(0) == 8 && getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272")))) {
             assertPrintThrowable(stack1,
                     "p.Exc1\n" +
                             "\tat p.C.method1(C.java:17)\n" +
