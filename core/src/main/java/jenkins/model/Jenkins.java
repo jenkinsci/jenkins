@@ -4271,7 +4271,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CLIMethod(name="restart")
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
-        checkPermission(ADMINISTER);
+        checkPermission(MANAGE);
         if (req != null && req.getMethod().equals("GET")) {
             req.getView(this,"_restart.jelly").forward(req,rsp);
             return;
@@ -4295,7 +4295,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CLIMethod(name="safe-restart")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
-        checkPermission(ADMINISTER);
+        checkPermission(MANAGE);
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this,"_safeRestart.jelly");
 
@@ -4831,12 +4831,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
-        if (restOfPath.matches("/computer/[^/]+/slave-agent[.]jnlp")
+        if ((isAgentJnlpPath(restOfPath, "jenkins") || (isAgentJnlpPath(restOfPath, "slave")))
             && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
             return false;
         }
 
         return true;
+    }
+
+    private boolean isAgentJnlpPath(String restOfPath, String prefix) {
+        return restOfPath.matches("/computer/[^/]+/" + prefix+ "-agent[.]jnlp");
     }
 
     /**

@@ -33,7 +33,7 @@ f.section(title: _("Administrative monitors configuration")) {
     f.advanced(title: _("Administrative monitors")) {
         f.entry(title: _("Enabled administrative monitors")) {
             p(_("blurb"))
-            table(width: "100%") {
+            div(width: "100%") {
                 for (AdministrativeMonitor am : new ArrayList<>(AdministrativeMonitor.all())
                         .sort({ o1, o2 -> o1.getDisplayName() <=> o2.getDisplayName() })) {
                     f.block() {
@@ -42,12 +42,10 @@ f.section(title: _("Administrative monitors configuration")) {
                                 checked: am.enabled,
                                 json: am.id)
                     }
-                    tr() {
-                        td(colspan: "2")
-                        td(class: "setting-description") {
+                    div(class: "tr") {
+                        div(class: "setting-description") {
                             st.include(from: am, page: "description", optional: true)
                         }
-                        td()
                     }
                 }
             }

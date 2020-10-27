@@ -1408,7 +1408,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     }
                 } else {
                     try (InputStream is = connection.getInputStream()) {
-                        IOUtils.copy(is, new NullOutputStream());
+                        IOUtils.copy(is, NullOutputStream.NULL_OUTPUT_STREAM);
                     }
                 }
             } catch (SSLHandshakeException e) {
@@ -1998,8 +1998,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return VerificationResult.NOT_COMPUTED;
         }
 
-        if (caseSensitive ? expectedDigest.equals(actualDigest) : expectedDigest.equalsIgnoreCase(actualDigest)) {
-            return VerificationResult.PASS;
+        if (caseSensitive) {
+            if (MessageDigest.isEqual(expectedDigest.getBytes(), actualDigest.getBytes())) {
+                return VerificationResult.PASS;
+            }
+        } else {
+            if (MessageDigest.isEqual(expectedDigest.toLowerCase().getBytes(), actualDigest.toLowerCase().getBytes())) {
+                return VerificationResult.PASS;
+            }
         }
 
         return VerificationResult.FAIL;

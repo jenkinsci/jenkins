@@ -31,7 +31,7 @@
     <svg class="svg-icon ${attrs.class}"
          viewBox="${attrs.viewBox != null ? attrs.viewBox : '0 0 24 24'}"
          focusable="${attrs.focusable != null ? attrs.focusable : 'false'}"
-         aria-hidden="${attrs.ariaHidden != null ? attrs.ariaHidden : ''}"
+         aria-hidden="${attrs.ariaHidden}"
          style="${attrs.style}"
          onclick="${attrs.onclick}"
          tooltip="${h.xmlEscape(attrs.tooltip ?: '')}">

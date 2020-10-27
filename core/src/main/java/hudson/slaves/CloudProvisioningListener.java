@@ -2,9 +2,11 @@ package hudson.slaves;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.slaves.Cloud.CloudState;
 import jenkins.model.Jenkins;
 
 import java.util.Collection;
@@ -35,9 +37,37 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      *
      * @return {@code null} if provisioning can proceed, or a
      * {@link CauseOfBlockage} reason why it cannot be provisioned.
+     *
+     * @deprecated Use {@link #canProvision(Cloud, CloudState, int)} instead.
      */
+    @Deprecated
     public CauseOfBlockage canProvision(Cloud cloud, Label label, int numExecutors) {
-        return null;
+        if (Util.isOverridden(CloudProvisioningListener.class,
+                getClass(),
+                "canProvision",
+                Cloud.class,
+                CloudState.class,
+                int.class)) {
+            return canProvision(cloud, new CloudState(label, 0), numExecutors);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Allows extensions to prevent a cloud from provisioning.
+     *
+     * Return null to allow provisioning, or non-null to prevent it.
+     *
+     * @param cloud The cloud being provisioned from.
+     * @param state The current cloud state.
+     * @param numExecutors The number of executors needed.
+     *
+     * @return {@code null} if provisioning can proceed, or a
+     * {@link CauseOfBlockage} reason why it cannot be provisioned.
+     */
+    public CauseOfBlockage canProvision(Cloud cloud, CloudState state, int numExecutors) {
+        return canProvision(cloud, state.getLabel(), numExecutors);
     }
 
     /**

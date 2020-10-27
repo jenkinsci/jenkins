@@ -80,17 +80,17 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <table style="width:100%">
+      <div style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
-          <tr>
-            <td colspan="3">
+          <div class="tr help-sibling">
+            <div colspan="3">
               <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
                 <b>${descriptor.displayName}</b>
+                <f:helpLink url="${help}"/>
               </div>
-            </td>
-            <f:helpLink url="${help}"/>
-          </tr>
+            </div>
+          </div>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea />
@@ -107,7 +107,7 @@ THE SOFTWARE.
             </div>
           </f:block>
         </j:if>
-      </table>
+      </div>
     </d:tag>
   </d:taglib>
 
@@ -148,7 +148,7 @@ THE SOFTWARE.
         <div name="${attrs.name}" title="${title}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}" disableDragAndDrop="${attrs.disableDragAndDrop}">
-            <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it,instance,${capture}">
+            <l:renderOnDemand tag="div" clazz="config-page" capture="descriptor,it,instance,${capture}">
               <l:ajax>
                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
               </l:ajax>

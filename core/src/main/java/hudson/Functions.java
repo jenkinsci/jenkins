@@ -967,7 +967,7 @@ public class Functions {
     }
 
     public static List<SCMDescriptor<?>> getSCMDescriptors(AbstractProject<?,?> project) {
-        return SCM._for(project);
+        return SCM._for((Job) project);
     }
 
     /**
@@ -1874,7 +1874,7 @@ public class Functions {
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
-     * This is primarily used in {@code slave-agent.jnlp.jelly} to specify the destination
+     * This is primarily used in {@code jenkins-agent.jnlp.jelly} to specify the destination
      * that the agents talk to.
      */
     public String getServerName() {

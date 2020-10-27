@@ -87,9 +87,6 @@ import static java.util.logging.Level.*;
  */
 public class WebAppMain implements ServletContextListener {
 
-    // use RingBufferLogHandler class name to configure for backward compatibility
-    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
-
     /**
      * System property name to force the session tracking by cookie.
      * This prevents Tomcat to use the URL tracking in addition to the cookie by default.
@@ -112,13 +109,26 @@ public class WebAppMain implements ServletContextListener {
     @Restricted(NoExternalUse.class)
     public static final String FORCE_SESSION_TRACKING_BY_COOKIE_PROP = WebAppMain.class.getName() + ".forceSessionTrackingByCookie";
 
-    private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
+    private final RingBufferLogHandler handler = new RingBufferLogHandler(WebAppMain.getDefaultRingBufferSize()) {
+      
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
                 super.publish(record);
             }
         }
     };
+
+    /**This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
+     * Exposes access from RingBufferLogHandler.DEFAULT_RING_BUFFER_SIZE to WebAppMain.
+     * Written for the requirements of JENKINS-50669
+     * @return int This returns DEFAULT_RING_BUFFER_SIZE
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @since TODO
+     */
+    public static int getDefaultRingBufferSize() {
+        return RingBufferLogHandler.getDefaultRingBufferSize();
+    }
+
     private static final String APP = "app";
     private boolean terminated;
     private Thread initThread;
@@ -244,7 +254,10 @@ public class WebAppMain implements ServletContextListener {
             // check that and report an error
             try {
                 File f = File.createTempFile("test", "test");
-                f.delete();
+                boolean result = f.delete();
+                if (!result) {
+                    LOGGER.log(FINE, "Temp file test.test could not be deleted.");
+                }
             } catch (IOException e) {
                 throw new NoTempDir(e);
             }

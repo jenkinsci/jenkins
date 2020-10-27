@@ -125,11 +125,7 @@ public class BasicHeaderProcessor implements Filter {
         // BASIC protocol is desirable. This behaviour is also consistent with that provided by form and digest,
         // both of which force re-authentication if the respective header is detected (and in doing so replace
         // any existing AnonymousAuthenticationToken). See SEC-610.
-        if (existingAuth instanceof AnonymousAuthenticationToken) {
-            return true;
-        }
-
-        return false;
+        return existingAuth instanceof AnonymousAuthenticationToken;
     }
 
     protected void success(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain, Authentication auth) throws IOException, ServletException {

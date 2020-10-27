@@ -515,7 +515,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         final long dirTime = archive.lastModified();
         // this ZipOutputStream is reused and not created for each directory
-        try (ZipOutputStream wrappedZOut = new ZipOutputStream(new NullOutputStream()) {
+        try (ZipOutputStream wrappedZOut = new ZipOutputStream(NullOutputStream.NULL_OUTPUT_STREAM) {
             @Override
             public void putNextEntry(ZipEntry ze) throws IOException {
                 ze.setTime(dirTime+1999);   // roundup

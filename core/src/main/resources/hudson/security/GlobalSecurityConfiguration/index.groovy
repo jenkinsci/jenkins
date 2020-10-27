@@ -30,19 +30,13 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
 
-                f.entry(title:_("Security Realm")) {
-                    table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
-                    }
+                div(style:"width:100%") {
+                    f.descriptorRadioList(title:_("Security Realm"), varName:"realm", instance:app.securityRealm, descriptors: h.filterDescriptors(app, SecurityRealm.all()))
                 }
             }
 
-            f.section(title:_("Authorization")) {
-                f.entry(title:_("Strategy")) {
-                    table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
-                    }
-                }
+            div(style:"width:100%") {
+                f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
             }
 
             f.section(title: _("Markup Formatter")) {
@@ -66,7 +60,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {
                         def agentProtocols = my.agentProtocols
-                        table(width:"100%") {
+                        div() {
                             for (AgentProtocol p : AgentProtocol.all()) {
                                 if (p.name != null && !p.required) {
                                     f.block() {
@@ -75,9 +69,8 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                                                 checked: agentProtocols.contains(p.name),
                                                 json: p.name)
                                     }
-                                    tr() {
-                                        td(colspan:"2")
-                                        td(class:"setting-description"){
+                                    div(class: "tr") {
+                                        div(class:"setting-description"){
                                             st.include(from:p, page: "description", optional:true)
                                             if (p.deprecated) {
                                               br()
@@ -85,7 +78,6 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                                               st.include(from:p, page: "deprecationCause", optional:true)
                                             }
                                         }
-                                        td()
                                     }
                                 }
                             }

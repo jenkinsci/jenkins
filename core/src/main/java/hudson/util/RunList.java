@@ -146,7 +146,8 @@ public class RunList<R extends Run> extends AbstractList<R> {
      */
     @Override
     public List<R> subList(int fromIndex, int toIndex) {
-        List<R> r = new ArrayList<>();
+        int sublistSize = toIndex < fromIndex ? 0 : toIndex - fromIndex;
+        List<R> r = new ArrayList<>(sublistSize);
         Iterator<R> itr = iterator();
         hudson.util.Iterators.skip(itr, fromIndex);
         for (int i=toIndex-fromIndex; i>0; i--) {
