@@ -40,6 +40,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.EnvVars;
 import hudson.console.AnnotatedLargeText;
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.XMLOutput;
@@ -265,6 +266,22 @@ public class RunTest {
 
         assertTrue(r1.compareTo(r2) != 0);
         assertTrue(treeSet.size() == 2);
+    }
+
+    @Issue("JENKINS-64049")
+    @Test
+    public void getCharacteristicEnvVarsReturnsBuildTagWithoutSpaces() throws IOException{
+        final Jenkins group = Mockito.mock(Jenkins.class);
+        Mockito.when(group.getFullName()).thenReturn("group");
+        final Job job = Mockito.mock(Job.class);
+        Mockito.when(job.getParent()).thenReturn(group);
+        Mockito.when(job.getCharacteristicEnvVars()).thenReturn(new EnvVars());
+        Mockito.when(job.getFullName()).thenReturn("space separated name");
+        
+        Run run = new Run(job) {};
+        EnvVars env = run.getCharacteristicEnvVars();
+
+        assertFalse("BUILD_TAG should not contain spaces", env.get("BUILD_TAG").contains(" "));
     }
 
     @Test

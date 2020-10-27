@@ -2458,7 +2458,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         EnvVars env = getParent().getCharacteristicEnvVars();
         env.put("BUILD_NUMBER",String.valueOf(number));
         env.put("BUILD_ID",getId());
-        env.put("BUILD_TAG","jenkins-"+getParent().getFullName().replace('/', '-')+"-"+number);
+        env.put("BUILD_TAG","jenkins-"+getParent().getFullName().replaceAll("[\\s/]", "-")+"-"+number);
         return env;
     }
 
