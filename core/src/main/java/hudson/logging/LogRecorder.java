@@ -103,11 +103,13 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             loggers = new ArrayList<>();
         }
 
-        if (targets != null && !targets.isEmpty()) {
+        List<Target> tempLoggers = new ArrayList<>(loggers);
+        
+        if (!targets.isEmpty()) {
             loggers.addAll(targets.getView());
         }
-        if (!loggers.isEmpty()) {
-            targets.addAll(loggers);
+        if (!tempLoggers.isEmpty() && !targets.getView().equals(tempLoggers)) {
+            targets.addAll(tempLoggers);
         }
         return this;
     }
@@ -238,6 +240,23 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
         public String getName() {
             return name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Target target = (Target) o;
+            return level == target.level && Objects.equals(name, target.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, level);
         }
 
         @Deprecated
