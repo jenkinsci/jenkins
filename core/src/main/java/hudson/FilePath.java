@@ -486,6 +486,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return act(new Archive(factory, out, scanner));
     }
 
+    /**
+     * Archives this directory into the specified archive format, to the given {@link OutputStream}, by using
+     * {@link DirScanner} to choose what files to include.
+     *
+     * @returna a list of files archived.
+     */
     public List<String> archive2(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
         return act(new Archive2(factory, out, scanner));
@@ -602,7 +608,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      Target directory to expand files to. All the necessary directories will be created.
      * @param compression
      *      Compression mode of this tar file.
-     * @since 2.264
+     * @since TODO
      * @see #untarFrom(InputStream, TarCompression)
      * @return a list of uncompressed files
      */
