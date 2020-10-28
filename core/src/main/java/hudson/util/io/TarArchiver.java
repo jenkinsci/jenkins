@@ -74,7 +74,7 @@ final class TarArchiver extends Archiver {
         tar.putArchiveEntry(e);
         tar.closeArchiveEntry();
         entriesWritten++;
-        files.add(relativePath);
+        files.add(link.getAbsolutePath());
     }
 
     @Override
@@ -121,7 +121,7 @@ final class TarArchiver extends Archiver {
             tar.closeArchiveEntry();
         }
         entriesWritten++;
-        files.add(relativePath);
+        files.add(file.getAbsolutePath());
 
     }
 
