@@ -529,7 +529,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.scanner = scanner;
         }
         @Override
-            public List<String> invoke(File f, VirtualChannel channel) throws IOException {
+        public List<String> invoke(File f, VirtualChannel channel) throws IOException {
                 Archiver a = factory.create(out);
                 try {
                     scanner.scan(f,reading(a));
