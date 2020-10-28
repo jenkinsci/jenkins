@@ -68,6 +68,9 @@ public class JenkinsLocationConfigurationTest {
         // Quoted value
         config.setAdminAddress("\""+email2+"\"");
         assertEquals(email2, config.getAdminAddress());
+
+        config.setAdminAddress("    test@foo.bar     ");
+        assertEquals(email,config.getAdminAddress());
     }
     
     @Test

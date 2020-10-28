@@ -4820,12 +4820,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
-        if (restOfPath.matches("/computer/[^/]+/slave-agent[.]jnlp")
+        if ((isAgentJnlpPath(restOfPath, "jenkins") || (isAgentJnlpPath(restOfPath, "slave")))
             && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
             return false;
         }
 
         return true;
+    }
+
+    private boolean isAgentJnlpPath(String restOfPath, String prefix) {
+        return restOfPath.matches("/computer/[^/]+/" + prefix+ "-agent[.]jnlp");
     }
 
     /**
