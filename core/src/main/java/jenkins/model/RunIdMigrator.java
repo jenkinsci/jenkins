@@ -170,7 +170,7 @@ public final class RunIdMigrator {
 
     private static String getUnmigrationCommandLine(File jenkinsHome) {
         StringBuilder cp = new StringBuilder();
-        for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */StandardCharsets.class, WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
+        for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
             URL location = c.getProtectionDomain().getCodeSource().getLocation();
             String locationS = location.toString();
             if (location.getProtocol().equals("file")) {
