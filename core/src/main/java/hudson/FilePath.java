@@ -490,7 +490,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Archives this directory into the specified archive format, to the given {@link OutputStream}, by using
      * {@link DirScanner} to choose what files to include.
      *
-     * @returna a list of files archived.
+     * @return a list of files archived
      */
     public List<String> archive2(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;

@@ -37,6 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
+import org.hamcrest.core.StringEndsWith;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -369,7 +370,7 @@ public class FilePathTest {
             DirScanner.Glob scanner = new DirScanner.Glob("**", "");
             List<String> files = tmpDirPath.archive2(ArchiverFactory.TARGZ, os, scanner);
             assertThat(files.size(), is(1));
-            assertThat(files.get(0), is(format("%s.log", filePrefix,filePrefix)));
+            assertThat(files.get(0), StringEndsWith.endsWith(format("%s/%s.log", filePrefix,filePrefix)));
         }
     }
 
