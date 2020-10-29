@@ -536,7 +536,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 } finally {
                     a.close();
                 }
-            return a.getFiles();
+                return a.getFiles();
             }
 
             private static final long serialVersionUID = 1L;
@@ -598,6 +598,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      Compression mode of this tar file.
      * @since 1.292
      * @see #untar2(FilePath, TarCompression)
+     * @deprecated
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
         untar2(target, compression);
