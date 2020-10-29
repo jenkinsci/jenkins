@@ -42,7 +42,9 @@ form {
   margin: 0;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   color: var(--text-color);
   background-color: var(--input-color);
   font-family: inherit;
@@ -64,11 +66,13 @@ dt {
   text-align: center;
 }
 
-.middle-align td, td.middle-align {
+.middle-align td,
+td.middle-align {
   vertical-align: middle;
 }
 
-.center-align td, td.center-align {
+.center-align td,
+td.center-align {
   text-align: center;
 }
 
@@ -184,7 +188,8 @@ a.tip:hover span {
   color: var(--call-to-action-text-color);
 }
 
-.call-to-action a, .call-to-action a:visited {
+.call-to-action a,
+.call-to-action a:visited {
   color: var(--call-to-action-link-color);
   font-weight: bold;
   font-size: larger;
@@ -303,7 +308,9 @@ pre.console {
   padding-top: 0;
 }
 
-.setting-name, .setting-main > input, .setting-main > textarea {
+.setting-name,
+.setting-main > input,
+.setting-main > textarea {
   vertical-align: middle;
   margin-top: 0;
 }
@@ -311,16 +318,6 @@ pre.console {
 .setting-main > .yui-button {
   clear: both;
   float: right;
-}
-
-.setting-main > .yui-button {
-  clear: both;
-  float: right;
-}
-
-.setting-name, .setting-main > input, .setting-main > textarea {
-  vertical-align: middle;
-  margin-top: 0;
 }
 
 .expanding-input {
@@ -534,7 +531,8 @@ LABEL.attach-previous {
     margin-left: 0.5em;
 }
 
-.bottom-sticker, #bottom-sticker {
+.bottom-sticker,
+#bottom-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
 }
 .bottom-sticker-inner {
@@ -542,7 +540,8 @@ LABEL.attach-previous {
     padding: 1em 0;
 }
 
-.top-sticker, #top-sticker {
+.top-sticker,
+#top-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
     z-index: 999;
 }
@@ -761,11 +760,13 @@ table.parameters > tbody:hover {
     display: none;
 }
 
-.healthReport:hover, .healthReport.hover { /* fix IE6 bug with :hover */
+.healthReport:hover,
+.healthReport.hover { /* fix IE6 bug with :hover */
     background: transparent;
 }
 
-.healthReport:hover div.healthReportDetails, .healthReport.hover div.healthReportDetails {
+.healthReport:hover div.healthReportDetails,
+.healthReport.hover div.healthReportDetails {
     display: block;
     position: absolute;
     background-color: #ffe;
@@ -945,11 +946,13 @@ table.parameters > tbody:hover {
 
 /* ================ Element overflow calculation helper styles ================ */
 
-.force-wrap, .force-wrap a {
+.force-wrap,
+.force-wrap a {
   white-space: normal !important;
   overflow: visible !important;
 }
-.force-nowrap, .force-nowrap a {
+.force-nowrap,
+.force-nowrap a {
   white-space: nowrap !important;
   overflow: hidden !important;
 }
@@ -1073,7 +1076,8 @@ TABLE.fingerprint-in-build TD {
   visibility: visible;
 }
 
-#plugins tr.has-dependents input, #plugins tr.has-disabled-dependency .enable input {
+#plugins tr.has-dependents input,
+#plugins tr.has-disabled-dependency .enable input {
   pointer-events: none;
   opacity: 0.5;
 }
@@ -1092,11 +1096,13 @@ TABLE.fingerprint-in-build TD {
   visibility: hidden !important;
 }
 
-#plugins .dependent-list, #plugins .dependency-list {
+#plugins .dependent-list,
+#plugins .dependency-list {
   display: none;
 }
 
-#plugins .enable-state-info, #plugins .uninstall-state-info {
+#plugins .enable-state-info,
+#plugins .uninstall-state-info {
     padding: 5px 20px;
     max-width: 70%;
     border: solid 1px var(--warning);
@@ -1112,7 +1118,8 @@ TABLE.fingerprint-in-build TD {
     float: right;
 }
 
-#plugins .plugin-dependency-info .title, #plugins .plugin-dependency-info .subtitle {
+#plugins .plugin-dependency-info .title,
+#plugins .plugin-dependency-info .subtitle {
     opacity: 0.7;
 }
 #plugins .plugin-dependency-info .title {
@@ -1228,7 +1235,8 @@ TEXTAREA.rich-editor {
 
 /* ========================= D&D support in heterogenous/repeatable lists = */
 
-.hetero-list-container .dd-handle, .repeated-container .dd-handle {
+.hetero-list-container .dd-handle,
+.repeated-container .dd-handle {
     cursor: move;
     background-image: url(../../images/grip.png);
     background-repeat: repeat-y;
@@ -1417,13 +1425,11 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= YUI dialog ========================= */
 
-.dialog .hd {
-    font-size: var(--font-size-xs) !important;
-}
 /* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
  to the latest YUI will fix this? */
 .dialog .hd {
     margin: 0 !important;
+    font-size: var(--font-size-xs) !important;
 }
 
 .dialog .bd {
