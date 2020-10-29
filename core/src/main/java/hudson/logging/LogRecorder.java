@@ -156,13 +156,13 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     public @NonNull FormValidation doCheckName(@QueryParameter String value, @QueryParameter String level) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         try {
-            if( (Util.fixEmpty(level) == null || Level.parse(level).intValue() <= Level.FINE.intValue()) 
+            if ((Util.fixEmpty(level) == null || Level.parse(level).intValue() <= Level.FINE.intValue())
                 && Util.fixEmpty(value) == null) {
                 return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
             }
         } catch (IllegalArgumentException iae) {
             // We cannot figure out the level, if the name is empty show a warning
-            if(Util.fixEmpty(value) == null) {
+            if (Util.fixEmpty(value) == null) {
                 return FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning());
             }
         }
