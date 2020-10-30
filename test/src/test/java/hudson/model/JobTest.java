@@ -483,6 +483,11 @@ public class JobTest {
         tryRename("myJob8", "блины", "блины");
     }
 
+    @Test
+    public void testRenameSpaceInBetween() throws Exception {
+        tryRename("myJob9", "my Job9", "my Job9");
+    }
+
     @Issue("JENKINS-35160")
     @Test
     public void interruptOnDelete() throws Exception {
@@ -571,7 +576,7 @@ public class JobTest {
         HtmlPage resultPage = j.submit(form);
 
         String urlString = MessageFormat.format(
-                "/job/{0}/", Functions.urlEncode(correctResult));
+                "/job/{0}/", Functions.encode(correctResult));
 
         assertThat(resultPage.getUrl().toString(), endsWith(urlString));
     }

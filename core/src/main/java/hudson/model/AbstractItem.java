@@ -264,7 +264,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         // send to the new job page
         // note we can't use getUrl() because that would pick up old name in the
         // Ancestor.getUrl()
-        return HttpResponses.redirectTo("../" + Functions.urlEncode(newName));
+        return HttpResponses.redirectTo("../" + Functions.encode(newName));
     }
 
     /**
