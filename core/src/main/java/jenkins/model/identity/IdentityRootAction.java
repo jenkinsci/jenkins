@@ -3,11 +3,11 @@ package jenkins.model.identity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
-import org.apache.commons.codec.Charsets;
 
 /**
  * A simple root action that exposes the public key to users so that they do not need to search for the
@@ -51,7 +51,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
             if (index > 0) {
                 buf.append("\n");
             }
-            buf.append(new String(encoded, index, len, Charsets.UTF_8));
+            buf.append(new String(encoded, index, len, StandardCharsets.UTF_8));
             index += len;
         }
         return String.format("-----BEGIN PUBLIC KEY-----%n%s%n-----END PUBLIC KEY-----%n", buf.toString());
