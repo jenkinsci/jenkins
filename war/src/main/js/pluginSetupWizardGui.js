@@ -502,18 +502,18 @@ var createPluginSetupWizard = function(appendTarget) {
 			var events = $._data($c[0], "events");
 			if (!events || !events.scroll) {
 				$c.on('scroll', function() {
-				    if (!$c.data('wasAutoScrolled')) {
-				    	var top = $c[0].scrollHeight - $c.height();
-				        if ($c.scrollTop() === top) {
-				        	// resume auto-scroll
-				        	$c.data('userScrolled', false);
-				        } else {
-				        	// user scrolled up
-					    	$c.data('userScrolled', true);
-				        }
-				    } else {
-				    	$c.data('wasAutoScrolled', false);
-				    }
+					if (!$c.data('wasAutoScrolled')) {
+						var top = $c[0].scrollHeight - $c.height();
+						if ($c.scrollTop() === top) {
+							// resume auto-scroll
+							$c.data('userScrolled', false);
+						} else {
+							// user scrolled up
+							$c.data('userScrolled', true);
+						}
+					} else {
+						$c.data('wasAutoScrolled', false);
+					}
 				});
 			}
 		};

@@ -124,7 +124,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
      * @param adminAddress Admin address. Use null to reset the value to default.
      */
     public void setAdminAddress(@CheckForNull String adminAddress) {
-        String address = Util.nullify(adminAddress);
+        String address = Util.fixEmptyAndTrim(adminAddress);
         if(address != null && address.startsWith("\"") && address.endsWith("\"")) {
             // some users apparently quote the whole thing. Don't know why
             // anyone does this, but it's a machine's job to forgive human mistake

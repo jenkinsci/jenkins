@@ -60,15 +60,15 @@ function fixDragEvent(handle) {
     var $chunk = $handle.closest('.repeated-chunk');
     $handle.add('#ygddfdiv')
 	.mousedown(function(){
-	    isReady = true;
+		isReady = true;
 	})
 	.mousemove(function(){
-	    if(isReady && !$chunk.hasClass('dragging')){
+		if(isReady && !$chunk.hasClass('dragging')){
 		$chunk.addClass('dragging');
-	    }
+		}
 	}).mouseup(function(){
-	    isReady = false;
-	    $chunk.removeClass('dragging');
+		isReady = false;
+		$chunk.removeClass('dragging');
 	});
 }
 
