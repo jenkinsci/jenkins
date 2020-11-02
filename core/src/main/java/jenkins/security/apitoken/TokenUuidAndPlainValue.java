@@ -29,6 +29,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 /**
  * Contains information about the token and the secret value.
  * It should not be stored as is, but just displayed once to the user and then forget about it.
+ * @since TODO
  */
 @Restricted(Beta.class)
 public class TokenUuidAndPlainValue {
