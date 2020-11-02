@@ -146,10 +146,6 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-jrebel</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
     </dependency>

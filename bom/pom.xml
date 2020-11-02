@@ -356,11 +356,6 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>stapler-jrebel</artifactId>
-        <version>${stapler.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler-adjunct-zeroclipboard</artifactId>
         <version>1.3.5-1</version>
       </dependency>
