@@ -814,13 +814,23 @@ public class SlaveComputer extends Computer {
 
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
-        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
+        return doJenkinsAgentJnlp(req, res);
+    }
+
+    @WebMethod(name="jenkins-agent.jnlp")
+    public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+        return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
     }
 
     class LowPermissionResponse {
+        @WebMethod(name="jenkins-agent.jnlp")
+        public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+            return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
+        }
+
         @WebMethod(name="slave-agent.jnlp")
         public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
-            return SlaveComputer.this.doSlaveAgentJnlp(req, res);
+            return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
     }
 

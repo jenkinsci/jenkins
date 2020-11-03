@@ -66,21 +66,21 @@ var ajaxMocks = function(responseMappings) {
         '/jenkins/updateCenter/installStatus': new LastResponse([{
             status: 'ok',
             data: { // first, return nothing by default, no ongoing install
-            	state: 'NEW',
-            	jobs: []
-        	}
+                state: 'NEW',
+                jobs: []
+            }
         },
         {
             status: 'ok',
             data: {
-            	state: 'INSTALLING_PLUGINS',
-            	jobs: [
-	              {
-	                  name: 'subversion',
-	                  type: 'InstallJob',
-	                  installStatus: 'Success'
-	              }
-	            ]
+                state: 'INSTALLING_PLUGINS',
+                jobs: [
+                  {
+                      name: 'subversion',
+                      type: 'InstallJob',
+                      installStatus: 'Success'
+                  }
+                ]
             }
         }]),
         '/jenkins/pluginManager/plugins': {

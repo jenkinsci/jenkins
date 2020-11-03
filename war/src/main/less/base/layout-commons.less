@@ -4,6 +4,7 @@ html {
   position: relative;
   height: 100%;
   box-sizing: border-box;
+  min-height: none;
 }
 
 body {
@@ -12,11 +13,6 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--background);
-}
-
-html {
-  min-height: none;
-  height: 100%;
 }
 
 *,
@@ -89,9 +85,6 @@ html {
 body.two-column #main-panel {
   width: calc(100% - 320px);
   flex: 1;
-}
-
-body.two-column #main-panel {
   display: block;
 }
 
