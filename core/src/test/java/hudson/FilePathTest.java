@@ -335,9 +335,9 @@ public class FilePathTest {
      * @throws Exception test failure
      */
     @Test public void compressTarUntarRoundTrip() throws Exception {
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);   
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100); 
-        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000); 
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_zero", 0);
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_small", 100);
+        checkTarUntarRoundTrip("compressTarUntarRoundTrip_medium", 50000);
     }
             
     /**
@@ -365,19 +365,32 @@ public class FilePathTest {
         assumeTrue(fileSize == file.length());
         file.close();
 
+        final File tmpDir2 = new File(tmpDir, filePrefix);
+        tmpDir2.mkdirs();
+
+
+        final File tempFile2 =  new File(tmpDir2, filePrefix + ".log");
+        RandomAccessFile file2 = new RandomAccessFile(tempFile2, "rw");
+        file2.setLength(fileSize);
+        assumeTrue(fileSize == file2.length());
+        file2.close();
+
+
+
         final FilePath tmpDirPath = new FilePath(tmpDir);
         try (OutputStream os = new FileOutputStream(tempFile)) {
             DirScanner.Glob scanner = new DirScanner.Glob("**", "");
             List<String> files = tmpDirPath.archive2(ArchiverFactory.TARGZ, os, scanner);
-            assertThat(files.size(), is(1));
-            assertThat(files.get(0), StringEndsWith.endsWith(format("%s/%s.log", filePrefix,filePrefix)));
+            assertThat(files.size(), is(2));
+            assertThat(files.get(1), StringEndsWith.endsWith(format("%s/%s.log", filePrefix,filePrefix)));
+            assertThat(files.get(0), StringEndsWith.endsWith(format("%s.log", filePrefix)));
         }
     }
 
 
     private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
 
-        checkUntar2Path(filePrefix+"2", fileSize);
+        archive2ReturnsPaths(filePrefix+"2", fileSize);
         final File tmpDir = temp.newFolder(filePrefix);
         final File tempFile =  new File(tmpDir, filePrefix + ".log");
         RandomAccessFile file = new RandomAccessFile(tempFile, "rw");
