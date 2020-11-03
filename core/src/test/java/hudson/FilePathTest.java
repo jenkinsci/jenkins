@@ -354,7 +354,7 @@ public class FilePathTest {
         checkTarUntarRoundTrip(filePrefix, largeFileSize);
     }
 
-    private void checkUntar2Path(String filePrefix, long fileSize) throws IOException, InterruptedException {
+    private void archive2ReturnsPaths(String filePrefix, long fileSize) throws IOException, InterruptedException {
 
         final File tmpDir = temp.newFolder(filePrefix);
         tmpDir.mkdirs();
