@@ -49,6 +49,9 @@ public abstract class Archiver extends FileVisitor implements Closeable {
         return entriesWritten;
     }
 
+    /**
+     * A list of the relative paths of all of the files in the archive.
+     */
     public List<String> getFiles() {
         return files;
     }
