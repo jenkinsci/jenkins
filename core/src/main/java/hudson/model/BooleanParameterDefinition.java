@@ -84,14 +84,16 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if(BooleanParameterDefinition.class != getClass())
+        if (obj == null)
+            return false;
+        if (BooleanParameterDefinition.class != getClass())
             return false;
         if (getClass() != obj.getClass())
             return false;
         BooleanParameterDefinition other = (BooleanParameterDefinition) obj;
-        if(!Objects.equals(getName(), other.getName()))
+        if (!Objects.equals(getName(), other.getName()))
             return false;
-        if(!Objects.equals(getDescription(), other.getDescription()))
+        if (!Objects.equals(getDescription(), other.getDescription()))
             return false;
         return defaultValue == other.defaultValue;
     }

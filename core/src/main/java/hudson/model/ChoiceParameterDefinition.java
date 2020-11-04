@@ -176,16 +176,18 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if(ChoiceParameterDefinition.class != getClass())
+        if (obj == null)
+            return false;
+        if (ChoiceParameterDefinition.class != getClass())
             return false;
         if (getClass() != obj.getClass())
             return false;
         ChoiceParameterDefinition other = (ChoiceParameterDefinition) obj;
-        if(!Objects.equals(getName(), other.getName()))
+        if (!Objects.equals(getName(), other.getName()))
             return false;
-        if(!Objects.equals(getDescription(), other.getDescription()))
+        if (!Objects.equals(getDescription(), other.getDescription()))
             return false;
-        if(!Objects.equals(choices, other.choices))
+        if (!Objects.equals(choices, other.choices))
                 return false;
         return Objects.equals(defaultValue, other.defaultValue);
     }
