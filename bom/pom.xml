@@ -351,12 +351,12 @@ THE SOFTWARE.
       <!--Stapler-->
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>stapler-groovy</artifactId>
+        <artifactId>stapler</artifactId>
         <version>${stapler.version}</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>stapler-jrebel</artifactId>
+        <artifactId>stapler-groovy</artifactId>
         <version>${stapler.version}</version>
       </dependency>
       <dependency>
