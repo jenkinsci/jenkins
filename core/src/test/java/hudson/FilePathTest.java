@@ -382,7 +382,7 @@ public class FilePathTest {
             DirScanner.Glob scanner = new DirScanner.Glob("**", "");
             List<String> files = tmpDirPath.archive2(ArchiverFactory.TARGZ, os, scanner);
             assertThat(files.size(), is(2));
-            assertThat(files.get(1), StringEndsWith.endsWith(format("%s/%s.log", filePrefix,filePrefix)));
+            assertThat(files.get(1), StringEndsWith.endsWith(format("%s%s%s.log", filePrefix,File.separator,filePrefix)));
             assertThat(files.get(0), StringEndsWith.endsWith(format("%s.log", filePrefix)));
         }
     }
