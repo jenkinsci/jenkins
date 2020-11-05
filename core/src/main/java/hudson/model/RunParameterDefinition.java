@@ -218,7 +218,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return true;
         if (obj == null)
             return false;
-        if(RunParameterDefinition.class != getClass())
+        if (RunParameterDefinition.class != getClass())
             return false;
         if (getClass() != obj.getClass())
             return false;
