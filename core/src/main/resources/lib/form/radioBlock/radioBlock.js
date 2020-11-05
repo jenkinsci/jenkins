@@ -18,13 +18,7 @@ var radioBlockSupport = {
             n = blockStart;
         }
         while((n = n.next()) != blockEnd) {
-            if (show) {
-                n.style.visibility = "visible";
-                n.style.position = "static";
-            } else {
-                n.style.visibility = "hidden !important";
-                n.style.position = "absolute !important";
-            }
+            n.style.display = show ? "" : "none";
         }
         layoutUpdateCallback.call();
     }
