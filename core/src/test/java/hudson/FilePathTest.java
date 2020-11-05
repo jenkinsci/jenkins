@@ -412,7 +412,7 @@ public class FilePathTest {
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
 
-        List<?> files = tmpDirPath.child(tarFile.getName()).untar2(outDir, TarCompression.NONE);
+        List<String> files = tmpDirPath.child(tarFile.getName()).untar2(outDir, TarCompression.NONE);
         assertThat(files.size(), is(1));
         assertThat(files.get(0), is(format("%s.log", filePrefix)));
     }
