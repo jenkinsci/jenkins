@@ -22,8 +22,8 @@ var radioBlockSupport = {
                 n.style.visibility = "visible";
                 n.style.position = "static";
             } else {
-                n.style.visibility = "hidden";
-                n.style.position = "absolute";
+                n.style.visibility = "hidden !important";
+                n.style.position = "absolute !important";
             }
         }
         layoutUpdateCallback.call();
