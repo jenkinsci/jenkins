@@ -175,12 +175,6 @@ public class WebAppMain implements ServletContextListener {
                 throw new InsufficientPermissionDetected(e);
             }
 
-            try {// remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
-                Security.removeProvider("SunPKCS11-Solaris");
-            } catch (SecurityException e) {
-                // ignore this error.
-            }
-
             installLogger();
 
             final FileAndDescription describedHomeDir = getHomeDir(event);

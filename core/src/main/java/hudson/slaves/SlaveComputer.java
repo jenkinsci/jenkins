@@ -1042,13 +1042,6 @@ public class SlaveComputer extends Computer {
             }
             LOGGER.addHandler(SLAVE_LOG_HANDLER);
 
-            // remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
-            try {
-                Security.removeProvider("SunPKCS11-Solaris");
-            } catch (SecurityException e) {
-                // ignore this error.
-            }
-
             try {
                 getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the agent side.
             } catch (ChannelClosedException e) {
