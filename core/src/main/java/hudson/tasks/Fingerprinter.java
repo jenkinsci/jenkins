@@ -51,7 +51,6 @@ import hudson.util.FormValidation;
 import hudson.util.PackedMap;
 import hudson.util.RunList;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.Symbol;
@@ -78,6 +77,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Records fingerprints of the specified files.

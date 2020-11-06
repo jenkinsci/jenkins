@@ -145,7 +145,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
-import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -174,6 +173,7 @@ import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Utility functions used in views.
@@ -1770,7 +1770,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return ACL.isAnonymous(Jenkins.getAuthentication());
+        return ACL.isAnonymous2(Jenkins.getAuthentication2());
     }
 
     /**

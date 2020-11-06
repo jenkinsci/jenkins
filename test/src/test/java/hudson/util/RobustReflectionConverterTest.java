@@ -108,7 +108,7 @@ public class RobustReflectionConverterTest {
         }
         
         private Object readResolve() throws Exception {
-            if (!ACL.SYSTEM.equals(Jenkins.getAuthentication())) {
+            if (!ACL.SYSTEM2.equals(Jenkins.getAuthentication2())) {
                 // called via REST / CLI with authentication
                 if (!isAcceptable()) {
                     // Reject invalid configuration via REST / CLI.

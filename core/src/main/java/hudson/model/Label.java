@@ -410,7 +410,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
         // denormalize for performance
         // we don't need to respect security as much when returning a simple count
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             int result = 0;
             for (AbstractProject ignored : Jenkins.get().allItems(AbstractProject.class, p -> matches(p.getAssignedLabelString()))) {
                 ++result;

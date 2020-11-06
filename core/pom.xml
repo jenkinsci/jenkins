@@ -124,6 +124,16 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler</artifactId>
+      <exclusions>
+        <exclusion> <!-- pick up from SpotBugs Annotations -->
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
       <exclusions>
         <exclusion>
@@ -146,16 +156,8 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-jrebel</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-zeroclipboard</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -385,16 +387,12 @@ THE SOFTWARE.
       <artifactId>commons-jexl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.acegisecurity</groupId>
-      <artifactId>acegi-security</artifactId>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>
-          <artifactId>spring-remoting</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-support</artifactId>
+          <artifactId>spring-jcl</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -411,22 +409,6 @@ THE SOFTWARE.
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-    </dependency>
-    <dependency>
-      <!--
-        for Grails spring bean builder.
-        Ideally we should be able to modify BeanBuilder so as not to depend on this.
-      -->
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-    </dependency>
-    <dependency><!-- Jenkins core doesn't use it but HUDSON-3811 requires us to put it. -->
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aop</artifactId>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -587,7 +569,7 @@ THE SOFTWARE.
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <exclusions>
-        <exclusion> <!-- pick up from Stapler -->
+        <exclusion> <!-- pick up from SpotBugs Annotations -->
           <groupId>com.google.code.findbugs</groupId>
           <artifactId>jsr305</artifactId>
         </exclusion>
@@ -866,6 +848,42 @@ THE SOFTWARE.
       <properties>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
       </properties>
+    </profile>
+    <profile>
+      <id>japicmp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.siom79.japicmp</groupId>
+            <artifactId>japicmp-maven-plugin</artifactId>
+            <version>0.14.4-20200728.214757-1</version> <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
+            <configuration>
+              <parameter>
+                <!-- see https://siom79.github.io/japicmp/MavenPlugin.html -->
+                <oldVersionPattern>\d+[.]\d+</oldVersionPattern>
+                <!-- <onlyModified>true</onlyModified> -->
+                <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
+              </parameter>
+              <oldClassPathDependencies>
+                <dependency> <!-- provided, so not visible in flattened artifact -->
+                  <groupId>javax.servlet</groupId>
+                  <artifactId>javax.servlet-api</artifactId>
+                  <version>3.1.0</version>
+                  <scope>provided</scope>
+                </dependency>
+              </oldClassPathDependencies>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>cmp</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

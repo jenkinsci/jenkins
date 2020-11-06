@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.Iterators.DuplicateFilterIterator;
 
 /**
@@ -42,13 +41,13 @@ import hudson.util.Iterators.DuplicateFilterIterator;
  *
  * <p>
  * This implementation is concurrency safe; additions and removals are serialized, but look up
- * can be performed concurrently even when modifications is in progress.
+ * can be performed concurrently even when modifications are in progress.
  *
  * <p>
  * Since typical hash functions we use in {@link Object#hashCode()} isn't random enough to
  * evenly populate the 2^32 ring space, we only ask the user to give us
  * <a href="http://en.wikipedia.org/wiki/Injective_function">an injective function</a> to a string,
- * and then we use MD5 to create random enough distribution.
+ * and then we use SHA-256 to create random enough distribution.
  *
  * <p>
  * This consistent hash implementation is consistent both to the addition/removal of Ts, as well
@@ -56,7 +55,7 @@ import hudson.util.Iterators.DuplicateFilterIterator;
  *
  * <p>
  * See http://en.wikipedia.org/wiki/Consistent_hashing for references, and
- * http://weblogs.java.net/blog/tomwhite/archive/2007/11/consistent_hash.html is probably a reasonable depiction.
+ * http://tom-e-white.com/2007/11/consistent-hashing.html is probably a reasonable depiction.
  * If we trust his experiments, creating 100 replicas will reduce the stddev to 10% of the mean for 10 nodes.
  *
  * @author Kohsuke Kawaguchi
@@ -66,14 +65,14 @@ public class ConsistentHash<T> {
     /**
      * All the items in the hash, to their replication factors.
      */
-    private final Map<T,Point[]> items = new HashMap<>();
+    private final Map<T, Point[]> items = new HashMap<>();
     private int numPoints;
 
     private final int defaultReplication;
     private final Hash<T> hash;
 
     /**
-     * Used for remembering the computed MD5 hash, since it's bit expensive to do it all over again.
+     * Used for remembering the computed SHA-256 hash, since it's bit expensive to do it all over again.
      */
     private static final class Point implements Comparable<Point> {
         final int hash;
@@ -99,37 +98,41 @@ public class ConsistentHash<T> {
      */
     private final class Table {
         private final int[] hash;
-        private final Object[] owner; // really T[]
+        // really T[]
+        private final Object[] owner; 
 
         private Table() {
-            int r=0;
-            for (Point[] v : items.values())
-                r+=v.length;
+            int r = 0;
+            for (Point[] v : items.values()) {
+                r += v.length;
+            }
             numPoints = r;
 
             // merge all points from all nodes and sort them into a single array
             Point[] allPoints = new Point[numPoints];
-            int p=0;
+            int p = 0;
             for (Point[] v : items.values()) {
-                System.arraycopy(v,0,allPoints,p,v.length);
-                p+=v.length;
+                System.arraycopy(v, 0, allPoints, p, v.length);
+                p += v.length;
             }
             Arrays.sort(allPoints);
 
             hash = new int[allPoints.length];
             owner = new Object[allPoints.length];
 
-            for (int i=0; i<allPoints.length; i++) {
+            for (int i = 0; i < allPoints.length; i++) {
                 Point pt = allPoints[i];
-                hash[i]=pt.hash;
-                owner[i]=pt.item;
+                hash[i] = pt.hash;
+                owner[i] = pt.item;
             }
         }
 
         T lookup(int queryPoint) {
             int i = index(queryPoint);
-            if(i<0) return null;
-            return (T)owner[i];
+            if (i < 0) {
+                return null;
+            }
+            return (T) owner[i];
         }
 
         /**
@@ -149,7 +152,9 @@ public class ConsistentHash<T> {
                 }
 
                 public T next() {
-                    if (!hasNext()) throw new NoSuchElementException();
+                    if (!hasNext()) {
+                        throw new NoSuchElementException();
+                    }
                     return (T) owner[(start + (pos++)) % owner.length];
                 }
 
@@ -161,10 +166,14 @@ public class ConsistentHash<T> {
 
         private int index(int queryPoint) {
             int idx = Arrays.binarySearch(hash, queryPoint);
-            if(idx<0) {
-                idx = -idx-1; // idx is now 'insertion point'
-                if(hash.length==0)  return -1;
-                idx %= hash.length; // make it a circle
+            if (idx < 0) {
+                // idx is now 'insertion point'
+                idx = - idx - 1;
+                if (hash.length == 0) {
+                    return -1;
+                }
+                // make it a circle
+                idx %= hash.length; 
             }
             return idx;
         }
@@ -180,7 +189,7 @@ public class ConsistentHash<T> {
      *
      * <p>
      * This hash function need not produce a very uniform distribution, as the
-     * output is rehashed with MD5. But it does need to make sure it doesn't
+     * output is rehashed with SHA-256. But it does need to make sure it doesn't
      * produce the same value for two different 'T's (and that's why this returns
      * String, not the usual int.) 
      */
@@ -194,11 +203,7 @@ public class ConsistentHash<T> {
         String hash(T t);
     }
 
-    static final Hash<?> DEFAULT_HASH = new Hash<Object>() {
-        public String hash(Object o) {
-            return o.toString();
-        }
-    };
+    static final Hash<?> DEFAULT_HASH = (Hash<Object>) Object::toString;
 
     public ConsistentHash() {
         this((Hash<T>) DEFAULT_HASH);
@@ -226,15 +231,16 @@ public class ConsistentHash<T> {
      * Adds a new node with the default number of replica.
      */
     public synchronized void add(T node) {
-        add(node,defaultReplication);
+        add(node, defaultReplication);
     }
 
     /**
      * Calls {@link #add(Object)} with all the arguments.
      */
     public synchronized void addAll(T... nodes) {
-        for (T node : nodes)
-            addInternal(node,defaultReplication);
+        for (T node : nodes) {
+            addInternal(node, defaultReplication);
+        }
         refreshTable();
     }
 
@@ -242,17 +248,19 @@ public class ConsistentHash<T> {
      * Calls {@link #add(Object)} with all the arguments.
      */
     public synchronized void addAll(Collection<? extends T> nodes) {
-        for (T node : nodes)
-            addInternal(node,defaultReplication);
+        for (T node : nodes) {
+            addInternal(node, defaultReplication);
+        }
         refreshTable();
     }
 
     /**
      * Calls {@link #add(Object,int)} with all the arguments.
      */
-    public synchronized void addAll(Map<? extends T,Integer> nodes) {
-        for (Map.Entry<? extends T,Integer> node : nodes.entrySet())
-            addInternal(node.getKey(),node.getValue());
+    public synchronized void addAll(Map<? extends T, Integer> nodes) {
+        for (Map.Entry<? extends T, Integer> node : nodes.entrySet()) {
+            addInternal(node.getKey(), node.getValue());
+        }
         refreshTable();
     }
 
@@ -272,14 +280,15 @@ public class ConsistentHash<T> {
     }
 
     private synchronized void addInternal(T node, int replica) {
-        if (replica==0) {
+        if (replica == 0) {
             items.remove(node);
         } else {
             Point[] points = new Point[replica];
             String seed = hash.hash(node);
-            for (int i=0; i<replica; i++)
-                points[i] = new Point(md5(seed+':'+i),node);
-            items.put(node,points);
+            for (int i = 0; i < replica; i++) {
+                points[i] = new Point(digest(seed + ':' + i), node);
+            }
+            items.put(node, points);
         }
     }
 
@@ -288,34 +297,33 @@ public class ConsistentHash<T> {
     }
 
     /**
-     * Compresses a string into an integer with MD5.
+     * Compresses a string into an integer with SHA-256.
      */
-    private int md5(String s) {
+    private int digest(String s) {
         try {
-            MessageDigest md5 = getMd5();
-            md5.update(s.getBytes());
-            byte[] digest = md5.digest();
+            MessageDigest messageDigest = createMessageDigest();
+            messageDigest.update(s.getBytes());
+            byte[] digest = messageDigest.digest();
 
             // 16 bytes -> 4 bytes
-            for (int i=0; i<4; i++)
-                digest[i] ^= digest[i+4]+digest[i+8]+digest[i+12];
-            return (b2i(digest[0])<< 24)|(b2i(digest[1])<<16)|(b2i(digest[2])<< 8)|b2i(digest[3]);
+            for (int i = 0; i < 4; i++) {
+                digest[i] ^= digest[i + 4] + digest[i + 8] + digest[i + 12];
+            }
+            return (b2i(digest[0]) << 24) | (b2i(digest[1]) << 16) | (b2i(digest[2]) << 8) | b2i(digest[3]);
         } catch (GeneralSecurityException e) {
-            throw new RuntimeException("Could not generate MD5 hash", e);
+            throw new RuntimeException("Could not generate SHA-256 hash", e);
         }
     }
 
-    // TODO JENKINS-60563 remove MD5 from all usages in Jenkins
-    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "Not used for security.")
-    private MessageDigest getMd5() throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance("MD5");
+    private MessageDigest createMessageDigest() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance("SHA-256");
     }
 
     /**
      * unsigned byte->int.
      */
     private int b2i(byte b) {
-        return ((int)b)&0xFF;
+        return ((int)b) & 0xFF;
     }
 
     /**
@@ -334,10 +342,10 @@ public class ConsistentHash<T> {
     }
 
     /**
-     * Takes a string, hash it with MD5, then calls {@link #lookup(int)}. 
+     * Takes a string, hash it with SHA-256, then calls {@link #lookup(int)}. 
      */
     public T lookup(String queryPoint) {
-        return lookup(md5(queryPoint));
+        return lookup(digest(queryPoint));
     }
 
     /**
@@ -352,17 +360,13 @@ public class ConsistentHash<T> {
      * Nodes with more replicas are more likely to show up early in the list
      */
     public Iterable<T> list(final int queryPoint) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return table.list(queryPoint);
-            }
-        };
+        return () -> table.list(queryPoint);
     }
 
     /**
-     * Takes a string, hash it with MD5, then calls {@link #list(int)}.
+     * Takes a string, hash it with SHA-256, then calls {@link #list(int)}.
      */
     public Iterable<T> list(String queryPoint) {
-        return list(md5(queryPoint));
+        return list(digest(queryPoint));
     }
 }

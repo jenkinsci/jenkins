@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import hudson.util.CopyOnWriteMap.Hash;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Random;
@@ -55,24 +56,23 @@ public class ConsistentHashTest {
         hash.add("data2");
         hash.add("data3");
 
-        System.out.println(hash.lookup(0));
-
-        // there's one in 2^32 chance that this test fails, but these two query points are
-        // only off by one.
+        // In a pure random scenario, there's one in 2^32 chance that this test fails
+        // but as we control the input and the hash function is deterministic, there is no risk of failure
         String x = hash.lookup(Integer.MIN_VALUE);
         String y = hash.lookup(Integer.MAX_VALUE);
-        assertEquals(x,y);
+        // both values are data3
+        assertEquals(x, y);
 
         // list them up
         Iterator<String> itr = hash.list(Integer.MIN_VALUE).iterator();
         Set<String> all = new HashSet<>();
         String z = itr.next();
         all.add(z);
-        assertEquals(z,x);
+        assertEquals(z, x);
         all.add(itr.next());
         all.add(itr.next());
         assertFalse(itr.hasNext());
-        assertEquals(3,all.size());
+        assertEquals(3, all.size());
     }
 
     /**
@@ -81,20 +81,23 @@ public class ConsistentHashTest {
     @Test
     public void unevenDistribution() {
         ConsistentHash<String> hash = new ConsistentHash<>();
-        hash.add("even",10);
-        hash.add("odd",100);
+        hash.add("Even",10);
+        hash.add("Odd",100);
 
         Random r = new Random(0);
-        int even=0,odd=0;
-        for(int i=0; i<1000; i++) {
+        int even = 0;
+        int odd = 0;
+        for(int i = 0; i < 1000; i++) {
             String v = hash.lookup(r.nextInt());
-            if(v.equals("even"))    even++;
-            else                    odd++;
+            if(v.equals("Even")) {
+                even++;
+            } else {
+                odd++;
+            }
         }
 
-        // again, there's a small chance tha this test fails.
-        System.out.printf("%d/%d\n",even,odd);
-        assertTrue(even*8<odd);
+        System.out.printf("%d/%d\n", even, odd);
+        assertTrue(even * 8 < odd);
     }
 
     /**
@@ -103,15 +106,16 @@ public class ConsistentHashTest {
     @Test
     public void removal() {
         ConsistentHash<Integer> hash = new ConsistentHash<>();
-        for( int i=0; i<10; i++ )
+        for (int i = 0; i < 10; i++) {
             hash.add(i);
+        }
 
         // what was the mapping before the mutation?
-        Map<Integer,Integer> before = new HashMap<>();
+        Map<Integer, Integer> before = new HashMap<>();
         Random r = new Random(0);
-        for(int i=0; i<1000; i++) {
+        for (int i = 0; i < 1000; i++) {
             int q = r.nextInt();
-            before.put(q,hash.lookup(q));
+            before.put(q, hash.lookup(q));
         }
 
         // remove a node
@@ -120,7 +124,7 @@ public class ConsistentHashTest {
         // verify that the mapping remains consistent
         for (Entry<Integer,Integer> e : before.entrySet()) {
             int m = hash.lookup(e.getKey());
-            assertTrue(e.getValue()==0 || e.getValue()==m);
+            assertTrue(e.getValue() == 0 || e.getValue() == m);
         }
     }
 
@@ -164,10 +168,8 @@ public class ConsistentHashTest {
     @Test
     public void usesCustomHash() {
         final RuntimeException exception = new RuntimeException();
-        ConsistentHash.Hash<String> hashFunction = new ConsistentHash.Hash<String>() {
-            public String hash(String str) {
-                throw exception;
-            }
+        ConsistentHash.Hash<String> hashFunction = str -> {
+            throw exception;
         };
 
         try {
@@ -183,18 +185,20 @@ public class ConsistentHashTest {
      * This test doesn't fail but it's written to measure the performance of the consistent hash function with large data set.
      */
     @Test
+    @Ignore("Helper test for performance, no assertion")
     public void speed() {
         Map<String,Integer> data = new Hash<>();
-        for (int i = 0; i < 1000; i++)
-            data.put("node" + i,100);
-        data.put("tail",100);
+        for (int i = 0; i < 1000; i++) {
+            data.put("node" + i, 100);
+        }
+        data.put("tail", 100);
 
         long start = System.currentTimeMillis();
-        for (int j=0; j<10; j++) {
+        for (int j = 0; j < 10; j++) {
             ConsistentHash<String> b = new ConsistentHash<>();
             b.addAll(data);
         }
 
-        System.out.println(System.currentTimeMillis()-start);
+        System.out.println(System.currentTimeMillis() - start);
     }
 }

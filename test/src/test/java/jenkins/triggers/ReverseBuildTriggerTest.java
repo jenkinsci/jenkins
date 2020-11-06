@@ -132,7 +132,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(1, downstream.getLastBuild().number);
         // Alice can see upstream, so downstream gets built, but the upstream build cannot see downstream:
         auth.grant(Item.READ).onItems(upstream).to("alice", "bob");
-        Map<String,Authentication> qiaConfig = new HashMap<String,Authentication>();
+        Map<String, org.acegisecurity.Authentication> qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
@@ -142,7 +142,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(2, downstream.getLastBuild().number);
         assertEquals(new Cause.UpstreamCause((Run) b), downstream.getLastBuild().getCause(Cause.UpstreamCause.class));
         // Now if upstream build is permitted to report on downstream:
-        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("admin").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
@@ -161,7 +161,7 @@ public class ReverseBuildTriggerTest {
                 .grant(Item.DISCOVER).onItems(upstream).to("alice");
         r.jenkins.setAuthorizationStrategy(auth);
         auth.grant(Item.READ).onItems(downstream).to("alice");
-        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
@@ -174,7 +174,7 @@ public class ReverseBuildTriggerTest {
         // so no message is printed about it, and no Exception neither (JENKINS-42707)
         auth.grant(Item.READ).onItems(upstream).to("bob");
         auth.grant(Item.DISCOVER).onItems(upstream).to("anonymous");
-        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));

@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import org.acegisecurity.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Represents a grouping inherent to a kind of {@link Item}s.

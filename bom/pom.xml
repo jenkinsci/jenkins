@@ -42,12 +42,18 @@ THE SOFTWARE.
     <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
     <stapler.version>1.261</stapler.version>
-    <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency> <!-- https://docs.spring.io/spring-security/site/docs/5.4.0-M1/reference/html5/#getting-maven-no-boot -->
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-bom</artifactId>
+        <version>5.4.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
@@ -351,18 +357,13 @@ THE SOFTWARE.
       <!--Stapler-->
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>stapler</artifactId>
+        <version>${stapler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler-groovy</artifactId>
         <version>${stapler.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>stapler-jrebel</artifactId>
-        <version>${stapler.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>stapler-adjunct-zeroclipboard</artifactId>
-        <version>1.3.5-1</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
@@ -422,29 +423,6 @@ THE SOFTWARE.
         <artifactId>jaxen</artifactId>
         <version>1.1-beta-11</version>
       </dependency>
-
-      <!--Spring-->
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-webmvc</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency><!-- Jenkins core doesn't use it but JENKINS-3881 requires us to put it. -->
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-aop</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.acegisecurity</groupId>
-        <artifactId>acegi-security</artifactId>
-        <version>1.0.7</version>
-      </dependency>
-
 
       <!-- Modules -->
       <dependency>

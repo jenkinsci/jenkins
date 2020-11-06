@@ -34,7 +34,6 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ExtensionList;
 import hudson.model.User;
-import static hudson.security.HudsonPrivateSecurityRealm.CLASSIC;
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
 import hudson.security.pages.SignupPage;
 import java.net.URL;
@@ -72,7 +71,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.WithoutJenkins;
 import org.mindrot.jbcrypt.BCrypt;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -96,19 +94,6 @@ public class HudsonPrivateSecurityRealmTest {
         field.setAccessible(true);
         field.set(null, null);
     }
-
-    @Test
-    @WithoutJenkins
-    public void hashCompatibility() {
-        String old = CLASSIC.encodePassword("hello world", null);
-        assertTrue(PASSWORD_ENCODER.isPasswordValid(old,"hello world",null));
-
-        String secure = PASSWORD_ENCODER.encodePassword("hello world", null);
-        assertTrue(PASSWORD_ENCODER.isPasswordValid(old,"hello world",null));
-
-        assertNotEquals(secure, old);
-    }
-
 
     @Issue("SECURITY-243")
     @Test

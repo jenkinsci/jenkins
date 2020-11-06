@@ -94,12 +94,12 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @since 1.220
      */
     public @NonNull ACL getACL(final @NonNull View item) {
-        return ACL.lambda((a, permission) -> {
+        return ACL.lambda2((a, permission) -> {
                 ACL base = item.getOwner().getACL();
 
-                boolean hasPermission = base.hasPermission(a, permission);
+                boolean hasPermission = base.hasPermission2(a, permission);
                 if (!hasPermission && permission == View.READ) {
-                    return base.hasPermission(a,View.CONFIGURE) || !item.getItems().isEmpty();
+                    return base.hasPermission2(a,View.CONFIGURE) || !item.getItems().isEmpty();
                 }
 
                 return hasPermission;
@@ -221,7 +221,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             return Collections.emptySet();
         }
 
-        private static final ACL UNSECURED_ACL = ACL.lambda((a, p) -> true);
+        private static final ACL UNSECURED_ACL = ACL.lambda2((a, p) -> true);
 
         @Extension @Symbol("unsecured")
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {

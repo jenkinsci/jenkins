@@ -23,33 +23,46 @@
  */
 package hudson.security;
 
-import java.util.Properties;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import hudson.model.User;
 import java.io.IOException;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import hudson.Util;
-import hudson.model.User;
 import jenkins.security.SecurityListener;
 import jenkins.security.seed.UserSeedProperty;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilter;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
- * {@link AuthenticationProcessingFilter} with a change for Jenkins so that
+ * Login filter with a change for Jenkins so that
  * we can pick up the hidden "from" form field defined in {@code login.jelly}
  * to send the user back to where he came from, after a successful authentication.
  * 
  * @author Kohsuke Kawaguchi
  */
-public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFilter {
+@Restricted(NoExternalUse.class)
+public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthenticationFilter {
+
+    public AuthenticationProcessingFilter2(String authenticationGatewayUrl) {
+        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/" + authenticationGatewayUrl, "POST"));
+        // Jenkins/login.jelly & SetupWizard/authenticate-security-token.jelly
+        setUsernameParameter("j_username");
+        setPasswordParameter("j_password");
+    }
+
+    /* TODO none of this compiles against Spring Security; rewrite (try InteractiveAuthenticationSuccessEvent & SimpleUrlAuthenticationFailureHandler):
+
     @Override
     protected String determineTargetUrl(HttpServletRequest request) {
+        AbstractAuthenticationProcessingFilter f = new UsernamePasswordAuthenticationFilter();
         String targetUrl = request.getParameter("from");
         request.getSession().setAttribute("from", targetUrl);
 
@@ -70,8 +83,8 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
     }
 
     /**
-     * @see org.acegisecurity.ui.AbstractProcessingFilter#determineFailureUrl(javax.servlet.http.HttpServletRequest, org.acegisecurity.AuthenticationException)
-     */
+     * @see AbstractProcessingFilter#determineFailureUrl(HttpServletRequest, AuthenticationException)
+     * /
     @Override
     protected String determineFailureUrl(HttpServletRequest request, AuthenticationException failed) {
         Properties excMap = getExceptionMappings();
@@ -80,16 +93,19 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 		request.getSession().setAttribute("from", whereFrom);
 		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
     }
+    */
 
     @Override
-    protected void onSuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException {
-        super.onSuccessfulAuthentication(request,response,authResult);
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        super.successfulAuthentication(request, response, chain, authResult);
         // make sure we have a session to store this successful authentication, given that we no longer
         // let HttpSessionContextIntegrationFilter2 to create sessions.
-        // HttpSessionContextIntegrationFilter stores the updated SecurityContext object into this session later
+        // SecurityContextPersistenceFilter stores the updated SecurityContext object into this session later
         // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
         // doFilter method.
+        /* TODO causes an ISE on the next line:
         request.getSession().invalidate();
+        */
         HttpSession newSession = request.getSession();
 
         if (!UserSeedProperty.DISABLE_USER_SEED) {
@@ -100,7 +116,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
             newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
         }
 
-        // as the request comes from Acegi redirect, that's not a Stapler one
+        // as the request comes from Spring Security redirect, that's not a Stapler one
         // thus it's not possible to retrieve it in the SecurityListener in that case
         // for that reason we need to keep the above code that apply quite the same logic as UserSeedSecurityListener
         SecurityListener.fireLoggedIn(authResult.getName());
@@ -108,18 +124,17 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
 
     /**
      * Leave the information about login failure.
-     *
-     * <p>
-     * Otherwise it seems like Acegi doesn't really leave the detail of the failure anywhere.
      */
     @Override
-    protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
-        super.onUnsuccessfulAuthentication(request, response, failed);
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        super.unsuccessfulAuthentication(request, response, failed);
         LOGGER.log(Level.FINE, "Login attempt failed", failed);
+        /* TODO this information appears to have been deliberately removed from Spring Security:
         Authentication auth = failed.getAuthentication();
         if (auth != null) {
             SecurityListener.fireFailedToLogIn(auth.getName());
         }
+        */
     }
 
     private static final Logger LOGGER = Logger.getLogger(AuthenticationProcessingFilter2.class.getName());

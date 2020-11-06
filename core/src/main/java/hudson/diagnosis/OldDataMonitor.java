@@ -119,7 +119,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static void remove(Saveable obj, boolean isDelete) {
         Jenkins j = Jenkins.get();
         OldDataMonitor odm = get(j);
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             odm.data.remove(referTo(obj));
             if (isDelete && obj instanceof Job<?, ?>) {
                 for (Run r : ((Job<?, ?>) obj).getBuilds()) {
