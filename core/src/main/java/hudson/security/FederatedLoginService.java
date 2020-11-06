@@ -23,23 +23,22 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 import hudson.model.User;
 import hudson.model.UserProperty;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.userdetails.UserDetails;
+import java.io.IOException;
+import java.io.Serializable;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.Serializable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Abstraction for a login mechanism through external authenticator/identity provider
@@ -189,7 +188,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
             User u = locateUser();
             if (u!=null) {
                 // login as this user
-                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername(u.getId());
+                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername2(u.getId());
 
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
                 token.setDetails(d);

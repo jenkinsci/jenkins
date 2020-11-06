@@ -16,8 +16,6 @@ import java.util.Set;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -25,6 +23,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * Expose the data needed for /whoAmI, so it can be exposed by Api.
@@ -71,7 +71,7 @@ public class WhoAmI implements UnprotectedRootAction {
     }
 
     private @NonNull Authentication auth() {
-        return Jenkins.getAuthentication();
+        return Jenkins.getAuthentication2();
     }
 
     @Exported

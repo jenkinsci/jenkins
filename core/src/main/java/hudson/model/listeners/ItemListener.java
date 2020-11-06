@@ -272,7 +272,7 @@ public class ItemListener implements ExtensionPoint {
             return null;
         });
         if (rootItem instanceof ItemGroup) {
-            for (final Item child : Items.allItems(ACL.SYSTEM, (ItemGroup)rootItem, Item.class)) {
+            for (final Item child : Items.allItems2(ACL.SYSTEM2, (ItemGroup)rootItem, Item.class)) {
                 final String childNew = child.getFullName();
                 assert childNew.startsWith(newFullName);
                 assert childNew.charAt(newFullName.length()) == '/';

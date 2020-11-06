@@ -30,8 +30,8 @@ import jenkins.model.Jenkins;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.args4j.Argument;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Show the list of all commands.

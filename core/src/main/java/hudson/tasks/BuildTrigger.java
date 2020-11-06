@@ -64,13 +64,13 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.security.core.Authentication;
 
 /**
  * Triggers builds of other projects.
@@ -200,7 +200,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             PrintStream logger = listener.getLogger();
             for (Job<?, ?> downstream : jobs) {
                 if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) {
-                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
+                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication2().getName(), downstream, build.getParent()});
                     continue;
                 }
                 if (!downstream.hasPermission(Item.BUILD)) {
@@ -297,7 +297,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                                                   List<Action> actions) {
                     AbstractProject downstream = getDownstreamProject();
                     if (Jenkins.get().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
-                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
+                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication2().getName(), downstream, getUpstreamProject()});
                         return false; // do not even issue a warning to build log
                     }
                     if (!downstream.hasPermission(Item.BUILD)) {
@@ -408,8 +408,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                     if(!(item instanceof ParameterizedJobMixIn.ParameterizedJob))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
                     // check whether the supposed user is expected to be able to build
-                    Authentication auth = Tasks.getAuthenticationOf(project);
-                    if (!item.hasPermission(auth, Item.BUILD)) {
+                    Authentication auth = Tasks.getAuthenticationOf2(project);
+                    if (!item.hasPermission2(auth, Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }
                     hasProjects = true;
@@ -430,7 +430,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         public static class ItemListenerImpl extends ItemListener {
             @Override
             public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-                try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+                try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                     locationChanged(item, oldFullName, newFullName);
                 }
             }

@@ -54,7 +54,7 @@ import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import hudson.security.ACL;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.slaves.DumbSlave;
 import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
@@ -532,38 +532,38 @@ public class ViewTest {
             grant(Jenkins.READ).everywhere().toEveryone().
             grant(Job.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
-        ACL.impersonate(Jenkins.ANONYMOUS, new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 return null;
             }
         });
-        ACL.impersonate(User.get("dev").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 try {
                     assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
                 return null;
             }
         });
-        ACL.impersonate(User.get("admin").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);

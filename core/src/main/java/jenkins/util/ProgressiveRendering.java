@@ -42,8 +42,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.Stapler;
@@ -52,6 +50,8 @@ import org.kohsuke.stapler.bind.Bound;
 import org.kohsuke.stapler.bind.BoundObjectTable;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.jelly.BindTag;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * A helper thread which does some computation in the background and displays incremental results using JavaScript.

@@ -1110,7 +1110,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } else {
             ctx = null;
         }
-        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all(Jenkins.getAuthentication(), getOwner().getItemGroup()))) {
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all2(Jenkins.getAuthentication2(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<>();
 
@@ -1291,7 +1291,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
         for (ViewDescriptor d : DescriptorVisibilityFilter.apply(owner, all())) {
             if (d.isApplicableIn(owner) && d.isInstantiable()
-                    && owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, d)) {
+                    && owner.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), owner, d)) {
                 r.add(d);
             }
         }

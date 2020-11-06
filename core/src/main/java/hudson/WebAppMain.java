@@ -434,7 +434,7 @@ public class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        try (ACLContext old = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext old = ACL.as2(ACL.SYSTEM2)) {
             Jenkins instance = Jenkins.getInstanceOrNull();
             try {
                 if (instance != null) {

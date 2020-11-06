@@ -26,7 +26,6 @@ package jenkins.security.seed;
 import hudson.Extension;
 import hudson.model.User;
 import jenkins.security.SecurityListener;
-import org.acegisecurity.userdetails.UserDetails;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
@@ -34,6 +33,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.http.HttpSession;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Inject the user seed inside the session (when there is an existing request) as part of the re-authentication mechanism
@@ -48,7 +48,7 @@ public class UserSeedSecurityListener extends SecurityListener {
     }
     
     @Override 
-    protected void authenticated(@NonNull UserDetails details) {
+    protected void authenticated2(@NonNull UserDetails details) {
         putUserSeedInSession(details.getUsername(), false);
     }
 
@@ -56,7 +56,7 @@ public class UserSeedSecurityListener extends SecurityListener {
         StaplerRequest req = Stapler.getCurrentRequest();
         if (req == null) {
             // expected case: CLI
-            // But also HudsonPrivateSecurityRealm because of a redirect from Acegi, the request is not a Stapler one
+            // But also HudsonPrivateSecurityRealm because of a redirect from Spring Security, the request is not a Stapler one
             return;
         }
 

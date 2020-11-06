@@ -23,34 +23,34 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.model.User;
 import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
+import hudson.remoting.Callable;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-
-import hudson.model.Item;
-import hudson.remoting.Callable;
-import hudson.model.ItemGroup;
-import hudson.model.TopLevelItemDescriptor;
 import java.util.function.BiFunction;
-import jenkins.security.NonSerializableSecurityContext;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
+import jenkins.security.NonSerializableSecurityContext;
 import jenkins.security.NotReallyRoleSensitiveCallable;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Gate-keeper that controls access to Hudson's model objects.
@@ -68,15 +68,15 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final void checkPermission(@NonNull Permission p) {
-        Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM) {
+        Authentication a = Jenkins.getAuthentication2();
+        if (a.equals(SYSTEM2)) {
             return;
         }
-        if (!hasPermission(a,p)) {
+        if (!hasPermission2(a,p)) {
             while (!p.enabled && p.impliedBy != null) {
                 p = p.impliedBy;
             }
-            throw new AccessDeniedException2(a,p);
+            throw new AccessDeniedException3(a,p);
         }
     }
 
@@ -99,7 +99,7 @@ public abstract class ACL {
 
         boolean failed = !hasAnyPermission(permissions);
 
-        Authentication authentication = Jenkins.getAuthentication();
+        Authentication authentication = Jenkins.getAuthentication2();
         if (failed) { // we know that none of the permissions are granted
             Set<Permission> enabledPermissions = new LinkedHashSet<>();
             for (Permission p : permissions) {
@@ -130,11 +130,11 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(@NonNull Permission p) {
-        Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM) {
+        Authentication a = Jenkins.getAuthentication2();
+        if (a.equals(SYSTEM2)) {
             return true;
         }
-        return hasPermission(a, p);
+        return hasPermission2(a, p);
     }
 
     /**
@@ -151,8 +151,8 @@ public abstract class ACL {
             throw new IllegalArgumentException("At least one permission must be provided");
         }
 
-        Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM) {
+        Authentication a = Jenkins.getAuthentication2();
+        if (a.equals(SYSTEM2)) {
             return true;
         }
 
@@ -168,21 +168,50 @@ public abstract class ACL {
      * Checks if the given principle has the given permission.
      *
      * <p>
-     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * Note that {@link #SYSTEM2} can be passed in as the authentication parameter,
      * in which case you should probably just assume it has every permission.
+     * @since TODO
      */
-    public abstract boolean hasPermission(@NonNull Authentication a, @NonNull Permission permission);
+    public boolean hasPermission2(@NonNull Authentication a, @NonNull Permission permission) {
+        if (Util.isOverridden(ACL.class, getClass(), "hasPermission", org.acegisecurity.Authentication.class, Permission.class)) {
+            return hasPermission(org.acegisecurity.Authentication.fromSpring(a), permission);
+        } else {
+            throw new AbstractMethodError("implement hasPermission2");
+        }
+    }
+
+    /**
+     * @deprecated use {@link #hasPermission2}
+     */
+    @Deprecated
+    public boolean hasPermission(@NonNull org.acegisecurity.Authentication a, @NonNull Permission permission) {
+        return hasPermission2(a.toSpring(), permission);
+    }
 
     /**
      * Creates a simple {@link ACL} implementation based on a “single-abstract-method” easily implemented via lambda syntax.
-     * @param impl the implementation of {@link ACL#hasPermission(Authentication, Permission)}
+     * @param impl the implementation of {@link ACL#hasPermission2(Authentication, Permission)}
      * @return an adapter to that lambda
-     * @since 2.105
+     * @since TODO
      */
-    public static ACL lambda(final BiFunction<Authentication, Permission, Boolean> impl) {
+    public static ACL lambda2(final BiFunction<Authentication, Permission, Boolean> impl) {
         return new ACL() {
             @Override
-            public boolean hasPermission(Authentication a, Permission permission) {
+            public boolean hasPermission2(Authentication a, Permission permission) {
+                return impl.apply(a, permission);
+            }
+        };
+    }
+
+    /**
+     * @deprecated use {@link #lambda2}
+     * @since 2.105
+     */
+    @Deprecated
+    public static ACL lambda(final BiFunction<org.acegisecurity.Authentication, Permission, Boolean> impl) {
+        return new ACL() {
+            @Override
+            public boolean hasPermission(org.acegisecurity.Authentication a, Permission permission) {
                 return impl.apply(a, permission);
             }
         };
@@ -201,11 +230,11 @@ public abstract class ACL {
      */
     public final void checkCreatePermission(@NonNull ItemGroup c,
                                             @NonNull TopLevelItemDescriptor d) {
-        Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM) {
+        Authentication a = Jenkins.getAuthentication2();
+        if (a.equals(SYSTEM2)) {
             return;
         }
-        if (!hasCreatePermission(a, c, d)) {
+        if (!hasCreatePermission2(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     Item.CREATE.group.title+"/"+Item.CREATE.name + Item.CREATE + "/" + d.getDisplayName()));
         }
@@ -213,18 +242,32 @@ public abstract class ACL {
     /**
      * Checks if the given principal has the permission to create top level items within the specified item group.
      * <p>
-     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * Note that {@link #SYSTEM2} can be passed in as the authentication parameter,
      * in which case you should probably just assume it can create anything anywhere.
      * @param a the principal.
      * @param c the container of the item.
      * @param d the descriptor of the item to be created.
      * @return false
      *      if the user doesn't have the permission.
+     * @since TODO
+     */
+    public boolean hasCreatePermission2(@NonNull Authentication a, @NonNull ItemGroup c,
+                                       @NonNull TopLevelItemDescriptor d) {
+        if (Util.isOverridden(ACL.class, getClass(), "hasCreatePermission", org.acegisecurity.Authentication.class, ItemGroup.class, TopLevelItemDescriptor.class)) {
+            return hasCreatePermission(org.acegisecurity.Authentication.fromSpring(a), c, d);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * @deprecated use {@link #hasCreatePermission2(Authentication, ItemGroup, TopLevelItemDescriptor)}
      * @since 1.607
      */
-    public boolean hasCreatePermission(@NonNull Authentication a, @NonNull ItemGroup c,
+    @Deprecated
+    public boolean hasCreatePermission(@NonNull org.acegisecurity.Authentication a, @NonNull ItemGroup c,
                                        @NonNull TopLevelItemDescriptor d) {
-        return true;
+        return hasCreatePermission2(a.toSpring(), c, d);
     }
 
     /**
@@ -239,11 +282,11 @@ public abstract class ACL {
      */
     public final void checkCreatePermission(@NonNull ViewGroup c,
                                             @NonNull ViewDescriptor d) {
-        Authentication a = Jenkins.getAuthentication();
-        if (a == SYSTEM) {
+        Authentication a = Jenkins.getAuthentication2();
+        if (a.equals(SYSTEM2)) {
             return;
         }
-        if (!hasCreatePermission(a, c, d)) {
+        if (!hasCreatePermission2(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
         }
@@ -252,18 +295,32 @@ public abstract class ACL {
     /**
      * Checks if the given principal has the permission to create views within the specified view group.
      * <p>
-     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * Note that {@link #SYSTEM2} can be passed in as the authentication parameter,
      * in which case you should probably just assume it can create anything anywhere.
      * @param a the principal.
      * @param c the container of the view.
      * @param d the descriptor of the view to be created.
      * @return false
      *      if the user doesn't have the permission.
+     * @since TODO
+     */
+    public boolean hasCreatePermission2(@NonNull Authentication a, @NonNull ViewGroup c,
+                                       @NonNull ViewDescriptor d) {
+        if (Util.isOverridden(ACL.class, getClass(), "hasCreatePermission", org.acegisecurity.Authentication.class, ViewGroup.class, ViewDescriptor.class)) {
+            return hasCreatePermission(org.acegisecurity.Authentication.fromSpring(a), c, d);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * @deprecated use {@link #hasCreatePermission2(Authentication, ItemGroup, TopLevelItemDescriptor)}
      * @since 2.37
      */
-    public boolean hasCreatePermission(@NonNull Authentication a, @NonNull ViewGroup c,
+    @Deprecated
+    public boolean hasCreatePermission(@NonNull org.acegisecurity.Authentication a, @NonNull ViewGroup c,
                                        @NonNull ViewDescriptor d) {
-        return true;
+        return hasCreatePermission2(a.toSpring(), c, d);
     }
 
     //
@@ -311,8 +368,15 @@ public abstract class ACL {
      * <p>
      * This is used when Hudson is performing computation for itself, instead
      * of acting on behalf of an user, such as doing builds.
+     * @since TODO
      */
-    public static final Authentication SYSTEM = new UsernamePasswordAuthenticationToken(SYSTEM_USERNAME,"SYSTEM");
+    public static final Authentication SYSTEM2 = new UsernamePasswordAuthenticationToken(SYSTEM_USERNAME,"SYSTEM");
+
+    /**
+     * @deprecated use {@link #SYSTEM2}
+     */
+    @Deprecated
+    public static final org.acegisecurity.Authentication SYSTEM = new org.acegisecurity.providers.UsernamePasswordAuthenticationToken((UsernamePasswordAuthenticationToken) SYSTEM2);
 
     /**
      * Changes the {@link Authentication} associated with the current thread
@@ -321,31 +385,40 @@ public abstract class ACL {
      * <p>
      * When the impersonation is over, be sure to restore the previous authentication
      * via {@code SecurityContextHolder.setContext(returnValueFromThisMethod)};
-     * or just use {@link #impersonate(Authentication,Runnable)}.
+     * or just use {@link #impersonate2(Authentication, Runnable)}.
      * 
      * <p>
      * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
      * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
-     * @since 1.462
-     * @deprecated use try with resources and {@link #as(Authentication)}
+     * @since TODO
+     * @deprecated use try with resources and {@link #as2(Authentication)}
      */
     @Deprecated
-    public static @NonNull SecurityContext impersonate(@NonNull Authentication auth) {
+    public static @NonNull SecurityContext impersonate2(@NonNull Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
         SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
         return old;
     }
 
     /**
-     * Safer variant of {@link #impersonate(Authentication)} that does not require a finally-block.
-     * @param auth authentication, such as {@link #SYSTEM}
-     * @param body an action to run with this alternate authentication in effect
-     * @since 1.509
-     * @deprecated use try with resources and {@link #as(Authentication)}
+     * @deprecated use {@link #impersonate2(Authentication)}
+     * @since 1.462
      */
     @Deprecated
-    public static void impersonate(@NonNull Authentication auth, @NonNull Runnable body) {
-        SecurityContext old = impersonate(auth);
+    public static @NonNull org.acegisecurity.context.SecurityContext impersonate(@NonNull org.acegisecurity.Authentication auth) {
+        return org.acegisecurity.context.SecurityContext.fromSpring(impersonate2(auth.toSpring()));
+    }
+
+    /**
+     * Safer variant of {@link #impersonate2(Authentication)} that does not require a finally-block.
+     * @param auth authentication, such as {@link #SYSTEM2}
+     * @param body an action to run with this alternate authentication in effect
+     * @since TODO
+     * @deprecated use try with resources and {@link #as2(Authentication)}
+     */
+    @Deprecated
+    public static void impersonate2(@NonNull Authentication auth, @NonNull Runnable body) {
+        SecurityContext old = impersonate2(auth);
         try {
             body.run();
         } finally {
@@ -354,15 +427,24 @@ public abstract class ACL {
     }
 
     /**
-     * Safer variant of {@link #impersonate(Authentication)} that does not require a finally-block.
-     * @param auth authentication, such as {@link #SYSTEM}
-     * @param body an action to run with this alternate authentication in effect (try {@link NotReallyRoleSensitiveCallable})
-     * @since 1.587
-     * @deprecated use try with resources and {@link #as(Authentication)}
+     * @deprecated use {@link #impersonate2(Authentication, Runnable)}
+     * @since 1.509
      */
     @Deprecated
-    public static <V,T extends Exception> V impersonate(Authentication auth, Callable<V,T> body) throws T {
-        SecurityContext old = impersonate(auth);
+    public static void impersonate(@NonNull org.acegisecurity.Authentication auth, @NonNull Runnable body) {
+        impersonate2(auth.toSpring(), body);
+    }
+
+    /**
+     * Safer variant of {@link #impersonate2(Authentication)} that does not require a finally-block.
+     * @param auth authentication, such as {@link #SYSTEM2}
+     * @param body an action to run with this alternate authentication in effect (try {@link NotReallyRoleSensitiveCallable})
+     * @since TODO
+     * @deprecated use try with resources and {@link #as2(Authentication)}
+     */
+    @Deprecated
+    public static <V,T extends Exception> V impersonate2(Authentication auth, Callable<V,T> body) throws T {
+        SecurityContext old = impersonate2(auth);
         try {
             return body.call();
         } finally {
@@ -371,25 +453,12 @@ public abstract class ACL {
     }
 
     /**
-     * Changes the {@link Authentication} associated with the current thread to the specified one and returns an
-     * {@link AutoCloseable} that restores the previous security context.
-     *
-     * <p>
-     * This makes impersonation much easier within code as it can now be used using the try with resources construct:
-     * <pre>
-     *     try (ACLContext ctx = ACL.as(auth)) {
-     *        ...
-     *     }
-     * </pre>
-     * @param auth the new authentication.
-     * @return the previous authentication context
-     * @since 2.14
+     * @deprecated use {@link #impersonate2(Authentication, Callable)}
+     * @since 1.587
      */
-    @NonNull
-    public static ACLContext as(@NonNull Authentication auth) {
-        final ACLContext context = new ACLContext(SecurityContextHolder.getContext());
-        SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
-        return context;
+    @Deprecated
+    public static <V,T extends Exception> V impersonate(org.acegisecurity.Authentication auth, Callable<V,T> body) throws T {
+        return impersonate2(auth.toSpring(), body);
     }
 
     /**
@@ -399,7 +468,39 @@ public abstract class ACL {
      * <p>
      * This makes impersonation much easier within code as it can now be used using the try with resources construct:
      * <pre>
-     *     try (ACLContext ctx = ACL.as(auth)) {
+     *     try (ACLContext ctx = ACL.as2(auth)) {
+     *        ...
+     *     }
+     * </pre>
+     * @param auth the new authentication.
+     * @return the previous authentication context
+     * @since TODO
+     */
+    @NonNull
+    public static ACLContext as2(@NonNull Authentication auth) {
+        final ACLContext context = new ACLContext(SecurityContextHolder.getContext());
+        SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
+        return context;
+    }
+
+    /**
+     * @deprecated use {@link #as2(Authentication)}
+     * @since 2.14
+     */
+    @Deprecated
+    @NonNull
+    public static ACLContext as(@NonNull org.acegisecurity.Authentication auth) {
+        return as2(auth.toSpring());
+    }
+
+    /**
+     * Changes the {@link Authentication} associated with the current thread to the specified one and returns an
+     * {@link AutoCloseable} that restores the previous security context.
+     *
+     * <p>
+     * This makes impersonation much easier within code as it can now be used using the try with resources construct:
+     * <pre>
+     *     try (ACLContext ctx = ACL.as2(auth)) {
      *        ...
      *     }
      * </pre>
@@ -410,16 +511,26 @@ public abstract class ACL {
      */
     @NonNull
     public static ACLContext as(@CheckForNull User user) {
-        return as(user == null ? Jenkins.ANONYMOUS : user.impersonate());
+        return as2(user == null ? Jenkins.ANONYMOUS2 : user.impersonate2());
     }
 
     /**
      * Checks if the given authentication is anonymous by checking its class.
-     * @see Jenkins#ANONYMOUS
+     * @see Jenkins#ANONYMOUS2
      * @see AnonymousAuthenticationToken
+     * @since TODO
      */
-    public static boolean isAnonymous(@NonNull Authentication authentication) {
+    public static boolean isAnonymous2(@NonNull Authentication authentication) {
         //TODO use AuthenticationTrustResolver instead to be consistent through the application
         return authentication instanceof AnonymousAuthenticationToken;
     }
+
+    /**
+     * @deprecated use {@link #isAnonymous2}
+     */
+    @Deprecated
+    public static boolean isAnonymous(@NonNull org.acegisecurity.Authentication authentication) {
+        return isAnonymous2(authentication.toSpring());
+    }
+
 }

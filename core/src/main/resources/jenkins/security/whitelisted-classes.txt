@@ -152,7 +152,6 @@ net.bull.javamelody.internal.model.ProcessInformations
 net.bull.javamelody.internal.model.ThreadInformations
 net.bull.javamelody.internal.model.TomcatInformations
 
-org.acegisecurity.userdetails.User
 org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
 org.apache.tools.ant.Location
@@ -206,6 +205,8 @@ org.jvnet.localizer.ResourceBundleHolder
 org.owasp.dependencycheck.dependency.Reference
 org.owasp.dependencycheck.dependency.Vulnerability
 org.owasp.dependencycheck.dependency.VulnerableSoftware
+
+org.springframework.security.core.userdetails.User
 
 sun.security.rsa.RSAPublicKeyImpl
 sun.security.x509.X509Key

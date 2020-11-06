@@ -3,21 +3,25 @@ package jenkins.security;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
-import hudson.security.UserMayOrMayNotExistException;
-import org.acegisecurity.*;
-import org.acegisecurity.userdetails.User;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
+import hudson.security.UserMayOrMayNotExistException2;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.springframework.dao.DataAccessException;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -36,43 +40,43 @@ public class LastGrantedAuthoritiesPropertyTest {
 
         hudson.model.User u = hudson.model.User.get("alice");
         LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
-        assertAuthorities(p, "authenticated:alice:development:us");
-        assertAuthorities(u.impersonate(), "authenticated:alice:development:us");
+        assertAuthorities(p, "alice:authenticated:development:us");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:us");
 
         // visiting the configuration page shouldn't change authorities
         HtmlPage pg = wc.goTo("user/alice/configure");
         j.submit(pg.getFormByName("config"));
 
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);
-        assertAuthorities(p, "authenticated:alice:development:us");
-        assertAuthorities(u.impersonate(), "authenticated:alice:development:us");
+        assertAuthorities(p, "alice:authenticated:development:us");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:us");
 
         // change should be reflected right away
         wc.login("alice", "alice:development:uk");
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);
-        assertAuthorities(p, "authenticated:alice:development:uk");
-        assertAuthorities(u.impersonate(), "authenticated:alice:development:uk");
+        assertAuthorities(p, "alice:authenticated:development:uk");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:uk");
 
         // if already receiving the authenticated group, we should avoid duplicate
         wc.login("alice", "alice:authenticated:development:uk");
         p = u.getProperty(LastGrantedAuthoritiesProperty.class);
 
-        assertAuthorities(p, "authenticated:alice:development:uk");
-        assertAuthorities(u.impersonate(), "authenticated:alice:development:uk");
+        assertAuthorities(p, "alice:authenticated:development:uk");
+        assertAuthorities(u.impersonate2(), "alice:authenticated:development:uk");
     }
 
     private void assertAuthorities(LastGrantedAuthoritiesProperty p, String expected) {
-        _assertAuthorities(p.getAuthorities(), expected);
+        _assertAuthorities(p.getAuthorities2(), expected);
     }
 
     private void assertAuthorities(Authentication auth, String expected) {
         _assertAuthorities(auth.getAuthorities(), expected);
     }
 
-    private void _assertAuthorities(GrantedAuthority[] grantedAuthorities, String expected){
-        List<String> authorities = Arrays.stream(grantedAuthorities).map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+    private void _assertAuthorities(Collection<? extends GrantedAuthority> grantedAuthorities, String expected){
+        List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).sorted().collect(Collectors.toList());
 
-        assertEquals(String.join(":", authorities), expected);
+        assertEquals(expected, String.join(":", authorities));
     }
 
     /**
@@ -80,23 +84,23 @@ public class LastGrantedAuthoritiesPropertyTest {
      */
     private static class TestSecurityRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (password.equals("error"))
                 throw new BadCredentialsException(username);
             String[] desiredAuthorities = password.split(":");
-            List<GrantedAuthority> authorities = Arrays.stream(desiredAuthorities).map(GrantedAuthorityImpl::new).collect(Collectors.toList());
+            List<GrantedAuthority> authorities = Arrays.stream(desiredAuthorities).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
-            return new User(username, "", true, authorities.toArray(new GrantedAuthority[0]));
+            return new User(username, "", authorities);
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-            throw new UserMayOrMayNotExistException("fallback");
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+            throw new UserMayOrMayNotExistException2("fallback");
         }
     }
 }

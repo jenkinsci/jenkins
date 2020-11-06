@@ -86,7 +86,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     
     public void build() {
         // Set full privileges while computing to avoid missing any projects the current user cannot see.
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)){
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)){
             this.computationalData = new HashMap<>();
             for( AbstractProject p : Jenkins.get().allItems(AbstractProject.class) )
                 p.buildDependencyGraph(this);
@@ -401,7 +401,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
          * Decide whether build should be triggered and provide any Actions for the build.
          * Default implementation always returns true (for backward compatibility), and
          * adds no Actions. Subclasses may override to control how/if the build is triggered.
-         * <p>The authentication in effect ({@link Jenkins#getAuthentication}) will be that of the upstream build.
+         * <p>The authentication in effect ({@link Jenkins#getAuthentication2}) will be that of the upstream build.
          * An implementation is expected to perform any relevant access control checks:
          * that an upstream project can both see and build a downstream project,
          * or that a downstream project can see an upstream project.

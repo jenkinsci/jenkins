@@ -4,23 +4,13 @@ import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
 import java.util.Base64;
-import static java.util.logging.Level.FINEST;
 import java.util.stream.Collectors;
 
 import hudson.model.User;
+import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.security.seed.UserSeedProperty;
-
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 
 import static org.hamcrest.Matchers.emptyString;
 import static org.junit.Assert.assertEquals;
@@ -32,9 +22,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
 import org.kohsuke.stapler.Stapler;
-import org.springframework.dao.DataAccessException;
 import test.security.realm.InMemorySecurityRealm;
 
 import net.jcip.annotations.GuardedBy;
@@ -45,14 +33,19 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 
 public class TokenBasedRememberMeServices2Test {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-
-    @Rule
-    public LoggerRule logging = new LoggerRule();
 
     private static boolean failureInduced;
 
@@ -78,36 +71,34 @@ public class TokenBasedRememberMeServices2Test {
         wc.getCookieManager().addCookie(c);
 
         // even if SecurityRealm chokes, it shouldn't kill the page
-        logging.capture(1000).record(TokenBasedRememberMeServices.class, FINEST);
         wc.goTo("");
 
         // make sure that the server recorded this failure
         assertTrue(failureInduced);
-        assertTrue(logging.getMessages().stream().anyMatch(m -> m.contains("contained username 'alice' but was not found")));
         // and the problematic cookie should have been removed
         assertNull(getRememberMeCookie(wc));
     }
 
     private Cookie getRememberMeCookie(JenkinsRule.WebClient wc) {
-        return wc.getCookieManager().getCookie(TokenBasedRememberMeServices2.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY);
+        return wc.getCookieManager().getCookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY);
     }
 
     private static class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (username.equals(password)) {
-                return new org.acegisecurity.userdetails.User(username, password, true, new GrantedAuthority[] {new GrantedAuthorityImpl("myteam")});
+                return new org.springframework.security.core.userdetails.User(username, password, Collections.singleton(new SimpleGrantedAuthority("myteam")));
             }
             throw new BadCredentialsException(username);
         }
 
         @Override
-        public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             failureInduced = true;
             throw new UsernameNotFoundException("intentionally not working");
         }
@@ -135,18 +126,18 @@ public class TokenBasedRememberMeServices2Test {
         assertTrue(failureInduced);
         // but we should have logged in
         wc.executeOnServer(() -> {
-            Authentication a = Jenkins.getAuthentication();
+            Authentication a = Jenkins.getAuthentication2();
             assertEquals("bob", a.getName());
-            assertEquals(ImmutableList.of("authenticated", "myteam"), Arrays.stream(a.getAuthorities()).map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+            assertEquals(ImmutableList.of("authenticated", "myteam"), a.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
             return null;
         });
     }
 
     private static class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
         @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             failureInduced = true;
-            throw new UserMayOrMayNotExistException("I cannot tell");
+            throw new UserMayOrMayNotExistException2("I cannot tell");
         }
     }
 
@@ -216,7 +207,7 @@ public class TokenBasedRememberMeServices2Test {
         j.jenkins.setDisableRememberMe(false);
 
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
-        TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe;
+        TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
         j.jenkins.setSecurityRealm(realm);
 
         String username = "alice";
@@ -259,7 +250,7 @@ public class TokenBasedRememberMeServices2Test {
             j.jenkins.setDisableRememberMe(false);
 
             HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
-            TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe;
+            TokenBasedRememberMeServices2 tokenService = (TokenBasedRememberMeServices2) realm.getSecurityComponents().rememberMe2;
             j.jenkins.setSecurityRealm(realm);
 
             String username = "alice";
@@ -317,7 +308,7 @@ public class TokenBasedRememberMeServices2Test {
 
         assertEquals(userSeed, sessionSeed);
 
-        // finally, ensure that loadUserByUsername is not being called anymore
+        // finally, ensure that loadUserByUsername2 is not being called anymore
         wc.goTo("");
         assertUserConnected(wc, "alice");
         realm.verifyInvocations(0);
@@ -329,9 +320,9 @@ public class TokenBasedRememberMeServices2Test {
         private int counter = 0;
 
         @Override
-        public synchronized UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        public synchronized UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             ++counter;
-            return super.loadUserByUsername(username);
+            return super.loadUserByUsername2(username);
         }
 
         synchronized void verifyInvocations(int count) {
@@ -347,7 +338,8 @@ public class TokenBasedRememberMeServices2Test {
         // the hack
         expiryTime += deltaDuration;
 
-        String signatureValue = tokenService.makeTokenSignature(expiryTime, user.getProperty(HudsonPrivateSecurityRealm.Details.class));
+        HudsonPrivateSecurityRealm.Details details = user.getProperty(HudsonPrivateSecurityRealm.Details.class);
+        String signatureValue = tokenService.makeTokenSignature(expiryTime, details.getUsername(), details.getPassword());
         String tokenValue = user.getId() + ":" + expiryTime + ":" + signatureValue;
         String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes());
         return new Cookie(j.getURL().getHost(), tokenService.getCookieName(), tokenValueBase64);
