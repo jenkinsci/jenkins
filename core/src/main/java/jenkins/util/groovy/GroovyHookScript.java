@@ -15,12 +15,13 @@ import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 
 /**
  * A collection of Groovy scripts that are executed as various hooks.
  *
  * <p>
- * By default, for a given hook type, like "init", the following locations are searched for hook scripts,
+ * For a given hook name, like "init", the following locations are searched for hook scripts,
  * and then they are executed in turn.
  *
  * <ol>
@@ -28,16 +29,6 @@ import jenkins.model.Jenkins;
  * <li>/WEB-INF/<i>HOOK</i>.groovy.d/*.groovy in the war file
  * <li>$JENKINS_HOME/<i>HOOK</i>.groovy
  * <li>$JENKINS_HOME/<i>HOOK</i>.groovy.d/*.groovy
- * </ol>
- *
- * If a file path or a directory path is specified for the script look up,
- * then the following locations are searched for hook scripts, and then they are executed in turn.
- *
- * <ol>
- * <li>/WEB-INF/<i>HOOK</i>.groovy in the war file
- * <li>/WEB-INF/<i>HOOK</i>.groovy.d/*.groovy in the war file
- * <li>{@code hookGroovy}.groovy
- * <li>{@code hookGroovyD}/*.groovy
  * </ol>
  *
  * <p>
@@ -48,11 +39,11 @@ import jenkins.model.Jenkins;
  * @author Kohsuke Kawaguchi
  */
 public class GroovyHookScript {
-    private final String type;
-    private final File hookGroovy;
-    private final File hookGroovyD;
+    private static final String ROOT_PATH= SystemProperties.getString(GroovyHookScript.class.getName() + ".ROOT_PATH");
+    private final String hook;
     private final Binding bindings = new Binding();
     private final ServletContext servletContext;
+    private final File rootDir;
     private final ClassLoader loader;
 
     @Deprecated
@@ -64,68 +55,11 @@ public class GroovyHookScript {
         this(hook, j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader);
     }
 
-    public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File home, @NonNull ClassLoader loader) {
-        this(hook,
-              defaultHookPath(hook, home, false),
-              defaultHookPath(hook, home, true),
-              servletContext,
-              home,
-              loader
-        );
-    }
-
-    /**
-     *
-     * @param type the hook type (eg init for an init Groovy Script)
-     * @param hookGroovy the path to a Groovy Script to execute
-     *                   If null, then it falls back to the default hook path.
-     * @see GroovyHookScript#defaultHookPath(String, File, boolean)
-     * @param hookGroovyD the path to a directory of Groovy Scripts to execute
-     *                    If null, then it falls back to the default hook path.
-     * @see GroovyHookScript#defaultHookPath(String, File, boolean)
-     * @param servletContext
-     * @param home JENKINS_HOME
-     * @param loader
-     */
-    public GroovyHookScript(String type,
-                            File hookGroovy,
-                            File hookGroovyD,
-                            @NonNull ServletContext servletContext,
-                            @NonNull File home,
-                            @NonNull ClassLoader loader) {
-        this.type = type;
-        if (hookGroovy != null) {
-            File canonicalPath;
-            try {
-                canonicalPath = hookGroovy.getCanonicalFile();
-            } catch (IOException e) {
-                LOGGER.log(WARNING, "Failed to retrieve a canonical path, falling back to default hook path", e);
-                canonicalPath  = defaultHookPath(type, home, false);
-            }
-            this.hookGroovy = canonicalPath;
-        } else {
-            this.hookGroovy = defaultHookPath(type, home, false);
-        }
-
-        if (hookGroovyD != null) {
-            File canonicalPath;
-            try {
-                canonicalPath = hookGroovyD.getCanonicalFile();
-            } catch (IOException e) {
-                LOGGER.log(WARNING, "Failed to retrieve a canonical path for " + hookGroovyD +", falling back to default hook directory path", e);
-                canonicalPath = defaultHookPath(type, home, true);
-            }
-            this.hookGroovyD = canonicalPath;
-        } else {
-            this.hookGroovyD = defaultHookPath(type, home, true);
-        }
-
+    public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {
+        this.hook = hook;
         this.servletContext = servletContext;
+        this.rootDir = ROOT_PATH != null ? new File(ROOT_PATH): jenkinsHome;
         this.loader = loader;
-    }
-
-    private static File defaultHookPath(String type, @NonNull File home, boolean directory) {
-        return new File(home, type + ".groovy" + (directory ? ".d" : ""));
     }
 
     public GroovyHookScript bind(String name, Object o) {
@@ -138,14 +72,17 @@ public class GroovyHookScript {
     }
 
     public void run() {
+        final String hookGroovy = hook+".groovy";
+        final String hookGroovyD = hook+".groovy.d";
+
         try {
-            URL bundled = servletContext.getResource("/WEB-INF/"+ type + ".groovy");
+            URL bundled = servletContext.getResource("/WEB-INF/"+ hookGroovy);
             execute(bundled);
         } catch (IOException e) {
-            LOGGER.log(WARNING, "Failed to execute /WEB-INF/" + type + ".groovy",e);
+            LOGGER.log(WARNING, "Failed to execute /WEB-INF/"+hookGroovy,e);
         }
 
-        Set<String> resources = servletContext.getResourcePaths("/WEB-INF/" + type + ".groovy.d" +"/");
+        Set<String> resources = servletContext.getResourcePaths("/WEB-INF/"+ hookGroovyD +"/");
         if (resources!=null) {
             // sort to execute them in a deterministic order
             for (String res : new TreeSet<>(resources)) {
@@ -158,10 +95,16 @@ public class GroovyHookScript {
             }
         }
 
-        execute(hookGroovy);
+        File script = new File(rootDir, hookGroovy);
+        execute(script);
 
-        if (hookGroovyD.isDirectory()) {
-            File[] scripts = hookGroovyD.listFiles(f -> f.getName().endsWith(".groovy"));
+        File scriptD = new File(rootDir, hookGroovyD);
+        if (scriptD.isDirectory()) {
+            File[] scripts = scriptD.listFiles(new FileFilter() {
+                public boolean accept(File f) {
+                    return f.getName().endsWith(".groovy");
+                }
+            });
             if (scripts!=null) {
                 // sort to run them in a deterministic order
                 Arrays.sort(scripts);
