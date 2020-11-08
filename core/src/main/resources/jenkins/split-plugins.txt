@@ -30,7 +30,7 @@ jdk-tool 2.112 1.0
 jaxb 2.163 2.3.0 11
 
 # JENKINS-64107
-sshd 2.265 3.0-rc161.0462582585e6
+sshd 2.265 3.0-rc163.a93e2d48abe4
 
 #JENKINS-43610 Split Trilead out from Core
 trilead-api 2.184 1.0.4

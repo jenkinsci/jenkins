@@ -416,7 +416,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.0-rc161.0462582585e6</version>
+                  <version>3.0-rc163.a93e2d48abe4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
