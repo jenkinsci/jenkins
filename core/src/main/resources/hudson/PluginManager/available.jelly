@@ -27,5 +27,69 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:table page="available" list="${app.updateCenter.availables}" filtered="true" xmlns:local="/hudson/PluginManager" />
+  <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}">
+    <j:set var="filtered" value="false"/>
+    <j:set var="page" value="available"/>
+    
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
+      <script>var view =<st:bind value="${app.updateCenter}"/></script>
+      <st:adjunct includes="hudson.PluginManager._table"/>
+
+      <div id="filter-container">
+        <div class="plugin-manager__search">
+          <input
+              role="searchbox"
+              class="plugin-manager__search-input"
+              type="text"
+              id="filter-box"
+              value="${request.getParameter('filter')}"
+              placeholder="${filtered == 'true' ? '%search' : '%filter'}" />
+          <span class="plugin-manager__icon-leading">
+            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
+          </span>
+        </div>
+      </div>
+
+      <form method="post" action="install">
+        <local:tabBar page="${page}" xmlns:local="/hudson/PluginManager" />
+        <table id="plugins" class="sortable pane bigtable stripped-odd" data-page="${page}" data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
+          <thead>
+            <tr>
+              <l:isAdmin>
+                <th initialSortDir="${isUpdates?null:'up'}"
+                    tooltip="${%Check to install the plugin}"
+                    width="32">${%Install}</th>
+              </l:isAdmin>
+              <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
+              <th>${%Version}</th>
+              <th>${%Released}</th>
+              <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
+            </tr>
+          </thead>
+          <tbody/>
+        </table>
+
+        <div id="bottom-sticker" >
+          <div class="bottom-sticker-inner">
+            <l:isAdmin>
+              <j:if test="${!isUpdates}">
+                <f:submit value="${%Install without restart}" name="dynamicLoad" />
+                <span style="margin-left:2em;"></span>
+              </j:if>
+              <f:submit value="${%Download now and install after restart}" />
+            </l:isAdmin>
+            <st:include page="check.jelly"/>
+          </div>
+        </div>
+      </form>
+    </l:main-panel>
+    <div class="grey-anime-preload" style="display:none">
+      <l:icon class="icon-grey-anime icon-md"/>
+      <l:icon class="icon-blue icon-md"/>
+      <l:icon class="icon-red icon-md"/>
+      <l:icon class="icon-grey icon-md"/>
+    </div>
+  </l:layout>
+
 </j:jelly>

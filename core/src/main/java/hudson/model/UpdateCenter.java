@@ -36,6 +36,7 @@ import hudson.security.Permission;
 import hudson.util.VersionNumber;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import jenkins.security.stapler.StaplerDispatchable;
@@ -45,6 +46,7 @@ import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toList;
 
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
@@ -69,8 +71,10 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerProxy;
@@ -121,6 +125,7 @@ import jenkins.util.Timer;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -971,6 +976,119 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                     UpdateCenter.class.getName()+".xml"));
     }
 
+    @Restricted(NoExternalUse.class)
+    public static boolean isNonMetaLabel(String label) {
+        return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean hasAdoptThisPluginLabel(UpdateSite.Plugin plugin) {
+        final String[] categories = plugin.categories;
+        if (categories == null) {
+            return false;
+        }
+        return Arrays.asList(categories).contains("adopt-this-plugin");
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static boolean hasLatestVersionNewerThanOffered(UpdateSite.Plugin plugin) {
+        if (plugin.latest == null) {
+            return false;
+        }
+        return !plugin.latest.equalsIgnoreCase(plugin.version); // we can assume that any defined 'latest' will be newer than the actual offered version
+    }
+    
+    @JavaScriptMethod
+    @Restricted(Beta.class)
+    public String jsAvailablePlugins(String searchQuery, int limit) {
+        String lowerSearchQuery = searchQuery != null ? searchQuery.toLowerCase() : null;
+        List<String> plugins = new ArrayList<>();
+        for (UpdateSite site : sites) {
+            plugins = site.getAvailables().stream()
+                .filter(plugin -> {
+                    if (StringUtils.isBlank(searchQuery)) {
+                        return true;
+                    }
+                    return plugin.name.toLowerCase().contains(lowerSearchQuery) ||
+                        plugin.title.toLowerCase().contains(lowerSearchQuery) ||
+                        plugin.excerpt.toLowerCase().contains(lowerSearchQuery) ||
+                        Arrays.asList(plugin.categories).contains(searchQuery) ||
+                        Arrays.stream(plugin.categories)
+                            .filter(UpdateCenter::isNonMetaLabel)
+                            .map(UpdateCenter::getCategoryDisplayName)
+                            .anyMatch(category -> category.toLowerCase().contains(searchQuery));
+                })
+                .limit(limit)
+                .map(plugin -> {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", plugin.name);
+                    jsonObject.put("sourceId", plugin.sourceId);
+                    jsonObject.put("title", plugin.title);
+                    jsonObject.put("displayName", plugin.getDisplayName());
+                    jsonObject.put("wiki", plugin.wiki);
+                    jsonObject.put("categories", Arrays.stream(plugin.categories)
+                        .filter(UpdateCenter::isNonMetaLabel)
+                        .map(UpdateCenter::getCategoryDisplayName)
+                        .collect(toList())
+                    );
+                    
+                    if (hasAdoptThisPluginLabel(plugin)) {
+                        jsonObject.put("adoptMe", Messages.UpdateCenter_adoptThisPlugin());
+                    }
+                    if (plugin.isDeprecated()) {
+                        jsonObject.put("deprecated", Messages.UpdateCenter_deprecationWarning(plugin.getDeprecation().url));
+                    }
+                    jsonObject.put("excerpt", plugin.excerpt);
+                    jsonObject.put("version", plugin.version);
+                    if (plugin.isForNewerHudson()) {
+                        jsonObject.put("newerCoreRequired", Messages.UpdateCenter_coreWarning(plugin.requiredCore));
+                    }
+                    if (plugin.isForNewerJava()) {
+                        jsonObject.put("newerJavaRequired", Messages.UpdateCenter_javaWarning(plugin.minimumJavaVersion));
+                    }
+                    if (plugin.isNeededDependenciesForNewerJava()) {
+                        VersionNumber javaVersion = plugin.getNeededDependenciesMinimumJavaVersion();
+                        if (javaVersion == null) {
+                            throw new IllegalStateException("java version cannot be null here");
+                        }
+                        jsonObject.put("dependenciesNewerJava", Messages.UpdateCenter_depJavaWarning(javaVersion.toString()));
+                    }
+                    if (plugin.hasWarnings()) {
+                        JSONObject unresolvedSecurityWarnings = new JSONObject();
+                        unresolvedSecurityWarnings.put("text", Messages.UpdateCenter_securityWarning());
+                        Set<UpdateSite.Warning> pluginWarnings = plugin.getWarnings();
+                        if (pluginWarnings == null) {
+                            throw new IllegalStateException("warnings cannot be null here");
+                        }
+                        List<JSONObject> warnings = pluginWarnings.stream()
+                            .map(warning -> {
+                                JSONObject jsonWarning = new JSONObject();
+                                jsonWarning.put("url", warning.url);
+                                jsonWarning.put("message", warning.message);
+                                return jsonWarning;
+                            }).collect(toList());
+                        unresolvedSecurityWarnings.put("warnings", warnings);
+                        jsonObject.put("unresolvedSecurityWarnings", unresolvedSecurityWarnings);
+                    }
+                    if (plugin.releaseTimestamp != null) {
+                        JSONObject releaseTimestamp = new JSONObject();
+                        releaseTimestamp.put("iso8601", Functions.iso8601DateTime(plugin.releaseTimestamp));
+                        releaseTimestamp.put("displayValue", Messages.UpdateCenter_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
+                        jsonObject.put("releaseTimestamp", releaseTimestamp);
+                    }
+                    if (hasLatestVersionNewerThanOffered(plugin)) {
+                        jsonObject.put("newerVersionAvailableNotOffered", Messages.UpdateCenter_newerVersionExists(plugin.latest));
+                    }
+                    return jsonObject.toString();
+                })
+                .collect(toList());
+            if (plugins.size() == limit) {
+                break;
+            }
+        }
+        return plugins.toString();
+    }
+    
     @Exported
     public List<Plugin> getAvailables() {
         Map<String,Plugin> pluginMap = new LinkedHashMap<>();
