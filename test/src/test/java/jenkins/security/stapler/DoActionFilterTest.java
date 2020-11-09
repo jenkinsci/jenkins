@@ -171,7 +171,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         public void doAnnotatedRequirePost() { replyOk(); }
         
         @JavaScriptMethod
-        public void annotatedJavascriptScriptMethod() { replyOk(); }
+        public void annotatedJavaScriptScriptMethod() { replyOk(); }
         
         @RespondSuccess
         public void doAnnotatedResponseSuccess() { replyOk(); }
@@ -332,7 +332,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
     
     @Test
-    public void testAnnotatedMethodOk_annotatedJavascriptScriptMethod() throws Exception {
+    public void testAnnotatedMethodOk_annotatedJavaScriptScriptMethod() throws Exception {
         webApp.setCrumbIssuer(new CrumbIssuer() {
             @Override
             public String issueCrumb(StaplerRequest request) {
@@ -346,7 +346,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         });
         
         
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJavascriptScriptMethod/"));
+        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJavaScriptScriptMethod/"));
         settings.setAdditionalHeader("Content-Type", "application/x-stapler-method-invocation");
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody(JSONArray.fromObject(Collections.emptyList()).toString());
