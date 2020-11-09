@@ -19,7 +19,7 @@ function onload(selector, callback, contextEl) {
     }
     function scan() {
         var elements = $(selector, contextEl).not(loadedClass);
-        if (elements.size() > 0) {
+        if (elements.length > 0) {
             elements.addClass(loadedClass);
             if (callback(elements) === true) {
                 registerRescan();
