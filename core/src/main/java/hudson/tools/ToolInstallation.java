@@ -30,19 +30,26 @@ import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.*;
+import hudson.remoting.Channel;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
 import hudson.util.XStream2;
 
 import java.io.Serializable;
+import java.io.StringReader;
 import java.io.IOException;
 import java.util.List;
 
-import com.thoughtworks.xstream.annotations.XStreamSerializable;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
 /**
  * Formalization of a tool installed in nodes used for builds.
@@ -76,14 +83,16 @@ import jenkins.model.Jenkins;
  * @since 1.286
  */
 public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements Serializable, ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(ToolInstallation.class.getName());
+
     private final String name;
     private /*almost final*/ String home;
 
     /**
      * {@link ToolProperty}s that are associated with this tool.
      */
-    @XStreamSerializable
-    private transient /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
+    private /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
             = new DescribableList<>(Saveable.NOOP);
 
     /**
@@ -145,8 +154,10 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     public void buildEnvVars(EnvVars env) {
     }
 
-    public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
-        assert properties!=null;
+    public synchronized DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
+        if (properties == null) {
+            properties = new DescribableList<>(Saveable.NOOP);
+        }
         return properties;
     }
 
@@ -210,11 +221,30 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Invoked by XStream when this object is read into memory.
      */
     protected Object readResolve() {
-        if(properties==null)
-            properties = new DescribableList<>(Saveable.NOOP);
-        for (ToolProperty<?> p : properties)
-            _setTool(p, this);
+        if (properties != null) {
+            for (ToolProperty<?> p : properties) {
+                _setTool(p, this);
+            }
+        }
         return this;
+    }
+
+    protected Object writeReplace() throws Exception {
+        if (Channel.current() == null) { // XStream
+            return this;
+        } else { // Remoting
+            LOGGER.log(Level.WARNING, "Serialization of " + getClass().getSimpleName() + " extends ToolInstallation over Remoting is deprecated", new Throwable());
+            // Hack: properties is not serializable, so try to serialize as XML (in another thread); delete <properties/>; deserialize; then load a clone
+            String xml1 = Timer.get().submit(() -> Jenkins.XSTREAM2.toXML(this)).get();
+            Document dom = new SAXReader().read(new StringReader(xml1));
+            Element properties = dom.getRootElement().element("properties");
+            if (properties != null) {
+                dom.getRootElement().remove(properties);
+            }
+            String xml2 = dom.asXML();
+            ToolInstallation clone = (ToolInstallation) Timer.get().submit(() -> Jenkins.XSTREAM2.fromXML(xml2)).get();
+            return clone;
+        }
     }
 
     @Override public String toString() {
@@ -244,5 +274,4 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
         return Jenkins.get().getDescriptorList(ToolInstallation.class);
     }
 
-    private static final long serialVersionUID = 1L;
 }

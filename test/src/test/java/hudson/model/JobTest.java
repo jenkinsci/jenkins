@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import jenkins.model.Jenkins;
 import java.util.concurrent.atomic.AtomicReference;
 
 import jenkins.model.ProjectNamingStrategy;
@@ -76,6 +77,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -205,12 +207,16 @@ public class JobTest {
         }
     }
 
-    @LocalData
     @Test public void readPermission() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        FreeStyleProject p = j.createFreeStyleProject("testJob");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.READ).everywhere().toEveryone().
+            grant(Item.READ).onItems(p).to("joe"));
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
-        wc.withBasicCredentials("joe");  // Has Item.READ permission
+        wc.withBasicCredentials("joe");
         // Verify we can access both URLs:
         wc.goTo("job/testJob/");
         wc.goTo("jobCaseInsensitive/TESTJOB/");
@@ -477,6 +483,17 @@ public class JobTest {
         tryRename("myJob7 ", " foo", "foo");
     }
 
+    @Issue("JENKINS-63899")
+    @Test
+    public void testRenameNonLatin() throws Exception {
+        tryRename("myJob8", "блины", "блины");
+    }
+
+    @Test
+    public void testRenameSpaceInBetween() throws Exception {
+        tryRename("myJob9", "my Job9", "my Job9");
+    }
+
     @Issue("JENKINS-35160")
     @Test
     public void interruptOnDelete() throws Exception {
@@ -565,7 +582,7 @@ public class JobTest {
         HtmlPage resultPage = j.submit(form);
 
         String urlString = MessageFormat.format(
-                "/job/{0}/", correctResult).replace(" ", "%20");
+                "/job/{0}/", Functions.encode(correctResult));
 
         assertThat(resultPage.getUrl().toString(), endsWith(urlString));
     }

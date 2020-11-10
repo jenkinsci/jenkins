@@ -62,14 +62,12 @@ import java.util.Set;
 import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.security.ACLContext;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTriggerTest;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.junit.Assume;
@@ -87,6 +85,9 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.xml.sax.SAXException;
 
 public class BuildTriggerTest {
@@ -211,7 +212,7 @@ public class BuildTriggerTest {
         auth.add(Computer.BUILD, "anonymous");
         j.jenkins.setAuthorizationStrategy(auth);
         final FreeStyleProject upstream =j. createFreeStyleProject("upstream");
-        Authentication alice = User.get("alice").impersonate();
+        org.acegisecurity.Authentication alice = User.get("alice").impersonate();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", alice)));
         Map<Permission,Set<String>> perms = new HashMap<Permission,Set<String>>();
         perms.put(Item.READ, Collections.singleton("alice"));
@@ -302,13 +303,10 @@ public class BuildTriggerTest {
         assertEquals(3, downstream.getLastBuild().number);
         b3 = j.buildAndAssertSuccess(simple);
     }
-    private void assertDoCheck(Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
+    private void assertDoCheck(org.acegisecurity.Authentication auth, @CheckForNull String expectedError, AbstractProject<?, ?> project, String value) {
         FormValidation result;
-        SecurityContext orig = ACL.impersonate(auth);
-        try {
+        try (ACLContext c = ACL.as(auth)) {
             result = j.jenkins.getDescriptorByType(BuildTrigger.DescriptorImpl.class).doCheck(project, value);
-        } finally {
-            SecurityContextHolder.setContext(orig);
         }
         if (expectedError == null) {
             assertEquals(result.renderHtml(), FormValidation.Kind.OK, result.kind);

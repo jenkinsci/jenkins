@@ -5,7 +5,8 @@
   border-radius: 4px;
 }
 
-.pane-header, .pane-footer {
+.pane-header,
+.pane-footer {
   padding: 8px 0px;
   color: var(--pane-header-text-color);
   background: var(--pane-header-bg);
@@ -57,7 +58,9 @@ table.stripped-even tr:nth-child(even) {
 table.stripped-odd tr:nth-child(odd) {
   background: var(--even-row-color);
 }
-table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
+table.stripped tr:hover,
+table.stripped-even tr:hover,
+table.stripped-odd tr:hover {
   background: var(--table-striped-bg--hover) !important;
 }
 
@@ -88,7 +91,8 @@ table.bigtable {
 }
 
 // Keep this for tables still wrapped by .pane-frame
-.pane-frame table, .pane-frame .bigtable tr {
+.pane-frame table,
+.pane-frame .bigtable tr {
   border: none; /* Border will be provided by the pane-frame */
 }
 

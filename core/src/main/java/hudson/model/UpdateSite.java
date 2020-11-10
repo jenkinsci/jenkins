@@ -262,7 +262,7 @@ public class UpdateSite {
      * @since 2.9
      */
     protected UpdateCenter.InstallationJob createInstallationJob(Plugin plugin, UpdateCenter uc, boolean dynamicLoad) {
-        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication(), dynamicLoad);
+        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication2(), dynamicLoad);
     }
 
     /**
@@ -392,9 +392,9 @@ public class UpdateSite {
         r.sort(new Comparator<Plugin>() {
             @Override
             public int compare(Plugin plugin, Plugin t1) {
-                final int pop = plugin.popularity.compareTo(t1.popularity);
+                final int pop = t1.popularity.compareTo(plugin.popularity);
                 if (pop != 0) {
-                    return -pop; // highest popularity first
+                    return pop; // highest popularity first
                 }
                 return plugin.getDisplayName().compareTo(plugin.getDisplayName());
             }
@@ -481,7 +481,7 @@ public class UpdateSite {
     
     /**
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
-     * in Javascript.
+     * in JavaScript.
      */
     @Exported
     public String getUrl() {
@@ -1598,7 +1598,7 @@ public class UpdateSite {
         public Future<UpdateCenterJob> deployBackup() {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
-            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication()));
+            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication2()));
         }
         /**
          * Making the installation web bound.

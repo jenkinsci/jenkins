@@ -43,7 +43,7 @@ for(j = 0; j < jdks.size(); j++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"], buildType, jdk) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -e"
+                            def mvnCmd = "mvn -Pdebug -Pjapicmp -U -Dset.changelist help:evaluate -Dexpression=changelist -Doutput=$changelistF clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -ntp -Dmaven.repo.local=$m2repo -e"
 
                             if(isUnix()) {
                                 sh mvnCmd
@@ -58,7 +58,7 @@ for(j = 0; j < jdks.size(); j++) {
                 // Once we've built, archive the artifacts and the test results.
                 stage("${buildType} Publishing") {
                     if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
+                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml'
                         archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
                     }
                     if (buildType == 'Linux' && jdk == jdks[0]) {
@@ -69,6 +69,7 @@ for(j = 0; j < jdks.size(); j++) {
                                              allowEmptyArchive: true, // in case we forgot to reincrementalify
                                              fingerprint: true
                         }
+                        publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, includes: 'japicmp.html', keepAll: false, reportDir: 'core/target/japicmp', reportFiles: 'japicmp.html', reportName: 'API compatibility', reportTitles: 'japicmp report'])
                     }
                 }
         }

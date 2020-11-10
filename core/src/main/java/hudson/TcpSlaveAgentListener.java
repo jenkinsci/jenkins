@@ -26,7 +26,6 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -48,12 +47,9 @@ import java.util.Arrays;
 import java.util.Base64;
 import jenkins.AgentProtocol;
 
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -62,7 +58,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -232,6 +227,10 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     private final class ConnectionHandler extends Thread {
+        private static final String DEFAULT_RESPONSE_404 = "HTTP/1.0 404 Not Found\r\n" +
+                        "Content-Type: text/plain;charset=UTF-8\r\n" +
+                        "\r\n" +
+                        "Not Found\r\n";
         private final Socket s;
         /**
          * Unique number to identify this connection. Used in the log.
@@ -261,15 +260,12 @@ public final class TcpSlaveAgentListener extends Thread {
                 LOGGER.log(Level.FINE, "Accepted connection #{0} from {1}", new Object[] {id, s.getRemoteSocketAddress()});
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
-                PrintWriter out = new PrintWriter(
-                        new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8)),
-                        true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
                 // peek the first few bytes to determine what to do with this client
                 byte[] head = new byte[10];
                 in.readFully(head);
 
-                String header = new String(head, Charsets.US_ASCII);
+                String header = new String(head, StandardCharsets.US_ASCII);
                 if (header.startsWith("GET ")) {
                     // this looks like an HTTP client
                     respondHello(header,s);
@@ -287,12 +283,12 @@ public final class TcpSlaveAgentListener extends Thread {
                             LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
-                            error(out, "Disabled protocol:" + s);
+                            error("Disabled protocol:" + s, this.s);
                         }
                     } else
-                        error(out, "Unknown protocol:" + s);
+                        error("Unknown protocol:", this.s);
                 } else {
-                    error(out, "Unrecognized protocol: "+s);
+                    error("Unrecognized protocol: " + s, this.s);
                 }
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
@@ -321,39 +317,39 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private void respondHello(String header, Socket s) throws IOException {
             try {
-                Writer o = new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8);
-                
+                DataOutputStream out = new DataOutputStream(s.getOutputStream());
+                String response;
                 if (header.startsWith("GET / ")) {
-                    o.write("HTTP/1.0 200 OK\r\n");
-                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
-                    o.write("\r\n");
-                    o.write("Jenkins-Agent-Protocols: " + getAgentProtocolNames()+"\r\n");
-                    o.write("Jenkins-Version: " + Jenkins.VERSION + "\r\n");
-                    o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
-                    o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
-                    o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
-                    o.write("Remoting-Minimum-Version: " + getRemotingMinimumVersion() + "\r\n");
-                    o.flush();
-                    s.shutdownOutput();
+                    response = "HTTP/1.0 200 OK\r\n" +
+                            "Content-Type: text/plain;charset=UTF-8\r\n" +
+                            "\r\n" +
+                            "Jenkins-Agent-Protocols: " + getAgentProtocolNames()+"\r\n" +
+                            "Jenkins-Version: " + Jenkins.VERSION + "\r\n" +
+                            "Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n" +
+                            "Client: " + s.getInetAddress().getHostAddress() + "\r\n" +
+                            "Server: " + s.getLocalAddress().getHostAddress() + "\r\n" +
+                            "Remoting-Minimum-Version: " + getRemotingMinimumVersion() + "\r\n";
                 } else {
-                    o.write("HTTP/1.0 404 Not Found\r\n");
-                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
-                    o.write("\r\n");
-                    o.write("Not Found\r\n");
-                    o.flush();
-                    s.shutdownOutput();
+                    response = DEFAULT_RESPONSE_404;
                 }
+                out.write(response.getBytes(StandardCharsets.UTF_8));
+                out.flush();
+                s.shutdownOutput();
 
                 InputStream i = s.getInputStream();
-                IOUtils.copy(i, new NullOutputStream());
+                IOUtils.copy(i, NullOutputStream.NULL_OUTPUT_STREAM);
                 s.shutdownInput();
             } finally {
                 s.close();
             }
         }
 
-        private void error(PrintWriter out, String msg) throws IOException {
-            out.println(msg);
+        private void error(String msg, Socket s) throws IOException {
+            DataOutputStream out = new DataOutputStream(s.getOutputStream());
+            String response = msg + System.lineSeparator();
+            out.write(response.getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            s.shutdownOutput();
             LOGGER.log(Level.WARNING, "Connection #{0} is aborted: {1}", new Object[]{id, msg});
             s.close();
         }

@@ -96,7 +96,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 StreamTaskListener l = createListener();
                 try {
                     l.getLogger().printf("Started at %tc%n", new Date(startTime));
-                    try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+                    try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                         execute(l);
                     }
                 } catch (IOException e) {

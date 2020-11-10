@@ -19,7 +19,7 @@ function onload(selector, callback, contextEl) {
     }
     function scan() {
         var elements = $(selector, contextEl).not(loadedClass);
-        if (elements.size() > 0) {
+        if (elements.length > 0) {
             elements.addClass(loadedClass);
             if (callback(elements) === true) {
                 registerRescan();
@@ -60,15 +60,15 @@ function fixDragEvent(handle) {
     var $chunk = $handle.closest('.repeated-chunk');
     $handle.add('#ygddfdiv')
 	.mousedown(function(){
-	    isReady = true;
+		isReady = true;
 	})
 	.mousemove(function(){
-	    if(isReady && !$chunk.hasClass('dragging')){
+		if(isReady && !$chunk.hasClass('dragging')){
 		$chunk.addClass('dragging');
-	    }
+		}
 	}).mouseup(function(){
-	    isReady = false;
-	    $chunk.removeClass('dragging');
+		isReady = false;
+		$chunk.removeClass('dragging');
 	});
 }
 

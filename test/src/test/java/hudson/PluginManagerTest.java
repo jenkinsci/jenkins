@@ -493,7 +493,7 @@ public class PluginManagerTest {
     public void requireSystemDuringLoad() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
-        try (ACLContext context = ACL.as(User.getById("underprivileged", true).impersonate())) {
+        try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
             dynamicLoad("require-system-during-load.hpi");
         }
     }
@@ -506,7 +506,7 @@ public class PluginManagerTest {
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         String pluginShortName = "require-system-during-load";
         dynamicLoad(pluginShortName + ".hpi");
-        try (ACLContext context = ACL.as(User.getById("underprivileged", true).impersonate())) {
+        try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
             r.jenkins.pluginManager.start(Collections.singletonList(r.jenkins.pluginManager.getPlugin(pluginShortName)));
         }
     }
@@ -518,7 +518,7 @@ public class PluginManagerTest {
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         String pluginShortName = "require-system-in-initializer";
         dynamicLoad(pluginShortName + ".jpi");
-        try (ACLContext context = ACL.as(User.getById("underprivileged", true).impersonate())) {
+        try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
             r.jenkins.pluginManager.start(Collections.singletonList(r.jenkins.pluginManager.getPlugin(pluginShortName)));
         }
     }

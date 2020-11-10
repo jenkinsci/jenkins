@@ -35,12 +35,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.PresetData;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * @author Patrick McKeown
@@ -60,12 +60,12 @@ public class SecurityContextExecutorServiceTest {
             super.before();
 
             ScheduledThreadPoolExecutor service = new ScheduledThreadPoolExecutor(NUM_THREADS);
-            // Create a system level context with ACL.SYSTEM
-            systemContext = ACL.impersonate(ACL.SYSTEM);
+            // Create a system level context with ACL.SYSTEM2
+            systemContext = ACL.impersonate2(ACL.SYSTEM2);
 
             User u = User.get("bob");
             // Create a sample user context
-            userContext = new NonSerializableSecurityContext(u.impersonate());
+            userContext = new NonSerializableSecurityContext(u.impersonate2());
 
             // Create a null context
             SecurityContextHolder.clearContext();
@@ -88,7 +88,7 @@ public class SecurityContextExecutorServiceTest {
         Future systemResult = wrappedService.submit(r);
         // Assert the runnable completed successfully
         assertNull(systemResult.get());
-        // Assert the context inside the runnable thread was set to ACL.SYSTEM
+        // Assert the context inside the runnable thread was set to ACL.SYSTEM2
         assertEquals(systemContext, runnableThreadContext);
 
         SecurityContextHolder.setContext(userContext);
@@ -116,7 +116,7 @@ public class SecurityContextExecutorServiceTest {
         };
         SecurityContextHolder.setContext(systemContext);
         Future<SecurityContext> result = wrappedService.submit(c);
-        // Assert the context inside the callable thread was set to ACL.SYSTEM
+        // Assert the context inside the callable thread was set to ACL.SYSTEM2
         assertEquals(systemContext, result.get());
 
         SecurityContextHolder.setContext(userContext);
@@ -180,7 +180,7 @@ public class SecurityContextExecutorServiceTest {
         try {
             wrappedService.execute(r);
         } catch (AssertionError expectedException) {
-            // Assert the current context is once again ACL.SYSTEM
+            // Assert the current context is once again ACL.SYSTEM2
             assertEquals(systemContext, SecurityContextHolder.getContext());
         }
 

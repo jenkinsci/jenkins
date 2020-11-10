@@ -15,22 +15,22 @@
 package jenkins.security;
 
 import hudson.Extension;
-import jenkins.util.SystemProperties;
-import jenkins.ExtensionFilter;
-import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.ui.AuthenticationDetailsSource;
-import org.acegisecurity.ui.AuthenticationDetailsSourceImpl;
-
+import java.io.IOException;
+import static java.util.logging.Level.*;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
+import jenkins.ExtensionFilter;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 
 /**
  * Checks if the password given in the BASIC header matches the user's actual password,
@@ -39,12 +39,13 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  * @since 1.576
  */
+@Restricted(NoExternalUse.class)
 @Extension
 public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticator {
-    private AuthenticationDetailsSource authenticationDetailsSource = new AuthenticationDetailsSourceImpl();
+    private AuthenticationDetailsSource authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
     @Override
-    public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException {
+    public Authentication authenticate2(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException {
         if (DISABLE)
             return null;
 
@@ -53,7 +54,7 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
         authRequest.setDetails(authenticationDetailsSource.buildDetails(req));
 
         try {
-            Authentication a = Jenkins.get().getSecurityRealm().getSecurityComponents().manager.authenticate(authRequest);
+            Authentication a = Jenkins.get().getSecurityRealm().getSecurityComponents().manager2.authenticate(authRequest);
             // Authentication success
             LOGGER.log(FINER, "Authentication success: {0}", a);
             return a;

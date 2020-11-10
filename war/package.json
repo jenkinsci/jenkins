@@ -14,7 +14,7 @@
     "prod": "webpack --config webpack.config.js --mode=production",
     "build": "yarn prod",
     "start": "yarn dev --watch",
-    "test": "jest --config=jest.config.json",
+    "test": "jest --ci --config=jest.config.json --reporters=jest-standard-reporter --reporters=jest-junit",
     "lint:js": "eslint . --ext js",
     "lint:css": "stylelint src/main/less --syntax less",
     "lint": "yarn lint:js && yarn lint:css"
@@ -34,6 +34,7 @@
     "handlebars-loader": "^1.7.1",
     "jest": "^26.0.1",
     "jest-handlebars": "^1.0.1",
+    "jest-junit": "^12.0.0",
     "jest-standard-reporter": "^1.0.4",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
@@ -51,7 +52,7 @@
     "babel-loader": "^8.0.6",
     "bootstrap": "3.3.5",
     "jenkins-js-modules": "^1.5.0",
-    "jquery": "2.1.4",
+    "jquery": "3.5.1",
     "stylelint": "^13.0.0",
     "window-handle": "^1.0.0"
   },

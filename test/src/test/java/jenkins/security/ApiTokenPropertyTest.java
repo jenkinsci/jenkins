@@ -1,6 +1,9 @@
 package jenkins.security;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
@@ -32,6 +35,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,6 +43,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
@@ -46,6 +51,8 @@ import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.recipes.LocalData;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -460,7 +467,214 @@ public class ApiTokenPropertyTest {
         Object result = responseJson.getJSONObject("data").toBean(GenerateNewTokenResponse.class);
         return (GenerateNewTokenResponse) result;
     }
-    
-    
+
+    @Test
+    @Issue("JENKINS-57484")
+    public void script_addFixedNewToken_Regular() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+
+        String tokenPlainTextValue = "110123456789abcdef0123456789abcdef";
+        apiTokenProperty.addFixedNewToken("fixed-token", tokenPlainTextValue);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        // ensure the token is created
+        assertEquals(beforeTokenList.size() + 1, afterTokenList.size());
+        // ensure the token is working
+
+        checkTokenIsWorking(user.getId(), tokenPlainTextValue);
+    }
+
+    @Test
+    @Issue("JENKINS-57484")
+    public void script_addFixedNewToken_Invalid() throws Exception {
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+
+        checkInvalidTokenValue(apiTokenProperty,"invalid-token: too-long", "110123456789abcdef0123456789abcdefg");
+        checkInvalidTokenValue(apiTokenProperty,"invalid-token: too-short", "110123456789abcdef0123456789abcde");
+        checkInvalidTokenValue(apiTokenProperty,"invalid-token: non-hex", "110123456789abcdef0123456789abcdeg");
+        checkInvalidTokenValue(apiTokenProperty,"invalid-token: invalid-version", "120123456789abcdef0123456789abcdef");
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        // ensure there is no new tokens
+        assertEquals(beforeTokenList.size(), afterTokenList.size());
+    }
+
+    @Test
+    @Issue("JENKINS-57484")
+    public void script_generateNewToken() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        Collection<ApiTokenStore.HashedToken> beforeTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+
+        TokenUuidAndPlainValue token1 = apiTokenProperty.generateNewToken("token1");
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 1, afterTokenList.size());
+
+        checkTokenIsWorking(user.getId(), token1.plainValue);
+
+        TokenUuidAndPlainValue token2 = apiTokenProperty.generateNewToken("token2");
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        TokenUuidAndPlainValue token3 = apiTokenProperty.generateNewToken("token3");
+        checkTokenIsWorking(user.getId(), token3.plainValue);
+
+        Collection<ApiTokenStore.HashedToken> afterTokenList2 = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertEquals(beforeTokenList.size() + 3, afterTokenList2.size());
+    }
+
+    @Test
+    @Issue("JENKINS-57484")
+    public void script_revokeAllTokens() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        apiTokenProperty.revokeAllTokens();
+        Collection<ApiTokenStore.HashedToken> tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        // legacy token removed
+        assertThat(tokenList, empty());
+
+        apiTokenProperty.generateNewToken("token1");
+        apiTokenProperty.revokeAllTokens();
+        tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, empty());
+
+        String tokenPlainTextValue = "110123456789abcdef0123456789abcdef";
+        apiTokenProperty.addFixedNewToken("fixed-token", tokenPlainTextValue);
+        checkTokenIsWorking(user.getId(), tokenPlainTextValue);
+        apiTokenProperty.revokeAllTokens();
+        checkTokenIsNotWorking(user.getId(), tokenPlainTextValue);
+
+        tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, empty());
+    }
+
+    @Test
+    @Issue("JENKINS-57484")
+    public void script_revokeAllTokensExceptOne() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        apiTokenProperty.generateNewToken("token0");
+        TokenUuidAndPlainValue token1 = apiTokenProperty.generateNewToken("token1");
+        TokenUuidAndPlainValue token2 = apiTokenProperty.generateNewToken("token2");
+        apiTokenProperty.generateNewToken("token3");
+
+        checkTokenIsWorking(user.getId(), token1.plainValue);
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        apiTokenProperty.revokeAllTokensExceptOne(token1.tokenUuid);
+        checkTokenIsWorking(user.getId(), token1.plainValue);
+        checkTokenIsNotWorking(user.getId(), token2.plainValue);
+
+        Collection<ApiTokenStore.HashedToken> tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, hasSize(1));
+        assertEquals(token1.tokenUuid, tokenList.iterator().next().getUuid());
+
+        String tokenPlainTextValue = "110123456789abcdef0123456789abcdef";
+        apiTokenProperty.addFixedNewToken("fixed-token", tokenPlainTextValue);
+        TokenUuidAndPlainValue token4 = apiTokenProperty.generateNewToken("token4");
+        apiTokenProperty.revokeAllTokensExceptOne(token4.tokenUuid);
+
+        tokenList = apiTokenProperty.getTokenStore().getTokenListSortedByName();
+        assertThat(tokenList, hasSize(1));
+        assertEquals(token4.tokenUuid, tokenList.iterator().next().getUuid());
+
+        checkTokenIsNotWorking(user.getId(), token1.plainValue);
+        checkTokenIsNotWorking(user.getId(), tokenPlainTextValue);
+        checkTokenIsWorking(user.getId(), token4.plainValue);
+    }
+
+    @Test
+    @Issue("JENKINS-57484")
+    public void script_revokeToken() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+
+        User user = User.getById("user", true);
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        apiTokenProperty.revokeAllTokens();
+
+        TokenUuidAndPlainValue token1 = apiTokenProperty.generateNewToken("token1");
+        TokenUuidAndPlainValue token2 = apiTokenProperty.generateNewToken("token2");
+        TokenUuidAndPlainValue token3 = apiTokenProperty.generateNewToken("token3");
+
+        checkTokenIsWorking(user.getId(), token1.plainValue);
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        checkTokenIsWorking(user.getId(), token3.plainValue);
+        
+        apiTokenProperty.revokeToken(token1.tokenUuid);
+        
+        checkTokenIsNotWorking(user.getId(), token1.plainValue);
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        checkTokenIsWorking(user.getId(), token3.plainValue);
+
+        apiTokenProperty.revokeToken(token3.tokenUuid);
+
+        checkTokenIsNotWorking(user.getId(), token1.plainValue);
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        checkTokenIsNotWorking(user.getId(), token3.plainValue);
+
+        // no effect
+        apiTokenProperty.revokeToken("invalid-uuid");
+
+        checkTokenIsNotWorking(user.getId(), token1.plainValue);
+        checkTokenIsWorking(user.getId(), token2.plainValue);
+        checkTokenIsNotWorking(user.getId(), token3.plainValue);
+    }
+
+    private void checkTokenIsWorking(String login, String token) throws Exception {
+        WebClient wc = j.createWebClient()
+                .withBasicCredentials(login, token);
+        XmlPage xmlPage = wc.goToXml("whoAmI/api/xml");
+        assertThat(xmlPage, allOf(
+                hasXPath("//name", is(login)),
+                hasXPath("//anonymous", is("false")),
+                hasXPath("//authenticated", is("true")),
+                hasXPath("//authority", is("authenticated"))
+        ));
+    }
+
+    private void checkTokenIsNotWorking(String login, String token) throws Exception {
+        WebClient wc = j.createWebClient()
+                .withBasicCredentials(login, token)
+                .withThrowExceptionOnFailingStatusCode(false);
+        // error page returned
+        HtmlPage page = wc.goTo("whoAmI/api/xml");
+        assertThat(page.getWebResponse().getStatusCode(), is(HttpServletResponse.SC_UNAUTHORIZED));
+    }
+
+    private void checkInvalidTokenValue(ApiTokenProperty apiTokenProperty, String tokenName, String tokenValue) throws Exception {
+        try {
+            apiTokenProperty.addFixedNewToken(tokenName, tokenValue);
+            fail("The invalid token " + tokenName + " with value " + tokenValue + " was accepted but it should have been rejected.");
+        }
+        catch (IllegalArgumentException iae) {
+            // no care about the exception
+        }
+    }
+
     // test no token are generated for new user with the global configuration set to false
 }

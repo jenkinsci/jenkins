@@ -23,8 +23,6 @@
  */
 package jenkins.security;
 
-import org.acegisecurity.userdetails.UserDetails;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +31,7 @@ import java.util.function.Predicate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.springframework.security.core.userdetails.UserDetails;
 
 //TODO temporary solution, should be moved to Jenkins Test Harness project
 /**
@@ -56,7 +55,7 @@ public abstract class SpySecurityListener extends SecurityListener {
     }
     
     @Override
-    protected void authenticated(@NonNull UserDetails details) {
+    protected void authenticated2(@NonNull UserDetails details) {
         this.authenticatedCalls.add(details);
     }
     

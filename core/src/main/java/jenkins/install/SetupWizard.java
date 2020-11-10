@@ -26,14 +26,13 @@ import javax.servlet.http.HttpSession;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.security.ApiTokenProperty;
+import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -74,6 +73,10 @@ import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -94,6 +97,38 @@ public class SetupWizard extends PageDecorator {
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
+
+    private static final String ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME = SetupWizard.class.getName() + ".adminInitialApiToken";
+
+    /**
+     * This property determines the behavior during the SetupWizard install phase concerning the API Token creation 
+     * for the initial admin account.
+     * The behavior depends on the provided value:
+     * - true
+     *      A token is generated using random value at startup and the information is put 
+     *      in the file "$JENKINS_HOME/secrets/initialAdminApiToken".
+     * - [2-char hash version][32-hex-char of secret], where the hash version is currently only 11. 
+     *      E.g. 110123456789abcdef0123456789abcdef.
+     *      A fixed API Token will be created for the user with that plain value as the token.
+     *      It is strongly recommended to use it to generate a new one (random) and then revoke it.
+     *      See {@link ApiTokenProperty#generateNewToken(String)} and {@link ApiTokenProperty#revokeAllTokensExceptOne(String)}
+     *      for scripting methods or using the web API calls: 
+     *      /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/generateNewToken and 
+     *      /user/[user-login]/descriptorByName/jenkins.security.ApiTokenProperty/revokeAllExcept 
+     * - @[file-location] where the file contains plain text value of the token, all stuff explained above is applicable
+     *      The application will not delete the file after read, so the script is responsible to clean up the stuff
+     *
+     * When the API Token is generated using this system property, it's strongly recommended that you are revoking it
+     * during your installation script using the other ways at your disposal so that you have a fresh token
+     * with less traces for your script.
+     *
+     * If you do not provide any value to that system property, the default admin account will not have an API Token.
+     *
+     * @since TODO (for the existence of the sysprop, not the availability to plugin)
+     */
+    @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties.getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
 
     @NonNull
     @Override
@@ -121,7 +156,11 @@ public class SetupWizard extends PageDecorator {
                     String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
     
                     // create an admin user
-                    securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
+                    User initialAdmin = securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
+                    
+                    if (ADMIN_INITIAL_API_TOKEN != null) {
+                        createInitialApiToken(initialAdmin);
+                    }
     
                     // JENKINS-33599 - write to a file in the jenkins home directory
                     // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
@@ -180,6 +219,54 @@ public class SetupWizard extends PageDecorator {
         }
     }
 
+    private void createInitialApiToken(User user) throws IOException, InterruptedException {
+        ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
+
+        String sysProp = ADMIN_INITIAL_API_TOKEN;
+        if (sysProp.equals("true")) {
+            TokenUuidAndPlainValue tokenUuidAndPlainValue = apiTokenProperty.generateNewToken("random-generation-during-setup-wizard");
+            FilePath fp = getInitialAdminApiTokenFile();
+            // same comment as in the init method
+
+            // JENKINS-33599 - write to a file in the jenkins home directory
+            // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
+            // and use group 'jenkins' for admins. So we allow groups to read this file
+            fp.touch(System.currentTimeMillis());
+            fp.chmod(0640);
+            fp.write(tokenUuidAndPlainValue.plainValue, StandardCharsets.UTF_8.name());
+            LOGGER.log(Level.INFO, "The API Token was randomly generated and the information was put in {0}", fp.getRemote());
+        } else {
+            String plainText;
+            if (sysProp.startsWith("@")) {
+                // no need for path traversal check as it's coming from the instance creator only
+                File apiTokenFile = new File(sysProp.substring(1));
+                if (!apiTokenFile.exists()) {
+                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from a non-existing file: {0}", apiTokenFile);
+                    return;
+                }
+
+                try {
+                    plainText = FileUtils.readFileToString(apiTokenFile, StandardCharsets.UTF_8);
+                    LOGGER.log(Level.INFO, "API Token generated using contents of file: {0}", apiTokenFile.getAbsolutePath());
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, String.format("The API Token cannot be retrieved from the file: %s", apiTokenFile), e);
+                    return;
+                }
+            } else {
+                LOGGER.log(Level.INFO, "API Token generated using system property: {0}", ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
+                plainText = sysProp;
+            }
+
+            try {
+                apiTokenProperty.addFixedNewToken("fix-generation-during-setup-wizard", plainText);
+            }
+            catch (IllegalArgumentException e) {
+                String constraintFailureMessage = e.getMessage();
+                LOGGER.log(Level.WARNING, "The API Token cannot be generated using the provided value due to: {0}", constraintFailureMessage);
+            }
+        }
+    }
+
     private void setUpFilter() {
         try {
             if (!PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER)) {
@@ -225,7 +312,7 @@ public class SetupWizard extends PageDecorator {
             HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
             try {
                 if(securityRealm.getAllUsers().size() == 1) {
-                    HudsonPrivateSecurityRealm.Details details = securityRealm.loadUserByUsername(SetupWizard.initialSetupAdminUserName);
+                    HudsonPrivateSecurityRealm.Details details = securityRealm.load(SetupWizard.initialSetupAdminUserName);
                     FilePath iapf = getInitialAdminPasswordFile();
                     if (iapf.exists()) {
                         if (details.isPasswordCorrect(iapf.readToString().trim())) {
@@ -255,13 +342,20 @@ public class SetupWizard extends PageDecorator {
 
         User admin = securityRealm.getUser(SetupWizard.initialSetupAdminUserName);
         try {
+            ApiTokenProperty initialApiTokenProperty = null;
+
             if (admin != null) {
+                initialApiTokenProperty = admin.getProperty(ApiTokenProperty.class);
                 admin.delete(); // assume the new user may well be 'admin'
             }
 
             User newUser = securityRealm.createAccountFromSetupWizard(req);
             if (admin != null) {
                 admin = null;
+            }
+            if (initialApiTokenProperty != null) {
+                // actually it will remove the current one and replace it with the one from initial admin
+                newUser.addProperty(initialApiTokenProperty);
             }
 
             // Success! Delete the temporary password file:
@@ -270,12 +364,21 @@ public class SetupWizard extends PageDecorator {
             } catch (InterruptedException e) {
                 throw new IOException(e);
             }
+            try {
+                FilePath fp = getInitialAdminApiTokenFile();
+                // no care about TOCTOU as it's done during instance creation process only (i.e. not yet user reachable)
+                if (fp.exists()) {
+                    fp.delete();
+                }
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
 
             InstallUtil.proceedToNextStateFrom(InstallState.CREATE_ADMIN_USER);
 
             // ... and then login
             Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
-            auth = securityRealm.getSecurityComponents().manager.authenticate(auth);
+            auth = securityRealm.getSecurityComponents().manager2.authenticate(auth);
             SecurityContextHolder.getContext().setAuthentication(auth);
             
             HttpSession session = req.getSession(false);
@@ -549,6 +652,15 @@ public class SetupWizard extends PageDecorator {
      */
     public FilePath getInitialAdminPasswordFile() {
         return Jenkins.get().getRootPath().child("secrets/initialAdminPassword");
+    }
+    
+    /**
+     * Gets the file used to store the initial admin API Token, in case the system property
+     * {@link #ADMIN_INITIAL_API_TOKEN} is set to "true" (and only in this case).
+     */
+    @Restricted(NoExternalUse.class)
+    public FilePath getInitialAdminApiTokenFile() {
+        return Jenkins.get().getRootPath().child("secrets/initialAdminApiToken");
     }
 
     /**

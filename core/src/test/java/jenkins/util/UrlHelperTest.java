@@ -150,7 +150,7 @@ public class UrlHelperTest {
 
     @Test
     @Issue("SECURITY-1471")
-    public void ensureJavascriptSchemaIsNotAllowed() {
+    public void ensureJavaScriptSchemaIsNotAllowed() {
         assertFalse(UrlHelper.isValidRootUrl("javascript:alert(123)"));
     }
 }

@@ -29,7 +29,7 @@ import hudson.security.ACLContext;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import jenkins.util.InterceptingScheduledExecutorService;
-import org.acegisecurity.Authentication;
+import org.springframework.security.core.Authentication;
 
 /**
  * Variant of {@link ImpersonatingExecutorService} for scheduled services.
@@ -42,11 +42,20 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
     /**
      * Creates a wrapper service.
      * @param base the base service
-     * @param authentication for example {@link ACL#SYSTEM}
+     * @param authentication for example {@link ACL#SYSTEM2}
+     * @since TODO
      */
     public ImpersonatingScheduledExecutorService(ScheduledExecutorService base, Authentication authentication) {
         super(base);
         this.authentication = authentication;
+    }
+
+    /**
+     * @deprecated use {@link #ImpersonatingScheduledExecutorService(ScheduledExecutorService, Authentication)}
+     */
+    @Deprecated
+    public ImpersonatingScheduledExecutorService(ScheduledExecutorService base, org.acegisecurity.Authentication authentication) {
+        this(base, authentication.toSpring());
     }
 
     @Override
@@ -54,7 +63,7 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
         return new Runnable() {
             @Override
             public void run() {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     r.run();
                 }
             }
@@ -66,7 +75,7 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
         return new Callable<V>() {
             @Override
             public V call() throws Exception {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     return r.call();
                 }
             }

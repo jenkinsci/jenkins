@@ -55,9 +55,9 @@ public class CreateJobCommandTest {
             grant(Jenkins.READ).everywhere().toAuthenticated().
             grant(Item.READ).onItems(d).toAuthenticated(). // including alice
             grant(Item.CREATE).onItems(d).to("bob"));
-        cmd.setTransportAuth(User.getOrCreateByIdOrFullName("alice").impersonate());
+        cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("alice").impersonate2());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("d/p"), failedWith(6));
-        cmd.setTransportAuth(User.getOrCreateByIdOrFullName("bob").impersonate());
+        cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("bob").impersonate2());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));
     }
