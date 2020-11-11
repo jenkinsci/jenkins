@@ -50,8 +50,8 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                             var htmlInputElement = document.createElement('input');
                             htmlInputElement.type = 'checkbox';
                             htmlInputElement.name = 'plugin.' + plugin.name + '.' + plugin.sourceId;
-                            htmlTableDataCellElement.append(htmlInputElement);
-                            htmlTableRowElement.append(htmlTableDataCellElement);
+                            htmlTableDataCellElement.appendChild(htmlInputElement);
+                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
                         }
 
                         function createNameEntry() {
@@ -63,8 +63,8 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                             htmlAnchorElement.text = plugin.displayName
                             htmlAnchorElement.target = '_blank'
                             htmlAnchorElement.rel = 'noopener noreferrer'
-                            htmlDivElement.append(htmlAnchorElement)
-                            htmlTableDataCellElement.append(htmlDivElement)
+                            htmlDivElement.appendChild(htmlAnchorElement)
+                            htmlTableDataCellElement.appendChild(htmlDivElement)
 
                             if (plugin.categories) {
                                 htmlDivElement = document.createElement('div');
@@ -74,37 +74,37 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                                     htmlAnchorElement.href = '?filter=' + category;
                                     htmlAnchorElement.classList.add('plugin-manager__category-label')
                                     htmlAnchorElement.text = category
-                                    htmlDivElement.append(htmlAnchorElement)
+                                    htmlDivElement.appendChild(htmlAnchorElement)
                                 })
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
                             if (plugin.excerpt) {
                                 htmlDivElement = document.createElement('div');
                                 htmlDivElement.classList.add('excerpt');
                                 htmlDivElement.innerHTML = plugin.excerpt
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
-                            htmlTableRowElement.append(htmlTableDataCellElement);
+                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
                             
                             if (plugin.newerCoreRequired) {
                                 htmlDivElement = document.createElement('div');
                                 htmlDivElement.classList.add('alert', 'alert-danger');
                                 htmlDivElement.innerHTML = plugin.newerCoreRequired
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
 
                             if (plugin.newerJavaRequired) {
                                 htmlDivElement = document.createElement('div');
                                 htmlDivElement.classList.add('alert', 'alert-danger');
                                 htmlDivElement.innerHTML = plugin.newerJavaRequired
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
 
                             if (plugin.dependenciesNewerJava) {
                                 htmlDivElement = document.createElement('div');
                                 htmlDivElement.classList.add('alert', 'alert-danger');
                                 htmlDivElement.innerHTML = plugin.dependenciesNewerJava
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
 
                             if (plugin.unresolvedSecurityWarnings) {
@@ -119,40 +119,40 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                                     htmlAnchorElement.text = warning.message
                                     htmlAnchorElement.target = '_blank'
                                     htmlAnchorElement.rel = 'noopener noreferrer'
-                                    li.append(htmlAnchorElement)
-                                    listElement.append(li)
+                                    li.appendChild(htmlAnchorElement)
+                                    listElement.appendChild(li)
                                 })
-                                htmlDivElement.append(listElement)
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlDivElement.appendChild(listElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
 
                             if (plugin.deprecated) {
                                 htmlDivElement = document.createElement('div');
                                 htmlDivElement.classList.add('alert', 'alert-warning');
                                 htmlDivElement.innerHTML = plugin.deprecated
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
 
                             if (plugin.adoptMe) {
                                 htmlDivElement = document.createElement('div');
                                 htmlDivElement.classList.add('alert', 'alert-warning');
                                 htmlDivElement.innerHTML = plugin.adoptMe
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
 
                             if (plugin.newerVersionAvailableNotOffered) {
                                 htmlDivElement = document.createElement('div');
                                 htmlDivElement.classList.add('alert', 'alert-info');
                                 htmlDivElement.innerHTML = plugin.newerVersionAvailableNotOffered
-                                htmlTableDataCellElement.append(htmlDivElement)
+                                htmlTableDataCellElement.appendChild(htmlDivElement)
                             }
                         }
 
                         function createVersionEntry() {
                             var htmlTableDataCellElement = document.createElement('td');
                             htmlTableDataCellElement.classList.add('pane')
-                            htmlTableDataCellElement.append(document.createTextNode(plugin.version));
-                            htmlTableRowElement.append(htmlTableDataCellElement);
+                            htmlTableDataCellElement.appendChild(document.createTextNode(plugin.version));
+                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
                         }
 
                         function createReleasedAgo() {
@@ -162,9 +162,9 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                                 var htmlTimeElement = document.createElement('time');
                                 htmlTimeElement.dateTime = plugin.releaseTimestamp.iso8601;
                                 htmlTimeElement.textContent = plugin.releaseTimestamp.displayValue;
-                                htmlTableDataCellElement.append(htmlTimeElement);
+                                htmlTableDataCellElement.appendChild(htmlTimeElement);
                             }
-                            htmlTableRowElement.append(htmlTableDataCellElement);
+                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
                         }
 
                         if (pluginsTable.dataset.hasadmin === 'true') {
@@ -174,7 +174,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         createVersionEntry();
                         createReleasedAgo();
 
-                        tbody.append(htmlTableRowElement);
+                        tbody.appendChild(htmlTableRowElement);
                     })
                 })
             } else {
@@ -185,8 +185,8 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 var items = document.getElementsBySelector("TR.plugin");
                 var anyVisible = false;
                 for (var i = 0; i < items.length; i++) {
-                    if ((filterParts.length < 1 || filter.length < 2) && items[i].hasClassName("hidden-by-default")) {
-                        items[i].addClassName("hidden");
+                    if ((filterParts.length < 1 || filter.length < 2) && items[i].classList.contains("hidden-by-default")) {
+                        items[i].classList.add("hidden");
                         continue;
                     }
                     var makeVisible = true;
