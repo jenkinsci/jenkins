@@ -120,9 +120,12 @@ void withMavenEnv(List envVars = [], def buildType, def javaVersion, def body) {
     // to be made more flexible.
     // Using the "tool" Workflow call automatically installs those tools on the
     // node.
-    String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
-    String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
+//    String mvntool = tool name: "mvn", type: 'hudson.tasks.Maven$MavenInstallation'
+//    String jdktool = tool name: "jdk${javaVersion}", type: 'hudson.model.JDK'
 
+    String mvntool = tool name: "mvn", type: '/usr/share/maven'
+    String jdktool = tool name: "jdk${javaVersion}", type: '/usr/local/openjdk-8'
+    
     // Set JAVA_HOME, MAVEN_HOME and special PATH variables for the tools we're
     // using.
     List mvnEnv = ["PATH+MVN=${mvntool}/bin", "PATH+JDK=${jdktool}/bin", "JAVA_HOME=${jdktool}", "MAVEN_HOME=${mvntool}"]
