@@ -16,7 +16,7 @@ public class BuildStepCompatibilityLayerTest {
 
     @Issue("JENKINS-18734")
     @Test(expected = AbstractMethodError.class)
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") /* testing deprecated variant */
     public void testPerformExpectAbstractMethodError() throws InterruptedException, IOException {
 
         FreeStyleBuild mock = Mockito.mock(FreeStyleBuild.class, Mockito.CALLS_REAL_METHODS);
