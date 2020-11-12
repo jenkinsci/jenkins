@@ -37,6 +37,7 @@ THE SOFTWARE.
             <j:if test="${activeNonSecurityAMCount > 0}">
                 <a id="visible-am-button" class="am-button" href="#" onclick="toggleVisibleAmList(event)" title="${%tooltip(activeNonSecurityAMCount)}">
                     <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px" />
+                    <div class="am-monitor__indicator-mobile" />
                     <span class="am-monitor__count">
                         ${activeNonSecurityAMCount}
                     </span>
@@ -57,6 +58,7 @@ THE SOFTWARE.
             <j:if test="${activeSecurityAMCount > 0}">
                 <a id="visible-sec-am-button" class="am-button security-am" href="#" onclick="toggleVisibleSecAmList(event)" title="${%tooltipSec(activeSecurityAMCount)}">
                     <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_warning_shield_24px" />
+                    <div class="am-monitor__indicator-mobile" />
                     <span class="am-monitor__count">
                         ${activeSecurityAMCount}
                     </span>

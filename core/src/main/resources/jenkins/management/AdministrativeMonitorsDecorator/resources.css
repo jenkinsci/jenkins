@@ -6,6 +6,20 @@
     position: relative;
 }
 
+.am-button .am-monitor__indicator-mobile {
+    display: none;
+    position: absolute;
+    top: .25rem;
+    right: .25rem;
+    border-radius: 50%;
+    width: .65rem;
+    height: .65rem;
+    background-color: #ff9800;
+}
+.security-am .am-monitor__indicator-mobile {
+    background-color: #dc3545;
+}
+
 .am-button .am-monitor__count {
     display: inline-block;
     display: inline-flex;
@@ -142,4 +156,13 @@
 .am-container .am-list .alert-danger a {
     color: #a94442;
     color: var(--alert-danger-text-color);
+}
+
+@media screen and (max-width: 768px) {
+    .am-button .am-monitor__indicator-mobile {
+        display: block;
+    }
+    .am-button .am-monitor__count {
+        display: none;
+    }
 }
