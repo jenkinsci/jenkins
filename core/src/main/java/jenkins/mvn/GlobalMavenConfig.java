@@ -11,7 +11,7 @@ import org.jenkinsci.Symbol;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 //as close as it gets to the global Maven Project configuration
-@Extension(ordinal = 50) @Symbol("maven")
+@Extension(ordinal = 50) @Symbol("mavenGlobalConfig")
 public class GlobalMavenConfig extends GlobalConfiguration  implements PersistentDescriptor {
     private SettingsProvider settingsProvider;
     private GlobalSettingsProvider globalSettingsProvider;
