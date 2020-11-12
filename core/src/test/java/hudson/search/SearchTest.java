@@ -39,7 +39,6 @@ import org.junit.Test;
 public class SearchTest {
 
     @Test
-    @SuppressWarnings("deprecation")
     public void findAndSuggest() {
         SearchIndex si = new SearchIndexBuilder()
             .add("abc-def-ghi","abc def ghi")

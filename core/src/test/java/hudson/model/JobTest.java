@@ -22,7 +22,6 @@ import hudson.Platform;
 @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class JobTest {
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testSetDisplayName() throws Exception {
        final String displayName = "testSetDisplayName";
@@ -35,7 +34,6 @@ public class JobTest {
        assertEquals(displayName, j.getDisplayName());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testSetDisplayNameZeroLength() throws Exception {
         StubJob j = new StubJob();

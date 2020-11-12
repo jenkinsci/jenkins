@@ -52,7 +52,7 @@ public class RunTest {
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-15816")
-    @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     public void timezoneOfID() throws Exception {
         TimeZone origTZ = TimeZone.getDefault();

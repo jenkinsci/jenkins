@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
 
 public class DisplayNameListenerTest {
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testOnCopied() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();
@@ -47,7 +46,6 @@ public class DisplayNameListenerTest {
         assertEquals(dest.getName(), dest.getDisplayName());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testOnRenamedOldNameEqualsDisplayName() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();
@@ -62,7 +60,6 @@ public class DisplayNameListenerTest {
         assertEquals(newName, src.getDisplayName());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testOnRenamedOldNameNotEqualDisplayName() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();

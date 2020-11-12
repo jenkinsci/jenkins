@@ -54,7 +54,6 @@ public class CLIActionTest {
     private ExecutorService pool;
 
     @Test
-    @SuppressWarnings("deprecation")
     @org.jvnet.hudson.test.recipes.PresetData(org.jvnet.hudson.test.recipes.PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Issue("SECURITY-192")
     public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
