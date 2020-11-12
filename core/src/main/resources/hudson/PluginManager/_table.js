@@ -17,7 +17,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
             // only on available tab
             if (pluginsTable.dataset.page === 'available') {
-                view.availablePlugins(e.value.toLowerCase().trim(), 20, function (plugins) {
+                view.availablePlugins(e.value.toLowerCase().trim(), 50, function (plugins) {
                     var availablePlugins = JSON.parse(plugins.responseObject());
 
                     var tbody = pluginsTable.querySelector('tbody');

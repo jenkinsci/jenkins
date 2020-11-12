@@ -1014,9 +1014,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         plugin.excerpt.toLowerCase().contains(lowerSearchQuery) ||
                         Arrays.asList(plugin.categories).contains(searchQuery) ||
                         Arrays.stream(plugin.categories)
-                            .filter(UpdateCenter::isNonMetaLabel)
                             .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> category.toLowerCase().contains(searchQuery));
+                            .anyMatch(category -> category.toLowerCase().contains(searchQuery)) ||
+                        plugin.hasWarnings() && lowerSearchQuery.equals("warning:");
                 })
                 .limit(limit)
                 .map(plugin -> {
