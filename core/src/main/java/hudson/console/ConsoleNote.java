@@ -23,6 +23,7 @@
  */
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionPoint;
 import hudson.Functions;
 import hudson.MarkupText;
@@ -31,8 +32,6 @@ import jenkins.model.Jenkins;
 import hudson.model.Run;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.IOUtils;
-import hudson.util.UnbufferedBase64InputStream;
-import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.tools.ant.BuildListener;
 
@@ -47,6 +46,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import com.jcraft.jzlib.GZIPInputStream;
@@ -203,7 +203,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
         ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
 
-        try (DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2, true, -1, null))) {
+        try (DataOutputStream dos = new DataOutputStream(Base64.getEncoder().wrap(buf2))) {
             buf2.write(PREAMBLE);
             if (JenkinsJVM.isJenkinsJVM()) { // else we are in another JVM and cannot sign; result will be ignored unless INSECURE
                 byte[] mac = MAC.mac(buf.toByteArray());
@@ -239,7 +239,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             if (!Arrays.equals(preamble,PREAMBLE))
                 return null;    // not a valid preamble
 
-            DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
+            DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
             int macSz = - decoded.readInt();
             byte[] mac;
             int sz;
@@ -270,17 +270,23 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 }
             }
 
-            Jenkins jenkins = Jenkins.get();
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
+
             try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(new ByteArrayInputStream(buf)),
                     jenkins != null ? jenkins.pluginManager.uberClassLoader : ConsoleNote.class.getClassLoader(),
                     ClassFilter.DEFAULT)) {
-                return (ConsoleNote) ois.readObject();
+                return getConsoleNote(ois);
             }
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.
             // package that up as IOException so that the caller won't fatally die.
             throw new IOException(e);
         }
+    }
+
+    @SuppressFBWarnings(value = "OBJECT_DESERIALIZATION", justification = "Deserialization is protected by logic.")
+    private static ConsoleNote getConsoleNote(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        return (ConsoleNote) ois.readObject();
     }
 
     /**
@@ -292,7 +298,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         if (!Arrays.equals(preamble,PREAMBLE))
             return;    // not a valid preamble
 
-        DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
+        DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
         int macSz = - decoded.readInt();
         if (macSz > 0) { // new format
             IOUtils.skip(decoded, macSz);

@@ -1,16 +1,22 @@
-var $ = require('jquery-detached').getJQuery();
-var page = require('./util/page.js');
-var windowHandle = require('window-handle');
+import $ from 'jquery';
+import windowHandle from 'window-handle';
+import page from './util/page';
+import * as tabBarWidget from './widgets/config/tabbar';
+
 var isScrolling = false;
 var ignoreNextScrollEvent = false;
 var pageHeaderHeight = page.pageHeaderHeight();
 var breadcrumbBarHeight = page.breadcrumbBarHeight();
 
 // Some stuff useful for testing.
-exports.tabbars = [];
-exports.scrollspeed = 500;
+export var tabbars = [];
+export var scrollspeed = 500;
+// Used to set scrollspeed from the the test suite
+export function setScrollspeed(newScrollspeed) {
+    scrollspeed = newScrollspeed;
+}
 var eventListeners = [];
-exports.on = function(listener) {
+export var on = function(listener) {
     eventListeners.push(listener);
 };
 function notify(event) {
@@ -20,10 +26,8 @@ function notify(event) {
 }
 
 $(function() {
-    var tabBarWidget = require('./widgets/config/tabbar.js');
-
     tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
-        exports.tabbars.push(tabBar);
+        tabbars.push(tabBar);
 
         tabBarWidget.addFinderToggle(tabBar);
         tabBar.onShowSection(function() {
@@ -40,6 +44,12 @@ $(function() {
         page.onWinScroll(function () {
             stickTabbar(tabBar);
         });
+
+        // Manually trigger a repaint, otherwise Folder forms will not position
+        // the buttons correctly. This is caused by upgrading jQuery to 3.5.x,
+        // and probably has something to do with event listeners running in
+        // different order.
+        layoutUpdateCallback.call()
     }, {trackSectionVisibility: true});
 });
 
@@ -50,7 +60,7 @@ function scrollTo(section, tabBar) {
     isScrolling = true;
     $('html,body').animate({
         scrollTop: scrollTop
-    }, exports.scrollspeed, function() {
+    }, scrollspeed, function() {
         if (isScrolling) {
             notify({
                 type: 'click_scrollto',
@@ -87,7 +97,7 @@ function autoActivateTabs(tabBar) {
         if (!section.isVisible()) {
             return;
         }
-        
+
         // each section enters the viewport at its distance down the page, less the height of
         // the toolbar, which hangs down the page. Or it is zero if the section doesn't
         // match or was removed...

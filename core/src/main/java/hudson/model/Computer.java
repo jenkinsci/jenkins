@@ -79,6 +79,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -91,8 +92,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 
 import java.io.File;
@@ -117,9 +118,9 @@ import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -150,7 +151,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
@@ -193,6 +194,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected transient List<Action> transientActions;
 
     protected final Object statusChangeLock = new Object();
+
+    private final Object logDirLock = new String("logDirLock");
 
     /**
      * Keeps track of stack traces to track the termination requests for this computer.
@@ -274,7 +277,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
-    public void addAction(@Nonnull Action a) {
+    public void addAction(@NonNull Action a) {
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
@@ -289,7 +292,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #getLogDir()
      * @see #relocateOldLogs()
      */
-    public @Nonnull File getLogFile() {
+    public @NonNull File getLogFile() {
         return new File(getLogDir(),"slave.log");
     }
 
@@ -300,12 +303,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @since 1.613
      */
-    protected @Nonnull File getLogDir() {
+    protected @NonNull File getLogDir() {
         File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
-        try {
-            IOUtils.mkdirs(dir);
-        } catch (IOException x) {
-            LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
+        synchronized (logDirLock) {
+            try {
+                IOUtils.mkdirs(dir);
+            } catch (IOException x) {
+                LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
+            }
         }
         return dir;
     }
@@ -328,7 +333,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText<Computer> getLogText() {
-        checkPermission(CONNECT);
+        checkAnyPermission(CONNECT, EXTENDED_READ);
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
@@ -562,7 +567,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns {@link Node#getNodeName() the name of the node}.
      */
-    public @Nonnull String getName() {
+    public @NonNull String getName() {
         return nodeName != null ? nodeName : "";
     }
 
@@ -762,7 +767,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @Exported
-    @Override public @Nonnull String getDisplayName() {
+    @Override public @NonNull String getDisplayName() {
         return nodeName;
     }
 
@@ -777,7 +782,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.EMPTY_SET;
+        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -785,7 +790,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.EMPTY_LIST;
+        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
@@ -1069,13 +1074,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns the {@link Node} description for this computer
+     * Returns the {@link Node} description for this computer. Empty String if the {@link Node} is {@code null}.
      */
     @Restricted(DoNotUse.class)
     @Exported
-    public @Nonnull String getDescription() {
+    public @NonNull String getDescription() {
         Node node = getNode();
-        return (node != null) ? node.getNodeDescription() : null;
+        return (node != null) ? node.getNodeDescription() : "";
     }
 
 
@@ -1196,7 +1201,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see ProcStarter#envs(Map)
      * @since 1.489
      */
-    public @Nonnull EnvVars buildEnvironment(@Nonnull TaskListener listener) throws IOException, InterruptedException {
+    public @NonNull EnvVars buildEnvironment(@NonNull TaskListener listener) throws IOException, InterruptedException {
         EnvVars env = new EnvVars();
 
         Node node = getNode();
@@ -1361,23 +1366,43 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Executors.newCachedThreadPool(
                 new ExceptionCatchingThreadFactory(
                     new NamingThreadFactory(
-                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM));
+                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM2));
 
 //
 //
 // UI
 //
 //
+    @Restricted(DoNotUse.class)
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", getBuilds());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds());
     }
 
+    @Restricted(DoNotUse.class)
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", getBuilds().failureOnly());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly());
     }
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName() + suffix, getUrl(),
-                runs.newBuilds(), Run.FEED_ADAPTER, req, rsp);
+
+    /**
+     * Retrieve the RSS feed for the last build for each project executed in this computer.
+     * Only the information from {@link AbstractProject} is displayed since there isn't a proper API to gather
+     * information about the node where the builds are executed for other sorts of projects such as Pipeline
+     * @since 2.215
+     */
+    @Restricted(DoNotUse.class)
+    public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        final List<Run> lastBuilds = new ArrayList<>();
+        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
+            if (p.getLastBuild() != null) {
+                for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+                    if (b.getBuiltOn() == getNode()) {
+                        lastBuilds.add(b);
+                        break;
+                    }
+                }
+            }
+        }
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds));
     }
 
     @RequirePOST
@@ -1571,6 +1596,21 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         getLogText().doProgressText(req, rsp);
     }
 
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            Jenkins.get().checkPermission(Jenkins.READ);
+        }
+        return this;
+    }
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
+
     /**
      * Gets the current {@link Computer} that the build is running.
      * This method only works when called during a build, such as by
@@ -1590,7 +1630,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
      * @see hudson.model.Node#isAcceptingTasks()
      */
-    @OverridingMethodsMustInvokeSuper
+    @OverrideMustInvoke
     public boolean isAcceptingTasks() {
         final Node node = getNode();
         return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());
@@ -1662,31 +1702,31 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Restricted(NoExternalUse.class)
     public static class DisplayExecutor implements ModelObject {
 
-        @Nonnull
+        @NonNull
         private final String displayName;
-        @Nonnull
+        @NonNull
         private final String url;
-        @Nonnull
+        @NonNull
         private final Executor executor;
 
-        public DisplayExecutor(@Nonnull String displayName, @Nonnull String url, @Nonnull Executor executor) {
+        public DisplayExecutor(@NonNull String displayName, @NonNull String url, @NonNull Executor executor) {
             this.displayName = displayName;
             this.url = url;
             this.executor = executor;
         }
 
         @Override
-        @Nonnull
+        @NonNull
         public String getDisplayName() {
             return displayName;
         }
 
-        @Nonnull
+        @NonNull
         public String getUrl() {
             return url;
         }
 
-        @Nonnull
+        @NonNull
         public Executor getExecutor() {
             return executor;
         }
@@ -1711,11 +1751,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
             DisplayExecutor that = (DisplayExecutor) o;
 
-            if (!executor.equals(that.executor)) {
-                return false;
-            }
-
-            return true;
+            return executor.equals(that.executor);
         }
 
         @Extension(ordinal = Double.MAX_VALUE)
@@ -1767,6 +1803,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static final Permission[] EXTENDED_READ_AND_CONNECT =
+            new Permission[] { EXTENDED_READ, CONNECT };
 
     // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
     // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,

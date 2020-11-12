@@ -1,10 +1,12 @@
+@import '../../../less/abstracts/theme.less';
+
 #add-item-panel {
 
   form > .header {
     position: relative;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--input-border);
     border-bottom: none;
-    background: #eeeeee;
+    background: var(--light-bg-color);
     -webkit-border-top-left-radius: 3px;
     -moz-border-top-left-radius: 3px;
     border-top-left-radius: 3px;
@@ -16,9 +18,9 @@
 
   form > .footer {
     position: relative;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--input-border);
     border-top: none;
-    background: #eeeeee;
+    background: var(--light-bg-color);
     height: 110px;
 
     .btn-decorator {
@@ -27,8 +29,8 @@
       padding: 20px 30px;
       width: auto;
       border-top-right-radius: 10px;
-      border: 1px solid #aaccbb;
-      background: rgba(245, 249, 239, 0.75);
+      border: 1px solid var(--add-item-btn-decorator-border-color);
+      background: var(--add-item-btn-decorator-bg-color);
       text-align: center;
       z-index: 10;
 
@@ -36,38 +38,6 @@
         width: auto;
         min-width: auto;
         margin-right: 0px;
-      }
-
-      button[type=submit] {
-        padding: 5px 20px;
-        background-color: rgb(204, 221, 238);
-        border-color: rgb(102, 153, 204);
-        border-radius: 3px;
-        border-width: 1px;
-        border-style: solid;
-        color: rgb(80, 80, 80);
-        font-weight: bold;
-        font-size: 12px;
-        line-height: 27px;
-      }
-
-      button[type=submit]:hover:not(.disabled), button[type=submit]:focus:not(.disabled) {
-        background-color: rgb(68, 119, 136);
-        border-color: rgb(51, 85, 102);
-        color: rgb(238, 238, 238);
-        cursor: pointer;
-      }
-
-      button[type=submit]:active:not(.disabled){        
-        box-shadow: inset 0px 1px 6px 2px #1b2b33;
-      }
-
-      button[type=submit].disabled {
-        background-color: #ccc;
-        border-color: #aaa;
-        color: rgb(140, 140, 140);
-        cursor: auto;
-        opacity: 0.75;
       }
     }
   }
@@ -77,22 +47,19 @@
 
     label {
       position: relative;
-      display: block;
-      font-size: 22px;
-      font-weight: bold;
       padding-bottom: 10px;
     }
   }
 
   .item-copy {
     position: relative;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--input-border);
     border-top: none;
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: var(--light-bg-color);
 
     p.description {
-      font-size: 16px;
+      font-size: var(--font-size-base);
       margin-top: 0;
     }
 
@@ -101,7 +68,7 @@
       padding-left: 58px;
 
       /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
-      font-family: Helvetica, Arial, sans-serif !important;
+      font-family: var(--font-family-sans) !important;
 
       input[type=radio] {
         display: none;
@@ -127,7 +94,7 @@
     .input-help {
       color: #666;
       font-style: italic;
-      font-size: 13px;
+      font-size: var(--font-size-sm);
       padding-top: 2px;
     }
 
@@ -149,7 +116,7 @@
     top: 10px;
     height: 48px;
     width: 48px;
-    background: #ffffff;
+    background: var(--input-color);
     border: 1px solid #6699cc;
     border-radius: 50%;
     opacity: .9;
@@ -243,20 +210,17 @@
   }
 
   input {
-    font-size: 1.5em;
-    background-color: #fff;
     padding: 5px 10px;
-    border: 1px solid #999;
     width: 50%;
     min-width: 300px;
   }
 
   .categories {
-    border: 1px solid #cccccc;
-    background-color: #f9f9f9;
+    border: 1px solid var(--input-border);
+    background-color: var(--bright-bg-color);
 
     .category {
-      border-bottom: 1px solid #cccccc;
+      border-bottom: 1px solid var(--input-border);
       padding: 10px;
 
       .header {
@@ -310,16 +274,16 @@
 .j-item-options {
 
   li:hover, li:focus {
-    border-color: #cccccc;
-    background: rgba(255, 255, 255, 0.65);
+    border-color: var(--input-border);
+    background: var(--light-bg-color--hover);
     outline: 0;
   }
 
   li.active {
     cursor: text;
-    background-color: #ffffff;
-    border-color: #6699cc;
-    box-shadow: inset 999rem 0 #ffffff;
+    background-color: var(--background);
+    border-color: var(--input-border);
+    box-shadow: inset 999rem 0 var(--background);
     -webkit-touch-callout: text;
     -webkit-user-select: text;
     -khtml-user-select: text;
@@ -352,9 +316,9 @@
 
     label {
       display: block;
-      font-size: 1.1em;
+      font-size: var(--font-size-base);
       font-weight: bold;
-      color: #000;
+      color: var(--text-color);
       padding-bottom: 5px;
       cursor: pointer;
 

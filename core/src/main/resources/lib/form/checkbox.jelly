@@ -46,6 +46,10 @@ THE SOFTWARE.
     <st:attribute name="negative" />
     <st:attribute name="readonly">
       If set to true, this will take precedence over the onclick attribute and prevent the state of the checkbox from being changed.
+      
+      Note: if you want an actual read only checkbox then add:
+      &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+      See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
     </st:attribute>
     <st:attribute name="field">
       Used for databinding. TBD.
@@ -62,17 +66,17 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: false}"/>
   <j:set var="value" value="${attrs.checked ?: instance[attrs.field] ?: default}"/>
+
   <input type="checkbox"
          name="${name}"
          value="${attrs.value}"
          title="${attrs.tooltip}"
          onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
          checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
+         disabled="${readOnlyMode ? 'true' : null}"
          checked="${value ? 'true' : null}"/>
-  <j:if test="${attrs.title!=null}">
-    <label class="attach-previous"
-           title="${attrs.tooltip}">${attrs.title}</label>
-  </j:if>
+  <label class="attach-previous setting-checkbox ${attrs.title == null ? 'js-checkbox-label-empty' : ''}"
+         title="${attrs.tooltip}">${attrs.title}</label>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

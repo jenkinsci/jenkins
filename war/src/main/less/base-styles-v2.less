@@ -1,0 +1,37 @@
+/**
+  * New base styles, inherited from the layout-commons.css
+  * and style.lcss files
+  */
+
+html {
+  // Ensure that the 1rem size is 16px and scales with the browser zoom
+  // This is needed because bootstrap 3 overrides the font-size when loaded.
+  //
+  // It's set to 16px instead of 100% because using percentages would trigger
+  // known browser bugs where elements with a font-family: monospace declaration
+  // would not respect relative font-size rules.
+  // The downside is that the page does not resize with the browser's font size,
+  // only with the zoom level.
+  font-size: 16px !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@import './abstracts/mixins.less';
+
+@import './base/typography.less';
+@import './base/layout-commons.less';
+@import './base/style.less';
+@import './base/visibility-utils.less';
+@import './base/yui-compatibility.less';
+
+@import './modules/icons.less';
+@import './modules/buttons.less';
+@import './modules/page-header.less';
+@import './modules/page-footer.less';
+@import './modules/side-panel-tasks.less';
+@import './modules/side-panel-widgets.less';
+@import './modules/tabs.less';
+@import './modules/panes-and-bigtable.less';
+@import './modules/manage-jenkins.less';
+@import './modules/content-blocks.less';

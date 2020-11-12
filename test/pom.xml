@@ -2,7 +2,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2018, Sun Microsystems, Inc., Kohsuke Kawaguchi, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,8 @@ THE SOFTWARE.
 
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
-    <artifactId>jenkins-test-parent</artifactId>
+    <artifactId>jenkins-parent</artifactId>
     <version>${revision}${changelist}</version>
-    <relativePath>../test-pom</relativePath>
   </parent>
 
   <artifactId>jenkins-test</artifactId>
@@ -37,4 +36,379 @@ THE SOFTWARE.
   <name>Tests for Jenkins core</name>
   <description>Functional tests for Jenkins core</description>
 
+  <properties>
+    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
+    <mavenDebug>false</mavenDebug>
+    <jacocoSurefireArgs /><!-- empty by default -->
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jenkins-ci.main</groupId>
+        <artifactId>jenkins-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>ant</artifactId>
+        <version>1.11</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <version>${project.version}</version>
+      <type>executable-war</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-test-harness</artifactId>
+      <version>2.68</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-war</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-test-harness-tools</artifactId>
+      <version>2.0</version>
+      <scope>test</scope>
+    </dependency>
+     <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>6.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>maven-plugin</artifactId>
+      <version>2.14</version>
+      <exclusions>
+        <exclusion> <!-- perhaps unnecessary as of JENKINS-35445? -->
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.inject</groupId>
+          <artifactId>guice</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.ant</groupId>
+          <artifactId>ant</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <!-- maven-plugin 2.14 (above) pulls in mailer 1.7, but then HelpCommandTest fails due to moved localized resources -->
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
+      <version>1.23</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>${matrix-auth.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>antisamy-markup-formatter</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>${matrix-project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <version>1.29</version>
+      <!-- TODO define property for this and share with war/pom.xml-->
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
+      <version>1.20</version>
+      <!-- TODO define property for this and share with war/pom.xml-->
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- requireUpperBounds via matrix-project and junit -->
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>script-security</artifactId>
+      <version>1.75</version>
+      <!-- TODO define property for this and share with war/pom.xml-->
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.mock-javamail</groupId>
+      <artifactId>mock-javamail</artifactId>
+      <version>1.7</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.mail</groupId>
+          <artifactId>mail</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>2.2</version>
+    </dependency>
+    <dependency>
+      <!-- for testing JNLP launch. -->
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>netx</artifactId>
+      <version>0.5-hudson-2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <version>2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.9.9</version>
+      <exclusions>
+        <exclusion> <!-- TODO requests 15; apparently works well enough with the 11 we bundle -->
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion> <!-- pick up from Stapler -->
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.geb</groupId>
+      <artifactId>geb-implicit-assertions</artifactId>
+      <version>0.7.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <version>3.19.0-GA</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>3.0.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.objenesis</groupId>
+      <artifactId>objenesis</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <groupId>org.kohsuke.stapler</groupId>
+        <artifactId>maven-stapler-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>old-remoting-for-test</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <!-- we use copy as this is a dependency from outside the reactor -->
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.main</groupId>
+                  <artifactId>remoting</artifactId>
+                  <version>${remoting.minimum.supported.version}</version>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
+                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- version specified in grandparent pom -->
+        <configuration>
+          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+          <systemPropertyVariables>
+              <!-- use AntClassLoader that supports predictable file handle release -->
+              <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
+              <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
+              <buildDirectory>${project.build.directory}</buildDirectory>
+          </systemPropertyVariables>
+          <reuseForks>false</reuseForks>
+          <forkCount>${concurrency}</forkCount>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin> <!-- TODO pending JENKINS-45271 fix, would be best to finish moving MavenModuleSet-specific tests to maven-plugin and delete the test dep here -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <configuration>
+          <rules>
+            <requireUpperBoundDeps>
+              <excludes combine.children="append">
+                <exclude>org.apache.maven:maven-embedder</exclude>
+                <exclude>org.codehaus.plexus:plexus-classworlds</exclude>
+                <exclude>org.apache.maven:maven-core</exclude>
+                <exclude>org.apache.maven:maven-aether-provider</exclude>
+                <exclude>org.codehaus.plexus:plexus-utils</exclude>
+              </excludes>
+            </requireUpperBoundDeps>
+          </rules>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <fork>true</fork>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <!-- Profile, which allows skipping all integration tests -->
+      <id>light-test</id>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
+    <profile>
+      <!-- Profile, which runs only a number of quick integration tests so that the build takes less than 5 minutes -->
+      <id>smoke-test</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <groups>org.jvnet.hudson.test.SmokeTest</groups>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
+        <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
+      </properties>
+    </profile>
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.6.3.201306030806</version>
+            <executions>
+              <!--
+                Prepares the property pointing to the JaCoCo runtime agent which
+                is passed as VM argument when Maven the Surefire plugin is executed.
+              -->
+              <execution>
+                <id>pre-unit-test</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <!-- Sets the path to the file which contains the execution data. -->
+                  <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+                  <propertyName>jacocoSurefireArgs</propertyName>
+                </configuration>
+              </execution>
+              <!--
+                Ensures that the code coverage report for unit tests is created after
+                unit tests have been run.
+              -->
+              <execution>
+                <id>post-unit-test</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <configuration>
+                  <!-- Sets the path to the file which contains the execution data. -->
+                  <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+                  <!-- Sets the output directory for the code coverage report. -->
+                  <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

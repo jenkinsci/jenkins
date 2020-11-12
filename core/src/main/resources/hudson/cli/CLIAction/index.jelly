@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout norefresh="true" permission="${app.READ}">
+  <l:layout permission="${app.READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
       <h1>
@@ -41,7 +41,7 @@ THE SOFTWARE.
       <table>
         <j:forEach items="${h.getCLICommands()}" var="command">
           <tr>
-            <td><a href="command/${command.name}" style="color: black; font-weight: bold">${command.name}</a></td>
+            <td><a href="command/${command.name}">${command.name}</a></td>
             <td>${command.shortDescription}</td>
           </tr>
         </j:forEach>

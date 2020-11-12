@@ -1,10 +1,8 @@
-var jQD = require('../../../util/jquery-ext.js');
-var util = require('./util.js');
-var page = require('../../../util/page.js');
-var ConfigRowGrouping = require('./ConfigRowGrouping.js');
+import { getJQuery } from '../../../util/jquery-ext';
+import page from '../../../util/page.js';
+import { toId } from './util';
+import ConfigRowGrouping from './ConfigRowGrouping';
 var pageHeaderHeight = page.pageHeaderHeight();
-
-module.exports = ConfigSection;
 
 /*
  * =======================================================================================
@@ -15,7 +13,7 @@ function ConfigSection(headerRow, parentCMD) {
     this.headerRow = headerRow;
     this.parentCMD = parentCMD;
     this.title = headerRow.attr('title');
-    this.id = util.toId(this.title);
+    this.id = toId(this.title);
     this.rowGroups = undefined;
     this.activator = undefined;
     this.subSections = [];
@@ -92,7 +90,7 @@ ConfigSection.prototype.getRows = function() {
     var numNewRows = 0;
 
     rows.push(curTr);
-    while(curTr.size() === 1 && !curTr.hasClass('section-header-row')) {
+    while(curTr.length === 1 && !curTr.hasClass('section-header-row')) {
         rows.push(curTr);
         if (!curTr.hasClass(this.id)) {
             numNewRows++;
@@ -149,7 +147,7 @@ ConfigSection.prototype.markRowsAsActive = function() {
 };
 
 ConfigSection.prototype.hasText = function(text) {
-    var $ = jQD.getJQuery();
+    var $ = getJQuery();
     var selector = ":containsci('" + text + "')";
     var sectionRows = this.getRows();
 
@@ -157,7 +155,7 @@ ConfigSection.prototype.hasText = function(text) {
         var row = sectionRows[i1];
         var elementsWithText = $(selector, row);
 
-        if (elementsWithText.size() > 0) {
+        if (elementsWithText.length > 0) {
             return true;
         }
     }
@@ -255,7 +253,7 @@ ConfigSection.prototype.getRowGroupLabels = function() {
 };
 
 ConfigSection.prototype.highlightText = function(text) {
-    var $ = jQD.getJQuery();
+    var $ = getJQuery();
     var selector = ":containsci('" + text + "')";
     var rows = this.getRows();
     
@@ -286,3 +284,5 @@ ConfigSection.prototype.highlightText = function(text) {
         this.subSections[i2].highlightText(text);
     }
 };
+
+export default ConfigSection;

@@ -24,6 +24,9 @@
 package jenkins.security;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -32,30 +35,25 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.apache.commons.lang.ArrayUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.*;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import static java.time.Instant.*;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static java.time.Instant.*;
-import static java.time.temporal.ChronoUnit.MINUTES;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.apache.commons.lang.ArrayUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Root action serving {@link DirectoryBrowserSupport} instances
@@ -143,7 +141,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         }
     }
 
-    public String getRedirectUrl(@Nonnull Token token, @Nonnull String restOfPath) {
+    public String getRedirectUrl(@NonNull Token token, @NonNull String restOfPath) {
         String resourceRootUrl = getResourceRootUrl();
         if (!restOfPath.startsWith("/")) {
             // Unsure whether this can happen -- just be safe here
@@ -165,7 +163,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
      * @return a token that can be used to redirect users to the {@link ResourceDomainRootAction}.
      */
     @CheckForNull
-    public Token getToken(@Nonnull DirectoryBrowserSupport dbs, @Nonnull StaplerRequest req) {
+    public Token getToken(@NonNull DirectoryBrowserSupport dbs, @NonNull StaplerRequest req) {
         // This is the "restOfPath" of the DirectoryBrowserSupport, i.e. the directory/file/pattern "inside" the DBS.
         final String dbsFile = req.getOriginalRestOfPath();
 
@@ -177,8 +175,8 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         String dbsUrl = completeUrl.substring(0, completeUrl.length() - dbsFile.length());
         LOGGER.fine(() -> "Determined DBS URL: " + dbsUrl + " from restOfUrl: " + completeUrl + " and restOfPath: " + dbsFile);
 
-        Authentication authentication = Jenkins.getAuthentication();
-        String authenticationName = authentication == Jenkins.ANONYMOUS ? "" : authentication.getName();
+        Authentication authentication = Jenkins.getAuthentication2();
+        String authenticationName = authentication.equals(Jenkins.ANONYMOUS2) ? "" : authentication.getName();
 
         try {
             return new Token(dbsUrl, authenticationName, Instant.now());
@@ -195,7 +193,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private final String authenticationName;
         private final String browserUrl;
 
-        InternalResourceRequest(@Nonnull String browserUrl, @Nonnull String authenticationName) {
+        InternalResourceRequest(@NonNull String browserUrl, @NonNull String authenticationName) {
             this.browserUrl = browserUrl;
             this.authenticationName = authenticationName;
         }
@@ -207,12 +205,12 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
 
             LOGGER.fine(() -> "Performing a request as authentication: " + authenticationName + " and restOfUrl: " + requestUrlSuffix + " and restOfPath: " + restOfPath);
 
-            Authentication auth = Jenkins.ANONYMOUS;
+            Authentication auth = Jenkins.ANONYMOUS2;
             if (Util.fixEmpty(authenticationName) != null) {
                 User user = User.getById(authenticationName, false);
                 if (user != null) {
                     try {
-                        auth = user.impersonate();
+                        auth = user.impersonate2();
                         LOGGER.fine(() -> "Successfully impersonated " + authenticationName);
                     } catch (UsernameNotFoundException ex) {
                         LOGGER.log(Level.FINE, "Failed to impersonate " + authenticationName, ex);
@@ -222,7 +220,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
                 }
             }
 
-            try (ACLContext ignored = ACL.as(auth)) {
+            try (ACLContext ignored = ACL.as2(auth)) {
                 try {
                     String path = requestUrlSuffix + Arrays.stream(restOfPath.split("[/]")).map(Util::rawEncode).collect(Collectors.joining("/"));
                     Stapler.getCurrent().invoke(req, rsp, Jenkins.get(), path);
@@ -268,7 +266,7 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private Instant timestamp;
 
         @VisibleForTesting
-        Token (@Nonnull String path, @Nullable String username, @Nonnull Instant timestamp) {
+        Token (@NonNull String path, @Nullable String username, @NonNull Instant timestamp) {
             this.path = path;
             this.username = Util.fixNull(username);
             this.timestamp = timestamp;

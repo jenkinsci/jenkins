@@ -1,22 +1,37 @@
+import $ from 'jquery';
+import Handlebars from 'handlebars';
+import jenkins from './util/jenkins';
+import pluginManager from './api/pluginManager';
+import securityConfig from './api/securityConfig';
+import idIfy from './handlebars-helpers/id';
+import { enhanceJQueryWithBootstrap } from './plugin-setup-wizard/bootstrap-detached';
+import errorPanel from './templates/errorPanel.hbs';
+import loadingPanel from './templates/loadingPanel.hbs';
+import welcomePanel from './templates/welcomePanel.hbs';
+import progressPanel from './templates/progressPanel.hbs';
+import pluginSuccessPanel from './templates/successPanel.hbs';
+import pluginSelectionPanel from './templates/pluginSelectionPanel.hbs';
+import setupCompletePanel from './templates/setupCompletePanel.hbs';
+import proxyConfigPanel from './templates/proxyConfigPanel.hbs';
+import firstUserPanel from './templates/firstUserPanel.hbs';
+import configureInstancePanel from './templates/configureInstance.hbs';
+import offlinePanel from './templates/offlinePanel.hbs';
+import pluginSetupWizard from './templates/pluginSetupWizard.hbs';
+import incompleteInstallationPanel from './templates/incompleteInstallationPanel.hbs';
+import pluginSelectList from './templates/pluginSelectList.hbs';
+
 /**
  * Jenkins first-run install wizard
  */
-// Require modules here, make sure they get browserify'd/bundled
-var jquery = require('jquery-detached');
-var bootstrap = require('bootstrap-detached');
-var jenkins = require('./util/jenkins');
-var pluginManager = require('./api/pluginManager');
-var securityConfig = require('./api/securityConfig');
 
-window.zq = jquery.getJQuery();
+Handlebars.registerPartial('pluginSelectList', pluginSelectList);
+
+// TODO: see whether this is actually being used or if it can be removed
+window.zq = $;
 
 // Setup the dialog, exported
 var createPluginSetupWizard = function(appendTarget) {
-	// call getJQuery / getBootstrap within the main function so it will work with tests -- if getJQuery etc is called in the main
-	var $ = jquery.getJQuery();
-	var $bs = bootstrap.getBootstrap();
-
-	var Handlebars = jenkins.initHandlebars();
+	var $bs = enhanceJQueryWithBootstrap($);
 
 	// Necessary handlebars helpers:
 	// returns the plugin count string per category selected vs. available e.g. (5/44)
@@ -103,31 +118,16 @@ var createPluginSetupWizard = function(appendTarget) {
 			return options.fn();
 		}
 	});
-	
-	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
-	var errorPanel = require('./templates/errorPanel.hbs');
-	var loadingPanel = require('./templates/loadingPanel.hbs');
-	var welcomePanel = require('./templates/welcomePanel.hbs');
-	var progressPanel = require('./templates/progressPanel.hbs');
-	var pluginSuccessPanel = require('./templates/successPanel.hbs');
-	var pluginSelectionPanel = require('./templates/pluginSelectionPanel.hbs');
-	var setupCompletePanel = require('./templates/setupCompletePanel.hbs');
-	var proxyConfigPanel = require('./templates/proxyConfigPanel.hbs');
-	var firstUserPanel = require('./templates/firstUserPanel.hbs');
-	var configureInstancePanel = require('./templates/configureInstance.hbs');
-	var offlinePanel = require('./templates/offlinePanel.hbs');
-	var pluginSetupWizard = require('./templates/pluginSetupWizard.hbs');
-	var incompleteInstallationPanel = require('./templates/incompleteInstallationPanel.hbs');
-	var pluginSelectList = require('./templates/pluginSelectList.hbs');
-	
-	Handlebars.registerPartial('pluginSelectList', pluginSelectList);
 
 	// wrap calls with this method to handle generic errors returned by the plugin manager
 	var handleGenericError = function(success) {
 		return function() {
-			if(this.isError) {
-				var errorMessage = this.errorMessage;
-				if(!errorMessage || this.errorMessage === 'timeout') {
+			// Workaround for webpack passing null context to anonymous functions
+			var self = this || window;
+
+			if(self.isError) {
+				var errorMessage = self.errorMessage;
+				if(!errorMessage || self.errorMessage === 'timeout') {
 					errorMessage = translations.installWizard_error_connection;
 				}
 				else {
@@ -136,7 +136,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				setPanel(errorPanel, { errorMessage: errorMessage });
 				return;
 			}
-			success.apply(this, arguments);
+			success.apply(self, arguments);
 		};
 	};
 	
@@ -412,9 +412,9 @@ var createPluginSetupWizard = function(appendTarget) {
 			installPlugins(pluginManager.recommendedPluginNames());
 		});
 	};
-	
+
 	var enableButtonsAfterFrameLoad = function() {
-		$('iframe[src]').load(function() {
+		$('iframe[src]').on('load', function() {
 			$('button').prop({disabled:false});
 		});
 	};
@@ -502,18 +502,18 @@ var createPluginSetupWizard = function(appendTarget) {
 			var events = $._data($c[0], "events");
 			if (!events || !events.scroll) {
 				$c.on('scroll', function() {
-				    if (!$c.data('wasAutoScrolled')) {
-				    	var top = $c[0].scrollHeight - $c.height();
-				        if ($c.scrollTop() === top) {
-				        	// resume auto-scroll
-				        	$c.data('userScrolled', false);
-				        } else {
-				        	// user scrolled up
-					    	$c.data('userScrolled', true);
-				        }
-				    } else {
-				    	$c.data('wasAutoScrolled', false);
-				    }
+					if (!$c.data('wasAutoScrolled')) {
+						var top = $c[0].scrollHeight - $c.height();
+						if ($c.scrollTop() === top) {
+							// resume auto-scroll
+							$c.data('userScrolled', false);
+						} else {
+							// user scrolled up
+							$c.data('userScrolled', true);
+						}
+					} else {
+						$c.data('wasAutoScrolled', false);
+					}
 				});
 			}
 		};
@@ -596,7 +596,7 @@ var createPluginSetupWizard = function(appendTarget) {
 						}
 						$txt.append($div);
 
-						var $itemProgress = $('.selected-plugin[id="installing-' + jenkins.idIfy(j.name) + '"]');
+						var $itemProgress = $('.selected-plugin[id="installing-' + idIfy(j.name) + '"]');
 						if($itemProgress.length > 0 && !$itemProgress.is('.'+state)) {
 							$itemProgress.addClass(state);
 						}
@@ -940,7 +940,19 @@ var createPluginSetupWizard = function(appendTarget) {
 	var skipFirstUser = function() {
 		$('button').prop({disabled:true});
 		firstUserSkipped = true;
-		showConfigureInstance();
+                jenkins.get('/api/json?tree=url', function(data) {
+                    if (data.url) {
+                        // as in InstallState.ConfigureInstance.initializeState
+                        showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
+                    } else {
+                        showConfigureInstance();
+                    }
+                }, {
+                    error: function() {
+                        // give up
+                        showConfigureInstance();
+                    }
+                });
 	};
 	
 	var handleConfigureInstanceResponseSuccess = function (data) {
@@ -1267,4 +1279,4 @@ var createPluginSetupWizard = function(appendTarget) {
 };
 
 // export wizard creation method
-exports.init = createPluginSetupWizard;
+export default { init: createPluginSetupWizard };

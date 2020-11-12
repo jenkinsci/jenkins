@@ -32,7 +32,7 @@ import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 public class SCMListenerTest {
 
     @Issue("JENKINS-23522")
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes"})
     @Test public void onChangeLogParsed() throws Exception {
         SCM scm = Mockito.mock(SCM.class);
         BuildListener bl = Mockito.mock(BuildListener.class);

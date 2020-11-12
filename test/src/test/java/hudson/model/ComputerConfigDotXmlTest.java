@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import hudson.security.ACL;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
 import java.io.ByteArrayOutputStream;
@@ -45,8 +45,6 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,6 +55,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * @author ogondza
@@ -77,7 +77,7 @@ public class ComputerConfigDotXmlTest {
         MockitoAnnotations.initMocks(this);
         computer = spy(rule.createSlave().toComputer());
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        oldSecurityContext = ACL.impersonate(User.get("user").impersonate());
+        oldSecurityContext = ACL.impersonate2(User.get("user").impersonate2());
     }
 
     @After
@@ -86,7 +86,7 @@ public class ComputerConfigDotXmlTest {
         SecurityContextHolder.setContext(oldSecurityContext);
     }
 
-    @Test(expected = AccessDeniedException2.class)
+    @Test(expected = AccessDeniedException3.class)
     public void configXmlGetShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("GET");
@@ -96,7 +96,7 @@ public class ComputerConfigDotXmlTest {
         computer.doConfigDotXml(req, rsp);
     }
 
-    @Test(expected = AccessDeniedException2.class)
+    @Test(expected = AccessDeniedException3.class)
     public void configXmlPostShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("POST");

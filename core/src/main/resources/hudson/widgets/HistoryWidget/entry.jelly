@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  Render a single build history entry indicated by ${build}
+  Render a single build history entry indicated by ${build} (hudson.model.Build)
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
@@ -31,6 +31,9 @@ THE SOFTWARE.
   <j:set var="firstTransientBuildKey" value="${it.widget.firstTransientBuildKey}" />
   <j:set var="transitive" value="${(firstTransientBuildKey!=null and (it.widget.adapter.compare(build,firstTransientBuildKey) ge 0)) ? 'transitive' : null}" />
   <j:set var="link" value="${it.widget.baseUrl}/${build.number}/" />
+  <j:if test="${h.isUserTimeZoneOverride()}">
+    <i:setTimeZone value="${h.getUserTimeZone()}" />
+   </j:if>
   <tr class="build-row ${transitive} single-line" page-entry-id="${pageEntry.entryId}">
     <td class="build-row-cell">
       <div class="pane build-name">
@@ -40,7 +43,11 @@ THE SOFTWARE.
         <a class="tip model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
       </div>
       <div class="pane build-details" time="${build.timestamp.time.time}">
-        <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row">
+        <j:set var="linkTitleAttr" value=""/> 
+        <j:if test="${!build.building}">
+          <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
+        </j:if>
+        <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
           <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
         </a>
         <j:if test="${build.building}">
@@ -67,9 +74,9 @@ THE SOFTWARE.
           </div>
         </j:if>
       </div>
-      <j:if test="${!empty build.description}">
+      <j:if test="${!empty build.truncatedDescription}">
         <div class="pane desc indent-multiline">
-          <j:out value="${app.markupFormatter.translate(build.description)}"/>
+          <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
         </div>
       </j:if>
       <div class="left-bar" />

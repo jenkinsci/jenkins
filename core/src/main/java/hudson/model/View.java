@@ -33,7 +33,6 @@ import hudson.Functions;
 import hudson.Indenter;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
-import hudson.model.labels.LabelAtomPropertyDescriptor;
 import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -55,7 +54,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -194,7 +193,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Gets all the items in this collection in a read-only view.
      */
-    @Nonnull
+    @NonNull
     @Exported(name="jobs")
     public abstract Collection<TopLevelItem> getItems();
 
@@ -245,7 +244,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see #rename(String)
      */
     @Exported(visibility=2,name="name")
-    @Nonnull
+    @NonNull
     public String getViewName() {
         return name;
     }
@@ -322,8 +321,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * Returns all the {@link LabelAtomPropertyDescriptor}s that can be potentially configured
-     * on this label.
+     * Returns all the {@link ViewPropertyDescriptor}s that can be potentially configured
+     * on this view. Returns both {@link ViewPropertyDescriptor}s visible and invisible for user, see
+     * {@link View#getVisiblePropertyDescriptors} to filter invisible one.
      */
     public List<ViewPropertyDescriptor> getApplicablePropertyDescriptors() {
         List<ViewPropertyDescriptor> r = new ArrayList<>();
@@ -332,6 +332,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 r.add(pd);
         }
         return r;
+    }
+
+    /**
+     * @return all the {@link ViewPropertyDescriptor}s that can be potentially configured on this View and are visible
+     * for the user. Use {@link DescriptorVisibilityFilter} to make a View property invisible for users.
+     * @since 2.214
+     */
+    public List<ViewPropertyDescriptor> getVisiblePropertyDescriptors() {
+        return DescriptorVisibilityFilter.apply(this, getApplicablePropertyDescriptors());
     }
 
     public void save() throws IOException {
@@ -375,12 +384,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
     
     /**
-     * Enables or disables automatic refreshes of the view.
-     * By default, automatic refreshes are enabled.
+     * Used to enable or disable automatic refreshes of the view.
+     *
      * @since 1.557
+     *
+     * @deprecated Auto-refresh has been removed
      */
+    @Deprecated
     public boolean isAutomaticRefreshEnabled() {
-        return true;
+        return false;
     }
     
     /**
@@ -1098,7 +1110,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } else {
             ctx = null;
         }
-        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all(Jenkins.getAuthentication(), getOwner().getItemGroup()))) {
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all2(Jenkins.getAuthentication2(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<>();
 
@@ -1134,11 +1146,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " all builds", getBuilds());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
     public void doRssFailed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        rss(req, rsp, " failed builds", getBuilds().failureOnly());
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().failureOnly().newBuilds());
     }
     
     public RunList getBuilds() {
@@ -1147,11 +1159,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
-    }
-
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs) throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName()+ suffix, getUrl(),
-            runs.newBuilds(), Run.FEED_ADAPTER, req, rsp );
     }
 
     public void doRssLatest( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -1163,8 +1170,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 if(lb!=null)    lastBuilds.add(lb);
             }
         }
-        RSS.forwardToRss(getDisplayName()+" last builds only", getUrl(),
-            lastBuilds, Run.FEED_ADAPTER_LATEST, req, rsp );
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
     /**
@@ -1272,7 +1278,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * <strong>NOTE: Historically this method is only ever called from a {@link StaplerRequest}</strong>
      * @return the list of instantiable {@link ViewDescriptor} instances for the current {@link StaplerRequest}
      */
-    @Nonnull
+    @NonNull
     public static List<ViewDescriptor> allInstantiable() {
         List<ViewDescriptor> r = new ArrayList<>();
         StaplerRequest request = Stapler.getCurrentRequest();
@@ -1285,7 +1291,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
         for (ViewDescriptor d : DescriptorVisibilityFilter.apply(owner, all())) {
             if (d.isApplicableIn(owner) && d.isInstantiable()
-                    && owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, d)) {
+                    && owner.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), owner, d)) {
                 r.add(d);
             }
         }

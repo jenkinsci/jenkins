@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
@@ -317,7 +317,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
         }
         
-        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
+        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on an agent
             decorate(con);
         }
 
@@ -380,7 +380,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     private static ProxyConfiguration _get() {
         JenkinsJVM.checkJenkinsJVM();
         // this code could be called between the JVM flag being set and theInstance initialized
-        Jenkins jenkins = Jenkins.get();
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
         return jenkins == null ? null : jenkins.proxy;
     }
 

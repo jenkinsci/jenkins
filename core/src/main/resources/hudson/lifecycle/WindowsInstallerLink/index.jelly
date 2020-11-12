@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <l:layout permission="${app.ADMINISTER}" title="${%Install as Windows Service}">
     <st:include it="${app}" page="sidepanel.jelly" />
     <l:main-panel>
@@ -36,16 +36,14 @@ THE SOFTWARE.
 
           <p>${%installBlurb}</p>
 
-          <form action="doInstall" method="post">
-            <table>
-              <f:entry title="${%Installation Directory}">
-                <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" -->
-              </f:entry>
-              <f:block>
-                <f:submit value="${%Install}" />
-              </f:block>
-            </table>
-          </form>
+          <f:form action="doInstall" method="post" name="install">
+            <f:entry title="${%Installation Directory}">
+              <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" -->
+            </f:entry>
+            <f:block>
+              <f:submit value="${%Install}" />
+            </f:block>
+          </f:form>
         </j:when>
 
         <!-- already installed -->

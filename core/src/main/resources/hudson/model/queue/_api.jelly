@@ -4,7 +4,7 @@
   <h2>Canceling the build of an item in the Queue</h2>
   <p>
     To programmatically cancel the build of an item in the Queue, post to <a href="../cancelItem">this URL</a>.
-    The id of the item to cancel is expected.
+    The id of the item to cancel is expected to be passed as a query parameter named <code>id</code>.
 
     Response will be:
     <ul>

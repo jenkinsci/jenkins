@@ -30,8 +30,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Implements {@link ViewGroup} to be used as a "mix-in".
@@ -47,7 +47,7 @@ import javax.annotation.Nonnull;
  * private ViewsTabBar viewsTabBar;
  * }</pre>
  * <li>
- * Define a transient field and store ViewGroupMixIn subype, then wire up getters and setters:
+ * Define a transient field and store ViewGroupMixIn subtype, then wire up getters and setters:
  * <pre>
  * private transient ViewGroupMixIn = new ViewGroupMixIn() {
  *     List&lt;View&gt; views() { return views; }
@@ -64,7 +64,7 @@ public abstract class ViewGroupMixIn {
     /**
      * Returns all views in the group. This list must be modifiable and concurrently iterable.
      */
-    @Nonnull
+    @NonNull
     protected abstract List<View> views();
 
     /**
@@ -85,17 +85,17 @@ public abstract class ViewGroupMixIn {
         this.owner = owner;
     }
 
-    public void addView(@Nonnull View v) throws IOException {
+    public void addView(@NonNull View v) throws IOException {
         v.owner = owner;
         views().add(v);
         owner.save();
     }
 
-    public boolean canDelete(@Nonnull View view) {
+    public boolean canDelete(@NonNull View view) {
         return !view.isDefault();  // Cannot delete primary view
     }
 
-    public synchronized void deleteView(@Nonnull View view) throws IOException {
+    public synchronized void deleteView(@NonNull View view) throws IOException {
         if (views().size() <= 1)
             throw new IllegalStateException("Cannot delete last view");
         views().remove(view);

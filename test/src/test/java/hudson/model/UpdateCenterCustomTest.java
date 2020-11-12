@@ -26,7 +26,7 @@ package hudson.model;
 
 import javax.servlet.ServletContext;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -74,7 +74,7 @@ public class UpdateCenterCustomTest {
         public String getUpdateCenterClassName() {
             return updateCenterClassName;
         }
-    };
+    }
     
     public static final class CustomUpdateCenter extends UpdateCenter {
 

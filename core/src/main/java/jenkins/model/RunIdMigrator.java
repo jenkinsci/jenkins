@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
@@ -36,6 +37,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -53,9 +55,8 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import org.apache.commons.io.Charsets;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -88,7 +89,7 @@ public final class RunIdMigrator {
      */
     private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<>());
 
-    private @Nonnull Map<String,Integer> idToNumber = EMPTY;
+    private @NonNull Map<String,Integer> idToNumber = EMPTY;
 
     public RunIdMigrator() {}
 
@@ -169,7 +170,7 @@ public final class RunIdMigrator {
 
     private static String getUnmigrationCommandLine(File jenkinsHome) {
         StringBuilder cp = new StringBuilder();
-        for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */Charsets.class, WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
+        for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
             URL location = c.getProtectionDomain().getCodeSource().getLocation();
             String locationS = location.toString();
             if (location.getProtocol().equals("file")) {
@@ -248,7 +249,7 @@ public final class RunIdMigrator {
                     LOGGER.log(WARNING, "found no build.xml in {0}", name);
                     continue;
                 }
-                String xml = FileUtils.readFileToString(buildXml, Charsets.UTF_8);
+                String xml = FileUtils.readFileToString(buildXml, StandardCharsets.UTF_8);
                 Matcher m = NUMBER_ELT.matcher(xml);
                 if (!m.find()) {
                     LOGGER.log(WARNING, "could not find <number> in {0}/build.xml", name);
@@ -259,7 +260,7 @@ public final class RunIdMigrator {
                 xml = m.replaceFirst("  <id>" + name + "</id>" + nl + "  <timestamp>" + timestamp + "</timestamp>" + nl);
                 File newKid = new File(dir, Integer.toString(number));
                 move(kid, newKid);
-                FileUtils.writeStringToFile(new File(newKid, "build.xml"), xml, Charsets.UTF_8);
+                FileUtils.writeStringToFile(new File(newKid, "build.xml"), xml, StandardCharsets.UTF_8);
                 LOGGER.log(FINE, "fully processed {0} → {1}", new Object[] {name, number});
                 idToNumber.put(name, number);
             } catch (Exception x) {
@@ -289,7 +290,7 @@ public final class RunIdMigrator {
      * @param id a nonnumeric ID which may be a valid {@link Run#getId}
      * @return the corresponding {@link Run#number}, or 0 if unknown
      */
-    public synchronized int findNumber(@Nonnull String id) {
+    public synchronized int findNumber(@NonNull String id) {
         Integer number = idToNumber.get(id);
         return number != null ? number : 0;
     }
@@ -313,13 +314,19 @@ public final class RunIdMigrator {
         if (args.length != 1) {
             throw new Exception("pass one parameter, $JENKINS_HOME");
         }
-        File root = new File(args[0]);
+        File root = constructFile(args[0]);
         File jobs = new File(root, "jobs");
         if (!jobs.isDirectory()) {
             throw new FileNotFoundException("no such $JENKINS_HOME " + root);
         }
         new RunIdMigrator().unmigrateJobsDir(jobs);
     }
+
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only invoked from the command line as a standalone utility")
+    private static File constructFile(String arg) {
+        return new File(arg);
+    }
+
     private void unmigrateJobsDir(File jobs) throws Exception {
         File[] jobDirs = jobs.listFiles();
         if (jobDirs == null) {
@@ -372,7 +379,7 @@ public final class RunIdMigrator {
                 System.err.println(buildXml + " did not exist");
                 continue;
             }
-            String xml = FileUtils.readFileToString(buildXml, Charsets.UTF_8);
+            String xml = FileUtils.readFileToString(buildXml, StandardCharsets.UTF_8);
             Matcher m = TIMESTAMP_ELT.matcher(xml);
             if (!m.find()) {
                 System.err.println(buildXml + " did not contain <timestamp> as expected");
@@ -390,7 +397,7 @@ public final class RunIdMigrator {
                 // Post-migration build. We give it a new ID based on its timestamp.
                 id = legacyIdFormatter.format(new Date(timestamp));
             }
-            FileUtils.write(buildXml, xml, Charsets.UTF_8);
+            FileUtils.write(buildXml, xml, StandardCharsets.UTF_8);
             if (!build.renameTo(new File(builds, id))) {
                 System.err.println(build + " could not be renamed");
             }

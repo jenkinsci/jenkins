@@ -2,6 +2,7 @@
  * The MIT License
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2020, CloudBees, Inc
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +24,14 @@
  */
 package hudson;
 
+import hudson.init.Initializer;
 import jenkins.util.SystemProperties;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-import hudson.util.OneShotEvent;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static hudson.init.InitMilestone.COMPLETED;
 
 /**
  * Monitors a UDP multicast broadcast and respond with the location of the Hudson service.
@@ -48,103 +40,22 @@ import java.util.logging.Logger;
  * Useful for auto-discovery of Hudson in the network.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated No longer does anything.
  */
-public class UDPBroadcastThread extends Thread {
-    private final Jenkins jenkins;
+@Deprecated
+@Restricted(NoExternalUse.class)
+public class UDPBroadcastThread {
 
-    public final OneShotEvent ready = new OneShotEvent();
-    private MulticastSocket mcs;
-    private boolean shutdown;
-    static boolean udpHandlingProblem; // for tests
-
-    /**
-     * @deprecated as of 1.416
-     *      Use {@link #UDPBroadcastThread(Jenkins)}
-     */
-    @Deprecated
-    public UDPBroadcastThread(Hudson jenkins) throws IOException {
-        this((Jenkins)jenkins);
-    }
-
-    public UDPBroadcastThread(Jenkins jenkins) throws IOException {
-        super("Jenkins UDP "+PORT+" monitoring thread");
-        this.jenkins = jenkins;
-        mcs = new MulticastSocket(PORT);
-    }
-
-    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-    @Override
-    public void run() {
-        try {
-            mcs.joinGroup(MULTICAST);
-            ready.signal();
-
-            //noinspection InfiniteLoopStatement
-            while(true) {
-                byte[] buf = new byte[2048];
-                DatagramPacket p = new DatagramPacket(buf,buf.length);
-                mcs.receive(p);
-
-                SocketAddress sender = p.getSocketAddress();
-
-                // prepare a response
-                TcpSlaveAgentListener tal = jenkins.getTcpSlaveAgentListener();
-
-                StringBuilder rsp = new StringBuilder("<hudson>");
-                tag(rsp,"version", Jenkins.VERSION);
-                tag(rsp,"url", jenkins.getRootUrl());
-                tag(rsp,"server-id", jenkins.getLegacyInstanceId());
-                tag(rsp,"slave-port",tal==null?null:tal.getPort());
-
-                for (UDPBroadcastFragment f : UDPBroadcastFragment.all())
-                    f.buildFragment(rsp,sender);
-
-                rsp.append("</hudson>");
-
-                byte[] response = rsp.toString().getBytes(StandardCharsets.UTF_8);
-                mcs.send(new DatagramPacket(response,response.length,sender));
-            }
-        } catch (ClosedByInterruptException e) {
-            // shut down
-        } catch (SocketException e) {
-            if (shutdown) { // forcibly closed
-                return;
-            }            // if we failed to listen to UDP, just silently abandon it, as a stack trace
-            // makes people unnecessarily concerned, for a feature that currently does no good.
-            LOGGER.log(Level.INFO, "Cannot listen to UDP port {0}, skipping: {1}", new Object[] {PORT, e});
-            LOGGER.log(Level.FINE, null, e);
-        } catch (IOException e) {
-            if (shutdown)   return; // forcibly closed
-            LOGGER.log(Level.WARNING, "UDP handling problem",e);
-            udpHandlingProblem = true;
-        }
-    }
-
-    private void tag(StringBuilder buf, String tag, Object value) {
-        if(value==null) return;
-        buf.append('<').append(tag).append('>').append(value).append("</").append(tag).append('>');
-    }
-
-    public void shutdown() {
-        shutdown = true;
-        mcs.close();
-        interrupt();
-    }
-
-    public static final int PORT = SystemProperties.getInteger("hudson.udp",33848);
+    // The previous default port was 33848, before the "disabled by default" change
+    public static final int PORT = SystemProperties.getInteger("hudson.udp", -1);
 
     private static final Logger LOGGER = Logger.getLogger(UDPBroadcastThread.class.getName());
 
-    /**
-     * Multicast socket address.
-     */
-    public static InetAddress MULTICAST;
-
-    static {
-        try {
-            MULTICAST = InetAddress.getByAddress(new byte[]{(byte)239, (byte)77, (byte)124, (byte)213});
-        } catch (UnknownHostException e) {
-            throw new Error(e);
+    @Initializer(before=COMPLETED)
+    public static void warn() {
+        if (PORT > 0) {
+            LOGGER.warning("UDP broadcast capability has been removed from Jenkins. More information: https://jenkins.io/redirect/udp-broadcast");
         }
     }
+
 }

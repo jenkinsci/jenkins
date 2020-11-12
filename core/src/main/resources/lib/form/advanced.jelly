@@ -40,23 +40,22 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-	<tr><td/><td/>
-	  <td>
-      <st:adjunct includes="lib.form.advanced.advanced"/>
+	<div class='tr'>
+          <st:adjunct includes="lib.form.advanced.advanced"/>
 
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
               <j:set var="id" value="${h.generateId()}"/>
               <span style="display: none" id="${id}">
-                <l:icon class="icon-notepad icon-md" style="vertical-align: baseline" tooltip="${%customizedFields}"/>
+                <l:icon class="icon-notepad icon-md" tooltip="${%customizedFields}"/>
               </span>
               <st:nbsp />
 	      <input type="button" value="${attrs.title?:'%Advanced'}..." class="advanced-button advancedButton" /><!-- advancedButton is legacy -->
 	    </div>
             <j:new var="customizedFields" className="java.util.TreeSet"/>
-	    <table class="advancedBody"><tbody>
+	    <div class="advancedBody"><div class="tbody">
 	    <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
 	      <d:invokeBody/>
-	    </tbody></table>
+	    </div></div>
             <j:if test="${!customizedFields.isEmpty()}">
               <script>
                   {
@@ -69,7 +68,5 @@ THE SOFTWARE.
                   }
               </script>
             </j:if>
-	  </td>
-	  <td/>
-	</tr>
+	</div>
 </j:jelly>

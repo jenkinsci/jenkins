@@ -23,20 +23,20 @@
  */
 package hudson.security;
 
-import org.apache.commons.jelly.JellyTagException;
-import org.acegisecurity.AcegiSecurityException;
-import org.acegisecurity.ui.ExceptionTranslationFilter;
-
+import java.io.IOException;
 import javax.servlet.Filter;
+import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.FilterChain;
-import java.io.IOException;
+import org.apache.commons.jelly.JellyTagException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 
 /**
- * If {@link AcegiSecurityException} caused {@link JellyTagException},
+ * If a security exception caused {@link JellyTagException},
  * rethrow it accordingly so that {@link ExceptionTranslationFilter}
  * can pick it up and initiate the redirection.
  * 
@@ -51,12 +51,18 @@ public class UnwrapSecurityExceptionFilter implements Filter {
             chain.doFilter(request,response);
         } catch (ServletException e) {
             Throwable t = e.getRootCause();
-            if (t instanceof JellyTagException) {
+            if (t != null && !(t instanceof JellyTagException)) {
+                if (t instanceof ServletException) {
+                    t = ((ServletException) t).getRootCause();
+                } else {
+                    t = t.getCause();
+                }
+            }
+            if (t != null && t instanceof JellyTagException) {
                 JellyTagException jte = (JellyTagException) t;
                 Throwable cause = jte.getCause();
-                if (cause instanceof AcegiSecurityException) {
-                    AcegiSecurityException se = (AcegiSecurityException) cause;
-                    throw new ServletException(se);
+                if (cause instanceof AccessDeniedException || cause instanceof AuthenticationException) {
+                    throw new ServletException(cause);
                 }
             }
             throw e;

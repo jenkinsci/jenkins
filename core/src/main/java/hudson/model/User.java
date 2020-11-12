@@ -26,12 +26,14 @@ package hudson.model;
 
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
@@ -41,12 +43,11 @@ import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
-import hudson.security.UserMayOrMayNotExistException;
+import hudson.security.UserMayOrMayNotExistException2;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,26 +64,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
-import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -94,7 +85,13 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
-import org.springframework.dao.DataAccessException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Represents a user.
@@ -244,7 +241,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return the {@link jenkins.model.IdStrategy} for use with {@link User} instances.
      * @since 1.566
      */
-    @Nonnull
+    @NonNull
     public static IdStrategy idStrategy() {
         Jenkins j = Jenkins.get();
         SecurityRealm realm = j.getSecurityRealm();
@@ -254,7 +251,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return realm.getUserIdStrategy();
     }
 
-    public int compareTo(@Nonnull User that) {
+    public int compareTo(@NonNull User that) {
         return idStrategy().compare(this.id, that.id);
     }
 
@@ -263,11 +260,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return id;
     }
 
-    public @Nonnull String getUrl() {
+    public @NonNull String getUrl() {
         return "user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
-    public @Nonnull String getSearchUrl() {
+    public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
@@ -275,7 +272,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * The URL of the user page.
      */
     @Exported(visibility = 999)
-    public @Nonnull String getAbsoluteUrl() {
+    public @NonNull String getAbsoluteUrl() {
         return Jenkins.get().getRootUrl() + getUrl();
     }
 
@@ -284,7 +281,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is configurable by the user.
      */
     @Exported(visibility = 999)
-    public @Nonnull String getFullName() {
+    public @NonNull String getFullName() {
         return fullName;
     }
 
@@ -321,7 +318,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Updates the user object by adding a property.
      */
-    public synchronized void addProperty(@Nonnull UserProperty p) throws IOException {
+    public synchronized void addProperty(@NonNull UserProperty p) throws IOException {
         UserProperty old = getProperty(p.getClass());
         List<UserProperty> ps = new ArrayList<>(properties);
         if (old != null)
@@ -364,10 +361,23 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * logged in.
      *
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
+     * @since TODO
+     */
+    public @NonNull Authentication impersonate2() throws UsernameNotFoundException {
+        return this.impersonate(this.getUserDetailsForImpersonation2());
+    }
+
+    /**
+     * @deprecated use {@link #impersonate2}
      * @since 1.419
      */
-    public @Nonnull Authentication impersonate() throws UsernameNotFoundException {
-        return this.impersonate(this.getUserDetailsForImpersonation());
+    @Deprecated
+    public @NonNull org.acegisecurity.Authentication impersonate() throws org.acegisecurity.userdetails.UsernameNotFoundException {
+        try {
+            return org.acegisecurity.Authentication.fromSpring(impersonate2());
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
+        }
     }
 
     /**
@@ -378,17 +388,18 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
+     * @since TODO
      */
-    public @Nonnull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
-        ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
-                Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails
+    public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
+        ImpersonatingUserDetailsService2 userDetailsService = new ImpersonatingUserDetailsService2(
+                Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails2
         );
 
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(id);
             LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", id);
             return userDetails;
-        } catch (UserMayOrMayNotExistException e) {
+        } catch (UserMayOrMayNotExistException2 e) {
             LOGGER.log(Level.FINE, "The user {0} may or may not exist in the SecurityRealm, so we provide minimum access", id);
         } catch (UsernameNotFoundException e) {
             if (ALLOW_NON_EXISTENT_USER_TO_LOGIN) {
@@ -397,23 +408,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm", id);
                 throw e;
             }
-        } catch (DataAccessException e) {
-            // seems like it's in the same boat as UserMayOrMayNotExistException
-            LOGGER.log(Level.FINE, "The user {0} retrieval just threw a DataAccess exception with msg = {1}, so we provide minimum access", new Object[]{id, e.getMessage()});
         }
 
         return new LegitimateButUnknownUserDetails(id);
     }
 
     /**
+     * @deprecated use {@link #getUserDetailsForImpersonation2}
+     */
+    @Deprecated
+    public @NonNull org.acegisecurity.userdetails.UserDetails getUserDetailsForImpersonation() throws org.acegisecurity.userdetails.UsernameNotFoundException {
+        try {
+            return org.acegisecurity.userdetails.UserDetails.fromSpring(getUserDetailsForImpersonation2());
+        } catch (AuthenticationException x) {
+            throw org.acegisecurity.AuthenticationException.fromSpring(x);
+        }
+    }
+
+    /**
      * Only used for a legitimate user we have no idea about. We give it only minimum access
      */
-    private static class LegitimateButUnknownUserDetails extends org.acegisecurity.userdetails.User {
+    private static class LegitimateButUnknownUserDetails extends org.springframework.security.core.userdetails.User {
         private LegitimateButUnknownUserDetails(String username) throws IllegalArgumentException {
             super(
                     username, "",
                     true, true, true, true,
-                    new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY}
+                    Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2)
             );
         }
     }
@@ -421,11 +441,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Creates an {@link Authentication} object that represents this user using the given userDetails
      *
-     * @param userDetails Provided by {@link #getUserDetailsForImpersonation()}.
-     * @see #getUserDetailsForImpersonation()
+     * @param userDetails Provided by {@link #getUserDetailsForImpersonation2()}.
+     * @see #getUserDetailsForImpersonation2()
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull Authentication impersonate(@Nonnull UserDetails userDetails) {
+    public @NonNull Authentication impersonate(@NonNull UserDetails userDetails) {
         return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
     }
 
@@ -447,7 +467,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * <p>
      * This is used to avoid null {@link User} instance.
      */
-    public static @Nonnull User getUnknown() {
+    public static @NonNull User getUnknown() {
         return getById(UNKNOWN_USERNAME, true);
     }
 
@@ -483,7 +503,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return An existing or created user. May be {@code null} if a user does not exist and
      * {@code create} is false.
      */
-    public static @Nullable User get(String idOrFullName, boolean create, @Nonnull Map context) {
+    public static @Nullable User get(String idOrFullName, boolean create, @NonNull Map context) {
         if (idOrFullName == null) {
             return null;
         }
@@ -503,7 +523,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return An existing or created user. May be {@code null} if a user does not exist and
      * {@code create} is false.
      */
-    private static @Nullable User getOrCreateById(@Nonnull String id, @Nonnull String fullName, boolean create) {
+    private static @Nullable User getOrCreateById(@NonNull String id, @NonNull String fullName, boolean create) {
         User u = AllUsers.get(id);
         if (u == null && (create || UserIdMapper.getInstance().isMapped(id))) {
             u = new User(id, fullName);
@@ -536,7 +556,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
      */
     @Deprecated
-    public static @Nonnull User get(String idOrFullName) {
+    public static @NonNull User get(String idOrFullName) {
         return getOrCreateByIdOrFullName(idOrFullName);
     }
 
@@ -555,7 +575,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @return User instance. It will be created on-demand.
      * @since 2.91
      */
-    public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
+    public static @NonNull User getOrCreateByIdOrFullName(@NonNull String idOrFullName) {
         return get(idOrFullName, true, Collections.emptyMap());
     }
 
@@ -567,7 +587,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.172
      */
     public static @CheckForNull User current() {
-        return get(Jenkins.getAuthentication());
+        return get2(Jenkins.getAuthentication2());
     }
 
     /**
@@ -576,14 +596,23 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param a the supplied {@link Authentication} .
      * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
-     * @since 1.609
+     * @since TODO
      */
-    public static @CheckForNull User get(@CheckForNull Authentication a) {
+    public static @CheckForNull User get2(@CheckForNull Authentication a) {
         if (a == null || a instanceof AnonymousAuthenticationToken)
             return null;
 
         // Since we already know this is a name, we can just call getOrCreateById with the name directly.
         return getById(a.getName(), true);
+    }
+
+    /**
+     * @deprecated use {@link #get2(Authentication)}
+     * @since 1.609
+     */
+    @Deprecated
+    public static @CheckForNull User get(@CheckForNull org.acegisecurity.Authentication a) {
+        return get2(a != null ? a.toSpring() : null);
     }
 
     /**
@@ -604,7 +633,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets all the users.
      */
-    public static @Nonnull Collection<User> getAll() {
+    public static @NonNull Collection<User> getAll() {
         final IdStrategy strategy = idStrategy();
         ArrayList<User> users = new ArrayList<>(AllUsers.values());
         users.sort((o1, o2) -> strategy.compare(o1.getId(), o2.getId()));
@@ -642,14 +671,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Returns the user name.
      */
-    public @Nonnull String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return getFullName();
     }
 
     /**
      * true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
      */
-    private boolean relatedTo(@Nonnull AbstractBuild<?, ?> b) {
+    private boolean relatedTo(@NonNull AbstractBuild<?, ?> b) {
         if (b.hasParticipant(this)) {
             return true;
         }
@@ -670,7 +699,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
-    public @Nonnull RunList getBuilds() {
+    public @NonNull RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().
                 allItems(Job.class)).filter((Predicate<Run<?, ?>>) r -> r instanceof AbstractBuild && relatedTo((AbstractBuild<?, ?>) r));
     }
@@ -680,16 +709,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @since 1.191
      */
-    public @Nonnull Set<AbstractProject<?, ?>> getProjects() {
+    public @NonNull Set<AbstractProject<?, ?>> getProjects() {
         Set<AbstractProject<?, ?>> r = new HashSet<>();
-        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class))
-            if (p.hasParticipant(this))
-                r.add(p);
+        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class, p -> p.hasParticipant(this)))
+            r.add(p);
         return r;
     }
 
     public @Override String toString() {
-        return fullName;
+        return id;
     }
 
     /**
@@ -861,7 +889,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @RequirePOST
     public void doDoDelete(StaplerRequest req, StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
-        if (idStrategy().equals(id, Jenkins.getAuthentication().getName())) {
+        if (idStrategy().equals(id, Jenkins.getAuthentication2().getName())) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot delete self");
             return;
         }
@@ -872,11 +900,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " all builds", getBuilds(), Run.FEED_ADAPTER);
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (all builds)", getUrl(), getBuilds().newBuilds());
     }
 
     public void doRssFailed(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rss(req, rsp, " regression builds", getBuilds().regressionOnly(), Run.FEED_ADAPTER);
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (failed builds)", getUrl(), getBuilds().regressionOnly());
     }
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
@@ -892,21 +920,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         // historically these have been reported sorted by project name, we switched to the lazy iteration
         // so we only have to sort the sublist of runs rather than the full list of irrelevant projects
         lastBuilds.sort((o1, o2) -> Items.BY_FULL_NAME.compare(o1.getParent(), o2.getParent()));
-        rss(req, rsp, " latest build", RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
-    }
-
-    private void rss(StaplerRequest req, StaplerResponse rsp, String suffix, RunList runs, FeedAdapter adapter)
-            throws IOException, ServletException {
-        RSS.forwardToRss(getDisplayName() + suffix, getUrl(), runs.newBuilds(), adapter, req, rsp);
+        RSS.rss(req, rsp, "Jenkins:" + getDisplayName() + " (latest builds)", getUrl(), RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 
     @Override
-    @Nonnull
+    @NonNull
     public ACL getACL() {
         ACL base = Jenkins.get().getAuthorizationStrategy().getACL(this);
         // always allow a non-anonymous user full control of himself.
-        return ACL.lambda((a, permission) -> (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
-                || base.hasPermission(a, permission));
+        return ACL.lambda2((a, permission) -> (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
+                || base.hasPermission2(a, permission));
     }
 
     /**
@@ -914,32 +937,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public boolean canDelete() {
         final IdStrategy strategy = idStrategy();
-        return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication().getName())
+        return hasPermission(Jenkins.ADMINISTER) && !strategy.equals(id, Jenkins.getAuthentication2().getName())
                 && UserIdMapper.getInstance().isMapped(id);
     }
 
     /**
      * Checks for authorities (groups) associated with this user.
      * If the caller lacks {@link Jenkins#ADMINISTER}, or any problems arise, returns an empty list.
-     * {@link SecurityRealm#AUTHENTICATED_AUTHORITY} and the username, if present, are omitted.
+     * {@link SecurityRealm#AUTHENTICATED_AUTHORITY2} and the username, if present, are omitted.
      *
      * @return a possibly empty list
      * @since 1.498
      */
-    public @Nonnull List<String> getAuthorities() {
+    public @NonNull List<String> getAuthorities() {
         if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return Collections.emptyList();
         }
         List<String> r = new ArrayList<>();
         Authentication authentication;
         try {
-            authentication = impersonate();
+            authentication = impersonate2();
         } catch (UsernameNotFoundException x) {
             LOGGER.log(Level.FINE, "cannot look up authorities for " + id, x);
             return Collections.emptyList();
         }
         for (GrantedAuthority a : authentication.getAuthorities()) {
-            if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY)) {
+            if (a.equals(SecurityRealm.AUTHENTICATED_AUTHORITY2)) {
                 continue;
             }
             String n = a.getAuthority();
@@ -1042,7 +1065,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         private final ConcurrentMap<String, User> byName = new ConcurrentHashMap<>();
 
-        @Initializer(after = InitMilestone.JOB_LOADED)
+        @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
         public static void scanAll() {
             for (String userId : UserIdMapper.getInstance().getConvertedUserIds()) {
                 User user = new User(userId, userId);
@@ -1107,7 +1130,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         public static final String REALM = "realm";
 
         @Override
-        public int compareTo(@Nonnull CanonicalIdResolver o) {
+        public int compareTo(@NonNull CanonicalIdResolver o) {
             // reverse priority order
             return Integer.compare(o.getPriority(), getPriority());
         }
@@ -1154,7 +1177,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * @since 2.93
          */
         @CheckForNull
-        public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
+        public static String resolve(@NonNull String idOrFullName, @NonNull Map<String, ?> context) {
             for (CanonicalIdResolver resolver : CanonicalIdResolver.all()) {
                 String id = resolver.resolveCanonicalId(idOrFullName, context);
                 if (id != null) {
@@ -1219,7 +1242,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         return userDetails.getUsername();
                     } catch (UsernameNotFoundException x) {
                         LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
-                    } catch (DataAccessException | ExecutionException x) {
+                    } catch (ExecutionException x) {
                         LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
                     } finally {
                         resolving.set(false);

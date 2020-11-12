@@ -25,11 +25,12 @@
 package jenkins.security.UpdateSiteWarningsMonitor
 
 def f = namespace(lib.FormTagLib)
+def l = namespace(lib.LayoutTagLib)
 
 def listWarnings(warnings) {
     warnings.each { warning ->
         dd {
-            a(warning.message, href: warning.url, target: "_blank")
+            a(warning.message, href: warning.url, rel: 'noopener noreferrer', target: "_blank")
         }
     }
 }
@@ -39,11 +40,13 @@ def pluginWarnings = my.activePluginWarningsByPlugin
 
 div(class: "alert alert-danger", role: "alert") {
 
-    form(method: "post", action: "${rootURL}/${my.url}/forward") {
-        if (!pluginWarnings.isEmpty()) {
-            f.submit(name: 'fix', value: _("pluginManager.link"))
+    l.isAdmin() {
+        form(method: "post", action: "${rootURL}/${my.url}/forward") {
+            if (!pluginWarnings.isEmpty()) {
+                f.submit(name: 'fix', value: _("pluginManager.link"))
+            }
+            f.submit(name: 'configure', value: _("configureSecurity.link"))
         }
-        f.submit(name: 'configure', value: _("configureSecurity.link"))
     }
 
     text(_("blurb"))
@@ -60,7 +63,7 @@ div(class: "alert alert-danger", role: "alert") {
         dl {
             pluginWarnings.each { plugin, warnings ->
                 dt {
-                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, target: "_blank")
+                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, rel: 'noopener noreferrer', target: "_blank")
                 }
                 listWarnings(warnings)
             }

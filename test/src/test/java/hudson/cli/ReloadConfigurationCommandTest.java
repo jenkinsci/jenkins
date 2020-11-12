@@ -62,9 +62,12 @@ public class ReloadConfigurationCommandTest {
     @Before public void setUp() {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         ReloadConfigurationCommand cmd = new ReloadConfigurationCommand();
-        cmd.setTransportAuth(User.get("user").impersonate()); // TODO https://github.com/jenkinsci/jenkins-test-harness/pull/53 use CLICommandInvoker.asUser
+        cmd.setTransportAuth2(User.get("user").impersonate2()); // TODO https://github.com/jenkinsci/jenkins-test-harness/pull/53 use CLICommandInvoker.asUser
         command = new CLICommandInvoker(j, cmd);
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toAuthenticated()
+                .grant(Jenkins.MANAGE).everywhere().toAuthenticated()
+        );
     }
 
     @Test
@@ -161,7 +164,7 @@ public class ReloadConfigurationCommandTest {
     @Ignore // Until fixed JENKINS-8217
     @Test
     public void reloadDescriptorConfig() throws Exception {
-        Mailer.DescriptorImpl desc = j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).get(0);;
+        Mailer.DescriptorImpl desc = j.jenkins.getExtensionList(Mailer.DescriptorImpl.class).get(0);
         desc.setDefaultSuffix("@oldSuffix");
         desc.save();
 

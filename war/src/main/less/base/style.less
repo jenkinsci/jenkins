@@ -1,0 +1,1669 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+@import '../abstracts/theme.less';
+
+
+/* Panel */
+@media (min-width: 1600px) {
+  body#jenkins.j-hide-left #main-panel {
+    max-width: 75%;
+  }
+}
+
+@media (min-width: 2000px) {
+  body#jenkins.j-hide-left #main-panel {
+    max-width: 85%;
+  }
+}
+
+form {
+  margin: 0;
+}
+
+input,
+textarea,
+select {
+  color: var(--text-color);
+  background-color: var(--input-color);
+  font-family: inherit;
+}
+
+td {
+  vertical-align: top;
+}
+
+dt {
+  font-weight: bold;
+}
+
+.fixed-width {
+  font-family: monospace;
+}
+
+.center {
+  text-align: center;
+}
+
+.middle-align td,
+td.middle-align {
+  vertical-align: middle;
+}
+
+.center-align td,
+td.center-align {
+  text-align: center;
+}
+
+.no-wrap td, td.no-wrap {
+  white-space: nowrap;
+}
+
+#main-table {
+  padding: 0;
+  border-collapse: collapse;
+}
+
+#top-panel {
+  margin-bottom: 3pt;
+  height: 34px;
+  background: url(../../images/topbar.png) repeat-x;
+}
+
+#top-panel a {
+  text-decoration: none;
+}
+
+.skiplink {
+    position: absolute;
+    left: -20000px;
+}
+
+#shutdown-msg {
+    font-weight: bold;
+    color: white;
+    background-color: #ef2929;
+    text-align: center;
+    margin-left: 2em;
+    margin-right: 2em;
+    margin-bottom: 0.5em;
+    padding: 0.5em;
+    -moz-border-radius: 0.5em;
+}
+
+/* #header .login {
+  position: relative;
+  top: 6px;
+  color: white;
+  margin-right: 10px;
+}
+
+#header .login a, #header .login a:visited {
+  color: white;
+  text-decoration: none;
+}
+
+#header .login a:hover {
+    text-decoration: underline;
+    color: #ccc;
+} */
+
+a {
+  .link();
+}
+
+p a {
+  text-decoration: underline;
+}
+
+a.lowkey:link {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.lowkey:hover {
+  text-decoration: underline;
+  color: inherit;
+}
+
+a.lowkey:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* tip - anchors of class info */
+a.tip {
+  position: relative;
+  z-index: 24;
+  text-decoration: underline;
+}
+
+a.tip:hover {
+  z-index: 25;
+}
+
+a.tip span {
+  display: none
+}
+
+a.tip:hover span {
+  display: block;
+  position: absolute;
+  top: 2em;
+  left: 2em;
+  width: 400px;
+  border: 1px solid #bbb;
+  background-color: #fffff0;
+  color: #000;
+  text-align: left
+}
+
+.call-to-action {
+  display: table;
+  margin-bottom: 5px;
+  padding: 10px;
+  background-color: var(--alert-info-bg-color);
+  border-left: 4px solid #577baa;
+  color: var(--call-to-action-text-color);
+}
+
+.call-to-action a,
+.call-to-action a:visited {
+  color: var(--call-to-action-link-color);
+  font-weight: bold;
+  font-size: larger;
+}
+
+img {
+  vertical-align: middle;
+  border: 0;
+}
+
+div.disabled {
+    opacity : 0.4;
+    filter: alpha(opacity=40); /* msie */
+    background-color: #000;
+}
+
+table.tab {
+  border-collapse: collapse;
+}
+
+td.selected_tab {
+  vertical-align: middle;
+  border: 1px #090 solid;
+  background: #fff;
+}
+
+td.tab_filler {
+  background: #fff;
+  border-bottom: 1px #090 solid;
+}
+
+td.tab {
+  vertical-align: middle;
+  border: 1px #090 solid;
+  background: #f0f0f0;
+}
+
+.dashboard td {
+  padding: 4px 4px 4px 4px;
+}
+
+pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    margin: 0;
+}
+
+pre a {
+    word-wrap: break-word;
+}
+
+pre.console {
+  overflow: auto;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+
+  &:after {
+    content: " "; /* Older browser do not support empty content */
+    visibility: hidden;
+    display: block;
+    height: 0;
+    clear: both;
+ }
+}
+
+.setting-leftspace {
+  width: 2em;
+}
+
+.setting-name {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+}
+
+.setting-checkbox {
+  font-weight: 500;
+}
+
+.setting-main {
+  margin-top: 0.25rem;
+  width: 100%; /* try to make this column as big as possible. */
+}
+
+.setting-help {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  width: 16px;
+  vertical-align: middle;
+  float: right;
+}
+
+.setting-no-help {
+  width: 16px;
+}
+
+.setting-input {
+  width: 100%;
+  border-radius: 3px;
+  border: 1px solid var(--input-border);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  padding: 6px;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.setting-description {
+  font-size: var(--font-size-xs);
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.setting-name,
+.setting-main > input,
+.setting-main > textarea {
+  vertical-align: middle;
+  margin-top: 0;
+}
+
+.setting-main > .yui-button {
+  clear: both;
+  float: right;
+}
+
+.expanding-input {
+  display: flex;
+}
+.expanding-input__input {
+  flex: 1;
+}
+.expanding-input__button {
+  flex-shrink: 1;
+}
+.expanding-input__button input {
+  min-width: 0 !important;
+}
+
+/* div that looks like a hyperlink */
+.pseudoLink {
+  cursor: pointer;
+}
+
+.advancedLink {
+  text-align: right;
+}
+
+.advancedBody {
+  display: none;
+}
+
+.scm_info {
+  width: 480px;
+}
+
+.build-keep {
+  font-weight: bold;
+}
+
+.task-header {
+  display: block;
+  border-bottom: 1px #090 solid;
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+}
+
+.jenkins-not-applicable {
+  color: darkgrey;
+  font-style: italic;
+}
+
+.main-table {
+}
+
+.smallfont {
+  font-size: 9px;
+}
+
+#foldertab {
+  padding: 4px 0;
+  margin-left: 0;
+  border-bottom: 1px solid #090;
+  font: bold 12px Helvetica, Arial, sans-serif;
+}
+
+#foldertab li {
+  list-style: none;
+  margin: 0;
+  display: inline;
+}
+
+#foldertab li a {
+  padding: 4px 0.5em;
+  margin-left: 3px;
+  border: 1px solid #090;
+  border-bottom: none;
+  background: #090;
+  text-decoration: none;
+}
+
+#foldertab li a:link { color: white; }
+#foldertab li a:visited { color: white; }
+
+#foldertab li a:hover {
+  color: white;
+  background: #6c0;
+  border-color: #6c0;
+}
+
+#foldertab li a#current {
+  background: white;
+  border-bottom: 1px solid white;
+  color: black;
+}
+
+.changeset-message {
+  border: 1px solid #ccb;
+  background: #eed;
+  padding: 4px;
+  white-space: normal;
+}
+
+.disabledJob {
+  color: gray;
+}
+
+.spinner {
+  padding-left: 32px;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  background-image: url("../../images/spinner.gif");
+  background-repeat: no-repeat;
+  background-position: left;
+}
+
+.spinner-right {
+  padding-right: 32px;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  background-image: url("../../images/spinner.gif");
+  background-repeat: no-repeat;
+  background-position: right;
+}
+
+#login-field {
+    vertical-align: middle;
+    padding-right: 1em;
+    width: 1px;
+}
+
+#login-field SPAN {
+  white-space: nowrap;
+  color: white;
+}
+
+#login-field A {
+    /*
+      link inside login field should be always white.
+      If I set this to inherit, it won't work in IE7
+     */
+    color: white;
+}
+
+div.behavior-loading {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #e4e4e4;
+    text-align: center;
+    // TODO: use a display font, maybe 3rem
+    font-size: 300%;
+    opacity: 0.5;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+}
+
+.config div.behavior-loading{
+    background: rgba(255,255,255,.85);
+    left: 0;
+    width:100%;
+    right: 0;
+    top: 15px;
+    bottom: 0;
+    height: 100%;
+    width: auto;
+    min-height: 100%;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: alpha(opacity=100);
+    font-size: 1.5em;
+    z-index: 99;
+    opacity: 1;
+    color: #999;
+    text-shadow:#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px
+}
+
+.behavior-loading:before {
+  content:' ';
+  display:block;
+  width: 100px;
+  height: 100px;
+  margin: 200px auto 25px;
+  background-color: rgba(0,0,0,.15);
+  border:5px solid rgba(0,0,0,.33);
+  position:relative;
+  z-index:2;
+  border-radius: 100%;
+  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+  animation: sk-scaleout 1.0s infinite ease-in-out;
+  box-shadow:#fff 0 0 0 10px
+}
+
+@-webkit-keyframes sk-scaleout {
+  0% { -webkit-transform: scale(0) }
+  100% {
+    -webkit-transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+@keyframes sk-scaleout {
+  0% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 100% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+LABEL.attach-previous {
+    margin-left: 0.5em;
+}
+
+.bottom-sticker,
+#bottom-sticker {
+    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+}
+.bottom-sticker-inner {
+    background: var(--background);
+    padding: 1em 0;
+}
+
+.top-sticker,
+#top-sticker {
+    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+    z-index: 999;
+}
+.top-sticker-inner {
+    padding:1em;
+}
+.top-sticker-edge {
+    height:16px;
+    background-image: url("../../images/top-sticker-bottom-edge.png");
+    background-repeat: repeat-x;
+}
+.top-sticker.noedge > .top-sticker-edge {
+    display: none;
+}
+
+.top-sticker.noedge > .top-sticker-inner {
+    padding:0;
+}
+
+
+/* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
+.error {
+    color: #CC0000;
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    line-height: 16px;
+    background-image: url("../../images/16x16/error.png");
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.error-inline {
+    color: #CC0000;
+    font-weight: bold;
+}
+
+.warning {
+    color: #C4A000;
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    line-height: 16px;
+    background-image: url("../../images/16x16/warning.png");
+    background-size: 16px 16px;
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.warning-inline {
+    color: #C4A000;
+    font-weight: bold;
+}
+
+.info {
+    color: var(--text-color);
+    font-weight: bold;
+    padding-left: 20px;
+    min-height: 16px;
+    background-image: url("../../images/16x16/go-next.png"); /* TODO: get a better icon */
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.icon16x16 {
+    width: 16px;
+    height: 16px;
+}
+
+.icon24x24 {
+    width: 24px;
+    height: 24px;
+}
+
+.icon32x32 {
+    width: 32px;
+    height: 32px;
+}
+
+/* ====================== help ===================================== */
+
+.help {
+  display: none;  /* hidden until loaded */
+  border: solid #bbb 1px;
+  background-color: var(--help-area-bg-color);
+  padding: 1em;
+  margin-bottom: 1em;
+  word-break: break-word;
+}
+
+.help a {
+  text-decoration: underline;
+}
+
+.help .from-plugin {
+    text-align: right;
+    color: #666;
+}
+
+.help-area {
+  /* this marker class is used by JavaScript to locate the area to display help text. */
+}
+
+.help-button {
+  margin-left: 2px;
+  margin-right: 2ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+.setting-help .help-button {
+  margin: 0;
+}
+.icon-help,
+.svg-icon.icon-help {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+img.icon-help {
+  vertical-align: text-top;
+}
+
+/* ====================== project view tab bar ===================================== */
+#viewList {
+  border: none;
+  margin-bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+}
+#viewList td {
+  padding: 0;
+}
+#viewList td.inactive {
+  border: solid 1px #ccc;
+  border-bottom-color: #bbb;
+}
+#viewList td.inactive:hover {
+  background-color: #777;
+}
+#viewList td.inactive a {
+  text-decoration: none;
+  color: #444;
+}
+#viewList td.inactive a:hover {
+  color: #f1f1f1;
+}
+#viewList td.noleft {
+  border-left: none;
+}
+#viewList td.noright {
+  border-right: none;
+}
+#viewList td.active {
+  border: solid 1px #bbb;
+  padding: 0.5em;
+  border-bottom: none;
+  vertical-align:middle;
+  background-color: rgb(240,240,240);
+  font-weight: bold;
+  white-space: nowrap;
+}
+#viewList td.filler {
+  border: none;
+  border-bottom: solid 1px #bbb;
+  width: 100%;
+  text-align: right;
+}
+#viewList a {
+  display: block;
+  padding: 0.5em;
+  white-space: nowrap;
+}
+
+#projectstatus .header {
+  border-bottom: 1px solid var(--bigtable-header-border-color);
+}
+#projectstatus th {
+  text-align: left;
+  // padding: 7px 0px;
+}
+
+/* ============================ list view entries ======================== */
+div.listview-jobs {
+  max-height:300px;
+  overflow:auto;
+}
+
+/* ============================ parameters form ========================== */
+
+table.parameters {
+  border-collapse: collapse;
+}
+
+table.parameters > tbody > tr:first-child > td {
+  padding-top: 4px;
+}
+
+table.parameters .setting-description {
+  padding-bottom: 4px;
+}
+
+table.parameters > tbody:hover {
+  background-color: var(--table-parameters-bg--hover);
+}
+
+/* ============================ health report hover ========================== */
+
+.healthReport a {
+    text-decoration: none;
+}
+#side-panel .healthReport a {
+  height: 100%;
+}
+
+.healthReport div.healthReportDetails {
+    display: none;
+}
+
+.healthReport:hover,
+.healthReport.hover { /* fix IE6 bug with :hover */
+    background: transparent;
+}
+
+.healthReport:hover div.healthReportDetails,
+.healthReport.hover div.healthReportDetails {
+    display: block;
+    position: absolute;
+    background-color: #ffe;
+    border: 1px solid #bbb;
+    margin-left: 32px; /* move it across a bit */
+    z-index: 26;
+}
+
+.healthReport div.healthReportDetails table {
+    border-collapse: collapse;
+    width: 450px; /* fix IE bug with width */
+}
+
+/* ========================= build history ========================= */
+#buildHistory .healthReport {
+    display: inline;
+    margin-right: 1em;
+}
+
+#buildHistory a:visited {
+  color: fuchsia;
+}
+
+#buildHistory tr.no-wrap td.middle-align {
+    padding: 0;
+}
+
+#buildHistory .desc {
+  position: relative;
+  padding: 0;
+  margin-top: 5px;
+  white-space: normal;
+  opacity: 0.6;
+}
+
+#buildHistory .build-row-cell {
+  position: relative;
+}
+
+#buildHistory .build-rss-links {
+  float: right;
+}
+#buildHistory .build-rss-links a {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.5rem;
+}
+#buildHistory .build-rss-all-icon,
+#buildHistory .build-rss-failed-icon {
+  margin-right: 0.25rem;
+}
+
+
+#buildHistoryPage {
+  position: relative;
+}
+
+#buildHistoryPage .build-search-row td {
+    position: relative;
+}
+#buildHistoryPage .build-search-row .clear {
+    position: absolute;
+    padding: 0 4px;
+    cursor: pointer;
+    top: 4px;
+    right: 6px;
+    opacity: 0.5;
+}
+#buildHistoryPage .build-search-row .clear:hover {
+    background-color: var(--very-light-grey);
+    border: 1px solid var(--medium-grey);
+    padding-right: 3px;
+    border-top-right-radius: 2px;
+}
+#buildHistoryPage .build-search-row input {
+    width: 100%;
+    padding-left: 5px;
+    padding-right: 20px;
+}
+#buildHistoryPage .build-search-row table {
+    width: 100%;
+}
+#buildHistoryPage .build-search-row .build-search-help {
+    width: 20px;
+}
+#buildHistoryPage .build-search-row .icon-help {
+    position: absolute;
+    cursor: pointer;
+    top: 6px;
+}
+
+#buildHistoryPageNav {
+  position: absolute;
+  right: -21px;
+  top: 41px;
+  border: 1px solid;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  visibility: hidden;
+}
+
+#buildHistoryPageNav .nav {
+  width: 16px;
+  height: 16px;
+  background: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+#buildHistoryPageNav.mouseOverSidePanel {
+  visibility: visible;
+  border-color: var(--light-grey) !important;
+}
+#buildHistoryPageNav.mouseOverSidePanelBuildHistory {
+  border-color: var(--medium-grey) !important;
+}
+#buildHistoryPageNav:hover {
+  border-color: var(--medium-grey) !important;
+}
+
+#buildHistoryPageNav .pageOne {
+  background-image: url(../../images/16x16/go_top.png);
+}
+#buildHistoryPageNav .pageUp {
+  background-image: url(../../images/16x16/go_up.png);
+}
+#buildHistoryPageNav .pageDown {
+  background-image: url(../../images/16x16/go_down.png);
+}
+#buildHistoryPageNav .find {
+  background-image: url(../../images/16x16/find.png);
+}
+
+
+.build-row.model-link-active {
+  background: var(--light-grey) !important;
+}
+
+.build-row-cell {
+  font-size: var(--font-size-xs);
+}
+
+.build-row-cell .pane.build-name {
+  width: 25%;
+  font-weight: bold;
+  vertical-align: top;
+}
+.build-row-cell .pane.build-details {
+  width: 50%;
+}
+.build-row-cell .pane.build-controls {
+  width: 25%;
+  text-align: right;
+}
+.build-row-cell .pane.build-details.block {
+  width: 100%;
+}
+
+.pane.build-name a,
+.pane.build-name a:visited {
+  color: var(--pane-link-color);
+  text-decoration: underline;
+}
+
+.pane.build-details a,
+.pane.build-details a:visited {
+  color: var(--pane-link-color--visited);
+  opacity: 0.6;
+  text-decoration: none;
+}
+.pane.build-details a:hover {
+  opacity: 1.0;
+  text-decoration: underline;
+}
+
+/* ================ Element overflow calculation helper styles ================ */
+
+.force-wrap,
+.force-wrap a {
+  white-space: normal !important;
+  overflow: visible !important;
+}
+.force-nowrap,
+.force-nowrap a {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+/* ========================= editable combobox style ========================= */
+.comboBoxList {
+  border: 1px solid #000;
+  overflow: visible;
+  background-color: white;
+  color: black;
+}
+.comboBoxSelectedItem {
+  background-color: Highlight;
+  color: HighlightText;
+}
+.combobox-values {
+  display: none;
+}
+
+
+/* ========================= directory tree ========================= */
+.parentPath {
+  font-size: var(--font-size-base);
+  font-weight: bold;
+}
+
+.dirTree li {
+  list-style: none;
+}
+
+.dirTree .rootIcon {
+  margin-right: 1em;
+}
+
+TABLE.fileList {
+  margin-left: 2em;
+  padding: 0;
+}
+
+TABLE.fileList TD {
+  padding: 0;
+}
+
+TABLE.fileList TD.fileSize {
+  padding-left: 2em;
+  text-align: right;
+  color: #888;
+}
+
+
+
+/* ========================= test result ========================= */
+.result-passed {
+  color: #3465a4;
+}
+
+.result-skipped {
+  color: #ddbb00;
+}
+
+.result-fixed {
+  color: #3465a4;
+  font-weight: bold;
+}
+
+.result-failed {
+  color: #ef2929;
+}
+
+.result-regression {
+  color: #ef2929;
+  font-weight: bold;
+}
+.test-trend-caption {
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: bold;
+}
+
+/* ========================= fingerprint ========================= */
+.md5sum {
+  text-align: right;
+}
+
+.fingerprint-summary-header {
+  font-size: var(--font-size-base);
+  vertical-align: middle;
+}
+
+TABLE.fingerprint-in-build TD {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+
+
+
+/* ========================= plugin manager ========================= */
+#plugins {
+  margin-top: 0;
+  border-top: none;
+}
+
+#plugins.bigtable {
+  // Add this fallback because tables with hidden rows will
+  // not have a bottom border
+  border-bottom: 1px solid var(--bigtable-row-border-color);
+}
+
+#pluginsAdv tr:hover {
+  background-color: inherit;
+}
+
+#plugins tr.already-upgraded {
+  background-color: var(--plugin-manager-bg-color-already-upgraded);
+}
+
+#plugins tr.all-dependents-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
+#plugins tr.has-dependents input,
+#plugins tr.has-disabled-dependency .enable input {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+#plugins tr.has-dependents-but-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
+#plugins tr.has-disabled-dependency .enable input {
+  opacity: 0.4;
+}
+
+#plugins tr.deleted input {
+  visibility: hidden !important;
+}
+
+#plugins .dependent-list,
+#plugins .dependency-list {
+  display: none;
+}
+
+#plugins .enable-state-info,
+#plugins .uninstall-state-info {
+    padding: 5px 20px;
+    max-width: 70%;
+    border: solid 1px var(--warning);
+    border-radius: 3px;
+    text-align: center;
+}
+
+#plugins .enable-state-info {
+    float: left;
+}
+
+#plugins .uninstall-state-info {
+    float: right;
+}
+
+#plugins .plugin-dependency-info .title,
+#plugins .plugin-dependency-info .subtitle {
+    opacity: 0.7;
+}
+#plugins .plugin-dependency-info .title {
+    margin-bottom: 5px;
+    font-size: larger;
+    font-weight: bolder;
+}
+
+#plugins .plugin-dependency-info span {
+    margin: 5px 5px 0px 0px;
+    background-color: var(--primary);
+    display: inline-block;
+    padding: .2em .6em .3em;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--white);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+}
+
+/* ========================= repeatable elements ========================= */
+
+.repeated-chunk {
+    border: 2px dashed transparent;
+    padding-left: 1.5rem;
+}
+
+.repeated-chunk.hover {
+    border-color: var(--medium-grey);
+}
+
+.repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested repeatable elements / 2 deep == */
+.repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/* == nested repeatable elements / 3 deep == */
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
+
+/*
+    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
+    and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
+    when the user does "Add".
+*/
+DIV.to-be-removed { display: none; }
+
+/* ========================= Other form related CSS ========================= */
+
+.form-container {
+  max-width: 100%;
+}
+
+.optionalBlock-container > .form-container,
+.radioBlock-container > .form-container,
+.dropdownList-container {
+  margin-left: 0.25rem;
+  border-left: 2px dashed rgba(0, 0, 0, 0.33);
+  padding-left: 1rem;
+}
+
+.row-set-end { display: none; }
+
+/* ========================= resizable text area ========================= */
+
+TEXTAREA {
+    margin-bottom: 0;
+}
+
+div.textarea-handle {
+    height: 5px;
+    font-size: 0;
+    background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
+    border: 1px solid var(--medium-grey);
+    border-top: none;
+    cursor: s-resize;
+}
+TEXTAREA.rich-editor {
+  visibility: hidden;
+}
+
+/* ========================= hover notification ========================= */
+
+#hoverNotification {
+    visibility:hidden;
+    background-color: white;
+    border: 1px solid black;
+    padding: 0.5em;
+}
+
+/* ========================= D&D support in heterogenous/repeatable lists = */
+
+.hetero-list-container .dd-handle,
+.repeated-container .dd-handle {
+    cursor: move;
+    background-image: url(../../images/grip.png);
+    background-repeat: repeat-y;
+    padding-left: 20px;
+}
+
+.hetero-list-container.with-drag-drop .repeated-chunk,
+.repeated-container.with-drag-drop .repeated-chunk {
+    padding: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 1.5rem;
+}
+.hetero-list-container.with-drag-drop .repeated-chunk .dd-handle,
+.repeated-container.with-drag-drop .repeated-chunk .dd-handle {
+  margin-left: -1.25rem;
+}
+
+
+/* ========================= plugin update center ========================= */
+
+#plugins .excerpt {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: var(--text-color-secondary);
+}
+
+#plugins .excerpt a {
+  text-decoration: underline;
+}
+
+/*
+ * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299,
+ *                  remove once there are no more dependencies
+ */
+#plugins .compatWarning {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #FF0000;
+}
+
+#plugins .securityWarning {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #FF0000;
+}
+
+#pluginsAdv {
+  padding: 0.5rem;
+}
+
+#pluginsAdv section {
+  &:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* ========================= progress bar ========================= */
+
+table.progress-bar {
+  border-collapse: collapse;
+  border: 1px solid #3465a4;
+  height: 6px;
+  width: 100px;
+  clear: none;
+}
+
+table.progress-bar tr.unknown {
+    background-image:url(../../images/progress-unknown.gif);
+}
+
+td.progress-bar-done {
+  background-color: #3465a4;
+}
+
+td.progress-bar-left {
+  background-color: #ffffff;
+}
+
+table.progress-bar.red {
+  border: 1px solid #cc0000;
+}
+
+table.progress-bar.red tr.unknown {
+    background-image:url(../../images/progress-unknown-red.gif);
+}
+table.progress-bar.red td.progress-bar-done {
+  background-color: #cc0000;
+}
+
+/* ========================= notification bar ========================= */
+#notification-bar {
+    width:100%;
+    position:fixed;
+    text-align:center;
+    left:0;
+    font-size: 1.75rem;
+    z-index:1000;
+    border-bottom: 1px solid var(--black);
+    line-height: 3.5rem;
+    height: 3.5rem;
+    display: block;
+    will-change: opacity;
+}
+
+#notification-bar .svg-icon {
+  width: 35px;
+  height: 35px;
+  padding-bottom: 5px
+}
+
+#notification-bar.notif-alert-default {
+  background-color: var(--alert-default-bg-color);
+  border-color: var(--alert-default-border-color);
+  color: var(--alert-default-color);
+  .svg-icon {
+    color: var(--alert-default-icon-color);
+  }
+}
+
+#notification-bar.notif-alert-success {
+  background-color: var(--notification-success-bg-color);
+  border-color: var(--notification-success-border-color);
+  color: var(--notification-success-color);
+  .svg-icon {
+    color: var(--notification-success-icon-color);
+  }
+}
+
+#notification-bar.notif-alert-warn {
+  background-color: var(--notification-warning-bg-color);
+  border-color: var(--notification-warning-border-color);
+  color: var(--notification-warning-color);
+  .svg-icon {
+    color: var(--notification-warning-icon-color);
+  }
+}
+
+#notification-bar.notif-alert-err {
+  background-color: var(--notification-error-bg-color);
+  border-color: var(--notification-error-border-color);
+  color: var(--notification-error-color);
+  .svg-icon {
+    color: var(--notification-error-icon-color);
+  }
+}
+
+#notification-bar.notif-alert-show {
+  -webkit-animation: fadein 350ms ease-out 1 normal forwards;
+  -moz-animation: fadein 350ms ease-out 1 normal forwards;
+  -o-animation: fadein 350ms ease-out 1 normal forwards;
+  -ms-animation: fadein 350ms ease-out 1 normal forwards;
+  animation: fadein 350ms ease-out 1 normal forwards;
+}
+
+#notification-bar.notif-alert-clear {
+  -webkit-animation: fadeout 350ms ease-in 1 normal forwards;
+  -moz-animation: fadeout 350ms ease-in 1 normal forwards;
+  -o-animation: fadeout 350ms ease-in 1 normal forwards;
+  -ms-animation: fadeout 350ms ease-in 1 normal forwards;
+  animation: fadeout 350ms ease-in 1 normal forwards;
+}
+
+@keyframes fadein{
+  from{
+    opacity: 0;
+  }
+  to{
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes fadeout{
+  from{
+    opacity: 1;
+  }
+  to{
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* ========================= YUI dialog ========================= */
+
+/* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
+ to the latest YUI will fix this? */
+.dialog .hd {
+    margin: 0 !important;
+    font-size: var(--font-size-xs) !important;
+}
+
+.dialog .bd {
+    margin: 0 !important;
+}
+
+.dialog .ft {
+    margin: 0 !important;
+}
+
+/* ========================= tags/labels ================== */
+/* tag0 is the least important tag in a tag cloud */
+.tag0 { font-size: 1.00em; }
+.tag1 { font-size: 1.10em; }
+.tag2 { font-size: 1.20em; }
+.tag3 { font-size: 1.30em; }
+.tag4 { font-size: 1.40em; }
+.tag5 { font-size: 1.50em; }
+.tag6 { font-size: 1.60em; }
+.tag7 { font-size: 1.70em; }
+.tag8 { font-size: 1.80em; }
+.tag9 { font-size: 1.90em; }
+
+/* ========================= textarea.jelly ================== */
+
+.textarea-preview-container {
+    text-align:left;
+}
+.textarea-preview {
+    background-color: var(--very-light-grey);
+    padding: 0.5em;
+}
+
+/* ========================= logRecords.jelly ================== */
+
+.logrecord-metadata {
+    font-size: var(--font-size-xs);
+}
+
+.logrecord-metadata-new {
+    color: #8A8;
+}
+
+.logrecord-metadata-old {
+    color: #AAA;
+}
+
+/* ========================= matrix configuration table ================== */
+table#configuration-matrix {
+  border: 1px var(--medium-grey) solid;
+  border-collapse: collapse;
+}
+tr.matrix-row {
+  background-color: var(--bigtable-header-bg);
+  color: var(--bigtable-header-text-color);
+  font-weight: var(--bigtable-header-font-weight);
+}
+td.matrix-header {
+  border: 1px var(--medium-grey) solid;
+  padding: 3px;
+}
+td#matrix-title {
+  padding: 3px;
+}
+td.matrix-leftcolumn {
+  border: 1px var(--medium-grey) solid;
+  font-weight: bold;
+  background: var(--very-light-grey);
+  padding: 3px;
+}
+td.matrix-cell {
+  border: 1px var(--medium-grey) solid;
+  text-align: center;
+}
+
+/* ========================= legend.jelly ================== */
+table#legend-table td {
+  vertical-align: middle;
+}
+
+/* ========================= select.jelly ================== */
+select.select-ajax-pending {
+  padding-left: 1.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  color: transparent;
+  background-image: url(../../images/spinner.gif); /* this is why here and not in an adjunct */
+  background-repeat: no-repeat;
+  background-position: 2px;
+}
+
+/* ========================= Button styles ================= */
+.btn-box {
+  display:block;
+  margin-top:2em
+}
+#disable-project {
+    margin-top: 6px;
+}
+
+.i18n {
+    display: none;
+}
+
+.alert {
+    font-size: var(--font-size-sm);
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert a {
+  color: inherit;
+  text-decoration: underline;
+
+  &:hover,
+  &:focus,
+  &:active {
+    text-decoration: underline;
+  }
+}
+
+.alert-success {
+  color: var(--alert-success-text-color);
+  background-color: var(--alert-success-bg-color);
+  border-color: var(--alert-success-border-color);
+}
+
+.alert-info {
+  color: var(--alert-info-text-color);
+  background-color: var(--alert-info-bg-color);
+  border-color: var(--alert-info-border-color);
+}
+
+.alert-warning {
+    color: var(--alert-warning-text-color);
+    background-color: var(--alert-warning-bg-color);
+    border-color: var(--alert-warning-border-color);
+}
+
+.alert-warning p {
+    color: var(--alert-warning-text-color);
+}
+
+.alert-danger {
+    color: var(--alert-danger-text-color);
+    background-color: var(--alert-danger-bg-color);
+    border-color: var(--alert-danger-border-color);
+}
+
+.alert-danger p {
+    color: var(--alert-danger-text-color);
+}
+
+body.no-decoration #main-panel {
+    margin: 0 auto !important;
+}
+body.no-decoration #page-head,
+body.no-decoration #side-panel,
+body.no-decoration footer {
+    display: none;
+}
+body.no-sticker #bottom-sticker {
+    display: none;
+}
+
+/* see the Icon class for the definition of these CSS classes */
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-lg {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-xlg {
+    width: 48px;
+    height: 48px;
+}
+
+/* -------------------------------------- */
+
+/* --------------- RSS bar -------------- */
+
+#rss-bar {
+    margin: 1em;
+    text-align: right;
+}
+
+#rss-bar .icon-rss {
+    border: 0;
+}
+
+/* -------------------------------------- */
+
+
+/* -------------- SVG icons ------------- */
+
+.svg-icon {
+  display: inline-block;
+  vertical-align: middle;
+
+  /* default dimensions */
+  height: 24px;
+  width: 24px;
+
+  /* default fill fallback */
+  fill: var(--text-color);
+  fill: currentColor;
+}
+
+/* -------------------------------------- */
+
+.tr {
+  margin-top: 0.4em;
+}
+
+/* -------------- Unclassified ---------- */
+
+.spacer {
+  height: 2em;
+}
+
+/* used by elements that are hidden by default but revealed throught JavaScript */
+.default-hidden {
+  display: none;
+}
+
+/* -------------------------------------- */

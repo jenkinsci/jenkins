@@ -23,25 +23,23 @@
  */
 package hudson.security;
 
-import hudson.Functions;
-
 import com.google.common.base.Strings;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.InsufficientAuthenticationException;
-import org.acegisecurity.ui.webapp.AuthenticationProcessingFilterEntryPoint;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Functions;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
 
 /**
  * For anonymous requests to pages that require authentication,
@@ -58,12 +56,17 @@ import java.text.MessageFormat;
  *
  * @author Kohsuke Kawaguchi
  */
-public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilterEntryPoint {
-    @Override
-    public void commence(ServletRequest request, ServletResponse response, AuthenticationException reason) throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse rsp = (HttpServletResponse) response;
+@Restricted(NoExternalUse.class)
+public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    private final String loginFormUrl;
+
+    public HudsonAuthenticationEntryPoint(String loginFormUrl) {
+        this.loginFormUrl = loginFormUrl;
+    }
+
+    @Override
+    public void commence(HttpServletRequest req, HttpServletResponse rsp, AuthenticationException reason) throws IOException, ServletException {
         String requestedWith = req.getHeader("X-Requested-With");
         if("XMLHttpRequest".equals(requestedWith)) {
             // container authentication normally relies on session attribute to
@@ -76,7 +79,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
             if(!Strings.isNullOrEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
-            String loginForm = req.getContextPath()+getLoginFormUrl();
+            String loginForm = req.getContextPath() + loginFormUrl;
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
@@ -85,11 +88,11 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
 
             Functions.advertiseHeaders(rsp);
 
-            AccessDeniedException2 cause = null;
+            AccessDeniedException3 cause = null;
             // report the diagnosis information if possible
             if (reason instanceof InsufficientAuthenticationException) {
-                if (reason.getCause() instanceof AccessDeniedException2) {
-                    cause = (AccessDeniedException2) reason.getCause();
+                if (reason.getCause() instanceof AccessDeniedException3) {
+                    cause = (AccessDeniedException3) reason.getCause();
                     cause.reportAsHeaders(rsp);
                 }
             }
@@ -100,15 +103,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             } catch (IllegalStateException e) {
                 out = rsp.getWriter();
             }
-            out.printf(
-                "<html><head>" +
-                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
-                "<script>window.location.replace('%1$s');</script>" +
-                "</head>" +
-                "<body style='background-color:white; color:white;'>%n" +
-                "%n%n"+
-                "Authentication required%n"+
-                "<!--%n",loginForm);
+            printResponse(loginForm, out);
 
             if (cause!=null)
                 cause.report(out);
@@ -122,5 +117,18 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
                 out.print("                              ");
             out.close();
         }
+    }
+
+    @SuppressFBWarnings(value = "XSS_SERVLET", justification = "Intermediate step for redirecting users to login page.")
+    private void printResponse(String loginForm, PrintWriter out) {
+        out.printf(
+            "<html><head>" +
+            "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+            "<script>window.location.replace('%1$s');</script>" +
+            "</head>" +
+            "<body style='background-color:white; color:white;'>%n" +
+            "%n%n"+
+            "Authentication required%n"+
+            "<!--%n",loginForm);
     }
 }

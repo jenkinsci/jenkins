@@ -51,6 +51,27 @@ import jenkins.util.Timer;
 public abstract class SafeTimerTask extends TimerTask {
 
     /**
+     * Lambda-friendly means of creating a task.
+     * @since 2.216
+     */
+    public static SafeTimerTask of(ExceptionRunnable r) {
+        return new SafeTimerTask() {
+            @Override
+            protected void doRun() throws Exception {
+                r.run();
+            }
+        };
+    }
+    /**
+     * @see #of
+     * @since 2.216
+     */
+    @FunctionalInterface
+    public interface ExceptionRunnable {
+        void run() throws Exception;
+    }
+
+    /**
      * System property to change the location where (tasks) logging should be sent.
      * <p><strong>Beware: changing it while Jenkins is running gives no guarantee logs will be sent to the new location
      * until it is restarted.</strong></p>
@@ -66,7 +87,7 @@ public abstract class SafeTimerTask extends TimerTask {
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             doRun();
         } catch(Throwable t) {
             LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);

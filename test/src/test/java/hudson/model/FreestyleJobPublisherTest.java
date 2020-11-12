@@ -1,8 +1,5 @@
 package hudson.model;
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Result;
 import hudson.model.utils.AbortExceptionPublisher;
 import hudson.model.utils.IOExceptionPublisher;
 import hudson.model.utils.ResultWriterPublisher;
@@ -47,8 +44,7 @@ public class FreestyleJobPublisherTest {
         assertEquals("Build must fail, because we used FalsePublisher", b.getResult(), Result.FAILURE);
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertTrue("Publisher, after publisher with return false status, must see FAILURE status",
-                FileUtils.readFileToString(file).equals(Result.FAILURE.toString()));
+        assertEquals("Publisher, after publisher with return false status, must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
     }
 
     /**
@@ -73,8 +69,7 @@ public class FreestyleJobPublisherTest {
         j.assertLogContains("Threw AbortException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertTrue("Third publisher must see FAILURE status",
-                FileUtils.readFileToString(file).equals(Result.FAILURE.toString()));
+        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
     }
 
     /**
@@ -99,7 +94,6 @@ public class FreestyleJobPublisherTest {
         j.assertLogContains("Threw IOException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertTrue("Third publisher must see FAILURE status",
-                FileUtils.readFileToString(file).equals(Result.FAILURE.toString()));
+        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
     }
 }

@@ -94,8 +94,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
@@ -664,6 +664,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
+    @Exported
     public boolean isDisabled() {
         return disabled;
     }
@@ -1017,7 +1018,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Deprecated
     public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
-        public BecauseOfBuildInProgress(@Nonnull AbstractBuild<?, ?> build) {
+        public BecauseOfBuildInProgress(@NonNull AbstractBuild<?, ?> build) {
             super(build);
         }
     }
@@ -1071,7 +1072,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return new BlockedBecauseOfBuildInProgress(lastBuild);
             } else {
                 // The build has been likely deleted after the isLogUpdated() call.
-                // Another cause may be an API implementation glitсh in the implementation for AbstractProject. 
+                // Another cause may be an API implementation glitch in the implementation for AbstractProject.
                 // Anyway, we should let the code go then.
                 LOGGER.log(Level.FINE, "The last build has been deleted during the non-concurrent cause creation. The build is not blocked anymore");
             }
@@ -1389,7 +1390,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    private PollingResult pollWithWorkspace(TaskListener listener, SCM scm, R lb, @Nonnull FilePath ws, WorkspaceList l) throws InterruptedException, IOException {
+    private PollingResult pollWithWorkspace(TaskListener listener, SCM scm, R lb, @NonNull FilePath ws, WorkspaceList l) throws InterruptedException, IOException {
         // if doing non-concurrent build, acquire a workspace in a way that causes builds to block for this workspace.
         // this prevents multiple workspaces of the same job --- the behavior of Hudson < 1.319.
         //
@@ -1533,7 +1534,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override public Map<TriggerDescriptor,Trigger<?>> getTriggers() {
         return triggers().toMap();
     }
@@ -1911,7 +1911,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         public FormValidation doCheckLabel(@AncestorInPath AbstractProject<?,?> project,
                                            @QueryParameter String value) {
-            return validateLabelExpression(value, project);
+            return LabelExpression.validate(value, project);
         }
 
         /**
@@ -1919,39 +1919,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
          *
          * @param project May be specified to perform project specific validation.
          * @since 1.590
+         * @deprecated Use {@link LabelExpression#validate(String, Item)} instead.
          */
-        public static @Nonnull FormValidation validateLabelExpression(String value, @CheckForNull AbstractProject<?, ?> project) {
-            if (Util.fixEmpty(value)==null)
-                return FormValidation.ok(); // nothing typed yet
-            try {
-                Label.parseExpression(value);
-            } catch (ANTLRException e) {
-                return FormValidation.error(e,
-                        Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
-            }
-            Jenkins j = Jenkins.get();
-            Label l = j.getLabel(value);
-            if (l.isEmpty()) {
-                for (LabelAtom a : l.listAtoms()) {
-                    if (a.isEmpty()) {
-                        LabelAtom nearest = LabelAtom.findNearest(a.getName());
-                        return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch_DidYouMean(a.getName(),nearest.getDisplayName()));
-                    }
-                }
-                return FormValidation.warning(Messages.AbstractProject_AssignedLabelString_NoMatch());
-            }
-            if (project != null) {
-                for (AbstractProject.LabelValidator v : j
-                        .getExtensionList(AbstractProject.LabelValidator.class)) {
-                    FormValidation result = v.check(project, l);
-                    if (!FormValidation.Kind.OK.equals(result.kind)) {
-                        return result;
-                    }
-                }
-            }
-            return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-                    j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
-            );
+        @Deprecated
+        public static @NonNull FormValidation validateLabelExpression(String value, @CheckForNull AbstractProject<?, ?> project) {
+            return LabelExpression.validate(value, project);
         }
 
         public FormValidation doCheckCustomWorkspace(@QueryParameter String customWorkspace){
@@ -1963,13 +1935,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         public AutoCompletionCandidates doAutoCompleteUpstreamProjects(@QueryParameter String value) {
             AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-            List<Job> jobs = Jenkins.get().getItems(Job.class);
-            for (Job job: jobs) {
-                if (job.getFullName().startsWith(value)) {
-                    if (job.hasPermission(Item.READ)) {
-                        candidates.add(job.getFullName());
-                    }
-                }
+            List<TopLevelItem> jobs = Jenkins.get().getItems(j -> j instanceof Job && j.getFullName().startsWith(value));
+            for (TopLevelItem job: jobs) {
+                candidates.add(job.getFullName());
             }
             return candidates;
         }
@@ -1983,63 +1951,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
 
         public AutoCompletionCandidates doAutoCompleteLabel(@QueryParameter String value) {
-            AutoCompletionCandidates c = new AutoCompletionCandidates();
-            Set<Label> labels = Jenkins.get().getLabels();
-            List<String> queries = new AutoCompleteSeeder(value).getSeeds();
-
-            for (String term : queries) {
-                for (Label l : labels) {
-                    if (l.getName().startsWith(term)) {
-                        c.add(l.getName());
-                    }
-                }
-            }
-            return c;
+            return LabelExpression.autoComplete(value);
         }
 
         public List<SCMCheckoutStrategyDescriptor> getApplicableSCMCheckoutStrategyDescriptors(AbstractProject p) {
             return SCMCheckoutStrategyDescriptor._for(p);
-        }
-
-        /**
-        * Utility class for taking the current input value and computing a list
-        * of potential terms to match against the list of defined labels.
-         */
-        static class AutoCompleteSeeder {
-            private String source;
-
-            AutoCompleteSeeder(String source) {
-                this.source = source;
-            }
-
-            List<String> getSeeds() {
-                ArrayList<String> terms = new ArrayList<>();
-                boolean trailingQuote = source.endsWith("\"");
-                boolean leadingQuote = source.startsWith("\"");
-                boolean trailingSpace = source.endsWith(" ");
-
-                if (trailingQuote || (trailingSpace && !leadingQuote)) {
-                    terms.add("");
-                } else {
-                    if (leadingQuote) {
-                        int quote = source.lastIndexOf('"');
-                        if (quote == 0) {
-                            terms.add(source.substring(1));
-                        } else {
-                            terms.add("");
-                        }
-                    } else {
-                        int space = source.lastIndexOf(' ');
-                        if (space > -1) {
-                            terms.add(source.substring(space+1));
-                        } else {
-                            terms.add(source);
-                        }
-                    }
-                }
-
-                return terms;
-            }
         }
     }
 
@@ -2126,17 +2042,48 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * This extension point allows such restrictions.
      *
      * @since 1.540
+     * @deprecated Use {@link jenkins.model.labels.LabelValidator} instead.
      */
+    @Deprecated
     public static abstract class LabelValidator implements ExtensionPoint {
+
         /**
          * Check the use of the label within the specified context.
+         * <p>
+         * Note that "OK" responses (and any text/markup that may be set on them) will be ignored. Only warnings and
+         * errors are taken into account, and aggregated across all validators.
          *
          * @param project the project that wants to restrict itself to the specified label.
          * @param label   the label that the project wants to restrict itself to.
          * @return the {@link FormValidation} result.
          */
-        @Nonnull
-        public abstract FormValidation check(@Nonnull AbstractProject<?, ?> project, @Nonnull Label label);
+        @NonNull
+        public abstract FormValidation check(@NonNull AbstractProject<?, ?> project, @NonNull Label label);
+
+        /**
+         * Validates the use of a label within a particular context.
+         * <p>
+         * Note that "OK" responses (and any text/markup that may be set on them) will be ignored. Only warnings and
+         * errors are taken into account, and aggregated across all validators.
+         * <p>
+         * This method exists to allow plugins to implement an override for it, enabling checking in non-AbstractProject
+         * contexts without needing to update their Jenkins dependency (and using the new
+         * {@link jenkins.model.labels.LabelValidator} instead).
+         *
+         * @param item  The context item to be restricted by the label.
+         * @param label The label that the job wants to restrict itself to.
+         * @return The validation result.
+         *
+         * @since 2.243
+         */
+        @NonNull
+        public FormValidation checkItem(@NonNull Item item, @NonNull Label label) {
+            if (item instanceof AbstractProject<?, ?>) {
+                return this.check((AbstractProject<?, ?>) item, label);
+            }
+            return FormValidation.ok();
+        }
+
     }
 
 }

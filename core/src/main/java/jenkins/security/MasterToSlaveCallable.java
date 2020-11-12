@@ -36,7 +36,7 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
         return ch;
     }
 
-    //TODO: remove once Callable#getOpenChannelOrFail() once Minimaumsupported Remoting version is 3.15 or above
+    //TODO: remove Callable#getOpenChannelOrFail() once minimum supported Remoting version is 3.15 or above
     @Override
     public Channel getOpenChannelOrFail() throws ChannelClosedException {
         final Channel ch = getChannelOrFail();

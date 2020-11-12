@@ -52,7 +52,7 @@ public class DependencyRunner implements Runnable {
     }
 
     public void run() {
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             Set<AbstractProject> topLevelProjects = new HashSet<>();
             // Get all top-level projects
             LOGGER.fine("assembling top level projects");

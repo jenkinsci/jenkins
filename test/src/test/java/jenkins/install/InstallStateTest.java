@@ -27,7 +27,7 @@ import hudson.ExtensionList;
 import jenkins.model.Jenkins;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class InstallStateTest {
     public JenkinsRule j = new JenkinsRule();
     
     @Test
-    public void shouldPefromCorrectConversionForAllNames() {
+    public void shouldPerformCorrectConversionForAllNames() {
         ExtensionList<InstallState> states = InstallState.all();
         for (InstallState state : states) {
             InstallState afterRoundtrip = forName(state.name());

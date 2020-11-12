@@ -1,0 +1,152 @@
+/* ----------- Manage Jenkins page ----------- */
+
+.manage-messages {
+    margin-bottom: 20px;
+}
+
+.manage-messages a,
+.manage-messages a:visited {
+    color: inherit !important;
+    text-decoration: none;
+}
+
+.manage-messages a:hover,
+.manage-messages a:focus {
+    text-decoration: underline;
+}
+
+.manage-messages dl:first-child {
+    margin-top: 0;
+}
+
+.manage-messages dl dt:first-child {
+    margin-top: 0;
+}
+
+.manage-messages dl dt {
+    margin-top: 10px;
+    font-weight: normal;
+}
+
+.manage-messages dl dd {
+    margin-left: 15px;
+}
+
+.manage-messages dl:last-child {
+    margin-bottom: 0;
+}
+
+.manage-messages dl dt::after {
+    content: ": ";
+}
+
+.manage-messages .alert a {
+    text-decoration: underline;
+}
+
+.manage-messages .alert a:hover {
+    text-decoration: underline;
+}
+
+.manage-messages .alert form {
+    position: relative;
+    float: right;
+    margin: -6px 0 0 0 !important;
+}
+
+.manage-messages .alert form span {
+    margin: 0 0 0 4px !important;
+}
+
+.manage-option {
+    border: 1px solid transparent;
+    margin-bottom: 4px;
+
+    &:hover,
+    &:focus-within {
+      border: 1px solid var(--manage-option-border-color);
+    }
+}
+
+.manage-option dl {
+    padding: 0;
+    margin: 0 0 0 62px;
+    min-height: 48px;
+}
+
+.manage-option dl dt {
+    font-size: var(--font-size-base);
+}
+
+.manage-option dl dd {
+    margin-left: 0;
+    line-height: 20px;
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+}
+
+.manage-option a {
+    display: block;
+    padding: 8px;
+    margin: 0;
+    text-decoration: none !important;
+    color: var(--text-color);
+    font-weight: normal;
+    height: 100%;
+
+    &:hover,
+    &:focus {
+      background-color: var(--manage-option-bg-color--hover);
+    }
+
+    &:focus {
+      outline-color: var(--focus);
+    }
+
+    &:active {
+      background-color: var(--manage-option-bg-color--active);
+    }
+}
+
+.manage-option .icon {
+    display: block;
+    float: left;
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+.manage-page__category {
+  &:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.manage-page__row {
+  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 1800px;
+}
+
+.manage-page__column {
+  width: 100%;
+}
+
+@media screen and (min-width: 992px) {
+  .manage-page__column {
+    width: 50%;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .manage-page__column {
+    width: 33.333%;
+  }
+}
+
+@media screen and (min-width: 1800px) {
+  .manage-page__column {
+    width: 25%;
+  }
+}

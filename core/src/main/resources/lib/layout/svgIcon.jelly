@@ -1,0 +1,49 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
+    <st:documentation>
+        <!-- TODO: @since? -->
+
+        Opinionated helper to use icons via &lt;svg> tags. Can be used by passing an href or a body:
+
+        # &lt;l:svgIcon href="/path/to/my/sprite.svg#my-icon" />
+        # &lt;l:svgIcon>&lt;path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z">&lt;/path>&lt;/l:svgIcon>
+
+        <st:attribute name="class">
+            Extra CSS classes passed to the icon. Currently only the 'svg-icon' class is applied by default.
+        </st:attribute>
+
+        <st:attribute name="href">
+            Href of the 'use' tag. Normally path to a sprite plus an icon id
+        </st:attribute>
+
+        <st:attribute name="viewBox">viewbox (default 0 0 24 24)</st:attribute>
+
+        <st:attribute name="focusable">
+            Whether the icon can receive keyboard focus. Possible values 'true' or 'false'
+        </st:attribute>
+
+        <st:attribute name="onclick">onclick handler.</st:attribute>
+        <st:attribute name="style">style</st:attribute>
+        <st:attribute name="tooltip">tooltip</st:attribute>
+        <st:attribute name="ariaHidden">aria-hidden</st:attribute>
+    </st:documentation>
+
+    <svg class="svg-icon ${attrs.class}"
+         viewBox="${attrs.viewBox != null ? attrs.viewBox : '0 0 24 24'}"
+         focusable="${attrs.focusable != null ? attrs.focusable : 'false'}"
+         aria-hidden="${attrs.ariaHidden}"
+         style="${attrs.style}"
+         onclick="${attrs.onclick}"
+         tooltip="${h.xmlEscape(attrs.tooltip ?: '')}">
+
+        <j:choose>
+            <j:when test="${attrs.href != null}">
+                <use href="${attrs.href}"></use>
+            </j:when>
+            <j:otherwise>
+                <d:invokeBody />
+            </j:otherwise>
+        </j:choose>
+    </svg>
+
+</j:jelly>

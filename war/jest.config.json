@@ -1,0 +1,8 @@
+{
+  "transform": {
+      "\\.hbs$": "jest-handlebars",
+      "\\.js$": "babel-jest"
+  },
+  "reporters": ["jest-standard-reporter", "jest-junit"],
+  "roots": ["<rootDir>/src"]
+}

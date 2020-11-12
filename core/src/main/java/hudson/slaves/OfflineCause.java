@@ -33,8 +33,8 @@ import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.Date;
@@ -70,7 +70,7 @@ public abstract class OfflineCause {
      *
      * @since 1.612
      */
-    public final @Nonnull Date getTime() {
+    public final @NonNull Date getTime() {
         return new Date(timestamp);
     }
 
@@ -147,7 +147,7 @@ public abstract class OfflineCause {
         }
 
         private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS.getName(), message));
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message));
             this.userId = userId;
         }
 
@@ -159,7 +159,6 @@ public abstract class OfflineCause {
         }
 
         // Storing the User in a filed was a mistake, switch to userId
-        @SuppressWarnings("deprecation")
         private Object readResolve() throws ObjectStreamException {
             if (user != null) {
                 String id = user.getId();

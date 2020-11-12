@@ -1,7 +1,6 @@
 package hudson.model.queue;
 
 import hudson.model.FreeStyleProject;
-import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.labels.LabelExpression;
@@ -60,7 +59,7 @@ public class MaintainCanTakeStrengtheningTest {
         assertThat(r.getInstance().getQueue().getBuildableItems().get(0).task.getName(), equalTo("theFaultyOne"));
 
         // The new error is shown in the logs
-        assertThat(logging.getMessages(), hasItem(String.format("Exception evaluating if the node '%s' can take the task '%s'", new Object[]{faultyAgent.getDisplayName(), "theFaultyOne"})));
+        assertThat(logging.getMessages(), hasItem(String.format("Exception evaluating if the node '%s' can take the task '%s'", faultyAgent.getDisplayName(), "theFaultyOne")));
     }
 
     /**

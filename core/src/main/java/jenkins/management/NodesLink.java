@@ -26,8 +26,11 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
-import jenkins.management.Messages;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -49,8 +52,20 @@ public class NodesLink extends ManagementLink {
         return Messages.NodesLink_Description();
     }
 
+    @NonNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.READ;
+    }
+
     @Override
     public String getUrlName() {
         return "computer";
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
     }
 }

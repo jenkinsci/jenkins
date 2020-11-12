@@ -40,9 +40,14 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -512,17 +517,40 @@ public class FunctionsTest {
         Stack stack2 = new Stack("p.Exc2", "p.C.method2:27");
         stack1.cause(stack2);
         stack2.cause(stack1);
-        assertPrintThrowable(stack1,
-            "p.Exc1\n" +
-            "\tat p.C.method1(C.java:17)\n" +
-            "Caused by: p.Exc2\n" +
-            "\tat p.C.method2(C.java:27)\n" +
-            "\t[CIRCULAR REFERENCE:p.Exc1]\n",
-            "<cycle to p.Exc1>\n" +
-            "Caused: p.Exc2\n" +
-            "\tat p.C.method2(C.java:27)\n" +
-            "Caused: p.Exc1\n" +
-            "\tat p.C.method1(C.java:17)\n");
+        //Format changed in 11.0.9 / 8.0.272 (JDK-8226809 / JDK-8252444 / JDK-8252489)
+        if ((getVersion().getDigitAt(0) == 11 && getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9"))) ||
+                (getVersion().getDigitAt(0) == 8 && getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272")))) {
+            assertPrintThrowable(stack1,
+                    "p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n" +
+                            "Caused by: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "Caused by: [CIRCULAR REFERENCE: p.Exc1]\n",
+                    "<cycle to p.Exc1>\n" +
+                            "Caused: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "Caused: p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n");
+        } else {
+            assertPrintThrowable(stack1,
+                    "p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n" +
+                            "Caused by: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "\t[CIRCULAR REFERENCE:p.Exc1]\n",
+                    "<cycle to p.Exc1>\n" +
+                            "Caused: p.Exc2\n" +
+                            "\tat p.C.method2(C.java:27)\n" +
+                            "Caused: p.Exc1\n" +
+                            "\tat p.C.method1(C.java:17)\n");
+        }
+    }
+    private static VersionNumber getVersion() {
+        String version = System.getProperty("java.version");
+        if(version.startsWith("1.")) {
+            version = version.substring(2).replace("_", ".");
+        }
+        return new VersionNumber(version);
     }
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
@@ -559,5 +587,4 @@ public class FunctionsTest {
             return this;
         }
     }
-
 }

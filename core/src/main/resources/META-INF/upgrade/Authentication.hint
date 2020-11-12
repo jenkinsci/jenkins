@@ -1,0 +1,4 @@
+$a == hudson.security.ACL.SYSTEM :: $a instanceof org.acegisecurity.Authentication => hudson.security.ACL.SYSTEM.equals($a);;
+$a == jenkins.model.Jenkins.ANONYMOUS :: $a instanceof org.acegisecurity.Authentication => jenkins.model.Jenkins.ANONYMOUS.equals($a);;
+$a == hudson.security.ACL.SYSTEM2 :: $a instanceof org.springframework.security.core.Authentication => hudson.security.ACL.SYSTEM2.equals($a);;
+$a == jenkins.model.Jenkins.ANONYMOUS2 :: $a instanceof org.springframework.security.core.Authentication => jenkins.model.Jenkins.ANONYMOUS2.equals($a);;

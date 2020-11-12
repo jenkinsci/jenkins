@@ -52,10 +52,16 @@ import java.util.concurrent.Callable;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -65,6 +71,7 @@ import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *
@@ -106,7 +113,7 @@ public class NodeTest {
         OfflineCause.UserCause cause;
 
         final User someone = User.get("someone@somewhere.com");
-        ACL.impersonate(someone.impersonate());
+        ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
         cause = (UserCause) computer.getOfflineCause();
@@ -114,7 +121,7 @@ public class NodeTest {
         assertEquals(someone, cause.getUser());
 
         final User root = User.get("root@localhost");
-        ACL.impersonate(root.impersonate());
+        ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
@@ -130,7 +137,7 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         final Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
-        try (ACLContext ctxt = ACL.as(Jenkins.ANONYMOUS)) {
+        try (ACLContext ctxt = ACL.as2(Jenkins.ANONYMOUS2)) {
             computer.doToggleOffline("original message");
         }
 
@@ -140,7 +147,7 @@ public class NodeTest {
 
 
         final User root = User.get("root@localhost");
-        try (ACLContext ctxt = ACL.as(root.impersonate())) {
+        try (ACLContext ctxt = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
         cause = (UserCause) computer.getOfflineCause();
@@ -208,8 +215,8 @@ public class NodeTest {
         assertEquals("Cause of blockage should be reserved label.", message, node.canTake(item2).getShortDescription());
         node.getNodeProperties().add(new NodePropertyImpl());
         notTake = true;
-        assertNotNull("Node should not take project because node property not alow it.", node.canTake(item));
-        assertTrue("Cause of blockage should be bussy label.", node.canTake(item) instanceof CauseOfBlockage.BecauseLabelIsBusy);
+        assertNotNull("Node should not take project because node property does not allow it.", node.canTake(item));
+        assertTrue("Cause of blockage should be busy label.", node.canTake(item) instanceof CauseOfBlockage.BecauseLabelIsBusy);
         User user = User.get("John");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
@@ -220,8 +227,8 @@ public class NodeTest {
         notTake = false;
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
-        message = Messages._Node_LackingBuildPermission(item.authenticate().getName(),node.getNodeName()).toString();
-        assertEquals("Cause of blockage should be bussy label.", message, node.canTake(item).getShortDescription());
+        message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(),node.getNodeName()).toString();
+        assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());
     }
 
     @Test
@@ -246,13 +253,13 @@ public class NodeTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
         User user = realm.createAccount("John Smith","abcdef");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
         auth.add(Computer.CONFIGURE, user.getId());
         assertTrue("Current user should have permission CONFIGURE.", user.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
 
         user = User.get("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));

@@ -23,8 +23,8 @@
  */
 package hudson.slaves;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import jenkins.model.Jenkins;
@@ -35,8 +35,7 @@ import java.io.File;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Kohsuke Kawaguchi

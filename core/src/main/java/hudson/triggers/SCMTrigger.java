@@ -41,11 +41,14 @@ import hudson.model.PersistentDescriptor;
 import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
 import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
+
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
@@ -217,7 +220,7 @@ public class SCMTrigger extends Trigger<Item> {
     public static class DescriptorImpl extends TriggerDescriptor implements PersistentDescriptor {
 
         private static ThreadFactory threadFactory() {
-            return new NamingThreadFactory(Executors.defaultThreadFactory(), "SCMTrigger");
+            return new NamingThreadFactory(new DaemonThreadFactory(), "SCMTrigger");
         }
 
         /**
@@ -557,7 +560,7 @@ public class SCMTrigger extends Trigger<Item> {
             if (actions == null) {
                 additionalActions = new Action[0];
             } else {
-                additionalActions = actions;
+                additionalActions = Arrays.copyOf(actions, actions.length);
             }
         }
         
@@ -683,7 +686,6 @@ public class SCMTrigger extends Trigger<Item> {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private SCMTriggerItem job() {
         return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
     }

@@ -1,0 +1,51 @@
+<p>
+    Jenkins serve molti file creati potenzialmente da utenti non affidabili, come file negli spazi di lavoro o artefatti archiviati.
+    Quando non è definito alcun URL radice risorse, Jenkins servirà tali file con l'intestazione HTTP <code>Content-Security-Policy</code> ("CSP").
+    Per impostazione predefinita, è impostata a un valore che disabilita molte funzionalità Web moderne per prevenire attacchi cross-site scripting (XSS) e di altro tipo rivolti agli utenti Jenkins che accedono a tali file.
+    Il valore specifico per l'intestazione CSP è configurabile dall'utente (e può anche essere disabilitato), ma tale operazione è un compromesso fra sicurezza e funzionalità.
+</p>
+<p>
+    Se l'URL radice delle risorse è definito, Jenkins redirigerà le richieste per i file di risorse creati dall'utente a URL che iniziano con l'URL configurato qui.
+    Per tali URL l'intestazione CSP non sarà impostata, il che consentirà a Javascript e a funzionalità simili di funzionare.
+    Affinché quest'opzione funzioni come desiderato, si applicano le seguenti restrizioni e considerazioni:
+</p>
+<ul>
+    <li>L'URL radice delle risorse dev'essere un'alternativa valida all'URL radice di Jenkins affinché le richieste siano elaborate correttamente.</li>
+    <li>L'URL radice di Jenkins dev'essere impostato e dev'essere differente da quest'URL radice delle risorse (di fatto, è richiesto un nome host differente).</li>
+    <li>
+        Una volta impostata, Jenkins servirà le richieste per le URL risorse dall'URL radice delle risorse.
+        Tutte le altre richieste riceveranno una risposta <em>HTTP 404 Not Found</em>.
+    </li>
+</ul>
+<p>
+    Una volta impostato correttamente quest'URL, Jenkins redirigerà le richieste agli spazi di lavoro, agli artefatti archiviati e a simili insiemi di contenuto solitamente generato dall'utente a URL che iniziano con l'URL radice delle risorse.
+    Anziché un percorso del tipo <code>job/NOME/ws</code>, gli URL risorse conterranno un token che codifica tale percorso, l'utente per cui è stato creato l'URL e quando è stato creato.
+    Tali URL risorse consentono di accedere a file statici <em>con le credenziali</em> dell'utente per cui sono stati creati:
+    se viene rimosso il permesso dell'utente di accedere a tali file, nemmeno gli URL risorse corrispondenti funzioneranno più.
+    <strong>Tali URL sono accessibili a chiunque senza autenticazione fino alla loro scadenza, per cui condividere tali URL equivale a condividere direttamente i file.</strong>
+</p>
+<h3>Considerazioni di sicurezza</h3>
+<h4>Autenticazione</h4>
+<p>
+    Gli URL risorse non richiedono l'autenticazione (gli utenti non avranno una sessione valida per l'URL radice delle risorse).
+    La condivisione di un URL risorse con un altro utente, anche con uno che non ha il permesso Jenkins Generale/Lettura, consentirà a tale utente di accedere a tali file fino alla scadenza degli URL.
+</p>
+<h4>Scadenza</h4>
+<p>
+    Gli URL risorse, per impostazione predefinita, scadono dopo 30 minuti.
+    Gli URL risorse scaduti redirigeranno gli utenti agli URL Jenkins equivalenti in modo che l'utente possa autenticarsi nuovamente, se necessario, e quindi essere rediretto a un nuovo URL risorsa che sarà valido per altri 30 minuti.
+    Ciò in generale sarà trasparente per l'utente se hanno una sessione Jenkins valida.
+    In caso contrario, dovranno autenticarsi nuovamente su Jenkins.
+    Ciò nonostante, quando si naviga in una pagina con frame HTML, come siti Javadoc, la schermata di accesso non può apparire in un frame.
+    In tali casi, gli utenti dovranno aggiornare il frame principale per far apparire la schermata di accesso.
+</p>
+<p>
+    Per modificare il tempo di scadenza degli URL risorse, impostare la proprietà di sistema <code>jenkins.security.ResourceDomainRootAction.validForMinutes</code> al valore desiderato in minuti.
+    Un valore minore potrebbe rendere più difficile utilizzare tali URL, mentre un valore maggiore aumenta la possibilità che utenti non autorizzati ottengano l'accesso tramite URL condivisi con loro da utenti autorizzati.
+</p>
+<h4>Autenticità</h4>
+<p>
+    Gli URL risorse codificano l'URL, l'utente per cui sono stati creati e data e ora della loro creazione.
+    Inoltre, questa stringa contiene un <a href="https://en.wikipedia.org/wiki/HMAC" rel="noopener noreferrer" target="_blank">HMAC</a> per garantire l'autenticità dell'URL.
+    Ciò impedisce a un attaccante di falsificare URL che gli consentirebbero l'accesso a file di risorse con le credenziali di un altro utente.
+</p>

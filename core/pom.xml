@@ -39,9 +39,8 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.258</stapler.version>
-    <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>2.4.12</groovy.version>
+    <hamcrest.version>2.2</hamcrest.version>
+    <junit.jupiter.version>5.6.2</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
@@ -58,7 +57,7 @@ THE SOFTWARE.
 
 
   <dependencies>
-    <dependency>
+    <dependency> <!-- Not included into BOm due to the library vs. plugin conflict and possible confusion -->
       <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
       <artifactId>icon-set</artifactId>
       <version>1.0.5</version>
@@ -75,17 +74,14 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>crypto-util</artifactId>
-      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>jtidy</artifactId>
-      <version>4aug2000r7-dev-hudson-1</version>
       <exclusions>
         <exclusion>
           <groupId>jdom</groupId>
@@ -116,9 +112,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.connectbot.jbcrypt</groupId>
       <artifactId>jbcrypt</artifactId>
-      <version>1.0.0</version>
     </dependency>
-    <dependency> <!-- for compatibility only; all new code should use JNR -->
+    <dependency> <!-- for compatibility only; all new code should use JNR. Not included into BOM due to the same reason -->
       <groupId>org.jruby.ext.posix</groupId>
       <artifactId>jna-posix</artifactId>
       <version>1.0.3-jenkins-1</version>
@@ -126,12 +121,20 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-      <version>3.0.45</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke.stapler</groupId>
+      <artifactId>stapler</artifactId>
+      <exclusions>
+        <exclusion> <!-- pick up from SpotBugs Annotations -->
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-groovy</artifactId>
-      <version>${stapler.version}</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -153,46 +156,38 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-jrebel</artifactId>
-      <version>${stapler.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
-      <version>1.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-zeroclipboard</artifactId>
-      <version>1.3.5-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-codemirror</artifactId>
-      <version>1.3</version>
     </dependency>
     <dependency><!-- this helps us see the source code of the control while we edit Jenkins. -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.jenkins.stapler</groupId>
       <artifactId>jenkins-stapler-support</artifactId>
-      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>${hamcrest.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
-      <version>1.3</version>
+      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -205,16 +200,14 @@ THE SOFTWARE.
     <dependency><!-- until we get this version through Stapler -->
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>json-lib</artifactId>
-      <version>2.4-jenkins-2</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
     </dependency>
-    <dependency><!-- JENKINS-21160: remoting also depends on args4j, please update accordingly -->
+    <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
-      <version>2.33</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -223,27 +216,22 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>bytecode-compatibility-transformer</artifactId>
-      <version>2.0-beta-2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>task-reactor</artifactId>
-      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.26</version>
     </dependency>
     <dependency>
       <groupId>antlr</groupId>
       <artifactId>antlr</artifactId>
-      <version>2.7.6</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.7-jenkins-1</version>
       <exclusions>
         <exclusion>
           <groupId>xmlpull</groupId>
@@ -257,7 +245,7 @@ THE SOFTWARE.
     </dependency>
     <!--
     still including the xpp3 driver to ensure backwards compatibilty
-    for other plugins that may be depending on it
+    for other plugins that may be depending on it. Not included into BOM
     -->
     <dependency>
       <groupId>xpp3</groupId>
@@ -267,12 +255,10 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.sf.kxml</groupId>
       <artifactId>kxml2</artifactId>
-      <version>2.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
-      <version>1.0.19</version>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -295,7 +281,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-digester</groupId>
       <artifactId>commons-digester</artifactId>
-      <version>2.1</version>
       <exclusions>
         <exclusion>
           <groupId>xml-apis</groupId>
@@ -306,33 +291,18 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
-      <version>1.9.3</version>
     </dependency>
     <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.19</version>
     </dependency>
     <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.4.4</version>
-      <exclusions>
-        <exclusion><!-- using a patched version -->
-          <groupId>javax.activation</groupId>
-          <artifactId>activation</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>activation</artifactId>
-      <version>1.1.1-hudson-1</version>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>jakarta.mail</artifactId>
     </dependency>
     <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
-      <version>1.1-beta-11</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -359,12 +329,10 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-jelly</groupId>
       <artifactId>commons-jelly-tags-fmt</artifactId>
-      <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>commons-jelly</groupId>
       <artifactId>commons-jelly-tags-xml</artifactId>
-      <version>1.1</version>
       <exclusions>
         <exclusion>
           <groupId>commons-jelly</groupId>
@@ -399,7 +367,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly-tags-define</artifactId>
-      <version>1.0.1-hudson-20071021</version>
       <exclusions>
         <exclusion>
           <groupId>dom4j</groupId>
@@ -418,29 +385,22 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1-jenkins-20111212</version>
     </dependency>
     <dependency>
-      <groupId>org.acegisecurity</groupId>
-      <artifactId>acegi-security</artifactId>
-      <version>1.0.7</version>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.springframework</groupId>
-          <artifactId>spring-remoting</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-support</artifactId>
+          <artifactId>spring-jcl</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>${groovy.version}</version>
     </dependency>
-    <dependency><!-- groovy shell uses this but uses an optional dependency -->
+    <dependency><!-- groovy shell uses this but uses an optional dependency. Not included into BOM -->
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
       <version>2.12</version>
@@ -449,30 +409,29 @@ THE SOFTWARE.
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-      <version>1.11</version>
     </dependency>
     <dependency>
-      <!--
-        for Grails spring bean builder.
-        Ideally we should be able to modify BeanBuilder so as not to depend on this.
-      -->
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency><!-- Jenkins core doesn't use it but HUDSON-3811 requires us to put it. -->
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aop</artifactId>
-      <version>${spring.version}</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -491,9 +450,8 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->
-      <groupId>javax.servlet.jsp.jstl</groupId>
-      <artifactId>javax.servlet.jsp.jstl-api</artifactId>
-      <version>1.2.1</version>
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -511,69 +469,52 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
-      <version>20110809</version>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
-      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.28</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-      <version>1.9</version>
     </dependency>
     <dependency><!-- StAX implementation. See HUDSON-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
-      <version>3.2.9</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jmdns</groupId>
-      <artifactId>jmdns</artifactId>
-      <version>3.5.5</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>5.3.1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>akuma</artifactId>
-      <version>1.10</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>libpam4j</artifactId>
-      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.8</version>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
       <artifactId>embedded_su4j</artifactId>
-      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.13</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
       <artifactId>j-interop</artifactId>
-      <version>2.0.6-kohsuke-1</version>
     </dependency>
-    <dependency>
+    <dependency> <!-- Not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
       <version>1.8</version>
@@ -582,9 +523,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
-      <version>1.2</version>
     </dependency>
-    <dependency>
+    <dependency> <!-- Not included into BOM, plugins should use one from structs-plugin -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>symbol-annotation</artifactId>
       <version>1.1</version>
@@ -605,11 +545,15 @@ THE SOFTWARE.
       <artifactId>spotbugs-annotations</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <optional>true</optional>
+    </dependency>
 
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-      <version>1.3.1-jenkins-2</version> 
     </dependency>
 
     <!-- offline profiler API to put in the classpath if we need it -->
@@ -625,7 +569,7 @@ THE SOFTWARE.
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <exclusions>
-        <exclusion> <!-- pick up from Stapler -->
+        <exclusion> <!-- pick up from SpotBugs Annotations -->
           <groupId>com.google.code.findbugs</groupId>
           <artifactId>jsr305</artifactId>
         </exclusion>
@@ -640,7 +584,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.jcraft</groupId>
       <artifactId>jzlib</artifactId>
-      <version>1.1.3-kohsuke-1</version>
     </dependency>
     <dependency>
       <groupId>org.xmlunit</groupId>
@@ -793,8 +736,8 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>2.3.0</version>
-                  <classifier>bin</classifier>
+                  <version>2.9.0</version>
+                  <classifier>net4</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
                   <destFileName>jenkins.exe</destFileName>
@@ -894,6 +837,53 @@ THE SOFTWARE.
         <!-- In the default profile we always fail the build if there SpotBugs errors -->
         <findbugs.failOnError>true</findbugs.failOnError>
       </properties>
+    </profile>
+    <profile>
+      <id>all-tests</id>
+      <activation>
+        <property>
+          <name>!test</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+      </properties>
+    </profile>
+    <profile>
+      <id>japicmp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.siom79.japicmp</groupId>
+            <artifactId>japicmp-maven-plugin</artifactId>
+            <version>0.14.4-20200728.214757-1</version> <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
+            <configuration>
+              <parameter>
+                <!-- see https://siom79.github.io/japicmp/MavenPlugin.html -->
+                <oldVersionPattern>\d+[.]\d+</oldVersionPattern>
+                <!-- <onlyModified>true</onlyModified> -->
+                <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
+              </parameter>
+              <oldClassPathDependencies>
+                <dependency> <!-- provided, so not visible in flattened artifact -->
+                  <groupId>javax.servlet</groupId>
+                  <artifactId>javax.servlet-api</artifactId>
+                  <version>3.1.0</version>
+                  <scope>provided</scope>
+                </dependency>
+              </oldClassPathDependencies>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>cmp</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

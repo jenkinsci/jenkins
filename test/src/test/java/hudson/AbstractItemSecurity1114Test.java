@@ -16,7 +16,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 public class AbstractItemSecurity1114Test {
     @Rule
@@ -70,7 +70,7 @@ public class AbstractItemSecurity1114Test {
     public static class BypassAccess implements RootAction {
         public Item getDynamic(String name) {
             Item item;
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                  item = Jenkins.get().getItemByFullName(name);
             }
             return item;

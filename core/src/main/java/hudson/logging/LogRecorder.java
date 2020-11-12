@@ -50,6 +50,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.Collator;
 import java.util.*;
 import java.util.logging.Level;
@@ -67,7 +68,7 @@ import org.kohsuke.stapler.verb.POST;
  * TODO: still a work in progress.
  *
  * <h3>Access Control</h3>
- * {@link LogRecorder} is only visible for administrators, and this access control happens at
+ * {@link LogRecorder} is only visible for administrators and system readers, and this access control happens at
  * {@link jenkins.model.Jenkins#getLog()}, the sole entry point for binding {@link LogRecorder} to URL.
  *
  * @author Kohsuke Kawaguchi
@@ -252,7 +253,9 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     }
     
-    private static class TargetComparator implements Comparator<Target> {
+    private static class TargetComparator implements Comparator<Target>, Serializable {
+
+        private static final long serialVersionUID = 9285340752515798L;
 
         @Override
         public int compare(Target left, Target right) {
@@ -329,6 +332,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @POST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
@@ -355,6 +360,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @RequirePOST
     public HttpResponse doClear() throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         handler.clear();
         return HttpResponses.redirectToDot();
     }
@@ -382,6 +389,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+
         getConfigFile().delete();
         getParent().logRecorders.remove(name);
         // Disable logging for all our targets,

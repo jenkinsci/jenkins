@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
@@ -31,7 +32,6 @@ import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -47,6 +47,7 @@ import java.net.URLConnection;
 import java.util.Locale;
 
 import static hudson.Util.fixEmpty;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Base class that provides the framework for doing on-the-fly form field validation.
@@ -145,6 +146,7 @@ public abstract class FormFieldValidator {
     /**
      * Gets the parameter as a file.
      */
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Not used.")
     protected final File getFileParameter(String paramName) {
         return new File(Util.fixNull(request.getParameter(paramName)));
     }
@@ -329,7 +331,7 @@ public abstract class FormFieldValidator {
 
             try {
                 URL url = new URL(value);
-                HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                HttpURLConnection con = openConnection(url);
                 con.connect();
                 if(con.getResponseCode()!=200
                 || con.getHeaderField("X-Hudson")==null) {
@@ -341,6 +343,11 @@ public abstract class FormFieldValidator {
             } catch (IOException e) {
                 handleIOException(value,e);
             }
+        }
+
+        @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Not used.")
+        private HttpURLConnection openConnection(URL url) throws IOException {
+            return (HttpURLConnection)url.openConnection();
         }
     }
 

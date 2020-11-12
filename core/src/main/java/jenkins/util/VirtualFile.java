@@ -54,8 +54,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
@@ -66,7 +66,6 @@ import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.apache.tools.ant.types.selectors.TokenizedPath;
 import org.apache.tools.ant.types.selectors.TokenizedPattern;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
@@ -114,7 +113,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * For a “root directory” this may be the empty string.
      * @return a simple name (no slashes)
      */
-    public abstract @Nonnull String getName();
+    public abstract @NonNull String getName();
 
     /**
      * Gets a URI.
@@ -123,7 +122,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * unless some sort of authentication is also embedded.
      * @return a URI (need not be absolute)
      */
-    public abstract @Nonnull URI toURI();
+    public abstract @NonNull URI toURI();
 
     /**
      * Gets the parent file.
@@ -154,7 +153,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if reading the link, or even determining whether this file is a link, failed
      * @since 2.118
      */
-    @Restricted(Beta.class)
     public @CheckForNull String readLink() throws IOException {
         return null;
     }
@@ -173,7 +171,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @return a list of children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
-    public abstract @Nonnull VirtualFile[] list() throws IOException;
+    public abstract @NonNull VirtualFile[] list() throws IOException;
 
     @Restricted(NoExternalUse.class)
     public boolean supportsQuickRecursiveListing() {
@@ -188,7 +186,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
     @Restricted(NoExternalUse.class)
-    public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
+    public @NonNull List<VirtualFile> listOnlyDescendants() throws IOException {
         VirtualFile[] children = list();
         List<VirtualFile> result = new ArrayList<>();
         for (VirtualFile child : children) {
@@ -203,7 +201,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @deprecated use {@link #list(String, String, boolean)} instead
      */
     @Deprecated
-    public @Nonnull String[] list(String glob) throws IOException {
+    public @NonNull String[] list(String glob) throws IOException {
         return list(glob.replace('\\', '/'), null, true).toArray(MemoryReductionUtil.EMPTY_STRING_ARRAY);
     }
 
@@ -219,8 +217,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
      * @since 2.118
      */
-    @Restricted(Beta.class)
-    public @Nonnull Collection<String> list(@Nonnull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
+    public @NonNull Collection<String> list(@NonNull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
         Collection<String> r = run(new CollectFiles(this));
         List<TokenizedPattern> includePatterns = patterns(includes);
         List<TokenizedPattern> excludePatterns = patterns(excludes);
@@ -274,7 +271,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @param name a relative path, possibly including {@code /} (but not {@code ..})
      * @return a representation of that child, whether it actually exists or not
      */
-    public abstract @Nonnull VirtualFile child(@Nonnull String name);
+    public abstract @NonNull VirtualFile child(@NonNull String name);
 
     /**
      * Gets the file length.
@@ -297,7 +294,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if checking the mode failed
      * @since 2.118
      */
-    @Restricted(Beta.class)
     public int mode() throws IOException {
         return -1;
     }
@@ -379,7 +375,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @since 2.118
      * @see #toURI
      */
-    @Restricted(Beta.class)
     public @CheckForNull URL toExternalURL() throws IOException {
         return null;
     }
@@ -479,7 +474,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return true;
             }
 
-            @Override public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
+            @Override public @NonNull List<VirtualFile> listOnlyDescendants() throws IOException {
                 if (isIllegalSymlink()) {
                     return Collections.emptyList();
                 }
@@ -699,7 +694,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 return this.f.getChannel() == FilePath.localChannel;
             }
 
-            @Override public @Nonnull List<VirtualFile> listOnlyDescendants() throws IOException {
+            @Override public @NonNull List<VirtualFile> listOnlyDescendants() throws IOException {
                 try {
                     if (!isDescendant("")) {
                         return Collections.emptyList();

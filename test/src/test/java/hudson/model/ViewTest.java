@@ -54,7 +54,7 @@ import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import hudson.security.ACL;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.slaves.DumbSlave;
 import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
@@ -62,6 +62,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.net.HttpURLConnection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,13 @@ import jenkins.security.NotReallyRoleSensitiveCallable;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -364,7 +371,7 @@ public class ViewTest {
         MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
-                new LabelAxis("label", asList("label1"))
+                new LabelAxis("label", Collections.singletonList("label1"))
         ));
 
         FreeStyleProject noLabelJob = j.createFreeStyleProject("not-assigned-label");
@@ -525,38 +532,38 @@ public class ViewTest {
             grant(Jenkins.READ).everywhere().toEveryone().
             grant(Job.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
-        ACL.impersonate(Jenkins.ANONYMOUS, new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 return null;
             }
         });
-        ACL.impersonate(User.get("dev").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("dev").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 try {
                     assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 try {
                     assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
                     fail("should not have been allowed");
-                } catch (AccessDeniedException2 x) {
+                } catch (AccessDeniedException3 x) {
                     // OK
                 }
                 assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
                 return null;
             }
         });
-        ACL.impersonate(User.get("admin").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+        ACL.impersonate2(User.get("admin").impersonate2(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
             public Void call() throws Exception {
                 assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);

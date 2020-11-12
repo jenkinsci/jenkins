@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -56,7 +55,7 @@ public class ManagementLinkTest {
 
         for (int i=0; ; i++) {
             HtmlPage page = wc.goTo("manage");
-            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[@class='manage-option']/a[not(@onclick)]");
+            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'manage-option')]/a[not(@onclick)]");
             assertTrue(anchors.size()>=8);
             if (i==anchors.size())  return; // done
 

@@ -21,26 +21,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
-
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
     <j:new var="h" className="hudson.Functions" />
-    <st:statusCode value="503"/><!-- SERVICE NOT AVAILABLE -->
-    <st:setHeader name="Expires" value="0"/>
-    <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
+    <st:statusCode value="503" /><!-- SERVICE NOT AVAILABLE -->
+    <st:header name="Expires" value="0" />
+    <st:header name="Cache-Control" value="no-cache,no-store,must-revalidate" />
     <!-- response contentType header -->
-    <st:contentType value="text/html;charset=UTF-8"/>
-    <!-- get default/commong page variable -->
+    <st:contentType value="text/html;charset=UTF-8" />
+    <!-- get default/common page variable -->
     ${h.initPageVariables(context)}
-    <x:doctype name="html"/>
+    <x:doctype name="html" />
     <html lang="${request.getLocale().toLanguageTag()}">
-        <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+        <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
             <title>${%Starting Jenkins}</title>
             <!-- we do not want bots on this page -->
-            <meta name="ROBOTS" content="NOFOLLOW"/>
+            <meta name="ROBOTS" content="NOFOLLOW" />
             <!-- mobile friendly layout -->
-            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
             <link rel="stylesheet" href="${resURL}/css/simple-page.css" type="text/css" />
             <link rel="stylesheet" href="${resURL}/css/simple-page.theme.css" type="text/css" />
             <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />
@@ -49,7 +47,7 @@ THE SOFTWARE.
             <div class="simple-page" role="main">
                 <div class="modal signup">
                     <div class="signupIntroDefault">
-                        <div class="logo"></div>
+                        <div class="logo" />
                         <h1 class="loading">
                             ${%Please wait while Jenkins is getting ready to work}
                             <span>.</span><span>.</span><span>.</span>
@@ -60,8 +58,7 @@ THE SOFTWARE.
                     </div>
                 </div>
             </div>
-            <script src="${resURL}/scripts/loading.js" type="text/javascript"></script>
-            <script>safeRedirector(window.location.href);</script>
+            <script src="${resURL}/scripts/loading.js" type="text/javascript" />
         </body>
     </html>
 </j:jelly>

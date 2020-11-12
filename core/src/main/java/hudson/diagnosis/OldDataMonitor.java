@@ -27,6 +27,7 @@ import com.google.common.base.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.Main;
 import hudson.XmlFile;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Item;
@@ -53,12 +54,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -88,7 +87,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      * @throws IllegalStateException Monitor not found.
      *              It should never happen since the monitor is located in the core.
      */
-    @Nonnull
+    @NonNull
     static OldDataMonitor get(Jenkins j) throws IllegalStateException {
         return ExtensionList.lookupSingleton(OldDataMonitor.class);
     }
@@ -120,7 +119,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     private static void remove(Saveable obj, boolean isDelete) {
         Jenkins j = Jenkins.get();
         OldDataMonitor odm = get(j);
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             odm.data.remove(referTo(obj));
             if (isDelete && obj instanceof Job<?, ?>) {
                 for (Run r : ((Job<?, ?>) obj).getBuilds()) {
@@ -209,6 +208,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
             if (e instanceof ReportException) {
                 report(obj, ((ReportException)e).version);
             } else {
+                if (Main.isUnitTest) {
+                    LOGGER.log(Level.INFO, "Trouble loading " + obj, e);
+                }
                 if (++i > 1) buf.append(", ");
                 buf.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage());
             }
@@ -442,6 +444,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     @Extension @Symbol("oldData")
     public static class ManagementLinkImpl extends ManagementLink {
+        @NonNull
+        @Override
+        public Category getCategory() {
+            return Category.TROUBLESHOOTING;
+        }
+
         @Override
         public String getIconFileName() {
             return "document.png";

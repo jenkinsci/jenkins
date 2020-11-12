@@ -27,7 +27,7 @@ package hudson.os;
 import hudson.Functions;
 import org.apache.commons.io.IOUtils;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -48,9 +48,9 @@ public class WindowsUtil {
      * Quotes an argument while escaping special characters interpreted by CreateProcess.
      *
      * @param argument argument to be quoted or escaped for windows shells.
-     * @return properly quoted and escaped windows arguemnts.
+     * @return properly quoted and escaped windows arguments.
      */
-    public static @Nonnull String quoteArgument(@Nonnull String argument) {
+    public static @NonNull String quoteArgument(@NonNull String argument) {
         if (!NEEDS_QUOTING.matcher(argument).find()) return argument;
         StringBuilder sb = new StringBuilder();
         sb.append('"');
@@ -89,7 +89,7 @@ public class WindowsUtil {
      * @param argument argument to be quoted or escaped for {@code cmd.exe}.
      * @return properly quoted and escaped arguments to {@code cmd.exe}.
      */
-    public static @Nonnull String quoteArgumentForCmd(@Nonnull String argument) {
+    public static @NonNull String quoteArgumentForCmd(@NonNull String argument) {
         return CMD_METACHARS.matcher(quoteArgument(argument)).replaceAll("^$0");
     }
 
@@ -98,7 +98,7 @@ public class WindowsUtil {
      * @param argv arguments to be quoted or escaped for {@code cmd.exe /C ...}.
      * @return properly quoted and escaped arguments to {@code cmd.exe /C ...}.
      */
-    public static @Nonnull Process execCmd(String... argv) throws IOException {
+    public static @NonNull Process execCmd(String... argv) throws IOException {
         String command = Arrays.stream(argv).map(WindowsUtil::quoteArgumentForCmd).collect(Collectors.joining(" "));
         return Runtime.getRuntime().exec(new String[]{"cmd.exe", "/C", command});
     }
@@ -113,7 +113,7 @@ public class WindowsUtil {
      * @throws InterruptedException if the call to mklink is interrupted before completing
      * @throws UnsupportedOperationException if this method is called on a non-Windows platform
      */
-    public static @Nonnull File createJunction(@Nonnull File junction, @Nonnull File target) throws IOException, InterruptedException {
+    public static @NonNull File createJunction(@NonNull File junction, @NonNull File target) throws IOException, InterruptedException {
         if (!Functions.isWindows()) {
             throw new UnsupportedOperationException("Can only be called on windows platform");
         }

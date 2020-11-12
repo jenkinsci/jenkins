@@ -24,8 +24,6 @@
 
 package jenkins.security.seed;
 
-import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -36,6 +34,8 @@ import javax.servlet.http.HttpSession;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 public class UserSeedSecurityListenerTest {
 
@@ -46,7 +46,7 @@ public class UserSeedSecurityListenerTest {
     @Issue("JENKINS-59107")
     public void authenticateSecondaryUserWhileLoggedIn_shouldNotOverwritePrimaryUserSessionSeed() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        AuthenticationManager authenticationManager = j.jenkins.getSecurityRealm().getSecurityComponents().manager;
+        AuthenticationManager authenticationManager = j.jenkins.getSecurityRealm().getSecurityComponents().manager2;
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("alice").executeOnServer(() -> {
             HttpSession session = Stapler.getCurrentRequest().getSession();

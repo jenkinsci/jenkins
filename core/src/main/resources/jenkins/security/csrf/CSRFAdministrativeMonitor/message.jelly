@@ -28,7 +28,7 @@ THE SOFTWARE.
             <f:submit value="${%Dismiss}"/>
         </form>
         <j:set var="referenceAnchor">
-            <a href="https://jenkins.io/redirect/csrf-protection" target="_blank">${%referenceUrlContent}</a>
+            <a href="https://jenkins.io/redirect/csrf-protection" rel="noopener noreferrer" target="_blank">${%referenceUrlContent}</a>
         </j:set>
         <j:set var="actionAnchor">
             <a href="${rootURL}/configureSecurity">${%actionUrlContent}</a>

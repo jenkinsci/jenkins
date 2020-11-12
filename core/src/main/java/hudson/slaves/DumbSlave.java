@@ -25,7 +25,6 @@ package hudson.slaves;
 
 import hudson.model.Slave;
 import hudson.model.Descriptor.FormException;
-import hudson.slaves.DumbSlave;
 import hudson.Extension;
 
 import java.io.IOException;
@@ -35,7 +34,7 @@ import java.util.List;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Default {@link Slave} implementation for computers that do not belong to a higher level structure,
@@ -63,11 +62,11 @@ public final class DumbSlave extends Slave {
     }
 
     @DataBoundConstructor
-    public DumbSlave(@Nonnull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+    public DumbSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
         super(name, remoteFS, launcher);
     }
 
-    @Extension @Symbol({"permanent" /*because this is in effect the canonical slave type*/, 
+    @Extension @Symbol({"permanent" /*because this is in effect the canonical agent type*/,
             "dumb", "slave"})
     public static final class DescriptorImpl extends SlaveDescriptor {
         public String getDisplayName() {

@@ -1,7 +1,11 @@
 package hudson.model;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 import hudson.Launcher;
@@ -116,7 +120,7 @@ public class ExecutorTest {
         assertThat(log, containsString("Finished: FAILURE"));
         assertThat(log, containsString("Build step 'BlockingBuilder' marked build as failure"));
         assertThat(log, containsString("Agent went offline during the build"));
-        assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your buil"));
+        assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your build"));
     }
 
     @Issue("SECURITY-611")
