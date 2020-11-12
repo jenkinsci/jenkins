@@ -1853,11 +1853,6 @@ public class Queue extends ResourceController implements Saveable {
      * transient Task, extend {@link TransientTask} marker interface.
      *
      * <p>
-     * Plugins are encouraged to extend from {@link Queue.Task}
-     * instead of implementing this interface directly, to maintain
-     * compatibility with future changes to this interface.
-     *
-     * <p>
      * Plugins are encouraged to implement {@link AccessControlled} otherwise
      * the tasks will be hidden from display in the queue.
      *
