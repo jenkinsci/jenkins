@@ -158,6 +158,13 @@
     color: var(--alert-danger-text-color);
 }
 
+@media screen and (max-width: 576px) {
+    /* Hide non-security monitors on mobile view to avoid messing up the heading */
+    #visible-am-container {
+       display: none;
+    }
+}
+
 @media screen and (max-width: 768px) {
     .am-button .am-monitor__indicator-mobile {
         display: block;
