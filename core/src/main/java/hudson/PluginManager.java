@@ -1435,7 +1435,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     return jsonObject;
                 })
                 .collect(toList());
-            if (plugins.size() == limit) {
+            if (plugins.size() >= limit) {
                 break;
             }
         }
