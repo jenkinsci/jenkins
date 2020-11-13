@@ -10,214 +10,46 @@ function checkPluginsWithoutWarnings() {
 
 Behaviour.specify("#filter-box", '_table', 0, function(e) {
     function applyFilter() {
-        clearTimeout(debounce);
-        // debounce reduces number of server side calls while typing
-        debounce = setTimeout(function() {
-            var pluginsTable = document.getElementById('plugins');
+        var filter = e.value.toLowerCase().trim();
+        var filterParts = filter.split(/ +/).filter (function(word) { return word.length > 0; });
+        var items = document.getElementsBySelector("TR.plugin");
+        var anyVisible = false;
+        for (var i=0; i<items.length; i++) {
+            if ((filterParts.length < 1 || filter.length < 2) && items[i].hasClassName("hidden-by-default")) {
+                items[i].addClassName("hidden");
+                continue;
+            }
+            var makeVisible = true;
 
-            // only on available tab
-            if (pluginsTable.dataset.page === 'available') {
-                view.availablePlugins(e.value.toLowerCase().trim(), 50, function (plugins) {
-                    var availablePlugins = JSON.parse(plugins.responseObject());
-
-                    var tbody = pluginsTable.querySelector('tbody');
-
-                    function clearOldResults() {
-                        if (pluginsTable.dataset.hasadmin !== 'true') {
-                            tbody.innerHTML = '';
-                        } else {
-                            var rows = tbody.querySelectorAll('tr');
-                            if (rows) {
-                                rows.forEach(function (row) {
-                                    var input = row.firstChild.firstChild;
-                                    if (input.checked !== true) {
-                                        row.remove();
-                                    }
-                                })
-                            }
-                        }
-                    }
-
-                    clearOldResults();
-
-                    availablePlugins.forEach(function (plugin) {
-                        var htmlTableRowElement = document.createElement('tr');
-                        htmlTableRowElement.classList.add('plugin');
-
-                        function createCheckBox() {
-                            var htmlTableDataCellElement = document.createElement('td');
-                            htmlTableDataCellElement.classList.add('pane')
-                            var htmlInputElement = document.createElement('input');
-                            htmlInputElement.type = 'checkbox';
-                            htmlInputElement.name = 'plugin.' + plugin.name + '.' + plugin.sourceId;
-                            htmlTableDataCellElement.appendChild(htmlInputElement);
-                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
-                        }
-
-                        function createNameEntry() {
-                            var htmlTableDataCellElement = document.createElement('td');
-                            htmlTableDataCellElement.classList.add('pane')
-                            var htmlDivElement = document.createElement('div');
-                            var htmlAnchorElement = document.createElement('a');
-                            htmlAnchorElement.href = plugin.wiki
-                            htmlAnchorElement.text = plugin.displayName
-                            htmlAnchorElement.target = '_blank'
-                            htmlAnchorElement.rel = 'noopener noreferrer'
-                            htmlDivElement.appendChild(htmlAnchorElement)
-                            htmlTableDataCellElement.appendChild(htmlDivElement)
-
-                            if (plugin.categories) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('plugin-manager__categories');
-                                plugin.categories.forEach(function (category) {
-                                    var htmlAnchorElement = document.createElement('a');
-                                    htmlAnchorElement.href = '?filter=' + category;
-                                    htmlAnchorElement.classList.add('plugin-manager__category-label')
-                                    htmlAnchorElement.text = category
-                                    htmlDivElement.appendChild(htmlAnchorElement)
-                                })
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-                            if (plugin.excerpt) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('excerpt');
-                                htmlDivElement.innerHTML = plugin.excerpt
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
-                            
-                            if (plugin.newerCoreRequired) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('alert', 'alert-danger');
-                                htmlDivElement.innerHTML = plugin.newerCoreRequired
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-
-                            if (plugin.newerJavaRequired) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('alert', 'alert-danger');
-                                htmlDivElement.innerHTML = plugin.newerJavaRequired
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-
-                            if (plugin.dependenciesNewerJava) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('alert', 'alert-danger');
-                                htmlDivElement.innerHTML = plugin.dependenciesNewerJava
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-
-                            if (plugin.unresolvedSecurityWarnings) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('alert', 'alert-danger');
-                                htmlDivElement.innerText = plugin.unresolvedSecurityWarnings.text
-                                var listElement = document.createElement('ul');
-                                plugin.unresolvedSecurityWarnings.warnings.forEach(function(warning) {
-                                    var li = document.createElement('li');
-                                    var htmlAnchorElement = document.createElement('a');
-                                    htmlAnchorElement.href = warning.url
-                                    htmlAnchorElement.text = warning.message
-                                    htmlAnchorElement.target = '_blank'
-                                    htmlAnchorElement.rel = 'noopener noreferrer'
-                                    li.appendChild(htmlAnchorElement)
-                                    listElement.appendChild(li)
-                                })
-                                htmlDivElement.appendChild(listElement)
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-
-                            if (plugin.deprecated) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('alert', 'alert-warning');
-                                htmlDivElement.innerHTML = plugin.deprecated
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-
-                            if (plugin.adoptMe) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('alert', 'alert-warning');
-                                htmlDivElement.innerHTML = plugin.adoptMe
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-
-                            if (plugin.newerVersionAvailableNotOffered) {
-                                htmlDivElement = document.createElement('div');
-                                htmlDivElement.classList.add('alert', 'alert-info');
-                                htmlDivElement.innerHTML = plugin.newerVersionAvailableNotOffered
-                                htmlTableDataCellElement.appendChild(htmlDivElement)
-                            }
-                        }
-
-                        function createVersionEntry() {
-                            var htmlTableDataCellElement = document.createElement('td');
-                            htmlTableDataCellElement.classList.add('pane')
-                            htmlTableDataCellElement.appendChild(document.createTextNode(plugin.version));
-                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
-                        }
-
-                        function createReleasedAgo() {
-                            var htmlTableDataCellElement = document.createElement('td');
-                            htmlTableDataCellElement.classList.add('pane')
-                            if (plugin.releaseTimestamp) {
-                                var htmlTimeElement = document.createElement('time');
-                                htmlTimeElement.dateTime = plugin.releaseTimestamp.iso8601;
-                                htmlTimeElement.textContent = plugin.releaseTimestamp.displayValue;
-                                htmlTableDataCellElement.appendChild(htmlTimeElement);
-                            }
-                            htmlTableRowElement.appendChild(htmlTableDataCellElement);
-                        }
-
-                        if (pluginsTable.dataset.hasadmin === 'true') {
-                            createCheckBox();
-                        }
-                        createNameEntry();
-                        createVersionEntry();
-                        createReleasedAgo();
-
-                        tbody.appendChild(htmlTableRowElement);
-                    })
-                })
-            } else {
-                var filter = e.value.toLowerCase().trim();
-                var filterParts = filter.split(/ +/).filter(function (word) {
-                    return word.length > 0;
-                });
-                var items = document.getElementsBySelector("TR.plugin");
-                var anyVisible = false;
-                for (var i = 0; i < items.length; i++) {
-                    if ((filterParts.length < 1 || filter.length < 2) && items[i].classList.contains("hidden-by-default")) {
-                        items[i].classList.add("hidden");
-                        continue;
-                    }
-                    var makeVisible = true;
-
-                    var content = items[i].innerHTML.toLowerCase();
-                    for (var j = 0; j < filterParts.length; j++) {
-                        var part = filterParts[j];
-                        if (content.indexOf(part) < 0) {
-                            makeVisible = false;
-                            break;
-                        }
-                    }
-                    if (makeVisible) {
-                        items[i].removeClassName("hidden");
-                        anyVisible = true;
-                    } else {
-                        items[i].addClassName("hidden");
-                    }
+            var content = items[i].innerHTML.toLowerCase();
+            for (var j = 0; j < filterParts.length; j++) {
+                var part = filterParts[j];
+                if (content.indexOf(part) < 0) {
+                    makeVisible = false;
+                    break;
                 }
             }
+            if (makeVisible) {
+                items[i].removeClassName("hidden");
+                anyVisible = true;
+            } else {
+                items[i].addClassName("hidden");
+            }
+        }
+        var instructions = document.getElementById("hidden-by-default-instructions")
+        if (instructions) {
+            instructions.style.display = anyVisible ? 'none' : '';
+        }
 
-            // sticky bottom floats on page load if we don't delay it
-            setTimeout(function () {
-                layoutUpdateCallback.call();
-            }, 100);
-        }, 150);
+        layoutUpdateCallback.call();
     }
-    var debounce = null;
     e.onkeyup = applyFilter;
 
     (function() {
+        var instructionsTd = document.getElementById("hidden-by-default-instructions-td");
+        if (instructionsTd) { // only on Available tab
+            instructionsTd.innerText = instructionsTd.getAttribute("data-loaded-text");
+        }
         applyFilter();
     }());
 });
