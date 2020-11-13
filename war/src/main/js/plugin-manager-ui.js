@@ -1,4 +1,5 @@
 import pluginManagerAvailable from './templates/plugin-manager/available.hbs'
+import pluginManager from './api/pluginManager';
 
 var debounce = null;
 
@@ -6,8 +7,7 @@ function applyFilter(searchQuery) {
     clearTimeout(debounce);
     // debounce reduces number of server side calls while typing
     debounce = setTimeout(function () {
-        view.availablePlugins(searchQuery.toLowerCase().trim(), 50, function (pluginsObj) {
-            var plugins = JSON.parse(pluginsObj.responseObject());
+        pluginManager.availablePluginsSearch(searchQuery.toLowerCase().trim(), 50, function(plugins) {
             var pluginsTable = document.getElementById('plugins');
             var tbody = pluginsTable.querySelector('tbody');
             var selectedPlugins = []
