@@ -999,7 +999,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
     
     @JavaScriptMethod
-    @Restricted(Beta.class)
+    @Restricted(NoExternalUse.class)
     public String jsAvailablePlugins(String searchQuery, int limit) {
         String lowerSearchQuery = searchQuery != null ? searchQuery.toLowerCase() : null;
         List<String> plugins = new ArrayList<>();
