@@ -499,6 +499,10 @@ THE SOFTWARE.
       <artifactId>libpam4j</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.sun.solaris</groupId>
+      <artifactId>embedded_su4j</artifactId>
+    </dependency>
+    <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
     </dependency>

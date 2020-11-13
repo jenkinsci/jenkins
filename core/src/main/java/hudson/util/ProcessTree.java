@@ -451,6 +451,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return new Linux(vetoes);
             if(os.equals("AIX"))
                 return new AIX(vetoes);
+            if(os.equals("SunOS"))
+                return new Solaris(vetoes);
             if(os.equals("Mac OS X"))
                 return new Darwin(vetoes);
         } catch (LinkageError e) {
@@ -1344,6 +1346,273 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     /**
+     * Implementation for Solaris that uses {@code /proc}.
+     *
+     * /proc/PID/psinfo contains a psinfo_t struct. We use it to determine where the
+     *     process arguments and environment are located in PID's address space.
+     *     Note that the psinfo_t struct is different (different sized elements) for 32-bit
+     *     vs 64-bit processes and the kernel will provide the version of the struct that
+     *     matches the _reader_ (this Java process) regardless of whether PID is a
+     *     32-bit or 64-bit process.
+     *
+     *     Note that this means that if PID is a 64-bit process, then a 32-bit Java
+     *     process can not get meaningful values for envp and argv out of the psinfo_t. The
+     *     values will have been truncated to 32-bits.
+     *
+     * /proc/PID/as contains the address space of the process we are inspecting. We can
+     *     follow the envp and argv pointers from psinfo_t to find the environment variables
+     *     and process arguments. When following pointers in this address space we need to
+     *     make sure to use 32-bit or 64-bit pointers depending on what sized pointers
+     *     PID uses, regardless of what size pointers the Java process uses.
+     *
+     *     Note that the size of a 64-bit address space is larger than Long.MAX_VALUE (because
+     *     longs are signed). So normal Java utilities like RandomAccessFile and FileChannel
+     *     (which use signed longs as offsets) are not able to read from the end of the address
+     *     space, where envp and argv will be. Therefore we need to use LIBC.pread() directly.
+     *     when accessing this file.
+     */
+    static class Solaris extends ProcfsUnix {
+        public Solaris(boolean vetoersExist) {
+            super(vetoersExist);
+        }
+        
+        protected OSProcess createProcess(final int pid) throws IOException {
+            return new SolarisProcess(pid);
+        }
+
+        private class SolarisProcess extends UnixProcess {
+            private static final byte PR_MODEL_ILP32 = 1;
+            private static final byte PR_MODEL_LP64 = 2;
+
+            /*
+             * An arbitrary upper-limit on how many characters readLine() will
+             * try reading before giving up. This avoids having readLine() loop
+             * over the entire process address space if this class has bugs.
+             */
+            private final int LINE_LENGTH_LIMIT =
+                SystemProperties.getInteger(Solaris.class.getName()+".lineLimit", 10000);
+
+            /*
+             * True if target process is 64-bit (Java process may be different).
+             */
+            private final boolean b64;
+
+            private final int ppid;
+            /**
+             * Address of the environment vector.
+             */
+            private final long envp;
+            /**
+             * Similarly, address of the arguments vector.
+             */
+            private final long argp;
+            private final int argc;
+            private EnvVars envVars;
+            private List<String> arguments;
+
+            private SolarisProcess(int pid) throws IOException {
+                super(pid);
+
+                try (RandomAccessFile psinfo = new RandomAccessFile(getFile("psinfo"), "r")) {
+                    // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/procfs.h
+                    //typedef struct psinfo {
+                    //	int	pr_flag;	/* process flags */
+                    //	int	pr_nlwp;	/* number of lwps in the process */
+                    //	pid_t	pr_pid;	/* process id */
+                    //	pid_t	pr_ppid;	/* process id of parent */
+                    //	pid_t	pr_pgid;	/* process id of process group leader */
+                    //	pid_t	pr_sid;	/* session id */
+                    //	uid_t	pr_uid;	/* real user id */
+                    //	uid_t	pr_euid;	/* effective user id */
+                    //	gid_t	pr_gid;	/* real group id */
+                    //	gid_t	pr_egid;	/* effective group id */
+                    //	uintptr_t	pr_addr;	/* address of process */
+                    //	size_t	pr_size;	/* size of process image in Kbytes */
+                    //	size_t	pr_rssize;	/* resident set size in Kbytes */
+                    //	dev_t	pr_ttydev;	/* controlling tty device (or PRNODEV) */
+                    //	ushort_t	pr_pctcpu;	/* % of recent cpu time used by all lwps */
+                    //	ushort_t	pr_pctmem;	/* % of system memory used by process */
+                    //	timestruc_t	pr_start;	/* process start time, from the epoch */
+                    //	timestruc_t	pr_time;	/* cpu time for this process */
+                    //	timestruc_t	pr_ctime;	/* cpu time for reaped children */
+                    //	char	pr_fname[PRFNSZ];	/* name of exec'ed file */
+                    //	char	pr_psargs[PRARGSZ];	/* initial characters of arg list */
+                    //	int	pr_wstat;	/* if zombie, the wait() status */
+                    //	int	pr_argc;	/* initial argument count */
+                    //	uintptr_t	pr_argv;	/* address of initial argument vector */
+                    //	uintptr_t	pr_envp;	/* address of initial environment vector */
+                    //	char	pr_dmodel;	/* data model of the process */
+                    //	lwpsinfo_t	pr_lwp;	/* information for representative lwp */
+                    //} psinfo_t;
+
+                    // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/types.h
+                    // for the size of the various datatype.
+
+                    // see http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/cmd/ptools/pargs/pargs.c
+                    // for how to read this information
+
+                    psinfo.seek(8);
+                    if(adjust(psinfo.readInt())!=pid)
+                        throw new IOException("psinfo PID mismatch");   // sanity check
+                    ppid = adjust(psinfo.readInt());
+
+                    /*
+                     * Read the remainder of psinfo_t differently depending on whether the
+                     * Java process is 32-bit or 64-bit.
+                     */
+                    if (Native.POINTER_SIZE == 8) {
+                        psinfo.seek(236);  // offset of pr_argc
+                        argc = adjust(psinfo.readInt());
+                        argp = adjustL(psinfo.readLong());
+                        envp = adjustL(psinfo.readLong());
+                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                    } else {
+                        psinfo.seek(188);  // offset of pr_argc
+                        argc = adjust(psinfo.readInt());
+                        argp = to64(adjust(psinfo.readInt()));
+                        envp = to64(adjust(psinfo.readInt()));
+                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                    }
+                }
+                if(ppid==-1)
+                    throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
+
+            }
+
+            @CheckForNull
+            public OSProcess getParent() {
+                return get(ppid);
+            }
+
+            @NonNull
+            public synchronized List<String> getArguments() {
+                if(arguments!=null)
+                    return arguments;
+
+                arguments = new ArrayList<>(argc);
+		if (argc == 0) {
+		    return arguments;
+		}
+
+                int psize = b64 ? 8 : 4;
+                Memory m = new Memory(psize);
+                try {
+                    if(LOGGER.isLoggable(FINER))
+                        LOGGER.finer("Reading "+getFile("as"));
+                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
+                    try {
+                        for( int n=0; n<argc; n++ ) {
+                            // read a pointer to one entry
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp+n*psize));
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
+
+                            arguments.add(readLine(fd, addr, "argv["+ n +"]"));
+                        }
+                    } finally {
+                        LIBC.close(fd);
+                    }
+                } catch (IOException | LastErrorException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+
+                arguments = Collections.unmodifiableList(arguments);
+                return arguments;
+            }
+
+            @NonNull
+            public synchronized EnvVars getEnvironmentVariables() {
+                if(envVars !=null)
+                    return envVars;
+                envVars = new EnvVars();
+
+		if (envp == 0) {
+		    return envVars;
+		}
+
+                int psize = b64 ? 8 : 4;
+                Memory m = new Memory(psize);
+                try {
+                    if(LOGGER.isLoggable(FINER))
+                        LOGGER.finer("Reading "+getFile("as"));
+                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
+                    try {
+                        for( int n=0; ; n++ ) {
+                            // read a pointer to one entry
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp+n*psize));
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
+                            if (addr == 0) // completed the walk
+                                break;
+
+                            // now read the null-terminated string
+                            envVars.addLine(readLine(fd, addr, "env["+ n +"]"));
+                        }
+                    } finally {
+                        LIBC.close(fd);
+                    }
+                } catch (IOException | LastErrorException e) {
+                    // failed to read. this can happen under normal circumstances (most notably permission denied)
+                    // so don't report this as an error.
+                }
+                return envVars;
+            }
+
+            private String readLine(int fd, long addr, String prefix) throws IOException {
+                if(LOGGER.isLoggable(FINEST))
+                    LOGGER.finest("Reading "+prefix+" at "+addr);
+
+                Memory m = new Memory(1);
+                byte ch = 1;
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                int i = 0;
+                while(true) {
+                    if (i++ > LINE_LENGTH_LIMIT) {
+                        LOGGER.finest("could not find end of line, giving up");
+                        throw new IOException("could not find end of line, giving up");
+                    }
+
+                    LIBC.pread(fd, m, new NativeLong(1), new NativeLong(addr));
+                    ch = m.getByte(0);
+                    if (ch == 0)
+                        break;
+                    buf.write(ch);
+                    addr++;
+                }
+                String line = buf.toString();
+                if(LOGGER.isLoggable(FINEST))
+                    LOGGER.finest(prefix+" was "+line);
+                return line;
+            }
+        }
+
+        /**
+         * int to long conversion with zero-padding.
+         */
+        private static long to64(int i) {
+            return i&0xFFFFFFFFL;
+        }
+
+        /**
+         * {@link DataInputStream} reads a value in big-endian, so
+         * convert it to the correct value on little-endian systems.
+         */
+        private static int adjust(int i) {
+            if(IS_LITTLE_ENDIAN)
+                return (i<<24) |((i<<8) & 0x00FF0000) | ((i>>8) & 0x0000FF00) | (i>>>24);
+            else
+                return i;
+        }
+
+        public static long adjustL(long i) {
+            if(IS_LITTLE_ENDIAN) {
+                return Long.reverseBytes(i);
+            } else {
+                return i;
+            }
+        }
+    }
+
+    /**
      * Implementation for Mac OS X based on sysctl(3).
      */
     private static class Darwin extends Unix {
@@ -1670,6 +1939,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ Object writeReplace() throws ObjectStreamException {
         return new Remote(this, getChannelForSerialization());
     }
+
+//    public static void main(String[] args) {
+//        // dump everything
+//        LOGGER.setLevel(Level.ALL);
+//        ConsoleHandler h = new ConsoleHandler();
+//        h.setLevel(Level.ALL);
+//        LOGGER.addHandler(h);
+//
+//        Solaris killer = (Solaris)get();
+//        Solaris.SolarisSystem s = killer.createSystem();
+//        Solaris.SolarisProcess p = s.get(Integer.parseInt(args[0]));
+//        System.out.println(p.getEnvVars());
+//
+//        if(args.length==2)
+//            p.kill();
+//    }
 
     /*
         On MacOS X, there's no procfs <http://www.osxbook.com/book/bonus/chapter11/procfs/>

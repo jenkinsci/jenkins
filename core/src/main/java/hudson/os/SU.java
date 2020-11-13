@@ -23,6 +23,7 @@
  */
 package hudson.os;
 
+import com.sun.solaris.EmbeddedSu;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -94,6 +95,21 @@ public abstract class SU {
                     return p;
                 }
             }.start(listener,rootPassword);
+
+        if(os.equals("SunOS"))
+            return new UnixSu() {
+                protected String sudoExe() {
+                    return "/usr/bin/pfexec";
+                }
+
+                protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
+                    listener.getLogger().println("Running with embedded_su");
+                    ProcessBuilder pb = new ProcessBuilder(args.prepend(sudoExe()).toCommandArray());
+                    return EmbeddedSu.startWithSu(rootUsername, rootPassword, pb);
+                }
+            // in solaris, pfexec never asks for a password, so username==null means
+            // we won't be using password. this helps disambiguate empty password
+            }.start(listener,rootUsername==null?null:rootPassword);
 
         // TODO: Mac?
 
