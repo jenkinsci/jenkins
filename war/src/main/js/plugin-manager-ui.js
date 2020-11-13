@@ -49,7 +49,7 @@ var debouncedFilter = debounce(handleFilter, 150);
 
 document.addEventListener("DOMContentLoaded", function () {
     var filterInput = document.getElementById('filter-box');
-    
+
     filterInput.addEventListener('input', debouncedFilter);
 
     applyFilter(filterInput.value);

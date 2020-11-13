@@ -154,18 +154,18 @@ pluginManager.availablePlugins = function(handler) {
 	});
 };
 
-pluginManager.availablePluginsSearch = function(query, limit, handler) {
-	jenkins.get('/pluginManager/pluginsSearch?query=' + query + '&limit=' + limit, function(response) {
-		if(response.status !== 'ok') {
-			handler.call({ isError: true, errorMessage: response.message });
+pluginManager.availablePluginsSearch = function (query, limit, handler) {
+	jenkins.get('/pluginManager/pluginsSearch?query=' + query + '&limit=' + limit, function (response) {
+		if (response.status !== 'ok') {
+			handler.call({isError: true, errorMessage: response.message});
 			return;
 		}
 
-		handler.call({ isError: false }, response.data);
+		handler.call({isError: false}, response.data);
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,
-		error: function(xhr, textStatus, errorThrown) {
-			handler.call({ isError: true, errorMessage: errorThrown });
+		error: function (xhr, textStatus, errorThrown) {
+			handler.call({isError: true, errorMessage: errorThrown});
 		}
 	});
 };
