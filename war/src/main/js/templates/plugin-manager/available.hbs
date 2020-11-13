@@ -1,6 +1,6 @@
 {{#each plugins}}
 <tr>
-    {{#if this.admin }}
+    {{#if @root/admin }}
     <td class="pane">
         <input type="checkbox" name="plugin.{{ this.name }}.{{ this.sourceId }}">
     </td>
