@@ -33,10 +33,6 @@ import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -77,6 +73,10 @@ import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -312,7 +312,7 @@ public class SetupWizard extends PageDecorator {
             HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
             try {
                 if(securityRealm.getAllUsers().size() == 1) {
-                    HudsonPrivateSecurityRealm.Details details = securityRealm.loadUserByUsername(SetupWizard.initialSetupAdminUserName);
+                    HudsonPrivateSecurityRealm.Details details = securityRealm.load(SetupWizard.initialSetupAdminUserName);
                     FilePath iapf = getInitialAdminPasswordFile();
                     if (iapf.exists()) {
                         if (details.isPasswordCorrect(iapf.readToString().trim())) {
@@ -378,7 +378,7 @@ public class SetupWizard extends PageDecorator {
 
             // ... and then login
             Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
-            auth = securityRealm.getSecurityComponents().manager.authenticate(auth);
+            auth = securityRealm.getSecurityComponents().manager2.authenticate(auth);
             SecurityContextHolder.getContext().setAuthentication(auth);
             
             HttpSession session = req.getSession(false);

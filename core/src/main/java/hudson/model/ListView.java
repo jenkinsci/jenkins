@@ -51,10 +51,8 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn;
 
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -67,6 +65,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Displays {@link Job}s in a flat list view.
@@ -133,7 +132,7 @@ public class ListView extends View implements DirectlyModifiableView {
         this.jobFilters.replaceBy(jobFilters);
     }
 
-    private Object readResolve() {
+    protected Object readResolve() {
         if(includeRegex!=null) {
             try {
                 includePattern = Pattern.compile(includeRegex);
@@ -532,7 +531,7 @@ public class ListView extends View implements DirectlyModifiableView {
     public static final class Listener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 locationChanged(oldFullName, newFullName);
             }
         }
@@ -577,7 +576,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
         @Override
         public void onDeleted(final Item item) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 deleted(item);
             }
         }

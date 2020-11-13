@@ -119,8 +119,6 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.ArrayUtils;
@@ -136,6 +134,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * A particular execution of {@link Job}.
@@ -1888,12 +1888,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener = createBuildListener(job, logger, charset);
                     listener.started(getCauses());
 
-                    Authentication auth = Jenkins.getAuthentication();
-                    if (auth.equals(ACL.SYSTEM)) {
+                    Authentication auth = Jenkins.getAuthentication2();
+                    if (auth.equals(ACL.SYSTEM2)) {
                         listener.getLogger().println(Messages.Run_running_as_SYSTEM());
                     } else {
                         String id = auth.getName();
-                        if (!auth.equals(Jenkins.ANONYMOUS)) {
+                        if (!auth.equals(Jenkins.ANONYMOUS2)) {
                             final User usr = User.getById(id, false);
                             if (usr != null) { // Encode user hyperlink for existing users
                                 id = ModelHyperlinkNote.encodeTo(usr);
@@ -2082,7 +2082,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
     }
 
-    private Object writeReplace() {
+    protected Object writeReplace() {
         return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
     private static class Replacer {
@@ -2476,8 +2476,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @param id as produced by {@link #getExternalizableId}
      * @return the same run, or null if the job or run was not found
      * @throws IllegalArgumentException if the ID is malformed
+     * @throws AccessDeniedException as per {@link ItemGroup#getItem}
      */
-    public @CheckForNull static Run<?,?> fromExternalizableId(String id) throws IllegalArgumentException {
+    public @CheckForNull static Run<?,?> fromExternalizableId(String id) throws IllegalArgumentException, AccessDeniedException {
         int hash = id.lastIndexOf('#');
         if (hash <= 0) {
             throw new IllegalArgumentException("Invalid id");

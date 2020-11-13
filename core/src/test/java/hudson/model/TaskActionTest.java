@@ -44,7 +44,7 @@ public class TaskActionTest {
         }
 
         protected ACL getACL() {
-            return ACL.lambda((a, p) -> true);
+            return ACL.lambda2((a, p) -> true);
         }
     }
 

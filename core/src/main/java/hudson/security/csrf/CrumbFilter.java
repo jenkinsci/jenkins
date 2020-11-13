@@ -8,7 +8,6 @@ package hudson.security.csrf;
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -32,6 +31,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 /**
  * Checks for and validates crumbs on requests that cause state changes, to
@@ -139,7 +139,7 @@ public class CrumbFilter implements Filter {
             }
 
             // JENKINS-40344: Don't spam the log just because a session is expired
-            Level level = Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken ? Level.FINE : Level.WARNING;
+            Level level = Jenkins.getAuthentication2() instanceof AnonymousAuthenticationToken ? Level.FINE : Level.WARNING;
 
             if (crumb != null) {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
@@ -152,7 +152,7 @@ public class CrumbFilter implements Filter {
             if (valid) {
                 chain.doFilter(request, response);
             } else {
-                LOGGER.log(level, "No valid crumb was included in request for {0} by {1}. Returning {2}.", new Object[] {httpRequest.getRequestURI(), Jenkins.getAuthentication().getName(), HttpServletResponse.SC_FORBIDDEN});
+                LOGGER.log(level, "No valid crumb was included in request for {0} by {1}. Returning {2}.", new Object[] {httpRequest.getRequestURI(), Jenkins.getAuthentication2().getName(), HttpServletResponse.SC_FORBIDDEN});
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {

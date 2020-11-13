@@ -28,7 +28,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.tasks.*;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -256,7 +256,7 @@ public class ProjectTest {
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
         ((HtmlElement)form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
         // required due to the new default behavior of click
-        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), true);
+        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
         form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
@@ -548,7 +548,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -567,7 +567,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -604,7 +604,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -642,7 +642,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -680,7 +680,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 

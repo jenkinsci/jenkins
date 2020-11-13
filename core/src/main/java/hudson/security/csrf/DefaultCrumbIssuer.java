@@ -25,12 +25,12 @@ import jenkins.security.HexStringConfidentialKey;
 
 import net.sf.json.JSONObject;
 
-import org.acegisecurity.Authentication;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.security.core.Authentication;
 
 /**
  * A crumb issuing algorithm based on the request principal and the remote address.
@@ -75,7 +75,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
             if (md != null) {
                 HttpServletRequest req = (HttpServletRequest) request;
                 StringBuilder buffer = new StringBuilder();
-                Authentication a = Jenkins.getAuthentication();
+                Authentication a = Jenkins.getAuthentication2();
                 buffer.append(a.getName());
                 buffer.append(';');
                 if (!isExcludeClientIPFromCrumb()) {

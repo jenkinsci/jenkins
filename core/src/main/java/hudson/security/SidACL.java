@@ -23,16 +23,15 @@
  */
 package hudson.security;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.acls.sid.PrincipalSid;
-import org.acegisecurity.acls.sid.GrantedAuthoritySid;
-import org.acegisecurity.acls.sid.Sid;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
+import java.util.logging.Logger;
+import org.acegisecurity.acls.sid.GrantedAuthoritySid;
+import org.acegisecurity.acls.sid.PrincipalSid;
+import org.acegisecurity.acls.sid.Sid;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * {@link ACL} that checks permissions based on {@link GrantedAuthority}
@@ -43,8 +42,8 @@ import static java.util.logging.Level.FINER;
 public abstract class SidACL extends ACL {
 
     @Override
-    public boolean hasPermission(@NonNull Authentication a, Permission permission) {
-        if(a==SYSTEM) {
+    public boolean hasPermission2(@NonNull Authentication a, Permission permission) {
+        if(a.equals(SYSTEM2)) {
             if(LOGGER.isLoggable(FINE))
                 LOGGER.fine("hasPermission("+a+","+permission+")=>SYSTEM user has full access");
             return true;
@@ -59,7 +58,7 @@ public abstract class SidACL extends ACL {
     }
 
     /**
-     * Implementation that backs up {@link #hasPermission(Authentication, Permission)}.
+     * Implementation that backs up {@link #hasPermission2(Authentication, Permission)}.
      *
      * @return
      *      true or false if {@link #hasPermission(Sid, Permission)} returns it.
@@ -100,7 +99,7 @@ public abstract class SidACL extends ACL {
      * Checks if the given {@link Sid} has the given {@link Permission}.
      *
      * <p>
-     * {@link #hasPermission(Authentication, Permission)} is implemented
+     * {@link #hasPermission2(Authentication, Permission)} is implemented
      * by checking authentication's {@link GrantedAuthority} by using
      * this method.
      *

@@ -51,7 +51,6 @@ import java.util.TreeSet;
 import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -77,6 +76,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
 public class ListViewTest {
@@ -378,8 +378,8 @@ public class ListViewTest {
         }
         @Override public ACL getACL(View item) {
             return new ACL() {
-                @Override public boolean hasPermission(Authentication a, Permission permission) {
-                    return a.equals(SYSTEM);
+                @Override public boolean hasPermission2(Authentication a, Permission permission) {
+                    return a.equals(SYSTEM2);
                 }
             };
         }
