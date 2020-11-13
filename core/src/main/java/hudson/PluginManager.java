@@ -95,7 +95,6 @@ import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -1386,29 +1385,29 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     );
 
                     if (hasAdoptThisPluginLabel(plugin)) {
-                        jsonObject.put("adoptMe", hudson.model.Messages.UpdateCenter_adoptThisPlugin());
+                        jsonObject.put("adoptMe", Messages.PluginManager_adoptThisPlugin());
                     }
                     if (plugin.isDeprecated()) {
-                        jsonObject.put("deprecated", hudson.model.Messages.UpdateCenter_deprecationWarning(plugin.getDeprecation().url));
+                        jsonObject.put("deprecated", Messages.PluginManager_deprecationWarning(plugin.getDeprecation().url));
                     }
                     jsonObject.put("excerpt", plugin.excerpt);
                     jsonObject.put("version", plugin.version);
                     if (plugin.isForNewerHudson()) {
-                        jsonObject.put("newerCoreRequired", hudson.model.Messages.UpdateCenter_coreWarning(plugin.requiredCore));
+                        jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(plugin.requiredCore));
                     }
                     if (plugin.isForNewerJava()) {
-                        jsonObject.put("newerJavaRequired", hudson.model.Messages.UpdateCenter_javaWarning(plugin.minimumJavaVersion));
+                        jsonObject.put("newerJavaRequired", Messages.PluginManager_javaWarning(plugin.minimumJavaVersion));
                     }
                     if (plugin.isNeededDependenciesForNewerJava()) {
                         VersionNumber javaVersion = plugin.getNeededDependenciesMinimumJavaVersion();
                         if (javaVersion == null) {
                             throw new IllegalStateException("java version cannot be null here");
                         }
-                        jsonObject.put("dependenciesNewerJava", hudson.model.Messages.UpdateCenter_depJavaWarning(javaVersion.toString()));
+                        jsonObject.put("dependenciesNewerJava", Messages.PluginManager_depJavaWarning(javaVersion.toString()));
                     }
                     if (plugin.hasWarnings()) {
                         JSONObject unresolvedSecurityWarnings = new JSONObject();
-                        unresolvedSecurityWarnings.put("text", hudson.model.Messages.UpdateCenter_securityWarning());
+                        unresolvedSecurityWarnings.put("text", Messages.PluginManager_securityWarning());
                         Set<UpdateSite.Warning> pluginWarnings = plugin.getWarnings();
                         if (pluginWarnings == null) {
                             throw new IllegalStateException("warnings cannot be null here");
@@ -1426,11 +1425,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (plugin.releaseTimestamp != null) {
                         JSONObject releaseTimestamp = new JSONObject();
                         releaseTimestamp.put("iso8601", Functions.iso8601DateTime(plugin.releaseTimestamp));
-                        releaseTimestamp.put("displayValue", hudson.model.Messages.UpdateCenter_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
+                        releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
                     if (hasLatestVersionNewerThanOffered(plugin)) {
-                        jsonObject.put("newerVersionAvailableNotOffered", hudson.model.Messages.UpdateCenter_newerVersionExists(plugin.latest));
+                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
                     }
                     return jsonObject;
                 })
