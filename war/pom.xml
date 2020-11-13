@@ -135,12 +135,6 @@ THE SOFTWARE.
       <artifactId>systemd-slave-installer</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>sshd</artifactId>
-      <version>3.0-rc163.a93e2d48abe4</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
       <artifactId>jquery-detached</artifactId>
       <version>1.2.1</version>
