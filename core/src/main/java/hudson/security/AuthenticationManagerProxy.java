@@ -23,10 +23,12 @@
  */
 package hudson.security;
 
-import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.DisabledException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 
 /**
  * {@link AuthenticationManager} proxy that delegates to another instance.
@@ -38,6 +40,7 @@ import org.acegisecurity.DisabledException;
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public class AuthenticationManagerProxy implements AuthenticationManager {
     private volatile AuthenticationManager delegate;
 

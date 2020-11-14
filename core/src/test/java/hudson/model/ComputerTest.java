@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.FilePath;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -13,6 +12,7 @@ import java.util.concurrent.Future;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import org.springframework.security.core.Authentication;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -41,7 +41,7 @@ public class ComputerTest {
     @Issue("JENKINS-50296")
     @Test
     public void testThreadPoolForRemotingActsAsSystemUser() throws InterruptedException, ExecutionException {
-        Future<Authentication> job = Computer.threadPoolForRemoting.submit(Jenkins::getAuthentication);
-        assertThat(job.get(), is(ACL.SYSTEM));
+        Future<Authentication> job = Computer.threadPoolForRemoting.submit(Jenkins::getAuthentication2);
+        assertThat(job.get(), is(ACL.SYSTEM2));
     }
 }

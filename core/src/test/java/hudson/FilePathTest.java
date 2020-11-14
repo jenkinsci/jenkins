@@ -28,6 +28,7 @@ import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
+import hudson.slaves.WorkspaceList;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import org.apache.commons.io.FileUtils;
@@ -241,8 +242,8 @@ public class FilePathTest {
     @Test public void archiveBug() throws Exception {
             FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
             d.child("test").touch(0);
-            d.zip(new NullOutputStream());
-            d.zip(new NullOutputStream(),"**/*");
+            d.zip(NullOutputStream.NULL_OUTPUT_STREAM);
+            d.zip(NullOutputStream.NULL_OUTPUT_STREAM,"**/*");
     }
 
     @Test public void normalization() throws Exception {
@@ -808,6 +809,20 @@ public class FilePathTest {
         assertTrue("symlink target should not be deleted", Files.exists(targetDir));
         assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
         assertFalse("could not delete target", Files.exists(toDelete));
+    }
+
+    @Test
+    @Issue("JENKINS-44909")
+    public void deleteSuffixesRecursive() throws Exception {
+        File deleteSuffixesRecursiveFolder = temp.newFolder("deleteSuffixesRecursive");
+        FilePath filePath = new FilePath(deleteSuffixesRecursiveFolder);
+        FilePath suffix = filePath.withSuffix(WorkspaceList.COMBINATOR + "suffixed");
+        FilePath textTempFile = suffix.createTextTempFile("tmp", null, "dummy", true);
+
+        assertThat(textTempFile.exists(), is(true));
+        
+        filePath.deleteSuffixesRecursive();
+        assertThat(textTempFile.exists(), is(false));
     }
 
     @Test public void deleteRecursiveOnWindows() throws Exception {

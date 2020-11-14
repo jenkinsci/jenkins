@@ -29,10 +29,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
-import org.apache.commons.io.Charsets;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class AnnotatedLargeTextTest {
         ps.print("Some text.\n");
         ps.print("Go back to " + TestNote.encodeTo("/root", "your home") + ".\n");
         ps.print("More text.\n");
-        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, Charsets.UTF_8, true, null);
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
         assertEquals("Some text.\nGo back to your home.\nMore text.\n", baos.toString());
@@ -72,7 +73,7 @@ public class AnnotatedLargeTextTest {
     public void oldDeserialization() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         buf.write(("hello" + ConsoleNote.PREAMBLE_STR + "AAAAwR+LCAAAAAAAAP9dzLEOwVAUxvHThtiNprYxsGiMQhiwNSIhMR/tSZXr3Lr3oJPwPt7FM5hM3gFh8i3/5Bt+1yeUrYH6ap9Yza1Ys9WKWuMiR05wqWhEgpmyEy306Jxvwb19ccGNoBJjLplmgWq0xgOGCjkNZ2IyTrsRlFayVTs4gVMYqP3pw28/JnznuABF/rYWyIyeJfLQe1vxZiDQ7NnYZLn0UZGRRjA9MiV+0OyFv3+utadQyH8B+aJxVM4AAAA=" + ConsoleNote.POSTAMBLE_STR + "there\n").getBytes());
-        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, Charsets.UTF_8, true, null);
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
         assertEquals("hellothere\n", baos.toString());
@@ -95,7 +96,7 @@ public class AnnotatedLargeTextTest {
     public void badMac() throws Exception {
         ByteBuffer buf = new ByteBuffer();
         buf.write(("Go back to " + ConsoleNote.PREAMBLE_STR + "////4ByIhqPpAc43AbrEtyDUDc1/UEOXsoY6LeoHSeSlb1d7AAAAlR+LCAAAAAAAAP9b85aBtbiIQS+jNKU4P08vOT+vOD8nVc8xLy+/JLEkNcUnsSg9NSS1oiQktbhEBUT45ZekCpys9xWo8J3KxMDkycCWk5qXXpLhw8BcWpRTwiDkk5VYlqifk5iXrh9cUpSZl25dUcQghWaBM4QGGcYAAYxMDAwVBUAGZwkDq35Rfn4JABmN28qcAAAA" + ConsoleNote.POSTAMBLE_STR + "your home.\n").getBytes());
-        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, Charsets.UTF_8, true, null);
+        AnnotatedLargeText<Void> text = new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         text.writeLogTo(0, baos);
         assertEquals("Go back to your home.\n", baos.toString());

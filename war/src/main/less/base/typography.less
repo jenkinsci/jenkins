@@ -1,12 +1,11 @@
-@import '../abstracts/font.less';
-@import '../abstracts/colors.less';
+@import '../abstracts/theme.less';
 
 body,
 p {
-  font-family: @font-family-sans;
-  font-size: @font-size-sm;
-  line-height: @line-height-base;
-  color: @text-color;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  color: var(--text-color);
 }
 
 button {
@@ -21,7 +20,7 @@ form,
 input,
 textarea,
 select {
-  font-size: @font-size-sm;
+  font-size: var(--font-size-sm);
 }
 
 // Reset monospaced font-size, because browsers reduce it by default to ~81%
@@ -30,7 +29,7 @@ code,
 kbd,
 samp,
 tt {
-  font-size: @font-size-monospace;
+  font-size: var(--font-size-monospace);
 }
 
 /*
@@ -49,7 +48,7 @@ h5,
 .h5,
 h6,
 .h6 {
-  line-height: @line-height-heading;
+  line-height: var(--line-height-heading);
   font-weight: bold;
   display: block;
   margin-top: 0.5rem;

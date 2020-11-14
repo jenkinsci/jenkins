@@ -69,7 +69,6 @@ import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -145,6 +144,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -155,6 +155,7 @@ import java.util.stream.Collectors;
 
 import static hudson.init.InitMilestone.*;
 import static java.util.logging.Level.*;
+import org.springframework.security.core.Authentication;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -883,7 +884,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting, @CheckForNull List<PluginWrapper> batch) throws IOException, InterruptedException, RestartRequiredException {
-        try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext context = ACL.as2(ACL.SYSTEM2)) {
             LOGGER.log(FINE, "Attempting to dynamic load {0}", arc);
             PluginWrapper p = null;
             String sn;
@@ -950,7 +951,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     public void start(List<PluginWrapper> plugins) throws Exception {
-      try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+      try (ACLContext context = ACL.as2(ACL.SYSTEM2)) {
         Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
 
         // recalculate dependencies of plugins optionally depending the newly deployed ones.
@@ -1547,7 +1548,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             installJobs.add(updateCenter.addJob(updateCenter.new CompleteBatchJob(batch, start, correlationId)));
         }
 
-        final Authentication currentAuth = Jenkins.getAuthentication();
+        final Authentication currentAuth = Jenkins.getAuthentication2();
 
         if (!jenkins.getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
@@ -1577,7 +1578,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     updateCenter.persistInstallStatus();
                     if(!failures) {
-                        try (ACLContext acl = ACL.as(currentAuth)) {
+                        try (ACLContext acl = ACL.as2(currentAuth)) {
                             InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
                         }
                     }
@@ -2238,6 +2239,32 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     }
 
+    /**
+     * {@link AdministrativeMonitor} that checks if there are any plugins that are deprecated.
+     *
+     * @since 2.246
+     */
+    @Restricted(NoExternalUse.class)
+    @Symbol("pluginDeprecation")
+    @Extension
+    public static final class PluginDeprecationMonitor extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_PluginDeprecationMonitor_DisplayName();
+        }
+
+        public boolean isActivated() {
+            return !getDeprecatedPlugins().isEmpty();
+        }
+
+        public Map<PluginWrapper, String> getDeprecatedPlugins() {
+            return Jenkins.get().getPluginManager().getPlugins().stream()
+                    .filter(PluginWrapper::isDeprecated)
+                    .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
+        }
+    }
+
     @Restricted(DoNotUse.class)
     public String unscientific(double d) {
         return String.format(Locale.US, "%15.4f", d);
@@ -2254,7 +2281,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean isMetaLabel(String label) {
-        return "adopt-this-plugin".equals(label);
+        return "adopt-this-plugin".equals(label) || "deprecated".equals(label);
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly
@@ -2264,6 +2291,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return false;
         }
         return Arrays.asList(categories).contains("adopt-this-plugin");
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean hasLatestVersionNewerThanOffered(UpdateSite.Plugin plugin) {
+        if (plugin.latest == null) {
+            return false;
+        }
+        return !plugin.latest.equalsIgnoreCase(plugin.version); // we can assume that any defined 'latest' will be newer than the actual offered version
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly

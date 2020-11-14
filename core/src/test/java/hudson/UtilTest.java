@@ -30,6 +30,7 @@ import hudson.util.StreamTaskListener;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +50,13 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -579,5 +586,35 @@ public class UtilTest {
         // intermediate symlinks are NOT resolved
         assertNull(Util.resolveSymlinkToFile(new File(_a, "aa")));
         assertNull(Util.resolveSymlinkToFile(new File(_a, "aa/aa.txt")));
+    }
+
+    @Test
+    public void ifOverriddenSuccess() {
+        assertTrue(Util.ifOverridden(() -> true, BaseClass.class, DerivedClassSuccess.class, "method"));
+    }
+
+    @Test
+    public void ifOverriddenFailure() {
+        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> {
+            Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method");
+        });
+        assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
+    }
+
+    public static class BaseClass {
+        protected String method() {
+            return "base";
+        }
+    }
+
+    public static class DerivedClassFailure extends BaseClass {
+
+    }
+
+    public static class DerivedClassSuccess extends BaseClass {
+        @Override
+        protected String method() {
+            return DerivedClassSuccess.class.getName();
+        }
     }
 }

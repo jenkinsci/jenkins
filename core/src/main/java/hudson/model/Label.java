@@ -203,7 +203,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     public boolean isSelfLabel() {
         Set<Node> nodes = getNodes();
-        return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
+        return nodes.size() == 1 && nodes.iterator().next().getSelfLabel().equals(this);
     }
 
     private static class NodeSorter implements Comparator<Node>, Serializable {
@@ -410,38 +410,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
         // denormalize for performance
         // we don't need to respect security as much when returning a simple count
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             int result = 0;
-            // top level gives the map without checking security of items in the map
-            // therefore best performance
-            for (TopLevelItem topLevelItem : Jenkins.get().getItemMap().values()) {
-                if (topLevelItem instanceof AbstractProject) {
-                    final AbstractProject project = (AbstractProject) topLevelItem;
-                    if (matches(project.getAssignedLabelString())) {
-                        result++;
-                    }
-                }
-                if (topLevelItem instanceof ItemGroup) {
-                    Stack<ItemGroup> q = new Stack<>();
-                    q.push((ItemGroup) topLevelItem);
-
-                    while (!q.isEmpty()) {
-                        ItemGroup<?> parent = q.pop();
-                        // we run the risk of permissions checks in ItemGroup#getItems()
-                        // not much we can do here though
-                        for (Item i : parent.getItems()) {
-                            if (i instanceof AbstractProject) {
-                                final AbstractProject project = (AbstractProject) i;
-                                if (matches(project.getAssignedLabelString())) {
-                                    result++;
-                                }
-                            }
-                            if (i instanceof ItemGroup) {
-                                q.push((ItemGroup) i);
-                            }
-                        }
-                    }
-                }
+            for (AbstractProject ignored : Jenkins.get().allItems(AbstractProject.class, p -> matches(p.getAssignedLabelString()))) {
+                ++result;
             }
             return tiedJobsCount = result;
         }

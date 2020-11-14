@@ -3,7 +3,10 @@ package hudson.slaves;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Action;
@@ -40,8 +43,8 @@ public class CloudTest {
             }
         };
 
-        assertTrue(acl.hasPermission(Jenkins.ANONYMOUS, Cloud.PROVISION));
-        assertFalse(acl.hasPermission(Jenkins.ANONYMOUS, Jenkins.ADMINISTER));
+        assertTrue(acl.hasPermission2(Jenkins.ANONYMOUS2, Cloud.PROVISION));
+        assertFalse(acl.hasPermission2(Jenkins.ANONYMOUS2, Jenkins.ADMINISTER));
         assertEquals(Cloud.PROVISION, Computer.PERMISSIONS.find("Provision"));
     }
 

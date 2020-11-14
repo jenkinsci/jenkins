@@ -41,7 +41,7 @@ public final class AgentComputerUtil {
      * separate thread on agents, that'll fail.)
      *
      * @return null if the calling thread doesn't have any trace of where its master is.
-     * @since TODO
+     * @since 2.235
      */
     @CheckForNull
     public static VirtualChannel getChannelToMaster() {

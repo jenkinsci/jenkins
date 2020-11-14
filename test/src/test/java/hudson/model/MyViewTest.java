@@ -31,13 +31,15 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.acegisecurity.context.SecurityContextHolder;
 import static org.hamcrest.Matchers.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.*;
 import org.jvnet.hudson.test.LoggerRule;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *
@@ -61,12 +63,12 @@ public class MyViewTest {
         
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);
-        User user = User.get("User1");
+        User user = User.getOrCreateByIdOrFullName("User1");
         FreeStyleProject job = rule.createFreeStyleProject("job");
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);
         auth.add(Job.READ, "User1");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("View " + view.getDisplayName() + " should not contain job " + job.getDisplayName(), view.contains(job));
         auth.add(Job.CONFIGURE, "User1");
         assertTrue("View " + view.getDisplayName() + " contain job " + job.getDisplayName(), view.contains(job));
@@ -93,14 +95,14 @@ public class MyViewTest {
     
     @Test
     public void testGetItems() throws IOException, InterruptedException{
-        User user = User.get("User1");
+        User user = User.getOrCreateByIdOrFullName("User1");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);   
         FreeStyleProject job2 = rule.createFreeStyleProject("job2");
         FreeStyleProject job = rule.createFreeStyleProject("job");
         MyView view = new MyView("My", rule.jenkins);
         auth.add(Job.READ, "User1");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("View " + view.getDisplayName() + " should not contains job " + job.getDisplayName(), view.getItems().contains(job));
         assertFalse("View " + view.getDisplayName() + " should not contains job " + job2.getDisplayName(), view.getItems().contains(job2));
         auth.add(Job.CONFIGURE, "User1");

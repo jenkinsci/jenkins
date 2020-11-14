@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Build;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.FreeStyleProject;
@@ -33,10 +34,10 @@ import hudson.model.User;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.jvnet.hudson.test.Issue;
@@ -45,6 +46,8 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 public class ACLTest {
 
@@ -61,14 +64,14 @@ public class ACLTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new DoNotBotherMe());
         assertTrue(p.hasPermission(Item.CONFIGURE));
-        assertTrue(p.hasPermission(ACL.SYSTEM, Item.CONFIGURE));
+        assertTrue(p.hasPermission2(ACL.SYSTEM2, Item.CONFIGURE));
         p.checkPermission(Item.CONFIGURE);
         p.checkAbortPermission();
         assertEquals(Collections.singletonList(p), r.jenkins.getAllItems());
     }
 
     @Test
-    public void checkAnyPermissionPassedIfOneIsValid() throws Exception {
+    public void checkAnyPermissionPassedIfOneIsValid() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -76,13 +79,13 @@ public class ACLTest {
         );
 
         final User manager = User.getOrCreateByIdOrFullName("manager");
-        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.MANAGE);
         }
     }
 
     @Test
-    public void checkAnyPermissionThrowsIfPermissionIsMissing() throws Exception {
+    public void checkAnyPermissionThrowsIfPermissionIsMissing() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -93,13 +96,13 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing the Overall/Administer permission");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.ADMINISTER);
         }
     }
 
     @Test
-    public void checkAnyPermissionThrowsIfMissingMoreThanOne() throws Exception {
+    public void checkAnyPermissionThrowsIfMissingMoreThanOne() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -110,14 +113,14 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing a permission, one of Overall/Administer, Overall/Read is required");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.ADMINISTER, Jenkins.READ);
         }
     }
 
     @Test
     @Issue("JENKINS-61467")
-    public void checkAnyPermissionDoesNotShowDisabledPermissionsInError() throws Exception {
+    public void checkAnyPermissionDoesNotShowDisabledPermissionsInError() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -128,14 +131,14 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing the Overall/Administer permission");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ);
         }
     }
 
     @Test
     @Issue("JENKINS-61467")
-    public void checkAnyPermissionShouldShowDisabledPermissionsIfNotImplied() throws Exception {
+    public void checkAnyPermissionShouldShowDisabledPermissionsIfNotImplied() {
         Jenkins jenkins = r.jenkins;
         jenkins.setSecurityRealm(r.createDummySecurityRealm());
         jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
@@ -146,7 +149,7 @@ public class ACLTest {
 
         expectedException.expectMessage("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required");
         expectedException.expect(AccessDeniedException.class);
-        try (ACLContext ignored = ACL.as(manager.impersonate())) {
+        try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Build.ARTIFACTS);
         }
     }
@@ -192,12 +195,13 @@ public class ACLTest {
         public ACL getRootACL() {
             return new ACL() {
                 @Override
-                public boolean hasPermission(Authentication a, Permission permission) {
+                public boolean hasPermission2(Authentication a, Permission permission) {
                     throw new AssertionError("should not have needed to check " + permission + " for " + a);
                 }
             };
         }
 
+        @NonNull
         @Override
         public Collection<String> getGroups() {
             return Collections.emptySet();

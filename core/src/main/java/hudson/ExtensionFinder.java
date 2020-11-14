@@ -578,7 +578,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 // so that we invoke them before derived class one. This isn't specified in JSR-250 but implemented
                 // this way in Spring and what most developers would expect to happen.
 
-                final Set<Class> interfaces = ClassUtils.getAllInterfacesAsSet(instance);
+                final Set<Class<?>> interfaces = ClassUtils.getAllInterfacesAsSet(instance);
 
                 while (c != Object.class) {
                     Arrays.stream(c.getDeclaredMethods())
@@ -607,7 +607,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * This allows to introspect metadata for a method which is both declared in parent class and in implemented
      * interface(s). {@code interfaces} typically is obtained by {@link ClassUtils#getAllInterfacesAsSet}
      */
-    Collection<Method> getMethodAndInterfaceDeclarations(Method method, Collection<Class> interfaces) {
+    Collection<Method> getMethodAndInterfaceDeclarations(Method method, Collection<Class<?>> interfaces) {
         final List<Method> methods = new ArrayList<>();
         methods.add(method);
 

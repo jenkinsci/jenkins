@@ -75,7 +75,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -102,6 +101,7 @@ import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Partial default implementation of {@link Item}.
@@ -264,7 +264,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         // send to the new job page
         // note we can't use getUrl() because that would pick up old name in the
         // Ancestor.getUrl()
-        return HttpResponses.redirectTo("../" + newName);
+        return HttpResponses.redirectTo("../" + Functions.encode(newName));
     }
 
     /**
@@ -313,13 +313,13 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             if (item != null) {
                 throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
             }
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                 item = getParent().getItem(newName);
                 if (item != null) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
                                 "User {2} has no {3} permission for existing job with the same name",
-                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext().getAuthentication().getName(), Item.DISCOVER.name} );
+                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext2().getAuthentication().getName(), Item.DISCOVER.name} );
                     }
                     // Don't explicitly mention that there is another item with the same name.
                     throw new Failure(Messages.Jenkins_NotAllowedName(newName));
@@ -614,7 +614,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return Items.getConfigFile(this);
     }
 
-    private Object writeReplace() {
+    protected Object writeReplace() {
         return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
     private static class Replacer {

@@ -35,8 +35,17 @@ import hudson.model.Node;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.remoting.ChannelClosedException;
+import jenkins.tasks.filters.EnvVarsFilterLocalRule;
+import jenkins.tasks.filters.EnvVarsFilterableBuilder;
+import jenkins.tasks.filters.EnvVarsFilterException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,11 +56,17 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * 
  * @author Kohsuke Kawaguchi
  */
-public abstract class CommandInterpreter extends Builder {
+public abstract class CommandInterpreter extends Builder implements EnvVarsFilterableBuilder {
     /**
      * Command to execute. The format depends on the actual {@link CommandInterpreter} implementation.
      */
     protected final String command;
+
+    /**
+     * List of configured environment filter rules
+     */
+    @Restricted(Beta.class)
+    protected List<EnvVarsFilterLocalRule> configuredLocalRules = new ArrayList<>();
 
     public CommandInterpreter(String command) {
         this.command = command;
@@ -59,6 +74,16 @@ public abstract class CommandInterpreter extends Builder {
 
     public final String getCommand() {
         return command;
+    }
+
+    public @NonNull List<EnvVarsFilterLocalRule> buildEnvVarsFilterRules() {
+        return configuredLocalRules == null ? Collections.emptyList() : new ArrayList<>(configuredLocalRules);
+    }
+
+    // used by Jelly view
+    @Restricted(NoExternalUse.class)
+    public List<EnvVarsFilterLocalRule> getConfiguredLocalRules() {
+        return configuredLocalRules == null ? Collections.emptyList() : configuredLocalRules;
     }
 
     @Override
@@ -106,7 +131,21 @@ public abstract class CommandInterpreter extends Builder {
                 for(Map.Entry<String,String> e : build.getBuildVariables().entrySet())
                     envVars.put(e.getKey(),e.getValue());
 
-                r = join(launcher.launch().cmds(buildCommandLine(script)).envs(envVars).stdout(listener).pwd(ws).start());
+                launcher.prepareFilterRules(build, this);
+
+                Launcher.ProcStarter procStarter = launcher.launch();
+                procStarter.cmds(buildCommandLine(script))
+                        .envs(envVars)
+                        .stdout(listener)
+                        .pwd(ws);
+
+                try {
+                    Proc proc = procStarter.start();
+                    r = join(proc);
+                } catch (EnvVarsFilterException se) {
+                    LOGGER.log(Level.FINE, "Environment variable filtering failed", se);
+                    return false;
+                }
 
                 if(isErrorlevelForUnstableBuild(r)) {
                     build.setResult(Result.UNSTABLE);

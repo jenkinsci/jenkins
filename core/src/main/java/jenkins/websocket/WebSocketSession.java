@@ -131,7 +131,6 @@ public abstract class WebSocketSession {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected final void sendBinary(ByteBuffer partialByte, boolean isLast) {
         try {
             remoteEndpoint.getClass().getMethod("sendPartialBytes", ByteBuffer.class, boolean.class).invoke(remoteEndpoint, partialByte, isLast);

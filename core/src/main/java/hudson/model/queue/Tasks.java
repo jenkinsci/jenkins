@@ -27,12 +27,11 @@ import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import org.acegisecurity.Authentication;
-
 import java.util.Collection;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
+import org.springframework.security.core.Authentication;
 
 /**
  * Convenience methods around {@link Task} and {@link SubTask}.
@@ -80,36 +79,46 @@ public class Tasks {
         return p instanceof hudson.model.Item ? (hudson.model.Item)p : null;
     }
 
-    /** @deprecated call {@link Task#getDefaultAuthentication()} directly */
+    /** @deprecated call {@link Queue.Task#getDefaultAuthentication()} directly */
     @Deprecated
     @NonNull
-    public static Authentication getDefaultAuthenticationOf(Task t) {
+    public static org.acegisecurity.Authentication getDefaultAuthenticationOf(Task t) {
         return t.getDefaultAuthentication();
     }
 
-    /** @deprecated call {@link Task#getDefaultAuthentication(Item)} directly */
+    /** @deprecated call {@link Queue.Task#getDefaultAuthentication(Item)} directly */
     @Deprecated
     @NonNull
-    public static Authentication getDefaultAuthenticationOf(Task t, Item item) {
+    public static org.acegisecurity.Authentication getDefaultAuthenticationOf(Task t, Item item) {
         return t.getDefaultAuthentication(item);
     }
 
     /**
      * Finds what authentication a task is likely to be run under when scheduled.
-     * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate}) might differ,
-     * in case some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Item)} takes (for example) actions into consideration.
+     * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate2}) might differ,
+     * in case some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Item)} takes (for example) actions into consideration.
      * @param t a task
-     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication()}
-     * @since 1.560
+     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication2()}
+     * @since TODO
      */
-    public static @NonNull Authentication getAuthenticationOf(@NonNull Task t) {
+    public static @NonNull Authentication getAuthenticationOf2(@NonNull Task t) {
         for (QueueItemAuthenticator qia : QueueItemAuthenticatorProvider.authenticators()) {
-            Authentication a = qia.authenticate(t);
+            Authentication a = qia.authenticate2(t);
             if (a != null) {
                 return a;
             }
         }
-        return t.getDefaultAuthentication();
+        return t.getDefaultAuthentication2();
     }
+
+    /**
+     * @deprecated use {@link #getAuthenticationOf2}
+     * @since 1.560
+     */
+    @Deprecated
+    public static @NonNull org.acegisecurity.Authentication getAuthenticationOf(@NonNull Task t) {
+        return org.acegisecurity.Authentication.fromSpring(getAuthenticationOf2(t));
+    }
+
 
 }

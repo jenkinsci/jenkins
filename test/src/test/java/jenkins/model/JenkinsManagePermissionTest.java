@@ -1,5 +1,6 @@
 package jenkins.model;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -19,20 +20,32 @@ import org.jvnet.hudson.test.recipes.WithPlugin;
 import hudson.PluginWrapper;
 import hudson.cli.CLICommandInvoker;
 import hudson.cli.DisablePluginCommand;
+import hudson.lifecycle.RestartNotSupportedException;
 import hudson.model.Descriptor;
 import hudson.model.MyView;
+import hudson.model.User;
 import hudson.model.View;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.tasks.Shell;
 
+import jenkins.security.ApiTokenProperty;
+
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 
 /**
  * As Jenkins.MANAGE can be enabled on startup with jenkins.security.ManagePermission property, we need a test class
@@ -226,4 +239,51 @@ public class JenkinsManagePermissionTest {
 
     // End of HudsonTest
     //-------
+
+    @Issue("JENKINS-63795")
+    @Test
+    public void managePermissionShouldBeAllowedToRestart() throws IOException {
+
+        //GIVEN a Jenkins with 3 users : ADMINISTER, MANAGE and READ
+        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false, false, null);
+        User adminUser = realm.createAccount("Administer", "G0d");
+        User manageUser = realm.createAccount("Manager", "TheB00S");
+        User readUser = realm.createAccount("Reader", "BookW00rm");
+        j.jenkins.setSecurityRealm(realm);
+
+        ProjectMatrixAuthorizationStrategy authorizationStrategy = new ProjectMatrixAuthorizationStrategy();
+        authorizationStrategy.add(Jenkins.ADMINISTER, adminUser.getId());
+
+        authorizationStrategy.add(Jenkins.MANAGE, manageUser.getId());
+        authorizationStrategy.add(Jenkins.READ, manageUser.getId());
+
+        authorizationStrategy.add(Jenkins.READ, readUser.getId());
+        j.jenkins.setAuthorizationStrategy(authorizationStrategy);
+
+        //WHEN Asking for restart or safe-restart
+        //THEN MANAGE and ADMINISTER are allowed but not READ
+        CLICommandInvoker.Result result = new CLICommandInvoker(j, "restart").asUser(readUser.getId()).invoke();
+        assertThat(result, allOf(failedWith(6),hasNoStandardOutput()));
+
+        result = new CLICommandInvoker(j, "safe-restart").asUser(readUser.getId()).invoke();
+        assertThat(result, allOf(failedWith(6),hasNoStandardOutput()));
+
+        // We should assert that cli result is 0
+        // but as restart is not allowed in JenkinsRule, we assert that it has tried to restart.
+        result = new CLICommandInvoker(j, "restart").asUser(manageUser.getId()).invoke();
+        assertThat(result, failedWith(1));
+        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+
+        result = new CLICommandInvoker(j, "safe-restart").asUser(manageUser.getId()).invoke();
+        assertThat(result, failedWith(1));
+        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+
+        result = new CLICommandInvoker(j, "restart").asUser(adminUser.getId()).invoke();
+        assertThat(result, failedWith(1));
+        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+
+        result = new CLICommandInvoker(j, "safe-restart").asUser(adminUser.getId()).invoke();
+        assertThat(result, failedWith(1));
+        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+    }
 }

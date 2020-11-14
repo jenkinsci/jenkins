@@ -100,11 +100,7 @@ public class CharacterEncodingFilter implements Filter {
             }
         }
 
-        if (FORCE_ENCODING || req.getCharacterEncoding() == null) {
-            return true;
-        }
-        
-        return false;
+        return FORCE_ENCODING || req.getCharacterEncoding() == null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(CharacterEncodingFilter.class.getName());

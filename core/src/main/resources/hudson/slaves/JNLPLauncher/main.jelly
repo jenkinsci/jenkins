@@ -41,7 +41,7 @@ THE SOFTWARE.
             <j:when test="${it.launcher.javaWebStartSupported}">
               <li>
                 <p>
-                  <a href="slave-agent.jnlp" id="jnlp-link">
+                  <a href="jenkins-agent.jnlp" id="jnlp-link">
                     <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
                   </a>
                   ${%Launch agent from browser}
@@ -64,13 +64,13 @@ THE SOFTWARE.
                 <p>
                   ${%Run from agent command line:}
                 </p>
-                <pre>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+                <pre>javaws ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp</pre>
               </li>
               <li>
                 <p>
                   ${%Or if the agent is headless:}
                 </p>
-                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp ${it.launcher.getWorkDirOptions(it)}</pre>
+                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}</pre>
               </li>
             </j:when>
             <j:otherwise>
@@ -79,12 +79,12 @@ THE SOFTWARE.
                   ${%Run from agent command line:}
                 </p>
                 <!-- TODO conceal secret w/ JS if possible -->
-                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}</pre>
+                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}</pre>
                 <p>
                   ${%Run from agent command line, with the secret stored in a file:}
                 </p>
                 <pre>echo ${it.jnlpMac} > secret-file
-java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
+java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
               </li>
             </j:otherwise>
           </j:choose>

@@ -7,7 +7,9 @@ import hudson.util.ProcessTree.ProcessCallable;
 import java.io.IOException;
 import java.io.Serializable;
 import jenkins.security.MasterToSlaveCallable;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Assume;
 import org.junit.Rule;

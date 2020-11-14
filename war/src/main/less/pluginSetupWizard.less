@@ -16,7 +16,7 @@
     bottom: 0;
     left: 0;
     z-index: 1000;
-    background: rgba(0,0,0,.2);
+    background: rgba(0, 0, 0, 0.2);
     text-align: initial;
     font-size: 13px;
 
@@ -98,29 +98,29 @@
         background: linear-gradient(175deg, #f8f8f8 0%, rgba(255, 255, 255, 1) 22%, rgba(255, 255, 255, 0) 100%);
         overflow-y: auto;
         height: 100%;
-        padding:0;
-        border-bottom:1px solid #ccc;
+        padding: 0;
+        border-bottom: 1px solid #ccc;
 
         .water-mark{
           font-size: 392px;
           position: absolute;
           display: block;
-          bottom: 0px;
+          bottom: 0;
           right: 50px;
-          color: rgba(0,0,0,.05);
+          color: rgba(0, 0, 0, 0.05);
         }
 
         .installing-panel{
-          border-bottom:1px solid #ccc;
-          margin:0;
-          padding:7.5% 10%;
-          height:33.3%;
-          position:relative;
-          z-index:9;
-          box-shadow:rgba(0,0,0,.5) 0 1px 5px;
+          border-bottom: 1px solid #ccc;
+          margin: 0;
+          padding: 7.5% 10%;
+          height: 33.3%;
+          position: relative;
+          z-index: 9;
+          box-shadow: rgba(0, 0, 0, 0.5) 0 1px 5px;
 
           @media screen and (max-width: 992px) {
-            padding:5%;
+            padding: 5%;
             height: 20%;
             max-height: 20%;
         h1{
@@ -129,10 +129,10 @@
           }
 
           @media screen and (max-width: 768px) {
-            padding:5%;
-            height:auto;
+            padding: 5%;
+            height: auto;
             h1{
-              display:none;
+              display: none;
             }
           }
 
@@ -185,13 +185,16 @@
         .plugins {
             padding-top: 2.75em;
             position: relative;
-            border-left:1px solid rgba(0,0,0,.2);
+            border-left: 1px solid rgba(0, 0, 0, 0.2);
 
             @media screen and (min-width: 768px) {
                 height: 100%;
             }
 
-            h2 {padding-top:10px; margin-top:0}
+            h2 {
+              padding-top: 10px; 
+              margin-top: 0
+            }
 
             .plugin-select-actions, .plugin-selected-info {
                 position: absolute;
@@ -259,16 +262,16 @@
                 padding: 0 10px;
                 height: 2.75em;
                 z-index: 100;
-                background:rgba(0,0,0,.03);
-                border-bottom:1px solid rgba(0,0,0,.2);
+                background: rgba(0, 0, 0, 0.03);
+                border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 
 
                 .form-control{
-                  font-size:13px;
-                  padding:2px 5px;
-                  height:30px;
-                  top:2px;
-                  position:relative;
+                  font-size: 13px;
+                  padding: 2px 5px;
+                  height: 30px;
+                  top: 2px;
+                  position: relative;
                 }
             }
 
@@ -444,16 +447,16 @@
 						border-radius: 2px;
 						color: @badge-background;
 					}
-					.website-link:hover:before,.website-link:focus:before {
+					.website-link:hover:before, .website-link:focus:before {
 						background: #fff;
 					}
-					.website-link:hover:after,.website-link:focus:after {
+					.website-link:hover:after, .website-link:focus:after {
 						color: @link-color;
 						width: 16px;
 						height: 16px;
 						font-size: 17px;
                         line-height: 17px;
-						left: 0px;
+						left: 0;
 						top: -1px;
 					}
 					.toggle-dependency-list {
@@ -472,7 +475,7 @@
 							padding-left: 9px;
 							background: @badge-background;
 							color: @badge-color;
-							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
+							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 						
 							&:after {
 								content: '\f0d9';
@@ -492,7 +495,6 @@
 								background: @badge-color;
 								color: #fff;
 							}
-							outline: none;
 						}
 					}
 					
@@ -519,7 +521,7 @@
 							margin: 5px 3px 0 0;
 							background: @badge-background;
 							color: @badge-color;
-							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
+							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 							
 							&:after {
 								content: '\f14c';
@@ -558,7 +560,7 @@
             }
 
             .nav{
-              margin:5px 0px;
+              margin: 5px 0;
             }
 
             li {
@@ -571,7 +573,7 @@
                     background: transparent;
                     border: none;
                     font-weight:500;
-                    border-radius:none;
+                    border-radius: none;
 
                     &:after {
                         content: '';
@@ -585,8 +587,8 @@
                     }
 
                     &:hover, &:focus {
-                      background:rgba(100,200,255,.1);
-                      box-shadow:inset -200px 0 200px -200px rgba(100,200,255,.33);
+                      background: rgba(100, 200, 255, 0.1);
+                      box-shadow: inset -200px 0 200px -200px rgba(100, 200, 255, 0.33);
                         color: #337ab7;
 
                         &:after {
@@ -624,7 +626,7 @@
         right: 0;
         bottom: 2em;
         left: 0;
-        overflow:auto;
+        overflow: auto;
         font: 12px monospace;
     }
     
@@ -640,11 +642,11 @@
             font: 12px monospace;
             overflow: auto;
             height: 100%;
-            display:block;
-            padding:1px 10px;
+            display: block;
+            padding: 1px 10px;
 
           &:nth-child(odd){
-            background:rgba(0,0,0,.05);
+            background: rgba(0, 0, 0, 0.05);
           }
         }
 
@@ -680,9 +682,9 @@
     padding: 0;
     width: 75%;
     font-size: 0;
-    background:rgba(0,0,0,.1);
-    border-bottom:1px solid #ccc;
-    border-top:1px solid rgba(0,0,0,.1);
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 
         @media screen and (max-width: 992px) {
            width: 100%;
@@ -693,7 +695,7 @@
         }
         &.success-panel {
             bottom: 0;
-            width:100%;
+            width: 100%;
         }
 
         .selected-plugin {
@@ -702,31 +704,31 @@
       padding: 5px 5px 5px 30px;
       position: relative;
       width: 25%;
-      overflow:hidden;
+      overflow: hidden;
       font-size: 13px;
       height: 45px;
-      border-right: 1px solid rgba(0,0,0,.1);
-      border-bottom: 1px solid rgba(0,0,0,.1);
-      box-shadow:0 1px 3px rgba(0,0,0,.2);
-      background:rgba(255,255,255,.75);
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow:0 1px 3px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.75);
 
             &:nth-child(odd){
-              box-shadow:0 1px 3px rgba(0,0,0,.2),inset 0 0 0 999px rgba(0,0,0,.05);
+              box-shadow:0 1px 3px rgba(0, 0, 0, 0.2),inset 0 0 0 999px rgba(0, 0, 0, 0.05);
             }
             &:before { // pending
                 font-family: FontAwesome;
                 font-size: 17px;
                 line-height: 17px;
                 content: '\f10c';
-                color: rgba(0,0,0,.1);
+                color: rgba(0, 0, 0, 0.1);
                 position: absolute;
-                left:5px;
+                left: 5px;
             }
 
             &.installing {
                 &:before {
                     content: '\f021';
-                    color: rgba(0,60,100,.33);
+                    color: rgba(0, 60, 100, 0.33);
                     .spin();
                 }
             }
@@ -755,7 +757,7 @@
         background: transparent;
         padding: 0 10%;
 
-        h1{font-size:48px; margin-top:5px;}
+        h1 {font-size:48px; margin-top:5px;}
 
         @media screen and (min-width: 768px) {
             padding-top: 5%;
@@ -779,12 +781,12 @@
             min-height: 12.5em;
             margin-right: 1.3%;
             margin-top: 1em;
-            padding:20px 25px;
-            box-shadow:inset 0 -200px 200px -100px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.2);
-            border:1px solid rgba(0,60,100,.5);
-            text-shadow:#fff 0 1px 3px;
-            position:relative;
-            background:rgba(255,255,255,.75);
+            padding: 20px 25px;
+            box-shadow: inset 0 -200px 200px -100px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 60, 100, 0.5);
+            text-shadow: #fff 0 1px 3px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.75);
 
             @media screen and (min-width: 768px) {
                 max-width: 41%;
@@ -793,28 +795,28 @@
             }
 
             &:hover{
-              box-shadow:inset 0 1px 3px -1px rgba(0,0,0,.2);
-        background:rgba(100,200,255,.1);
+              box-shadow: inset 0 1px 3px -1px rgba(0, 0, 0, 0.2);
+        background:rgba(100, 200, 255, 0.1);
             }
             &:focus{
-              background:#fff;
-        box-shadow:inset 0 -200px 200px -100px rgba(0,0,0,.1),0 0 5px 3px rgba(00,180,250,.2);
+              background: #fff;
+        box-shadow: inset 0 -200px 200px -100px rgba(0, 0, 0, 0.1),0 0 5px 3px rgba(00, 180, 250, 0.2);
       }
       &:hover:focus{
-        background:rgba(100,200,255,.1);
+        background: rgba(100,200,255,.1);
       }
             &.btn-primary{
-              background:rgba(200,240,255,.2);
+              background: rgba(200,240,255,.2);
 
-              box-shadow:inset 0 -200px 200px -100px rgba(0,120,160,.2), 0 1px 3px rgba(0,0,0,.2);
-              color:rgba(0,80,120,1);
+              box-shadow: inset 0 -200px 200px -100px rgba(0,120,160,.2), 0 1px 3px rgba(0,0,0,.2);
+              color: rgba(0,80,120,1);
 
               &:hover{
-                box-shadow:inset 0 1px 3px -1px rgba(0,0,0,.2);
-          background:rgba(70,200,255,.2);
+                box-shadow: inset 0 1px 3px -1px rgba(0,0,0,.2);
+          background: rgba(70,200,255,.2);
               }
               &:focus{
-          box-shadow:inset 0 -200px 200px -100px rgba(0,120,160,.2),0 0 5px 3px rgba(00,180,250,.2);        }
+          box-shadow: inset 0 -200px 200px -100px rgba(0,120,160,.2),0 0 5px 3px rgba(00,180,250,.2);        }
             }
             .icon {
               position: absolute;
@@ -826,14 +828,14 @@
             b {
                 display: block;
                 font-size: 24px;
-                line-height:100%;
-                margin-bottom:5px;
-                min-height:81px;
-                font-weight:600;
-                width:80%;
+                line-height: 100%;
+                margin-bottom: 5px;
+                min-height: 81px;
+                font-weight: 600;
+                width: 80%;
             }
             sub{
-              font-size:21px;
+              font-size: 21px;
             }
             span {
                 display: block;

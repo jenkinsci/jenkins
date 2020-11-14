@@ -1,13 +1,14 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import org.acegisecurity.Authentication;
-
+import hudson.Util;
+import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.springframework.security.core.Authentication;
 
 /**
  * When Jenkins receives HTTP basic authentication, this hook will validate the username/password
@@ -34,8 +35,27 @@ public abstract class BasicHeaderAuthenticator implements ExtensionPoint {
      * <p>
      * When no processor can validate the username/password pair, caller will make
      * the request processing fail.
+     * @since TODO
      */
-    public abstract Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException;
+    @CheckForNull
+    public Authentication authenticate2(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException {
+        if (Util.isOverridden(BasicHeaderAuthenticator.class, getClass(), "authenticate", HttpServletRequest.class, HttpServletResponse.class, String.class, String.class)) {
+            org.acegisecurity.Authentication a = authenticate(req, rsp, username, password);
+            return a != null ? a.toSpring() : null;
+        } else {
+            throw new AbstractMethodError("implement authenticate2");
+        }
+    }
+
+    /**
+     * @deprecated use {@link #authenticate2}
+     */
+    @Deprecated
+    @CheckForNull
+    public org.acegisecurity.Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws IOException, ServletException {
+        Authentication a = authenticate2(req, rsp, username, password);
+        return a != null ? org.acegisecurity.Authentication.fromSpring(a) : null;
+    }
 
     public static ExtensionList<BasicHeaderAuthenticator> all() {
         return ExtensionList.lookup(BasicHeaderAuthenticator.class);

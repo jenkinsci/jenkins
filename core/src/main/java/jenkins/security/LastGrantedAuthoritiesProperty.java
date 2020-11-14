@@ -8,10 +8,6 @@ import hudson.model.UserPropertyDescriptor;
 import hudson.security.SecurityRealm;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.userdetails.UserDetails;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -19,14 +15,22 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Remembers the set of {@link GrantedAuthority}s that was obtained the last time the user has logged in.
  *
- * This allows us to implement {@link User#impersonate()} with proper set of groups.
+ * This allows us to implement {@link User#impersonate2()} with proper set of groups.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.556
@@ -45,30 +49,42 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     	return this;
     }
 
-    public GrantedAuthority[] getAuthorities() {
+    /**
+     * @since TODO
+     */
+    public Collection<? extends GrantedAuthority> getAuthorities2() {
         String[] roles = this.roles;    // capture to a variable for immutability
 
         if(roles == null){
-            return new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY};
+            return Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2);
         }
 
-        String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY.getAuthority();
+        String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY2.getAuthority();
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length + 1);
-        grantedAuthorities.add(new GrantedAuthorityImpl(authenticatedRole));
+        grantedAuthorities.add(new SimpleGrantedAuthority(authenticatedRole));
 
         for (String role : roles) {
             // to avoid having twice that role
             if (!authenticatedRole.equals(role)) {
-                grantedAuthorities.add(new GrantedAuthorityImpl(role));
+                grantedAuthorities.add(new SimpleGrantedAuthority(role));
             }
         }
 
-        return grantedAuthorities.toArray(new GrantedAuthority[0]);
+        return grantedAuthorities;
+    }
+
+    /**
+     * @deprecated use {@link #getAuthorities2}
+     */
+    @Deprecated
+    public org.acegisecurity.GrantedAuthority[] getAuthorities() {
+        return org.acegisecurity.GrantedAuthority.fromSpring(getAuthorities2());
     }
 
     /**
      * Persist the information with the new {@link UserDetails}.
      */
+    @Restricted(NoExternalUse.class)
     public void update(@NonNull Authentication auth) throws IOException {
         List<String> roles = new ArrayList<>();
         for (GrantedAuthority ga : auth.getAuthorities()) {
@@ -107,7 +123,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
                 LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
                 if (o==null)
                     u.addProperty(o=new LastGrantedAuthoritiesProperty());
-                Authentication a = Jenkins.getAuthentication();
+                Authentication a = Jenkins.getAuthentication2();
                 if (a!=null && a.getName().equals(username))
                     o.update(a);    // just for defensive sanity checking
             } catch (IOException e) {

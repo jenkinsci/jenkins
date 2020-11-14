@@ -95,7 +95,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
- * See <a href="https://jenkins-ci.org/issue/27268">JENKINS-27268</a>.
+ * See <a href="https://jenkins.io/issue/27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -159,7 +159,7 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
-     * @deprecated since FIXME
+     * @deprecated since 2.184
      */
     @Deprecated
     public Slave(String name, String nodeDescription, String remoteFS, String numExecutors,
@@ -200,7 +200,6 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
 
         this.nodeProperties.replaceBy(nodeProperties);
-         Slave node = (Slave) Jenkins.get().getNode(name);
 
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
@@ -622,7 +621,6 @@ public abstract class Slave extends Node implements Serializable {
          * @since 2.12
          */
         @NonNull
-        @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, RetentionStrategy.all())
