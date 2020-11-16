@@ -44,6 +44,6 @@ THE SOFTWARE.
     where Jenkins can restart itself (such as when Jenkins is installed as a Windows service), POSTing to
     <a href="../restart">this URL</a> will start the restart sequence, or
     <a href="../safeRestart">this URL</a> to restart once no jobs are running.
-    All these URLs need the admin privilege to the system.
+    All these URLs need Overall/Manage permission (typically granted via Overall/Administer).
   </p>
 </j:jelly>
