@@ -51,6 +51,10 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -368,7 +372,13 @@ public class FilePathTest {
         // Decompress
         FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
         final FilePath outFile = outDir.child(tempFile.getName());
-        tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE);
+        final Logger LOGGER = Logger.getLogger("testing");
+
+        Consumer<List<String>> function = (list) -> {
+            list.stream().forEach(f ->LOGGER.info("Unstashing "+ f));
+        };
+
+        tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE, function);
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
     }

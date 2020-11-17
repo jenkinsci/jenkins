@@ -104,6 +104,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -482,17 +484,24 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      is archived.
      */
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
+        return archive(factory, os, scanner, (list) -> {});
+    }
+
+    public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner, Consumer<List<String>> f) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
-        return act(new Archive(factory, out, scanner));
+        return act(new Archive(factory, out, scanner, f));
     }
     private class Archive extends SecureFileCallable<Integer> {
         private final ArchiverFactory factory;
         private final OutputStream out;
         private final DirScanner scanner;
-        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner) {
+        private final Consumer<List<String>> function;
+
+        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, Consumer<List<String>> function) {
             this.factory = factory;
             this.out = out;
             this.scanner = scanner;
+            this.function = function;
         }
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
@@ -502,6 +511,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 } finally {
                     a.close();
                 }
+                function.accept(a.files());
                 return a.countEntries();
             }
 
@@ -566,36 +576,46 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @see #untarFrom(InputStream, TarCompression)
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
+        untar(target, compression, (a) -> {});
+    }
+
+    public void untar(final FilePath target, final TarCompression compression, Consumer<List<String>> function) throws IOException, InterruptedException {
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
-            target.act(new UntarRemote(compression, in));
+            target.act(new UntarRemote(compression, in, function));
         } else {// local -> local or remote->remote
-            target.act(new UntarLocal(compression));
+            target.act(new UntarLocal(compression, function));
         }
     }
     private class UntarRemote extends SecureFileCallable<Void> {
         private final TarCompression compression;
         private final RemoteInputStream in;
-        UntarRemote(TarCompression compression, RemoteInputStream in) {
+        private final Consumer<List<String>> function;
+
+        UntarRemote(TarCompression compression, RemoteInputStream in, Consumer<List<String>> function) {
             this.compression = compression;
             this.in = in;
+            this.function = function;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            readFromTar(FilePath.this.getName(), dir, compression.extract(in));
+            function.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(in)));
             return null;
         }
         private static final long serialVersionUID = 1L;
     }
     private class UntarLocal extends SecureFileCallable<Void> {
         private final TarCompression compression;
-        UntarLocal(TarCompression compression) {
+        private final Consumer<List<String>> function;
+
+        UntarLocal(TarCompression compression, Consumer<List<String>> function) {
             this.compression = compression;
+            this.function = function;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read()));
+            function.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read())));
             return null;
         }
         private static final long serialVersionUID = 1L;
@@ -2627,7 +2647,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
-    private void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+    private List<String> readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        List<String> files = new ArrayList<>();
 
         // TarInputStream t = new TarInputStream(in);
         try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
@@ -2638,6 +2659,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     throw new IOException(
                             "Tar " + name + " contains illegal file name that breaks out of the target directory: " + te.getName());
                 }
+                LOGGER.info("Unstashing "+ f.getName());
                 if (te.isDirectory()) {
                     mkdirs(f);
                 } else {
@@ -2655,6 +2677,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         if (mode != 0 && !Functions.isWindows()) // be defensive
                             _chmod(f, mode);
                     }
+                    files.add(f.getName());
                 }
             }
         } catch (IOException e) {
@@ -2663,6 +2686,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             Thread.currentThread().interrupt(); // process this later
             throw new IOException("Failed to extract " + name, e);
         }
+        return files;
     }
 
     /**
