@@ -2659,7 +2659,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     throw new IOException(
                             "Tar " + name + " contains illegal file name that breaks out of the target directory: " + te.getName());
                 }
-                LOGGER.info("Unstashing "+ f.getName());
                 if (te.isDirectory()) {
                     mkdirs(f);
                 } else {
