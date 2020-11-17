@@ -51,7 +51,12 @@ public class ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor extends Admin
     public boolean isActivated() {
         return ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();
     }
-    
+
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if (no == null) {
