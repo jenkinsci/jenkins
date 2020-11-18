@@ -589,7 +589,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @see #untarFrom(InputStream, TarCompression)
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
-        untar(target, compression, (a) -> {});
+        untar(target, compression, (Consumer<List<String>> & Serializable)(a) -> {});
     }
 
     /**
