@@ -486,6 +486,16 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return archive(factory, os, scanner, (list) -> {});
     }
 
+    /**
+     * Archives this directory into the specified archive format, to the given {@link OutputStream}, by using
+     * {@link DirScanner} to choose what files to include.
+     *
+     * a Consumer {@link Consumer} is passed to process the list of stashed files
+     *
+     * @return
+     *      number of files/directories archived. This is only really useful to check for a situation where nothing
+     *      is archived.
+     */
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner, Consumer<List<String>> f) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
         return act(new Archive(factory, out, scanner, f));
@@ -572,49 +582,64 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param compression
      *      Compression mode of this tar file.
      * @since 1.292
+     *
+     * @see FilePath#untar(FilePath, TarCompression, Consumer)
      * @see #untarFrom(InputStream, TarCompression)
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
         untar(target, compression, (a) -> {});
     }
 
-    public void untar(final FilePath target, final TarCompression compression, Consumer<List<String>> function) throws IOException, InterruptedException {
+    /**
+     * When this {@link FilePath} represents a tar file, extracts that tar file.
+     *
+     * @param target
+     *      Target directory to expand files to. All the necessary directories will be created.
+     * @param compression
+     *      Compression mode of this tar file.
+     * @param consumer
+     *      Consumer for processing the untar files.
+     *
+     * @since 2.267
+     * @see #untarFrom(InputStream, TarCompression)
+     */
+    public void untar(final FilePath target, final TarCompression compression, Consumer<List<String>> consumer) throws IOException, InterruptedException {
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
-            target.act(new UntarRemote(compression, in, function));
+            target.act(new UntarRemote(compression, in, consumer));
         } else {// local -> local or remote->remote
-            target.act(new UntarLocal(compression, function));
+            target.act(new UntarLocal(compression, consumer));
         }
     }
     private class UntarRemote extends SecureFileCallable<Void> {
         private final TarCompression compression;
         private final RemoteInputStream in;
-        private final Consumer<List<String>> function;
+        private final Consumer<List<String>> consumer;
 
-        UntarRemote(TarCompression compression, RemoteInputStream in, Consumer<List<String>> function) {
+        UntarRemote(TarCompression compression, RemoteInputStream in, Consumer<List<String>> consumer) {
             this.compression = compression;
             this.in = in;
-            this.function = function;
+            this.consumer = consumer;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            function.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(in)));
+            consumer.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(in)));
             return null;
         }
         private static final long serialVersionUID = 1L;
     }
     private class UntarLocal extends SecureFileCallable<Void> {
         private final TarCompression compression;
-        private final Consumer<List<String>> function;
+        private final Consumer<List<String>> consumer;
 
-        UntarLocal(TarCompression compression, Consumer<List<String>> function) {
+        UntarLocal(TarCompression compression, Consumer<List<String>> consumer) {
             this.compression = compression;
-            this.function = function;
+            this.consumer = consumer;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            function.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read())));
+            consumer.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read())));
             return null;
         }
         private static final long serialVersionUID = 1L;
