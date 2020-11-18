@@ -438,7 +438,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 // If we receive an InterruptedException here, we probably can't do much anyway.
                 // Perhaps we should just return at this point since we probably can't do anything else.
                 // It might make sense to introduce retries, but it's probably not going to get better.
-                LOGGER.log(Level.FINE, "Caught InterruptedException while checking for vetoers: ", ie);
+                LOGGER.log(Level.FINE, "Caught InterruptedException while checking if vetoers exist: ", ie);
             }
             catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
