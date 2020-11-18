@@ -75,6 +75,7 @@ import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.io.Writer;
+import java.lang.invoke.SerializedLambda;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -483,7 +484,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      is archived.
      */
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
-        return archive(factory, os, scanner, (list) -> {});
+        Consumer<List<String>> c = (Consumer<List<String>> & Serializable)(s) -> {};
+        return archive(factory, os, scanner, c);
     }
 
     /**
