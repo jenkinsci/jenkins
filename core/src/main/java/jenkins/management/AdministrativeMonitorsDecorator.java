@@ -40,6 +40,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Show notifications and popups for active administrative monitors on all pages.
@@ -65,24 +66,31 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         return Messages.AdministrativeMonitorsDecorator_DisplayName();
     }
 
-    // Used by Jelly
-    public Collection<AdministrativeMonitor> filterNonSecurityAdministrativeMonitors(Collection<AdministrativeMonitor> activeMonitors) {
-        return this.filterActiveAdministrativeMonitors(activeMonitors, false);
+
+    // Used by API
+    public List<AdministrativeMonitor> getNonSecurityAdministrativeMonitors() {
+        return getAllActiveAdministrativeMonitors()
+                .stream()
+                .filter(administrativeMonitor -> !administrativeMonitor.isSecurity())
+                .collect(Collectors.toList());
     }
 
     // Used by Jelly
-    public Collection<AdministrativeMonitor> filterSecurityAdministrativeMonitors(Collection<AdministrativeMonitor> activeMonitors) {
-        return this.filterActiveAdministrativeMonitors(activeMonitors, true);
+    public int getNonSecurityAdministrativeMonitorsCount() {
+        return getNonSecurityAdministrativeMonitors().size();
     }
 
-    private Collection<AdministrativeMonitor> filterActiveAdministrativeMonitors(Collection<AdministrativeMonitor> activeMonitors, boolean isSecurity) {
-        Collection<AdministrativeMonitor> active = new ArrayList<>();
-        for (AdministrativeMonitor am : activeMonitors) {
-            if (am.isSecurity() == isSecurity) {
-                active.add(am);
-            }
-        }
-        return active;
+    // Used by API
+    public List<AdministrativeMonitor> getSecurityAdministrativeMonitors() {
+        return getAllActiveAdministrativeMonitors()
+                .stream()
+                .filter(AdministrativeMonitor::isSecurity)
+                .collect(Collectors.toList());
+    }
+
+    // Used by Jelly
+    public int getSecurityAdministrativeMonitorsCount() {
+        return getSecurityAdministrativeMonitors().size();
     }
 
     private Collection<AdministrativeMonitor> getAllActiveAdministrativeMonitors() {
@@ -104,7 +112,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
     /**
      * Compute the administrative monitors that are active and should be shown.
      * This is done only when the instance is currently running and the user has the permission to read them.
-     * 
+     *
      * @return the list of active monitors if we should display them, otherwise null.
      */
     // Used by Jelly

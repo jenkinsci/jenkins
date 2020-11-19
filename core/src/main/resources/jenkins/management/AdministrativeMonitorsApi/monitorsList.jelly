@@ -1,0 +1,14 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <ul class="am-message-list">
+        <j:forEach var="am" items="${it.monitorsList}">
+            <li class="am-message">
+                <st:include page="message.jelly" it="${am}"/>
+            </li>
+        </j:forEach>
+    </ul>
+
+    <p style="text-align: center; margin: 10px 0 0 0;">
+        <a href="${rootURL}/manage" onclick="document.location.href='${rootURL}/manage';">${%Manage Jenkins}</a>
+    </p>
+</j:jelly>

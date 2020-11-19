@@ -1,78 +1,82 @@
-function amCloser(e) {
-    var list = document.getElementById('visible-am-list');
-    var el = e.target;
-    while (el) {
-        if (el === list) {
-            return; // clicked in the list
+function initializeAmMonitor(amMonitorRoot, options) {
+    var button = amMonitorRoot.querySelector('.am-button');
+    var url = button.getAttribute('data-href');
+    var amList = amMonitorRoot.querySelector('.am-list');
+
+    function onClose(e) {
+        var list = amList;
+        var el = e.target;
+        while (el) {
+            if (el === list) {
+                return; // clicked in the list
+            }
+            el = el.parentElement;
         }
-        el = el.parentElement;
+        close();
     }
-    hideVisibleAmList();
-}
-function secAmCloser(e) {
-    var list = document.getElementById('visible-sec-am-list');
-    var el = e.target;
-    while (el) {
-        if (el === list) {
-            return; // clicked in the list
+    function onEscClose(e) {
+        if (e.keyCode === 27) {
+            close();
         }
-        el = el.parentElement;
     }
-    hideVisibleSecAmList();
-}
-function amEscCloser(e) {
-    if (e.keyCode === 27) {
-        amCloser(e);
+
+    function show() {
+        if (options.closeAll) options.closeAll();
+
+        new Ajax.Request(url, {
+            method: "GET",
+            onSuccess: function(rsp) {
+                var popupContent = rsp.responseText;
+                amList.innerHTML = popupContent;
+                amMonitorRoot.classList.add('visible');
+                document.addEventListener('click', onClose);
+                document.addEventListener('keydown', onEscClose);
+            }
+        })
+    }
+
+    function close() {
+        amMonitorRoot.classList.remove('visible');
+        amList.innerHTML = '';
+        document.removeEventListener('click', onClose);
+        document.removeEventListener('keydown', onEscClose);
+    }
+
+    function toggle(e) {
+        if (amMonitorRoot.classList.contains('visible')) {
+            close();
+        } else {
+            show();
+        }
+        e.preventDefault();
+    }
+
+
+    return {
+        button: button,
+        toggle: toggle,
+        close: close,
     }
 }
-function secAmEscCloser(e) {
-    if (e.keyCode === 27) {
-        secAmCloser(e);
+
+document.addEventListener('DOMContentLoaded', function () {
+    var monitorWidgets;
+
+    function closeAll() {
+        monitorWidgets.forEach(function (widget) {
+            widget.close();
+        })
     }
-}
-function amContainer() {
-    return document.getElementById('visible-am-container');
-}
-function secAmContainer() {
-    return document.getElementById('visible-sec-am-container');
-}
-function hideVisibleAmList(e) {
-    amContainer().classList.remove('visible');
-    document.removeEventListener('click', amCloser);
-    document.removeEventListener('keydown', amEscCloser);
-}
-function hideVisibleSecAmList(e) {
-    secAmContainer().classList.remove('visible');
-    document.removeEventListener('click', secAmCloser);
-    document.removeEventListener('keydown', secAmEscCloser);
-}
-function showVisibleAmList(e) {
-    amContainer().classList.add('visible');
-    setTimeout(function() {
-        document.addEventListener('click', amCloser);
-        document.addEventListener('keydown', amEscCloser);
-    }, 1);
-}
-function showVisibleSecAmList(e) {
-    secAmContainer().classList.add('visible');
-    setTimeout(function() {
-        document.addEventListener('click', secAmCloser);
-        document.addEventListener('keydown', secAmEscCloser);
-    }, 1);
-}
-function toggleVisibleAmList(e) {
-    if (amContainer().classList.contains('visible')) {
-        hideVisibleAmList(e);
-    } else {
-        showVisibleAmList(e);
-    }
-    e.preventDefault();
-}
-function toggleVisibleSecAmList(e) {
-    if (secAmContainer().classList.contains('visible')) {
-        hideVisibleSecAmList(e);
-    } else {
-        showVisibleSecAmList(e);
-    }
-    e.preventDefault();
-}
+
+    var normalMonitors = initializeAmMonitor(document.getElementById('visible-am-container'), {
+        closeAll: closeAll,
+    });
+    var securityMonitors = initializeAmMonitor(document.getElementById('visible-sec-am-container'), {
+        closeAll: closeAll,
+    });
+    monitorWidgets = [normalMonitors, securityMonitors];
+
+    monitorWidgets.forEach(function (widget) {
+        widget.button.addEventListener('click', widget.toggle);
+    });
+});
