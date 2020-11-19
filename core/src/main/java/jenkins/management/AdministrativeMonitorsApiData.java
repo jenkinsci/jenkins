@@ -12,12 +12,14 @@ public class AdministrativeMonitorsApiData {
     private final ArrayList<AdministrativeMonitor> monitorsList = new ArrayList<AdministrativeMonitor>();
 
     AdministrativeMonitorsApiData(List<AdministrativeMonitor> monitors) {
-        for (AdministrativeMonitor monitor : monitors) {
-            monitorsList.add(monitor);
-        }
+        monitorsList.addAll(monitors);
     }
 
     public ArrayList<AdministrativeMonitor> getMonitorsList() {
         return this.monitorsList;
+    }
+
+    public boolean hasActiveMonitors() {
+        return  this.monitorsList.size() > 0;
     }
 }

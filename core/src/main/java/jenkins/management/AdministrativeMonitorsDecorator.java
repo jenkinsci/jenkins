@@ -39,6 +39,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,8 +70,13 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
     // Used by API
     public List<AdministrativeMonitor> getNonSecurityAdministrativeMonitors() {
-        return getAllActiveAdministrativeMonitors()
-                .stream()
+        Collection<AdministrativeMonitor> allowedMonitors = getMonitorsToDisplay();
+
+        if (allowedMonitors == null) {
+            return Collections.emptyList();
+        }
+
+        return allowedMonitors.stream()
                 .filter(administrativeMonitor -> !administrativeMonitor.isSecurity())
                 .collect(Collectors.toList());
     }
@@ -82,8 +88,13 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
     // Used by API
     public List<AdministrativeMonitor> getSecurityAdministrativeMonitors() {
-        return getAllActiveAdministrativeMonitors()
-                .stream()
+        Collection<AdministrativeMonitor> allowedMonitors = getMonitorsToDisplay();
+
+        if (allowedMonitors == null) {
+            return Collections.emptyList();
+        }
+
+        return allowedMonitors.stream()
                 .filter(AdministrativeMonitor::isSecurity)
                 .collect(Collectors.toList());
     }
@@ -115,7 +126,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
      *
      * @return the list of active monitors if we should display them, otherwise null.
      */
-    // Used by Jelly
     public Collection<AdministrativeMonitor> getMonitorsToDisplay() {
         if (!Jenkins.get().hasPermission(Jenkins.SYSTEM_READ)) {
             return null;

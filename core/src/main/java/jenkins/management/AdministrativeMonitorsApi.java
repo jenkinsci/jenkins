@@ -22,8 +22,6 @@ import java.util.Collections;
 public class AdministrativeMonitorsApi implements RootAction {
     @GET
     public void doNonSecurityPopupContent(StaplerRequest req, StaplerResponse resp) throws IOException, ServletException {
-        // TODO: add authorization
-
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("text/html");
 
@@ -33,9 +31,6 @@ public class AdministrativeMonitorsApi implements RootAction {
 
     @GET
     public void doSecurityPopupContent(StaplerRequest req, StaplerResponse resp) throws IOException, ServletException {
-        // TODO: add authorization
-
-
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("text/html");
 
@@ -62,10 +57,6 @@ public class AdministrativeMonitorsApi implements RootAction {
         return Jenkins.get()
                 .getExtensionList(PageDecorator.class)
                 .get(AdministrativeMonitorsDecorator.class);
-    }
-
-    public Collection<AdministrativeMonitor> getMonitorsList() {
-        return getDecorator().getMonitorsToDisplay();
     }
 
 }
