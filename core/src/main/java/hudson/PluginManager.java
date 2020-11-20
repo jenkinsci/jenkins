@@ -1392,6 +1392,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     jsonObject.put("excerpt", plugin.excerpt);
                     jsonObject.put("version", plugin.version);
+                    jsonObject.put("popularity", plugin.popularity);
                     if (plugin.isForNewerHudson()) {
                         jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(plugin.requiredCore));
                     }
@@ -1432,6 +1433,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
                     }
                     return jsonObject;
+                })
+                .sorted((o1, o2) -> {
+                    String o1DisplayName = o1.getString("displayName");
+                    if (o1.getString("name").toLowerCase().equals(lowerSearchQuery) || o1DisplayName.toLowerCase().equals(lowerSearchQuery)) {
+                        return -1;
+                    }
+                    if (o1 == o2) {
+                        return 0;
+                    }
+                    Double popularity = o2.getDouble("popularity");
+                    final int pop = popularity.compareTo(o1.getDouble("popularity"));
+                    if (pop != 0) {
+                        return pop; // highest popularity first
+                    }
+                    return o1DisplayName.compareTo(o2.getString("displayName"));
                 })
                 .collect(toList());
             if (plugins.size() >= limit) {
