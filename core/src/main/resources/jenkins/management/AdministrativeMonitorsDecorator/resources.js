@@ -18,7 +18,8 @@
             close();
         }
         function onEscClose(e) {
-            if (e.keyCode === 27) { // If the key press is ESCAPE...
+            var escapeKeyCode = 27;
+            if (e.keyCode === escapeKeyCode) {
                 close();
             }
         }
