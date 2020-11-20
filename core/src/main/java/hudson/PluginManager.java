@@ -1443,8 +1443,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (o1 == o2) {
                         return 0;
                     }
-                    Double popularity = o2.getDouble("popularity");
-                    final int pop = popularity.compareTo(o1.getDouble("popularity"));
+                    final int pop = Double.compare(o2.getDouble("popularity"), o1.getDouble("popularity"));
                     if (pop != 0) {
                         return pop; // highest popularity first
                     }
