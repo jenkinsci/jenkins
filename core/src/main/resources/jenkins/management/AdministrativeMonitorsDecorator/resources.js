@@ -1,8 +1,10 @@
 (function () {
     function initializeAmMonitor(amMonitorRoot, options) {
         var button = amMonitorRoot.querySelector('.am-button');
-        var url = button.getAttribute('data-href');
         var amList = amMonitorRoot.querySelector('.am-list');
+        if (button === null || amList === null) return null;
+
+        var url = button.getAttribute('data-href');
 
         function onClose(e) {
             var list = amList;
@@ -81,7 +83,9 @@
         var securityMonitors = initializeAmMonitor(document.getElementById('visible-sec-am-container'), {
             closeAll: closeAll,
         });
-        monitorWidgets = [normalMonitors, securityMonitors];
+        monitorWidgets = [normalMonitors, securityMonitors].filter(function (widget) {
+            return widget !== null;
+        });
 
         monitorWidgets.forEach(function (widget) {
             widget.startListeners();
