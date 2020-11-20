@@ -51,6 +51,7 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -58,6 +59,7 @@ import java.util.zip.ZipOutputStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -370,15 +372,18 @@ public class FilePathTest {
         // Decompress
         FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
         final FilePath outFile = outDir.child(tempFile.getName());
-        final Logger LOGGER = Logger.getLogger("testing");
+
+        final List<String> files = new ArrayList<>();
 
         Consumer<List<String>> function = (list) -> {
-            list.stream().forEach(f ->LOGGER.info("Unstashing "+ f));
+            files.addAll(list);
         };
 
         tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE, function);
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
+        assertThat(files, containsInAnyOrder(filePrefix + ".log"));
+
     }
 
     @Test public void list() throws Exception {
