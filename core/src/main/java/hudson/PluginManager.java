@@ -1353,7 +1353,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     
     @Restricted(NoExternalUse.class)
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
-        String lowerSearchQuery = query != null ? query.toLowerCase() : null;
+        String lowerSearchQuery = query != null ? query.toLowerCase(Locale.US) : null;
         List<JSONObject> plugins = new ArrayList<>();
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
             plugins = site.getAvailables().stream()
@@ -1361,13 +1361,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (StringUtils.isBlank(query)) {
                         return true;
                     }
-                    return plugin.name.toLowerCase().contains(lowerSearchQuery) ||
-                        plugin.title.toLowerCase().contains(lowerSearchQuery) ||
-                        plugin.excerpt.toLowerCase().contains(lowerSearchQuery) ||
+                    return plugin.name.toLowerCase(Locale.US).contains(lowerSearchQuery) ||
+                        plugin.title.toLowerCase(Locale.US).contains(lowerSearchQuery) ||
+                        plugin.excerpt.toLowerCase(Locale.US).contains(lowerSearchQuery) ||
                         Arrays.asList(plugin.categories).contains(query) ||
                         Arrays.stream(plugin.categories)
                             .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> category.toLowerCase().contains(query)) ||
+                            .anyMatch(category -> category.toLowerCase(Locale.US).contains(query)) ||
                         plugin.hasWarnings() && lowerSearchQuery.equals("warning:");
                 })
                 .limit(limit)
@@ -1436,7 +1436,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 })
                 .sorted((o1, o2) -> {
                     String o1DisplayName = o1.getString("displayName");
-                    if (o1.getString("name").toLowerCase().equals(lowerSearchQuery) || o1DisplayName.toLowerCase().equals(lowerSearchQuery)) {
+                    if (o1.getString("name").toLowerCase(Locale.US).equals(lowerSearchQuery) || 
+                        o1DisplayName.toLowerCase(Locale.US).equals(lowerSearchQuery)) {
                         return -1;
                     }
                     if (o1 == o2) {
