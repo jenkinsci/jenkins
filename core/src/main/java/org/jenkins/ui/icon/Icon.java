@@ -58,6 +58,7 @@ public class Icon {
     private final String normalizedSelector;
     private final String url;
     private final String style;
+    private final boolean svg;
     private IconType iconType;
 
     /**
@@ -101,6 +102,7 @@ public class Icon {
         this.normalizedSelector = toNormalizedCSSSelector(classSpec);
         this.url = toNormalizedIconUrl(url);
         this.style = style;
+        this.svg = url.contains(".svg");
         this.iconType = iconType;
     }
 
@@ -110,6 +112,13 @@ public class Icon {
      */
     public String getClassSpec() {
         return classSpec;
+    }
+
+    /**
+     * Is the Icon an SVG?
+     */
+    public boolean isSvg() {
+        return svg;
     }
 
     /**
