@@ -9,17 +9,17 @@ import java.util.List;
 
 @Restricted(NoExternalUse.class)
 public class AdministrativeMonitorsApiData {
-    private final ArrayList<AdministrativeMonitor> monitorsList = new ArrayList<AdministrativeMonitor>();
+    private final List<AdministrativeMonitor> monitorsList = new ArrayList<AdministrativeMonitor>();
 
     AdministrativeMonitorsApiData(List<AdministrativeMonitor> monitors) {
         monitorsList.addAll(monitors);
     }
 
-    public ArrayList<AdministrativeMonitor> getMonitorsList() {
+    public List<AdministrativeMonitor> getMonitorsList() {
         return this.monitorsList;
     }
 
     public boolean hasActiveMonitors() {
-        return  this.monitorsList.size() > 0;
+        return !this.monitorsList.isEmpty();
     }
 }
