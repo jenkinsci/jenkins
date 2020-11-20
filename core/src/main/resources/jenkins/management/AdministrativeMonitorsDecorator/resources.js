@@ -18,7 +18,7 @@
             close();
         }
         function onEscClose(e) {
-            if (e.keyCode === 27) {
+            if (e.keyCode === 27) { // If the key press is ESCAPE...
                 close();
             }
         }
