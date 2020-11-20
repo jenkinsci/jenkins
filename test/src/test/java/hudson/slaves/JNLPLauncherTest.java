@@ -23,7 +23,6 @@
  */
 package hudson.slaves;
 
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Proc;
 import hudson.Util;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -84,7 +82,7 @@ public class JNLPLauncherTest {
     public void testLaunch() throws Exception {
         Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
 
-        Computer c = addTestAgent(false);
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c));
     }
         
@@ -97,7 +95,7 @@ public class JNLPLauncherTest {
         Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
         File workDir = tmpDir.newFolder("workDir");
         
-        Computer c = addTestAgent(false);
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-workDir", workDir.getAbsolutePath()));
         assertTrue("Remoting work dir should have been created", new File(workDir, "remoting").exists());
     }
@@ -108,7 +106,7 @@ public class JNLPLauncherTest {
      */
     @Test
     public void testHeadlessLaunch() throws Exception {
-        Computer c = addTestAgent(false);
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
         // make sure that onOffline gets called just the right number of times
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
@@ -119,7 +117,7 @@ public class JNLPLauncherTest {
     public void testHeadlessLaunchWithWorkDir() throws Exception {
         Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
         
-        Computer c = addTestAgent(true);
+        Computer c = addTestSlave(true);
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
     }
@@ -130,7 +128,7 @@ public class JNLPLauncherTest {
         Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
         File workDir = tmpDir.newFolder("workDir");
         
-        Computer c = addTestAgent(false);
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless", "-workDir", workDir.getAbsolutePath()));
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
     }
@@ -167,7 +165,7 @@ public class JNLPLauncherTest {
 
         ComputerLauncher launcher = new JNLPLauncher("", "", new RemotingWorkDirSettings(false, workDir.getAbsolutePath(), "internalDir", false));
         launcher = new DelegatingComputerLauncherImpl(launcher);
-        Computer c = addTestAgent(launcher);
+        Computer c = addTestSlave(launcher);
         launchJnlpAndVerify(c, buildJnlpArgs(c));
         assertTrue("Remoting work dir should have been created", new File(workDir, "internalDir").exists());
     }
@@ -180,7 +178,7 @@ public class JNLPLauncherTest {
 
         ComputerLauncher launcher = new JNLPLauncher("", "", new RemotingWorkDirSettings(false, workDir.getAbsolutePath(), "internalDir", false));
         launcher = new ComputerLauncherFilterImpl(launcher);
-        Computer c = addTestAgent(launcher);
+        Computer c = addTestSlave(launcher);
         launchJnlpAndVerify(c, buildJnlpArgs(c));
         assertTrue("Remoting work dir should have been created", new File(workDir, "internalDir").exists());
     }
@@ -214,7 +212,7 @@ public class JNLPLauncherTest {
         args.add(Which.jarFile(netx.jnlp.runtime.JNLPRuntime.class).getAbsolutePath());
         args.add("-headless","-basedir");
         args.add(j.createTmpDir());
-        args.add("-nosecurity","-jnlp", j.getURL() + "computer/"+c.getName()+"/jenkins-agent.jnlp");
+        args.add("-nosecurity","-jnlp", j.getURL() + "computer/"+c.getName()+"/slave-agent.jnlp");
         
         if (c instanceof SlaveComputer) {
             SlaveComputer sc = (SlaveComputer)c;
@@ -228,7 +226,7 @@ public class JNLPLauncherTest {
     }
 
     /**
-     * Launches the Inbound TCP agent and asserts its basic operations.
+     * Launches the JNLP slave agent and asserts its basic operations.
      */
     private void launchJnlpAndVerify(Computer c, ArgumentListBuilder args) throws Exception {
         Proc proc = j.createLocalLauncher().launch().cmds(args).stdout(System.out).pwd(".").start();
@@ -243,7 +241,7 @@ public class JNLPLauncherTest {
 
             if (c.isOffline()) {
                 System.out.println(c.getLog());
-                fail("Agent failed to go online");
+                fail("Slave failed to go online");
             }
             // run some trivial thing
             System.err.println("Calling task...");
@@ -258,21 +256,21 @@ public class JNLPLauncherTest {
     }
 
     /**
-     * Adds an Inbound TCP agent to the system and returns it.
+     * Adds a JNLP {@link Slave} to the system and returns it.
      */
-    private Computer addTestAgent(boolean enableWorkDir) throws Exception {
-        return addTestAgent(new JNLPLauncher(enableWorkDir));
+    private Computer addTestSlave(boolean enableWorkDir) throws Exception {
+        return addTestSlave(new JNLPLauncher(enableWorkDir));
     }
 
     /**
-     * Adds an Inbound TCP agent to the system and returns it.
+     * Adds a JNLP {@link Slave} to the system and returns it.
      */
-    private Computer addTestAgent(ComputerLauncher launcher) throws Exception {
-        List<Node> agents = new ArrayList<Node>(j.jenkins.getNodes());
+    private Computer addTestSlave(ComputerLauncher launcher) throws Exception {
+        List<Node> slaves = new ArrayList<Node>(j.jenkins.getNodes());
         File dir = Util.createTempDir();
-        agents.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
+        slaves.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
                 launcher, RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
-        j.jenkins.setNodes(agents);
+        j.jenkins.setNodes(slaves);
         Computer c = j.jenkins.getComputer("test");
         assertNotNull(c);
         return c;
@@ -299,21 +297,4 @@ public class JNLPLauncherTest {
         j.assertEqualBeans(original,s.getLauncher(),"tunnel,vmargs");
         j.assertEqualDataBoundBeans(((JNLPLauncher) s.getLauncher()).getWorkDirSettings(), custom);
     }
-
-    @Test
-    public void testJnlpFileDownload() throws Exception {
-        assertJnlpFileDownload("/jenkins-agent.jnlp");
-    }
-
-    @Test
-    public void testObsoletedJnlpFileDownload() throws Exception {
-        assertJnlpFileDownload("/slave-agent.jnlp");
-    }
-
-    private void assertJnlpFileDownload(String filename) throws Exception {
-        Computer c = addTestAgent(false);
-        Page p = j.createWebClient().getPage(j.getURL() + "computer/" + c.getName() + filename);
-        assertThat(p.getWebResponse().getStatusCode(), is(200));
-    }
-
 }
