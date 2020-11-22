@@ -169,16 +169,19 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public int hashCode() {
+        if (ChoiceParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
         return Objects.hash(getName(), getDescription(), choices, defaultValue);
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (ChoiceParameterDefinition.class != getClass())
+            return super.equals(obj);
         if (this == obj)
             return true;
         if (obj == null)
-            return false;
-        if (ChoiceParameterDefinition.class != getClass())
             return false;
         if (getClass() != obj.getClass())
             return false;

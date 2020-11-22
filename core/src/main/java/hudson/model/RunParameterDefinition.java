@@ -209,16 +209,19 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public int hashCode() {
+        if (RunParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
         return Objects.hash(getName(), getDescription(), projectName, runId, filter);
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (RunParameterDefinition.class != getClass())
+            return super.equals(obj);
         if (this == obj)
             return true;
         if (obj == null)
-            return false;
-        if(RunParameterDefinition.class != getClass())
             return false;
         if (getClass() != obj.getClass())
             return false;

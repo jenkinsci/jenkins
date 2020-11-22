@@ -106,16 +106,19 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
 
     @Override
     public int hashCode() {
+        if (PasswordParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
         return Objects.hash(getName(), getDescription(), defaultValue);
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (PasswordParameterDefinition.class != getClass())
+            return super.equals(obj);
         if (this == obj)
             return true;
         if (obj == null)
-            return false;
-        if (PasswordParameterDefinition.class != getClass())
             return false;
         if (getClass() != obj.getClass())
             return false;

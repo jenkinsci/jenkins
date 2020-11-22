@@ -121,16 +121,19 @@ public class FileParameterDefinition extends ParameterDefinition {
 
     @Override
     public int hashCode() {
+        if (FileParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
         return Objects.hash(getName(), getDescription());
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (FileParameterDefinition.class != getClass())
+            return super.equals(obj);
         if (this == obj)
             return true;
         if (obj == null)
-            return false;
-        if (FileParameterDefinition.class != getClass())
             return false;
         if (getClass() != obj.getClass())
             return false;

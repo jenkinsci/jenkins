@@ -131,6 +131,28 @@ public class ParameterDefinitionTest {
         assertNotEquals(rpd, pd);
     }
 
+    @Test
+    public void compareChildsWithoutEqualsAndHashCode() {
+        ExtendStringParameterDefinition epd = new ExtendStringParameterDefinition("epd", "default", "desc");
+        ExtendStringParameterDefinition epdSame = new ExtendStringParameterDefinition("epd", "default", "desc");
+        ExtendStringParameterDefinition epdOther = new ExtendStringParameterDefinition("epd", "default1", "desc");
+
+        assertEquals(epd, epdSame);
+        assertNotEquals(epd, epdOther);
+
+        ParameterDefinition pd = new StringParameterDefinition("spd", "default", "desc") {
+            public void newMethod() {
+            }
+        };
+
+        ParameterDefinition pdOther = new StringParameterDefinition("spd", "default", "desc") {
+            public void newMethod() {
+            }
+        };
+
+        assertNotEquals(pd, pdOther);
+    }
+
     static class ExtendStringParameterDefinition extends StringParameterDefinition {
         public ExtendStringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
             super(name, defaultValue, description, trim);
