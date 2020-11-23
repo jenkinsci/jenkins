@@ -30,6 +30,7 @@ package org.jenkins.ui.icon;
  * also implement this interface.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since 2.0
  */
 public interface IconSpec {
 
