@@ -1,7 +1,7 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "1cc579eac831af27f444100c6bde73b342ec7c22"
+  athRevision: "acceptance-test-harness-1.78" # FTR 1.78 is 51a62122c5cda004db05599487abbb7069cf7b65
   athImage: "jenkins/ath@sha256:284c2fdfaf1a51e95783126367c0a88c07af83ff9234063d12ba3001959628e8"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest

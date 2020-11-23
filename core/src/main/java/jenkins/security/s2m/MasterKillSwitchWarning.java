@@ -2,6 +2,7 @@ package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import org.apache.tools.ant.taskdefs.condition.IsSet;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -27,6 +28,11 @@ public class MasterKillSwitchWarning extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
         return rule.getMasterKillSwitch() && config.isRelevant();
+    }
+
+    @Override
+    public boolean isSecurity() {
+        return true;
     }
 
     @Override

@@ -61,6 +61,7 @@ public class QuietDownCommandTest {
     private CLICommandInvoker command;
     private final static QueueTest.TestFlyweightTask task
             = new QueueTest.TestFlyweightTask(new AtomicInteger(), null);
+    private final static String TEST_REASON = "test reason";
 
     @Rule
     public final JenkinsRule j = new JenkinsRule();
@@ -108,12 +109,32 @@ public class QuietDownCommandTest {
     }
 
     @Test
+    public void quietDownShouldSuccessWithReason() throws Exception {
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .invokeWithArgs("-reason", TEST_REASON);
+        assertThat(result, succeededSilently());
+        assertJenkinsInQuietMode();
+        assertThat(j.jenkins.getQuietDownReason(), equalTo(TEST_REASON));
+    }
+
+    @Test
     public void quietDownShouldSuccessWithBlockAndTimeout() throws Exception {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invokeWithArgs("-block", "-timeout", "0");
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
+    }
+
+    @Test
+    public void quietDownShouldSuccessWithBlockAndTimeoutAndReason() throws Exception {
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .invokeWithArgs("-block", "-timeout", "0", "-reason", TEST_REASON);
+        assertThat(result, succeededSilently());
+        assertJenkinsInQuietMode();
+        assertThat(j.jenkins.getQuietDownReason(), equalTo(TEST_REASON));
     }
 
     @Test
@@ -139,7 +160,7 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.doQuietDown(true, 0);
+        j.jenkins.doQuietDown(true, 0, null);
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
@@ -150,7 +171,7 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockAndTimeoutOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.doQuietDown(true, 0);
+        j.jenkins.doQuietDown(true, 0, null);
         assertJenkinsInQuietMode();
         final long time_before = System.currentTimeMillis();
         final CLICommandInvoker.Result result = command
