@@ -27,8 +27,6 @@ package hudson.util.io;
 import hudson.util.FileVisitor;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * {@link FileVisitor} that creates archive files.
@@ -38,7 +36,6 @@ import java.util.List;
  */
 public abstract class Archiver extends FileVisitor implements Closeable {
     protected int entriesWritten =0;
-    protected List<String> files = new ArrayList<>();
 
     /**
      * Number of files/directories archived.
@@ -47,7 +44,4 @@ public abstract class Archiver extends FileVisitor implements Closeable {
         return entriesWritten;
     }
 
-    public List<String> files(){
-        return files;
-    }
 }

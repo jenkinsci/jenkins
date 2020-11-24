@@ -375,8 +375,8 @@ public class FilePathTest {
 
         final List<String> files = new ArrayList<>();
 
-        Consumer<List<String>> function = (list) -> {
-            files.addAll(list);
+        Consumer<String> function = (list) -> {
+            files.add(list);
         };
 
         tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE, function);

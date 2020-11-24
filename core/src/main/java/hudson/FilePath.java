@@ -75,7 +75,6 @@ import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.io.Writer;
-import java.lang.invoke.SerializedLambda;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -484,7 +483,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      is archived.
      */
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner) throws IOException, InterruptedException {
-        Consumer<List<String>> c = (Consumer<List<String>> & Serializable)(s) -> {};
+        Consumer<String> c = (Consumer<String> & Serializable)(s) -> {};
         return archive(factory, os, scanner, c);
     }
 
@@ -498,7 +497,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      number of files/directories archived. This is only really useful to check for a situation where nothing
      *      is archived.
      */
-    public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner, Consumer<List<String>> f) throws IOException, InterruptedException {
+    public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner, Consumer<String> f) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
         return act(new Archive(factory, out, scanner, f));
     }
@@ -506,9 +505,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final ArchiverFactory factory;
         private final OutputStream out;
         private final DirScanner scanner;
-        private final Consumer<List<String>> function;
+        private final Consumer<String> function;
 
-        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, Consumer<List<String>> function) {
+        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, Consumer<String> function) {
             this.factory = factory;
             this.out = out;
             this.scanner = scanner;
@@ -522,7 +521,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 } finally {
                     a.close();
                 }
-                function.accept(a.files());
+                function.accept(f.getName());
                 return a.countEntries();
             }
 
@@ -589,7 +588,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @see #untarFrom(InputStream, TarCompression)
      */
     public void untar(final FilePath target, final TarCompression compression) throws IOException, InterruptedException {
-        untar(target, compression, (Consumer<List<String>> & Serializable)(a) -> {});
+        untar(target, compression, (Consumer<String> & Serializable)(a) -> {});
     }
 
     /**
@@ -605,7 +604,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 2.267
      * @see #untarFrom(InputStream, TarCompression)
      */
-    public void untar(final FilePath target, final TarCompression compression, Consumer<List<String>> consumer) throws IOException, InterruptedException {
+    public void untar(final FilePath target, final TarCompression compression, Consumer<String> consumer) throws IOException, InterruptedException {
         // TODO: post release, re-unite two branches by introducing FileStreamCallable that resolves InputStream
         if (this.channel!=target.channel) {// local -> remote or remote->local
             final RemoteInputStream in = new RemoteInputStream(read(), Flag.GREEDY);
@@ -617,31 +616,31 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private class UntarRemote extends SecureFileCallable<Void> {
         private final TarCompression compression;
         private final RemoteInputStream in;
-        private final Consumer<List<String>> consumer;
+        private final Consumer<String> consumer;
 
-        UntarRemote(TarCompression compression, RemoteInputStream in, Consumer<List<String>> consumer) {
+        UntarRemote(TarCompression compression, RemoteInputStream in, Consumer<String> consumer) {
             this.compression = compression;
             this.in = in;
             this.consumer = consumer;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            consumer.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(in)));
+            readFromTar(FilePath.this.getName(), dir, compression.extract(in), consumer);
             return null;
         }
         private static final long serialVersionUID = 1L;
     }
     private class UntarLocal extends SecureFileCallable<Void> {
         private final TarCompression compression;
-        private final Consumer<List<String>> consumer;
+        private final Consumer<String> consumer;
 
-        UntarLocal(TarCompression compression, Consumer<List<String>> consumer) {
+        UntarLocal(TarCompression compression, Consumer<String> consumer) {
             this.compression = compression;
             this.consumer = consumer;
         }
         @Override
         public Void invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-            consumer.accept(readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read())));
+            readFromTar(FilePath.this.getName(), dir, compression.extract(FilePath.this.read()), consumer);
             return null;
         }
         private static final long serialVersionUID = 1L;
@@ -2673,9 +2672,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
-    private List<String> readFromTar(String name, File baseDir, InputStream in) throws IOException {
-        List<String> files = new ArrayList<>();
+    private void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        readFromTar(name, baseDir, in, (Consumer<String> & Serializable)(a) -> {});
+    }
 
+    private void readFromTar(String name, File baseDir, InputStream in, Consumer<String> consumer) throws IOException {
         // TarInputStream t = new TarInputStream(in);
         try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
             TarArchiveEntry te;
@@ -2702,8 +2703,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         if (mode != 0 && !Functions.isWindows()) // be defensive
                             _chmod(f, mode);
                     }
-                    files.add(f.getName());
                 }
+                consumer.accept(f.getName());
             }
         } catch (IOException e) {
             throw new IOException("Failed to extract " + name, e);
@@ -2711,7 +2712,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             Thread.currentThread().interrupt(); // process this later
             throw new IOException("Failed to extract " + name, e);
         }
-        return files;
     }
 
     /**
