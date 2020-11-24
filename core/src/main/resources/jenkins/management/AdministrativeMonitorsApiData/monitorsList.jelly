@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <l:ajax>
         <j:choose>
-            <j:when test="${it.hasActiveMonitors() == true}">
+            <j:when test="${it.hasActiveMonitors()}">
                 <j:set var="activeMonitors" value="${it.getMonitorsList()}"/>
 
                 <ul class="am-message-list">

@@ -67,6 +67,28 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         return Messages.AdministrativeMonitorsDecorator_DisplayName();
     }
 
+    // Used by Jelly
+    public Collection<AdministrativeMonitor> filterNonSecurityAdministrativeMonitors(Collection<AdministrativeMonitor> activeMonitors) {
+        return this.filterActiveAdministrativeMonitors(activeMonitors, false);
+    }
+
+    // Used by Jelly
+    public Collection<AdministrativeMonitor> filterSecurityAdministrativeMonitors(Collection<AdministrativeMonitor> activeMonitors) {
+        return this.filterActiveAdministrativeMonitors(activeMonitors, true);
+    }
+
+    /**
+     * Prevent us to compute multiple times the {@link AdministrativeMonitor#isActivated()} by re-using the same list
+     */
+    private Collection<AdministrativeMonitor> filterActiveAdministrativeMonitors(Collection<AdministrativeMonitor> activeMonitors, boolean isSecurity) {
+        Collection<AdministrativeMonitor> active = new ArrayList<>();
+        for (AdministrativeMonitor am : activeMonitors) {
+            if (am.isSecurity() == isSecurity) {
+                active.add(am);
+            }
+        }
+        return active;
+    }
 
     // Used by API
     public List<AdministrativeMonitor> getNonSecurityAdministrativeMonitors() {
@@ -81,11 +103,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
                 .collect(Collectors.toList());
     }
 
-    // Used by Jelly
-    public int getNonSecurityAdministrativeMonitorsCount() {
-        return getNonSecurityAdministrativeMonitors().size();
-    }
-
     // Used by API
     public List<AdministrativeMonitor> getSecurityAdministrativeMonitors() {
         Collection<AdministrativeMonitor> allowedMonitors = getMonitorsToDisplay();
@@ -97,11 +114,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         return allowedMonitors.stream()
                 .filter(AdministrativeMonitor::isSecurity)
                 .collect(Collectors.toList());
-    }
-
-    // Used by Jelly
-    public int getSecurityAdministrativeMonitorsCount() {
-        return getSecurityAdministrativeMonitors().size();
     }
 
     private Collection<AdministrativeMonitor> getAllActiveAdministrativeMonitors() {

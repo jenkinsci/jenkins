@@ -27,9 +27,11 @@ THE SOFTWARE.
 
     <j:if test="${activeMonitors != null and activeMonitors.size() > 0}">
         <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>
-
-        <j:set var="activeNonSecurityAMCount" value="${it.nonSecurityAdministrativeMonitorsCount}"/>
-        <j:set var="activeSecurityAMCount" value="${it.securityAdministrativeMonitorsCount  }"/>
+    
+        <j:set var="activeNonSecurityAM" value="${it.filterNonSecurityAdministrativeMonitors(activeMonitors)}" />
+        <j:set var="activeNonSecurityAMCount" value="${activeNonSecurityAM.size()}" />
+        <j:set var="activeSecurityAM" value="${it.filterSecurityAdministrativeMonitors(activeMonitors)}" />
+        <j:set var="activeSecurityAMCount" value="${activeSecurityAM.size()}" />
 
         <div id="visible-am-container" class="am-container">
             <j:if test="${activeNonSecurityAMCount > 0}">
