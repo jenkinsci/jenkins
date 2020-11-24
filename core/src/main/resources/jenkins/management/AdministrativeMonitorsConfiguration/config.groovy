@@ -41,6 +41,9 @@ f.section(title: _("Administrative monitors configuration")) {
                                 title: am.displayName,
                                 checked: am.enabled,
                                 json: am.id)
+                        if (am.isSecurity()) {
+                            span(style: 'border: 1px solid grey; color: grey; border-radius: 4px; padding: 3px; margin-left: 5px;', _("Security"))
+                        }
                     }
                     div(class: "tr") {
                         div(class: "setting-description") {
