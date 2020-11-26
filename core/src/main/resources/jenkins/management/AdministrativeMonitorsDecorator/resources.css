@@ -93,6 +93,10 @@
     margin-bottom: 1.4em;
 }
 
+.am-message-list {
+    padding: 0;
+}
+
 .am-container .am-message .alert form {
     position: relative;
     float: right;
