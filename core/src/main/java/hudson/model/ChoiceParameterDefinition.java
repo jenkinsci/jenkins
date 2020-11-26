@@ -19,6 +19,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * @author huybrechts
@@ -164,6 +165,34 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         StringParameterValue parameterValue = new StringParameterValue(getName(), value, getDescription());
         checkValue(parameterValue, value);
         return parameterValue;
+    }
+
+    @Override
+    public int hashCode() {
+        if (ChoiceParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
+        return Objects.hash(getName(), getDescription(), choices, defaultValue);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (ChoiceParameterDefinition.class != getClass())
+            return super.equals(obj);
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ChoiceParameterDefinition other = (ChoiceParameterDefinition) obj;
+        if (!Objects.equals(getName(), other.getName()))
+            return false;
+        if (!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        if (!Objects.equals(choices, other.choices))
+                return false;
+        return Objects.equals(defaultValue, other.defaultValue);
     }
 
     @Extension @Symbol({"choice","choiceParam"})
