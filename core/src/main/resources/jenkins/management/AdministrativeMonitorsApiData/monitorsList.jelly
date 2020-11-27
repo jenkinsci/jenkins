@@ -1,0 +1,27 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <l:ajax>
+        <j:choose>
+            <j:when test="${it.hasActiveMonitors()}">
+                <j:set var="activeMonitors" value="${it.getMonitorsList()}"/>
+
+                <ul class="am-message-list">
+                    <j:forEach var="am" items="${activeMonitors}">
+                        <li class="am-message">
+                            <st:include page="message.jelly" it="${am}"/>
+                        </li>
+                    </j:forEach>
+                </ul>
+
+                <p style="text-align: center; margin: 10px 0 0 0;">
+                    <a href="${rootURL}/manage" onclick="document.location.href='${rootURL}/manage';">
+                        ${%Manage Jenkins}
+                    </a>
+                </p>
+            </j:when>
+            <j:otherwise>
+               <p>${%no_active_monitors}</p>
+            </j:otherwise>
+        </j:choose>
+    </l:ajax>
+</j:jelly>

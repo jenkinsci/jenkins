@@ -29,6 +29,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
+import java.util.Objects;
+
 /**
  * {@link ParameterDefinition} that is either 'true' or 'false'.
  *
@@ -71,6 +73,32 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     @Override
     public BooleanParameterValue getDefaultParameterValue() {
         return new BooleanParameterValue(getName(), defaultValue, getDescription());
+    }
+
+    @Override
+    public int hashCode() {
+        if (BooleanParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
+        return Objects.hash(getName(), getDescription(), defaultValue);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (BooleanParameterDefinition.class != getClass())
+            return super.equals(obj);
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        BooleanParameterDefinition other = (BooleanParameterDefinition) obj;
+        if (!Objects.equals(getName(), other.getName()))
+            return false;
+        if (!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        return defaultValue == other.defaultValue;
     }
 
     // unlike all the other ParameterDescriptors, using 'booleanParam' as the primary
