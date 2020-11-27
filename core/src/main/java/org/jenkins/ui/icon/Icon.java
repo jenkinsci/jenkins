@@ -61,8 +61,6 @@ public class Icon {
     private IconType iconType;
 
     /**
-     * Icon instance.
-     * <p/>
      * Creates a {@link IconType#CORE core} icon.
      *
      * @param classSpec The icon class names.
@@ -73,8 +71,6 @@ public class Icon {
     }
 
     /**
-     * Icon instance.
-     * <p/>
      * Creates a {@link IconType#CORE core} icon.
      *
      * @param classSpec The icon class names.
@@ -137,9 +133,8 @@ public class Icon {
 
     /**
      * Get the qualified icon url.
-     * <p/>
+     * <br>
      * Qualifying the URL involves prefixing it depending on whether the icon is a core or plugin icon.
-     * Core icons are prefixed with the
      *
      * @param context The JellyContext.
      * @return The qualified icon url.
@@ -207,10 +202,10 @@ public class Icon {
 
     /**
      * Generate a normalized CSS selector from the space separated list of icon class names.
-     * <p/>
+     * <br>
      * The normalized CSS selector is the list of class names, alphabetically sorted and dot separated.
      * This means that "icon-help icon-xlg" and "icon-xlg icon-help" have the same normalized
-     * selector ".icon-help.icon-xlg".  Spaces are not relevant etc.
+     * selector ".icon-help.icon-xlg". Spaces are not relevant etc.
      *
      * @param classNames The space separated list of icon class names.
      * @return The normalized CSS selector.

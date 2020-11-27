@@ -36,7 +36,7 @@ public interface IconSpec {
 
     /**
      * Get the Icon class specification e.g. 'icon-notepad'.
-     * <p/>
+     * <br>
      * Note: do <strong>NOT</strong> include icon size specifications (such as 'icon-sm').
      *
      * @return The Icon class specification e.g. 'icon-notepad'.

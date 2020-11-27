@@ -66,7 +66,7 @@ public class IconSet {
 
     /**
      * Get an icon instance from it's {@link  Icon#toNormalizedCSSSelector(String) normalized CSS selector}.
-     * <p/>
+     * <br>
      * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
      * are trying to perform reflective lookup using a GString (instead of a {@link String}).
      *
@@ -94,7 +94,7 @@ public class IconSet {
 
     /**
      * Get an icon instance from a class specification.
-     * <p/>
+     * <br>
      * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
      * are trying to perform reflective lookup using a GString (instead of a {@link String}).
      *
@@ -142,7 +142,7 @@ public class IconSet {
 
     /**
      * Get an icon instance from it's url.
-     * <p/>
+     * <br>
      * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
      * are trying to perform reflective lookup using a GString (instead of a {@link String}).
      *
@@ -173,7 +173,7 @@ public class IconSet {
 
     /**
      * Normalize the supplied string to an Icon name class e.g. "blue_anime" to "icon-blue-anime".
-     * <p/>
+     * <br>
      * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
      * are trying to perform reflective lookup using a GString (instead of a {@link String}).
      *
@@ -200,7 +200,7 @@ public class IconSet {
 
     /**
      * Normalize the supplied string to an Icon size class e.g. "16x16" to "icon-sm".
-     * <p/>
+     * <br>
      * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
      * are trying to perform reflective lookup using a GString (instead of a {@link String}).
      *
@@ -229,7 +229,7 @@ public class IconSet {
 
     /**
      * Normalize the supplied url.
-     * <p/>
+     * <br>
      * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
      * are trying to perform reflective lookup using a GString (instead of a {@link String}).
      *
