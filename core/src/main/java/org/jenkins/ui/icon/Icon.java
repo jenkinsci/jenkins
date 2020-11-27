@@ -25,7 +25,6 @@ package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -63,7 +62,19 @@ public class Icon {
 
     /**
      * Icon instance.
-     * <br><br>
+     * <p/>
+     * Creates a {@link IconType#CORE core} icon.
+     *
+     * @param classSpec The icon class names.
+     * @param style     The icon style.
+     */
+    public Icon(String classSpec, String style) {
+        this(classSpec, null, style, IconType.CORE);
+    }
+
+    /**
+     * Icon instance.
+     * <p/>
      * Creates a {@link IconType#CORE core} icon.
      *
      * @param classSpec The icon class names.
@@ -72,10 +83,12 @@ public class Icon {
      */
     public Icon(String classSpec, String url, String style) {
         this(classSpec, url, style, IconType.CORE);
-        if (url.startsWith("images/")) {
-            this.iconType = IconType.CORE;
-        } else if (url.startsWith("plugin/")) {
-            this.iconType = IconType.PLUGIN;
+        if (url != null) {
+            if (url.startsWith("images/")) {
+                this.iconType = IconType.CORE;
+            } else if (url.startsWith("plugin/")) {
+                this.iconType = IconType.PLUGIN;
+            }
         }
     }
 
@@ -124,7 +137,7 @@ public class Icon {
 
     /**
      * Get the qualified icon url.
-     * <br><br>
+     * <p/>
      * Qualifying the URL involves prefixing it depending on whether the icon is a core or plugin icon.
      * Core icons are prefixed with the
      *
@@ -132,7 +145,11 @@ public class Icon {
      * @return The qualified icon url.
      */
     public String getQualifiedUrl(JellyContext context) {
-        return iconType.toQualifiedUrl(url, context);
+        if (url != null) {
+            return iconType.toQualifiedUrl(url, context);
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -190,7 +207,7 @@ public class Icon {
 
     /**
      * Generate a normalized CSS selector from the space separated list of icon class names.
-     * <br><br>
+     * <p/>
      * The normalized CSS selector is the list of class names, alphabetically sorted and dot separated.
      * This means that "icon-help icon-xlg" and "icon-xlg icon-help" have the same normalized
      * selector ".icon-help.icon-xlg".  Spaces are not relevant etc.
@@ -256,7 +273,7 @@ public class Icon {
         return originalUrl;
     }
 
-    private static class StringComparator implements Comparator<String>, Serializable {
+    private static class StringComparator implements Comparator<String> {
 
         @Override
         public int compare(String s1, String s2) {

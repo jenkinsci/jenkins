@@ -23,7 +23,6 @@
  */
 package org.jenkins.ui.icon;
 
-import groovy.lang.GString;
 import org.apache.commons.jelly.JellyContext;
 
 import java.util.Map;
@@ -41,10 +40,15 @@ public class IconSet {
     private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<String, Icon>();
     private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<String, Icon>();
     private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<String, Icon>();
+    private Map<String, Icon> coreIcons = new ConcurrentHashMap<String, Icon>();
 
     private static final Icon NO_ICON = new Icon("_", "_", "_");
 
     public IconSet() {
+    }
+
+    public Map<String, Icon> getCoreIcons() {
+        return coreIcons;
     }
 
     public static void initPageVariables(JellyContext context) {
@@ -53,28 +57,35 @@ public class IconSet {
 
     public IconSet addIcon(Icon icon) {
         iconsByCSSSelector.put(icon.getNormalizedSelector(), icon);
-        iconsByUrl.put(icon.getUrl(), icon);
+        if (icon.getUrl() != null) {
+            iconsByUrl.put(icon.getUrl(), icon);
+        }
+        iconsByClassSpec.clear(); // regenerate, in case an icon has been redefined.
         return this;
     }
 
     /**
-     * Get an icon instance from its {@link  Icon#toNormalizedCSSSelector(String) normalized CSS selector}.
+     * Get an icon instance from it's {@link  Icon#toNormalizedCSSSelector(String) normalized CSS selector}.
+     * <p/>
+     * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
+     * are trying to perform reflective lookup using a GString (instead of a {@link String}).
+     *
      * @param cssSelector The icon's normalized CSS selector.
      * @return The icon instance, or {@code null} if no such icon.
      */
-    public Icon getIconByNormalizedCSSSelector(GString cssSelector) {
+    public Icon getIconByNormalizedCSSSelector(Object cssSelector) {
         if (cssSelector == null) {
             return null;
         }
-        return iconsByCSSSelector.get(cssSelector.toString());
+        return getIconByNormalizedCSSSelector(cssSelector.toString());
     }
 
     /**
-     * Get an icon instance from its {@link  Icon#toNormalizedCSSSelector(String) normalized CSS selector}.
+     * Get an icon instance from it's {@link  Icon#toNormalizedCSSSelector(String) normalized CSS selector}.
      * @param cssSelector The icon's normalized CSS selector.
      * @return The icon instance, or {@code null} if no such icon.
      */
-    public Icon getIconByNormalizedCSSSelector(String cssSelector) {
+    private Icon getIconByNormalizedCSSSelector(String cssSelector) {
         if (cssSelector == null) {
             return null;
         }
@@ -83,10 +94,14 @@ public class IconSet {
 
     /**
      * Get an icon instance from a class specification.
+     * <p/>
+     * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
+     * are trying to perform reflective lookup using a GString (instead of a {@link String}).
+     *
      * @param iconClassSpec The icon's class spec as defined on the &lt;l:icon class&gt; attribute.
      * @return The icon instance, or {@code null} if no such icon.
      */
-    public Icon getIconByClassSpec(GString iconClassSpec) {
+    public Icon getIconByClassSpec(Object iconClassSpec) {
         if (iconClassSpec == null) {
             return null;
         }
@@ -98,7 +113,7 @@ public class IconSet {
      * @param iconClassSpec The icon's class spec as defined on the &lt;l:icon class&gt; attribute.
      * @return The icon instance, or {@code null} if no such icon.
      */
-    public Icon getIconByClassSpec(String iconClassSpec) {
+    private Icon getIconByClassSpec(String iconClassSpec) {
         if (iconClassSpec == null) {
             return null;
         }
@@ -126,11 +141,15 @@ public class IconSet {
     }
 
     /**
-     * Get an icon instance from its url.
+     * Get an icon instance from it's url.
+     * <p/>
+     * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
+     * are trying to perform reflective lookup using a GString (instead of a {@link String}).
+     *
      * @param url The icon url.
      * @return The icon instance, or {@code null} if no such icon.
      */
-    public Icon getIconByUrl(GString url) {
+    public Icon getIconByUrl(Object url) {
         if (url == null) {
             return null;
         }
@@ -138,11 +157,11 @@ public class IconSet {
     }
 
     /**
-     * Get an icon instance from its url.
+     * Get an icon instance from it's url.
      * @param url The icon url.
      * @return The icon instance, or {@code null} if no such icon.
      */
-    public Icon getIconByUrl(String url) {
+    private Icon getIconByUrl(String url) {
         if (url == null) {
             return null;
         }
@@ -154,12 +173,19 @@ public class IconSet {
 
     /**
      * Normalize the supplied string to an Icon name class e.g. "blue_anime" to "icon-blue-anime".
+     * <p/>
+     * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
+     * are trying to perform reflective lookup using a GString (instead of a {@link String}).
+     *
      *
      * @param string The string to be normalized.
      * @return The normalized icon name class.
      */
-    public static String toNormalizedIconNameClass(GString string) {
-        return Icon.toNormalizedIconNameClass(string.toString());
+    public static String toNormalizedIconNameClass(Object string) {
+        if (string == null) {
+            return null;
+        }
+        return toNormalizedIconNameClass(string.toString());
     }
 
     /**
@@ -168,19 +194,26 @@ public class IconSet {
      * @param string The string to be normalized.
      * @return The normalized icon name class.
      */
-    public static String toNormalizedIconNameClass(String string) {
+    private static String toNormalizedIconNameClass(String string) {
         return Icon.toNormalizedIconNameClass(string);
     }
 
     /**
      * Normalize the supplied string to an Icon size class e.g. "16x16" to "icon-sm".
+     * <p/>
+     * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
+     * are trying to perform reflective lookup using a GString (instead of a {@link String}).
+     *
      *
      * @param string The string to be normalized.
      * @return The normalized icon size class, or the unmodified {@code string} arg
      *         if it was an unrecognised icon size.
      */
-    public static String toNormalizedIconSizeClass(GString string) {
-        return Icon.toNormalizedIconSizeClass(string.toString());
+    public static String toNormalizedIconSizeClass(Object string) {
+        if (string == null) {
+            return null;
+        }
+        return toNormalizedIconSizeClass(string.toString());
     }
 
     /**
@@ -190,18 +223,25 @@ public class IconSet {
      * @return The normalized icon size class, or the unmodified {@code string} arg
      *         if it was an unrecognised icon size.
      */
-    public static String toNormalizedIconSizeClass(String string) {
+    private static String toNormalizedIconSizeClass(String string) {
         return Icon.toNormalizedIconSizeClass(string);
     }
 
     /**
      * Normalize the supplied url.
+     * <p/>
+     * This {@link Object} based version allows the function to be resolvable e.g. from JEXL expressions that
+     * are trying to perform reflective lookup using a GString (instead of a {@link String}).
+     *
      *
      * @param url The url to be normalized.
      * @return The normalized url.
      */
-    public static String toNormalizedIconUrl(GString url) {
-        return Icon.toNormalizedIconUrl(url.toString());
+    public static String toNormalizedIconUrl(Object url) {
+        if (url == null) {
+            return null;
+        }
+        return toNormalizedIconUrl(url.toString());
     }
 
     /**
@@ -210,7 +250,7 @@ public class IconSet {
      * @param url The url to be normalized.
      * @return The normalized url.
      */
-    public static String toNormalizedIconUrl(String url) {
+    private static String toNormalizedIconUrl(String url) {
         return Icon.toNormalizedIconUrl(url);
     }
 
@@ -625,5 +665,8 @@ public class IconSet {
         icons.addIcon(new Icon("icon-user icon-xlg", "48x48/user.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-warning icon-xlg", "48x48/warning.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-yellow icon-xlg", "48x48/yellow.png", Icon.ICON_XLARGE_STYLE));
+
+        // Capture a list of the core icons.
+        icons.coreIcons.putAll(icons.iconsByCSSSelector);
     }
 }
