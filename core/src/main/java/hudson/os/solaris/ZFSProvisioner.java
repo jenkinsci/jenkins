@@ -38,6 +38,8 @@ import hudson.model.Node;
 import java.io.IOException;
 import java.io.File;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jenkinsci.Symbol;
 import org.jvnet.solaris.libzfs.LibZFS;
@@ -49,7 +51,18 @@ import org.jvnet.solaris.libzfs.ZFSFileSystem;
  * @author Kohsuke Kawaguchi
  */
 public class ZFSProvisioner extends FileSystemProvisioner implements Serializable {
-    private static final LibZFS libzfs = new LibZFS();
+    private static final Logger LOGGER = Logger.getLogger(ZFSProvisioner.class.getName());
+    private static final LibZFS libzfs;
+    static {
+        LibZFS tmp;
+        try {
+            tmp = new LibZFS();
+        } catch (Throwable t) {
+            LOGGER.log(Level.WARNING, "Failed to initialize LibZFS", t);
+            tmp = null;
+        }
+        libzfs = tmp;
+    }
     private final String rootDataset;
 
     public ZFSProvisioner(Node node) throws IOException, InterruptedException {
