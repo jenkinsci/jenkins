@@ -390,7 +390,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     plugin.setServletContext(pluginManager.context);
                 }
                 else {
-                    throw new NullPointerException("Failed to initialize Plugin, because it is null");
+                    throw new NullPointerException("Failed to initialize the plugin " + wrapper.getDisplayName());
                 }
                 startPlugin(wrapper);
             } catch(Throwable t) {
