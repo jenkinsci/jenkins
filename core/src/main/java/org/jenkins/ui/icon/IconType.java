@@ -30,6 +30,7 @@ import org.kohsuke.stapler.Stapler;
  * Icon type.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since 2.0
  */
 public enum IconType {
     CORE,

@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * An icon set.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since 2.0
  */
 public class IconSet {
 

@@ -37,6 +37,7 @@ import java.util.Map;
  * Simple icon metadata class.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since 2.0
  */
 public class Icon {
 
