@@ -347,7 +347,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-health-40to59 icon-sm", "16x16/health-40to59.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-health-60to79 icon-sm", "16x16/health-60to79.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-health-80plus icon-sm", "16x16/health-80plus.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-help icon-sm", "16x16/help.png", Icon.ICON_SMALL_STYLE));
+        icons.addIcon(new Icon("icon-help icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-hourglass icon-sm", "16x16/hourglass.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-lock icon-sm", "16x16/lock.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-nobuilt icon-sm", "16x16/nobuilt.png", Icon.ICON_SMALL_STYLE));
@@ -462,7 +462,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-health-40to59 icon-md", "24x24/health-40to59.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-health-60to79 icon-md", "24x24/health-60to79.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-health-80plus icon-md", "24x24/health-80plus.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-help icon-md", "24x24/help.png", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-help icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-installer icon-md", "24x24/installer.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-lock icon-md", "24x24/lock.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-md", "24x24/monitor.png", Icon.ICON_MEDIUM_STYLE));
@@ -642,7 +642,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-health-40to59 icon-xlg", "48x48/health-40to59.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-health-60to79 icon-xlg", "48x48/health-60to79.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-health-80plus icon-xlg", "48x48/health-80plus.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-help icon-xlg", "48x48/help.png", Icon.ICON_XLARGE_STYLE));
+        icons.addIcon(new Icon("icon-help icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-installer icon-xlg", "48x48/installer.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-lock icon-xlg", "48x48/lock.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-xlg", "48x48/monitor.png", Icon.ICON_XLARGE_STYLE));
