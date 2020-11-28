@@ -25,7 +25,7 @@ package org.jenkins.ui.icon;
 
 /**
  * Icon Specification.
- * <p/>
+ * <br>
  * Plugin extension points that implement/extend Action/ManagementLink should
  * also implement this interface.
  *
