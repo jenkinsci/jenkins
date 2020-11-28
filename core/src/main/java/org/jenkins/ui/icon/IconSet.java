@@ -440,7 +440,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-accept icon-md", "24x24/accept.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-attribute icon-md", "24x24/attribute.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-blue icon-md", "24x24/blue.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-clipboard icon-md", "24x24/clipboard.png", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-clipboard icon-md", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-clock icon-md", "24x24/clock.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-computer-x icon-md", "24x24/computer-x.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-computer icon-md", "24x24/computer.png", Icon.ICON_MEDIUM_STYLE));
@@ -535,7 +535,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-accept icon-lg", "32x32/accept.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-attribute icon-lg", "32x32/attribute.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-blue icon-lg", "32x32/blue.png", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-clipboard icon-lg", "32x32/clipboard.png", Icon.ICON_LARGE_STYLE));
+        icons.addIcon(new Icon("icon-clipboard icon-lg", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-clock icon-lg", "32x32/clock.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-computer-x icon-lg", "32x32/computer-x.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-computer icon-lg", "32x32/computer.png", Icon.ICON_LARGE_STYLE));
@@ -624,7 +624,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-accept icon-xlg", "48x48/accept.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-attribute icon-xlg", "48x48/attribute.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-blue icon-xlg", "48x48/blue.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-clipboard icon-xlg", "48x48/clipboard.png", Icon.ICON_XLARGE_STYLE));
+        icons.addIcon(new Icon("icon-clipboard icon-xlg", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-computer-x icon-xlg", "48x48/computer-x.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-computer icon-xlg", "48x48/computer.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-disabled icon-xlg", "48x48/disabled.png", Icon.ICON_XLARGE_STYLE));
