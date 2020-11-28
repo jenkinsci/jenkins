@@ -155,7 +155,7 @@ THE SOFTWARE.
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
         <version>[0]</version>
-        <!-- 
+        <!--
               "[0]" is a range that must be exactly 0
               this is different to "0" which is hint to use version 0.
               therefore unless anyone else uses ranges (they should not) this version will always win
@@ -263,11 +263,6 @@ THE SOFTWARE.
         <groupId>commons-fileupload</groupId>
         <artifactId>commons-fileupload</artifactId>
         <version>1.3.1-jenkins-2</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.xml.txw2</groupId>
-        <artifactId>txw2</artifactId>
-        <version>20110809</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.winp</groupId>

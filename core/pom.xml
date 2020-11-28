@@ -467,10 +467,6 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.sun.xml.txw2</groupId>
-      <artifactId>txw2</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
     </dependency>
