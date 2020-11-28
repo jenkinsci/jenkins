@@ -39,7 +39,7 @@ import jenkins.util.SystemProperties;
  * @author Kohsuke Kawaguchi
  */
 public class GroovyHookScript {
-    private static final String ROOT_PATH= SystemProperties.getString(GroovyHookScript.class.getName() + ".ROOT_PATH");
+    private static final String ROOT_PATH = SystemProperties.getString(GroovyHookScript.class.getName() + ".ROOT_PATH");
     private final String hook;
     private final Binding bindings = new Binding();
     private final ServletContext servletContext;
@@ -58,7 +58,7 @@ public class GroovyHookScript {
     public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {
         this.hook = hook;
         this.servletContext = servletContext;
-        this.rootDir = ROOT_PATH != null ? new File(ROOT_PATH): jenkinsHome;
+        this.rootDir = ROOT_PATH != null ? new File(ROOT_PATH) : jenkinsHome;
         this.loader = loader;
     }
 
