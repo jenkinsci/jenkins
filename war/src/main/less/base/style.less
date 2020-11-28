@@ -231,11 +231,8 @@ td.tab {
   padding: 4px 4px 4px 4px;
 }
 
-pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
+pre {
     white-space: pre-wrap;       /* css-3 */
-    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-    white-space: -pre-wrap;      /* Opera 4-6 */
-    white-space: -o-pre-wrap;    /* Opera 7 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
     margin: 0;
 }
@@ -1388,17 +1385,11 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 #notification-bar.notif-alert-show {
-  -webkit-animation: fadein 350ms ease-out 1 normal forwards;
-  -moz-animation: fadein 350ms ease-out 1 normal forwards;
-  -o-animation: fadein 350ms ease-out 1 normal forwards;
   -ms-animation: fadein 350ms ease-out 1 normal forwards;
   animation: fadein 350ms ease-out 1 normal forwards;
 }
 
 #notification-bar.notif-alert-clear {
-  -webkit-animation: fadeout 350ms ease-in 1 normal forwards;
-  -moz-animation: fadeout 350ms ease-in 1 normal forwards;
-  -o-animation: fadeout 350ms ease-in 1 normal forwards;
   -ms-animation: fadeout 350ms ease-in 1 normal forwards;
   animation: fadeout 350ms ease-in 1 normal forwards;
 }
