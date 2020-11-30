@@ -54,7 +54,7 @@ jobs:
 
           echo $REPO
 
-          wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/jenkins.war
+          wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}
       - name: Upload Release Asset
         id: upload-war
         uses: actions/upload-release-asset@v1
@@ -157,7 +157,7 @@ jobs:
 
           echo $REPO
 
-          wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/jenkins.msi
+          wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}
       - name: Upload Release Asset
         id: upload-msi
         if: always()
@@ -179,7 +179,8 @@ jobs:
         run: |
           PROJECT_VERSION=${{ needs.determine-version.outputs.project-version }}
           echo $PROJECT_VERSION
-          FILE_NAME=jenkins-${PROJECT_VERSION}-1.2-opensuse.noarch.rpm
+          # we need opensuse to the file 
+          OUTPUT_FILE_NAME=jenkins-${PROJECT_VERSION}-1.2-opensuse.noarch.rpm
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
           echo "::set-output name=file-name::$FILE_NAME"
 
@@ -191,7 +192,7 @@ jobs:
 
           echo $REPO
 
-          wget -q https://get.jenkins.io/${REPO}/jenkins-${PROJECT_VERSION}-1.2.noarch.rpm -O ${FILE_NAME} 
+          wget -q https://get.jenkins.io/${REPO}/jenkins-${PROJECT_VERSION}-1.2.noarch.rpm -O ${OUTPUT_FILE_NAME} 
       - name: Upload Release Asset
         id: upload-suse-rpm
         if: always()
