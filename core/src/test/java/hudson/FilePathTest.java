@@ -378,7 +378,6 @@ public class FilePathTest {
         final File tmpDir2 = new File(tmpDir, filePrefix);
         tmpDir2.mkdirs();
 
-
         final File tempFile2 =  new File(tmpDir2, filePrefix + ".log");
         RandomAccessFile file2 = new RandomAccessFile(tempFile2, "rw");
         file2.setLength(fileSize);
@@ -391,10 +390,8 @@ public class FilePathTest {
             files.add(list);
         };
 
-
         final FilePath tmpDirPath = new FilePath(tmpDir);
         final File tagz =  new File(temp.getRoot(), filePrefix + ".tagz");
-        tagz.createNewFile();
 
         try (OutputStream os = new FileOutputStream(tagz)) {
             DirScanner.Glob scanner = new DirScanner.Glob("**", "");
@@ -419,7 +416,6 @@ public class FilePathTest {
                     format("%s%s%s.log", filePrefix,File.separator,filePrefix),
                     format("%s.log", filePrefix)
             ));
-
 
         }
     }
