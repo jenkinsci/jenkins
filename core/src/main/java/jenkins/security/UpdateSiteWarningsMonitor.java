@@ -89,6 +89,11 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
         return !getActiveCoreWarnings().isEmpty() || !getActivePluginWarningsByPlugin().isEmpty();
     }
 
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     public List<UpdateSite.Warning> getActiveCoreWarnings() {
         List<UpdateSite.Warning> CoreWarnings = new ArrayList<>();
 

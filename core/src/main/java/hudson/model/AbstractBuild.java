@@ -499,7 +499,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                 workspace = lease.path.getRemote();
                 listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
-                node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
 
                 for (WorkspaceListener wl : WorkspaceListener.all()) {
                     wl.beforeUse(AbstractBuild.this, lease.path, listener);
