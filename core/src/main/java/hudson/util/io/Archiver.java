@@ -27,6 +27,7 @@ package hudson.util.io;
 import hudson.util.FileVisitor;
 
 import java.io.Closeable;
+import java.util.function.Consumer;
 
 /**
  * {@link FileVisitor} that creates archive files.
@@ -36,12 +37,17 @@ import java.io.Closeable;
  */
 public abstract class Archiver extends FileVisitor implements Closeable {
     protected int entriesWritten =0;
-
+    protected Consumer<String> consumer = (str)-> {};
     /**
      * Number of files/directories archived.
      */
     public int countEntries() {
         return entriesWritten;
+    }
+
+    public Archiver withConsumer(Consumer<String> consumer){
+        this.consumer = consumer;
+        return this;
     }
 
 }

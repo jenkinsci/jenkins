@@ -82,6 +82,7 @@ final class ZipArchiver extends Archiver {
             }
             zip.closeEntry();
         }
+        consumer.accept(relativePath);
         entriesWritten++;
     }
 

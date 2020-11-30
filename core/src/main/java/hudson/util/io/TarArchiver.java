@@ -73,6 +73,7 @@ final class TarArchiver extends Archiver {
 
         tar.putArchiveEntry(e);
         tar.closeArchiveEntry();
+        consumer.accept(relativePath);
         entriesWritten++;
     }
 
@@ -119,6 +120,7 @@ final class TarArchiver extends Archiver {
         } finally { // always close the entry
             tar.closeArchiveEntry();
         }
+        consumer.accept(relativePath);
         entriesWritten++;
 
     }

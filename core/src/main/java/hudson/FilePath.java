@@ -515,13 +515,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                Archiver a = factory.create(out);
+                Archiver a = factory.create(out).withConsumer(function);
                 try {
                     scanner.scan(f,reading(a));
                 } finally {
                     a.close();
                 }
-                function.accept(f.getName());
                 return a.countEntries();
             }
 
@@ -2704,7 +2703,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                             _chmod(f, mode);
                     }
                 }
-                consumer.accept(f.getName());
+
+                consumer.accept(baseDir.toPath().relativize(f.toPath()).toString());
             }
         } catch (IOException e) {
             throw new IOException("Failed to extract " + name, e);
