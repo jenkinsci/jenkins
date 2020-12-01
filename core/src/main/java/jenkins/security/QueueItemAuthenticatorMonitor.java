@@ -66,6 +66,11 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
         return !isQueueItemAuthenticatorPresent() || !isQueueItemAuthenticatorConfigured() || isAnyBuildLaunchedAsSystemWithAuthenticatorPresent();
     }
 
+    @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String redirect, @QueryParameter String dismiss, @QueryParameter String reset) throws IOException {
         if (redirect != null) {
