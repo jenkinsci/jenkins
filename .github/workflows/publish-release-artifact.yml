@@ -182,7 +182,7 @@ jobs:
           # we need opensuse to the file 
           OUTPUT_FILE_NAME=jenkins-${PROJECT_VERSION}-1.2-opensuse.noarch.rpm
           IS_LTS=${{ needs.determine-version.outputs.is-lts }}
-          echo "::set-output name=file-name::$FILE_NAME"
+          echo "::set-output name=file-name::$OUTPUT_FILE_NAME"
 
           REPO=opensuse
           if [ ${IS_LTS} = 'true' ]
