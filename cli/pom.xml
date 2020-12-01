@@ -68,7 +68,6 @@
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.26</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -154,7 +153,7 @@
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
-        <artifactId>maven-localizer-plugin</artifactId>
+        <artifactId>localizer-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>
