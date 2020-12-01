@@ -57,11 +57,6 @@ THE SOFTWARE.
 
 
   <dependencies>
-    <dependency> <!-- Not included into BOm due to the library vs. plugin conflict and possible confusion -->
-      <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
-      <artifactId>icon-set</artifactId>
-      <version>1.0.5</version>
-    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
