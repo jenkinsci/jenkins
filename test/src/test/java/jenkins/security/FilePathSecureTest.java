@@ -131,9 +131,10 @@ public class FilePathSecureTest {
 //
         // consumer to access to the (un)compressed files
         final List<String> files = new ArrayList<>();
-        Consumer<String> function = (Consumer)((Serializable)((s) -> {
-            files.add(s);
+        Consumer<String> function = (Consumer<String> & Serializable)(a) -> {
+            files.add(a);
         };
+
 
         final File tagz = File.createTempFile(filePrefix, ".tagz");
 
