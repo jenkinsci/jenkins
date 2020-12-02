@@ -37,7 +37,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
-import org.hamcrest.core.StringEndsWith;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,9 +53,7 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
