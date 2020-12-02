@@ -33,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -130,8 +131,8 @@ public class FilePathSecureTest {
 //
         // consumer to access to the (un)compressed files
         final List<String> files = new ArrayList<>();
-        Consumer<String> function = (list) -> {
-            files.add(list);
+        Consumer<String> function = (Consumer)((Serializable)((s) -> {
+            files.add(s);
         };
 
         final File tagz = File.createTempFile(filePrefix, ".tagz");
