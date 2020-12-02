@@ -67,30 +67,47 @@ public class FilePathSecureTest {
         remote = s.getRootPath();
         // to see the difference: DefaultFilePathFilter.BYPASS = true;
     }
-
-    @Test public void arc() throws Exception {
+    @Issue("JENKINS-40912")
+    @Test public void archiving() throws Exception {
         FilePath dir = root.child("dir");
         dir.mkdirs();
         dir.child("stuff").write("hello", null);
+
+        FilePath folder = dir.child("folder");
+        folder.mkdirs();
+        folder.child("more-stuff").write("hello", null);
+
         FilePath zip = root.child("dir.zip");
 
         // consumer to access to the (un)compressed files
         final List<String> files = new ArrayList<>();
         Consumer<String> function = (Consumer<String> & Serializable)(a) -> {
+            System.out.println("a "+ a);
             files.add(a);
-            System.out.println("File "+ a);
         };
 
         OutputStream os = zip.write();
-        dir.archive(ArchiverFactory.ZIP,os,null, function);
+        DirScanner.Glob scanner = new DirScanner.Glob("**", "");
+        dir.archive(ArchiverFactory.TAR, os, scanner, function);
 
-        System.out.println(" files "+ files.size());
-        files.stream().forEach(System.out::println);
-        System.out.println(" files "+ files.size());
+        // assert that the former two files are archived.
+        assertThat(files.size(), is(2));
+        assertThat(files, containsInAnyOrder(
+                "stuff",
+                "folder/more-stuff"
+        ));
+        files.clear();
 
-//        dir.zip(zip);
-//        zip.unzip(remote);
-//        assertEquals("hello", remote.child("dir/stuff").readToString());
+
+        FilePath out = root.child("output");
+        out.mkdirs();
+        zip.untar(out, FilePath.TarCompression.NONE, function);
+
+        assertThat(files.size(), is(2));
+        assertThat(files, containsInAnyOrder(
+                "stuff",
+                "folder/more-stuff"
+        ));
     }
 
     @Test public void unzip() throws Exception {
@@ -136,48 +153,4 @@ public class FilePathSecureTest {
         tar.untar(root, FilePath.TarCompression.NONE);
         assertEquals("hello", remote.child("dir/stuff").readToString());
     }
-
-    @Issue("JENKINS-40912")
-    @Test
-    @Ignore
-    public void processAllFilesWhenArchiving() throws IOException, InterruptedException {
-        // let's create a workspace with two files,
-        //      /workspace.log
-        //      /workspace/workspace.log
-        String filePrefix = "workspace";
-
-        final FilePath tmpDir = remote.child(filePrefix);
-        tmpDir.mkdirs();
-
-        tmpDir.child(filePrefix+".log").write("hello", null);
-
-        FilePath folder = tmpDir.child(filePrefix);
-        tmpDir.mkdirs();
-        folder.child(filePrefix+".log").write("hello", null);
-
-        // consumer to access to the (un)compressed files
-        final List<String> files = new ArrayList<>();
-        Consumer<String> function = (Consumer<String> & Serializable)(a) -> {
-            files.add(a);
-        };
-
-
-        final File tagz = File.createTempFile(filePrefix, ".tagz");
-
-        try (OutputStream os = new FileOutputStream(tagz)) {
-            DirScanner.Glob scanner = new DirScanner.Glob("**", "");
-            //create targz file in the base directory. (../workspace.tagz)
-            tmpDir.archive(ArchiverFactory.TARGZ, os, scanner, function);
-
-            // assert that the former two files are archived.
-            assertThat(files.size(), is(2));
-            assertThat(files, containsInAnyOrder(
-                    format("%s%s%s.log", filePrefix,File.separator,filePrefix),
-                    format("%s.log", filePrefix)
-            ));
-
-
-        }
-    }
-
 }
