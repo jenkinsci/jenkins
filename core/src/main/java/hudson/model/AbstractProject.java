@@ -356,8 +356,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if(ws!=null) {
             Node on = getLastBuiltOn();
             getScm().processWorkspaceBeforeDeletion(this, ws, on);
-            if(on!=null)
-                on.getFileSystemProvisioner().discardWorkspace(this,ws);
         }
         super.performDelete();
     }

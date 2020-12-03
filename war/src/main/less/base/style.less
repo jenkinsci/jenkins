@@ -76,7 +76,8 @@ td.center-align {
   text-align: center;
 }
 
-.no-wrap td, td.no-wrap {
+.no-wrap td,
+ td.no-wrap {
   white-space: nowrap;
 }
 
@@ -164,7 +165,7 @@ a.tip:hover {
 }
 
 a.tip span {
-  display: none
+  display: none;
 }
 
 a.tip:hover span {
@@ -176,7 +177,7 @@ a.tip:hover span {
   border: 1px solid #bbb;
   background-color: #fffff0;
   color: #000;
-  text-align: left
+  text-align: left;
 }
 
 .call-to-action {
@@ -201,7 +202,7 @@ img {
 }
 
 div.disabled {
-    opacity : 0.4;
+    opacity: 0.4;
     filter: alpha(opacity=40); /* msie */
     background-color: #000;
 }
@@ -231,11 +232,8 @@ td.tab {
   padding: 4px 4px 4px 4px;
 }
 
-pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
+pre {
     white-space: pre-wrap;       /* css-3 */
-    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-    white-space: -pre-wrap;      /* Opera 4-6 */
-    white-space: -o-pre-wrap;    /* Opera 7 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
     margin: 0;
 }
@@ -251,7 +249,7 @@ pre.console {
 .form-group {
   margin-bottom: 1rem;
 
-  &:after {
+  &::after {
     content: " "; /* Older browser do not support empty content */
     visibility: hidden;
     display: block;
@@ -323,12 +321,15 @@ pre.console {
 .expanding-input {
   display: flex;
 }
+
 .expanding-input__input {
   flex: 1;
 }
+
 .expanding-input__button {
   flex-shrink: 1;
 }
+
 .expanding-input__button input {
   min-width: 0 !important;
 }
@@ -445,12 +446,12 @@ pre.console {
     width: 1px;
 }
 
-#login-field SPAN {
+#login-field span {
   white-space: nowrap;
   color: white;
 }
 
-#login-field A {
+#login-field a {
     /*
       link inside login field should be always white.
       If I set this to inherit, it won't work in IE7
@@ -473,10 +474,10 @@ div.behavior-loading {
     filter: alpha(opacity=50);
 }
 
-.config div.behavior-loading{
-    background: rgba(255,255,255,.85);
+.config div.behavior-loading {
+    background: rgba(255, 255, 255, 0.85);
     left: 0;
-    width:100%;
+    width: 100%;
     right: 0;
     top: 15px;
     bottom: 0;
@@ -489,29 +490,30 @@ div.behavior-loading {
     z-index: 99;
     opacity: 1;
     color: #999;
-    text-shadow:#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px
+    text-shadow: #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px, #fff 0 0 5px;
 }
 
-.behavior-loading:before {
-  content:' ';
-  display:block;
+.behavior-loading::before {
+  content: ' ';
+  display: block;
   width: 100px;
   height: 100px;
   margin: 200px auto 25px;
-  background-color: rgba(0,0,0,.15);
-  border:5px solid rgba(0,0,0,.33);
-  position:relative;
-  z-index:2;
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 5px solid rgba(0, 0, 0, 0.33);
+  position: relative;
+  z-index: 2;
   border-radius: 100%;
-  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
-  animation: sk-scaleout 1.0s infinite ease-in-out;
-  box-shadow:#fff 0 0 0 10px
+  -webkit-animation: sk-scaleout 1s infinite ease-in-out;
+  animation: sk-scaleout 1s infinite ease-in-out;
+  box-shadow: #fff 0 0 0 10px;
 }
 
 @-webkit-keyframes sk-scaleout {
-  0% { -webkit-transform: scale(0) }
+  0% { -webkit-transform: scale(0); }
+
   100% {
-    -webkit-transform: scale(1.0);
+    -webkit-transform: scale(1);
     opacity: 0;
   }
 }
@@ -520,21 +522,24 @@ div.behavior-loading {
   0% {
     -webkit-transform: scale(0);
     transform: scale(0);
-  } 100% {
-    -webkit-transform: scale(1.0);
-    transform: scale(1.0);
+  }
+
+ 100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
     opacity: 0;
   }
 }
 
-LABEL.attach-previous {
+label.attach-previous {
     margin-left: 0.5em;
 }
 
 .bottom-sticker,
 #bottom-sticker {
-    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+    width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
 }
+
 .bottom-sticker-inner {
     background: var(--background);
     padding: 1em 0;
@@ -542,29 +547,32 @@ LABEL.attach-previous {
 
 .top-sticker,
 #top-sticker {
-    width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
+    width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
     z-index: 999;
 }
+
 .top-sticker-inner {
-    padding:1em;
+    padding: 1em;
 }
+
 .top-sticker-edge {
-    height:16px;
+    height: 16px;
     background-image: url("../../images/top-sticker-bottom-edge.png");
     background-repeat: repeat-x;
 }
+
 .top-sticker.noedge > .top-sticker-edge {
     display: none;
 }
 
 .top-sticker.noedge > .top-sticker-inner {
-    padding:0;
+    padding: 0;
 }
 
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
-    color: #CC0000;
+    color: #c00;
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
@@ -575,12 +583,12 @@ LABEL.attach-previous {
 }
 
 .error-inline {
-    color: #CC0000;
+    color: #c00;
     font-weight: bold;
 }
 
 .warning {
-    color: #C4A000;
+    color: #c4a000;
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
@@ -592,7 +600,7 @@ LABEL.attach-previous {
 }
 
 .warning-inline {
-    color: #C4A000;
+    color: #c4a000;
     font-weight: bold;
 }
 
@@ -652,14 +660,17 @@ LABEL.attach-previous {
   justify-content: center;
   align-items: center;
 }
+
 .setting-help .help-button {
   margin: 0;
 }
+
 .icon-help,
 .svg-icon.icon-help {
   height: 1.25rem;
   width: 1.25rem;
 }
+
 img.icon-help {
   vertical-align: text-top;
 }
@@ -671,44 +682,54 @@ img.icon-help {
   width: 100%;
   white-space: nowrap;
 }
+
 #viewList td {
   padding: 0;
 }
+
 #viewList td.inactive {
   border: solid 1px #ccc;
   border-bottom-color: #bbb;
 }
+
 #viewList td.inactive:hover {
   background-color: #777;
 }
+
 #viewList td.inactive a {
   text-decoration: none;
   color: #444;
 }
+
 #viewList td.inactive a:hover {
   color: #f1f1f1;
 }
+
 #viewList td.noleft {
   border-left: none;
 }
+
 #viewList td.noright {
   border-right: none;
 }
+
 #viewList td.active {
   border: solid 1px #bbb;
   padding: 0.5em;
   border-bottom: none;
-  vertical-align:middle;
-  background-color: rgb(240,240,240);
+  vertical-align: middle;
+  background-color: rgb(240, 240, 240);
   font-weight: bold;
   white-space: nowrap;
 }
+
 #viewList td.filler {
   border: none;
   border-bottom: solid 1px #bbb;
   width: 100%;
   text-align: right;
 }
+
 #viewList a {
   display: block;
   padding: 0.5em;
@@ -718,6 +739,7 @@ img.icon-help {
 #projectstatus .header {
   border-bottom: 1px solid var(--bigtable-header-border-color);
 }
+
 #projectstatus th {
   text-align: left;
   // padding: 7px 0px;
@@ -725,8 +747,8 @@ img.icon-help {
 
 /* ============================ list view entries ======================== */
 div.listview-jobs {
-  max-height:300px;
-  overflow:auto;
+  max-height: 300px;
+  overflow: auto;
 }
 
 /* ============================ parameters form ========================== */
@@ -752,6 +774,7 @@ table.parameters > tbody:hover {
 .healthReport a {
     text-decoration: none;
 }
+
 #side-panel .healthReport a {
   height: 100%;
 }
@@ -809,16 +832,17 @@ table.parameters > tbody:hover {
 #buildHistory .build-rss-links {
   float: right;
 }
+
 #buildHistory .build-rss-links a {
   display: inline-flex;
   align-items: center;
   margin-right: 0.5rem;
 }
+
 #buildHistory .build-rss-all-icon,
 #buildHistory .build-rss-failed-icon {
   margin-right: 0.25rem;
 }
-
 
 #buildHistoryPage {
   position: relative;
@@ -827,6 +851,7 @@ table.parameters > tbody:hover {
 #buildHistoryPage .build-search-row td {
     position: relative;
 }
+
 #buildHistoryPage .build-search-row .clear {
     position: absolute;
     padding: 0 4px;
@@ -835,23 +860,28 @@ table.parameters > tbody:hover {
     right: 6px;
     opacity: 0.5;
 }
+
 #buildHistoryPage .build-search-row .clear:hover {
     background-color: var(--very-light-grey);
     border: 1px solid var(--medium-grey);
     padding-right: 3px;
     border-top-right-radius: 2px;
 }
+
 #buildHistoryPage .build-search-row input {
     width: 100%;
     padding-left: 5px;
     padding-right: 20px;
 }
+
 #buildHistoryPage .build-search-row table {
     width: 100%;
 }
+
 #buildHistoryPage .build-search-row .build-search-help {
     width: 20px;
 }
+
 #buildHistoryPage .build-search-row .icon-help {
     position: absolute;
     cursor: pointer;
@@ -882,9 +912,11 @@ table.parameters > tbody:hover {
   visibility: visible;
   border-color: var(--light-grey) !important;
 }
+
 #buildHistoryPageNav.mouseOverSidePanelBuildHistory {
   border-color: var(--medium-grey) !important;
 }
+
 #buildHistoryPageNav:hover {
   border-color: var(--medium-grey) !important;
 }
@@ -892,16 +924,18 @@ table.parameters > tbody:hover {
 #buildHistoryPageNav .pageOne {
   background-image: url(../../images/16x16/go_top.png);
 }
+
 #buildHistoryPageNav .pageUp {
   background-image: url(../../images/16x16/go_up.png);
 }
+
 #buildHistoryPageNav .pageDown {
   background-image: url(../../images/16x16/go_down.png);
 }
+
 #buildHistoryPageNav .find {
   background-image: url(../../images/16x16/find.png);
 }
-
 
 .build-row.model-link-active {
   background: var(--light-grey) !important;
@@ -916,13 +950,16 @@ table.parameters > tbody:hover {
   font-weight: bold;
   vertical-align: top;
 }
+
 .build-row-cell .pane.build-details {
   width: 50%;
 }
+
 .build-row-cell .pane.build-controls {
   width: 25%;
   text-align: right;
 }
+
 .build-row-cell .pane.build-details.block {
   width: 100%;
 }
@@ -939,8 +976,9 @@ table.parameters > tbody:hover {
   opacity: 0.6;
   text-decoration: none;
 }
+
 .pane.build-details a:hover {
-  opacity: 1.0;
+  opacity: 1;
   text-decoration: underline;
 }
 
@@ -951,6 +989,7 @@ table.parameters > tbody:hover {
   white-space: normal !important;
   overflow: visible !important;
 }
+
 .force-nowrap,
 .force-nowrap a {
   white-space: nowrap !important;
@@ -964,10 +1003,12 @@ table.parameters > tbody:hover {
   background-color: white;
   color: black;
 }
+
 .comboBoxSelectedItem {
   background-color: Highlight;
   color: HighlightText;
 }
+
 .combobox-values {
   display: none;
 }
@@ -987,16 +1028,16 @@ table.parameters > tbody:hover {
   margin-right: 1em;
 }
 
-TABLE.fileList {
+table.fileList {
   margin-left: 2em;
   padding: 0;
 }
 
-TABLE.fileList TD {
+table.fileList td {
   padding: 0;
 }
 
-TABLE.fileList TD.fileSize {
+table.fileList td.fileSize {
   padding-left: 2em;
   text-align: right;
   color: #888;
@@ -1010,7 +1051,7 @@ TABLE.fileList TD.fileSize {
 }
 
 .result-skipped {
-  color: #ddbb00;
+  color: #db0;
 }
 
 .result-fixed {
@@ -1026,6 +1067,7 @@ TABLE.fileList TD.fileSize {
   color: #ef2929;
   font-weight: bold;
 }
+
 .test-trend-caption {
   text-align: center;
   font-size: var(--font-size-base);
@@ -1042,7 +1084,7 @@ TABLE.fileList TD.fileSize {
   vertical-align: middle;
 }
 
-TABLE.fingerprint-in-build TD {
+table.fingerprint-in-build td {
   padding-left: 1em;
   padding-right: 1em;
 }
@@ -1072,7 +1114,7 @@ TABLE.fingerprint-in-build TD {
 
 #plugins tr.all-dependents-disabled .enable input {
   pointer-events: auto;
-  opacity: 1.0;
+  opacity: 1;
   visibility: visible;
 }
 
@@ -1084,7 +1126,7 @@ TABLE.fingerprint-in-build TD {
 
 #plugins tr.has-dependents-but-disabled .enable input {
   pointer-events: auto;
-  opacity: 1.0;
+  opacity: 1;
   visibility: visible;
 }
 
@@ -1122,6 +1164,7 @@ TABLE.fingerprint-in-build TD {
 #plugins .plugin-dependency-info .subtitle {
     opacity: 0.7;
 }
+
 #plugins .plugin-dependency-info .title {
     margin-bottom: 5px;
     font-size: larger;
@@ -1129,10 +1172,10 @@ TABLE.fingerprint-in-build TD {
 }
 
 #plugins .plugin-dependency-info span {
-    margin: 5px 5px 0px 0px;
+    margin: 5px 5px 0 0;
     background-color: var(--primary);
     display: inline-block;
-    padding: .2em .6em .3em;
+    padding: 0.2em 0.6em 0.3em;
     font-size: var(--font-size-xs);
     font-weight: 700;
     line-height: 1;
@@ -1140,7 +1183,7 @@ TABLE.fingerprint-in-build TD {
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
-    border-radius: .25em;
+    border-radius: 0.25em;
 }
 
 /* ========================= repeatable elements ========================= */
@@ -1154,33 +1197,33 @@ TABLE.fingerprint-in-build TD {
     border-color: var(--medium-grey);
 }
 
-.repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .show-if-last { visibility: hidden; }
 .repeated-chunk.last .show-if-last { visibility: visible; }
 
-.repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .show-if-not-last { visibility: visible; }
 .repeated-chunk.last .show-if-not-last { visibility: hidden; }
 
-.repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .show-if-not-only { visibility: visible; }
 .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
 .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
-.repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
 .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
 
-.repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
 .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
 .repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
 .repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
 
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
 .repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /*
@@ -1188,7 +1231,7 @@ TABLE.fingerprint-in-build TD {
     and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
     when the user does "Add".
 */
-DIV.to-be-removed { display: none; }
+div.to-be-removed { display: none; }
 
 /* ========================= Other form related CSS ========================= */
 
@@ -1208,7 +1251,7 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= resizable text area ========================= */
 
-TEXTAREA {
+textarea {
     margin-bottom: 0;
 }
 
@@ -1220,14 +1263,15 @@ div.textarea-handle {
     border-top: none;
     cursor: s-resize;
 }
-TEXTAREA.rich-editor {
+
+textarea.rich-editor {
   visibility: hidden;
 }
 
 /* ========================= hover notification ========================= */
 
 #hoverNotification {
-    visibility:hidden;
+    visibility: hidden;
     background-color: white;
     border: 1px solid black;
     padding: 0.5em;
@@ -1250,6 +1294,7 @@ TEXTAREA.rich-editor {
     margin-bottom: 0.5em;
     padding-left: 1.5rem;
 }
+
 .hetero-list-container.with-drag-drop .repeated-chunk .dd-handle,
 .repeated-container.with-drag-drop .repeated-chunk .dd-handle {
   margin-left: -1.25rem;
@@ -1277,14 +1322,14 @@ TEXTAREA.rich-editor {
     white-space: normal;
     margin-top: 0.5em;
     padding-left: 2em;
-    color: #FF0000;
+    color: #f00;
 }
 
 #plugins .securityWarning {
     white-space: normal;
     margin-top: 0.5em;
     padding-left: 2em;
-    color: #FF0000;
+    color: #f00;
 }
 
 #pluginsAdv {
@@ -1308,7 +1353,7 @@ table.progress-bar {
 }
 
 table.progress-bar tr.unknown {
-    background-image:url(../../images/progress-unknown.gif);
+    background-image: url(../../images/progress-unknown.gif);
 }
 
 td.progress-bar-done {
@@ -1316,28 +1361,29 @@ td.progress-bar-done {
 }
 
 td.progress-bar-left {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 
 table.progress-bar.red {
-  border: 1px solid #cc0000;
+  border: 1px solid #c00;
 }
 
 table.progress-bar.red tr.unknown {
-    background-image:url(../../images/progress-unknown-red.gif);
+    background-image: url(../../images/progress-unknown-red.gif);
 }
+
 table.progress-bar.red td.progress-bar-done {
-  background-color: #cc0000;
+  background-color: #c00;
 }
 
 /* ========================= notification bar ========================= */
 #notification-bar {
-    width:100%;
-    position:fixed;
-    text-align:center;
-    left:0;
+    width: 100%;
+    position: fixed;
+    text-align: center;
+    left: 0;
     font-size: 1.75rem;
-    z-index:1000;
+    z-index: 1000;
     border-bottom: 1px solid var(--black);
     line-height: 3.5rem;
     height: 3.5rem;
@@ -1348,13 +1394,14 @@ table.progress-bar.red td.progress-bar-done {
 #notification-bar .svg-icon {
   width: 35px;
   height: 35px;
-  padding-bottom: 5px
+  padding-bottom: 5px;
 }
 
 #notification-bar.notif-alert-default {
   background-color: var(--alert-default-bg-color);
   border-color: var(--alert-default-border-color);
   color: var(--alert-default-color);
+
   .svg-icon {
     color: var(--alert-default-icon-color);
   }
@@ -1364,6 +1411,7 @@ table.progress-bar.red td.progress-bar-done {
   background-color: var(--notification-success-bg-color);
   border-color: var(--notification-success-border-color);
   color: var(--notification-success-color);
+
   .svg-icon {
     color: var(--notification-success-icon-color);
   }
@@ -1373,6 +1421,7 @@ table.progress-bar.red td.progress-bar-done {
   background-color: var(--notification-warning-bg-color);
   border-color: var(--notification-warning-border-color);
   color: var(--notification-warning-color);
+
   .svg-icon {
     color: var(--notification-warning-icon-color);
   }
@@ -1382,42 +1431,37 @@ table.progress-bar.red td.progress-bar-done {
   background-color: var(--notification-error-bg-color);
   border-color: var(--notification-error-border-color);
   color: var(--notification-error-color);
+
   .svg-icon {
     color: var(--notification-error-icon-color);
   }
 }
 
 #notification-bar.notif-alert-show {
-  -webkit-animation: fadein 350ms ease-out 1 normal forwards;
-  -moz-animation: fadein 350ms ease-out 1 normal forwards;
-  -o-animation: fadein 350ms ease-out 1 normal forwards;
-  -ms-animation: fadein 350ms ease-out 1 normal forwards;
   animation: fadein 350ms ease-out 1 normal forwards;
 }
 
 #notification-bar.notif-alert-clear {
-  -webkit-animation: fadeout 350ms ease-in 1 normal forwards;
-  -moz-animation: fadeout 350ms ease-in 1 normal forwards;
-  -o-animation: fadeout 350ms ease-in 1 normal forwards;
-  -ms-animation: fadeout 350ms ease-in 1 normal forwards;
   animation: fadeout 350ms ease-in 1 normal forwards;
 }
 
-@keyframes fadein{
-  from{
+@keyframes fadein {
+  from {
     opacity: 0;
   }
-  to{
+
+  to {
     opacity: 1;
     visibility: visible;
   }
 }
 
-@keyframes fadeout{
-  from{
+@keyframes fadeout {
+  from {
     opacity: 1;
   }
-  to{
+
+  to {
     opacity: 0;
     visibility: hidden;
   }
@@ -1441,23 +1485,25 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 /* ========================= tags/labels ================== */
+
 /* tag0 is the least important tag in a tag cloud */
-.tag0 { font-size: 1.00em; }
-.tag1 { font-size: 1.10em; }
-.tag2 { font-size: 1.20em; }
-.tag3 { font-size: 1.30em; }
-.tag4 { font-size: 1.40em; }
-.tag5 { font-size: 1.50em; }
-.tag6 { font-size: 1.60em; }
-.tag7 { font-size: 1.70em; }
-.tag8 { font-size: 1.80em; }
-.tag9 { font-size: 1.90em; }
+.tag0 { font-size: 1em; }
+.tag1 { font-size: 1.1em; }
+.tag2 { font-size: 1.2em; }
+.tag3 { font-size: 1.3em; }
+.tag4 { font-size: 1.4em; }
+.tag5 { font-size: 1.5em; }
+.tag6 { font-size: 1.6em; }
+.tag7 { font-size: 1.7em; }
+.tag8 { font-size: 1.8em; }
+.tag9 { font-size: 1.9em; }
 
 /* ========================= textarea.jelly ================== */
 
 .textarea-preview-container {
-    text-align:left;
+    text-align: left;
 }
+
 .textarea-preview {
     background-color: var(--very-light-grey);
     padding: 0.5em;
@@ -1470,11 +1516,11 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 .logrecord-metadata-new {
-    color: #8A8;
+    color: #8a8;
 }
 
 .logrecord-metadata-old {
-    color: #AAA;
+    color: #aaa;
 }
 
 /* ========================= matrix configuration table ================== */
@@ -1482,24 +1528,29 @@ table#configuration-matrix {
   border: 1px var(--medium-grey) solid;
   border-collapse: collapse;
 }
+
 tr.matrix-row {
   background-color: var(--bigtable-header-bg);
   color: var(--bigtable-header-text-color);
   font-weight: var(--bigtable-header-font-weight);
 }
+
 td.matrix-header {
   border: 1px var(--medium-grey) solid;
   padding: 3px;
 }
+
 td#matrix-title {
   padding: 3px;
 }
+
 td.matrix-leftcolumn {
   border: 1px var(--medium-grey) solid;
   font-weight: bold;
   background: var(--very-light-grey);
   padding: 3px;
 }
+
 td.matrix-cell {
   border: 1px var(--medium-grey) solid;
   text-align: center;
@@ -1523,9 +1574,10 @@ select.select-ajax-pending {
 
 /* ========================= Button styles ================= */
 .btn-box {
-  display:block;
-  margin-top:2em
+  display: block;
+  margin-top: 2em;
 }
+
 #disable-project {
     margin-top: 6px;
 }
@@ -1588,11 +1640,13 @@ select.select-ajax-pending {
 body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
+
 body.no-decoration #page-head,
 body.no-decoration #side-panel,
 body.no-decoration footer {
     display: none;
 }
+
 body.no-sticker #bottom-sticker {
     display: none;
 }
