@@ -491,8 +491,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Archives this directory into the specified archive format, to the given {@link OutputStream}, by using
      * {@link DirScanner} to choose what files to include.
      *
-     * a Consumer {@link Consumer} is passed to process the list of stashed files
+     * a Consumer {@link Consumer} is passed to process each stashed file at the moment of being stashed
      *
+     * @since 2.267
      * @return
      *      number of files/directories archived. This is only really useful to check for a situation where nothing
      *      is archived.
@@ -505,17 +506,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final ArchiverFactory factory;
         private final OutputStream out;
         private final DirScanner scanner;
-        private final Consumer<String> function;
+        private final Consumer<String> consumer;
 
-        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, Consumer<String> function) {
+        Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, Consumer<String> consumer) {
             this.factory = factory;
             this.out = out;
             this.scanner = scanner;
-            this.function = function;
+            this.consumer = consumer;
         }
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                Archiver a = factory.create(out).withConsumer(function);
+                Archiver a = factory.create(out).withConsumer(consumer);
                 try {
                     scanner.scan(f,reading(a));
                 } finally {
@@ -598,7 +599,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param compression
      *      Compression mode of this tar file.
      * @param consumer
-     *      Consumer for processing the untar files.
+     *      Consumer for processing the untar files in the moment of being untared
      *
      * @since 2.267
      * @see #untarFrom(InputStream, TarCompression)
@@ -2703,8 +2704,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                             _chmod(f, mode);
                     }
                 }
+                try {
+                    consumer.accept(baseDir.toPath().relativize(f.toPath()).toString());
+                }catch (Throwable throwable) {
+                    LOGGER.log(Level.FINE, throwable, () -> "Error when executing consume to 'archive' ");
+                }
 
-                consumer.accept(baseDir.toPath().relativize(f.toPath()).toString());
             }
         } catch (IOException e) {
             throw new IOException("Failed to extract " + name, e);

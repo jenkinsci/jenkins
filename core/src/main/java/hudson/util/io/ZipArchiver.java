@@ -36,6 +36,8 @@ import org.apache.tools.zip.ZipOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link FileVisitor} that creates a zip archive.
@@ -45,6 +47,7 @@ import java.io.OutputStream;
 final class ZipArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
     private final ZipOutputStream zip;
+    private static final Logger LOGGER = Logger.getLogger(ZipArchiver.class.getName());
 
     ZipArchiver(OutputStream out) {
         zip = new ZipOutputStream(out);
@@ -82,7 +85,11 @@ final class ZipArchiver extends Archiver {
             }
             zip.closeEntry();
         }
-        consumer.accept(relativePath);
+        try {
+            consumer.accept(relativePath);
+        }catch (Throwable t){
+            LOGGER.log(Level.FINE, t, () -> "Error when executing consume to 'archive' ");
+        }
         entriesWritten++;
     }
 
