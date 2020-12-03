@@ -61,7 +61,7 @@ THE SOFTWARE.
   </j:if>
 
   <j:choose>
-    <j:when test="${iconMetadata.svg}">
+    <j:when test="${iconMetadata.svgSprite}">
       <l:svgIcon class="${attrs.class}" href="${iconSrc}"/>
     </j:when>
     <j:otherwise>

@@ -58,8 +58,9 @@ public class Icon {
     private final String normalizedSelector;
     private final String url;
     private final String style;
-    private final boolean svg;
+//    private final boolean svg;
     private IconType iconType;
+    private IconFormat iconFormat;
 
     /**
      * Creates a {@link IconType#CORE core} icon.
@@ -98,12 +99,16 @@ public class Icon {
      * @param iconType  The icon type.
      */
     public Icon(String classSpec, String url, String style, IconType iconType) {
+        this(classSpec, url, style, iconType, IconFormat.IMG);
+    }
+
+    public Icon(String classSpec, String url, String style, IconType iconType, IconFormat iconFormat) {
         this.classSpec = classSpec;
         this.normalizedSelector = toNormalizedCSSSelector(classSpec);
         this.url = toNormalizedIconUrl(url);
         this.style = style;
-        this.svg = url.contains(".svg");
         this.iconType = iconType;
+        this.iconFormat = iconFormat;
     }
 
     /**
@@ -117,8 +122,8 @@ public class Icon {
     /**
      * Is the Icon an SVG?
      */
-    public boolean isSvg() {
-        return svg;
+    public boolean isSvgSprite() {
+        return iconFormat == IconFormat.SVG_SPRITE;
     }
 
     /**
