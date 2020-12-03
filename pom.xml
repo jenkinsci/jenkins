@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.61-20201201.120825-2</version>
+    <version>1.61</version>
     <relativePath />
   </parent>
 
