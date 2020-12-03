@@ -494,13 +494,18 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * a Consumer {@link Consumer} is passed to process each stashed file at the moment of being stashed
      *
      * @since 2.267
+     * @param factory top level archiver: TAR or ZIP.
+     * @param os stream where files selected by scanner will be compressed.
+     * @param scanner decides which files to compress.
+     * @param consumer execute a function(consumer) to the relative path of the compressed file.
+     *
      * @return
      *      number of files/directories archived. This is only really useful to check for a situation where nothing
      *      is archived.
      */
-    public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner, Consumer<String> f) throws IOException, InterruptedException {
+    public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner, Consumer<String> consumer) throws IOException, InterruptedException {
         final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
-        return act(new Archive(factory, out, scanner, f));
+        return act(new Archive(factory, out, scanner, consumer));
     }
     private class Archive extends SecureFileCallable<Integer> {
         private final ArchiverFactory factory;
@@ -508,24 +513,32 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final DirScanner scanner;
         private final Consumer<String> consumer;
 
+        /**
+         * @see FilePath#archive(ArchiverFactory, OutputStream, DirScanner, Consumer)
+         * @param factory top level archiver: TAR or ZIP.
+         * @param out stream where files selected by scanner will be compressed.
+         * @param scanner decides which files to compress.
+         * @param consumer execute a function(consumer) to the relative path of the compressed file.
+         */
         Archive(ArchiverFactory factory, OutputStream out, DirScanner scanner, Consumer<String> consumer) {
             this.factory = factory;
             this.out = out;
             this.scanner = scanner;
             this.consumer = consumer;
         }
-        @Override
-            public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                Archiver a = factory.create(out).withConsumer(consumer);
-                try {
-                    scanner.scan(f,reading(a));
-                } finally {
-                    a.close();
-                }
-                return a.countEntries();
-            }
 
-            private static final long serialVersionUID = 1L;
+        @Override
+        public Integer invoke(File f, VirtualChannel channel) throws IOException {
+            Archiver a = factory.create(out).withConsumer(consumer);
+            try {
+                scanner.scan(f, reading(a));
+            } finally {
+                a.close();
+            }
+            return a.countEntries();
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 
     public int archive(final ArchiverFactory factory, OutputStream os, final FileFilter filter) throws IOException, InterruptedException {
