@@ -1370,6 +1370,25 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
                 })
                 .limit(limit)
+                .sorted((o1, o2) -> {
+                    String o1DisplayName = o1.getDisplayName();
+                    if (o1.name.equalsIgnoreCase(query) ||
+                        o1DisplayName.equalsIgnoreCase(query)) {
+                        return -1;
+                    }
+                    String o2DisplayName = o2.getDisplayName();
+                    if (o2.name.equalsIgnoreCase(query) || o2DisplayName.equalsIgnoreCase(query)) {
+                        return 1;
+                    }
+                    if (o1.name.equals(o2.name)) {
+                        return 0;
+                    }
+                    final int pop = Double.compare(o2.popularity, o1.popularity);
+                    if (pop != 0) {
+                        return pop; // highest popularity first
+                    }
+                    return o1DisplayName.compareTo(o2DisplayName);
+                })
                 .map(plugin -> {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("name", plugin.name);
@@ -1432,21 +1451,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
                     }
                     return jsonObject;
-                })
-                .sorted((o1, o2) -> {
-                    String o1DisplayName = o1.getString("displayName");
-                    if (o1.getString("name").equalsIgnoreCase(query) || 
-                        o1DisplayName.equalsIgnoreCase(query)) {
-                        return -1;
-                    }
-                    if (o1 == o2) {
-                        return 0;
-                    }
-                    final int pop = Double.compare(o2.getDouble("popularity"), o1.getDouble("popularity"));
-                    if (pop != 0) {
-                        return pop; // highest popularity first
-                    }
-                    return o1DisplayName.compareTo(o2.getString("displayName"));
                 })
                 .collect(toList());
             if (plugins.size() >= limit) {
