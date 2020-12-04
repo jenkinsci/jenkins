@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.58</version>
+    <version>1.61</version>
     <relativePath />
   </parent>
 
@@ -164,7 +164,7 @@ THE SOFTWARE.
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
         <version>[0]</version>
-        <!-- 
+        <!--
               "[0]" is a range that must be exaclty 0
               this is different to "0" which is hint to use version 0.
               therefore unless anyone else uses ranges (they should not) this version will always win
@@ -345,7 +345,7 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
-          <artifactId>maven-localizer-plugin</artifactId>
+          <artifactId>localizer-maven-plugin</artifactId>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>

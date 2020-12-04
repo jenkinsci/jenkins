@@ -154,7 +154,7 @@
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
-        <artifactId>maven-localizer-plugin</artifactId>
+        <artifactId>localizer-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>
