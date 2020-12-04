@@ -182,7 +182,7 @@ public class Icon {
         if (string.endsWith(".png") || string.endsWith(".gif")) {
             string = string.substring(0, string.length() - 4);
         }
-        return string.replace("_", "-");
+        return string.replace('_', '-');
     }
 
     /**
