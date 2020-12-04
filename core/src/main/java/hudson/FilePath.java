@@ -617,7 +617,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param consumer
      *      Consumer for processing the untar files in the moment of being untared
      *
-     * @throws IOException when a file in the tar breaks the file system {@see #readFromTar(String, File, InputStream, Consumer<String>)}
+     * @throws IOException when a file in the tar breaks the file system
+     * @see #readFromTar(String, File, InputStream, Consumer)
+     *
      * @throws InterruptedException if the current untaring operation is interrupted while waiting.
      * @since 2.267
      * @see #untarFrom(InputStream, TarCompression)
