@@ -81,7 +81,8 @@ final class TarArchiver extends Archiver {
             consumer.accept(relativePath);
         }catch (Throwable t){
             LOGGER.log(Level.FINE, t, () -> "Error when executing consume to 'archive' ");
-        }        entriesWritten++;
+        }
+        entriesWritten++;
     }
 
     @Override

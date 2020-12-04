@@ -497,7 +497,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param factory top level archiver: TAR or ZIP.
      * @param os stream where files selected by scanner will be compressed.
      * @param scanner decides which files to compress.
-     * @param consumer execute a function(consumer) to the relative path of the compressed file.
+     * @param consumer execute a consumer accepting the relative path of the compressed file.
+     *
+     * @throws IOException if there any problems reading the files to archive or writing the archive file
+     * @throws InterruptedException if the current archiving operation is interrupted while waiting.
      *
      * @return
      *      number of files/directories archived. This is only really useful to check for a situation where nothing
@@ -614,6 +617,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param consumer
      *      Consumer for processing the untar files in the moment of being untared
      *
+     * @throws IOException when a file in the tar breaks the file system {@see #readFromTar(String, File, InputStream, Consumer<String>)}
+     * @throws InterruptedException if the current untaring operation is interrupted while waiting.
      * @since 2.267
      * @see #untarFrom(InputStream, TarCompression)
      */
@@ -2689,6 +2694,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         readFromTar(name, baseDir, in, (Consumer<String> & Serializable)(a) -> {});
     }
 
+    /**
+     *
+     * @param name tar file name
+     * @param baseDir to write tar umcprossed files
+     * @param in tar file stream
+     * @param consumer to be executed when each file is extracted
+     * @throws IOException if baseDir and any of the tar files are incompatible
+     */
     private void readFromTar(String name, File baseDir, InputStream in, Consumer<String> consumer) throws IOException {
         // TarInputStream t = new TarInputStream(in);
         try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
