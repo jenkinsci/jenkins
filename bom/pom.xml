@@ -432,11 +432,6 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>ssh-cli-auth</artifactId>
-        <version>1.8</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
         <artifactId>slave-installer</artifactId>
         <version>1.7</version>
       </dependency>

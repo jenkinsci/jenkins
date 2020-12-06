@@ -113,7 +113,7 @@ THE SOFTWARE.
     <access-modifier-checker.version>1.16</access-modifier-checker.version>
 
     <!-- SSHD plugin version -->
-    <sshd.plugin.version>3.0-rc163.a93e2d48abe4</sshd.plugin.version>
+    <sshd.plugin.version>3.0-rc164.cb4cccdfb4db</sshd.plugin.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
