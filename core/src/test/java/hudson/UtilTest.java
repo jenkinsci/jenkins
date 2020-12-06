@@ -34,7 +34,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
@@ -64,8 +63,6 @@ import static org.junit.Assert.fail;
 public class UtilTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-
-    @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void testReplaceMacro() {
@@ -502,8 +499,8 @@ public class UtilTest {
 
         assertEquals("Non-permission bits should be ignored", PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540));
 
-        expectedException.expectMessage(startsWith("Invalid mode"));
-        Util.modeToPermissions(01777);
+        Exception e = Assert.assertThrows(Exception.class, () -> Util.modeToPermissions(01777));
+        assertThat(e.getMessage(), startsWith("Invalid mode"));
     }
 
     @Test
@@ -522,30 +519,30 @@ public class UtilTest {
 
     @Test
     public void testDifferenceDays() throws Exception {
-        Date may_6_10am = parseDate("2018-05-06 10:00:00"); 
-        Date may_6_11pm55 = parseDate("2018-05-06 23:55:00"); 
-        Date may_7_01am = parseDate("2018-05-07 01:00:00"); 
-        Date may_7_11pm = parseDate("2018-05-07 11:00:00"); 
-        Date may_8_08am = parseDate("2018-05-08 08:00:00"); 
-        Date june_3_08am = parseDate("2018-06-03 08:00:00"); 
-        Date june_9_08am = parseDate("2018-06-09 08:00:00"); 
-        Date june_9_08am_nextYear = parseDate("2019-06-09 08:00:00"); 
-        
+        Date may_6_10am = parseDate("2018-05-06 10:00:00");
+        Date may_6_11pm55 = parseDate("2018-05-06 23:55:00");
+        Date may_7_01am = parseDate("2018-05-07 01:00:00");
+        Date may_7_11pm = parseDate("2018-05-07 11:00:00");
+        Date may_8_08am = parseDate("2018-05-08 08:00:00");
+        Date june_3_08am = parseDate("2018-06-03 08:00:00");
+        Date june_9_08am = parseDate("2018-06-09 08:00:00");
+        Date june_9_08am_nextYear = parseDate("2019-06-09 08:00:00");
+
         assertEquals(0, Util.daysBetween(may_6_10am, may_6_11pm55));
         assertEquals(1, Util.daysBetween(may_6_10am, may_7_01am));
         assertEquals(1, Util.daysBetween(may_6_11pm55, may_7_01am));
         assertEquals(2, Util.daysBetween(may_6_10am, may_8_08am));
         assertEquals(1, Util.daysBetween(may_7_11pm, may_8_08am));
-        
+
         // larger scale
         assertEquals(28, Util.daysBetween(may_6_10am, june_3_08am));
         assertEquals(34, Util.daysBetween(may_6_10am, june_9_08am));
         assertEquals(365 + 34, Util.daysBetween(may_6_10am, june_9_08am_nextYear));
-        
+
         // reverse order
         assertEquals(-1, Util.daysBetween(may_8_08am, may_7_11pm));
     }
-    
+
     private Date parseDate(String dateString) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dateString);
     }
