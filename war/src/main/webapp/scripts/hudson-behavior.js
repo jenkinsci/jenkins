@@ -754,7 +754,7 @@ function labelAttachPreviousOnClick() {
 function helpButtonOnClick() {
     var tr = findFollowingTR(this, "help-area", "help-sibling") ||
              findFollowingTR(this, "help-area", "setting-help") ||
-            findFollowingTR(this, "help-area");
+             findFollowingTR(this, "help-area");
     var div = $(tr).down();
     if (!div.hasClassName("help"))
         div = div.next().down();
