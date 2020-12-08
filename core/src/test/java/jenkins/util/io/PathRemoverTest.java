@@ -27,7 +27,6 @@ package jenkins.util.io;
 import hudson.Functions;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 import org.jvnet.hudson.test.Issue;
@@ -60,6 +59,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -69,7 +69,6 @@ import static org.mockito.Mockito.mock;
 public class PathRemoverTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-    @Rule public ExpectedException expectedException = ExpectedException.none();
     @Rule public Timeout timeout = new Timeout(10, TimeUnit.SECONDS);
     @Rule public FileLockerRule locker = new FileLockerRule();
 
@@ -232,11 +231,8 @@ public class PathRemoverTest {
         touchWithFileName(f1, d1f1, d2f2);
         locker.acquireLock(d1f1);
         PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> retriesAttempted < 1);
-        expectedException.expectMessage(allOf(
-                containsString(dir.getPath()),
-                containsString("Tried 1 time.")
-        ));
-        remover.forceRemoveDirectoryContents(dir.toPath());
+        Exception e = assertThrows(IOException.class, () -> remover.forceRemoveDirectoryContents(dir.toPath()));
+        assertThat(e.getMessage(), allOf(containsString(dir.getPath()), containsString("Tried 1 time.")));
         assertFalse(d2.exists());
         assertFalse(f1.exists());
         assertFalse(d2f2.exists());
@@ -273,8 +269,8 @@ public class PathRemoverTest {
 
         locker.acquireLock(d1f1);
         PathRemover remover = PathRemover.newSimpleRemover();
-        expectedException.expectMessage(containsString(dir.getPath()));
-        remover.forceRemoveRecursive(dir.toPath());
+        Exception e = assertThrows(IOException.class, () -> remover.forceRemoveRecursive(dir.toPath()));
+        assertThat(e.getMessage(), containsString(dir.getPath()));
         assertTrue(dir.exists());
         assertTrue(d1.exists());
         assertTrue(d1f1.exists());
