@@ -1247,7 +1247,7 @@ public class Queue extends ResourceController implements Saveable {
     private CauseOfBlockage getCauseOfBlockageForTask(Task task) {
         CauseOfBlockage causeOfBlockage = task.getCauseOfBlockage();
         if (causeOfBlockage != null) {
-            return task.getCauseOfBlockage();
+            return causeOfBlockage;
         }
 
         if (!canRun(task.getResourceList())) {
