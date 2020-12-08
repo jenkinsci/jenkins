@@ -111,6 +111,7 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
     <access-modifier-checker.version>1.16</access-modifier-checker.version>
+    <junit.jupiter.version>5.7.0</junit.jupiter.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
