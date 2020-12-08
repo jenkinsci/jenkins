@@ -155,6 +155,8 @@ import java.util.stream.Collectors;
 
 import static hudson.init.InitMilestone.*;
 import static java.util.logging.Level.*;
+import static java.util.stream.Collectors.toList;
+
 import org.springframework.security.core.Authentication;
 
 /**
@@ -1344,6 +1346,124 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         LogFactory.release(uberClassLoader);
     }
 
+    @Restricted(NoExternalUse.class)
+    public static boolean isNonMetaLabel(String label) {
+        return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
+    }
+    
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
+        List<JSONObject> plugins = new ArrayList<>();
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
+            plugins = site.getAvailables().stream()
+                .filter(plugin -> {
+                    if (StringUtils.isBlank(query)) {
+                        return true;
+                    }
+                    return StringUtils.containsIgnoreCase(plugin.name, query) ||
+                        StringUtils.containsIgnoreCase(plugin.title, query) ||
+                        StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
+                        Arrays.asList(plugin.categories).contains(query) ||
+                        Arrays.stream(plugin.categories)
+                            .map(UpdateCenter::getCategoryDisplayName)
+                            .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
+                        plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
+                })
+                .limit(limit)
+                .sorted((o1, o2) -> {
+                    String o1DisplayName = o1.getDisplayName();
+                    if (o1.name.equalsIgnoreCase(query) ||
+                        o1DisplayName.equalsIgnoreCase(query)) {
+                        return -1;
+                    }
+                    String o2DisplayName = o2.getDisplayName();
+                    if (o2.name.equalsIgnoreCase(query) || o2DisplayName.equalsIgnoreCase(query)) {
+                        return 1;
+                    }
+                    if (o1.name.equals(o2.name)) {
+                        return 0;
+                    }
+                    final int pop = Double.compare(o2.popularity, o1.popularity);
+                    if (pop != 0) {
+                        return pop; // highest popularity first
+                    }
+                    return o1DisplayName.compareTo(o2DisplayName);
+                })
+                .map(plugin -> {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", plugin.name);
+                    jsonObject.put("sourceId", plugin.sourceId);
+                    jsonObject.put("title", plugin.title);
+                    jsonObject.put("displayName", plugin.getDisplayName());
+                    jsonObject.put("wiki", plugin.wiki);
+                    jsonObject.put("categories", Arrays.stream(plugin.categories)
+                        .filter(PluginManager::isNonMetaLabel)
+                        .map(UpdateCenter::getCategoryDisplayName)
+                        .collect(toList())
+                    );
+
+                    if (hasAdoptThisPluginLabel(plugin)) {
+                        jsonObject.put("adoptMe", Messages.PluginManager_adoptThisPlugin());
+                    }
+                    if (plugin.isDeprecated()) {
+                        jsonObject.put("deprecated", Messages.PluginManager_deprecationWarning(plugin.getDeprecation().url));
+                    }
+                    jsonObject.put("excerpt", plugin.excerpt);
+                    jsonObject.put("version", plugin.version);
+                    jsonObject.put("popularity", plugin.popularity);
+                    if (plugin.isForNewerHudson()) {
+                        jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(plugin.requiredCore));
+                    }
+                    if (plugin.isForNewerJava()) {
+                        jsonObject.put("newerJavaRequired", Messages.PluginManager_javaWarning(plugin.minimumJavaVersion));
+                    }
+                    if (plugin.isNeededDependenciesForNewerJava()) {
+                        VersionNumber javaVersion = plugin.getNeededDependenciesMinimumJavaVersion();
+                        if (javaVersion == null) {
+                            throw new IllegalStateException("java version cannot be null here");
+                        }
+                        jsonObject.put("dependenciesNewerJava", Messages.PluginManager_depJavaWarning(javaVersion.toString()));
+                    }
+                    if (plugin.hasWarnings()) {
+                        JSONObject unresolvedSecurityWarnings = new JSONObject();
+                        unresolvedSecurityWarnings.put("text", Messages.PluginManager_securityWarning());
+                        Set<UpdateSite.Warning> pluginWarnings = plugin.getWarnings();
+                        if (pluginWarnings == null) {
+                            throw new IllegalStateException("warnings cannot be null here");
+                        }
+                        List<JSONObject> warnings = pluginWarnings.stream()
+                            .map(warning -> {
+                                JSONObject jsonWarning = new JSONObject();
+                                jsonWarning.put("url", warning.url);
+                                jsonWarning.put("message", warning.message);
+                                return jsonWarning;
+                            }).collect(toList());
+                        unresolvedSecurityWarnings.put("warnings", warnings);
+                        jsonObject.put("unresolvedSecurityWarnings", unresolvedSecurityWarnings);
+                    }
+                    if (plugin.releaseTimestamp != null) {
+                        JSONObject releaseTimestamp = new JSONObject();
+                        releaseTimestamp.put("iso8601", Functions.iso8601DateTime(plugin.releaseTimestamp));
+                        releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
+                        jsonObject.put("releaseTimestamp", releaseTimestamp);
+                    }
+                    if (hasLatestVersionNewerThanOffered(plugin)) {
+                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
+                    }
+                    return jsonObject;
+                })
+                .collect(toList());
+            if (plugins.size() >= limit) {
+                break;
+            }
+        }
+
+        JSONArray mappedPlugins = new JSONArray();
+        mappedPlugins.addAll(plugins);
+        
+        return hudson.util.HttpResponses.okJSON(mappedPlugins);
+    }
+    
     /**
      * Get the list of all plugins - available and installed.
      * @return The list of all plugins - available and installed.
