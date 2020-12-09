@@ -6,7 +6,8 @@ import org.jvnet.hudson.test.Issue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class FieldUtilsTest {
+@SuppressWarnings("deprecation")
+public class FieldUtilsTest {
 
     @Issue("JENKINS-64390")
     @Test
