@@ -244,7 +244,7 @@ public class BuildCommandTest {
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
         CLICommandInvoker.Result result = invoker.invokeWithArgs("foo", "-p", "string=value");
         assertThat(result, failedWith(2));
-        assertThat(result.stderr(), containsString("ERROR: No default value for the parameter \'FOO\'."));
+        assertThat(result.stderr(), containsString("ERROR: No default value for the parameter 'FOO'."));
 
         Thread.sleep(5000); // Give the job 5 seconds to be submitted
         assertNull("Build should not be scheduled", j.jenkins.getQueue().getItem(project));
