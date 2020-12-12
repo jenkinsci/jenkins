@@ -508,7 +508,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
                 } catch (Exception x) {
-                    throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
+                    throw new LinkageError("Failed to resolve "+c, x);
                 }
             }
 
