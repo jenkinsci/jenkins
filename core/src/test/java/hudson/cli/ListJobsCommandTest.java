@@ -74,11 +74,11 @@ public class ListJobsCommandTest {
     @Test
     public void getAllJobsForEmptyName() throws Exception {
 
-        final Collection<TopLevelItem> jenkinsJobs = Arrays.asList(
+        final List<TopLevelItem> jenkinsJobs = Arrays.asList(
                 job("some-job"), job("some-other-job")
         );
 
-        when(jenkins.getItems()).thenReturn((List<TopLevelItem>) jenkinsJobs);
+        when(jenkins.getItems()).thenReturn(jenkinsJobs);
 
         assertThat(runWith(null), equalTo(0));
         assertThat(stderr, is(empty()));
