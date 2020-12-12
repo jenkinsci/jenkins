@@ -179,7 +179,7 @@ public class FunctionsTest {
         when(view.getOwner().getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Collections.<TopLevelItem>emptyList());
+        when(view.getItems()).thenReturn(Collections.emptyList());
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("/jenkins/job/i/", result);
     }
