@@ -26,6 +26,7 @@ package hudson.cli;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Queue;
 import hudson.model.QueueTest;
 import hudson.util.OneShotEvent;
 import jenkins.model.Jenkins;
@@ -504,7 +505,7 @@ public class QuietDownCommandTest {
     public static void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> j.jenkins.getQueue().isBlockedByShutdown(task));
+                .until(() -> Queue.isBlockedByShutdown(task));
     }
 
     /**
@@ -514,6 +515,6 @@ public class QuietDownCommandTest {
     public static void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> !j.jenkins.getQueue().isBlockedByShutdown(task));
+                .until(() -> !Queue.isBlockedByShutdown(task));
     }
 }

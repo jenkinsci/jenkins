@@ -74,9 +74,9 @@ public class ToolLocationNodePropertyTest {
     @Test
     public void formRoundTrip() throws Exception {
         MavenInstallation.DescriptorImpl mavenDescriptor = j.jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
-        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", j.NO_PROPERTIES));
+        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", JenkinsRule.NO_PROPERTIES));
         AntInstallation.DescriptorImpl antDescriptor = j.jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class);
-        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", j.NO_PROPERTIES));
+        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", JenkinsRule.NO_PROPERTIES));
         JDK.DescriptorImpl jdkDescriptor = j.jenkins.getDescriptorByType(JDK.DescriptorImpl.class);
         jdkDescriptor.setInstallations(new JDK("jdk", "XXX"));
 
@@ -116,7 +116,7 @@ public class ToolLocationNodePropertyTest {
     public void maven() throws Exception {
         MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
+        Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", JenkinsRule.NO_PROPERTIES));
 
         project.getBuildersList().add(new Maven("--version", "maven"));
         configureDumpEnvBuilder();
@@ -166,7 +166,7 @@ public class ToolLocationNodePropertyTest {
     public void nativeMaven() throws Exception {
         MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenPath = maven.getHome();
-        Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
+        Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", JenkinsRule.NO_PROPERTIES));
 
         MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
         project.setScm(new ExtractResourceSCM(getClass().getResource(
