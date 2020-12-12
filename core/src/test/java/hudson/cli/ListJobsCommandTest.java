@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -117,7 +118,7 @@ public class ListJobsCommandTest {
         when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
         when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
         when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        when(rightView.getItems()).thenReturn(Arrays.asList(rightJob));
+        when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
 
         when(jenkins.getView("Root")).thenReturn(rootView);
 
