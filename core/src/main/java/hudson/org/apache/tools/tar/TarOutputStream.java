@@ -34,6 +34,7 @@ import java.io.FilterOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * The TarOutputStream writes a UNIX tar archive as an OutputStream.
@@ -358,9 +359,7 @@ public class TarOutputStream extends FilterOutputStream {
      * An EOF record consists of a record of all zeros.
      */
     private void writeEOFRecord() throws IOException {
-        for (int i = 0; i < this.recordBuf.length; ++i) {
-            this.recordBuf[i] = 0;
-        }
+        Arrays.fill(this.recordBuf, (byte) 0);
 
         this.buffer.writeRecord(this.recordBuf);
     }
