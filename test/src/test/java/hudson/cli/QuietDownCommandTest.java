@@ -501,7 +501,7 @@ public class QuietDownCommandTest {
      * Asserts if Jenkins is in quiet mode, retrying for some time before failing.
      * @throws TimeoutException
      */
-    public static final void assertJenkinsInQuietMode(final JenkinsRule j) {
+    public static void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> j.jenkins.getQueue().isBlockedByShutdown(task));
@@ -511,7 +511,7 @@ public class QuietDownCommandTest {
      * Asserts if Jenkins is <strong>not</strong> in quiet mode, retrying for some time before failing.
      * @throws TimeoutException
      */
-    public static final void assertJenkinsNotInQuietMode(final JenkinsRule j) {
+    public static void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> !j.jenkins.getQueue().isBlockedByShutdown(task));
