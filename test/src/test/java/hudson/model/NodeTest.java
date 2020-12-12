@@ -167,8 +167,7 @@ public class NodeTest {
         project.setAssignedLabel(label);
         label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        for(int i =0; i< cloud.size(); i ++){
-            TagCloud.Entry e = cloud.get(i);
+        for (TagCloud.Entry e : cloud) {
             if(e.item.equals(label)){
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
             }
