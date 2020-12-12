@@ -493,7 +493,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         m.invoke(ecl, c);
                     }
                     for (Class<?> cc = c; cc != Object.class && cc != null; cc = cc.getSuperclass()) {
-                        /**
+                        /*
                          * See {@link com.google.inject.spi.InjectionPoint#getInjectionPoints(TypeLiteral, boolean, Errors)}
                          */
                         cc.getGenericSuperclass();
