@@ -14,30 +14,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ClassLoaderReflectionToolkit {
 
-    private static final Method FIND_CLASS, FIND_LOADED_CLASS, FIND_RESOURCE, FIND_RESOURCES, GET_CLASS_LOADING_LOCK;
-
-    static {
-        try {
-            FIND_CLASS = ClassLoader.class.getDeclaredMethod("findClass",String.class);
-            FIND_CLASS.setAccessible(true);
-            FIND_LOADED_CLASS = ClassLoader.class.getDeclaredMethod("findLoadedClass",String.class);
-            FIND_LOADED_CLASS.setAccessible(true);
-            FIND_RESOURCE = ClassLoader.class.getDeclaredMethod("findResource",String.class);
-            FIND_RESOURCE.setAccessible(true);
-            FIND_RESOURCES = ClassLoader.class.getDeclaredMethod("findResources",String.class);
-            FIND_RESOURCES.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError(e);
-        }
-        Method gCLL;
-        try {
-            gCLL = ClassLoader.class.getDeclaredMethod("getClassLoadingLock", String.class);
-            gCLL.setAccessible(true);
-        } catch (NoSuchMethodException x) {
-            throw new AssertionError(x);
-        }
-        GET_CLASS_LOADING_LOCK = gCLL;
-    }
+    private static Method FIND_CLASS, FIND_LOADED_CLASS, FIND_RESOURCE, FIND_RESOURCES, GET_CLASS_LOADING_LOCK;
 
     private static <T extends Exception> Object invoke(Method method, Class<T> exception, Object obj, Object... args) throws T {
         try {
@@ -59,7 +36,22 @@ public class ClassLoaderReflectionToolkit {
     }
 
     private static Object getClassLoadingLock(ClassLoader cl, String name) {
+        initClassLoadingLock();
+
         return invoke(GET_CLASS_LOADING_LOCK, RuntimeException.class, cl, name);
+    }
+
+    private static void initClassLoadingLock() {
+        if (GET_CLASS_LOADING_LOCK == null) {
+            Method gCLL;
+            try {
+                gCLL = ClassLoader.class.getDeclaredMethod("getClassLoadingLock", String.class);
+                gCLL.setAccessible(true);
+            } catch (NoSuchMethodException x) {
+                throw new AssertionError(x);
+            }
+            GET_CLASS_LOADING_LOCK = gCLL;
+        }
     }
 
     /**
@@ -68,7 +60,20 @@ public class ClassLoaderReflectionToolkit {
      */
     public static @CheckForNull Class<?> _findLoadedClass(ClassLoader cl, String name) {
         synchronized (getClassLoadingLock(cl, name)) {
+            initFindLoadedClass();
+
             return (Class) invoke(FIND_LOADED_CLASS, RuntimeException.class, cl, name);
+        }
+    }
+
+    private static void initFindLoadedClass() {
+        if (FIND_LOADED_CLASS == null) {
+            try {
+                FIND_LOADED_CLASS = ClassLoader.class.getDeclaredMethod("findLoadedClass",String.class);
+            } catch (NoSuchMethodException e) {
+                throw new AssertionError(e);
+            }
+            FIND_LOADED_CLASS.setAccessible(true);
         }
     }
 
@@ -77,17 +82,44 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      */
     public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
+        initFindClass();
+
         synchronized (getClassLoadingLock(cl, name)) {
             return (Class) invoke(FIND_CLASS, ClassNotFoundException.class, cl, name);
         }
     }
+
+    private static void initFindClass() {
+        if (FIND_CLASS == null) {
+            try {
+                FIND_CLASS = ClassLoader.class.getDeclaredMethod("findClass",String.class);
+            } catch (NoSuchMethodException e) {
+                throw new AssertionError(e);
+            }
+            FIND_CLASS.setAccessible(true);
+        }
+    }
+
 
     /**
      * Calls {@link ClassLoader#findResource}.
      * @since 1.553
      */
     public static @CheckForNull URL _findResource(ClassLoader cl, String name) {
+        initFindResource();
+
         return (URL) invoke(FIND_RESOURCE, RuntimeException.class, cl, name);
+    }
+
+    private static void initFindResource() {
+        if (FIND_RESOURCE == null) {
+            try {
+                FIND_RESOURCE = ClassLoader.class.getDeclaredMethod("findResource", String.class);
+            } catch (NoSuchMethodException e) {
+                throw new AssertionError(e);
+            }
+            FIND_RESOURCE.setAccessible(true);
+        }
     }
 
     /**
@@ -95,7 +127,20 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      */
     public static @NonNull Enumeration<URL> _findResources(ClassLoader cl, String name) throws IOException {
+        initFindResources();
+
         return (Enumeration<URL>) invoke(FIND_RESOURCES, IOException.class, cl, name);
+    }
+
+    private static void initFindResources() {
+        if (FIND_RESOURCES == null) {
+            try {
+                FIND_RESOURCES = ClassLoader.class.getDeclaredMethod("findResources", String.class);
+            } catch (NoSuchMethodException e) {
+                throw new AssertionError(e);
+            }
+            FIND_RESOURCES.setAccessible(true);
+        }
     }
 
     /** @deprecated unsafe */
@@ -105,6 +150,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public Class findLoadedClass(ClassLoader cl, String name) throws InvocationTargetException {
         try {
+            initFindLoadedClass();
             return (Class)FIND_LOADED_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);
@@ -115,6 +161,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public Class findClass(ClassLoader cl, String name) throws InvocationTargetException {
         try {
+            initFindClass();
             return (Class)FIND_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);
@@ -125,6 +172,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public URL findResource(ClassLoader cl, String name) throws InvocationTargetException {
         try {
+            initFindResource();
             return (URL)FIND_RESOURCE.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);
@@ -135,6 +183,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public Enumeration<URL> findResources(ClassLoader cl, String name) throws InvocationTargetException {
         try {
+            initFindResources();
             return (Enumeration<URL>)FIND_RESOURCES.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);

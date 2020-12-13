@@ -37,10 +37,17 @@ public class AntWithFindResourceClassLoader extends AntClassLoader implements Cl
     }
 
     @Override
-    protected URL findResource(String name) {
+    public URL findResource(String name) {
         // try and load from this loader if the parent either didn't find
         // it or wasn't consulted.
         return getUrl(pathComponents, name);
+    }
+
+    /**
+     * Public version of {@link ClassLoader#findLoadedClass(String)}
+     */
+    public Class<?> findLoadedClass2(String name) {
+        return super.findLoadedClass(name);
     }
 
 }

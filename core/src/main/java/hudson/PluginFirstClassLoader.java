@@ -84,7 +84,7 @@ public class PluginFirstClassLoader
     }
 
     @Override
-    protected Enumeration findResources( String name )
+    public Enumeration findResources( String name )
         throws IOException
     {
         return super.findResources( name );

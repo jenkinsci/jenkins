@@ -2,6 +2,8 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
+
+import java.net.URLClassLoader;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
@@ -83,41 +85,27 @@ public class AssetManager implements UnprotectedRootAction {
             return null;
         }
 
-        try {
-            if (path.contains("..")) // crude avoidance of directory traversal attack
-                throw new IllegalArgumentException(path);
+        if (path.contains("..")) // crude avoidance of directory traversal attack
+            throw new IllegalArgumentException(path);
 
-            String name;
-            if (path.charAt(0) == '/') {
-                name = "assets" + path;
-            } else {
-                name = "assets/" + path;
-            }
-
-            ClassLoader cl = Jenkins.class.getClassLoader();
-            URL url = (URL) $findResource.invoke(cl, name);
-            if (url==null) {
-                // pick the last one, which is the one closest to the leaf of the classloader tree.
-                Enumeration<URL> e = cl.getResources(name);
-                while (e.hasMoreElements()) {
-                    url = e.nextElement();
-                }
-            }
-            return url;
-        } catch (InvocationTargetException|IllegalAccessException e) {
-            throw new Error(e);
+        String name;
+        if (path.charAt(0) == '/') {
+            name = "assets" + path;
+        } else {
+            name = "assets/" + path;
         }
+
+        ClassLoader cl = Jenkins.class.getClassLoader();
+        assert cl instanceof URLClassLoader;
+        URL url = ((URLClassLoader) cl).findResource(name);
+        if (url==null) {
+            // pick the last one, which is the one closest to the leaf of the classloader tree.
+            Enumeration<URL> e = cl.getResources(name);
+            while (e.hasMoreElements()) {
+                url = e.nextElement();
+            }
+        }
+        return url;
     }
 
-    private static final Method $findResource = init();
-
-    private static Method init() {
-        try {
-            Method m = ClassLoader.class.getDeclaredMethod("findResource", String.class);
-            m.setAccessible(true);
-            return m;
-        } catch (NoSuchMethodException e) {
-            throw (Error)new NoSuchMethodError().initCause(e);
-        }
-    }
 }
