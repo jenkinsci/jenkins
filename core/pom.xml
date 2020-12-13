@@ -392,7 +392,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
+      <artifactId>groovy</artifactId>
     </dependency>
     <dependency><!-- groovy shell uses this but uses an optional dependency. Not included into BOM -->
       <groupId>jline</groupId>
