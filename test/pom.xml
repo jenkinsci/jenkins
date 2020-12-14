@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>maven-plugin</artifactId>
-      <version>2.14</version>
+      <version>3.8</version>
       <exclusions>
         <exclusion> <!-- perhaps unnecessary as of JENKINS-35445? -->
           <groupId>org.apache.httpcomponents</groupId>
