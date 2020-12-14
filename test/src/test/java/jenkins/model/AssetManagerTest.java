@@ -49,7 +49,6 @@ public class AssetManagerTest {
 
     @Test
     public void handlebarsLoad() throws Exception {
-        // webclient does not work because it tries to parse the jquery2.js and there is a missing comma
         URL url = new URL(j.getURL() + "assets/handlebars/jsmodules/handlebars3.js");
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         assertEquals(HttpURLConnection.HTTP_OK, httpCon.getResponseCode());
