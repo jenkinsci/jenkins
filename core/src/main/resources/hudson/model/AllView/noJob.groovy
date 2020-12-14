@@ -111,7 +111,11 @@ div {
 
             h1(_("Welcome to Jenkins!"))
 
-            p(_("anonymousDescription"))
+            if (canSignUp) {
+                p(_("anonymousDescriptionSignUpEnabled"))
+            } else {
+                p(_("anonymousDescription"))
+            }
 
             section(class: "empty-state-section") {
                 ul(class: "empty-state-section-list") {
