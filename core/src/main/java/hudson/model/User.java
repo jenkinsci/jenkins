@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -129,6 +130,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Restricted(NoExternalUse.class)
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    /* package */ static boolean /* Script Console modifiable */ DISABLE_CACHE_FOR_IMPERSONATION =
+        Boolean.getBoolean(User.class.getName() + ".disableImpersonationCache");
 
     /**
      * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
@@ -393,22 +399,21 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
         try {
-            UserDetails userDetails;
+            UserDetails userDetails = null;
             if (!DISABLE_CACHE_FOR_IMPERSONATION) {
                 try {
                     userDetails = UserDetailsCache.get().loadUserByUsername(id);
                 } catch (ExecutionException ex) {
                     LOGGER.log(Level.FINE, "Failure to retrieve " + id + "from cache", ex);
-                    userDetails = new ImpersonatingUserDetailsService2(
-                        Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails2
-                    ).loadUserByUsername(id);
                 } catch (UserMayOrMayNotExistException2 e) {
                     LOGGER.log(Level.FINE, "Failure to retrieve " + id , e);
-                    // Those Exception originates from the SecurityRealm and tell us that the User may or may not exists
-                    // So directly try to impersonate
+                    // This exception originates from the SecurityRealm and tell us that the User may or may not exists
+                    // So do not use the ImpersonatingUserDetailsService that would duplicate the call to 
+                    // loadUserByUsername. Directly try to impersonate instead.
                     userDetails = Optional.ofNullable(getUserDetailsBase()).orElseThrow(() -> e);
                 }
-            } else {
+            }
+            if(userDetails == null) {
                 userDetails = new ImpersonatingUserDetailsService2(
                     Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails2
                 ).loadUserByUsername(id);
@@ -443,7 +448,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Get the {@link UserDetails} of the user from what is known.
-     * 
+     *
      * @return userDetails for the user, null if the user or a {@link LastGrantedAuthoritiesProperty} cannot be found
      */
     @Restricted(NoExternalUse.class)
@@ -460,9 +465,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private static class LegitimateButUnknownUserDetails extends org.springframework.security.core.userdetails.User {
         private LegitimateButUnknownUserDetails(String username) throws IllegalArgumentException {
             super(
-                    username, "",
-                    true, true, true, true,
-                    Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2)
+                username, "",
+                true, true, true, true,
+                Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2)
             );
         }
     }

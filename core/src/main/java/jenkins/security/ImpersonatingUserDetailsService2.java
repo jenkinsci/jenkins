@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.util.Optional;
+
 /**
  * {@link UserDetailsService} for those {@link SecurityRealm}
  * that doesn't allow query of other users.
@@ -34,13 +36,8 @@ public class ImpersonatingUserDetailsService2 implements UserDetailsService {
 
     protected UserDetails attemptToImpersonate(String username, RuntimeException e) {
         // this backend cannot tell if the user name exists or not. so substitute by what we know
-        User u = User.getById(username, false);
-        if (u != null) {
-            LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
-            if (p != null) {
-                return new org.springframework.security.core.userdetails.User(username, "", true, true, true, true, p.getAuthorities2());
-            }
-        }
-        throw e;
+        return Optional.ofNullable(User.getById(username, false))
+            .map(User::getUserDetailsBase)
+            .orElseThrow(() -> e);
     }
 }

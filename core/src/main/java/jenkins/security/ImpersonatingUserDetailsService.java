@@ -39,8 +39,14 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
 
     protected UserDetails attemptToImpersonate(String username, RuntimeException e) {
         // this backend cannot tell if the user name exists or not. so substitute by what we know
-        return Optional.ofNullable(User.getById(username, false))
-            .map(User::getUserDetailsBase)
-            .orElseThrow(() -> e);
+        User u = User.getById(username, false);
+        if (u!=null) {
+            LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
+            if (p!=null)
+                return new org.acegisecurity.userdetails.User(username,"",true,true,true,true,
+                    p.getAuthorities());
+        }
+
+        throw e;
     }
 }
