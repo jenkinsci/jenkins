@@ -753,7 +753,8 @@ function labelAttachPreviousOnClick() {
 
 function helpButtonOnClick() {
     var tr = findFollowingTR(this, "help-area", "help-sibling") ||
-             findFollowingTR(this, "help-area", "setting-help");
+             findFollowingTR(this, "help-area", "setting-help") ||
+             findFollowingTR(this, "help-area");
     var div = $(tr).down();
     if (!div.hasClassName("help"))
         div = div.next().down();
@@ -2774,20 +2775,6 @@ var toggleCheckboxes = function(toggle) {
         }
     }
 };
-
-// this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
-String.prototype.trim = function() {
-    var temp = this;
-    var obj = /^(\s*)([\W\w]*)(\b\s*$)/;
-    if (obj.test(temp))
-        temp = temp.replace(obj, '$2');
-    obj = /  /g;
-    while (temp.match(obj))
-        temp = temp.replace(obj, " ");
-    return temp;
-}
-
-
 
 var hoverNotification = (function() {
     var msgBox;

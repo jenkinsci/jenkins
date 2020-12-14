@@ -40,7 +40,6 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
-    <junit.jupiter.version>5.6.2</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
@@ -57,11 +56,6 @@ THE SOFTWARE.
 
 
   <dependencies>
-    <dependency> <!-- Not included into BOm due to the library vs. plugin conflict and possible confusion -->
-      <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
-      <artifactId>icon-set</artifactId>
-      <version>1.0.5</version>
-    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
@@ -668,7 +662,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
-        <artifactId>maven-localizer-plugin</artifactId>
+        <artifactId>localizer-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>

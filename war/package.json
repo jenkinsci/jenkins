@@ -17,6 +17,7 @@
     "test": "jest --ci --config=jest.config.json --reporters=jest-standard-reporter --reporters=jest-junit",
     "lint:js": "eslint . --ext js",
     "lint:css": "stylelint src/main/less --syntax less",
+    "lint:css:fix": "stylelint src/main/less --fix --syntax less",
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "postcss-custom-properties": "^9.1.1",
     "postcss-loader": "^3.0.0",
     "style-loader": "^1.2.1",
+    "stylelint": "^13.0.0",
     "stylelint-config-standard": "^20.0.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
@@ -53,7 +55,7 @@
     "bootstrap": "3.3.5",
     "jenkins-js-modules": "^1.5.0",
     "jquery": "3.5.1",
-    "stylelint": "^13.0.0",
+    "lodash": "^4.17.20",
     "window-handle": "^1.0.0"
   },
   "browserslist": [

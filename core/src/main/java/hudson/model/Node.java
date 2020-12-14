@@ -461,8 +461,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return new FilePath(ch,absolutePath);
     }
 
+    @Deprecated
     public FileSystemProvisioner getFileSystemProvisioner() {
-        // TODO: make this configurable or auto-detectable or something else
         return FileSystemProvisioner.DEFAULT;
     }
 

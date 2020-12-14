@@ -102,7 +102,7 @@
 
 /* Overrides for treeview-skin.css */
 
-.ygtvlabel, 
+.ygtvlabel,
 .ygtvlabel:link,
 .ygtvlabel:visited,
 .ygtvlabel:hover {
@@ -173,7 +173,6 @@ div.yahooTree td {
 
   // TODO:  chose a better box shadow
   box-shadow: var(--search-box-shadow);
-
   border: none;
   border-radius: var(--header-item-border-radius);
 }
@@ -191,7 +190,7 @@ div.yahooTree td {
   align-items: center;
   justify-content: center;
 
-  &:after {
+  &::after {
     /* Right arrow */
     content: "";
     border-left: 0.35em solid #333;
@@ -199,7 +198,6 @@ div.yahooTree td {
     border-top: 0.35em solid transparent;
     border-bottom: 0.35em solid transparent;
     border-right: 0;
-
     position: absolute;
     top: 50%;
     transform: translateY(-50%);

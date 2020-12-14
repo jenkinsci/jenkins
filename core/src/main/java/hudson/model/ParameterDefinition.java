@@ -32,6 +32,7 @@ import hudson.util.DescriptorList;
 
 import java.io.Serializable;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -234,6 +235,29 @@ public abstract class ParameterDefinition implements
     public boolean isValid(ParameterValue value) {
         // The base implementation just accepts the value.
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Jenkins.XSTREAM2.toXML(this).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ParameterDefinition other = (ParameterDefinition) obj;
+        if (!Objects.equals(getName(), other.getName()))
+            return false;
+        if (!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        String thisXml  = Jenkins.XSTREAM2.toXML(this);
+        String otherXml = Jenkins.XSTREAM2.toXML(other);
+        return thisXml.equals(otherXml);
     }
 
     /**
