@@ -1091,7 +1091,7 @@ public class UpdateSite {
         public final String minimumJavaVersion;
         /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
-         * Can be {@code null} in the update center does not support plugin categories.
+         * Can be {@code null} if the update center does not support plugin categories.
          */
         @Exported
         @CheckForNull
