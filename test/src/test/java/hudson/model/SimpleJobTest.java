@@ -55,6 +55,7 @@ public class SimpleJobTest {
         assertEquals(42, project.getEstimatedDuration());
     }
     
+    @Test
     public void testGetEstimatedDurationWithFailedRun() throws IOException {
         
         final SortedMap<Integer, TestBuild> runs = new TreeMap<>();
@@ -64,7 +65,7 @@ public class SimpleJobTest {
         TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 42, null);
         runs.put(1, lastBuild);
 
-        assertEquals(-1, project.getEstimatedDuration());
+        assertEquals(42, project.getEstimatedDuration());
     }
     
     @Test
