@@ -440,7 +440,7 @@ public class QueueTest {
         cloud.label = r.jenkins.getLabel("remote");
         r.jenkins.clouds.add(cloud);
         r.jenkins.setNumExecutors(0);
-        r.jenkins.setNodes(Collections.<Node>emptyList());
+        r.jenkins.setNodes(Collections.emptyList());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.setAxes(new AxisList(new LabelAxis("label", Collections.singletonList("remote"))));
         MatrixBuild build;
