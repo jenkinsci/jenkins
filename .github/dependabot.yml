@@ -10,3 +10,4 @@ updates:
       interval: "daily"
     ignore:
       - dependency-name: "org.codehaus.groovy:groovy-all"
+      - dependency-name: "commons-beanutils:commons-beanutils"
