@@ -214,7 +214,7 @@ public class BuildTriggerTest {
         final FreeStyleProject upstream =j. createFreeStyleProject("upstream");
         org.acegisecurity.Authentication alice = User.get("alice").impersonate();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", alice)));
-        Map<Permission,Set<String>> perms = new HashMap<Permission,Set<String>>();
+        Map<Permission,Set<String>> perms = new HashMap<>();
         perms.put(Item.READ, Collections.singleton("alice"));
         perms.put(Item.CONFIGURE, Collections.singleton("alice"));
         upstream.addProperty(new AuthorizationMatrixProperty(perms));
@@ -242,7 +242,7 @@ public class BuildTriggerTest {
         j.waitUntilNoActivity();
         assertNull(downstream.getLastBuild());
         // If we can see them, but not build them, that is a warning (but this is in cleanUp so the build is still considered a success):
-        Map<Permission,Set<String>> grantedPermissions = new HashMap<Permission,Set<String>>();
+        Map<Permission,Set<String>> grantedPermissions = new HashMap<>();
         grantedPermissions.put(Item.READ, Collections.singleton("alice"));
         AuthorizationMatrixProperty amp = new AuthorizationMatrixProperty(grantedPermissions);
         downstream.addProperty(amp);

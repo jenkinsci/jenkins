@@ -47,7 +47,7 @@ public class ListScmBrowsersTest {
         List<HtmlSelect> selects = DomNodeUtil.selectNodes(page, "//select");
         assertTrue(selects.size()>0);
         for (HtmlSelect select : selects) {
-            Set<String> title = new HashSet<String>();
+            Set<String> title = new HashSet<>();
             for(HtmlOption o : select.getOptions()) {
                 assertTrue("Duplicate entry: "+o.getText(),title.add(o.getText()));
             }

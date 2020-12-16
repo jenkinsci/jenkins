@@ -93,7 +93,7 @@ public class LoadPredictorTest {
     }
 
     private BuildableItem wrap(Queue.Task t) {
-        return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<Action>()));
+        return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<>()));
     }
 
     /**

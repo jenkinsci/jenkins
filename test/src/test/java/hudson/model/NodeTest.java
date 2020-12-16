@@ -200,9 +200,9 @@ public class NodeTest {
         FreeStyleProject project2 = j.createFreeStyleProject();
         FreeStyleProject project3 = j.createFreeStyleProject();
         project3.setAssignedLabel(j.jenkins.getLabel("notContained"));
-        Queue.BuildableItem item = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project, new ArrayList<Action>()));
-        Queue.BuildableItem item2 = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project2, new ArrayList<Action>()));
-        Queue.BuildableItem item3 = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project3, new ArrayList<Action>()));
+        Queue.BuildableItem item = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project, new ArrayList<>()));
+        Queue.BuildableItem item2 = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project2, new ArrayList<>()));
+        Queue.BuildableItem item3 = new Queue.BuildableItem(new WaitingItem(new GregorianCalendar(), project3, new ArrayList<>()));
         assertNull("Node should take project which is assigned to its label.", node.canTake(item));
         assertNull("Node should take project which is assigned to its label.", node.canTake(item2));
         assertNotNull("Node should not take project which is not assigned to its label.", node.canTake(item3));
@@ -506,7 +506,7 @@ public class NodeTest {
 
         @Override
         public Collection<LabelAtom> findLabels(Node node) {
-            List<LabelAtom> atoms = new ArrayList<LabelAtom>();
+            List<LabelAtom> atoms = new ArrayList<>();
             if(addDynamicLabel){
                 atoms.add(Jenkins.get().getLabelAtom("dynamicLabel"));
             }

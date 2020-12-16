@@ -422,7 +422,7 @@ public class QueueTest {
         }
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
-        List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();
+        List<Future<MatrixBuild>> futures = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             futures.add(m.scheduleBuild2(0, new UserIdCause(), new ParametersAction(new StringParameterValue("FOO", "value" + i))));
@@ -994,7 +994,7 @@ public class QueueTest {
 
         FreeStyleProject project = r.createFreeStyleProject("project");
 
-        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        Map<Permission, Set<String>> permissions = new HashMap<>();
         permissions.put(Item.READ, Collections.singleton("bob"));
         permissions.put(Item.DISCOVER, Collections.singleton("james"));
         AuthorizationMatrixProperty prop1 = new AuthorizationMatrixProperty(permissions);

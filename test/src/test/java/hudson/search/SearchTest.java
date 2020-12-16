@@ -441,7 +441,7 @@ public class SearchTest {
     }
 
     private List<SearchItem> suggest(SearchIndex index, String term) {
-        List<SearchItem> result = new ArrayList<SearchItem>();
+        List<SearchItem> result = new ArrayList<>();
         index.suggest(term, result);
         return result;
     }

@@ -419,7 +419,7 @@ public class FingerprintTest {
             throws IOException {
         assertThat("Cannot assign the property twice", job.getProperty(AuthorizationMatrixProperty.class), nullValue());
         
-        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>(); 
+        Map<Permission, Set<String>> permissions = new HashMap<>();
         HashSet<String> userSpec = new HashSet<>(Collections.singletonList(username));
 
         for (Permission p : s) {
