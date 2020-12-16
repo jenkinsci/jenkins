@@ -25,7 +25,6 @@
 package hudson.model;
 
 import hudson.PluginWrapper;
-import hudson.PluginWrapper.Dependency;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;

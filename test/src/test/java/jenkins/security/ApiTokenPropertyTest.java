@@ -45,7 +45,6 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.NonNull;

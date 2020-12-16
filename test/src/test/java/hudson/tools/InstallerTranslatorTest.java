@@ -31,7 +31,6 @@ import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
-import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;

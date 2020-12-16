@@ -14,7 +14,6 @@ import org.mockito.Mockito;
 import com.google.common.collect.ImmutableList;
 import hudson.model.Job;
 import hudson.model.ModelObject;
-import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
