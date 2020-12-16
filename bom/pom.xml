@@ -287,7 +287,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.3.1</version>
+        <version>5.6.0</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
