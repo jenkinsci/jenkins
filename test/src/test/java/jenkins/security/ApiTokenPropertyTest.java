@@ -84,11 +84,7 @@ public class ApiTokenPropertyTest {
 
         // test the authentication via Token
         WebClient wc = createClientForUser("foo");
-        assertEquals(u, wc.executeOnServer(new Callable<User>() {
-            public User call() throws Exception {
-                return User.current();
-            }
-        }));
+        assertEquals(u, wc.executeOnServer(User::current));
         
         // Make sure the UI shows the token to the user
         HtmlPage config = wc.goTo(u.getUrl() + "/configure");
