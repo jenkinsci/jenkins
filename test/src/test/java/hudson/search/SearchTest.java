@@ -120,7 +120,7 @@ public class SearchTest {
         j.assertGoodStatus(result);
 
         URL resultUrl = result.getUrl();
-        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
+        assertEquals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl(), resultUrl.toString());
     }
 
     @Issue("JENKINS-24433")
@@ -136,7 +136,7 @@ public class SearchTest {
         j.assertGoodStatus(result);
 
         URL resultUrl = result.getUrl();
-        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
+        assertEquals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl(), resultUrl.toString());
     }
 
     @Test
@@ -482,6 +482,6 @@ public class SearchTest {
         j.assertGoodStatus(searchResult);
 
         URL resultUrl = searchResult.getUrl();
-        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + freeStyleProject.getUrl()));
+        assertEquals(j.getInstance().getRootUrl() + freeStyleProject.getUrl(), resultUrl.toString());
     }
 }

@@ -40,6 +40,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.function.Executable;
 
@@ -49,8 +50,8 @@ public class AuthenticationTest {
     @Test
     public void system() {
         assertEquality(ACL.SYSTEM, ACL.SYSTEM2);
-        assertTrue(ACL.SYSTEM == org.acegisecurity.Authentication.fromSpring(ACL.SYSTEM2), "old code often compares a == SYSTEM");
-        assertTrue(ACL.SYSTEM2 == ACL.SYSTEM.toSpring());
+        assertSame(ACL.SYSTEM, org.acegisecurity.Authentication.fromSpring(ACL.SYSTEM2), "old code often compares a == SYSTEM");
+        assertSame(ACL.SYSTEM2, ACL.SYSTEM.toSpring());
 
     }
 
