@@ -41,7 +41,7 @@ THE SOFTWARE.
   <properties>
     <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
-    <stapler.version>1.262-rc1463.b4530fe9d42f</stapler.version> <!-- TODO https://github.com/stapler/stapler/pull/197 -->
+    <stapler.version>1.262-rc1475.5f6120138f06</stapler.version> <!-- TODO https://github.com/stapler/stapler/pull/201 -->
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
