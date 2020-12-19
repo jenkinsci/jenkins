@@ -219,8 +219,8 @@ public class Icon {
         List<String> classNameTokL = new ArrayList<String>();
 
         // Trim all tokens first
-        for (int i = 0; i < classNameTokA.length; i++) {
-            String trimmedToken = classNameTokA[i].trim();
+        for (String classNameTok : classNameTokA) {
+            String trimmedToken = classNameTok.trim();
             if (trimmedToken.length() > 0) {
                 classNameTokL.add(trimmedToken);
             }
@@ -235,8 +235,8 @@ public class Icon {
 
         // Build the compound name
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < classNameTokA.length; i++) {
-            stringBuilder.append(".").append(classNameTokA[i]);
+        for (String classNameTok : classNameTokA) {
+            stringBuilder.append(".").append(classNameTok);
         }
 
         return stringBuilder.toString();

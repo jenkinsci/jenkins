@@ -100,14 +100,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
      */
     public Socket createSocket(String host, int port) throws IOException,
             UnknownHostException,IOException {
-        Socket socket;
-        try {
-            socket = new Socket(host, port);
-        }        
-        catch (IOException e) {
-            throw e;
-        }
-        return socket;
+        return new Socket(host, port);
     }
     
     /**

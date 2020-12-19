@@ -330,14 +330,14 @@ public class RunRangeCommandTest {
                 .invokeWithArgs(PROJECT_NAME, "1,-2,3");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: Unable to parse \'1,-2,3\', expected string with a range M-N"));
+        assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,-2,3', expected string with a range M-N"));
 
         result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,2,-3");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: Unable to parse \'1,2,-3\', expected string with a range M-N"));
+        assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2,-3', expected string with a range M-N"));
     }
 
     @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsTooBig() {

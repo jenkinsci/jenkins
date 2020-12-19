@@ -185,7 +185,7 @@ public class NodeProvisionerTest {
 
         // no build on the master, to make sure we get everything from the cloud
         r.jenkins.setNumExecutors(0);
-        r.jenkins.setNodes(Collections.<Node>emptyList());
+        r.jenkins.setNodes(Collections.emptyList());
         return cloud;
     }
 

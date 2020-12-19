@@ -978,7 +978,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Jenkins.get().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.get().getDescriptorList(ComputerLauncher.class);
     }
 
     /**

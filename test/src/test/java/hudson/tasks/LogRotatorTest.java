@@ -74,7 +74,7 @@ public class LogRotatorTest {
         assertEquals(Result.FAILURE, build(project)); // #2
         assertEquals(Result.FAILURE, build(project)); // #3
         assertEquals(1, numberOf(project.getLastSuccessfulBuild()));
-        project.getBuildersList().replaceBy(Collections.<Builder>emptySet());
+        project.getBuildersList().replaceBy(Collections.emptySet());
         assertEquals(Result.SUCCESS, build(project)); // #4
         assertEquals(4, numberOf(project.getLastSuccessfulBuild()));
         assertNull(project.getBuildByNumber(1));
@@ -92,7 +92,7 @@ public class LogRotatorTest {
         assertEquals(Result.UNSTABLE, build(project)); // #2
         assertEquals(Result.UNSTABLE, build(project)); // #3
         assertEquals(1, numberOf(project.getLastStableBuild()));
-        project.getPublishersList().replaceBy(Collections.<Publisher>emptySet());
+        project.getPublishersList().replaceBy(Collections.emptySet());
         assertEquals(Result.SUCCESS, build(project)); // #4
         assertNull(project.getBuildByNumber(1));
         assertNull(project.getBuildByNumber(2));

@@ -167,8 +167,7 @@ public class NodeTest {
         project.setAssignedLabel(label);
         label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        for(int i =0; i< cloud.size(); i ++){
-            TagCloud.Entry e = cloud.get(i);
+        for (TagCloud.Entry e : cloud) {
             if(e.item.equals(label)){
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
             }
@@ -194,7 +193,7 @@ public class NodeTest {
 
     @Test
     public void testCanTake() throws Exception {
-        Node node = j.createOnlineSlave();
+        Slave node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel("label1"));
@@ -209,7 +208,7 @@ public class NodeTest {
         assertNotNull("Node should not take project which is not assigned to its label.", node.canTake(item3));
         String message = Messages._Node_LabelMissing(node.getNodeName(),j.jenkins.getLabel("notContained")).toString();
         assertEquals("Cause of blockage should be missing label.", message, node.canTake(item3).getShortDescription());
-        ((Slave)node).setMode(Node.Mode.EXCLUSIVE);
+        node.setMode(Node.Mode.EXCLUSIVE);
         assertNotNull("Node should not take project which has null label because it is in exclusive mode.", node.canTake(item2));
         message = Messages._Node_BecauseNodeIsReserved(node.getNodeName()).toString();
         assertEquals("Cause of blockage should be reserved label.", message, node.canTake(item2).getShortDescription());
@@ -233,9 +232,9 @@ public class NodeTest {
 
     @Test
     public void testCreatePath() throws Exception {
-        Node node = j.createOnlineSlave();
+        Slave node = j.createOnlineSlave();
         Node node2 = j.createSlave();
-        String absolutePath = ((Slave)node).remoteFS;
+        String absolutePath = node.remoteFS;
         FilePath path = node.createPath(absolutePath);
         assertNotNull("Path should be created.", path);
         assertNotNull("Channel should be set.", path.getChannel());

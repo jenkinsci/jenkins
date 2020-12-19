@@ -121,7 +121,7 @@ public class ExtensionListTest {
     public void descriptorLookup() throws Exception {
         Descriptor<Fish> d = new Sishamo().getDescriptor();
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
         assertSame(d,list.get(Sishamo.DescriptorImpl.class));
 
         assertSame(d, j.jenkins.getDescriptor(Sishamo.class));
@@ -132,7 +132,7 @@ public class ExtensionListTest {
         // imagine that this is a static instance, like it is in many LIST static field in Hudson.
         DescriptorList<Fish> LIST = new DescriptorList<Fish>(Fish.class);
 
-        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.<Fish,Descriptor<Fish>>getDescriptorList(Fish.class);
+        DescriptorExtensionList<Fish,Descriptor<Fish>> list = j.jenkins.getDescriptorList(Fish.class);
         assertEquals(2,list.size());
         assertNotNull(list.get(Tai.DescriptorImpl.class));
         assertNotNull(list.get(Saba.DescriptorImpl.class));

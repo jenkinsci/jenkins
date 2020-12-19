@@ -104,7 +104,7 @@ public class IsOverriddenTest {
         errors.checkSucceeds(() -> {assertThat("X4 overrides X.m1", Util.isOverridden(X.class, X4.class, "m1"), is(true)); return null;});
         errors.checkSucceeds(() -> {assertThat("X4 overrides X.m2", Util.isOverridden(X.class, X4.class, "m2"), is(true)); return null;});
     }
-    public static interface X {
+    public interface X {
         void m1();
         default void m2() {}
     }
