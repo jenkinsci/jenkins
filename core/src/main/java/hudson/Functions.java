@@ -302,7 +302,7 @@ public class Functions {
          */
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
-
+        context.setVariable("divBasedFormLayout", true);
         context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
         IconSet.initPageVariables(context);
     }
@@ -978,7 +978,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Jenkins.get().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.get().getDescriptorList(ComputerLauncher.class);
     }
 
     /**

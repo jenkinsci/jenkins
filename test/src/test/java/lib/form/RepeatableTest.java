@@ -335,7 +335,7 @@ public class RepeatableTest extends HudsonTestCase {
     }
 
     public DescriptorExtensionList<Fruit,Descriptor<Fruit>> getFruitDescriptors() {
-        return jenkins.<Fruit,Descriptor<Fruit>>getDescriptorList(Fruit.class);
+        return jenkins.getDescriptorList(Fruit.class);
     }
 
     public void testDropdownList() throws Exception {

@@ -954,7 +954,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public void start(List<PluginWrapper> plugins) throws Exception {
       try (ACLContext context = ACL.as2(ACL.SYSTEM2)) {
-        Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
+        Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(PluginWrapper::getShortName, p -> p));
 
         // recalculate dependencies of plugins optionally depending the newly deployed ones.
         for (PluginWrapper depender: this.plugins) {
@@ -1363,8 +1363,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     return StringUtils.containsIgnoreCase(plugin.name, query) ||
                         StringUtils.containsIgnoreCase(plugin.title, query) ||
                         StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
-                        Arrays.asList(plugin.categories).contains(query) ||
-                        Arrays.stream(plugin.categories)
+                        plugin.hasCategory(query) ||
+                        plugin.getCategoriesStream()
                             .map(UpdateCenter::getCategoryDisplayName)
                             .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
                         plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
@@ -1396,7 +1396,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     jsonObject.put("title", plugin.title);
                     jsonObject.put("displayName", plugin.getDisplayName());
                     jsonObject.put("wiki", plugin.wiki);
-                    jsonObject.put("categories", Arrays.stream(plugin.categories)
+                    jsonObject.put("categories", plugin.getCategoriesStream()
                         .filter(PluginManager::isNonMetaLabel)
                         .map(UpdateCenter::getCategoryDisplayName)
                         .collect(toList())
@@ -1726,10 +1726,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         hudson.checkPermission(Jenkins.ADMINISTER);
         UpdateCenter uc = hudson.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
-        for (UpdateSite s : sites) {
-            if (s.getId().equals(UpdateCenter.ID_DEFAULT))
-                sites.remove(s);
-        }
+        sites.removeIf(s -> s.getId().equals(UpdateCenter.ID_DEFAULT));
         sites.add(new UpdateSite(UpdateCenter.ID_DEFAULT, site));
 
         return new HttpRedirect("advanced");
@@ -2409,11 +2406,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean hasAdoptThisPluginLabel(UpdateSite.Plugin plugin) {
-        final String[] categories = plugin.categories;
-        if (categories == null) {
-            return false;
-        }
-        return Arrays.asList(categories).contains("adopt-this-plugin");
+        return plugin.hasCategory("adopt-this-plugin");
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly
@@ -2430,11 +2423,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         if (pluginMeta == null) {
             return false;
         }
-        final String[] categories = pluginMeta.categories;
-        if (categories == null) {
-            return false;
-        }
-        return Arrays.asList(categories).contains("adopt-this-plugin");
+        return pluginMeta.hasCategory("adopt-this-plugin");
     }
 
     /**

@@ -100,16 +100,16 @@ public class TransientActionFactoryTest {
         // getAllActions
         List<? extends Action> allActions = p.getAllActions();
         assertEquals(1, LazyFactory.count);
-        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
-        assertThat(Util.filter(allActions, MyProminentProjectAction.class), Matchers.<MyProminentProjectAction>iterableWithSize(1));
+        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.iterableWithSize(1));
+        assertThat(Util.filter(allActions, MyProminentProjectAction.class), Matchers.iterableWithSize(1));
         LazyFactory.count = 0;
         // getActions(Class)
-        assertThat(p.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
+        assertThat(p.getActions(FoldableAction.class), Matchers.iterableWithSize(0));
         assertEquals(0, LazyFactory.count);
-        assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
+        assertThat(p.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(1));
         assertEquals(1, LazyFactory.count);
-        assertThat(p.getActions(MyProminentProjectAction.class), Matchers.<MyProminentProjectAction>iterableWithSize(1));
+        assertThat(p.getActions(MyProminentProjectAction.class), Matchers.iterableWithSize(1));
         assertEquals(2, LazyFactory.count);
         LazyFactory.count = 0;
         // different context type
@@ -117,10 +117,10 @@ public class TransientActionFactoryTest {
         assertNull(d.getAction(FoldableAction.class));
         assertNull(d.getAction(ProminentProjectAction.class));
         allActions = d.getAllActions();
-        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(0));
-        assertThat(d.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(d.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(0));
+        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.iterableWithSize(0));
+        assertThat(d.getActions(FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(d.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(0));
         assertEquals(0, LazyFactory.count);
     }
     @SuppressWarnings("rawtypes")
@@ -145,13 +145,13 @@ public class TransientActionFactoryTest {
         // getAllActions
         List<? extends Action> allActions = p.getAllActions();
         assertEquals(1, OldFactory.count);
-        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
-        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
+        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.iterableWithSize(0));
+        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.iterableWithSize(1));
         OldFactory.count = 0;
         // getActions(Class)
-        assertThat(p.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
+        assertThat(p.getActions(FoldableAction.class), Matchers.iterableWithSize(0));
         assertEquals(1, OldFactory.count);
-        assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
+        assertThat(p.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(1));
         assertEquals(2, OldFactory.count);
     }
     @TestExtension("compatibility") public static class OldFactory extends TransientActionFactory<FreeStyleProject> {

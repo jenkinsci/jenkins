@@ -712,9 +712,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @throws IOException
      */
     private void disableWithoutCheck() throws IOException {
-        // creates an empty file
         try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
-            os.close();
+            // creates an empty file
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }

@@ -523,7 +523,7 @@ public abstract class FormFieldValidator {
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;
-            Exception exceptions[] = {null};
+            Exception[] exceptions = {null};
             DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
                 @Override
                 public void ok() {

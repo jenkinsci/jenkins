@@ -21,8 +21,8 @@ public class ExtensionTypeHierarchyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    public static interface Animal extends ExtensionPoint {}
-    public static interface White extends ExtensionPoint {}
+    public interface Animal extends ExtensionPoint {}
+    public interface White extends ExtensionPoint {}
 
     @TestExtension
     public static class Swan implements Animal, White {}

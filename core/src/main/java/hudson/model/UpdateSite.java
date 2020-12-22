@@ -66,6 +66,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -626,11 +628,9 @@ public class UpdateSite {
 
                 // compatibility with update sites that have no separate 'deprecated' top-level entry.
                 // Also do this even if there are deprecations to potentially allow limiting the top-level entry to overridden URLs.
-                if (p.categories != null) {
-                    if (Arrays.asList(p.categories).contains("deprecated")) {
-                        if (!this.deprecations.containsKey(p.name)) {
-                            this.deprecations.put(p.name, new Deprecation(p.wiki));
-                        }
+                if (p.hasCategory("deprecated")) {
+                    if (!this.deprecations.containsKey(p.name)) {
+                        this.deprecations.put(p.name, new Deprecation(p.wiki));
                     }
                 }
             }
@@ -1091,9 +1091,10 @@ public class UpdateSite {
         public final String minimumJavaVersion;
         /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
-         * Can be null.
+         * Can be {@code null} if the update center does not return categories.
          */
         @Exported
+        @CheckForNull
         public final String[] categories;
 
         /**
@@ -1508,6 +1509,26 @@ public class UpdateSite {
             }
 
             return warnings;
+        }
+
+        /**
+         * Checks whether a plugin has a desired category
+         * @since TODO
+         */
+        public boolean hasCategory(String category) {
+            if (categories == null) {
+                return false;
+            }
+            // TODO: cache it in a hashset for performance improvements
+            return Arrays.asList(categories).contains(category);
+        }
+
+        /**
+         * Get categories stream for further search.
+         * @since TODO
+         */
+        public Stream<String> getCategoriesStream() {
+            return categories != null ? Arrays.stream(categories) : Stream.empty();
         }
 
         /**

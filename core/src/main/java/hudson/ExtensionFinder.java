@@ -487,7 +487,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 }
                 try {
                     for (Class<?> cc = c; cc != Object.class && cc != null; cc = cc.getSuperclass()) {
-                        /**
+                        /*
                          * See {@link com.google.inject.spi.InjectionPoint#getInjectionPoints(TypeLiteral, boolean, Errors)}
                          */
                         cc.getGenericSuperclass();
@@ -502,7 +502,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
                 } catch (Exception x) {
-                    throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
+                    throw new LinkageError("Failed to resolve "+c, x);
                 }
             }
 

@@ -97,6 +97,7 @@ import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -743,7 +744,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         FilePath that = (FilePath) o;
 
-        if (channel != null ? !channel.equals(that.channel) : that.channel != null) return false;
+        if (!Objects.equals(channel, that.channel)) return false;
         return remote.equals(that.remote);
 
     }

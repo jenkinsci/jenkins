@@ -142,7 +142,7 @@ public class SimpleBuildWrapperTest {
     }
     private static class SpecialEnvSlave extends Slave {
         SpecialEnvSlave(File remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
-            super("special", "SpecialEnvSlave", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.<NodeProperty<?>>emptyList());
+            super("special", "SpecialEnvSlave", remoteFS.getAbsolutePath(), 1, Mode.NORMAL, "", launcher, RetentionStrategy.NOOP, Collections.emptyList());
         }
         @Override public Computer createComputer() {
             return new SpecialEnvComputer(this);
