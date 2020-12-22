@@ -3,7 +3,6 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 
-import java.net.URLClassLoader;
 import java.util.concurrent.TimeUnit;
 
 import jenkins.ClassLoaderReflectionToolkit;
@@ -17,8 +16,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
 
@@ -97,13 +94,8 @@ public class AssetManager implements UnprotectedRootAction {
         }
 
         ClassLoader cl = Jenkins.class.getClassLoader();
-        URL url;
-        if (cl instanceof URLClassLoader) {
-            url = ((URLClassLoader) cl).findResource(name);
-        } else {
-           url = ClassLoaderReflectionToolkit._findResource(cl, name);
-        }
-        if (url==null) {
+        URL url = ClassLoaderReflectionToolkit._findResource(cl, name);
+        if (url == null) {
             // pick the last one, which is the one closest to the leaf of the classloader tree.
             Enumeration<URL> e = cl.getResources(name);
             while (e.hasMoreElements()) {

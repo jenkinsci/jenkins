@@ -64,8 +64,6 @@ import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.CustomClassFilter;
 import jenkins.telemetry.impl.java11.MissingClassTelemetry;
-import jenkins.util.AntClassLoader;
-import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
@@ -2154,12 +2152,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (FAST_LOOKUP) {
                 for (PluginWrapper p : activePlugins) {
                     try {
-                        Class<?> c;
-                        if (p.classLoader instanceof AntWithFindResourceClassLoader) {
-                            c = ((AntWithFindResourceClassLoader) p.classLoader).findLoadedClass2(name);
-                        } else {
-                            c = ClassLoaderReflectionToolkit._findLoadedClass(p.classLoader, name);
-                        }
+                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(p.classLoader, name);
                         if (c != null) {
                             synchronized (loaded) {
                                 loaded.put(name, c);
@@ -2167,11 +2160,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                             return c;
                         }
                         // calling findClass twice appears to cause LinkageError: duplicate class def
-                        if (p.classLoader instanceof AntClassLoader) {
-                            c = ((AntClassLoader) p.classLoader).findClass(name);
-                        }  else {
-                            c = ClassLoaderReflectionToolkit._findClass(p.classLoader, name);
-                        }
+                        c = ClassLoaderReflectionToolkit._findClass(p.classLoader, name);
                         synchronized (loaded) {
                             loaded.put(name, c);
                         }
@@ -2202,14 +2191,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         protected URL findResource(String name) {
             if (FAST_LOOKUP) {
                     for (PluginWrapper p : activePlugins) {
-                        URL url;
-                        if (p.classLoader instanceof AntWithFindResourceClassLoader) {
-                            url = ((AntWithFindResourceClassLoader) p.classLoader).findResource(name);
-                        } else {
-                            url = ClassLoaderReflectionToolkit._findResource(p.classLoader, name);
-                        }
-                        if(url!=null)
+                        URL url = ClassLoaderReflectionToolkit._findResource(p.classLoader, name);
+                        if (url != null) {
                             return url;
+                        }
                     }
             } else {
                 for (PluginWrapper p : activePlugins) {
@@ -2226,12 +2211,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             List<URL> resources = new ArrayList<>();
             if (FAST_LOOKUP) {
                     for (PluginWrapper p : activePlugins) {
-                        Enumeration<URL> urls;
-                        if (p.classLoader instanceof AntWithFindResourceClassLoader) {
-                            urls = ((AntWithFindResourceClassLoader) p.classLoader).findResources(name);
-                        } else {
-                            urls = ClassLoaderReflectionToolkit._findResources(p.classLoader, name);
-                        }
+                        Enumeration<URL> urls = ClassLoaderReflectionToolkit._findResources(p.classLoader, name);
 
                         resources.addAll(Collections.list(urls));
                     }

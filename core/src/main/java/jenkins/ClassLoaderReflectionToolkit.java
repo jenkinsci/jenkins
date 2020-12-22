@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.util.AntClassLoader;
+import jenkins.util.AntWithFindResourceClassLoader;
 
 /**
  * Reflective access to various {@link ClassLoader} methods which are otherwise {@code protected}.
@@ -36,6 +39,9 @@ public class ClassLoaderReflectionToolkit {
     }
 
     private static Object getClassLoadingLock(ClassLoader cl, String name) {
+        if (cl instanceof AntWithFindResourceClassLoader) {
+            return ((AntWithFindResourceClassLoader) cl).getClassLoadingLock(name);
+        }
         initClassLoadingLock();
 
         return invoke(GET_CLASS_LOADING_LOCK, RuntimeException.class, cl, name);
@@ -60,9 +66,15 @@ public class ClassLoaderReflectionToolkit {
      */
     public static @CheckForNull Class<?> _findLoadedClass(ClassLoader cl, String name) {
         synchronized (getClassLoadingLock(cl, name)) {
-            initFindLoadedClass();
+            Class<?> c;
+            if (cl instanceof AntWithFindResourceClassLoader) {
+                c = ((AntWithFindResourceClassLoader) cl).findLoadedClass2(name);
+            } else {
+                initFindLoadedClass();
+                c = ClassLoaderReflectionToolkit._findLoadedClass(cl, name);
+            }
 
-            return (Class) invoke(FIND_LOADED_CLASS, RuntimeException.class, cl, name);
+            return c;
         }
     }
 
@@ -82,9 +94,12 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      */
     public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
-        initFindClass();
+        if (cl instanceof AntClassLoader) {
+            return ((AntClassLoader) cl).findClass(name);
+        }
 
         synchronized (getClassLoadingLock(cl, name)) {
+            initFindClass();
             return (Class) invoke(FIND_CLASS, ClassNotFoundException.class, cl, name);
         }
     }
@@ -106,9 +121,17 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      */
     public static @CheckForNull URL _findResource(ClassLoader cl, String name) {
-        initFindResource();
+        URL url;
+        if (cl instanceof AntWithFindResourceClassLoader) {
+            url = ((AntWithFindResourceClassLoader) cl).findResource(name);
+        } else if (cl instanceof URLClassLoader) {
+            url = ((URLClassLoader) cl).findResource(name);
+        } else {
+            initFindResource();
+            url = (URL) invoke(FIND_RESOURCE, RuntimeException.class, cl, name);
+        }
 
-        return (URL) invoke(FIND_RESOURCE, RuntimeException.class, cl, name);
+        return url;
     }
 
     private static void initFindResource() {
@@ -127,9 +150,15 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      */
     public static @NonNull Enumeration<URL> _findResources(ClassLoader cl, String name) throws IOException {
-        initFindResources();
+        Enumeration<URL> urls;
+        if (cl instanceof AntWithFindResourceClassLoader) {
+            urls = ((AntWithFindResourceClassLoader) cl).findResources(name);
+        } else {
+            initFindResources();
+            urls = (Enumeration<URL>) invoke(FIND_RESOURCES, IOException.class, cl, name);
+        }
 
-        return (Enumeration<URL>) invoke(FIND_RESOURCES, IOException.class, cl, name);
+        return urls;
     }
 
     private static void initFindResources() {

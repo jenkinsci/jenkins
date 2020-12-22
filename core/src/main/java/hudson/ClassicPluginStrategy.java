@@ -629,16 +629,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (PluginManager.FAST_LOOKUP) {
                 for (PluginWrapper pw : getTransitiveDependencies()) {
                     try {
-                        Class<?> c;
-                        if (pw.classLoader instanceof AntWithFindResourceClassLoader) {
-                            c = ((AntWithFindResourceClassLoader) pw.classLoader).findLoadedClass2(name);
-                        } else {
-                            c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
-                        }
-
-                        if (c!=null)    return c;
-                        if (pw.classLoader instanceof AntClassLoader) {
-                            return ((AntClassLoader) pw.classLoader).findClass(name);
+                        Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
+                        if (c!=null) {
+                            return c;
                         }
                         return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
                     } catch (ClassNotFoundException ignored) {
@@ -669,14 +662,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
             if (PluginManager.FAST_LOOKUP) {
                     for (PluginWrapper pw : getTransitiveDependencies()) {
-                        Enumeration<URL> urls;
-                        if (pw.classLoader instanceof AntWithFindResourceClassLoader) {
-                            urls = ((AntWithFindResourceClassLoader) pw.classLoader).findResources(name);
-                        } else {
-                            urls = ClassLoaderReflectionToolkit._findResources(pw.classLoader, name);
-                        }
-                        while (urls != null && urls.hasMoreElements())
+                        Enumeration<URL> urls = ClassLoaderReflectionToolkit._findResources(pw.classLoader, name);
+                        while (urls.hasMoreElements()) {
                             result.add(urls.nextElement());
+                        }
                     }
             } else {
                 for (Dependency dep : dependencies) {
@@ -696,12 +685,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         protected URL findResource(String name) {
             if (PluginManager.FAST_LOOKUP) {
                 for (PluginWrapper pw : getTransitiveDependencies()) {
-                    URL url;
-                    if (pw.classLoader instanceof AntWithFindResourceClassLoader) {
-                        url = ((AntWithFindResourceClassLoader) pw.classLoader).findResource(name);
-                    } else {
-                        url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);
-                    }
+                    URL url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);;
                     if (url!=null)    return url;
                 }
             } else {
