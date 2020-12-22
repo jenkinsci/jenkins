@@ -124,7 +124,8 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         Channel ch = computer.getChannel();
         if (ch != null) {
             String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
-            if (cookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), ch.getProperty(COOKIE_NAME).toString().getBytes(StandardCharsets.UTF_8))) {
+            String channelCookie = (String)ch.getProperty(JnlpConnectionState.COOKIE_KEY);
+            if (cookie != null && channelCookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), channelCookie.getBytes(StandardCharsets.UTF_8))) {
                 // we think we are currently connected, but this request proves that it's from the party
                 // we are supposed to be communicating to. so let the current one get disconnected
                 LOGGER.log(Level.INFO, "Disconnecting {0} as we are reconnected from the current peer", clientName);
@@ -158,7 +159,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         event.getChannelBuilder().withHeaderStream(log);
         String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
         if (cookie != null) {
-            event.getChannelBuilder().withProperty(COOKIE_NAME, cookie);
+            event.getChannelBuilder().withProperty(JnlpConnectionState.COOKIE_KEY, cookie);
         }
     }
 
@@ -218,5 +219,4 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
     private static final Logger LOGGER = Logger.getLogger(DefaultJnlpSlaveReceiver.class.getName());
 
-    private static final String COOKIE_NAME = "JnlpAgentProtocol.cookie";
 }
