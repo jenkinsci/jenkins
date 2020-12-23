@@ -13,11 +13,19 @@ import jenkins.util.AntWithFindResourceClassLoader;
 
 /**
  * Reflective access to various {@link ClassLoader} methods which are otherwise {@code protected}.
+ *
+ * Initially tries to access methods using known classloaders in use that expose the methods
+ * to prevent IllegalReflectiveAccess errors on Java 11+
+ * Then falls back to accessing the {@link ClassLoader} methods.
+ *
+ * All reflection method initialisation is delayed until first use so that we don't access the methods if we don't need to.
+ *
+ * Note: Currently there is no known production use-case for the fallback case of accessing these methods via reflection,
+ * the JenkinsRule tests use a different classloader, once that is made consistent with production Jenkins we can
+ * re-evaluate the fallback code.
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ClassLoaderReflectionToolkit {
-
-    private static Method FIND_CLASS, FIND_LOADED_CLASS, FIND_RESOURCE, FIND_RESOURCES, GET_CLASS_LOADING_LOCK;
 
     private static <T extends Exception> Object invoke(Method method, Class<T> exception, Object obj, Object... args) throws T {
         try {
@@ -42,13 +50,13 @@ public class ClassLoaderReflectionToolkit {
         if (cl instanceof AntWithFindResourceClassLoader) {
             return ((AntWithFindResourceClassLoader) cl).getClassLoadingLock(name);
         }
-        initClassLoadingLock();
-
-        return invoke(GET_CLASS_LOADING_LOCK, RuntimeException.class, cl, name);
+        return invoke(GetClassLoadingLock.GET_CLASS_LOADING_LOCK, RuntimeException.class, cl, name);
     }
 
-    private static void initClassLoadingLock() {
-        if (GET_CLASS_LOADING_LOCK == null) {
+    private static class GetClassLoadingLock {
+        private static final Method GET_CLASS_LOADING_LOCK;
+
+        static {
             Method gCLL;
             try {
                 gCLL = ClassLoader.class.getDeclaredMethod("getClassLoadingLock", String.class);
@@ -70,18 +78,19 @@ public class ClassLoaderReflectionToolkit {
             if (cl instanceof AntWithFindResourceClassLoader) {
                 c = ((AntWithFindResourceClassLoader) cl).findLoadedClass2(name);
             } else {
-                initFindLoadedClass();
-                c = ClassLoaderReflectionToolkit._findLoadedClass(cl, name);
+                c = (Class) invoke(FindLoadedClass.FIND_LOADED_CLASS, RuntimeException.class, cl, name);
             }
 
             return c;
         }
     }
 
-    private static void initFindLoadedClass() {
-        if (FIND_LOADED_CLASS == null) {
+    private static class FindLoadedClass {
+        private static final Method FIND_LOADED_CLASS;
+
+        static {
             try {
-                FIND_LOADED_CLASS = ClassLoader.class.getDeclaredMethod("findLoadedClass",String.class);
+                FIND_LOADED_CLASS = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
             } catch (NoSuchMethodException e) {
                 throw new AssertionError(e);
             }
@@ -99,13 +108,14 @@ public class ClassLoaderReflectionToolkit {
         }
 
         synchronized (getClassLoadingLock(cl, name)) {
-            initFindClass();
-            return (Class) invoke(FIND_CLASS, ClassNotFoundException.class, cl, name);
+            return (Class) invoke(FindClass.FIND_CLASS, ClassNotFoundException.class, cl, name);
         }
     }
 
-    private static void initFindClass() {
-        if (FIND_CLASS == null) {
+    private static class FindClass {
+        private static final Method FIND_CLASS;
+
+        static {
             try {
                 FIND_CLASS = ClassLoader.class.getDeclaredMethod("findClass",String.class);
             } catch (NoSuchMethodException e) {
@@ -127,15 +137,16 @@ public class ClassLoaderReflectionToolkit {
         } else if (cl instanceof URLClassLoader) {
             url = ((URLClassLoader) cl).findResource(name);
         } else {
-            initFindResource();
-            url = (URL) invoke(FIND_RESOURCE, RuntimeException.class, cl, name);
+            url = (URL) invoke(FindResource.FIND_RESOURCE, RuntimeException.class, cl, name);
         }
 
         return url;
     }
 
-    private static void initFindResource() {
-        if (FIND_RESOURCE == null) {
+    private static class FindResource {
+        private static final Method FIND_RESOURCE;
+
+        static {
             try {
                 FIND_RESOURCE = ClassLoader.class.getDeclaredMethod("findResource", String.class);
             } catch (NoSuchMethodException e) {
@@ -154,15 +165,16 @@ public class ClassLoaderReflectionToolkit {
         if (cl instanceof AntWithFindResourceClassLoader) {
             urls = ((AntWithFindResourceClassLoader) cl).findResources(name);
         } else {
-            initFindResources();
-            urls = (Enumeration<URL>) invoke(FIND_RESOURCES, IOException.class, cl, name);
+            urls = (Enumeration<URL>) invoke(FindResources.FIND_RESOURCES, IOException.class, cl, name);
         }
 
         return urls;
     }
 
-    private static void initFindResources() {
-        if (FIND_RESOURCES == null) {
+    private static class FindResources {
+        private static final Method FIND_RESOURCES;
+
+        static {
             try {
                 FIND_RESOURCES = ClassLoader.class.getDeclaredMethod("findResources", String.class);
             } catch (NoSuchMethodException e) {
@@ -179,8 +191,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public Class findLoadedClass(ClassLoader cl, String name) throws InvocationTargetException {
         try {
-            initFindLoadedClass();
-            return (Class)FIND_LOADED_CLASS.invoke(cl,name);
+            return (Class)FindLoadedClass.FIND_LOADED_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
@@ -190,8 +201,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public Class findClass(ClassLoader cl, String name) throws InvocationTargetException {
         try {
-            initFindClass();
-            return (Class)FIND_CLASS.invoke(cl,name);
+            return (Class)FindClass.FIND_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
@@ -201,8 +211,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public URL findResource(ClassLoader cl, String name) throws InvocationTargetException {
         try {
-            initFindResource();
-            return (URL)FIND_RESOURCE.invoke(cl,name);
+            return (URL)FindResource.FIND_RESOURCE.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
@@ -212,8 +221,7 @@ public class ClassLoaderReflectionToolkit {
     @Deprecated
     public Enumeration<URL> findResources(ClassLoader cl, String name) throws InvocationTargetException {
         try {
-            initFindResources();
-            return (Enumeration<URL>)FIND_RESOURCES.invoke(cl,name);
+            return (Enumeration<URL>)FindResources.FIND_RESOURCES.invoke(cl,name);
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
