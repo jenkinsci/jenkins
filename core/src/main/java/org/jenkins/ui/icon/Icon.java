@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Simple icon metadata class.
@@ -212,15 +213,9 @@ public class Icon {
         }
 
         String[] classNameTokA = classNames.split(" ");
-        List<String> classNameTokL = new ArrayList<String>();
+        List<String> classNameTokL = Arrays.stream(classNameTokA).map(String::trim).filter(trimmedToken -> trimmedToken.length() > 0).collect(Collectors.toList());
 
         // Trim all tokens first
-        for (int i = 0; i < classNameTokA.length; i++) {
-            String trimmedToken = classNameTokA[i].trim();
-            if (trimmedToken.length() > 0) {
-                classNameTokL.add(trimmedToken);
-            }
-        }
 
         // Refill classNameTokA
         classNameTokA = new String[classNameTokL.size()];
@@ -230,12 +225,7 @@ public class Icon {
         Arrays.sort(classNameTokA, new StringComparator());
 
         // Build the compound name
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < classNameTokA.length; i++) {
-            stringBuilder.append(".").append(classNameTokA[i]);
-        }
-
-        return stringBuilder.toString();
+        return Arrays.stream(classNameTokA).map(s -> "." + s).collect(Collectors.joining());
     }
 
     /**

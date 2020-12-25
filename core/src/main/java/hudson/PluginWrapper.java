@@ -78,6 +78,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static hudson.PluginWrapper.PluginDisableStatus.ALREADY_DISABLED;
 import static hudson.PluginWrapper.PluginDisableStatus.DISABLED;
@@ -395,21 +396,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             this.shortName = Util.intern(s.substring(0,idx));
             String version = Util.intern(s.substring(idx+1));
 
-            boolean isOptional = false;
             String[] osgiProperties = version.split("[;]");
-            for (int i = 1; i < osgiProperties.length; i++) {
-                String osgiProperty = osgiProperties[i].trim();
-                if (osgiProperty.equalsIgnoreCase("resolution:=optional")) {
-                    isOptional = true;
-                    break;
-                }
-            }
+            boolean isOptional = IntStream.range(1, osgiProperties.length).mapToObj(i -> osgiProperties[i].trim()).anyMatch("resolution:=optional"::equalsIgnoreCase);
             this.optional = isOptional;
-            if (isOptional) {
-                this.version = osgiProperties[0];
-            } else {
-                this.version = version;
-            }
+            this.version = isOptional ? osgiProperties[0] : version;
         }
 
         @Override
