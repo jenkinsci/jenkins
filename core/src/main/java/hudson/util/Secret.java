@@ -218,10 +218,10 @@ public final class Secret implements Serializable {
     }
 
     private static boolean isValidData(String data) {
-        if (data == null || "{}".equals(data) || "".equals(data.trim())) return false;
+        if (data == null || data.trim().isEmpty() || "{}".equals(data)) return false;
 
         if (data.startsWith("{") && data.endsWith("}")) {
-            return !"".equals(data.substring(1, data.length()-1).trim());
+            return !data.substring(1, data.length() - 1).trim().isEmpty();
         }
 
         return true;
