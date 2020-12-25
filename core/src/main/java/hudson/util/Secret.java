@@ -326,11 +326,7 @@ public final class Secret implements Serializable {
                         return null;
                     }
                     Secret decrypted = Secret.decrypt(value.toString());
-                    if (decrypted == null) {
-                        return value.toString();
-                    } else {
-                        return decrypted.getPlainText();
-                    }
+                    return decrypted == null ? value.toString() : decrypted.getPlainText();
                 }
             }, String.class);
         }

@@ -140,11 +140,7 @@ public class Icon {
      * @return The qualified icon url.
      */
     public String getQualifiedUrl(JellyContext context) {
-        if (url != null) {
-            return iconType.toQualifiedUrl(url, context);
-        } else {
-            return "";
-        }
+        return url == null ? "" : iconType.toQualifiedUrl(url, context);
     }
 
     /**

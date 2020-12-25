@@ -564,8 +564,7 @@ public class Util {
 
     @NonNull
     public static String removeTrailingSlash(@NonNull String s) {
-        if(s.endsWith("/")) return s.substring(0,s.length()-1);
-        else                return s;
+        return s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
     }
 
 
@@ -953,33 +952,36 @@ public class Util {
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
-            if(ch=='\n')
-                buf.append("<br>");
-            else
-            if(ch=='<')
-                buf.append("&lt;");
-            else
-            if(ch=='>')
-                buf.append("&gt;");
-            else
-            if(ch=='&')
-                buf.append("&amp;");
-            else
-            if(ch=='"')
-                buf.append("&quot;");
-            else
-            if(ch=='\'')
-                buf.append("&#039;");
-            else
-            if(ch==' ') {
-                // All spaces in a block of consecutive spaces are converted to
-                // non-breaking space (&nbsp;) except for the last one.  This allows
-                // significant whitespace to be retained without prohibiting wrapping.
-                char nextCh = i+1 < text.length() ? text.charAt(i+1) : 0;
-                buf.append(nextCh==' ' ? "&nbsp;" : " ");
+            switch (ch) {
+                case '\n':
+                    buf.append("<br>");
+                    break;
+                case '<':
+                    buf.append("&lt;");
+                    break;
+                case '>':
+                    buf.append("&gt;");
+                    break;
+                case '&':
+                    buf.append("&amp;");
+                    break;
+                case '"':
+                    buf.append("&quot;");
+                    break;
+                case '\'':
+                    buf.append("&#039;");
+                    break;
+                case ' ':
+                    // All spaces in a block of consecutive spaces are converted to
+                    // non-breaking space (&nbsp;) except for the last one.  This allows
+                    // significant whitespace to be retained without prohibiting wrapping.
+                    char nextCh = (i + 1 < text.length()) ? text.charAt(i + 1) : 0;
+                    buf.append(nextCh == ' ' ? "&nbsp;" : " ");
+                    break;
+                default:
+                    buf.append(ch);
+                    break;
             }
-            else
-                buf.append(ch);
         }
         return buf.toString();
     }
@@ -989,16 +991,20 @@ public class Util {
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
             char ch = text.charAt(i);
-            if(ch=='<')
-                buf.append("&lt;");
-            else
-            if(ch=='>')
-                buf.append("&gt;");
-            else
-            if(ch=='&')
-                buf.append("&amp;");
-            else
-                buf.append(ch);
+            switch (ch) {
+                case '<':
+                    buf.append("&lt;");
+                    break;
+                case '>':
+                    buf.append("&gt;");
+                    break;
+                case '&':
+                    buf.append("&amp;");
+                    break;
+                default:
+                    buf.append(ch);
+                    break;
+            }
         }
         return buf.toString();
     }
@@ -1408,8 +1414,7 @@ public class Util {
      */
     @NonNull
     public static String wrapToErrorSpan(@NonNull String s) {
-        s = "<span class=error style='display:inline-block'>"+s+"</span>";
-        return s;
+        return "<span class=error style='display:inline-block'>"+s+"</span>";
     }
 
     /**
@@ -1541,8 +1546,7 @@ public class Util {
     public static File changeExtension(@NonNull File dst, @NonNull String ext) {
         String p = dst.getPath();
         int pos = p.lastIndexOf('.');
-        if (pos<0)  return new File(p+ext);
-        else        return new File(p.substring(0,pos)+ext);
+        return pos < 0 ? new File(p + ext) : new File(p.substring(0, pos) + ext);
     }
 
     /**
