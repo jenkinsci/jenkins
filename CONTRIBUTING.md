@@ -162,3 +162,4 @@ just submit a pull request.
 [ci.jenkins.io]: https://ci.jenkins.io/
 [Jenkins Pipeline]: https://jenkins.io/doc/book/pipeline/
 [Jenkinsfile]: ./Jenkinsfile
+[download Maven here]: https://maven.apache.org/download.cgi
