@@ -215,8 +215,6 @@ public class Icon {
         String[] classNameTokA = classNames.split(" ");
         List<String> classNameTokL = Arrays.stream(classNameTokA).map(String::trim).filter(trimmedToken -> trimmedToken.length() > 0).collect(Collectors.toList());
 
-        // Trim all tokens first
-
         // Refill classNameTokA
         classNameTokA = new String[classNameTokL.size()];
         classNameTokL.toArray(classNameTokA);

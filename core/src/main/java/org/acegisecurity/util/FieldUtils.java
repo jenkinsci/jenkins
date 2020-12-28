@@ -24,6 +24,8 @@
 
 package org.acegisecurity.util;
 
+import java.lang.reflect.Field;
+
 /**
  * @deprecated use {@link org.apache.commons.lang.reflect.FieldUtils}
  */
@@ -40,8 +42,14 @@ public final class FieldUtils {
 
     public static void setProtectedFieldValue(String protectedField, Object object, Object newValue) {
         try {
-            org.apache.commons.lang.reflect.FieldUtils.writeField(object, protectedField, newValue, true);
-        } catch (IllegalAccessException x) {
+            // acgegi would silently fail to write to final fields
+            // FieldUtils.writeField(Object, field, true) only sets accessible on *non* public fields
+            // and then fails with IllegalAccessException (even if you make the field accessible in the interim!
+            // for backwards compatability we need to use a few steps
+            Field field = org.apache.commons.lang.reflect.FieldUtils.getField(object.getClass(), protectedField, true);
+            field.setAccessible(true);
+            field.set(object, newValue);
+        } catch (Exception x) {
             throw new RuntimeException(x);
         }
     }

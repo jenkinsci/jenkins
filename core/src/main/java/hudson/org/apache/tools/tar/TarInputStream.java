@@ -326,8 +326,7 @@ public class TarInputStream extends FilterInputStream {
         }
 
         if (this.readBuf != null) {
-            int sz = (numToRead > this.readBuf.length) ? this.readBuf.length
-                    : numToRead;
+            int sz = Math.min(numToRead, this.readBuf.length);
 
             System.arraycopy(this.readBuf, 0, buf, offset, sz);
 

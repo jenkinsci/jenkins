@@ -41,7 +41,7 @@ THE SOFTWARE.
   <properties>
     <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
-    <stapler.version>1.261</stapler.version>
+    <stapler.version>1.262</stapler.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
@@ -227,7 +227,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>localizer</artifactId>
-        <version>1.26</version>
+        <version>1.28</version>
       </dependency>
       <dependency>
         <groupId>antlr</groupId>
@@ -300,11 +300,6 @@ THE SOFTWARE.
         <version>1.11</version>
       </dependency>
       <dependency>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>libzfs</artifactId>
-        <version>0.8</version>
-      </dependency>
-      <dependency>
         <groupId>com.sun.solaris</groupId>
         <artifactId>embedded_su4j</artifactId>
         <version>1.1</version>
@@ -334,7 +329,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.14</version>
+        <version>1.4.15</version>
       </dependency>
       <dependency>
         <groupId>net.sf.kxml</groupId>

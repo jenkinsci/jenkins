@@ -26,6 +26,7 @@ package hudson.cli;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Queue;
 import hudson.model.QueueTest;
 import hudson.util.OneShotEvent;
 import jenkins.model.Jenkins;
@@ -485,7 +486,7 @@ public class QuietDownCommandTest {
      * Asserts if Jenkins is in quiet mode.
      * Will retry for some time before actually failing.
      */
-    private final void assertJenkinsInQuietMode() {
+    private void assertJenkinsInQuietMode() {
         assertJenkinsInQuietMode(j);
     }
 
@@ -493,7 +494,7 @@ public class QuietDownCommandTest {
      * Asserts if Jenkins is <strong>not</strong> in quiet mode.
      * Will retry for some time before actually failing.
      */
-    private final void assertJenkinsNotInQuietMode() {
+    private void assertJenkinsNotInQuietMode() {
         assertJenkinsNotInQuietMode(j);
     }
 
@@ -501,19 +502,19 @@ public class QuietDownCommandTest {
      * Asserts if Jenkins is in quiet mode, retrying for some time before failing.
      * @throws TimeoutException
      */
-    public static final void assertJenkinsInQuietMode(final JenkinsRule j) {
+    public static void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> j.jenkins.getQueue().isBlockedByShutdown(task));
+                .until(() -> Queue.isBlockedByShutdown(task));
     }
 
     /**
      * Asserts if Jenkins is <strong>not</strong> in quiet mode, retrying for some time before failing.
      * @throws TimeoutException
      */
-    public static final void assertJenkinsNotInQuietMode(final JenkinsRule j) {
+    public static void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> !j.jenkins.getQueue().isBlockedByShutdown(task));
+                .until(() -> !Queue.isBlockedByShutdown(task));
     }
 }

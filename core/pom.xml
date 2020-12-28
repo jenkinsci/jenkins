@@ -40,7 +40,6 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
-    <junit.jupiter.version>5.6.2</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
@@ -494,10 +493,6 @@ THE SOFTWARE.
       <artifactId>libpam4j</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>libzfs</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.solaris</groupId>
       <artifactId>embedded_su4j</artifactId>
     </dependency>
@@ -663,7 +658,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
-        <artifactId>maven-localizer-plugin</artifactId>
+        <artifactId>localizer-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>

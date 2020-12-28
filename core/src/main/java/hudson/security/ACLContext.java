@@ -42,7 +42,7 @@ public class ACLContext implements AutoCloseable {
     private final SecurityContext previousContext;
 
     /**
-     * Private constructor to ensure only instance creation is from {@link ACL#as(Authentication)}.
+     * Private constructor to ensure only instance creation is from {@link ACL#as2(Authentication)}.
      * @param previousContext the previous context
      */
     ACLContext(@NonNull SecurityContext previousContext) {

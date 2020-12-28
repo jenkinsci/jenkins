@@ -144,7 +144,7 @@ public class FunctionsTest {
         when(j.getItemGroup()).thenReturn(j);
         createMockAncestors(req, createAncestor(view, "."), createAncestor(j, "../.."));
         TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Arrays.asList(i));
+        when(view.getItems()).thenReturn(Collections.singletonList(i));
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("job/i/", result);
     }
@@ -179,7 +179,7 @@ public class FunctionsTest {
         when(view.getOwner().getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Collections.<TopLevelItem>emptyList());
+        when(view.getItems()).thenReturn(Collections.emptyList());
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("/jenkins/job/i/", result);
     }
@@ -201,7 +201,7 @@ public class FunctionsTest {
         when(parent.getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../../.."), createAncestor(parent, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/", "parent/job/i/");
-        when(view.getItems()).thenReturn(Arrays.asList(i));
+        when(view.getItems()).thenReturn(Collections.singletonList(i));
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("job/i/", result);
     }

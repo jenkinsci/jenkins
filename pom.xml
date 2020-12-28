@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.58</version>
+    <version>1.61</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.270</revision>
+    <revision>2.273</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -111,6 +111,7 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
     <access-modifier-checker.version>1.16</access-modifier-checker.version>
+    <junit.jupiter.version>5.7.0</junit.jupiter.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -154,7 +155,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.objenesis</groupId>
         <artifactId>objenesis</artifactId>
-        <version>2.6</version>
+        <version>3.1</version>
       </dependency>
 
       <dependency>
@@ -345,7 +346,7 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
-          <artifactId>maven-localizer-plugin</artifactId>
+          <artifactId>localizer-maven-plugin</artifactId>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>

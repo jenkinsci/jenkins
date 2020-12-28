@@ -389,74 +389,60 @@ public class Queue extends ResourceController implements Saveable {
             blockedProjects.clear();
             buildables.clear();
             pendings.clear();
-            // first try the old format
-            File queueFile = getQueueFile();
+
+            File queueFile = getXMLQueueFile();
             if (queueFile.exists()) {
-                try (BufferedReader in = Files.newBufferedReader(Util.fileToPath(queueFile), Charset.defaultCharset())) {
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        AbstractProject j = Jenkins.get().getItemByFullName(line, AbstractProject.class);
-                        if (j != null)
-                            j.scheduleBuild();
-                    }
-                }
-                // discard the queue file now that we are done
-                queueFile.delete();
-            } else {
-                queueFile = getXMLQueueFile();
-                if (queueFile.exists()) {
-                    Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
-                    List items;
+                Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
+                List items;
 
-                    if (unmarshaledObj instanceof State) {
-                        State state = (State) unmarshaledObj;
-                        items = state.items;
-                        WaitingItem.COUNTER.set(state.counter);
-                    } else {
-                        // backward compatibility - it's an old List queue.xml
-                        items = (List) unmarshaledObj;
-                        long maxId = 0;
-                        for (Object o : items) {
-                            if (o instanceof Item) {
-                                maxId = Math.max(maxId, ((Item)o).id);
-                            }
-                        }
-                        WaitingItem.COUNTER.set(maxId);
-                    }
-
+                if (unmarshaledObj instanceof State) {
+                    State state = (State) unmarshaledObj;
+                    items = state.items;
+                    WaitingItem.COUNTER.set(state.counter);
+                } else {
+                    // backward compatibility - it's an old List queue.xml
+                    items = (List) unmarshaledObj;
+                    long maxId = 0;
                     for (Object o : items) {
-                        if (o instanceof Task) {
-                            // backward compatibility
-                            schedule((Task)o, 0);
-                        } else if (o instanceof Item) {
-                            Item item = (Item)o;
-
-                            if (item.task == null) {
-                                continue;   // botched persistence. throw this one away
-                            }
-
-                            if (item instanceof WaitingItem) {
-                                item.enter(this);
-                            } else if (item instanceof BlockedItem) {
-                                item.enter(this);
-                            } else if (item instanceof BuildableItem) {
-                                item.enter(this);
-                            } else {
-                                throw new IllegalStateException("Unknown item type! " + item);
-                            }
+                        if (o instanceof Item) {
+                            maxId = Math.max(maxId, ((Item)o).id);
                         }
                     }
-
-                    // I just had an incident where all the executors are dead at AbstractProject._getRuns()
-                    // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
-                    // object that doesn't appear to be de-serialized properly.
-                    // I don't know how this problem happened, but to diagnose this problem better
-                    // when it happens again, save the old queue file for introspection.
-                    File bk = new File(queueFile.getPath() + ".bak");
-                    bk.delete();
-                    queueFile.renameTo(bk);
-                    queueFile.delete();
+                    WaitingItem.COUNTER.set(maxId);
                 }
+
+                for (Object o : items) {
+                    if (o instanceof Task) {
+                        // backward compatibility
+                        schedule((Task)o, 0);
+                    } else if (o instanceof Item) {
+                        Item item = (Item)o;
+
+                        if (item.task == null) {
+                            continue;   // botched persistence. throw this one away
+                        }
+
+                        if (item instanceof WaitingItem) {
+                            item.enter(this);
+                        } else if (item instanceof BlockedItem) {
+                            item.enter(this);
+                        } else if (item instanceof BuildableItem) {
+                            item.enter(this);
+                        } else {
+                            throw new IllegalStateException("Unknown item type! " + item);
+                        }
+                    }
+                }
+
+                // I just had an incident where all the executors are dead at AbstractProject._getRuns()
+                // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
+                // object that doesn't appear to be de-serialized properly.
+                // I don't know how this problem happened, but to diagnose this problem better
+                // when it happens again, save the old queue file for introspection.
+                File bk = new File(queueFile.getPath() + ".bak");
+                bk.delete();
+                queueFile.renameTo(bk);
+                queueFile.delete();
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
@@ -515,10 +501,6 @@ public class Queue extends ResourceController implements Saveable {
             lock.unlock();
         }
         scheduleMaintenance();
-    }
-
-    private File getQueueFile() {
-        return new File(Jenkins.get().getRootDir(), "queue.txt");
     }
 
     /*package*/ File getXMLQueueFile() {
@@ -1247,7 +1229,7 @@ public class Queue extends ResourceController implements Saveable {
     private CauseOfBlockage getCauseOfBlockageForTask(Task task) {
         CauseOfBlockage causeOfBlockage = task.getCauseOfBlockage();
         if (causeOfBlockage != null) {
-            return task.getCauseOfBlockage();
+            return causeOfBlockage;
         }
 
         if (!canRun(task.getResourceList())) {
