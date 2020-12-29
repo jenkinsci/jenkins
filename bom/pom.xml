@@ -202,7 +202,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.0.45</version>
+        <version>3.1.4</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -232,7 +232,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>antlr</groupId>
         <artifactId>antlr</artifactId>
-        <version>2.7.6</version>
+        <version>2.7.7</version>
       </dependency>
       <dependency>
         <groupId>org.jfree</groupId>
@@ -287,7 +287,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.3.1</version>
+        <version>5.6.0</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
