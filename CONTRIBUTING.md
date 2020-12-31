@@ -115,6 +115,14 @@ the repository maintainers will integrate it, prepare changelogs, and
 ensure it gets released in one of upcoming Weekly releases.
 There is no additional action required from pull request authors at this point.
 
+## IntelliJ suggestion
+
+In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
+The setting can be found in Settings -> Editor -> General -> On Save -> Remove trailing spaces on: `Modified lines`
+
+This will prevent adding noise to the changelog because of unrelated whitespace changes.
+
+
 ## Copyright
 
 The Jenkins core is licensed under [MIT license], with a few exceptions in bundled classes.
