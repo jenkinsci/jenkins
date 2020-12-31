@@ -25,7 +25,6 @@ package jenkins.util.xstream;
 
 import hudson.util.XStream2;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
 import org.junit.Test;
 import org.xmlunit.diff.DefaultNodeMatcher;
