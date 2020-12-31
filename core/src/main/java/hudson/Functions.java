@@ -169,7 +169,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -1704,7 +1703,7 @@ public class Functions {
                 summary = summary.substring(0, summary.length() - suffix.length());
             }
         }
-        s.append(summary).append(IOUtils.LINE_SEPARATOR);
+        s.append(summary).append(System.lineSeparator());
         StackTraceElement[] trace = t.getStackTrace();
         int end = trace.length;
         if (higher != null) {
@@ -1718,7 +1717,7 @@ public class Functions {
             }
         }
         for (int i = 0; i < end; i++) {
-            s.append(prefix).append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
+            s.append(prefix).append("\tat ").append(trace[i]).append(System.lineSeparator());
         }
     }
 
