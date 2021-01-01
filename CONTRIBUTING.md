@@ -120,7 +120,7 @@ There is no additional action required from pull request authors at this point.
 In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
 The setting can be found in Settings -> Editor -> General -> On Save -> Remove trailing spaces on: `Modified lines`
 
-This will prevent adding noise to the changelog because of unrelated whitespace changes.
+This will help minimize the diff, which makes reviewing PRs easier.
 
 
 ## Copyright
