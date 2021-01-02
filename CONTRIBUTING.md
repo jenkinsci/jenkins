@@ -119,10 +119,10 @@ There is no additional action required from pull request authors at this point.
 
 In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
 The setting can be found in Settings -> Editor -> General -> On Save -> Remove trailing spaces on: `Modified lines`
-
 This will help minimize the diff, which makes reviewing PRs easier.
 
-
+We also do not recommend `*` imports in the production code.
+Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '*'_ and Names count to use import with '*'_ to a high value, e.g. 100. 
 ## Copyright
 
 The Jenkins core is licensed under [MIT license], with a few exceptions in bundled classes.
