@@ -1541,9 +1541,6 @@ public class Functions {
                         sb.append('\n');
                         break;
                     case WAITING:
-                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
-                        sb.append('\n');
-                        break;
                     case TIMED_WAITING:
                         sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');

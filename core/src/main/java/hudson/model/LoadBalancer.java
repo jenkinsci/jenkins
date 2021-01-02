@@ -31,7 +31,6 @@ import hudson.model.queue.MappingWorksheet;
 import hudson.model.queue.MappingWorksheet.ExecutorChunk;
 import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.util.ConsistentHash;
-import hudson.util.ConsistentHash.Hash;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,11 +82,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
             // build consistent hash for each work chunk
             List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<>(ws.works.size());
             for (int i=0; i<ws.works.size(); i++) {
-                ConsistentHash<ExecutorChunk> hash = new ConsistentHash<>(new Hash<ExecutorChunk>() {
-                    public String hash(ExecutorChunk node) {
-                        return node.getName();
-                    }
-                });
+                ConsistentHash<ExecutorChunk> hash = new ConsistentHash<>(ExecutorChunk::getName);
 
                 // Build a Map to pass in rather than repeatedly calling hash.add() because each call does lots of expensive work
                 List<ExecutorChunk> chunks = ws.works(i).applicableExecutorChunks();

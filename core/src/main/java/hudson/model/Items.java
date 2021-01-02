@@ -76,11 +76,7 @@ public class Items {
      * @see Trigger#start
      * @since 1.482
      */
-    private static final ThreadLocal<Boolean> updatingByXml = new ThreadLocal<Boolean>() {
-        @Override protected Boolean initialValue() {
-            return false;
-        }
-    };
+    private static final ThreadLocal<Boolean> updatingByXml = ThreadLocal.withInitial(() -> false);
     /**
      * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getName()}.
      * If you are replacing {@link #getAllItems(ItemGroup, Class)} with {@link #allItems(ItemGroup, Class)} and
@@ -472,8 +468,8 @@ public class Items {
      *
      * @param root the root.
      * @param type the type.
+     * @param pred the predicate.
      * @param <T> the type.
-     * @param <T> the predicate.
      * @return An {@link Iterable} for all items.
      * @since 2.221
      */

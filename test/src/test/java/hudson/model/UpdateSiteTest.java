@@ -25,7 +25,6 @@
 package hudson.model;
 
 import hudson.PluginWrapper;
-import hudson.PluginWrapper.Dependency;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
@@ -125,7 +124,7 @@ public class UpdateSiteTest {
         Data data = site.getData();
         assertNotNull(data);
         assertEquals(new URL(url, "jenkins.war").toString(), data.core.url);
-        assertEquals(new HashSet<String>(Arrays.asList("tasks", "dummy")), data.plugins.keySet());
+        assertEquals(new HashSet<>(Arrays.asList("tasks", "dummy")), data.plugins.keySet());
         assertEquals(new URL(url, "tasks.jpi").toString(), data.plugins.get("tasks").url);
         assertEquals("http://nowhere.net/dummy.hpi", data.plugins.get("dummy").url);
 
@@ -248,7 +247,7 @@ public class UpdateSiteTest {
                 null,
                 new File("/tmp/" + name + ".jpi.disabled"),
                 null,
-                new ArrayList<Dependency>()
+                new ArrayList<>()
         );
     }
 }

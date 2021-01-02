@@ -34,7 +34,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.io.IOException;
 import java.util.List;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;

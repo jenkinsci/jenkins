@@ -23,9 +23,6 @@
  */
 package hudson.util;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;

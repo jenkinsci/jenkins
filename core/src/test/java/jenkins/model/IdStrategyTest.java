@@ -3,6 +3,7 @@ package jenkins.model;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -170,10 +171,10 @@ public class IdStrategyTest {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         assertTrue(idStrategy.compare("user1", "user2") < 0);
         assertTrue(idStrategy.compare("user2", "user1") > 0);
-        assertTrue(idStrategy.compare("user1", "user1") == 0);
+        assertEquals(0, idStrategy.compare("user1", "user1"));
         assertTrue(idStrategy.compare("USER1", "user2") < 0);
         assertTrue(idStrategy.compare("USER2", "user1") > 0);
-        assertTrue(idStrategy.compare("User1", "user1") == 0);
+        assertEquals(0, idStrategy.compare("User1", "user1"));
     }
 
     @Test
@@ -181,7 +182,7 @@ public class IdStrategyTest {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         assertTrue(idStrategy.compare("user1", "user2") < 0);
         assertTrue(idStrategy.compare("user2", "user1") > 0);
-        assertTrue(idStrategy.compare("user1", "user1") == 0);
+        assertEquals(0, idStrategy.compare("user1", "user1"));
         assertTrue(idStrategy.compare("USER1", "user2") < 0);
         assertTrue(idStrategy.compare("USER2", "user1") < 0);
         assertTrue(idStrategy.compare("User1", "user1") < 0);
@@ -190,14 +191,14 @@ public class IdStrategyTest {
     @Test
     public void testCompareCaseSensitiveEmail() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitiveEmailAddress();
-        assertTrue(idStrategy.compare("john.smith@acme.org", "john.smith@acme.org") == 0);
-        assertTrue(idStrategy.compare("John.Smith@acme.org", "John.Smith@acme.org") == 0);
-        assertTrue(idStrategy.compare("John.Smith@ACME.org", "John.Smith@acme.org") == 0);
-        assertTrue(idStrategy.compare("John.Smith@acme.ORG", "John.Smith@acme.org") == 0);
-        assertTrue(idStrategy.compare("john.smith", "john.smith") == 0);
-        assertTrue(idStrategy.compare("John.Smith", "John.Smith") == 0);
-        assertTrue(idStrategy.compare("john@smith@acme.org", "john@smith@acme.org") == 0);
-        assertTrue(idStrategy.compare("John@Smith@acme.org", "John@Smith@acme.org") == 0);
+        assertEquals(0, idStrategy.compare("john.smith@acme.org", "john.smith@acme.org"));
+        assertEquals(0, idStrategy.compare("John.Smith@acme.org", "John.Smith@acme.org"));
+        assertEquals(0, idStrategy.compare("John.Smith@ACME.org", "John.Smith@acme.org"));
+        assertEquals(0, idStrategy.compare("John.Smith@acme.ORG", "John.Smith@acme.org"));
+        assertEquals(0, idStrategy.compare("john.smith", "john.smith"));
+        assertEquals(0, idStrategy.compare("John.Smith", "John.Smith"));
+        assertEquals(0, idStrategy.compare("john@smith@acme.org", "john@smith@acme.org"));
+        assertEquals(0, idStrategy.compare("John@Smith@acme.org", "John@Smith@acme.org"));
 
         assertTrue(idStrategy.compare("John.Smith@acme.org", "john.smith@acme.org") < 0);
         assertTrue(idStrategy.compare("john.smith@acme.org", "John.Smith@acme.org") > 0);

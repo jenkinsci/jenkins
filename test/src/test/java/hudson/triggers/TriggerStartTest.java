@@ -107,7 +107,7 @@ public class TriggerStartTest {
 
     public static class MockTrigger extends Trigger<Item> {
 
-        public transient List<Boolean> calls = new ArrayList<Boolean>();
+        public transient List<Boolean> calls = new ArrayList<>();
 
         @DataBoundConstructor public MockTrigger() {}
 
@@ -117,7 +117,7 @@ public class TriggerStartTest {
         }
 
         @Override protected Object readResolve() throws ObjectStreamException {
-            calls = new ArrayList<Boolean>();
+            calls = new ArrayList<>();
             return super.readResolve();
         }
 

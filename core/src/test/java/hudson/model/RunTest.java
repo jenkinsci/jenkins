@@ -239,7 +239,7 @@ public class RunTest {
         treeSet.add(r2);
 
         assertTrue(r1.compareTo(r2) < 0);
-        assertTrue(treeSet.size() == 2);
+        assertEquals(2, treeSet.size());
     }
 
     @Issue("JENKINS-42319")
@@ -264,7 +264,7 @@ public class RunTest {
         treeSet.add(r2);
 
         assertTrue(r1.compareTo(r2) != 0);
-        assertTrue(treeSet.size() == 2);
+        assertEquals(2, treeSet.size());
     }
 
     @Test

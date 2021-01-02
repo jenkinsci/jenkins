@@ -45,7 +45,6 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -84,11 +83,7 @@ public class ApiTokenPropertyTest {
 
         // test the authentication via Token
         WebClient wc = createClientForUser("foo");
-        assertEquals(u, wc.executeOnServer(new Callable<User>() {
-            public User call() throws Exception {
-                return User.current();
-            }
-        }));
+        assertEquals(u, wc.executeOnServer(User::current));
         
         // Make sure the UI shows the token to the user
         HtmlPage config = wc.goTo(u.getUrl() + "/configure");
