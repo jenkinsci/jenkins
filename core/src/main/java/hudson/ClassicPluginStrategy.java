@@ -630,9 +630,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 for (PluginWrapper pw : getTransitiveDependencies()) {
                     try {
                         Class<?> c = ClassLoaderReflectionToolkit._findLoadedClass(pw.classLoader, name);
-                        if (c!=null) {
-                            return c;
-                        }
+                        if (c!=null)    return c;
                         return ClassLoaderReflectionToolkit._findClass(pw.classLoader, name);
                     } catch (ClassNotFoundException ignored) {
                         //not found. try next
@@ -663,9 +661,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (PluginManager.FAST_LOOKUP) {
                     for (PluginWrapper pw : getTransitiveDependencies()) {
                         Enumeration<URL> urls = ClassLoaderReflectionToolkit._findResources(pw.classLoader, name);
-                        while (urls.hasMoreElements()) {
+                        while (urls != null && urls.hasMoreElements())
                             result.add(urls.nextElement());
-                        }
                     }
             } else {
                 for (Dependency dep : dependencies) {
@@ -684,10 +681,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
         @Override
         protected URL findResource(String name) {
             if (PluginManager.FAST_LOOKUP) {
-                for (PluginWrapper pw : getTransitiveDependencies()) {
-                    URL url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);;
-                    if (url!=null)    return url;
-                }
+                    for (PluginWrapper pw : getTransitiveDependencies()) {
+                        URL url = ClassLoaderReflectionToolkit._findResource(pw.classLoader, name);
+                        if (url!=null)    return url;
+                    }
             } else {
                 for (Dependency dep : dependencies) {
                     PluginWrapper p = pluginManager.getPlugin(dep.shortName);
