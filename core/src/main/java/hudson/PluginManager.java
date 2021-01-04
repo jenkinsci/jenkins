@@ -2189,9 +2189,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (FAST_LOOKUP) {
                     for (PluginWrapper p : activePlugins) {
                         URL url = ClassLoaderReflectionToolkit._findResource(p.classLoader, name);
-                        if (url != null) {
+                        if(url!=null)
                             return url;
-                        }
                     }
             } else {
                 for (PluginWrapper p : activePlugins) {
@@ -2208,9 +2207,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             List<URL> resources = new ArrayList<>();
             if (FAST_LOOKUP) {
                     for (PluginWrapper p : activePlugins) {
-                        Enumeration<URL> urls = ClassLoaderReflectionToolkit._findResources(p.classLoader, name);
-
-                        resources.addAll(Collections.list(urls));
+                        resources.addAll(Collections.list(ClassLoaderReflectionToolkit._findResources(p.classLoader, name)));
                     }
             } else {
                 for (PluginWrapper p : activePlugins) {
