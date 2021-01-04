@@ -21,8 +21,8 @@ import jenkins.util.AntWithFindResourceClassLoader;
  * All reflection method initialisation is delayed until first use so that we don't access the methods if we don't need to.
  * <p>
  * Note: Currently there is no known production use-case for the fallback case of accessing these methods via reflection:
- * the {@code JenkinsRule} tests use a different classloader, but once that is made consistent with production Jenkins we can
- * re-evaluate the fallback code.
+ * the {@code JenkinsRule} tests use a different classloader,
+ * but once that is made consistent with production Jenkins we can re-evaluate the fallback code.
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ClassLoaderReflectionToolkit {
