@@ -2,7 +2,6 @@ package jenkins.security.s2m;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
-import org.apache.tools.ant.taskdefs.condition.IsSet;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;

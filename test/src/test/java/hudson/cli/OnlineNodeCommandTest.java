@@ -336,11 +336,7 @@ public class OnlineNodeCommandTest {
             Node node = build.getBuiltOn();
 
             block.signal(); // we are safe to be interrupted
-            for (;;) {
-                // Go out if we should finish
-                if (finish.isSignaled())
-                    break;
-
+            while (!finish.isSignaled()) {
                 // Keep using the channel
                 channel.call(node.getClockDifferenceCallable());
                 Thread.sleep(100);

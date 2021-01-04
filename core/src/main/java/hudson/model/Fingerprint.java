@@ -46,7 +46,6 @@ import hudson.util.XStream2;
 
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
-import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;

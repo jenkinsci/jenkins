@@ -29,7 +29,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import org.junit.Rule;
 import org.junit.Test;

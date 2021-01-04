@@ -108,6 +108,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import net.jcip.annotations.GuardedBy;
@@ -1613,9 +1614,16 @@ public class Queue extends ResourceController implements Saveable {
                 } else {
 
                     List<JobOffer> candidates = new ArrayList<>(parked.size());
-                    List<CauseOfBlockage> reasons = new ArrayList<>(parked.size());
+                    Map<Node, CauseOfBlockage> reasonMap = new HashMap<>();
                     for (JobOffer j : parked.values()) {
-                        CauseOfBlockage reason = j.getCauseOfBlockage(p);
+                        Node offerNode = j.getNode();
+                        CauseOfBlockage reason;
+                        if (reasonMap.containsKey(offerNode)) {
+                            reason = reasonMap.get(offerNode);
+                        } else {
+                            reason = j.getCauseOfBlockage(p);
+                            reasonMap.put(offerNode, reason);
+                        }
                         if (reason == null) {
                             LOGGER.log(Level.FINEST,
                                     "{0} is a potential candidate for task {1}",
@@ -1623,7 +1631,6 @@ public class Queue extends ResourceController implements Saveable {
                             candidates.add(j);
                         } else {
                             LOGGER.log(Level.FINEST, "{0} rejected {1}: {2}", new Object[] {j, taskDisplayName, reason});
-                            reasons.add(reason);
                         }
                     }
 
@@ -1635,6 +1642,7 @@ public class Queue extends ResourceController implements Saveable {
                         // check if we can execute other projects
                         LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
                                 new Object[]{p, candidates, parked.values()});
+                        List<CauseOfBlockage> reasons = reasonMap.values().stream().filter(Objects::nonNull).collect(Collectors.toList());
                         p.transientCausesOfBlockage = reasons.isEmpty() ? null : reasons;
                         continue;
                     }

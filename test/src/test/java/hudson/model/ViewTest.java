@@ -289,7 +289,7 @@ public class ViewTest {
         req.setRequestBody(xml);
         req.setEncodingType(null);
         wc.getPage(req);
-        assertEquals(null, view.getDescription()); // did not work
+        assertNull(view.getDescription()); // did not work
         xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertThat(xml, not(containsString("<description>"))); // did not work
         assertEquals(j.jenkins, view.getOwner());

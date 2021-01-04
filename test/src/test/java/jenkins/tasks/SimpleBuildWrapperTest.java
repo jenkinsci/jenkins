@@ -48,14 +48,12 @@ import hudson.scm.ChangeLogParser;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.slaves.ComputerLauncher;
-import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Maven;
 import hudson.tasks.Shell;
 import hudson.tasks.Maven.MavenInstallation;
-import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;

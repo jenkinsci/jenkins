@@ -141,6 +141,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -422,7 +423,7 @@ public class QueueTest {
         }
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
-        List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();
+        List<Future<MatrixBuild>> futures = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             futures.add(m.scheduleBuild2(0, new UserIdCause(), new ParametersAction(new StringParameterValue("FOO", "value" + i))));
@@ -439,14 +440,14 @@ public class QueueTest {
         cloud.label = r.jenkins.getLabel("remote");
         r.jenkins.clouds.add(cloud);
         r.jenkins.setNumExecutors(0);
-        r.jenkins.setNodes(Collections.<Node>emptyList());
+        r.jenkins.setNodes(Collections.emptyList());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.setAxes(new AxisList(new LabelAxis("label", Collections.singletonList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw new AssertionError(r.jenkins.getQueue().getItems().toString(), x);
+            throw new AssertionError(Arrays.toString(r.jenkins.getQueue().getItems()), x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
@@ -773,7 +774,7 @@ public class QueueTest {
         //project2 should not be in pendings
         List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
         for(Queue.BuildableItem item : items){
-            assertFalse("Project " + project2.getDisplayName() + " stuck in pendings",item.task.getName().equals(project2.getName()));
+            assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
         }
     }
 
@@ -948,7 +949,7 @@ public class QueueTest {
             Thread.sleep(10);
         }
         assertTrue(Queue.getInstance().getItems()[0].isBlocked());
-        assertTrue(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+        assertEquals(Queue.getInstance().getBlockedItems().get(0).task.getDisplayName(), matrixProject.displayName);
 
         //once the upstream is completed, the downstream can join the buildable queue again.
         r.assertBuildStatusSuccess(upstream);
@@ -957,7 +958,7 @@ public class QueueTest {
         }
         assertFalse(Queue.getInstance().getItems()[0].isBlocked());
         assertTrue(Queue.getInstance().getBlockedItems().isEmpty());
-        assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
+        assertEquals(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName(), matrixProject.displayName);
     }
 
     //let's make sure that the downstream project is not started before the upstream --> we want to simulate
@@ -994,7 +995,7 @@ public class QueueTest {
 
         FreeStyleProject project = r.createFreeStyleProject("project");
 
-        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        Map<Permission, Set<String>> permissions = new HashMap<>();
         permissions.put(Item.READ, Collections.singleton("bob"));
         permissions.put(Item.DISCOVER, Collections.singleton("james"));
         AuthorizationMatrixProperty prop1 = new AuthorizationMatrixProperty(permissions);
