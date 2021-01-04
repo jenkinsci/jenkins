@@ -47,7 +47,7 @@ public class AntWithFindResourceClassLoader extends AntClassLoader implements Cl
      * Public version of {@link ClassLoader#findLoadedClass(String)}
      */
     public Class<?> findLoadedClass2(String name) {
-        return super.findLoadedClass(name);
+        return findLoadedClass(name);
     }
     
     /**

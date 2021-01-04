@@ -13,15 +13,15 @@ import jenkins.util.AntWithFindResourceClassLoader;
 
 /**
  * Reflective access to various {@link ClassLoader} methods which are otherwise {@code protected}.
- *
+ * <p>
  * Initially tries to access methods using known classloaders in use that expose the methods
- * to prevent IllegalReflectiveAccess errors on Java 11+
+ * to prevent illegal reflective access errors on Java 11+
  * Then falls back to accessing the {@link ClassLoader} methods.
- *
+ * <p>
  * All reflection method initialisation is delayed until first use so that we don't access the methods if we don't need to.
- *
- * Note: Currently there is no known production use-case for the fallback case of accessing these methods via reflection,
- * the JenkinsRule tests use a different classloader, once that is made consistent with production Jenkins we can
+ * <p>
+ * Note: Currently there is no known production use-case for the fallback case of accessing these methods via reflection:
+ * the {@code JenkinsRule} tests use a different classloader, but once that is made consistent with production Jenkins we can
  * re-evaluate the fallback code.
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
