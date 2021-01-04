@@ -150,7 +150,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito2</artifactId>
-        <version>2.0.0-beta.5</version>
+        <version>2.0.9</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
