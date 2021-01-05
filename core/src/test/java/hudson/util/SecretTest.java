@@ -67,8 +67,9 @@ public class SecretTest {
 
     @Test
     public void encryptedValuePattern() {
+        final Random random = new Random();
         for (int i = 1; i < 100; i++) {
-            String plaintext = RandomStringUtils.random(new Random().nextInt(i));
+            String plaintext = RandomStringUtils.random(random.nextInt(i));
             String ciphertext = Secret.fromString(plaintext).getEncryptedValue();
             //println "${plaintext} → ${ciphertext}"
             assert ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches();
