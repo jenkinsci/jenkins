@@ -133,11 +133,11 @@ public class JNLPLauncherTest {
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         config.setJnlpRoot(jnlpRoot);
 
-        addTestSlave(false);
+        addTestAgent(false);
         JenkinsRule.WebClient jnlpAgent = j.createWebClient().login("alice");
 
         // parse the JNLP page into DOM to inspect the jnlp url argument.
-        XmlPage jnlp = (XmlPage) jnlpAgent.goTo("computer/test/slave-agent.jnlp","application/x-java-jnlp-file");
+        XmlPage jnlp = (XmlPage) jnlpAgent.goTo("computer/test/jenkins-agent.jnlp","application/x-java-jnlp-file");
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
         for( Object arg : dom.selectNodes("//application-desc/argument[3]/following-sibling::argument[1]") ) {
             String val = ((org.dom4j.Element)arg).getText();
