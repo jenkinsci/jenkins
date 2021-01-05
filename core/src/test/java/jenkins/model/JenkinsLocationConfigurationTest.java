@@ -86,4 +86,13 @@ public class JenkinsLocationConfigurationTest {
         config.setAdminAddress(null);
         assertEquals(Messages.Mailer_Address_Not_Configured(), config.getAdminAddress());
     }
+
+    @Test
+    public void setJnlpRoot() {
+        final String root="http://192.168.0.1/jenkins/";
+
+        // Basic case
+        config.setJnlpRoot(root);
+        assertEquals(root, config.getJnlpRoot());
+    }
 }

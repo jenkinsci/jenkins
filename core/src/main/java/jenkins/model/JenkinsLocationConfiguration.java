@@ -60,6 +60,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
     private transient String hudsonUrl;
     private String adminAddress;
     private String jenkinsUrl;
+    private String jnlpRoot;
 
     // just to suppress warnings
     private transient String charset,useSsl;
@@ -161,6 +162,30 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration implements
 
     private boolean isInvalidRootUrl(@Nullable String value) {
         return !UrlHelper.isValidRootUrl(value);
+    }
+
+    public @CheckForNull String getJnlpRoot() {
+        return jnlpRoot;
+    }
+
+    public void setJnlpRoot(@CheckForNull String jnlpRoot) {
+        String url = Util.nullify(jnlpRoot);
+        if(url!=null && !url.endsWith("/"))
+            url += '/';
+        this.jnlpRoot = url;
+
+        if (!DISABLE_URL_VALIDATION) {
+            preventJnlpRootBeingInvalid();
+        }
+
+        save();
+    }
+
+    private void preventJnlpRootBeingInvalid() {
+        if (this.jnlpRoot != null && isInvalidRootUrl(this.jnlpRoot)) {
+            LOGGER.log(Level.INFO, "Invalid JNLP Root URL received: {0}, considered as null", this.jnlpRoot);
+            this.jnlpRoot = null;
+        }
     }
 
     /**

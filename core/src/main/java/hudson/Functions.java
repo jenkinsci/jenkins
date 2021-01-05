@@ -908,6 +908,17 @@ public class Functions {
     }
 
     /**
+     * Return the root jnlp url and fallback to the configured jenkins root
+     */
+    public static String jnlpRootUrl(StaplerRequest req) {
+        String url = Jenkins.get().getJnlpRootUrl();
+        if (url != null) {
+            return url;
+        }
+        return inferHudsonURL(req);
+    }
+
+    /**
      * Infers the hudson installation URL from the given request.
      */
     public static String inferHudsonURL(StaplerRequest req) {
