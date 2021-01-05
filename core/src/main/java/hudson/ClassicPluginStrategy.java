@@ -222,7 +222,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             LOGGER.info("Plugin " + archive.getName() + " is disabled");
         }
         if (paths.isEmpty()) {
-            LOGGER.warning("No classpaths found for plugin " + archive.getName());
+            LOGGER.info("No classpaths found for plugin " + archive.getName());
         }
 
         // compute dependencies
