@@ -25,7 +25,6 @@ package hudson.slaves;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.Proc;
 import hudson.Util;
 import hudson.model.Computer;
@@ -35,18 +34,14 @@ import hudson.model.Slave;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
 
-import jenkins.model.Jenkins;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.slaves.RemotingWorkDirSettings;
 
-import org.dom4j.Document;
-import org.dom4j.io.DOMReader;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -117,31 +112,6 @@ public class JNLPLauncherTest {
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
         // make sure that onOffline gets called just the right number of times
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
-    }
-
-    @Issue("JENKINS-63222")
-    @Test
-    public void testInboundAgentUrlOverride() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
-        authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
-        j.jenkins.setAuthorizationStrategy(authorizationStrategy);
-
-        // Override the inbound agent url
-        String inboundAgentUrl = "http://localhost:8080/jenkins";
-        System.setProperty("jenkins.agent.inboundUrl", inboundAgentUrl);
-
-        // Create an agent
-        addTestAgent(false);
-
-        // parse the JNLP page into DOM to inspect the jnlp url argument.
-        JenkinsRule.WebClient agent = j.createWebClient();
-        XmlPage jnlp = (XmlPage) agent.goTo("computer/test/jenkins-agent.jnlp","application/x-java-jnlp-file");
-        Document dom = new DOMReader().read(jnlp.getXmlDocument());
-        Object arg = dom.selectSingleNode("//application-desc/argument[3]/following-sibling::argument[1]");
-        String val = ((org.dom4j.Element)arg).getText();
-        assertEquals(inboundAgentUrl, val);
-        System.clearProperty("jenkins.agent.inboundUrl");
     }
     
     @Test

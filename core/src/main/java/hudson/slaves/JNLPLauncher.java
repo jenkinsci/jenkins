@@ -77,6 +77,12 @@ public class JNLPLauncher extends ComputerLauncher {
     private boolean webSocket;
 
     /**
+     * @see #getInboundAgentUrl()
+     */
+    @NonNull
+    public static final String CUSTOM_INBOUND_URL_PROPERTY = "jenkins.agent.inboundUrl";
+
+    /**
      * Constructor.
      * @param tunnel Tunnel settings
      * @param vmargs JVM arguments
@@ -262,7 +268,7 @@ public class JNLPLauncher extends ComputerLauncher {
      */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {
-        String url = System.getProperty("jenkins.agent.inboundUrl");
+        String url = System.getProperty(CUSTOM_INBOUND_URL_PROPERTY);
         if (url == null || url.isEmpty()) {
             return Jenkins.get().getRootUrl();
         }
