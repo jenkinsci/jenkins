@@ -2331,33 +2331,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Gets the address to use for JNLP connections, such as {@code http://localhost/jenkins/}.
-     *
-     * <p>
-     * This method first tries to use the manually configured value, then
-     * fall back to {@link #getRootUrl()}.
-     *
-     * @return {@code null} if this parameter is not configured by the user and the calling thread is not in an HTTP request;
-     *                      otherwise the returned URL will always have the trailing {@code /}
-     * @throws IllegalStateException {@link JenkinsLocationConfiguration} cannot be retrieved.
-     *                      Jenkins instance may be not ready, or there is an extension loading glitch.
-     * @since 2.273
-     */
-    public @Nullable String getJnlpRootUrl() throws IllegalStateException {
-        final JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
-        if (config == null) {
-            // Try to get standard message if possible
-            final Jenkins j = Jenkins.get();
-            throw new IllegalStateException("Jenkins instance " + j + " has been successfully initialized, but JenkinsLocationConfiguration is undefined.");
-        }
-        String url = config.getJnlpRoot();
-        if(url!=null) {
-            return Util.ensureEndsWith(url,"/");
-        }
-        return this.getRootUrl();
-    }
-
-    /**
      * Gets the absolute URL of Jenkins, such as {@code http://localhost/jenkins/}.
      *
      * <p>

@@ -249,4 +249,12 @@ public class JNLPLauncher extends ComputerLauncher {
     public boolean isJavaWebStartSupported() {
         return JavaUtils.isRunningWithJava8OrBelow();
     }
+
+    public static String getInboundAgentUrl() {
+        String url = System.getProperty("jenkins.agent.inboundUrl");
+        if (url == null || url.isEmpty()) {
+            return Jenkins.get().getRootUrl();
+        }
+        return url;
+    }
 }
