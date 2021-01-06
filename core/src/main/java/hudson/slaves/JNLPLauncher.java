@@ -250,6 +250,17 @@ public class JNLPLauncher extends ComputerLauncher {
         return JavaUtils.isRunningWithJava8OrBelow();
     }
 
+    /**
+     * Overrides the url that inbound TCP agents should connect to
+     * as advertised in the agent.jnlp file. If not set, the default
+     * behavior is unchanged and returns the root URL.
+     *
+     * This enables using a private address for inbound tcp agents,
+     * separate from Jenkins root URL.
+     *
+     * @see @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
+     * @since 2.274
+     */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {
         String url = System.getProperty("jenkins.agent.inboundUrl");
