@@ -33,13 +33,11 @@ import org.dom4j.Document;
 import org.dom4j.io.DOMReader;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.FlagRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.SmokeTest;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -52,7 +50,6 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Tests of {@link JNLPLauncher} using a custom inbound agent url.
  */
-@Category(SmokeTest.class)
 public class AgentInboundUrlTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
