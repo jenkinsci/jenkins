@@ -34,6 +34,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
+import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
@@ -268,7 +269,7 @@ public class JNLPLauncher extends ComputerLauncher {
      */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {
-        String url = System.getProperty(CUSTOM_INBOUND_URL_PROPERTY);
+        String url = SystemProperties.getString(CUSTOM_INBOUND_URL_PROPERTY);
         if (url == null || url.isEmpty()) {
             return Jenkins.get().getRootUrl();
         }
