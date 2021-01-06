@@ -486,12 +486,6 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     return;
                 }
                 try {
-                    ClassLoader ecl = c.getClassLoader();
-                    if (ecl != null) { // Not bootstrap classloader
-                        Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
-                        m.setAccessible(true);
-                        m.invoke(ecl, c);
-                    }
                     for (Class<?> cc = c; cc != Object.class && cc != null; cc = cc.getSuperclass()) {
                         /*
                          * See {@link com.google.inject.spi.InjectionPoint#getInjectionPoints(TypeLiteral, boolean, Errors)}
