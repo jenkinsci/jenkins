@@ -259,7 +259,6 @@ public class JNLPLauncher extends ComputerLauncher {
      * separate from Jenkins root URL.
      *
      * @see @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
-     * @since 2.274
      */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {
