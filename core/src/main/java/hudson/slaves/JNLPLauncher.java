@@ -81,6 +81,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * @see #getInboundAgentUrl()
      */
     @NonNull
+    @Restricted(NoExternalUse.class)
     public static final String CUSTOM_INBOUND_URL_PROPERTY = "jenkins.agent.inboundUrl";
 
     /**
