@@ -250,6 +250,7 @@ public class JNLPLauncher extends ComputerLauncher {
         return JavaUtils.isRunningWithJava8OrBelow();
     }
 
+    @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {
         String url = System.getProperty("jenkins.agent.inboundUrl");
         if (url == null || url.isEmpty()) {

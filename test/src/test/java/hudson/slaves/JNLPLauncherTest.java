@@ -37,7 +37,6 @@ import hudson.util.ArgumentListBuilder;
 
 import jenkins.model.Jenkins;
 import jenkins.security.SlaveToMasterCallable;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.slaves.RemotingWorkDirSettings;
 
 import org.dom4j.Document;
@@ -123,31 +122,25 @@ public class JNLPLauncherTest {
     @Issue("JENKINS-63222")
     @Test
     public void testInboundAgentUrlOverride() throws Exception {
-        final String USER = "user";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                // full access
-//                .grant(Jenkins.ADMINISTER).everywhere().to(ADMIN)
-
-                // Read access
-                .grant(Jenkins.READ).everywhere().to(USER)
-        );
-        ApiTokenTestHelper.enableLegacyBehavior();
+        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
+        authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
+        j.jenkins.setAuthorizationStrategy(authorizationStrategy);
 
         // Override the inbound agent url
         String inboundAgentUrl = "http://localhost:8080/jenkins";
         System.setProperty("jenkins.agent.inboundUrl", inboundAgentUrl);
 
+        // Create an agent
         addTestAgent(false);
-        JenkinsRule.WebClient jnlpAgent = j.createWebClient().login("user");
 
         // parse the JNLP page into DOM to inspect the jnlp url argument.
-        XmlPage jnlp = (XmlPage) jnlpAgent.goTo("computer/test/jenkins-agent.jnlp","application/x-java-jnlp-file");
+        JenkinsRule.WebClient agent = j.createWebClient();
+        XmlPage jnlp = (XmlPage) agent.goTo("computer/test/jenkins-agent.jnlp","application/x-java-jnlp-file");
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
-        for( Object arg : dom.selectNodes("//application-desc/argument[3]/following-sibling::argument[1]") ) {
-            String val = ((org.dom4j.Element)arg).getText();
-            assertEquals(inboundAgentUrl, val);
-        }
+        Object arg = dom.selectSingleNode("//application-desc/argument[3]/following-sibling::argument[1]");
+        String val = ((org.dom4j.Element)arg).getText();
+        assertEquals(inboundAgentUrl, val);
         System.clearProperty("jenkins.agent.inboundUrl");
     }
     
