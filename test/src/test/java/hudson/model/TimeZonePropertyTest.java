@@ -34,7 +34,7 @@ public class TimeZonePropertyTest {
         TimeZoneProperty tzp = new TimeZoneProperty("InvalidTimeZoneName");
         user.addProperty(tzp);
 
-        assertEquals(null, TimeZoneProperty.forCurrentUser());
+        assertNull(TimeZoneProperty.forCurrentUser());
     }
 
     @Test
@@ -45,7 +45,7 @@ public class TimeZonePropertyTest {
         User user = User.get("John Smith", true, java.util.Collections.emptyMap());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
 
-        assertEquals(null, TimeZoneProperty.forCurrentUser());
+        assertNull(TimeZoneProperty.forCurrentUser());
         TimeZoneProperty tzp = new TimeZoneProperty(timeZone);
         user.addProperty(tzp);
         assertEquals(TimeZone.getDefault().getID(), TimeZoneProperty.forCurrentUser());

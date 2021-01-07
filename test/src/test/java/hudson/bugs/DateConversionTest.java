@@ -48,7 +48,7 @@ public class DateConversionTest {
         final DateConverter dc =new DateConverter();
         ExecutorService es = Executors.newFixedThreadPool(10);
 
-        List<Future> futures = new ArrayList<Future>();
+        List<Future> futures = new ArrayList<>();
         for(int i=0;i<10;i++) {
             futures.add(es.submit(new Callable<Object>() {
                 public Object call() throws Exception {

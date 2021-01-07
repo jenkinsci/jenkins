@@ -45,7 +45,7 @@ public class Icon {
     public static final String ICON_LARGE_STYLE = "width: 32px; height: 32px;";
     public static final String ICON_XLARGE_STYLE = "width: 48px; height: 48px;";
 
-    private static final Map<String, String> iconDims = new HashMap<String, String>();
+    private static final Map<String, String> iconDims = new HashMap<>();
 
     static {
         iconDims.put("16x16", "icon-sm");
@@ -216,7 +216,7 @@ public class Icon {
         }
 
         String[] classNameTokA = classNames.split(" ");
-        List<String> classNameTokL = new ArrayList<String>();
+        List<String> classNameTokL = new ArrayList<>();
 
         // Trim all tokens first
         for (String classNameTok : classNameTokA) {

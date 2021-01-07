@@ -43,7 +43,6 @@ import java.util.regex.Pattern;
 
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.IOUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -555,10 +554,10 @@ public class FunctionsTest {
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
-        assertEquals(sw.toString().replace(IOUtils.LINE_SEPARATOR, "\n"), traditional);
+        assertEquals(sw.toString().replace(System.lineSeparator(), "\n"), traditional);
         String actual = Functions.printThrowable(t);
         System.out.println(actual);
-        assertEquals(actual.replace(IOUtils.LINE_SEPARATOR, "\n"), custom);
+        assertEquals(actual.replace(System.lineSeparator(), "\n"), custom);
     }
     private static final class Stack extends Throwable {
         private static final Pattern LINE = Pattern.compile("(.+)[.](.+)[.](.+):(\\d+)");

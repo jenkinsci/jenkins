@@ -80,7 +80,6 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -605,7 +604,7 @@ public class UserTest {
         attacker1.setFullName("victim1");
         User victim1 = User.get("victim1");
         assertEquals("victim1 is a real user ID, we must ignore the attacker1’s fullName", "victim1", victim1.getId());
-        assertEquals("a recursive call to User.get was OK", null, victim1.getProperty(MyViewsProperty.class).getPrimaryViewName());
+        assertNull("a recursive call to User.get was OK", victim1.getProperty(MyViewsProperty.class).getPrimaryViewName());
         assertEquals("(though the realm mistakenly added metadata to the attacker)", "victim1", attacker1.getProperty(MyViewsProperty.class).getPrimaryViewName());
         User.get("attacker2").setFullName("nonexistent");
         assertEquals("but if we cannot find such a user ID, allow the fullName", "attacker2", User.get("nonexistent").getId());

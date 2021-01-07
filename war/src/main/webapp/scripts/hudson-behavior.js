@@ -878,18 +878,48 @@ function rowvgStartEachRow(recursive,f) {
     Behaviour.specify("INPUT.required", "input-required", ++p, function(e) { registerRegexpValidator(e,/./,"Field is required"); });
 
     // validate form values to be an integer
-    Behaviour.specify("INPUT.number", "input-number", ++p, function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); });
-    Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); });
+    Behaviour.specify("INPUT.number", "input-number", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
+        registerRegexpValidator(e,/^(\d+|)$/,"Not an integer");
+    });
+
+    Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
+        registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer");
+    });
 
     Behaviour.specify("INPUT.non-negative-number-required", "input-non-negative-number-required", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
     });
 
     Behaviour.specify("INPUT.positive-number", "input-positive-number", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
     });
 
     Behaviour.specify("INPUT.positive-number-required", "input-positive-number-required", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e', 'E', '.'
+                event.preventDefault();
+            }
+        })
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 

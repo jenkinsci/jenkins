@@ -190,7 +190,7 @@ public class NodeProvisionerTest {
     }
 
     private List<FreeStyleProject> create5SlowJobs(Latch l) throws IOException {
-        List<FreeStyleProject> jobs = new ArrayList<FreeStyleProject>();
+        List<FreeStyleProject> jobs = new ArrayList<>();
         for( int i=0; i<l.init; i++)
             //set a large delay, to simulate the situation where we need to provision more slaves
             // to keep up with the load
@@ -203,7 +203,7 @@ public class NodeProvisionerTest {
      */
     private List<Future<FreeStyleBuild>> buildAll(List<FreeStyleProject> jobs) {
         System.out.println("Scheduling builds for "+jobs.size()+" jobs");
-        List<Future<FreeStyleBuild>> builds = new ArrayList<Future<FreeStyleBuild>>();
+        List<Future<FreeStyleBuild>> builds = new ArrayList<>();
         for (FreeStyleProject job : jobs)
             builds.add(job.scheduleBuild2(0));
         return builds;
