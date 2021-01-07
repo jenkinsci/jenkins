@@ -40,10 +40,6 @@ complete {
     }
 */
 
-    match("antlr:*") {
-        rewriteLicense([], license("BSD License","http://www.antlr.org/license.html"))
-    }
-
     match("jaxen:jaxen") {
         rewriteLicense([], license("BSD License","http://jaxen.codehaus.org/license.html"))
     }
