@@ -88,12 +88,12 @@ public class PluginManagerTest {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
-        File plugin = new File(dir, "tasks.jpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/tasks.jpi"),plugin);
+        File plugin = new File(dir, "htmlpublisher.jpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"),plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertTrue( new File(r.jenkins.getRootDir(),"plugins/tasks.jpi").exists() );
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
     }
 
     /**
@@ -115,9 +115,9 @@ public class PluginManagerTest {
     /**
      * Tests the effect of {@link WithPlugin}.
      */
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @Test public void withRecipeJpi() {
-        assertNotNull(r.jenkins.getPlugin("tasks"));
+        assertNotNull(r.jenkins.getPlugin("htmlpublisher"));
     }
     
     /**
@@ -129,33 +129,12 @@ public class PluginManagerTest {
     }
 
     /**
-     * Makes sure that plugins can see Maven2 plugin that's refactored out in 1.296.
-     */
-    @WithPlugin("tasks.jpi")
-    @Test public void optionalMavenDependency() throws Exception {
-        PluginWrapper.Dependency m2=null;
-        PluginWrapper tasks = r.jenkins.getPluginManager().getPlugin("tasks");
-        for( PluginWrapper.Dependency d : tasks.getOptionalDependencies() ) {
-            if(d.shortName.equals("maven-plugin")) {
-                assertNull(m2);
-                m2 = d;
-            }
-        }
-        assertNotNull(m2);
-
-        // this actually doesn't really test what we need, though, because
-        // I thought test harness is loading the maven classes by itself.
-        // TODO: write a separate test that tests the optional dependency loading
-        tasks.classLoader.loadClass(hudson.maven.agent.AbortException.class.getName());
-    }
-
-    /**
      * Verifies that by the time {@link Plugin#start()} is called, uber classloader is fully functioning.
      * This is necessary as plugin start method can engage in XStream loading activities, and they should
      * resolve all the classes in the system (for example, a plugin X can define an extension point
      * other plugins implement, so when X loads its config it better sees all the implementations defined elsewhere)
      */
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @WithPluginManager(PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart.class)
     @Test public void uberClassLoaderIsAvailableDuringStart() {
         assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart) r.jenkins.pluginManager).tested);
@@ -454,12 +433,12 @@ public class PluginManagerTest {
     }
 
     @Issue("JENKINS-12753")
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @Test public void dynamicLoadRestartRequiredException() throws Exception {
-        File jpi = new File(r.jenkins.getRootDir(), "plugins/tasks.jpi");
+        File jpi = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi");
         assertTrue(jpi.isFile());
         FileUtils.touch(jpi);
-        File timestamp = new File(r.jenkins.getRootDir(), "plugins/tasks/.timestamp2");
+        File timestamp = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher/.timestamp2");
         assertTrue(timestamp.isFile());
         long lastMod = timestamp.lastModified();
         try {
@@ -471,7 +450,7 @@ public class PluginManagerTest {
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @Test public void pluginListJSONApi() throws IOException {
         JSONObject response = r.getJSON("pluginManager/plugins").getJSONObject();
 
