@@ -29,8 +29,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import hudson.Launcher;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -53,7 +51,6 @@ import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.util.FormValidation;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,23 +65,17 @@ import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTriggerTest;
 
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.MockBuilder;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
-import org.jvnet.hudson.test.ToolInstallations;
 import org.xml.sax.SAXException;
 
 public class BuildTriggerTest {
@@ -147,56 +138,6 @@ public class BuildTriggerTest {
     @Test
     public void triggerEvenWhenUnstable() throws Exception {
         doTriggerTest(true, Result.UNSTABLE, Result.FAILURE);
-    }
-
-    private void doMavenTriggerTest(boolean evenWhenUnstable) throws Exception {
-        File problematic = new File(System.getProperty("user.home"), ".m2/repository/org/apache/maven/plugins/maven-surefire-plugin/2.4.3/maven-surefire-plugin-2.4.3.pom");
-        if (problematic.isFile()) {
-            try {
-                new SAXReader().read(problematic);
-            } catch (DocumentException x) {
-                x.printStackTrace();
-                // somehow maven-surefire-plugin-2.4.3.pom got corrupted on CI builders
-                Assume.assumeNoException(x);
-            }
-        }
-        FreeStyleProject dp = createDownstreamProject();
-        ToolInstallations.configureMaven3();
-        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
-        m.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
-        if (!evenWhenUnstable) {
-            // Configure for UNSTABLE
-            m.setGoals("clean test");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure.zip")));
-        } // otherwise do nothing which gets FAILURE
-        // First build should not trigger downstream project
-        MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-        assertNoDownstreamBuild(dp, b);
-
-        if (evenWhenUnstable) {
-            // Configure for UNSTABLE
-            m.setGoals("clean test");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure.zip")));
-        } else {
-            // Configure for SUCCESS
-            m.setGoals("clean");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
-        }
-        // Next build should trigger downstream project
-        b = m.scheduleBuild2(0).get();
-        assertDownstreamBuild(dp, b);
-    }
-
-    @Test
-    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
-    public void mavenBuildTrigger() throws Exception {
-        doMavenTriggerTest(false);
-    }
-
-    @Test
-    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
-    public void mavenTriggerEvenWhenUnstable() throws Exception {
-        doMavenTriggerTest(true);
     }
 
     /** @see ReverseBuildTriggerTest#upstreamProjectSecurity */
