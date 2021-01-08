@@ -206,20 +206,20 @@ public class PluginManagerTest {
         assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
-        URL url = PluginManagerTest.class.getResource("/plugins/tasks-update-center.json");
+        URL url = PluginManagerTest.class.getResource("/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertNotNull(site.getData());
         assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
-        assertNull(r.jenkins.getPluginManager().getPlugin("tasks"));
-        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><tasks plugin=\"tasks@2.23\"/></whatever>"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
+        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>"));
         assertEquals(1, jobs.size());
         UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
         assertEquals("InstallationJob", job.getType());
         UpdateCenter.InstallationJob ijob = (UpdateCenter.InstallationJob) job;
-        assertEquals("tasks", ijob.plugin.name);
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("tasks"));
+        assertEquals("htmlpublisher", ijob.plugin.name);
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
         // TODO restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
         // TODO dependencies installed or upgraded too
         // TODO required plugin installed but inactive
