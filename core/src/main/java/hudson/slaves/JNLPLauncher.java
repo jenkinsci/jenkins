@@ -266,7 +266,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * This enables using a private address for inbound tcp agents,
      * separate from Jenkins root URL.
      *
-     * @see @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
      */
     @Restricted(NoExternalUse.class)
     public static String getInboundAgentUrl() {
