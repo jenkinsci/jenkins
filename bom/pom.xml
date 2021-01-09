@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 
   <properties>
-    <guavaVersion>11.0.1</guavaVersion>
+    <guavaVersion>23.0</guavaVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
     <stapler.version>1.262</stapler.version>
     <groovy.version>2.4.12</groovy.version>
@@ -232,7 +232,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>antlr</groupId>
         <artifactId>antlr</artifactId>
-        <version>2.7.6</version>
+        <version>2.7.7</version>
       </dependency>
       <dependency>
         <groupId>org.jfree</groupId>
