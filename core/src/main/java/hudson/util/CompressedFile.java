@@ -23,8 +23,8 @@
  */
 package hudson.util;
 
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

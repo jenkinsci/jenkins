@@ -27,7 +27,7 @@
  */
 package hudson.model;
 
-import com.jcraft.jzlib.GZIPInputStream;
+import java.util.zip.GZIPInputStream;
 import com.thoughtworks.xstream.XStream;
 import hudson.AbortException;
 import hudson.BulkChange;

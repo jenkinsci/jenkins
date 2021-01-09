@@ -62,7 +62,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import com.jcraft.jzlib.GZIPOutputStream;
+import java.util.zip.GZIPOutputStream;
 import jenkins.util.SystemProperties;
 
 /**
