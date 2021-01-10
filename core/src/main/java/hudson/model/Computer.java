@@ -108,6 +108,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -195,7 +196,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     protected final Object statusChangeLock = new Object();
 
-    private final Object logDirLock = new String("logDirLock");
+    private final ReentrantLock logDirLock = new ReentrantLock();
 
     /**
      * Keeps track of stack traces to track the termination requests for this computer.
@@ -305,12 +306,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     protected @NonNull File getLogDir() {
         File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
-        synchronized (logDirLock) {
-            try {
-                IOUtils.mkdirs(dir);
-            } catch (IOException x) {
-                LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
-            }
+        logDirLock.lock();
+        try {
+            IOUtils.mkdirs(dir);
+        } catch (IOException x) {
+            LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
+        } finally {
+            logDirLock.unlock();
         }
         return dir;
     }
