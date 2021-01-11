@@ -36,6 +36,8 @@ import org.apache.tools.zip.ZipOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
 
 /**
  * {@link FileVisitor} that creates a zip archive.
@@ -45,9 +47,15 @@ import java.io.OutputStream;
 final class ZipArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
     private final ZipOutputStream zip;
+    private final OpenOption[] openOptions;
 
     ZipArchiver(OutputStream out) {
+        this(out, false);
+    }
+
+    ZipArchiver(OutputStream out, boolean failOnSymLink) {
         zip = new ZipOutputStream(out);
+        openOptions = failOnSymLink ? new LinkOption[]{LinkOption.NOFOLLOW_LINKS} : new OpenOption[0];
         zip.setEncoding(System.getProperty("file.encoding"));
         zip.setUseZip64(Zip64Mode.AsNeeded);
     }
@@ -73,7 +81,7 @@ final class ZipArchiver extends Archiver {
             if (mode!=-1)   fileZipEntry.setUnixMode(mode);
             fileZipEntry.setTime(f.lastModified());
             zip.putNextEntry(fileZipEntry);
-            try (InputStream in = Files.newInputStream(f.toPath())) {
+            try (InputStream in = Files.newInputStream(f.toPath(), openOptions)) {
                 int len;
                 while((len=in.read(buf))>=0)
                     zip.write(buf,0,len);

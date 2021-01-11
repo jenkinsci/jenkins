@@ -25,6 +25,8 @@
 package hudson.util.io;
 
 import hudson.FilePath.TarCompression;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,6 +59,11 @@ public abstract class ArchiverFactory implements Serializable {
      */
     public static ArchiverFactory ZIP = new ZipArchiverFactory();
 
+    /**
+     * Zip format, without following symlinks.
+     */
+    @Restricted(NoExternalUse.class)
+    public static ArchiverFactory ZIP_WTHOUT_FOLLOWING_SYMLINKS = new ZipWithoutSymLinksArchiverFactory();
 
 
     private static final class TarArchiverFactory extends ArchiverFactory {
@@ -76,6 +83,14 @@ public abstract class ArchiverFactory implements Serializable {
     private static final class ZipArchiverFactory extends ArchiverFactory {
         public Archiver create(OutputStream out) {
             return new ZipArchiver(out);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static final class ZipWithoutSymLinksArchiverFactory extends ArchiverFactory {
+        public Archiver create(OutputStream out) {
+            return new ZipArchiver(out, true);
         }
 
         private static final long serialVersionUID = 1L;
