@@ -78,12 +78,6 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>jenkins-test-harness-tools</artifactId>
-      <version>2.0</version>
-      <scope>test</scope>
-    </dependency>
      <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
