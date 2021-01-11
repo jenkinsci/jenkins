@@ -610,7 +610,15 @@ function makeButton(e,onclick) {
     var h = e.onclick;
     var clsName = e.className;
     var n = e.name;
-    var btn = new YAHOO.widget.Button(e,{});
+
+    var attributes = {};
+    // YUI Button class interprets value attribute of <input> as HTML
+    // similar to how the child nodes of a <button> are treated as HTML.
+    // in standard HTML, we wouldn't expect the former case, yet here we are!
+    if (e.tagName === 'INPUT') {
+        attributes.label = e.value.escapeHTML();
+    }
+    var btn = new YAHOO.widget.Button(e, attributes);
     if(onclick!=null)
         btn.addListener("click",onclick);
     if(h!=null)
