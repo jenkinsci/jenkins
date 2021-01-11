@@ -3031,6 +3031,8 @@ var notificationBar = {
             this.div.onclick = function() {
                 self.hide();
             };
+        } else {
+            this.div.innerHTML = "";
         }
     },
     // cancel pending auto-hide timeout
@@ -3049,7 +3051,19 @@ var notificationBar = {
     show : function (text,options) {
         options = options || {};
         this.init();
-        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' focusable='false' class='svg-icon'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
+        var icon = this.div.appendChild(document.createElement("div"));
+        icon.style.display = "inline-block";
+        if (options.iconColor || this.defaultIconColor) {
+            icon.style.color = options.iconColor || this.defaultIconColor;
+        }
+        var svg = icon.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "svg"));
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("focusable", "false");
+        svg.setAttribute("class", "svg-icon");
+        var use = svg.appendChild(document.createElementNS("http://www.w3.org/2000/svg","use"));
+        use.setAttribute("href", rootURL + "/images/material-icons/" + (options.icon || this.defaultIcon));
+        var message = this.div.appendChild(document.createElement("span"));
+        message.appendChild(document.createTextNode(text));
 
         this.div.className=options.alertClass || this.defaultAlertClass;
         this.div.classList.add("notif-alert-show");
