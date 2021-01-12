@@ -51,7 +51,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 @PrepareForTest(Jenkins.class)
 @RunWith(PowerMockRunner.class)
