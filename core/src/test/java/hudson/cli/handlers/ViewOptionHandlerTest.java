@@ -36,6 +36,7 @@ import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,9 +69,16 @@ public class ViewOptionHandlerTest {
     @Mock private CompositeView outer;
     @Mock private Jenkins jenkins;
 
+    private AutoCloseable mocks;
+
+    @After
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
     @Before public void setUp() {
 
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
 
         handler = new ViewOptionHandler(null, null, setter);
 
@@ -91,7 +99,7 @@ public class ViewOptionHandlerTest {
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
         when(jenkins.getACL()).thenReturn(new ACL() {
             @Override
-            public boolean hasPermission2(@Nonnull Authentication a, @Nonnull Permission p) {
+            public boolean hasPermission2(@NonNull Authentication a, @NonNull Permission p) {
                 return true;
             }
         });
