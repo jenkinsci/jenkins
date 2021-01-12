@@ -31,7 +31,7 @@ public class ChannelPingerTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         mockStatic(ChannelPinger.class);
     }
 

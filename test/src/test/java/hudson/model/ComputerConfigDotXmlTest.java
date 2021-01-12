@@ -74,7 +74,7 @@ public class ComputerConfigDotXmlTest {
     @Before
     public void setUp() throws Exception {
 
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         computer = spy(rule.createSlave().toComputer());
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         oldSecurityContext = ACL.impersonate2(User.get("user").impersonate2());
@@ -146,7 +146,7 @@ public class ComputerConfigDotXmlTest {
 
     @Test
     @Issue("SECURITY-343")
-    public void emptyNodeMonitorDataWithoutConnect() throws Exception {
+    public void emptyNodeMonitorDataWithoutConnect() {
         rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
 
         assertTrue(computer.getMonitorData().isEmpty());
@@ -154,7 +154,7 @@ public class ComputerConfigDotXmlTest {
 
     @Test
     @Issue("SECURITY-343")
-    public void populatedNodeMonitorDataWithConnect() throws Exception {
+    public void populatedNodeMonitorDataWithConnect() {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
         auth.add(Computer.CONNECT, "user");
@@ -171,7 +171,7 @@ public class ComputerConfigDotXmlTest {
         when(rsp.getOutputStream()).thenReturn(new ServletOutputStream() {
 
             @Override
-            public void write(int b) throws IOException {
+            public void write(int b) {
                 baos.write(b);
             }
 
