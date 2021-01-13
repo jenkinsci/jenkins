@@ -75,6 +75,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
      * Load the Fingerprint with the given unique id.
      */
     public @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
+        if (!isAllowed(id)) {
+            return null;
+        }
         return load(getFingerprintFile(id));
     }
 
@@ -285,6 +288,15 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private static @NonNull File getFingerprintFile(@NonNull String id) {
         return new File( Jenkins.get().getRootDir(),
                 "fingerprints/" + id.substring(0,2) + '/' + id.substring(2,4) + '/' + id.substring(4) + ".xml");
+    }
+
+    private static boolean isAllowed(String id) {
+        try {
+            Util.fromHexString(id);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 
     private static String messageOfParseException(Throwable throwable) {

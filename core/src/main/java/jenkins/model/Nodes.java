@@ -35,6 +35,7 @@ import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
 import java.util.concurrent.Callable;
 
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -63,6 +64,13 @@ import java.util.logging.Logger;
  */
 @Restricted(NoExternalUse.class) // for now, we may make it public later
 public class Nodes implements Saveable {
+
+    /**
+     * Determine if we need to enforce the name restrictions during node creation or replacement.
+     * Should be enabled (default) to prevent SECURITY-2021.
+     */
+    @Restricted(NoExternalUse.class)
+    private static final boolean ENFORCE_NAME_RESTRICTIONS = SystemProperties.getBoolean(Nodes.class.getName() + ".enforceNameRestrictions", true);
 
     /**
      * The {@link Jenkins} instance that we are tracking nodes for.
@@ -127,6 +135,10 @@ public class Nodes implements Saveable {
      * @throws IOException if the list of nodes could not be persisted.
      */
     public void addNode(final @NonNull Node node) throws IOException {
+        if (ENFORCE_NAME_RESTRICTIONS) {
+            Jenkins.checkGoodName(node.getNodeName());
+        }
+
         Node oldNode = nodes.get(node.getNodeName());
         if (node != oldNode) {
             // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
@@ -228,6 +240,10 @@ public class Nodes implements Saveable {
      * @since 2.8
      */
     public boolean replaceNode(final Node oldOne, final @NonNull Node newOne) throws IOException {
+        if (ENFORCE_NAME_RESTRICTIONS) {
+            Jenkins.checkGoodName(newOne.getNodeName());
+        }
+
         if (oldOne == nodes.get(oldOne.getNodeName())) {
             // use the queue lock until Nodes has a way of directly modifying a single node.
             Queue.withLock(new Runnable() {

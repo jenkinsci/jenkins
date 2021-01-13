@@ -6,6 +6,8 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.selectors.FileSelector;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -103,15 +105,25 @@ public abstract class DirScanner implements Serializable {
         private final String includes, excludes;
 
         private boolean useDefaultExcludes = true;
+        private final boolean followSymlinks;
 
         public Glob(String includes, String excludes) {
-            this.includes = includes;
-            this.excludes = excludes;
+            this(includes, excludes, true, true);
         }
 
         public Glob(String includes, String excludes, boolean useDefaultExcludes) {
-            this(includes, excludes);
+            this(includes, excludes, useDefaultExcludes, true);
+        }
+
+        /**
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        public Glob(String includes, String excludes, boolean useDefaultExcludes, boolean followSymlinks) {
+            this.includes = includes;
+            this.excludes = excludes;
             this.useDefaultExcludes = useDefaultExcludes;
+            this.followSymlinks = followSymlinks;
         }
 
         public void scan(File dir, FileVisitor visitor) throws IOException {
@@ -122,14 +134,11 @@ public abstract class DirScanner implements Serializable {
             }
 
             FileSet fs = Util.createFileSet(dir,includes,excludes);
+            fs.setFollowSymlinks(followSymlinks);
             fs.setDefaultexcludes(useDefaultExcludes);
-
-            fs.appendSelector(new DescendantFileSelector(fs.getDir()));
 
             if(dir.exists()) {
                 DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
-                // due to the DescendantFileSelector usage, 
-                // the includedFiles are only the ones that are descendant
                 for( String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
