@@ -27,11 +27,31 @@ package jenkins.security;
 import hudson.FilePath;
 import hudson.slaves.DumbSlave;
 import hudson.util.DirScanner;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+import hudson.util.io.ArchiverFactory;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static java.lang.String.format;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
+
 import org.junit.Before;
 import org.junit.Rule;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class FilePathSecureTest {
@@ -46,6 +66,48 @@ public class FilePathSecureTest {
         root = r.jenkins.getRootPath();
         remote = s.getRootPath();
         // to see the difference: DefaultFilePathFilter.BYPASS = true;
+    }
+    @Issue("JENKINS-40912")
+    @Test public void archiving() throws Exception {
+        FilePath dir = root.child("dir");
+        dir.mkdirs();
+        dir.child("stuff").write("hello", null);
+
+        FilePath folder = dir.child("folder");
+        folder.mkdirs();
+        folder.child("more-stuff").write("hello", null);
+
+        FilePath zip = root.child("dir.zip");
+
+        // consumer to access to the (un)compressed files
+        final List<String> files = new ArrayList<>();
+        Consumer<String> function = (Consumer<String> & Serializable)(a) -> {
+            System.out.println("a "+ a);
+            files.add(a);
+        };
+
+        OutputStream os = zip.write();
+        DirScanner.Glob scanner = new DirScanner.Glob("**", "");
+        dir.archive(ArchiverFactory.TAR, os, scanner, function);
+
+        // assert that the former two files are archived.
+        assertThat(files.size(), is(2));
+        assertThat(files, containsInAnyOrder(
+                "stuff",
+                "folder/more-stuff"
+        ));
+        files.clear();
+
+
+        FilePath out = root.child("output");
+        out.mkdirs();
+        zip.untar(out, FilePath.TarCompression.NONE, function);
+
+        assertThat(files.size(), is(2));
+        assertThat(files, containsInAnyOrder(
+                "stuff",
+                "folder/more-stuff"
+        ));
     }
 
     @Test public void unzip() throws Exception {
@@ -91,5 +153,4 @@ public class FilePathSecureTest {
         tar.untar(root, FilePath.TarCompression.NONE);
         assertEquals("hello", remote.child("dir/stuff").readToString());
     }
-
 }

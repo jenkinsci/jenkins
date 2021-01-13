@@ -36,6 +36,9 @@ import java.io.OutputStream;
 
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
@@ -50,6 +53,7 @@ import org.apache.commons.compress.utils.BoundedInputStream;
 final class TarArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
     private final TarArchiveOutputStream tar;
+    private static final Logger LOGGER = Logger.getLogger(TarArchiver.class.getName());
 
     TarArchiver(OutputStream out) {
         tar = new TarArchiveOutputStream(out);
@@ -73,6 +77,11 @@ final class TarArchiver extends Archiver {
 
         tar.putArchiveEntry(e);
         tar.closeArchiveEntry();
+        try {
+            consumer.accept(relativePath);
+        }catch (Throwable t){
+            LOGGER.log(Level.FINE, t, () -> "Error when executing consume to 'archive' ");
+        }
         entriesWritten++;
     }
 
@@ -119,7 +128,13 @@ final class TarArchiver extends Archiver {
         } finally { // always close the entry
             tar.closeArchiveEntry();
         }
+        try {
+            consumer.accept(relativePath);
+        }catch (Throwable t){
+            LOGGER.log(Level.FINE, t, () -> "Error when executing consume to 'archive' ");
+        }
         entriesWritten++;
+
     }
 
     public void close() throws IOException {

@@ -29,8 +29,10 @@ import hudson.os.PosixAPI;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
+import hudson.util.DirScanner;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
+import hudson.util.io.ArchiverFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
@@ -51,11 +53,14 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -349,7 +354,70 @@ public class FilePathTest {
         final String filePrefix = "JENKINS-10629";
         checkTarUntarRoundTrip(filePrefix, largeFileSize);
     }
-     
+
+    @Issue("JENKINS-40912")
+    @Test
+    public void processAllFilesWhenArchiving() throws IOException, InterruptedException {
+        // let's create a workspace with two files,
+        //      /workspace.log
+        //      /workspace/workspace.log
+        String filePrefix = "workspace";
+        long fileSize = 512;
+        final File tmpDir = temp.newFolder(filePrefix);
+        tmpDir.mkdirs();
+        final File tempFile =  new File(tmpDir, filePrefix + ".log");
+        RandomAccessFile file = new RandomAccessFile(tempFile, "rw");
+
+        file.setLength(fileSize);
+        assumeTrue(fileSize == file.length());
+        file.close();
+
+        final File tmpDir2 = new File(tmpDir, filePrefix);
+        tmpDir2.mkdirs();
+
+        final File tempFile2 =  new File(tmpDir2, filePrefix + ".log");
+        RandomAccessFile file2 = new RandomAccessFile(tempFile2, "rw");
+        file2.setLength(fileSize);
+        assumeTrue(fileSize == file2.length());
+        file2.close();
+
+        // consumer to access to the (un)compressed files
+        final List<String> files = new ArrayList<>();
+        Consumer<String> function = (list) -> {
+            files.add(list);
+        };
+
+        final FilePath tmpDirPath = new FilePath(tmpDir);
+        final File tagz =  new File(temp.getRoot(), filePrefix + ".tagz");
+
+        try (OutputStream os = new FileOutputStream(tagz)) {
+            DirScanner.Glob scanner = new DirScanner.Glob("**", "");
+            //create targz file in the base directory. (../workspace.tagz)
+            tmpDirPath.archive(ArchiverFactory.TARGZ, os, scanner, function);
+
+            // assert that the former two files are archived.
+            assertThat(files.size(), is(2));
+            assertThat(files, containsInAnyOrder(
+                    format("%s%s%s.log", filePrefix,File.separator,filePrefix),
+                    format("%s.log", filePrefix)
+            ));
+            files.clear();
+
+            // untar the compressed file
+            FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
+            new FilePath(temp.getRoot()).child(tagz.getName()).untar(outDir, TarCompression.GZIP, function);
+
+            // assert that the former two files are unarchived.
+            assertThat(files.size(), is(2));
+            assertThat(files, containsInAnyOrder(
+                    format("%s%s%s.log", filePrefix,File.separator,filePrefix),
+                    format("%s.log", filePrefix)
+            ));
+
+        }
+    }
+
+
     private void checkTarUntarRoundTrip(String filePrefix, long fileSize) throws Exception {
         final File tmpDir = temp.newFolder(filePrefix);
         final File tempFile =  new File(tmpDir, filePrefix + ".log");
@@ -368,9 +436,18 @@ public class FilePathTest {
         // Decompress
         FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
         final FilePath outFile = outDir.child(tempFile.getName());
-        tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE);
+
+        final List<String> files = new ArrayList<>();
+
+        Consumer<String> function = (list) -> {
+            files.add(list);
+        };
+
+        tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE, function);
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
+        assertThat(files, containsInAnyOrder(filePrefix + ".log"));
+
     }
 
     @Test public void list() throws Exception {
