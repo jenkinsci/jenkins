@@ -1771,6 +1771,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
             try {
+                // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+                t.delete();
+
                 fileItem.write(t);
             } catch (Exception e) {
                 // Exception thrown is too generic so at least limit the scope where it can occur
