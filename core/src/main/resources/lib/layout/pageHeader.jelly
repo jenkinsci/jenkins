@@ -87,12 +87,12 @@
                                        class="am-monitor-icon" >
                                 <use href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_person_24px"></use>
                             </l:svgIcon>
-                            <span class="hidden-xs hidden-sm">${userName}</span>
+                            <span data-testid="user-logged-in" class="hidden-xs hidden-sm">${userName}</span>
                         </a>
                         <j:if test="${app.securityRealm.canLogOut()}">
                             <a href="${rootURL}/logout">
                                 <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_input_24px" />
-                                <span class="hidden-xs hidden-sm">${logout}</span>
+                                <span data-testid="logout" class="hidden-xs hidden-sm">${logout}</span>
                             </a>
                         </j:if>
                     </j:when>

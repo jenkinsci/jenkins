@@ -27,6 +27,6 @@ THE SOFTWARE.
   <st:include page="/hudson/security/SecurityRealm/loginLink.jelly" />
   <j:if test="${it.allowsSignup()}">
     |
-    <a href="${rootURL}/signup"><b>${%sign up}</b></a>
+    <a data-testid="sign-up" href="${rootURL}/signup"><b>${%sign up}</b></a>
   </j:if>
 </j:jelly>
