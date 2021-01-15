@@ -1,3 +1,18 @@
+/* Drag & drop implementation using the SortableJS library */
+function initContainerSortable(e) {
+    if (!Element.hasClassName(e,"with-drag-drop")) return false;
+
+    var sortable = new Sortable(e, {
+        draggable: '.repeated-chunk',
+        handle: '.dd-handle',
+    });
+
+    return true;
+}
+
+
+/* -------- LEGACY YUI drag & drop -------- */
+
 /*
     Drag&Drop implementation for heterogeneous/repeatable lists.
  */

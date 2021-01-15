@@ -32,7 +32,7 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         });
         Element.remove(prototypes);
 
-        var withDragDrop = initContainerDD(e);
+        var withDragDrop = initContainerSortable(e);
 
         var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
 
@@ -101,7 +101,8 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
                 }
                 (e.hasClassName("honor-order") ? findInsertionPoint() : insertionPoint).insert({before:nc});
 
-                if(withDragDrop)    prepareDD(nc);
+                // if(withDragDrop)    prepareDD(nc);
+                if(withDragDrop)    initContainerSortable(nc);
 
                 new YAHOO.util.Anim(nc, {
                     opacity: { to:1 }

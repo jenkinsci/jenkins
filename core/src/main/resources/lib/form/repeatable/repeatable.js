@@ -33,7 +33,8 @@ var repeatableSupport = {
             this.enableTopButton = false;
         }
         this.update();
-        this.withDragDrop = initContainerDD(container);
+        // this.withDragDrop = initContainerDD(container);
+        this.withDragDrop = initContainerSortable(container);
     },
 
     // insert one more block at the insertion position
@@ -57,7 +58,8 @@ var repeatableSupport = {
             });
             this.container.insertBefore(nc, children[0]);
         }
-        if (this.withDragDrop) prepareDD(nc);
+        // if (this.withDragDrop) prepareDD(nc);
+        if (this.withDragDrop) initContainerSortable(nc);
 
         new YAHOO.util.Anim(nc, {
             opacity: { to:1 }

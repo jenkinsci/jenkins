@@ -33,3 +33,42 @@ html {
 @import './modules/panes-and-bigtable.less';
 @import './modules/manage-jenkins.less';
 @import './modules/content-blocks.less';
+
+
+// .repeated-chunk.dragging {
+//   position: static;
+// }
+
+// .repeated-chunk {
+//   border: 1px solid var(--shade);
+//   margin: 2px;
+//   position: relative;
+// }
+
+
+// .sortable-drag,
+.sortable-ghost {
+  background-color: var(blue);
+  height: 100px;
+  width: 100%;
+  overflow: hidden;
+}
+
+// .sortable-drag {
+//   background-color: red;
+// }
+
+// .sortable-chosen {
+//   background: lightblue;
+// }
+
+.sortable-chosen {
+  height: 100px;
+  width: 100%;
+  background-color:  transparent;
+  border: 2px solid var(--medium-grey);
+
+  & > * {
+    display: none;
+  }
+}
