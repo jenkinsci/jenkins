@@ -21,3 +21,5 @@ updates:
       - dependency-name: "com.sun.mail:jakarta.mail"
       # needs updates in a number of plugins, see https://github.com/jenkinsci/jenkins/pull/5059 and https://github.com/jenkinsci/bom/pull/392
       - dependency-name: "com.google.guava:*"
+      # this is a banned dependency, we have a hack in our pom to prevent anyone else pulling it in
+      - dependency-name: "javax.servlet.servlet-api"
