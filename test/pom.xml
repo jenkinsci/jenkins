@@ -126,14 +126,6 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- requireUpperBounds via matrix-project and junit -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>script-security</artifactId>
-      <version>1.75</version>
-      <!-- TODO define property for this and share with war/pom.xml-->
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jvnet.mock-javamail</groupId>
       <artifactId>mock-javamail</artifactId>
       <version>1.7</version>
