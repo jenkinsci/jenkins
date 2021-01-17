@@ -346,7 +346,7 @@ THE SOFTWARE.
       <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
         <groupId>org.fusesource.jansi</groupId>
         <artifactId>jansi</artifactId>
-        <version>1.11</version>
+        <version>2.1.1</version>
       </dependency>
 
       <!--Stapler-->
