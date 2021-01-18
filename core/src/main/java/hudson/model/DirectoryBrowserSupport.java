@@ -251,7 +251,16 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(baseFile.isDirectory()) {
             if(zip) {
                 rsp.setContentType("application/zip");
-                baseFile.zip(rsp.getOutputStream(), StringUtils.isBlank(rest) ? "**" : rest, null, true, getNoFollowLinks());
+                String includes, prefix;
+                if (StringUtils.isBlank(rest)) {
+                    includes = "**";
+                    // JENKINS-19947, JENKINS-61473: traditional behavior is to prepend the directory name
+                    prefix = baseFile.getName();
+                } else {
+                    includes = rest;
+                    prefix = "";
+                }
+                baseFile.zip(rsp.getOutputStream(), includes, null, true, getNoFollowLinks(), prefix);
                 return;
             }
             if (plain) {
