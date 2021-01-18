@@ -8,7 +8,9 @@
  * corresponds to the sortable.js file that deals with table sorting.
  */
 
-import Sortable from 'sortablejs';
+import Sortable, { AutoScroll } from 'sortablejs/modular/sortable.core.esm.js';
+
+Sortable.mount(new AutoScroll());
 
 function registerSortableDragDrop(e) {
   if (!e || !e.classList.contains('with-drag-drop')) return false;
@@ -18,6 +20,7 @@ function registerSortableDragDrop(e) {
       handle: '.dd-handle',
       ghostClass: 'repeated-chunk--sortable-ghost',
       chosenClass: 'repeated-chunk--sortable-chosen',
+      forceFallback: true, // Do not use html5 drag & drop behaviour because it does not work with autoscroll
       scroll: true,
       bubbleScroll: true,
   });
