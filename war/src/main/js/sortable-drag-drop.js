@@ -16,6 +16,8 @@ function registerSortableDragDrop(e) {
   const sortableElement = new Sortable(e, {
       draggable: '.repeated-chunk',
       handle: '.dd-handle',
+      ghostClass: 'repeated-chunk--sortable-ghost',
+      chosenClass: 'repeated-chunk--sortable-chosen',
       scroll: true,
       bubbleScroll: true,
   });

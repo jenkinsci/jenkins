@@ -224,14 +224,16 @@
         z-index: 2
       }
 
-      // .repeated-chunk.dragging {
-      //   position: static;
-      // }
-
       .repeated-chunk {
         border: 1px solid var(--shade);
         margin: 2px;
         position: relative;
+      }
+      // Styling for drag & drop items
+      .repeated-chunk.repeated-chunk--sortable-ghost,
+      .repeated-chunk.repeated-chunk--sortable-chosen {
+        border-width: 2px;
+        border-color: var(--line-blue);
       }
 
       .repeatable-delete {
@@ -296,12 +298,6 @@
     }
   }
 }
-
-// #ygddfdiv {
-//   background:var(--light-bg-color);
-//   border:1px solid var(--line-blue) !important;
-//   opacity:.5;
-// }
 
 .yui-skin-sam .yuimenu {
   z-index: 9999 !important
