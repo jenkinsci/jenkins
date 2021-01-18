@@ -1896,8 +1896,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 blockUnwrap(blockWraps[i]);
             }
 
-            removeZeroWidthSpaces(displayName);
-            removeZeroWidthSpaces(desc);
             buildName.classList.remove('block');
             buildName.removeAttribute('style');
             buildDetails.classList.remove('block');
@@ -1911,10 +1909,8 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         // Undo everything from the previous poll.
         resetCellOverflows();
 
-        // Insert zero-width spaces so as to allow text to wrap, allowing us to get the true clientWidth.
-        insertZeroWidthSpacesInElementText(displayName, 2);
+        // Mark the text as multiline, if it has more than one line
         if (desc) {
-            insertZeroWidthSpacesInElementText(desc, 30);
             markMultiline();
         }
 
@@ -1926,13 +1922,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         var controlsOverflowParams;
         if (buildControls) {
             controlsOverflowParams = getElementOverflowParams(buildControls);
-        }
-
-        if (nameOverflowParams.isOverflowed) {
-            // If the name is overflowed, lets remove the zero-width spaces we added above and
-            // re-add zero-width spaces with a bigger max word sizes.
-            removeZeroWidthSpaces(displayName);
-            insertZeroWidthSpacesInElementText(displayName, 20);
         }
 
         function fitToControlsHeight(element) {
@@ -2097,16 +2086,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         var bh = $('buildHistory');
         var dataTable = getDataTable(bh);
         var rows = dataTable.rows;
-
-        // Insert zero-width spaces in text that may cause overflow distortions.
-        var displayNames = $(bh).getElementsBySelector('.display-name');
-        for (var i = 0; i < displayNames.length; i++) {
-            insertZeroWidthSpacesInElementText(displayNames[i], 2);
-        }
-        var descriptions = $(bh).getElementsBySelector('.desc');
-        for (var i = 0; i < descriptions.length; i++) {
-            insertZeroWidthSpacesInElementText(descriptions[i], 30);
-        }
 
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
@@ -2369,85 +2348,6 @@ function getElementOverflowParams(element) {
         return  overflowParams;
     } finally {
         element.classList.remove('force-nowrap');
-    }
-}
-
-var zeroWidthSpace = String.fromCharCode(8203);
-var ELEMENT_NODE = 1;
-var TEXT_NODE = 3;
-function insertZeroWidthSpacesInText(textNode, maxWordSize) {
-    if (textNode.textContent.length < maxWordSize) {
-        return;
-    }
-
-    // capture the original text
-    textNode.preZWSText = textNode.textContent;
-
-    var words = textNode.textContent.split(/\s+/);
-    var newTextContent = '';
-
-    var splitRegex = new RegExp('.{1,' + maxWordSize + '}', 'g');
-    for (var i = 0; i < words.length; i++) {
-        var word = words[i];
-        var wordTokens = word.match(splitRegex);
-        if (wordTokens) {
-            for (var ii = 0; ii < wordTokens.length; ii++) {
-                if (newTextContent.length === 0) {
-                    newTextContent += wordTokens[ii];
-                } else {
-                    newTextContent += zeroWidthSpace + wordTokens[ii];
-                }
-            }
-        } else {
-            newTextContent += word;
-        }
-        newTextContent += ' ';
-    }
-
-    textNode.textContent = newTextContent;
-}
-function insertZeroWidthSpacesInElementText(element, maxWordSize) {
-    if (element.classList.contains('zws-inserted')) {
-        // already done.
-        return;
-    }
-    if (!element.hasChildNodes()) {
-        return;
-    }
-
-    var children = element.childNodes;
-    for (var i = 0; i < children.length; i++) {
-        var child = children[i];
-        if (child.nodeType === TEXT_NODE) {
-            insertZeroWidthSpacesInText(child, maxWordSize);
-        } else if (child.nodeType === ELEMENT_NODE) {
-            insertZeroWidthSpacesInElementText(child, maxWordSize);
-        }
-    }
-
-    element.classList.add('zws-inserted');
-}
-function removeZeroWidthSpaces(element) {
-    if (element) {
-        if (!element.classList.contains('zws-inserted')) {
-            // Doesn't have ZWSed text.
-            return;
-        }
-        if (!element.hasChildNodes()) {
-            return;
-        }
-
-        var children = element.childNodes;
-        for (var i = 0; i < children.length; i++) {
-            var child = children[i];
-            if (child.nodeType === TEXT_NODE && child.preZWSText) {
-                child.textContent = child.preZWSText;
-            } else if (child.nodeType === ELEMENT_NODE) {
-                removeZeroWidthSpaces(child);
-            }
-        }
-
-        element.classList.remove('zws-inserted');
     }
 }
 
