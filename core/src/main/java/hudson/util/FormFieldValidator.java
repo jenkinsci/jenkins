@@ -24,6 +24,9 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import static hudson.Util.fixEmpty;
+import static hudson.util.FormValidation.APPLY_CONTENT_SECURITY_POLICY_HEADERS;
+
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
@@ -230,6 +233,11 @@ public abstract class FormFieldValidator {
         } else {
             response.setContentType("text/html;charset=UTF-8");
             // 1x16 spacer needed for IE since it doesn't support min-height
+            if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
+                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                    response.setHeader(header, "sandbox; default-src 'none';");
+                }
+            }
             response.getWriter().print("<div class="+ cssClass +"><img src='"+
                     request.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                     message+"</div>");

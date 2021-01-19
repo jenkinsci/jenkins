@@ -36,6 +36,7 @@ import hudson.tasks.Builder;
 import hudson.util.ReflectionUtils.Parameter;
 import jenkins.model.Jenkins;
 
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -114,6 +115,7 @@ import static hudson.Util.*;
  * @since 1.294
  */
 public abstract class FormValidation extends IOException implements HttpResponse {
+    /* package */ static /* non-final for Groovy */ boolean APPLY_CONTENT_SECURITY_POLICY_HEADERS = SystemProperties.getBoolean(FormValidation.class.getName() + ".applyContentSecurityPolicyHeaders", true);
     /**
      * Indicates the kind of result.
      */
@@ -551,6 +553,11 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     protected void respond(StaplerResponse rsp, String html) throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
+        if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
+            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                rsp.setHeader(header, "sandbox; default-src 'none';");
+            }
+        }
         rsp.getWriter().print(html);
     }
 
