@@ -61,10 +61,13 @@ public abstract class ArchiverFactory implements Serializable {
 
     /**
      * Zip format, without following symlinks.
+     * @param prefix The portion of file path that will be added at the beginning of the relative path inside the archive.
+     *               If non-empty, a trailing forward slash will be enforced.
      */
     @Restricted(NoExternalUse.class)
-    public static ArchiverFactory ZIP_WTHOUT_FOLLOWING_SYMLINKS = new ZipWithoutSymLinksArchiverFactory();
-
+    public static ArchiverFactory createZipWithoutSymlink(String prefix) {
+        return new ZipWithoutSymLinksArchiverFactory(prefix);
+    }
 
     private static final class TarArchiverFactory extends ArchiverFactory {
         private final TarCompression method;
@@ -89,8 +92,14 @@ public abstract class ArchiverFactory implements Serializable {
     }
 
     private static final class ZipWithoutSymLinksArchiverFactory extends ArchiverFactory {
+        private final String prefix;
+
+        ZipWithoutSymLinksArchiverFactory(String prefix){
+            this.prefix = prefix;
+        }
+
         public Archiver create(OutputStream out) {
-            return new ZipArchiver(out, true);
+            return new ZipArchiver(out, true, prefix);
         }
 
         private static final long serialVersionUID = 1L;

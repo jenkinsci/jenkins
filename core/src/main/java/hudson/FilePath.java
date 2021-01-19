@@ -483,13 +483,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *             Any symlinks between a file and root should be ignored.
      *             Symlinks in the parentage outside root will not be checked.
      * @param noFollowLinks true if it should not follow links.
+     * @param prefix The portion of file path that will be added at the beginning of the relative path inside the archive.
+     *               If non-empty, a trailing forward slash will be enforced.
      *
      * @return The number of files/directories archived.
      *          This is only really useful to check for a situation where nothing
      */
     @Restricted(NoExternalUse.class)
-    public int zip(OutputStream out, DirScanner scanner, String verificationRoot, boolean noFollowLinks) throws IOException, InterruptedException {
-        ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.ZIP_WTHOUT_FOLLOWING_SYMLINKS : ArchiverFactory.ZIP;
+    public int zip(OutputStream out, DirScanner scanner, String verificationRoot, boolean noFollowLinks, String prefix) throws IOException, InterruptedException {
+        ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.createZipWithoutSymlink(prefix) : ArchiverFactory.ZIP;
         return archive(archiverFactory, out, scanner, verificationRoot, noFollowLinks);
     }
 

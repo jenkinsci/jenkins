@@ -338,7 +338,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      */
     @Restricted(NoExternalUse.class)
     public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                            boolean noFollowLinks) throws IOException, UnsupportedOperationException {
+                            boolean noFollowLinks, String prefix) throws IOException, UnsupportedOperationException {
         throw new UnsupportedOperationException("Not implemented.");
     }
 
@@ -611,10 +611,10 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override
             public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                           boolean noFollowLinks) throws IOException {
+                           boolean noFollowLinks, String prefix) throws IOException {
                 String rootPath = determineRootPath();
                 DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.ZIP_WTHOUT_FOLLOWING_SYMLINKS : ArchiverFactory.ZIP;
+                ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.createZipWithoutSymlink(prefix) : ArchiverFactory.ZIP;
                 try (Archiver archiver = archiverFactory.create(outputStream)) {
                     globScanner.scan(f, FilePath.ignoringSymlinks(archiver, rootPath, noFollowLinks));
                     return archiver.countEntries();
@@ -920,11 +920,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override
             public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                                    boolean noFollowLinks) throws IOException {
+                                    boolean noFollowLinks, String prefix) throws IOException {
                 try {
                     String rootPath = root == null ? null : root.getRemote();
                     DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                    return f.zip(outputStream, globScanner, rootPath, noFollowLinks);
+                    return f.zip(outputStream, globScanner, rootPath, noFollowLinks, prefix);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
