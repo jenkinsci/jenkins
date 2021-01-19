@@ -65,7 +65,7 @@ final class ZipArchiver extends Archiver {
         if (StringUtils.isBlank(prefix)) {
             this.prefix = "";
         } else {
-            this.prefix = Util.ensureEndsWith(prefix, "/");
+            this.prefix = Util.ensureEndsWith(prefix.trim(), "/");
         }
         
         zip = new ZipOutputStream(out);
