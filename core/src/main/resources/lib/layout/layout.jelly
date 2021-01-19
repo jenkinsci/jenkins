@@ -139,6 +139,7 @@ THE SOFTWARE.
       <l:yui module="logger" />
     </j:if>
     <l:yui module="animation" />
+    <l:yui module="dragdrop" />
     <l:yui module="container" />
     <l:yui module="connection" />
     <l:yui module="datasource" />
