@@ -355,14 +355,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if(LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Serving "+baseFile+" with lastModified=" + lastModified + ", length=" + length);
 
-        InputStream in;
-        try {
-            in = baseFile.open(getNoFollowLinks());
-        } catch (IOException ioe) {
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
         if (view) {
+            InputStream in;
+            try {
+                in = baseFile.open(getNoFollowLinks());
+            } catch (IOException ioe) {
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
             // for binary files, provide the file name for download
             rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
 
@@ -383,7 +384,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         }
                     }
                 }
-                rsp.serveFile(req, baseFile.open(), lastModified, -1, length, baseFile.getName());
+                InputStream in;
+                try {
+                    in = baseFile.open(getNoFollowLinks());
+                } catch (IOException ioe) {
+                    rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
+                rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName());
             }
         }
     }
