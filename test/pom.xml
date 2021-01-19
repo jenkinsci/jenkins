@@ -56,6 +56,18 @@ THE SOFTWARE.
         <artifactId>ant</artifactId>
         <version>1.11</version>
       </dependency>
+      <dependency>
+        <!-- requireUpperBoundDeps via mailer and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>display-url-api</artifactId>
+        <version>2.3.4</version>
+      </dependency>
+      <dependency>
+        <!-- requireUpperBoundDeps via matrix-project and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>script-security</artifactId>
+        <version>1.75</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
