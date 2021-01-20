@@ -124,7 +124,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Saves the given Fingerprint in local XML-based database.
      */
-    public synchronized void save(Fingerprint fp) throws IOException {
+    public void save(Fingerprint fp) throws IOException {
         File file = getFingerprintFile(fp.getHashString());
         save(fp, file);
         // TODO(oleg_nenashev): Consider generalizing SaveableListener and invoking it for all storage implementations.
