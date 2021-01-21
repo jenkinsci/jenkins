@@ -63,11 +63,14 @@ import hudson.util.io.ArchiverFactory;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.apache.tools.ant.types.selectors.TokenizedPath;
 import org.apache.tools.ant.types.selectors.TokenizedPattern;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -334,12 +337,60 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
 
     /**
+     * Create a ZIP archive from the list of folders/files using the includes and excludes to filter them.
+     * 
+     * <p>The default implementation calls other existing methods to list the folders/files, then retrieve them and zip them all.
+     * 
+     * @param includes comma-separated Ant-style globs as per {@link Util#createFileSet(File, String, String)} using {@code /} as a path separator;
+     *                 the empty string means <em>no matches</em> (use {@link SelectorUtils#DEEP_TREE_MATCH} if you want to match everything except some excludes)
+     * @param excludes optional excludes in similar format to {@code includes}
+     * @param useDefaultExcludes as per {@link AbstractFileSet#setDefaultexcludes}
+     * @param noFollowLinks if true then do not follow links.
+     * @param prefix the partial path that will be added before each entry inside the archive.
+     *               If non-empty, a trailing slash will be enforced.
+     * @return the number of files inside the archive (not the folders)
+     * @throws IOException if this is not a directory, or listing was not possible for some other reason
      * @since TODO
      */
-    @Restricted(NoExternalUse.class)
     public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                            boolean noFollowLinks) throws IOException, UnsupportedOperationException {
-        throw new UnsupportedOperationException("Not implemented.");
+                   boolean noFollowLinks, String prefix) throws IOException {
+        String correctPrefix;
+        if (StringUtils.isBlank(prefix)) {
+            correctPrefix = "";
+        } else {
+            correctPrefix = Util.ensureEndsWith(prefix, "/");
+        }
+        
+        Collection<String> files = list(includes, excludes, useDefaultExcludes, noFollowLinks);
+        try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+            zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
+
+            for (String relativePath : files) {
+                VirtualFile virtualFile = this.child(relativePath);
+                sendOneZipEntry(zos, virtualFile, relativePath, noFollowLinks, correctPrefix);
+            }
+        }
+        return files.size();
+    }
+
+    private void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath, boolean noFollowLinks, String prefix) throws IOException {
+        // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
+        // TODO On Linux file names can contain backslashes which should not treated as file separators.
+        //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+        //      but not the file separator char of the (maybe remote) "dir".
+        String onlyForwardRelativePath = relativePath.replace('\\', '/');
+        String zipEntryName = prefix + onlyForwardRelativePath;
+        ZipEntry e = new ZipEntry(zipEntryName);
+
+        e.setTime(vf.lastModified());
+        zos.putNextEntry(e);
+        try (InputStream in = vf.open(noFollowLinks)) {
+            // hudson.util.IOUtils is already present
+            org.apache.commons.io.IOUtils.copy(in, zos);
+        }
+        finally {
+            zos.closeEntry();
+        }
     }
 
     /**
@@ -611,10 +662,10 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override
             public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                           boolean noFollowLinks) throws IOException {
+                           boolean noFollowLinks, String prefix) throws IOException {
                 String rootPath = determineRootPath();
                 DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.ZIP_WTHOUT_FOLLOWING_SYMLINKS : ArchiverFactory.ZIP;
+                ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.createZipWithoutSymlink(prefix) : ArchiverFactory.ZIP;
                 try (Archiver archiver = archiverFactory.create(outputStream)) {
                     globScanner.scan(f, FilePath.ignoringSymlinks(archiver, rootPath, noFollowLinks));
                     return archiver.countEntries();
@@ -920,11 +971,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override
             public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                                    boolean noFollowLinks) throws IOException {
+                                    boolean noFollowLinks, String prefix) throws IOException {
                 try {
                     String rootPath = root == null ? null : root.getRemote();
                     DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                    return f.zip(outputStream, globScanner, rootPath, noFollowLinks);
+                    return f.zip(outputStream, globScanner, rootPath, noFollowLinks, prefix);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }

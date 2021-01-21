@@ -34,6 +34,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -248,7 +249,7 @@ public class VirtualFileTest {
 
         VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true);
+            sourcePath.zip( outputStream,"**", null, true, true, "");
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -267,6 +268,36 @@ public class VirtualFileTest {
     }
 
     @Test
+    @Issue({"JENKINS-19947", "JENKINS-61473"})
+    public void zip_NoFollowLinks_FilePathVF_withPrefix() throws Exception {
+        File zipFile = new File(tmp.getRoot(), "output.zip");
+        File root = tmp.getRoot();
+        File source = new File(root, "source");
+        prepareFileStructureForIsDescendant(source);
+
+        VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
+        String prefix = "test1";
+        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
+            sourcePath.zip( outputStream,"**", null, true, true, prefix + "/");
+        }
+        FilePath zipPath = new FilePath(zipFile);
+        assertTrue(zipPath.exists());
+        assertFalse(zipPath.isDirectory());
+        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip"));
+        zipPath.unzip(unzipPath);
+        assertTrue(unzipPath.exists());
+        assertTrue(unzipPath.isDirectory());
+        assertTrue(unzipPath.child(prefix).isDirectory());
+        assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
+        assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
+        assertFalse(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
+        assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
+        assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
+        assertFalse(unzipPath.child(prefix).child("b").child("_a").exists());
+        assertFalse(unzipPath.child(prefix).child("b").child("_aatxt").exists());
+    }
+
+    @Test
     @Issue("SECURITY-1452")
     public void zip_NoFollowLinks_FileVF() throws Exception {
         File zipFile = new File(tmp.getRoot(), "output.zip");
@@ -276,7 +307,7 @@ public class VirtualFileTest {
 
         VirtualFile sourcePath = VirtualFile.forFile(source);
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true);
+            sourcePath.zip( outputStream,"**", null, true, true, "");
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -292,6 +323,36 @@ public class VirtualFileTest {
         assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
         assertFalse(unzipPath.child("b").child("_a").exists());
         assertFalse(unzipPath.child("b").child("_aatxt").exists());
+    }
+
+    @Test
+    @Issue({"JENKINS-19947", "JENKINS-61473"})
+    public void zip_NoFollowLinks_FileVF_withPrefix() throws Exception {
+        File zipFile = new File(tmp.getRoot(), "output.zip");
+        File root = tmp.getRoot();
+        File source = new File(root, "source");
+        prepareFileStructureForIsDescendant(source);
+
+        String prefix = "test1";
+        VirtualFile sourcePath = VirtualFile.forFile(source);
+        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
+            sourcePath.zip( outputStream,"**", null, true, true, prefix + "/");
+        }
+        FilePath zipPath = new FilePath(zipFile);
+        assertTrue(zipPath.exists());
+        assertFalse(zipPath.isDirectory());
+        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip"));
+        zipPath.unzip(unzipPath);
+        assertTrue(unzipPath.exists());
+        assertTrue(unzipPath.isDirectory());
+        assertTrue(unzipPath.child(prefix).isDirectory());
+        assertTrue(unzipPath.child(prefix).child("a").child("aa").child("aa.txt").exists());
+        assertTrue(unzipPath.child(prefix).child("a").child("ab").child("ab.txt").exists());
+        assertFalse(unzipPath.child(prefix).child("a").child("aa").child("aaa").exists());
+        assertFalse(unzipPath.child(prefix).child("a").child("_b").exists());
+        assertTrue(unzipPath.child(prefix).child("b").child("ba").child("ba.txt").exists());
+        assertFalse(unzipPath.child(prefix).child("b").child("_a").exists());
+        assertFalse(unzipPath.child(prefix).child("b").child("_aatxt").exists());
     }
 
     @Issue("JENKINS-26810")
@@ -1000,6 +1061,7 @@ public class VirtualFileTest {
     }
 
     @Test
+    @Ignore("TODO doesn't pass on ci.jenkins.io due to root user being used in container tests")
     public void testCanRead_False_FileVF() throws Exception {
         File ws = tmp.newFolder("ws");
         String childString = "child";
@@ -1187,6 +1249,7 @@ public class VirtualFileTest {
     }
 
     @Test
+    @Ignore("TODO doesn't pass on ci.jenkins.io due to root user being used in container tests")
     public void testCanRead_False_FilePathVF() throws Exception {
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
