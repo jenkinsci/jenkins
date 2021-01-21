@@ -123,7 +123,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
     /**
      * Saves the given Fingerprint in local XML-based database.
-     */
+     *
      * @param fp Fingerprint file to be saved.
      */
     @Override
