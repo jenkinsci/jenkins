@@ -16,7 +16,7 @@
   nav:before, nav:after {
     display: none;
   }
-  
+
   :hover .noTabs{
     color:#bbb;
   }
@@ -25,7 +25,7 @@
     opacity: 0.8;
     background:#bbb;
     color:var(--light-bg-color);
-    text-shadow:none    
+     text-shadow:none;
   }
 
   @find-container-width: 200px;
@@ -33,7 +33,7 @@
     margin:0;
     display:none;
   }
-  
+
   .showTabs,
   .noTabs {
     position: absolute;
@@ -172,14 +172,14 @@
       }
 
       .bottom-sticker,
-      #bottom-sticker{ 
+      #bottom-sticker{
         width: auto;
         margin-left: -10px;
         overflow: hidden;
         padding-bottom: 10px;
         margin: 30px 30px -25px -15px;
         z-index:9;
-        
+
         .cover{
           position:absolute;
           top:0;
@@ -224,14 +224,16 @@
         z-index: 2
       }
 
-      .repeated-chunk.dragging {
-        position: static;
-      }
-
       .repeated-chunk {
         border: 1px solid var(--shade);
         margin: 2px;
         position: relative;
+      }
+      // Styling for drag & drop items
+      .repeated-chunk.repeated-chunk--sortable-ghost,
+      .repeated-chunk.repeated-chunk--sortable-chosen {
+        border-width: 2px;
+        border-color: var(--line-blue);
       }
 
       .repeatable-delete {
@@ -295,12 +297,6 @@
       }
     }
   }
-}
-
-#ygddfdiv {
-  background:var(--light-bg-color);
-  border:1px solid var(--line-blue) !important;
-  opacity:.5;
 }
 
 .yui-skin-sam .yuimenu {

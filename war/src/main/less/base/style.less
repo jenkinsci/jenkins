@@ -1301,6 +1301,22 @@ textarea.rich-editor {
   margin-left: -1.25rem;
 }
 
+// SortableJS drag & drop classes
+.repeated-chunk--sortable-ghost {
+  height: 100px;
+  width: 100%;
+  overflow: hidden;
+}
+.repeated-chunk--sortable-chosen {
+  height: 100px;
+  width: 100%;
+  background-color: transparent;
+  border: 2px solid var(--primary);
+
+  & > * {
+    display: none;
+  }
+}
 
 /* ========================= plugin update center ========================= */
 
