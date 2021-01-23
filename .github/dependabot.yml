@@ -23,3 +23,5 @@ updates:
       - dependency-name: "com.google.guava:*"
       # this is a banned dependency, we have a hack in our pom to prevent anyone else pulling it in
       - dependency-name: "javax.servlet.servlet-api"
+      # needs a jakarta upgrade project, imports changed
+      - dependency-name: "jakarta.servlet.jsp.jstl.jakarta.servlet.jsp.jstl-api"
