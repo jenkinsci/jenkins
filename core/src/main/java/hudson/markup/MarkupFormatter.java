@@ -25,14 +25,29 @@ package hudson.markup;
 
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
-import hudson.util.HttpResponses;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.verb.GET;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Generalization of a function that takes text with some markup and converts that to HTML.
@@ -60,6 +75,11 @@ import org.kohsuke.stapler.QueryParameter;
  * @see jenkins.model.Jenkins#getMarkupFormatter()
  */
 public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupFormatter> implements ExtensionPoint {
+    private static final Logger LOGGER = Logger.getLogger(MarkupFormatter.class.getName());
+
+    private static /* non-final */ boolean PREVIEWS_ALLOW_GET = SystemProperties.getBoolean(MarkupFormatter.class.getName() + ".previewsAllowGET");
+    private static /* non-final */ boolean PREVIEWS_SET_CSP = SystemProperties.getBoolean(MarkupFormatter.class.getName() + ".previewsSetCSP", true);
+
     /**
      * Given the text, converts that to HTML according to whatever markup rules implicit in the implementation class.
      *
@@ -100,9 +120,50 @@ public abstract class MarkupFormatter extends AbstractDescribableImpl<MarkupForm
      * Generate HTML for preview, using markup formatter.
      * Can be called from other views.
      */
+    @POST
     public HttpResponse doPreviewDescription(@QueryParameter String text) throws IOException {
         StringWriter w = new StringWriter();
         translate(text, w);
-        return HttpResponses.html(w.toString());
+        Map<String, String> extraHeaders = Collections.emptyMap();
+        if (PREVIEWS_SET_CSP) {
+            extraHeaders = Stream.of("Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy").collect(Collectors.toMap(Function.identity(), v -> "default-src 'none';"));
+        }
+        return html(200, w.toString(), extraHeaders);
+    }
+
+    /**
+     * Handle GET requests sent to the /previewDescription URL.
+     * @return an HTTP response informing users that requests need to be sent via POST
+     */
+    @GET
+    @WebMethod(name = "previewDescription")
+    @Restricted(NoExternalUse.class)
+    public HttpResponse previewsNowNeedPostForSecurity2153(@QueryParameter String text, StaplerRequest req) throws IOException {
+        LOGGER.log(Level.FINE, "Received a GET request at " + req.getRequestURL());
+        if (PREVIEWS_ALLOW_GET) {
+            return doPreviewDescription(text);
+        }
+        return html(405, "This endpoint now requires that POST requests are sent. Update the component implementing this preview feature.", Collections.emptyMap());
+    }
+
+    /**
+     * Returns a basic HTML response with the provided status and additional headers set
+     * @param status the HTTP status code
+     * @param html the HTML response body
+     * @param headers the additional headers to set
+     * @return the response
+     */
+    private static HttpResponse html(int status, @NonNull String html, @NonNull Map<String, String> headers) {
+        // TODO Move to Stapler's HttpResponses, (also add a corresponding 'text' method)
+        return (req, rsp, node) -> {
+            rsp.setContentType("text/html;charset=UTF-8");
+            rsp.setStatus(status);
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                rsp.setHeader(header.getKey(), header.getValue());
+            }
+            PrintWriter pw = rsp.getWriter();
+            pw.print(html);
+            pw.flush();
+        };
     }
 }

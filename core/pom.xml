@@ -40,6 +40,7 @@ THE SOFTWARE.
   <properties>
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
+    <xmlunit.version>2.8.2</xmlunit.version>
   </properties>
 
   <dependencyManagement>
@@ -578,13 +579,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-core</artifactId>
-      <version>2.2.1</version>
+      <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.xmlunit</groupId>
       <artifactId>xmlunit-matchers</artifactId>
-      <version>2.2.1</version>
+      <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -221,6 +221,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         if (disableFile.exists()) {
             LOGGER.info("Plugin " + archive.getName() + " is disabled");
         }
+        if (paths.isEmpty()) {
+            LOGGER.info("No classpaths found for plugin " + archive.getName());
+        }
 
         // compute dependencies
         List<PluginWrapper.Dependency> dependencies = new ArrayList<>();

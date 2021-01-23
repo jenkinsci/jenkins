@@ -10,6 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -27,20 +31,21 @@ public class DetachedPluginsUtilTest {
 
         assertEquals(new VersionNumber("11"), jaxb.getMinimumJavaVersion());
 
-        final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins();
+        final List<String> detachedPlugins = mapToPluginShortName(DetachedPluginsUtil.getDetachedPlugins());
         if (JavaUtils.isRunningWithJava8OrBelow()) {
-            assertEquals(0, detachedPlugins.stream()
-                    .filter(plugin -> plugin.getShortName().equals("jaxb")).count());
-        } else if (JavaUtils.getCurrentJavaRuntimeVersionNumber().isNewerThanOrEqualTo(new VersionNumber("11.0.2"))) {
-            assertEquals(1, detachedPlugins.stream()
-                    .filter(plugin -> plugin.getShortName().equals("jaxb")).count());
+            assertThat(detachedPlugins, not(hasItem("jaxb")));
+        } else {
+            assertThat(detachedPlugins, hasItem("jaxb"));
 
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPluginsSince2_161 =
                     DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("2.161"));
 
-            assertEquals(1, detachedPluginsSince2_161.size());
-            assertEquals("jaxb", detachedPluginsSince2_161.get(0).getShortName());
+            assertThat(mapToPluginShortName(detachedPluginsSince2_161), contains("jaxb", "trilead-api"));
         }
+    }
+
+    private List<String> mapToPluginShortName(List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins) {
+        return detachedPlugins.stream().map(DetachedPluginsUtil.DetachedPlugin::getShortName).collect(Collectors.toList());
     }
 
     /**

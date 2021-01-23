@@ -56,6 +56,18 @@ THE SOFTWARE.
         <artifactId>ant</artifactId>
         <version>1.11</version>
       </dependency>
+      <dependency>
+        <!-- requireUpperBoundDeps via mailer and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>display-url-api</artifactId>
+        <version>2.3.4</version>
+      </dependency>
+      <dependency>
+        <!-- requireUpperBoundDeps via matrix-project and junit -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>script-security</artifactId>
+        <version>1.75</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -69,7 +81,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.68</version>
+      <version>2.69</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -81,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness-tools</artifactId>
-      <version>2.0</version>
+      <version>2.2</version>
       <scope>test</scope>
     </dependency>
      <dependency>
@@ -91,41 +103,9 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>maven-plugin</artifactId>
-      <version>2.14</version>
-      <exclusions>
-        <exclusion> <!-- perhaps unnecessary as of JENKINS-35445? -->
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.inject</groupId>
-          <artifactId>guice</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.ant</groupId>
-          <artifactId>ant</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!-- maven-plugin 2.14 (above) pulls in mailer 1.7, but then HelpCommandTest fails due to moved localized resources -->
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>1.23</version>
+      <version>1.32.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -146,7 +126,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.29</version>
+      <version>1.48</version>
       <!-- TODO define property for this and share with war/pom.xml-->
       <scope>test</scope>
     </dependency>
@@ -154,14 +134,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
       <version>1.20</version>
-      <!-- TODO define property for this and share with war/pom.xml-->
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- requireUpperBounds via matrix-project and junit -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>script-security</artifactId>
-      <version>1.75</version>
       <!-- TODO define property for this and share with war/pom.xml-->
       <scope>test</scope>
     </dependency>
@@ -300,23 +272,6 @@ THE SOFTWARE.
         <artifactId>maven-deploy-plugin</artifactId>
         <configuration>
           <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin> <!-- TODO pending JENKINS-45271 fix, would be best to finish moving MavenModuleSet-specific tests to maven-plugin and delete the test dep here -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <configuration>
-          <rules>
-            <requireUpperBoundDeps>
-              <excludes combine.children="append">
-                <exclude>org.apache.maven:maven-embedder</exclude>
-                <exclude>org.codehaus.plexus:plexus-classworlds</exclude>
-                <exclude>org.apache.maven:maven-core</exclude>
-                <exclude>org.apache.maven:maven-aether-provider</exclude>
-                <exclude>org.codehaus.plexus:plexus-utils</exclude>
-              </excludes>
-            </requireUpperBoundDeps>
-          </rules>
         </configuration>
       </plugin>
       <plugin>

@@ -28,7 +28,6 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.maven.MavenModuleSet;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.*;
@@ -48,7 +47,6 @@ import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
@@ -67,7 +65,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
@@ -282,31 +279,6 @@ public class NodeTest {
         assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
     }
 
-    /**
-     * Verify that the Label#getTiedJobCount does not perform a lazy loading operation.
-     */
-    @Issue("JENKINS-26391")
-    @Test
-    public void testGetAssignedLabelWithJobs() throws Exception {
-        final Node node = j.createOnlineSlave();
-        node.setLabelString("label1 label2");
-        MavenModuleSet mavenProject = j.jenkins.createProject(MavenModuleSet.class, "p");
-        mavenProject.setAssignedLabel(j.jenkins.getLabel("label1"));
-        RunLoadCounter.prepare(mavenProject);
-        j.assertBuildStatus(Result.FAILURE, mavenProject.scheduleBuild2(0).get());
-        Integer labelCount = RunLoadCounter.assertMaxLoads(mavenProject, 0, new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                final Label label = j.jenkins.getLabel("label1");
-                label.reset(); // Make sure cached value is not used
-                return label.getTiedJobCount();
-            }
-        });
-
-        assertEquals("Should have only one job tied to label.",
-                1, labelCount.intValue());
-    }
-
     @Issue("JENKINS-27188")
     @Test public void envPropertiesImmutable() throws Exception {
         Slave slave = j.createSlave();
@@ -318,51 +290,6 @@ public class NodeTest {
         assertFalse(slave.getComputer().getEnvironment().containsKey(propertyKey));
 
         assertNotSame(slave.getComputer().getEnvironment(), slave.getComputer().getEnvironment());
-    }
-
-    /**
-     * Create two projects which have the same label and verify that both are accounted for when getting a count
-     * of the jobs tied to the current label.
-     *
-     */
-    @Issue("JENKINS-26391")
-    @Test
-    public void testGetAssignedLabelMultipleSlaves() throws Exception {
-        final Node node1 = j.createOnlineSlave();
-        node1.setLabelString("label1");
-        final Node node2 = j.createOnlineSlave();
-        node1.setLabelString("label1");
-
-        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p1");
-        final Label label = j.jenkins.getLabel("label1");
-        project.setAssignedLabel(label);
-        j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
-
-        MavenModuleSet project2 = j.jenkins.createProject(MavenModuleSet.class, "p2");
-        project2.setAssignedLabel(label);
-        j.assertBuildStatus(Result.FAILURE, project2.scheduleBuild2(0).get());
-
-        label.reset(); // Make sure cached value is not used
-        assertEquals("Two jobs should be tied to this label.", 2, label.getTiedJobCount());
-    }
-
-    /**
-     * Verify that when a label is removed from a job that the tied job count does not include the removed job.
-     */
-    @Issue("JENKINS-26391")
-    @Test
-    public void testGetAssignedLabelWhenLabelRemoveFromProject() throws Exception {
-        final Node node = j.createOnlineSlave();
-        node.setLabelString("label1");
-
-        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
-        final Label label = j.jenkins.getLabel("label1");
-        project.setAssignedLabel(label);
-        j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
-
-        project.setAssignedLabel(null);
-        label.reset(); // Make sure cached value is not used
-        assertEquals("Label1 should have no tied jobs after the job label was removed.", 0, label.getTiedJobCount());
     }
 
     /**

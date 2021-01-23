@@ -8,18 +8,23 @@ updateCenter.post(
     },
     "id": "default",
     "plugins": {
-        "tasks": {
+        "htmlpublisher": {
             "buildDate": "Dec 17, 2008",
             "dependencies": [],
-            "developers": [{"name": "lokadm"}],
-            "excerpt": "   This plug-in scans for open tasks in a specified set of files in the project modules   and visualizes the results.  ",
-            "name": "tasks",
-            "wiki": "https://plugins.jenkins.io/tasks",
-            "requiredCore": "1.264",
-            "sha1": "wtzlciUKiMcg90H5CTYkGX6+r8Y=",
-            "title": "Jenkins Task Scanner Plug-in",
-            "url": "tasks.jpi",
-            "version": "2.23"
+            "developers": [
+                {
+                    "developerId": "mcrooney",
+                    "name": "Michael Rooney"
+                }
+            ],
+            "excerpt": "This plugin publishes HTML reports.",
+            "name": "htmlpublisher",
+            "wiki": "https://plugins.jenkins.io/htmlpublisher",
+            "requiredCore": "1.398",
+            "sha1": "tVSI0DVK02k9R3KV1M3A451Da3c=",
+            "title": "HTML Publisher",
+            "url": "htmlpublisher.jpi",
+            "version": "0.7"
         },
         "dummy": {
             "buildDate": "Dec 17, 2008",

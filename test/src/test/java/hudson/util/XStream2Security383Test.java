@@ -3,6 +3,7 @@ package hudson.util;
 import hudson.model.Items;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,9 +45,16 @@ public class XStream2Security383Test {
     @Mock
     private StaplerResponse rsp;
 
+    private AutoCloseable mocks;
+
+    @After
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
     }
 
     @Test

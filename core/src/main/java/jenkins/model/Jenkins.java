@@ -4851,7 +4851,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public boolean isSubjectToMandatoryReadPermissionCheck(String restOfPath) {
         for (String name : ALWAYS_READABLE_PATHS) {
-            if (restOfPath.startsWith(name)) {
+            if (restOfPath.startsWith("/" + name + "/") || restOfPath.equals("/" + name)) {
                 return false;
             }
         }
@@ -5393,19 +5393,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
-    private static final ImmutableSet<String> ALWAYS_READABLE_PATHS = ImmutableSet.of(
-        "/login",
-        "/logout",
-        "/accessDenied",
-        "/adjuncts/",
-        "/error",
-        "/oops",
-        "/signup",
-        "/tcpSlaveAgentListener",
-        "/federatedLoginService/",
-        "/securityRealm",
-        "/instance-identity"
-    );
+    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(ImmutableSet.of(
+        "login",
+        "loginError",
+        "logout",
+        "accessDenied",
+        "adjuncts",
+        "error",
+        "oops",
+        "signup",
+        "tcpSlaveAgentListener",
+        "federatedLoginService",
+        "securityRealm",
+        "instance-identity"
+    ));
+
+    static {
+        final String paths = SystemProperties.getString(Jenkins.class.getName() + ".additionalReadablePaths");
+        if (paths != null) {
+            LOGGER.log(INFO, "SECURITY-2047 override: Adding the following paths to ALWAYS_READABLE_PATHS: " + paths);
+            ALWAYS_READABLE_PATHS.addAll(Arrays.stream(paths.split(",")).map(String::trim).collect(Collectors.toSet()));
+        }
+    }
 
     /**
      * {@link Authentication} object that represents the anonymous user.
