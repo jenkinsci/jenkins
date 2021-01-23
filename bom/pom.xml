@@ -102,7 +102,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>4.0</version>
+        <version>4.2.3</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
