@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.acegisecurity.Authentication;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNot.not;

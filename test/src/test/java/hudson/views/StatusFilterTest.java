@@ -1,7 +1,6 @@
 package hudson.views;
 
 import hudson.model.FreeStyleProject;
-import hudson.model.ListView;
 import hudson.model.TopLevelItem;
 import org.junit.Rule;
 import org.junit.Test;

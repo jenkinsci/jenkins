@@ -75,6 +75,9 @@ public class FileFingerprintStorage extends FingerprintStorage {
      * Load the Fingerprint with the given unique id.
      */
     public @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
+        if (!isAllowed(id)) {
+            return null;
+        }
         return load(getFingerprintFile(id));
     }
 
@@ -120,10 +123,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
     /**
      * Saves the given Fingerprint in local XML-based database.
+     *
+     * @param fp Fingerprint file to be saved.
      */
-    public synchronized void save(Fingerprint fp) throws IOException {
-        File file = getFingerprintFile(fp.getHashString());
-        save(fp, file);
+    @Override
+    public void save(Fingerprint fp) throws IOException {
+        final File file;
+        synchronized (fp) {
+            file = getFingerprintFile(fp.getHashString());
+            save(fp, file);
+        }
         // TODO(oleg_nenashev): Consider generalizing SaveableListener and invoking it for all storage implementations.
         //  https://issues.jenkins-ci.org/browse/JENKINS-62543
         SaveableListener.fireOnChange(fp, getConfigFile(file));
@@ -285,6 +294,15 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private static @NonNull File getFingerprintFile(@NonNull String id) {
         return new File( Jenkins.get().getRootDir(),
                 "fingerprints/" + id.substring(0,2) + '/' + id.substring(2,4) + '/' + id.substring(4) + ".xml");
+    }
+
+    private static boolean isAllowed(String id) {
+        try {
+            Util.fromHexString(id);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 
     private static String messageOfParseException(Throwable throwable) {

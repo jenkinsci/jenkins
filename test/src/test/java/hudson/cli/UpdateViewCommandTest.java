@@ -77,7 +77,7 @@ public class UpdateViewCommandTest {
     @Test public void updateViewWithRenamedClass() throws Exception {
         ListView tv  = new ListView("tView");
         j.jenkins.addView(tv);
-        j.jenkins.XSTREAM2.addCompatibilityAlias("org.acme.old.Foo", ListView.class);
+        Jenkins.XSTREAM2.addCompatibilityAlias("org.acme.old.Foo", ListView.class);
         final CLICommandInvoker.Result result = command
                 .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/testview-foo.xml"))

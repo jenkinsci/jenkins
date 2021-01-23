@@ -461,8 +461,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return new FilePath(ch,absolutePath);
     }
 
+    @Deprecated
     public FileSystemProvisioner getFileSystemProvisioner() {
-        // TODO: make this configurable or auto-detectable or something else
         return FileSystemProvisioner.DEFAULT;
     }
 
@@ -537,9 +537,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                     DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<>(Saveable.NOOP, getNodeProperties().toList());
                     tmp.rebuild(req, jsonForProperties, NodeProperty.all());
                     return tmp.toList();
-                } catch (FormException e) {
-                    throw new IllegalArgumentException(e);
-                } catch (IOException e) {
+                } catch (FormException | IOException e) {
                     throw new IllegalArgumentException(e);
                 }
             }

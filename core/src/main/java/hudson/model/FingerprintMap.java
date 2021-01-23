@@ -82,15 +82,8 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
         return super.get(md5sum,createIfNotExist,createParams);
     }
 
-    private byte[] toByteArray(String md5sum) {
-        byte[] data = new byte[16];
-        for( int i=0; i<md5sum.length(); i+=2 )
-            data[i/2] = (byte)Integer.parseInt(md5sum.substring(i,i+2),16);
-        return data;
-    }
-
     protected @NonNull Fingerprint create(@NonNull String md5sum, @NonNull FingerprintParams createParams) throws IOException {
-        return new Fingerprint(createParams.build, createParams.fileName, toByteArray(md5sum));
+        return new Fingerprint(createParams.build, createParams.fileName, Util.fromHexString(md5sum));
     }
 
     protected @CheckForNull Fingerprint load(@NonNull String key) throws IOException {

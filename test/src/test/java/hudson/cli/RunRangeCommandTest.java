@@ -34,7 +34,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.io.IOException;
 import java.util.List;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
@@ -330,14 +329,14 @@ public class RunRangeCommandTest {
                 .invokeWithArgs(PROJECT_NAME, "1,-2,3");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: Unable to parse \'1,-2,3\', expected string with a range M-N"));
+        assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,-2,3', expected string with a range M-N"));
 
         result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,2,-3");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: Unable to parse \'1,2,-3\', expected string with a range M-N"));
+        assertThat(result.stderr(), containsString("ERROR: Unable to parse '1,2,-3', expected string with a range M-N"));
     }
 
     @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsTooBig() {

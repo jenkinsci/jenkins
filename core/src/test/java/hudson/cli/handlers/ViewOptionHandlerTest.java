@@ -24,10 +24,11 @@
 package hudson.cli.handlers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import hudson.model.ViewGroup;
 import hudson.model.View;
@@ -35,6 +36,7 @@ import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,6 +51,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 @PrepareForTest(Jenkins.class)
 @RunWith(PowerMockRunner.class)
@@ -65,9 +69,16 @@ public class ViewOptionHandlerTest {
     @Mock private CompositeView outer;
     @Mock private Jenkins jenkins;
 
+    private AutoCloseable mocks;
+
+    @After
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
     @Before public void setUp() {
 
-        MockitoAnnotations.initMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
 
         handler = new ViewOptionHandler(null, null, setter);
 
@@ -88,7 +99,7 @@ public class ViewOptionHandlerTest {
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
         when(jenkins.getACL()).thenReturn(new ACL() {
             @Override
-            public boolean hasPermission2(Authentication a, Permission p) {
+            public boolean hasPermission2(@NonNull Authentication a, @NonNull Permission p) {
                 return true;
             }
         });
@@ -129,7 +140,7 @@ public class ViewOptionHandlerTest {
                 parseFailedWith(IllegalArgumentException.class, "missing_view")
         );
 
-        verifyZeroInteractions(setter);
+        verifyNoInteractions(setter);
     }
 
     @Test public void reportNonexistentNestedView() throws Exception {
@@ -139,7 +150,7 @@ public class ViewOptionHandlerTest {
                 parseFailedWith(IllegalArgumentException.class, "outer/missing_view")
         );
 
-        verifyZeroInteractions(setter);
+        verifyNoInteractions(setter);
     }
 
     @Test public void reportNonexistentInnerView() throws Exception {
@@ -149,7 +160,7 @@ public class ViewOptionHandlerTest {
                 parseFailedWith(IllegalArgumentException.class, "outer/nested/missing_view")
         );
 
-        verifyZeroInteractions(setter);
+        verifyNoInteractions(setter);
     }
 
     @Test public void reportTraversingViewThatIsNotAViewGroup() throws Exception {
@@ -159,30 +170,30 @@ public class ViewOptionHandlerTest {
                 parseFailedWith(IllegalStateException.class, "outer/nested/inner/missing")
         );
 
-        verifyZeroInteractions(setter);
+        verifyNoInteractions(setter);
     }
 
-    @Test public void reportEmptyViewNameRequestAsNull() throws Exception {
-        assertEquals(handler.getView(""), null);
-        verifyZeroInteractions(setter);
+    @Test public void reportEmptyViewNameRequestAsNull() {
+        assertNull(handler.getView(""));
+        verifyNoInteractions(setter);
     }
 
-    @Test public void reportViewSpaceNameRequestAsIAE() throws Exception {
+    @Test public void reportViewSpaceNameRequestAsIAE() {
         try {
-            assertEquals(handler.getView(" "), null);
+            assertNull(handler.getView(" "));
             fail("No exception thrown. Expected IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertEquals("No view named   inside view Jenkins", e.getMessage());
-            verifyZeroInteractions(setter);
+            verifyNoInteractions(setter);
         }
     }
 
-    @Test public void reportNullViewAsNPE() throws Exception {
+    @Test public void reportNullViewAsNPE() {
         try {
             handler.getView(null);
             fail("No exception thrown. Expected NullPointerException");
         } catch (NullPointerException e) {
-            verifyZeroInteractions(setter);
+            verifyNoInteractions(setter);
         }
     }
 
@@ -197,9 +208,9 @@ public class ViewOptionHandlerTest {
 
         verify(outer).checkPermission(View.READ);
 
-        verifyZeroInteractions(nested);
-        verifyZeroInteractions(inner);
-        verifyZeroInteractions(setter);
+        verifyNoInteractions(nested);
+        verifyNoInteractions(inner);
+        verifyNoInteractions(setter);
     }
 
     @Test public void refuseToReadNestedView() throws Exception {
@@ -213,8 +224,8 @@ public class ViewOptionHandlerTest {
 
         verify(nested).checkPermission(View.READ);
 
-        verifyZeroInteractions(inner);
-        verifyZeroInteractions(setter);
+        verifyNoInteractions(inner);
+        verifyNoInteractions(setter);
     }
 
     @Test public void refuseToReadInnerView() throws Exception {
@@ -228,7 +239,7 @@ public class ViewOptionHandlerTest {
 
         verify(inner).checkPermission(View.READ);
 
-        verifyZeroInteractions(setter);
+        verifyNoInteractions(setter);
     }
 
     private void denyAccessOn(View view) {
@@ -249,13 +260,13 @@ public class ViewOptionHandlerTest {
             return ex.getMessage();
         }
 
-        fail("No exception thrown. Expected " + type.getClass());
+        fail("No exception thrown. Expected " + type);
         return null;
     }
 
     private void parse(final String... params) throws CmdLineException {
         handler.parseArguments(new Parameters() {
-            public String getParameter(int idx) throws CmdLineException {
+            public String getParameter(int idx) {
                 return params[idx];
             }
             public int size() {

@@ -31,7 +31,7 @@ public class DownloadServiceTest extends HudsonTestCase {
         assertNotNull(file, resource);
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource));
         @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
-        assertEquals(expected, new TreeSet<String>(keySet).toString());
+        assertEquals(expected, new TreeSet<>(keySet).toString());
     }
 
     public void testReduceFunctionWithMavenJsons() throws Exception {

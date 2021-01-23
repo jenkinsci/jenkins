@@ -40,10 +40,6 @@ complete {
     }
 */
 
-    match("antlr:*") {
-        rewriteLicense([], license("BSD License","http://www.antlr.org/license.html"))
-    }
-
     match("jaxen:jaxen") {
         rewriteLicense([], license("BSD License","http://jaxen.codehaus.org/license.html"))
     }
@@ -64,7 +60,7 @@ complete {
     }
 
     match(["org.kohsuke.jinterop:j-interop","org.kohsuke.jinterop:j-interopdeps"]) {
-        rewriteLicense([],license("LGPL v3","http://www.j-interop.org/license.html"))
+        rewriteLicense([license("MIT license", "http://www.opensource.org/licenses/mit-license.php")],license("LGPL v3","http://www.j-interop.org/license.html"))
     }
 
     // these are our own modules that have license in the trunk but not in these released versions

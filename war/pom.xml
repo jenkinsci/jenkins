@@ -41,8 +41,8 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <host>localhost</host><!-- HTTP listener host/interface -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>12.14.1</node.version>
-    <yarn.version>1.21.1</yarn.version>
+    <node.version>14.15.1</node.version>
+    <yarn.version>1.22.10</yarn.version>
   </properties>
 
   <dependencyManagement>
@@ -103,7 +103,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.12</version>
+      <version>5.13</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -137,24 +137,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.ui</groupId>
-      <artifactId>jquery-detached</artifactId>
-      <version>1.2.1</version>
-      <classifier>core-assets</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.ui</groupId>
-      <artifactId>bootstrap</artifactId>
-      <version>1.3.2</version>
-      <classifier>core-assets</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.ui</groupId>
-          <artifactId>jquery-detached</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -281,12 +263,6 @@ THE SOFTWARE.
                 <!--
                     Detached plugins and their dependencies - detached plugins that used to be bundled plugins
                 -->
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>cvs</artifactId>
-                  <version>2.11</version>
-                  <type>hpi</type>
-                </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
@@ -622,7 +598,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.6</version>
+            <version>1.11.0</version>
             <executions>
 
               <execution>

@@ -526,8 +526,8 @@ public class ProjectTest {
 
         Map<Integer,Fingerprint.RangeSet> relationship = upstream.getRelationship(downstream);
         assertFalse("Project upstream should have relationship with downstream", relationship.isEmpty());
-        assertTrue("Relationship should contain upstream #3", relationship.keySet().contains(3));
-        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.keySet().contains(4));
+        assertTrue("Relationship should contain upstream #3", relationship.containsKey(3));
+        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.containsKey(4));
         assertEquals("downstream #2 should be the first build which depends on upstream #3", 2, relationship.get(3).min());
         assertEquals("downstream #3 should be the last build which depends on upstream #3", 3, relationship.get(3).max()-1);
         assertEquals("downstream #4 should depend only on upstream #5", 4, relationship.get(5).min());
@@ -836,7 +836,7 @@ public class ProjectTest {
 
         @Override
         public Collection<? extends Action> createFor(AbstractProject target) {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             if(createAction)
                 actions.add(new TransientAction());
             return actions;
@@ -922,7 +922,7 @@ public class ProjectTest {
 
         @Override
         public Collection getSubTasks() {
-            ArrayList<SubTask> list = new ArrayList<SubTask>();
+            ArrayList<SubTask> list = new ArrayList<>();
             list.add(new SubTaskImpl());
             return list;
         }
@@ -935,7 +935,7 @@ public class ProjectTest {
 
         @Override
         public Collection<? extends SubTask> forProject(AbstractProject<?, ?> p) {
-            ArrayList<SubTask> list = new ArrayList<SubTask>();
+            ArrayList<SubTask> list = new ArrayList<>();
             if(createSubTask){
                 list.add(new SubTaskImpl2());
             }
@@ -1008,7 +1008,7 @@ public class ProjectTest {
 
         @Override
         public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
-            List<NodeProvisioner.PlannedNode> r = new ArrayList<NodeProvisioner.PlannedNode>();
+            List<NodeProvisioner.PlannedNode> r = new ArrayList<>();
 
             //Always provision...even if there is no workload.
             while(excessWorkload >= 0) {

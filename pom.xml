@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.58</version>
+    <version>1.62</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.267</revision>
+    <revision>2.277</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -91,7 +91,7 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <matrix-auth.version>2.6.4</matrix-auth.version>
-    <matrix-project.version>1.17</matrix-project.version>
+    <matrix-project.version>1.18</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
@@ -111,6 +111,8 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
     <access-modifier-checker.version>1.16</access-modifier-checker.version>
+    <junit.jupiter.version>5.7.0</junit.jupiter.version>
+    <powermock.version>2.0.9</powermock.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -138,23 +140,23 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.0.0</version>
+        <version>3.7.0</version>
       </dependency>
 
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>2.0.0-beta.5</version>
+        <version>${powermock.version}</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito2</artifactId>
-        <version>2.0.0-beta.5</version>
+        <version>${powermock.version}</version>
       </dependency>
       <dependency>
         <groupId>org.objenesis</groupId>
         <artifactId>objenesis</artifactId>
-        <version>2.6</version>
+        <version>3.1</version>
       </dependency>
 
       <dependency>
@@ -345,7 +347,7 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
-          <artifactId>maven-localizer-plugin</artifactId>
+          <artifactId>localizer-maven-plugin</artifactId>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>

@@ -27,7 +27,6 @@ package hudson.cli;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
 import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
@@ -113,21 +112,6 @@ public class ListJobsCommandTest {
         assertThat(result.stdout(), containsString("job1"));
         assertThat(result.stdout(), containsString("job2"));
         assertThat(result.stdout(), containsString("mp"));
-    }
-
-    @Issue("JENKINS-18393")
-    @Test public void getAllJobsFromFolderWithMavenModuleSet() throws Exception {
-        MockFolder folder = j.createFolder("Folder");
-
-        FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
-        FreeStyleProject job2 = folder.createProject(FreeStyleProject.class, "job2");
-        MavenModuleSet mavenProject = folder.createProject(MavenModuleSet.class, "mvn");
-
-        CLICommandInvoker.Result result = command.invokeWithArgs("Folder");
-        assertThat(result, CLICommandInvoker.Matcher.succeeded());
-        assertThat(result.stdout(), containsString("job1"));
-        assertThat(result.stdout(), containsString("job2"));
-        assertThat(result.stdout(), containsString("mvn"));
     }
 
     @Issue("JENKINS-18393")

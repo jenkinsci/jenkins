@@ -26,13 +26,13 @@ package hudson.lifecycle;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jenkins.model.Configuration;
 import jenkins.model.Jenkins;
 
 /**
@@ -56,7 +56,7 @@ public class ExitLifecycle extends Lifecycle {
     private Integer exitOnRestart;
 
     public ExitLifecycle() {
-        exitOnRestart = Integer.parseInt(Configuration.getStringConfigParameter(EXIT_CODE_ON_RESTART, DEFAULT_EXIT_CODE));
+        exitOnRestart = Integer.parseInt(SystemProperties.getString(Jenkins.class.getName() + "." + EXIT_CODE_ON_RESTART, DEFAULT_EXIT_CODE));
     }
 
     @Override

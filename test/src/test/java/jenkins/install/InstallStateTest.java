@@ -28,7 +28,7 @@ import jenkins.model.Jenkins;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,8 +56,8 @@ public class InstallStateTest {
             // It also prevents occasional name duplications
             assertThat("State after the roundtrip must be equal to the original state", 
                     afterRoundtrip, equalTo(state));
-            assertTrue("State " + state + " should return the extension point instance after deserialization", 
-                    afterRoundtrip == state);
+            assertSame("State " + state + " should return the extension point instance after deserialization", 
+                    afterRoundtrip, state);
         }
     }
     

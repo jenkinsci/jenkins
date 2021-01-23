@@ -556,7 +556,7 @@ public class FilePathTest {
     }
     
     @Issue("JENKINS-5253")
-    public void testValidateCaseSensitivity() throws Exception {
+    @Test public void testValidateCaseSensitivity() throws Exception {
         File tmp = Util.createTempDir();
         try {
             FilePath d = new FilePath(channels.french, tmp.getPath());

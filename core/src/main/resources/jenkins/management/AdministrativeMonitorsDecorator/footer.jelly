@@ -22,26 +22,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <j:if test="${it.shouldDisplay()}">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <j:set var="activeMonitors" value="${it.getMonitorsToDisplay()}"/>
+
+    <j:if test="${activeMonitors != null and activeMonitors.size() > 0}">
         <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>
-        <div id="visible-am-container">
-            <a id="visible-am-button" href="#" onclick="toggleVisibleAmList(event)" title="${%tooltip(it.activeAdministrativeMonitorsCount)}">
-                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px" />
-                <span class="am-monitor__count">
-                    ${it.activeAdministrativeMonitorsCount}
-                </span>
-            </a>
-            <div id="visible-am-list">
-                <j:forEach var="am" items="${it.activeAdministrativeMonitors}">
-                    <div class="am-message">
-                    <st:include page="message.jelly" it="${am}" />
-                    </div>
-                </j:forEach>
-                <p style="text-align: center; margin: 10px 0 0 0;">
-                    <a href="${rootURL}/manage" onclick="document.location.href='${rootURL}/manage';">${%Manage Jenkins}</a>
-                </p>
-            </div>
+    
+        <j:set var="activeNonSecurityAM" value="${it.filterNonSecurityAdministrativeMonitors(activeMonitors)}" />
+        <j:set var="activeNonSecurityAMCount" value="${activeNonSecurityAM.size()}" />
+        <j:set var="activeSecurityAM" value="${it.filterSecurityAdministrativeMonitors(activeMonitors)}" />
+        <j:set var="activeSecurityAMCount" value="${activeSecurityAM.size()}" />
+
+        <div id="visible-am-container" class="am-container">
+            <j:if test="${activeNonSecurityAMCount > 0}">
+                <a id="visible-am-button"
+                   class="am-button"
+                   href="#"
+                   data-href="${rootURL}/administrativeMonitors/nonSecurityPopupContent"
+                   title="${%tooltip(activeNonSecurityAMCount)}">
+                    <l:svgIcon
+                            href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px"/>
+                    <div class="am-monitor__indicator-mobile"/>
+                    <span class="am-monitor__count">
+                        ${activeNonSecurityAMCount}
+                    </span>
+                </a>
+                <div id="visible-am-list" class="am-list">
+                </div>
+            </j:if>
+        </div>
+        <div id="visible-sec-am-container" class="am-container">
+            <j:if test="${activeSecurityAMCount > 0}">
+                <a id="visible-sec-am-button"
+                   class="am-button security-am"
+                   href="#"
+                   data-href="${rootURL}/administrativeMonitors/securityPopupContent"
+                   title="${%tooltipSec(activeSecurityAMCount)}">
+                    <l:svgIcon
+                            href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_warning_shield_24px"/>
+                    <div class="am-monitor__indicator-mobile"/>
+                    <span class="am-monitor__count">
+                        ${activeSecurityAMCount}
+                    </span>
+                </a>
+                <div id="visible-sec-am-list" class="am-list">
+                </div>
+            </j:if>
         </div>
         <script type="text/javascript">
             (function() {
@@ -50,6 +76,13 @@ THE SOFTWARE.
 
                 if (amInsertion) {
                     amInsertion.appendChild(amContainer);
+                }
+
+                var secAmContainer = document.getElementById("visible-sec-am-container");
+                var secAmInsertion = document.getElementById("visible-sec-am-insertion");
+
+                if (secAmInsertion) {
+                    secAmInsertion.appendChild(secAmContainer);
                 }
             })();
         </script>

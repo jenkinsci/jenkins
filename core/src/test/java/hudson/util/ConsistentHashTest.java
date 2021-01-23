@@ -96,7 +96,7 @@ public class ConsistentHashTest {
             }
         }
 
-        System.out.printf("%d/%d\n", even, odd);
+        System.out.printf("%d/%d%n", even, odd);
         assertTrue(even * 8 < odd);
     }
 
