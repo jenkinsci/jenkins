@@ -8,7 +8,7 @@
   position: relative;
   border:1px solid var(--input-border);
   border-bottom:none;
-  background:var(--light-bg-color);
+  background: var(--light-grey);
   min-height:2.5em;
   .border-radius-top(@border-radius);
   z-index:5;
@@ -41,7 +41,7 @@
     right: 5px;
     top: 5px;
     cursor: pointer;
-    color: var(--input-border);
+    color: var(--medium-grey);
     text-shadow: var(--brightest-bg-color 0 1px 2px);
     font-size: var(--font-size-sm);
     padding: 3px 7px;
@@ -50,7 +50,7 @@
 
   .form-config.tabBarFrame {
     position: relative;
-    border-bottom: solid 1px var(--input-border);
+    border-bottom: solid 1px var(--medium-grey);
 
     .config-section-activators {
       margin: 0;
@@ -62,7 +62,7 @@
     .tabBar {
       .tab {
         border: solid 1px transparent;
-        color: #999;
+        color: var(--text-color-secondary);
         padding: 7px 10px;
         .border-radius-top(5px);
         cursor: pointer;
@@ -70,15 +70,17 @@
         text-decoration: none;
       }
       .tab:hover {
-        background:#bbb;
-        color: var(--brightest-bg-color);
+        background: var(--very-light-grey);
+        color: var(--text-color-secondary);
+        border:1px solid var(--medium-grey);
+        border-bottom:1px solid var(--bright-bg-color);
       }
       .tab.active {
-        background: var(--bright-bg-color);
+        background: var(--background);
         color: var(--text-color);
         font-weight: bold;
         z-index: 2;
-        border:1px solid var(--input-border);
+        border:1px solid var(--medium-grey);
         border-bottom:1px solid var(--bright-bg-color);
       }
     }
