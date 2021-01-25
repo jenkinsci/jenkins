@@ -176,7 +176,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
-        <version>1.12</version>
+        <version>1.14</version>
       </dependency>
 
       <dependency>
