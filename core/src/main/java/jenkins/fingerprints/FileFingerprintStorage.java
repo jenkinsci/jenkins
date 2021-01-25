@@ -43,6 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -146,7 +147,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
             file.getParentFile().mkdirs();
             // JENKINS-16301: fast path for the common case.
             AtomicFileWriter afw = new AtomicFileWriter(file);
-            try (PrintWriter w = new PrintWriter(afw)) {
+            try (PrintWriter w = new PrintWriter(new BufferedWriter(afw))) {
                 w.println("<?xml version='1.1' encoding='UTF-8'?>");
                 w.println("<fingerprint>");
                 w.print("  <timestamp>");
