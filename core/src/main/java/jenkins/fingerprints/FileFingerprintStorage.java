@@ -123,10 +123,16 @@ public class FileFingerprintStorage extends FingerprintStorage {
 
     /**
      * Saves the given Fingerprint in local XML-based database.
+     *
+     * @param fp Fingerprint file to be saved.
      */
-    public synchronized void save(Fingerprint fp) throws IOException {
-        File file = getFingerprintFile(fp.getHashString());
-        save(fp, file);
+    @Override
+    public void save(Fingerprint fp) throws IOException {
+        final File file;
+        synchronized (fp) {
+            file = getFingerprintFile(fp.getHashString());
+            save(fp, file);
+        }
         // TODO(oleg_nenashev): Consider generalizing SaveableListener and invoking it for all storage implementations.
         //  https://issues.jenkins-ci.org/browse/JENKINS-62543
         SaveableListener.fireOnChange(fp, getConfigFile(file));
