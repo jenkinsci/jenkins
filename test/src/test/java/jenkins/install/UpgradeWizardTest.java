@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -92,7 +93,7 @@ public class UpgradeWizardTest {
         j.executeOnServer(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                assertTrue(j.jenkins.getUpdateCenter().getJobs().size() == 0);
+                assertEquals(0, j.jenkins.getUpdateCenter().getJobs().size());
                 writeVersion("1.5");
                 assertTrue(getInstance().isDue());
 

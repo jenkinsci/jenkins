@@ -2,8 +2,6 @@ package jenkins.model;
 
 import hudson.Functions;
 import hudson.init.InitMilestone;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import org.apache.commons.io.FileUtils;
@@ -12,7 +10,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockFolder;
@@ -288,37 +285,6 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 		return loggerRule.getRecords().stream()
                 .filter(record -> record.getMessage().contains(searched)).anyMatch(record -> record.getLevel().equals(level));
 	}
-
-    @Test
-    @Issue("JENKINS-12251")
-    public void testItemFullNameExpansion() throws Exception {
-        loggerRule.record(Jenkins.class, Level.WARNING)
-                .record(Jenkins.class, Level.INFO)
-                .capture(1000);
-
-        story.then(steps -> {
-            assertTrue(story.j.getInstance().isDefaultBuildDir());
-            assertTrue(story.j.getInstance().isDefaultWorkspaceDir());
-            setBuildsDirProperty("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
-            setWorkspacesDirProperty("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
-        });
-
-        story.then(steps -> {
-            assertTrue(JenkinsBuildsAndWorkspacesDirectoriesTest.this.logWasFound("Changing builds directories from "));
-            assertFalse(story.j.getInstance().isDefaultBuildDir());
-            assertFalse(story.j.getInstance().isDefaultWorkspaceDir());
-
-            // build a dummy project
-            MavenModuleSet m = story.j.jenkins.createProject(MavenModuleSet.class, "p");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
-            MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-
-            // make sure these changes are effective
-            assertTrue(b.getWorkspace().getRemote().contains("test12251_ws"));
-            assertTrue(b.getRootDir().toString().contains("test12251_builds"));
-        });
-
-    }
 
     @Test
     @Issue("JENKINS-17138")

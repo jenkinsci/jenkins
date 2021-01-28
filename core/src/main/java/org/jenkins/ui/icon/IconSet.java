@@ -37,10 +37,10 @@ public class IconSet {
 
     public static final IconSet icons = new IconSet();
 
-    private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<String, Icon>();
-    private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<String, Icon>();
-    private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<String, Icon>();
-    private Map<String, Icon> coreIcons = new ConcurrentHashMap<String, Icon>();
+    private Map<String, Icon> iconsByCSSSelector = new ConcurrentHashMap<>();
+    private Map<String, Icon> iconsByUrl  = new ConcurrentHashMap<>();
+    private Map<String, Icon> iconsByClassSpec = new ConcurrentHashMap<>();
+    private Map<String, Icon> coreIcons = new ConcurrentHashMap<>();
 
     private static final Icon NO_ICON = new Icon("_", "_", "_");
 

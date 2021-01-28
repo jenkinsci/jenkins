@@ -61,6 +61,7 @@ import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -240,25 +241,32 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String base = _base.toString();
         String rest = _rest.toString();
 
-        if(!ALLOW_SYMLINK_ESCAPE && (root.supportIsDescendant() && !root.isDescendant(base))){
-            LOGGER.log(Level.WARNING, "Trying to access a file outside of the directory, target: "+ base);
-            rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "Trying to access a file outside of the directory, target: " + base);
-            return;
-        }
-
         // this is the base file/directory
         VirtualFile baseFile = base.isEmpty() ? root : root.child(base);
 
+        if (baseFile.hasSymlink(getNoFollowLinks())) {
+            rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
         if(baseFile.isDirectory()) {
             if(zip) {
                 rsp.setContentType("application/zip");
-                zip(rsp, root, baseFile, rest);
+                String includes, prefix;
+                if (StringUtils.isBlank(rest)) {
+                    includes = "**";
+                    // JENKINS-19947, JENKINS-61473: traditional behavior is to prepend the directory name
+                    prefix = baseFile.getName();
+                } else {
+                    includes = rest;
+                    prefix = "";
+                }
+                baseFile.zip(rsp.getOutputStream(), includes, null, true, getNoFollowLinks(), prefix);
                 return;
             }
             if (plain) {
                 rsp.setContentType("text/plain;charset=UTF-8");
                 try (OutputStream os = rsp.getOutputStream()) {
-                    for (VirtualFile kid : baseFile.list()) {
+                    for (VirtualFile kid : baseFile.list(getNoFollowLinks())) {
                         os.write(kid.getName().getBytes(StandardCharsets.UTF_8));
                         if (kid.isDirectory()) {
                             os.write('/');
@@ -281,29 +289,30 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
             List<List<Path>> glob = null;
             boolean patternUsed = rest.length() > 0;
+            boolean containsSymlink = false;
             if(patternUsed) {
                 // the rest is Ant glob pattern
                 glob = patternScan(baseFile, rest, createBackRef(restSize));
             } else
             if(serveDirIndex) {
                 // serve directory index
-                glob = baseFile.run(new BuildChildPaths(baseFile, req.getLocale()));
+                glob = baseFile.run(new BuildChildPaths(root, baseFile, req.getLocale()));
+                containsSymlink = baseFile.containsSymLinkChild(getNoFollowLinks());
             }
 
             if(glob!=null) {
-                List<List<Path>> filteredGlob = keepReadabilityOnlyOnDescendants(baseFile, patternUsed, glob);
-                
                 // serve glob
                 req.setAttribute("it", this);
                 List<Path> parentPaths = buildParentPath(base,restSize);
                 req.setAttribute("parentPath",parentPaths);
                 req.setAttribute("backPath", createBackRef(restSize));
                 req.setAttribute("topPath", createBackRef(parentPaths.size()+restSize));
-                req.setAttribute("files", filteredGlob);
+                req.setAttribute("files", glob);
                 req.setAttribute("icon", icon);
                 req.setAttribute("path", path);
                 req.setAttribute("pattern",rest);
                 req.setAttribute("dir", baseFile);
+                req.setAttribute("showSymlinkWarning", containsSymlink);
                 if (ResourceDomainConfiguration.isResourceRequest(req)) {
                     req.getView(this, "plaindir.jelly").forward(req, rsp);
                 } else {
@@ -347,11 +356,19 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             LOGGER.fine("Serving "+baseFile+" with lastModified=" + lastModified + ", length=" + length);
 
         if (view) {
+            InputStream in;
+            try {
+                in = baseFile.open(getNoFollowLinks());
+            } catch (IOException ioe) {
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
             // for binary files, provide the file name for download
             rsp.setHeader("Content-Disposition", "inline; filename=" + baseFile.getName());
 
             // pseudo file name to let the Stapler set text/plain
-            rsp.serveFile(req, baseFile.open(), lastModified, -1, length, "plain.txt");
+            rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
         } else {
             if (resourceToken != null) {
                 // redirect to second domain
@@ -367,7 +384,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         }
                     }
                 }
-                rsp.serveFile(req, baseFile.open(), lastModified, -1, length, baseFile.getName());
+                InputStream in;
+                try {
+                    in = baseFile.open(getNoFollowLinks());
+                } catch (IOException ioe) {
+                    rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
+                rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName());
             }
         }
     }
@@ -675,9 +699,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     private static final class BuildChildPaths extends MasterToSlaveCallable<List<List<Path>>,IOException> {
+        private VirtualFile root;
         private final VirtualFile cur;
         private final Locale locale;
-        BuildChildPaths(VirtualFile cur, Locale locale) {
+        BuildChildPaths(VirtualFile root, VirtualFile cur, Locale locale) {
+            this.root = root;
             this.cur = cur;
             this.locale = locale;
         }
@@ -693,7 +719,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static List<List<Path>> buildChildPaths(VirtualFile cur, Locale locale) throws IOException {
             List<List<Path>> r = new ArrayList<>();
 
-            VirtualFile[] files = cur.list();
+            VirtualFile[] files = cur.list(getNoFollowLinks());
                 Arrays.sort(files,new FileComparator(locale));
     
                 for( VirtualFile f : files ) {
@@ -708,7 +734,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         while(true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
                             List<VirtualFile> sub = new ArrayList<>();
-                            for (VirtualFile vf : f.list()) {
+                            for (VirtualFile vf : f.list(getNoFollowLinks())) {
                                 String name = vf.getName();
                                 if (!name.startsWith(".") && !name.equals("CVS") && !name.equals(".svn")) {
                                     sub.add(vf);
@@ -733,7 +759,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * @param baseRef String like "../../../" that cancels the 'rest' portion. Can be "./"
      */
     private static List<List<Path>> patternScan(VirtualFile baseDir, String pattern, String baseRef) throws IOException {
-            Collection<String> files = baseDir.list(pattern, null, /* TODO what is the user expectation? */true);
+            Collection<String> files = baseDir.list(pattern, null, /* TODO what is the user expectation? */true, getNoFollowLinks());
 
             if (!files.isEmpty()) {
                 List<List<Path>> r = new ArrayList<>(files.size());
@@ -776,6 +802,9 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             pathList.add(path);
         }
 
+    private static boolean getNoFollowLinks() {
+        return !ALLOW_SYMLINK_ESCAPE;
+    }
 
     private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
 

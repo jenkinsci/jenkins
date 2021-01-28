@@ -61,7 +61,7 @@ public class MaskingClassLoader extends ClassLoader {
          * The name of a resource is a '/'-separated path name
          */
         for (String mask : masks) {
-            masksResources.add(mask.replace(".","/"));
+            masksResources.add(mask.replace('.','/'));
         }
     }
 
@@ -92,7 +92,7 @@ public class MaskingClassLoader extends ClassLoader {
     public void add(String prefix) {
         masksClasses.add(prefix);
         if(prefix !=null){
-            masksResources.add(prefix.replace(".","/"));
+            masksResources.add(prefix.replace('.','/'));
         }
     }
 

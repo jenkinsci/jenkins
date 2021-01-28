@@ -16,7 +16,6 @@
   <properties>
     <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->
     <findbugs.threshold>Medium</findbugs.threshold>
-    <junit.jupiter.version>5.5.2</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
@@ -68,7 +67,6 @@
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.26</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -92,7 +90,7 @@
     <dependency>
       <groupId>org.glassfish.tyrus.bundles</groupId>
       <artifactId>tyrus-standalone-client-jdk</artifactId>
-      <version>1.12</version>
+      <version>2.0.0</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -154,7 +152,7 @@
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
-        <artifactId>maven-localizer-plugin</artifactId>
+        <artifactId>localizer-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>

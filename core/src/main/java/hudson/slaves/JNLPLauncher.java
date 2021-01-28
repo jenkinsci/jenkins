@@ -34,6 +34,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
+import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
@@ -75,6 +76,13 @@ public class JNLPLauncher extends ComputerLauncher {
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
     private boolean webSocket;
+
+    /**
+     * @see #getInboundAgentUrl()
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public static final String CUSTOM_INBOUND_URL_PROPERTY = "jenkins.agent.inboundUrl";
 
     /**
      * Constructor.
@@ -248,5 +256,24 @@ public class JNLPLauncher extends ComputerLauncher {
     @Restricted(NoExternalUse.class) // Jelly use
     public boolean isJavaWebStartSupported() {
         return JavaUtils.isRunningWithJava8OrBelow();
+    }
+
+    /**
+     * Overrides the url that inbound TCP agents should connect to
+     * as advertised in the agent.jnlp file. If not set, the default
+     * behavior is unchanged and returns the root URL.
+     *
+     * This enables using a private address for inbound tcp agents,
+     * separate from Jenkins root URL.
+     *
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getInboundAgentUrl() {
+        String url = SystemProperties.getString(CUSTOM_INBOUND_URL_PROPERTY);
+        if (url == null || url.isEmpty()) {
+            return Jenkins.get().getRootUrl();
+        }
+        return url;
     }
 }

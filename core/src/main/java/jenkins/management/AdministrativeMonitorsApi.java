@@ -40,7 +40,7 @@ public class AdministrativeMonitorsApi implements RootAction {
 
     @Override
     public String getUrlName() {
-        return "administrativeMonitors";
+        return "administrativeMonitorsApi";
     }
 
     private AdministrativeMonitorsDecorator getDecorator() {

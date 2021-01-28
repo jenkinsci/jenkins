@@ -39,7 +39,6 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 
-import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;

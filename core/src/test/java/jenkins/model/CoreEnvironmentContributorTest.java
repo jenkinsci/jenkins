@@ -11,6 +11,7 @@ import hudson.model.TaskListener;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +27,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CoreEnvironmentContributorTest {
     CoreEnvironmentContributor instance;
-    
+
+    private AutoCloseable mocks;
+
     @Mock
     Job job;
     
@@ -36,9 +39,14 @@ public class CoreEnvironmentContributorTest {
     @Mock
     Jenkins jenkins;
 
+    @After
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         instance = new CoreEnvironmentContributor();
     }
 

@@ -61,7 +61,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -712,9 +711,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @throws IOException
      */
     private void disableWithoutCheck() throws IOException {
-        // creates an empty file
         try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
-            os.close();
+            // creates an empty file
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }

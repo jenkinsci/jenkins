@@ -1,0 +1,79 @@
+{{#each plugins}}
+    <tr>
+        {{#if @root/admin }}
+            <td class="pane">
+                <input type="checkbox" name="plugin.{{ this.name }}.{{ this.sourceId }}">
+            </td>
+        {{/if}}
+        <td class="pane">
+            <div>
+                <a href="{{ this.wiki }}" target="_blank" rel="noopener noreferrer">
+                    {{ this.displayName }}
+                </a>
+            </div>
+            {{#if this.categories }}
+                <div class="plugin-manager__categories">
+                    {{#each this.categories }}
+                        <a href="?filter={{ this }}" class="plugin-manager__category-label">
+                        {{ this }}
+                        </a>
+                    {{/each}}
+                </div>
+            {{/if}}
+            {{#if this.excerpt }}
+                <div class="except">
+                    {{{ this.excerpt }}}
+                </div>
+            {{/if}}
+            {{#if this.newerCoreRequired }}
+                <div class="alert alert-danger">
+                    {{{ this.newerCoreRequired }}}
+                </div>
+            {{/if}}
+            {{#if this.dependenciesNewerJava }}
+                <div class="alert alert-danger">
+                    {{{ this.dependenciesNewerJava }}}
+                </div>
+            {{/if}}
+            {{#if this.unresolvedSecurityWarnings }}
+                <div class="alert alert-danger">
+                    {{ this.unresolvedSecurityWarnings.text }}
+                    <ul>
+                        {{#each this.unresolvedSecurityWarnings.warnings}}
+                            <li>
+                                <a href="{{ this.url }}" target="_blank" rel="noopener noreferrer">
+                                    {{ this.message }}
+                                </a>
+                            </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            {{/if}}
+            {{#if this.deprecated }}
+                <div class="alert alert-warning">
+                    {{{ this.deprecated }}}
+                </div>
+            {{/if}}
+            {{#if this.adoptMe }}
+                <div class="alert alert-warning">
+                    {{{ this.adoptMe }}}
+                </div>
+            {{/if}}
+            {{#if this.newerVersionAvailableNotOffered }}
+                <div class="alert alert-info">
+                    {{{ this.newerVersionAvailableNotOffered }}}
+                </div>
+            {{/if}}
+        </td>
+        <td class="pane">
+            {{ this.version }}
+        </td>
+        <td class="pane">
+            {{#if this.releaseTimestamp }}
+                <time datetime="{{ this.releaseTimestamp.iso8601 }}">
+                    {{ this.releaseTimestamp.displayValue }}
+                </time>
+            {{/if}}
+        </td>
+    </tr>
+{{/each}}

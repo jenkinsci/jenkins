@@ -3505,7 +3505,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     command.run();
                 }
             }, new ReactorListener() {
-                final Level level = Level.parse(Configuration.getStringConfigParameter("termLogLevel", "FINE"));
+                final Level level = Level.parse(SystemProperties.getString(Jenkins.class.getName() + "." +"termLogLevel", "FINE"));
 
                 public void onTaskStarted(Task t) {
                     LOGGER.log(level, "Started {0}", InitReactorRunner.getDisplayName(t));
@@ -4851,7 +4851,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public boolean isSubjectToMandatoryReadPermissionCheck(String restOfPath) {
         for (String name : ALWAYS_READABLE_PATHS) {
-            if (restOfPath.startsWith(name)) {
+            if (restOfPath.startsWith("/" + name + "/") || restOfPath.equals("/" + name)) {
                 return false;
             }
         }
@@ -5281,8 +5281,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
-    public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
-    public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
+    public static boolean PARALLEL_LOAD = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "parallelLoad", true);
+    public static boolean KILL_AFTER_LOAD = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "killAfterLoad", false);
     /**
      * @deprecated No longer used.
      */
@@ -5304,7 +5304,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Switch to enable people to use a shorter workspace name.
      */
-    private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
+    private static final String WORKSPACE_DIRNAME = SystemProperties.getString(Jenkins.class.getName() + "." + "workspaceDirName", "workspace");
 
     /**
      * Default value of job's builds dir.
@@ -5393,19 +5393,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
-    private static final ImmutableSet<String> ALWAYS_READABLE_PATHS = ImmutableSet.of(
-        "/login",
-        "/logout",
-        "/accessDenied",
-        "/adjuncts/",
-        "/error",
-        "/oops",
-        "/signup",
-        "/tcpSlaveAgentListener",
-        "/federatedLoginService/",
-        "/securityRealm",
-        "/instance-identity"
-    );
+    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(ImmutableSet.of(
+        "login",
+        "loginError",
+        "logout",
+        "accessDenied",
+        "adjuncts",
+        "error",
+        "oops",
+        "signup",
+        "tcpSlaveAgentListener",
+        "federatedLoginService",
+        "securityRealm",
+        "instance-identity"
+    ));
+
+    static {
+        final String paths = SystemProperties.getString(Jenkins.class.getName() + ".additionalReadablePaths");
+        if (paths != null) {
+            LOGGER.log(INFO, "SECURITY-2047 override: Adding the following paths to ALWAYS_READABLE_PATHS: " + paths);
+            ALWAYS_READABLE_PATHS.addAll(Arrays.stream(paths.split(",")).map(String::trim).collect(Collectors.toSet()));
+        }
+    }
 
     /**
      * {@link Authentication} object that represents the anonymous user.

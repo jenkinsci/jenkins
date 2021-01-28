@@ -24,18 +24,25 @@
 
 package hudson.util.io;
 
+import hudson.Util;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.Zip64Mode;
 import org.apache.tools.zip.ZipOutputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
 
 /**
  * {@link FileVisitor} that creates a zip archive.
@@ -45,9 +52,24 @@ import java.io.OutputStream;
 final class ZipArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
     private final ZipOutputStream zip;
+    private final OpenOption[] openOptions;
+    private final String prefix;
 
     ZipArchiver(OutputStream out) {
+        this(out, false, "");
+    }
+
+    // Restriction added for clarity, it's a package class, you should not use it outside of Jenkins core
+    @Restricted(NoExternalUse.class)
+    ZipArchiver(OutputStream out, boolean failOnSymLink, String prefix) {
+        if (StringUtils.isBlank(prefix)) {
+            this.prefix = "";
+        } else {
+            this.prefix = Util.ensureEndsWith(prefix, "/");
+        }
+        
         zip = new ZipOutputStream(out);
+        openOptions = failOnSymLink ? new LinkOption[]{LinkOption.NOFOLLOW_LINKS} : new OpenOption[0];
         zip.setEncoding(System.getProperty("file.encoding"));
         zip.setUseZip64(Zip64Mode.AsNeeded);
     }
@@ -61,7 +83,7 @@ final class ZipArchiver extends Archiver {
         String relativePath = _relativePath.replace('\\', '/');
         
         if(f.isDirectory()) {
-            ZipEntry dirZipEntry = new ZipEntry(relativePath+'/');
+            ZipEntry dirZipEntry = new ZipEntry(this.prefix + relativePath+'/');
             // Setting this bit explicitly is needed by some unzipping applications (see JENKINS-3294).
             dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
             if (mode!=-1)   dirZipEntry.setUnixMode(mode);
@@ -69,11 +91,11 @@ final class ZipArchiver extends Archiver {
             zip.putNextEntry(dirZipEntry);
             zip.closeEntry();
         } else {
-            ZipEntry fileZipEntry = new ZipEntry(relativePath);
+            ZipEntry fileZipEntry = new ZipEntry(this.prefix + relativePath);
             if (mode!=-1)   fileZipEntry.setUnixMode(mode);
             fileZipEntry.setTime(f.lastModified());
             zip.putNextEntry(fileZipEntry);
-            try (InputStream in = Files.newInputStream(f.toPath())) {
+            try (InputStream in = Files.newInputStream(f.toPath(), openOptions)) {
                 int len;
                 while((len=in.read(buf))>=0)
                     zip.write(buf,0,len);

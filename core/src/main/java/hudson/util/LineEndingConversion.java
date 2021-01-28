@@ -38,12 +38,12 @@ public class LineEndingConversion {
         // Convert line endings to Unix LF,
         // which also sets up the string for other conversions
         input = input.replace("\r\n","\n");
-        input = input.replace("\r","\n");
+        input = input.replace('\r','\n');
         switch (type) {
             case CR:
             case Mac:
                 // Convert line endings to CR
-                input = input.replace("\n", "\r");
+                input = input.replace('\n', '\r');
                 break;
             case CRLF:
             case Windows:

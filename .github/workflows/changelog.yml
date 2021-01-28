@@ -15,7 +15,7 @@ jobs:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - name: Generate GitHub Release Draft
         id: release-drafter
-        uses: release-drafter/release-drafter@v5.12.1
+        uses: release-drafter/release-drafter@v5.13.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Generates a YAML changelog file using https://github.com/jenkinsci/jenkins-core-changelog-generator
@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_AUTH: github-actions:${{ secrets.GITHUB_TOKEN }}
       - name: Upload Changelog YAML
-        uses: actions/upload-artifact@v2.2.1
+        uses: actions/upload-artifact@v2.2.2
         with:
           name: changelog.yaml
           path: changelog.yaml
