@@ -2,6 +2,7 @@ package org.jenkins.ui.icon;
 
 public enum IconFormat {
     IMG,
-    SVG_SPRITE,
+    EXTERNAL_SVG_SPRITE,
+    INLINE_SVG_SPRITE,
     INLINE_SVG,
 }

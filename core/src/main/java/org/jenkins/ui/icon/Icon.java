@@ -123,7 +123,7 @@ public class Icon {
      * Is the Icon an SVG?
      */
     public boolean isSvgSprite() {
-        return iconFormat == IconFormat.SVG_SPRITE;
+        return iconFormat == IconFormat.EXTERNAL_SVG_SPRITE || iconFormat == IconFormat.INLINE_SVG_SPRITE;
     }
 
     /**

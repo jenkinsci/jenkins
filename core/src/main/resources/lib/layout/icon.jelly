@@ -61,9 +61,21 @@ THE SOFTWARE.
   </j:if>
 
   <j:choose>
-    <j:when test="${iconMetadata.svgSprite}">
+    <j:when test="${iconMetadata.buildStatus}">
+      <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />
+
+      <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
+          <span class="build-status-icon__outer">
+            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" />
+          </span>
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}"/>
+      </span>
+    </j:when>
+
+    <j:when test="${iconMetadata.svgSprite &amp; !iconMetadata.buildStatus}">
       <l:svgIcon class="${attrs.class}" href="${iconSrc}"/>
     </j:when>
+
     <j:otherwise>
       <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
            alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>

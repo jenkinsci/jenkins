@@ -1484,6 +1484,16 @@ table.progress-bar.red td.progress-bar-done {
   }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg) translateZ(0); }
+  to { transform: rotate(360deg) translateZ(0); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
 /* ========================= YUI dialog ========================= */
 
 /* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
