@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import hudson.security.ACL;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -180,7 +181,7 @@ public class InstallUtilTest {
 					json.put("dependencies", new JSONArray());
 					Plugin p = new Plugin(getId(), json);
 
-					InstallationJob job = new InstallationJob(p, null, null, false);
+					InstallationJob job = new InstallationJob(p, null, ACL.SYSTEM2, false);
 						job.status = status;
 						job.setCorrelationId(UUID.randomUUID()); // this indicates the plugin was 'directly selected'
 		                updates.add(job);
