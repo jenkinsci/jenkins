@@ -2410,6 +2410,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Represents the state of the upgrade activity of Jenkins core.
      */
     public final class HudsonUpgradeJob extends DownloadJob {
+
+        @Deprecated
+        public HudsonUpgradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
+            super(site, auth.toSpring());
+        }
+
         public HudsonUpgradeJob(UpdateSite site, Authentication auth) {
             super(site, auth);
         }
