@@ -2111,6 +2111,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             this(plugin,site,auth,false);
         }
 
+        /**
+         * @deprecated use {@code InstallationJob(Plugin, UpdateSite, Authentication, boolean)}
+         * @see #InstallationJob(Plugin, UpdateSite, Authentication, boolean)
+         */
+        @Deprecated
+        public InstallationJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth, boolean dynamicLoad) {
+            this(plugin, site, auth.toSpring(), dynamicLoad);
+        }
+
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth, boolean dynamicLoad) {
             super(site, auth);
             this.plugin = plugin;
@@ -2326,6 +2335,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private final PluginManager pm = Jenkins.get().getPluginManager();
 
+        /**
+         * @deprecated use {@code PluginDowngradeJob(Plugin, UpdateSite, Authentication)}
+         * @see #PluginDowngradeJob(Plugin, UpdateSite, Authentication)
+         */
+        @Deprecated
+        public PluginDowngradeJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth) {
+            this(plugin, site, auth.toSpring());
+        }
+
+
         public PluginDowngradeJob(Plugin plugin, UpdateSite site, Authentication auth) {
             super(site, auth);
             this.plugin = plugin;
@@ -2411,6 +2430,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     public final class HudsonUpgradeJob extends DownloadJob {
 
+        /**
+          * @deprecated use {@code HudsonUpgradeJob(UpdateSite site, Authentication auth)}
+          * @see #HudsonUpgradeJob(UpdateSite, Authentication)
+         */
         @Deprecated
         public HudsonUpgradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
             super(site, auth.toSpring());
@@ -2450,6 +2473,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public final class HudsonDowngradeJob extends DownloadJob {
+
+        /**
+         * @deprecated use {@code HudsonDowngradeJob(UpdateSite site, Authentication auth)}
+         * @see #HudsonDowngradeJob(UpdateSite, Authentication)
+         */
+        @Deprecated
+        public HudsonDowngradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
+            super(site, auth.toSpring());
+        }
+
         public HudsonDowngradeJob(UpdateSite site, Authentication auth) {
             super(site, auth);
         }
