@@ -2112,8 +2112,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         /**
-         * @deprecated use {@code InstallationJob(Plugin, UpdateSite, Authentication, boolean)}
-         * @see #InstallationJob(Plugin, UpdateSite, Authentication, boolean)
+         * @deprecated use {@link InstallationJob(Plugin, UpdateSite, Authentication, boolean)}
          */
         @Deprecated
         public InstallationJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth, boolean dynamicLoad) {
@@ -2336,8 +2335,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private final PluginManager pm = Jenkins.get().getPluginManager();
 
         /**
-         * @deprecated use {@code PluginDowngradeJob(Plugin, UpdateSite, Authentication)}
-         * @see #PluginDowngradeJob(Plugin, UpdateSite, Authentication)
+         * @deprecated use {@link PluginDowngradeJob(Plugin, UpdateSite, Authentication)}
          */
         @Deprecated
         public PluginDowngradeJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth) {
@@ -2431,8 +2429,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class HudsonUpgradeJob extends DownloadJob {
 
         /**
-          * @deprecated use {@code HudsonUpgradeJob(UpdateSite site, Authentication auth)}
-          * @see #HudsonUpgradeJob(UpdateSite, Authentication)
+          * @deprecated use {@link HudsonUpgradeJob(UpdateSite site, Authentication auth)}
          */
         @Deprecated
         public HudsonUpgradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
@@ -2475,8 +2472,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class HudsonDowngradeJob extends DownloadJob {
 
         /**
-         * @deprecated use {@code HudsonDowngradeJob(UpdateSite site, Authentication auth)}
-         * @see #HudsonDowngradeJob(UpdateSite, Authentication)
+         * @deprecated use {@link HudsonDowngradeJob(UpdateSite site, Authentication auth)}
          */
         @Deprecated
         public HudsonDowngradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
