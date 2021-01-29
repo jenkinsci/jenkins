@@ -53,6 +53,7 @@ import hudson.model.UpdateSite;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.springframework.security.core.Authentication;
 
 /**
  * Test
