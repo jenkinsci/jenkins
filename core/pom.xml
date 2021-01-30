@@ -776,7 +776,7 @@ THE SOFTWARE.
       </plugin>
       <plugin><!-- skip slow dependency analysis -->
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
+        <version>3.1.1</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>
