@@ -25,13 +25,12 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import javax.annotation.CheckForNull;
 
 import java.util.Arrays;
 import java.util.List;
