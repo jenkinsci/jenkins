@@ -109,7 +109,7 @@ THE SOFTWARE.
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
     <!-- TODO keep these in sync -->
-    <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
+    <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
     <access-modifier-checker.version>1.16</access-modifier-checker.version>
     <junit.jupiter.version>5.7.0</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
