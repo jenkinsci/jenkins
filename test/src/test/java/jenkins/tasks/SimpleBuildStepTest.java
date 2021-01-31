@@ -1,5 +1,6 @@
 package jenkins.tasks;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -13,7 +14,6 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
-import javax.annotation.Nonnull;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class SimpleBuildStepTest {
     private static class StepThatGetsEnvironmentContents extends Builder implements SimpleBuildStep {
 
         @Override
-        public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull EnvVars env, @Nonnull Launcher launcher, @Nonnull TaskListener listener) throws InterruptedException, IOException {
+        public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
             // Check that the environment we get includes values from the slave
             Assert.assertEquals("JENKINS-29144", env.get("TICKET"));
             // And that parameters appear too

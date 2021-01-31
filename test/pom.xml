@@ -172,7 +172,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
-      <version>0.9.9</version>
+      <version>0.9.12</version>
       <exclusions>
         <exclusion> <!-- TODO requests 15; apparently works well enough with the 11 we bundle -->
           <groupId>com.google.guava</groupId>
