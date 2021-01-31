@@ -572,7 +572,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     return;
                                 }
                                 try {
-                                    p.getPlugin().postInitialize();
+                                    p.getPluginOrFail().postInitialize();
                                 } catch (Exception e) {
                                     failedPlugins.add(new FailedPlugin(p.getShortName(), e));
                                     activePlugins.remove(p);
@@ -980,7 +980,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             throw new IOException("Failed to refresh extensions after installing some plugins", e);
         }
         for (PluginWrapper p : plugins) {
-          p.getPlugin().postInitialize();
+            //TODO:According to the postInitialize() documentation, one may expect that
+            //p.getPluginOrFail() NPE will continue the initialization. Keeping the original behavior ATM
+          p.getPluginOrFail().postInitialize();
         }
 
         // run initializers in the added plugins
@@ -1707,6 +1709,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return installJobs;
     }
 
+    @CheckForNull
     private UpdateSite.Plugin getPlugin(String pluginName, String siteName) {
         UpdateSite updateSite = Jenkins.get().getUpdateCenter().getById(siteName);
         if (updateSite == null) {
