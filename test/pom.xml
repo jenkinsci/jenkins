@@ -81,7 +81,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.69</version>
+      <version>2.71</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -172,7 +172,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
-      <version>0.9.9</version>
+      <version>0.9.12</version>
       <exclusions>
         <exclusion> <!-- TODO requests 15; apparently works well enough with the 11 we bundle -->
           <groupId>com.google.guava</groupId>
@@ -204,7 +204,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>3.0.0</version>
+      <version>4.0.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
