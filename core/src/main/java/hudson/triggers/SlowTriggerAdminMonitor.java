@@ -1,5 +1,6 @@
 package hudson.triggers;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
@@ -28,6 +29,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     @NonNull
     private final Map<String, Value> errors = new ConcurrentHashMap<>();
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int MAX_ENTRIES = 10;
 
     @NonNull

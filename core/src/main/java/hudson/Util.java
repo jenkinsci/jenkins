@@ -1788,5 +1788,6 @@ public class Util {
      * overwritten by Jenkins erroneously.
      */
     @Restricted(value = NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

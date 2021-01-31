@@ -24,6 +24,7 @@
 
 package hudson.util.io;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath.TarCompression;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -47,6 +48,7 @@ public abstract class ArchiverFactory implements Serializable {
     /**
      * Uncompressed tar format.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static ArchiverFactory TAR = new TarArchiverFactory(TarCompression.NONE);
 
     /**
@@ -57,6 +59,7 @@ public abstract class ArchiverFactory implements Serializable {
     /**
      * Zip format.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static ArchiverFactory ZIP = new ZipArchiverFactory();
 
     /**

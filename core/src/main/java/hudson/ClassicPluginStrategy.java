@@ -722,5 +722,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /* Unused since 1.527, see https://github.com/jenkinsci/jenkins/commit/47de54d070f67af95b4fefb6d006a72bb31a5cb8 */
     @Deprecated
     public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DISABLE_TRANSFORMER = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }

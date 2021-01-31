@@ -24,6 +24,8 @@
 package hudson;
 
 import java.util.concurrent.TimeUnit;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -309,6 +311,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
 
     /**

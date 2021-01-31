@@ -145,6 +145,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      * which in practice means that all SCM committers as well as all Jenkins users with any non-read-only access are consider administrators.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* nonfinal for tests & script console */ boolean INSECURE = SystemProperties.getBoolean(ConsoleNote.class.getName() + ".INSECURE");
 
     /**
