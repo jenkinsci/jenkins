@@ -174,10 +174,6 @@ THE SOFTWARE.
       <artifactId>reflections</artifactId>
       <version>0.9.12</version>
       <exclusions>
-        <exclusion> <!-- TODO requests 15; apparently works well enough with the 11 we bundle -->
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
         <exclusion> <!-- pick up from Stapler -->
           <groupId>com.google.code.findbugs</groupId>
           <artifactId>jsr305</artifactId>
