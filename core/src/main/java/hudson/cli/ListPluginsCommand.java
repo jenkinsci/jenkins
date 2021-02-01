@@ -94,6 +94,6 @@ public class ListPluginsCommand extends CLICommand {
         }
 
         String formatString = String.format("%%-%ds %%-%ds %%s", colWidthShortName, colWidthDisplayName);
-        stdout.println(String.format(formatString, plugin.getShortName(), plugin.getDisplayName(), version));
+        stdout.printf(formatString + "%n", plugin.getShortName(), plugin.getDisplayName(), version);
     }
 }
