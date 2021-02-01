@@ -141,6 +141,12 @@ public class SlaveComputer extends Computer {
     private transient int numRetryAttempt;
 
     /**
+     * Escape hatch for rejecting connections from agents with unsupported Remoting versions
+     */
+    @Restricted(NoExternalUse.class)
+    private static boolean REJECT_CONNECTION = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedAgentConnection");
+
+    /**
      * Tracks the status of the last launch operation, which is always asynchronous.
      * This can be used to wait for the completion, or cancel the launch activity.
      */
@@ -644,10 +650,19 @@ public class SlaveComputer extends Computer {
         String slaveVersion = channel.call(new SlaveVersion());
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
+
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
-                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
-                    RemotingVersionInfo.getMinimumSupportedVersion()));
+            if (REJECT_CONNECTION) {
+                log.println(String.format("Remoting version is older than a minimum required one (%s). " +
+                                "Connection is rejected.",
+                        RemotingVersionInfo.getMinimumSupportedVersion()));
+                disconnect(new OfflineCause.ChannelTermination(new Exception("terminate")));
+                return;
+            } else {
+                log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
+                                "Connection will not be rejected, but the compatibility is NOT guaranteed",
+                        RemotingVersionInfo.getMinimumSupportedVersion()));
+            }
         }
 
         boolean _isUnix = channel.call(new DetectOS());
