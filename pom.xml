@@ -360,7 +360,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.17</version>
+          <version>1.18</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
