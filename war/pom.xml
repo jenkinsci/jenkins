@@ -320,7 +320,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>antisamy-markup-formatter</artifactId>
-                  <version>1.1</version>
+                  <version>2.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
