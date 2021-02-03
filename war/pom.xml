@@ -266,7 +266,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
-                  <version>1.8</version>
+                  <version>1.11</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
