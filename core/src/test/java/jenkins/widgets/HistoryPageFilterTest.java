@@ -65,7 +65,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_empty_page() {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> itemList = new ArrayList<>();
+        Iterable<ModelObject> itemList = Collections.emptyList();
 
         historyPageFilter.add(itemList);
         Assert.assertFalse(historyPageFilter.hasUpPage);
@@ -80,7 +80,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_partial_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> runs = newRuns(1, 2);
+        Iterable<ModelObject> runs = newRuns(1, 2);
         List<Queue.Item> queueItems = newQueueItems(3, 4);
 
         historyPageFilter.add(runs, queueItems);
@@ -104,7 +104,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_longer_list() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> runs = newRuns(1, 10);
+        Iterable<ModelObject> runs = newRuns(1, 10);
         List<Queue.Item> queueItems = newQueueItems(11, 12);
 
         historyPageFilter.add(runs, queueItems);
@@ -126,7 +126,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_gt_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 11L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -145,7 +145,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_lt_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 0L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -161,7 +161,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_leaving_part_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 4L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -181,7 +181,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_mid_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 8L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -199,7 +199,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_gt_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 11L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -215,7 +215,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_lt_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 0L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -233,7 +233,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_near_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 3L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -253,7 +253,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_near_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 8L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -272,7 +272,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_doesntIncludeQueuedItems() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 5L, null);
-        List<ModelObject> runs = newRuns(1, 10);
+        Iterable<ModelObject> runs = newRuns(1, 10);
         List<Queue.Item> queueItems = newQueueItems(11, 12);
 
         historyPageFilter.add(runs, queueItems);
@@ -293,7 +293,10 @@ public class HistoryPageFilterTest {
     @Test
     public void test_laterItemsNotEvaluated() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> itemList = newRuns(6, 10);
+        List<ModelObject> itemList = new ArrayList<>();
+        for (ModelObject run : newRuns(6, 10)) {
+            itemList.add(run);
+        }
         for (int queueId = 5; queueId >= 1; queueId--) {
             itemList.add(new ExplodingMockRun(queueId));
         }
@@ -312,7 +315,7 @@ public class HistoryPageFilterTest {
     public void test_search_runs_by_build_number() throws IOException {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> runs = newRuns(23, 24);
+        Iterable<ModelObject> runs = newRuns(23, 24);
         List<Queue.Item> queueItems = newQueueItems(25, 26);
         //and
         historyPageFilter.setSearchString("23");
@@ -389,7 +392,7 @@ public class HistoryPageFilterTest {
         return items;
     }
 
-    private List<ModelObject> newRuns(long startId, long endId) throws IOException {
+    private Iterable<ModelObject> newRuns(long startId, long endId) throws IOException {
         // Runs should be in reverse order, newest first.
         List<ModelObject> runs = new ArrayList<>();
         for (long queueId = endId; queueId >= startId; queueId--) {
