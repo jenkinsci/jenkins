@@ -208,6 +208,9 @@ public class InstallState implements ExtensionPoint {
             super("DOWNGRADE", true);
         }
         public void initializeState() {
+            // Invalidate update site cache after a Jenkins downgrade
+            Jenkins.get().getUpdateCenter().doInvalidateData();
+
             InstallUtil.saveLastExecVersion();
         }
     }

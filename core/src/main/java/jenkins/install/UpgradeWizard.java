@@ -58,6 +58,9 @@ public class UpgradeWizard extends InstallState {
     @Override
     public void initializeState() {
         applyForcedChanges();
+
+        // Invalidate update site cache after a Jenkins update
+        Jenkins.get().getUpdateCenter().doInvalidateData();
         
         // Initializing this state is directly related to 
         // running the detached plugin checks, these should be consolidated somehow
