@@ -170,17 +170,6 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.reflections</groupId>
-      <artifactId>reflections</artifactId>
-      <version>0.9.12</version>
-      <exclusions>
-        <exclusion> <!-- pick up from Stapler -->
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.codehaus.geb</groupId>
       <artifactId>geb-implicit-assertions</artifactId>
       <version>0.7.2</version>
