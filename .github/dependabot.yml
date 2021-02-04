@@ -33,3 +33,5 @@ updates:
       - dependency-name: "com.google.inject:guice"
       # the dependency is actually provided by the Web container, hence it is aligned with Jetty. See https://github.com/jenkinsci/jenkins/pull/5211
       - dependency-name: "javax.servlet:javax.servlet-api"
+      # log4j 1.2.17 is the final 1.x release
+      - dependency-name: "log4j:log4j"
