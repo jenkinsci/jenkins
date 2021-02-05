@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -58,6 +59,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -128,6 +130,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Restricted(NoExternalUse.class)
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    /* package */ static boolean /* Script Console modifiable */ DISABLE_CACHE_FOR_IMPERSONATION =
+        Boolean.getBoolean(User.class.getName() + ".disableImpersonationCache");
 
     /**
      * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
@@ -381,22 +388,36 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
-     * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
-     * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
-     * logged in.
+     * This method checks with {@link UserDetailsCache} and {@link SecurityRealm} if the user is a valid user that can 
+     * login to the security realm. If {@link SecurityRealm} is a kind that does not support querying information about
+     * other users, this will use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the 
+     * last time the user has logged in.
      *
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
      * @since TODO
      */
     public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
-        ImpersonatingUserDetailsService2 userDetailsService = new ImpersonatingUserDetailsService2(
-                Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails2
-        );
-
         try {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(id);
+            UserDetails userDetails = null;
+            if (!DISABLE_CACHE_FOR_IMPERSONATION) {
+                try {
+                    userDetails = UserDetailsCache.get().loadUserByUsername(id);
+                } catch (ExecutionException ex) {
+                    LOGGER.log(Level.FINE, "Failure to retrieve " + id + "from cache", ex);
+                } catch (UserMayOrMayNotExistException2 e) {
+                    LOGGER.log(Level.FINE, "Failure to retrieve " + id , e);
+                    // This exception originates from the SecurityRealm and tell us that the User may or may not exists
+                    // So do not use the ImpersonatingUserDetailsService that would duplicate the call to 
+                    // loadUserByUsername. Directly try to impersonate instead.
+                    userDetails = Optional.ofNullable(getUserDetailsBase()).orElseThrow(() -> e);
+                }
+            }
+            if(userDetails == null) {
+                userDetails = new ImpersonatingUserDetailsService2(
+                    Jenkins.get().getSecurityRealm().getSecurityComponents().userDetails2
+                ).loadUserByUsername(id);
+            }
             LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", id);
             return userDetails;
         } catch (UserMayOrMayNotExistException2 e) {
@@ -423,6 +444,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         } catch (AuthenticationException x) {
             throw org.acegisecurity.AuthenticationException.fromSpring(x);
         }
+    }
+
+    /**
+     * Get the {@link UserDetails} of the user from what is known.
+     *
+     * @return userDetails for the user, null if the user or a {@link LastGrantedAuthoritiesProperty} cannot be found
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nullable UserDetails getUserDetailsBase() {
+        LastGrantedAuthoritiesProperty p = this.getProperty(LastGrantedAuthoritiesProperty.class);
+        if (p != null)
+            return new org.springframework.security.core.userdetails.User(id, "", true, true, true, true, p.getAuthorities2());
+        return null;
     }
 
     /**

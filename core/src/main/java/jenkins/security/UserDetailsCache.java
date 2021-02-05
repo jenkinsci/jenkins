@@ -166,10 +166,14 @@ public final class UserDetailsCache {
                 if (userDetails == null) {
                     existenceCache.put(this.idOrFullName, Boolean.FALSE);
                     throw new NullPointerException("hudson.security.SecurityRealm should never return null. "
-                                                   + jenkins.getSecurityRealm() + " returned null for idOrFullName='" + idOrFullName + "'");
+                        + jenkins.getSecurityRealm() + " returned null for idOrFullName='" + idOrFullName + "'");
                 }
                 existenceCache.put(this.idOrFullName, Boolean.TRUE);
                 return userDetails;
+            } catch (UserMayOrMayNotExistException2 e) {
+                // In that case, we cannot guarantee the user does not exist
+                existenceCache.invalidate(this.idOrFullName);
+                throw e;
             } catch (UsernameNotFoundException e) {
                 existenceCache.put(this.idOrFullName, Boolean.FALSE);
                 throw e;
