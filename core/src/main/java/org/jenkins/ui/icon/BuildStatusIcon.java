@@ -8,7 +8,7 @@ public class BuildStatusIcon extends Icon {
         this.inProgress = inProgress;
     }
 
-    public  BuildStatusIcon(String classSpec, String url, String style) {
+    public BuildStatusIcon(String classSpec, String url, String style) {
         this(classSpec, url, style, false);
     }
 

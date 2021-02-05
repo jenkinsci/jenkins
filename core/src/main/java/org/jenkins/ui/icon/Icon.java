@@ -58,7 +58,6 @@ public class Icon {
     private final String normalizedSelector;
     private final String url;
     private final String style;
-//    private final boolean svg;
     private IconType iconType;
     private IconFormat iconFormat;
 
