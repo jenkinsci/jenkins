@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLAnchorElement;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -45,7 +46,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.annotation.CheckForNull;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
