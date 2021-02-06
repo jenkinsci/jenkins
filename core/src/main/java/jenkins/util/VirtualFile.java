@@ -661,18 +661,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
 
             @Override
-            public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                           boolean noFollowLinks, String prefix) throws IOException {
-                String rootPath = determineRootPath();
-                DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.createZipWithoutSymlink(prefix) : ArchiverFactory.ZIP;
-                try (Archiver archiver = archiverFactory.create(outputStream)) {
-                    globScanner.scan(f, FilePath.ignoringSymlinks(archiver, rootPath, noFollowLinks));
-                    return archiver.countEntries();
-                }
-            }
-
-            @Override
             public boolean hasSymlink(boolean noFollowLinks) throws IOException {
                 String rootPath = determineRootPath();
                 return FilePath.isSymlink(f, rootPath, noFollowLinks);
@@ -964,18 +952,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 try {
                     String rootPath = root == null ? null : root.getRemote();
                     return f.act(new Scanner(includes, excludes, useDefaultExcludes, rootPath, noFollowLinks));
-                } catch (InterruptedException x) {
-                    throw new IOException(x);
-                }
-            }
-
-            @Override
-            public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                                    boolean noFollowLinks, String prefix) throws IOException {
-                try {
-                    String rootPath = root == null ? null : root.getRemote();
-                    DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                    return f.zip(outputStream, globScanner, rootPath, noFollowLinks, prefix);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
