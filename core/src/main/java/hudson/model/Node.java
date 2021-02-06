@@ -526,7 +526,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
         final AtomicReference<BindInterceptor> old = new AtomicReference<>();
-        old.set(req.setBindListener(new BindInterceptor() {
+        old.set(req.setBindInterceptor(new BindInterceptor() {
             @Override
             public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
                 if (jsonForProperties != jsonSource) {

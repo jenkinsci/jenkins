@@ -47,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -77,10 +78,10 @@ public class VirtualFileTest {
     @Test public void outsideSymlinks() throws Exception {
         assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         File ws = tmp.newFolder("ws");
-        FileUtils.write(new File(ws, "safe"), "safe");
+        FileUtils.write(new File(ws, "safe"), "safe", StandardCharsets.US_ASCII, false);
         Util.createSymlink(ws, "safe", "supported", TaskListener.NULL);
         File other = tmp.newFolder("other");
-        FileUtils.write(new File(other, "secret"), "s3cr3t");
+        FileUtils.write(new File(other, "secret"), "s3cr3t", StandardCharsets.US_ASCII, false);
         Util.createSymlink(ws, "../other/secret", "hack", TaskListener.NULL);
         VirtualFile root = VirtualFile.forFile(ws);
         VirtualFile supported = root.child("supported");
@@ -731,19 +732,19 @@ public class VirtualFileTest {
         File aaa = new File(aa, "aaa");
         aaa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa");
+        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
 
         File ab = new File(a, "ab");
         ab.mkdirs();
         File abTxt = new File(ab, "ab.txt");
-        FileUtils.write(abTxt, "ab");
+        FileUtils.write(abTxt, "ab", StandardCharsets.US_ASCII, false);
 
         File b = new File(root, "b");
 
         File ba = new File(b, "ba");
         ba.mkdirs();
         File baTxt = new File(ba, "ba.txt");
-        FileUtils.write(baTxt, "ba");
+        FileUtils.write(baTxt, "ba", StandardCharsets.US_ASCII, false);
 
         File _a = new File(b, "_a");
         new FilePath(_a).symlinkTo(a.getAbsolutePath(), TaskListener.NULL);

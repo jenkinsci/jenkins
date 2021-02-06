@@ -24,7 +24,7 @@
  */
 package hudson.model;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;

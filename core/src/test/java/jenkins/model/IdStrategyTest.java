@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 public class IdStrategyTest {
 
+    @SuppressWarnings("deprecation")
     @Test
     public void caseInsensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseInsensitive();
@@ -45,6 +46,7 @@ public class IdStrategyTest {
         assertThat(idStrategy.idFromFilename("rrr$t123"), is("rrr$t123"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void caseInsensitivePassesThroughOldLegacy() {
         IdStrategy idStrategy = new IdStrategy.CaseInsensitive();
@@ -55,6 +57,7 @@ public class IdStrategyTest {
         assertThat(idStrategy.idFromFilename("~1fred"), is("~1fred"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void caseSensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
@@ -93,6 +96,7 @@ public class IdStrategyTest {
         assertThat(idStrategy.idFromFilename("iiii _-@$007~ea"), is("iiii _-@$007Ea"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void caseSensitivePassesThroughOldLegacy() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
@@ -204,6 +208,7 @@ public class IdStrategyTest {
         assertTrue(idStrategy.compare("john.smith@acme.org", "John.Smith@acme.org") > 0);
     }
 
+    @SuppressWarnings("deprecation")
     private void assertRestrictedNames(IdStrategy idStrategy) {
         assertThat(idStrategy.idFromFilename("$002f"), is("/"));
 
