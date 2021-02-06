@@ -39,7 +39,6 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
-import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Node.Mode;
@@ -832,7 +831,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @SuppressWarnings("deprecation")
     @WithBridgeMethods(Future.class)
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod) {
-        return scheduleBuild2(quietPeriod, new LegacyCodeCause());
+        return scheduleBuild2(quietPeriod, new hudson.model.Cause.LegacyCodeCause());
     }
 
     /**

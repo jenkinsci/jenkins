@@ -179,6 +179,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean add(D d) {
         boolean r = super.add(d);
         getDescriptorExtensionList().add(d);
