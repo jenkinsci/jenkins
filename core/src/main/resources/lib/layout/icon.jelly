@@ -72,7 +72,7 @@ THE SOFTWARE.
       </span>
     </j:when>
 
-    <j:when test="${iconMetadata.svgSprite &amp; !iconMetadata.buildStatus}">
+    <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
       <l:svgIcon class="${attrs.class}" href="${iconSrc}"/>
     </j:when>
 
