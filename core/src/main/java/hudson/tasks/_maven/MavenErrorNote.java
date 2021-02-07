@@ -53,7 +53,6 @@ public class MavenErrorNote extends ConsoleNote {
         }
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static Pattern PATTERN = Pattern.compile("^\\[ERROR\\]");
+    public static final Pattern PATTERN = Pattern.compile("^\\[ERROR\\]");
 }
 

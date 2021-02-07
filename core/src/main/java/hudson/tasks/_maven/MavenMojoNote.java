@@ -58,6 +58,5 @@ public class MavenMojoNote extends ConsoleNote {
         }
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static Pattern PATTERN = Pattern.compile("\\[INFO\\] \\[[A-Za-z0-9-_]+:[A-Za-z0-9-_]+ \\{execution: [A-Za-z0-9-_]+\\}\\]");
+    public static final Pattern PATTERN = Pattern.compile("\\[INFO\\] \\[[A-Za-z0-9-_]+:[A-Za-z0-9-_]+ \\{execution: [A-Za-z0-9-_]+\\}\\]");
 }
