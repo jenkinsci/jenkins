@@ -139,7 +139,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *
      * <p>
      * This method is called after {@link #setServletContext(ServletContext)} is invoked.
-     * You can also use {@link jenkins.model.Jenkins#getInstance()} to access the singleton hudson instance,
+     * You can also use {@link jenkins.model.Jenkins#get()} to access the singleton hudson instance,
      * although the plugin start up happens relatively early in the initialization
      * stage and not all the data are loaded in Hudson.
      *
