@@ -5,7 +5,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 public class WeatherIcon extends Icon {
-    enum  Status {
+    enum Status {
         POURING("build-status/weather-sprite.svg#weather-pouring"),
         RAINY("build-status/weather-sprite.svg#weather-rainy"),
         CLOUDY("build-status/weather-sprite.svg#weather-cloudy"),
