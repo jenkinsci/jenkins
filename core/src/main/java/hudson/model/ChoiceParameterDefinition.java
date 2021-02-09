@@ -57,6 +57,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = defaultValue;
     }
 
+    // TODO consider switching @DataBoundConstructor to a ChoiceParameterDefinition(String) overload
     /**
      * Databound constructor for reflective instantiation.
      *
