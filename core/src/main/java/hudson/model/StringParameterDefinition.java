@@ -45,7 +45,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     private boolean trim;
 
     /**
-     * @since XXX
+     * @since TODO
      */
     @DataBoundConstructor
     public StringParameterDefinition(String name) {
@@ -113,7 +113,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     }
 
     /**
-     * @since XXX
+     * @since TODO
      */
     @DataBoundSetter
     public void setTrim(boolean trim) {
