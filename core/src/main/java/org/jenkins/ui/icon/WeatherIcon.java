@@ -23,8 +23,4 @@ public class WeatherIcon extends Icon {
         super(classSpec, status.url, style, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE);
     }
 
-    @Override
-    public boolean isSvgSprite() {
-        return true;
-    }
 }
