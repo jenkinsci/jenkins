@@ -254,7 +254,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
 
     /**
      * Parameter object for {@link hudson.slaves.Cloud}.
-     * @since TODO
+     * @since 2.259
      */
     public static final class CloudState {
         /**

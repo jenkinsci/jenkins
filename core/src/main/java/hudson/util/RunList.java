@@ -205,7 +205,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     /**
      * Returns elements that satisfy the given predicate.
      * <em>Warning:</em> this method mutates the original list and then returns it.
-     * @since TODO
+     * @since 2.279
      */
     public RunList<R> filter(Predicate<R> predicate) {
         return filter(new PredicateAdapter(predicate));

@@ -166,7 +166,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
      * create within the specified item group.
      *
-     * @since TODO
+     * @since 2.266
      */
     public static List<TopLevelItemDescriptor> all2(Authentication a, ItemGroup c) {
         List<TopLevelItemDescriptor> result = new ArrayList<>();
@@ -488,7 +488,7 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.266
      */
     public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type) {
         return allItems2(authentication, root, type, t -> true);
@@ -516,7 +516,7 @@ public class Items {
      * @param <T> the type.
      * @param pred the predicate.
      * @return An {@link Iterable} for all items.
-     * @since TODO
+     * @since 2.266
      */
     public static <T extends Item> Iterable<T> allItems2(Authentication authentication, ItemGroup root, Class<T> type, Predicate<T> pred) {
         return new AllItemsIterable<>(root, authentication, type, pred);

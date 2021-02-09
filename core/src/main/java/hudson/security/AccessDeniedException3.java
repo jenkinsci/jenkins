@@ -10,7 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 /**
  * {@link AccessDeniedException} with more information.
  * @author Kohsuke Kawaguchi
- * @since TODO
+ * @since 2.266
  */
 public class AccessDeniedException3 extends AccessDeniedException {
 

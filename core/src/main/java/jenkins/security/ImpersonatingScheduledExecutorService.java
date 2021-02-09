@@ -43,7 +43,7 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
      * Creates a wrapper service.
      * @param base the base service
      * @param authentication for example {@link ACL#SYSTEM2}
-     * @since TODO
+     * @since 2.266
      */
     public ImpersonatingScheduledExecutorService(ScheduledExecutorService base, Authentication authentication) {
         super(base);
