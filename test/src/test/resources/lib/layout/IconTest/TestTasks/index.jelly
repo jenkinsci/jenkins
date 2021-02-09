@@ -23,26 +23,24 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
 <l:layout title="">
   <l:main-panel>
-    <div id="iconsBlock">
-      <l:icon class="icon-aborted icon-sm" />
-      <l:icon class="icon-aborted icon-md" />
-      <l:icon class="icon-aborted icon-lg" />
-      <l:icon class="icon-aborted icon-xlg" />
 
-      <!--
-      class specs not in "normal" order...
-      -->
-      <l:icon class="icon-sm icon-aborted " />
-      <l:icon class="icon-md icon-aborted" />
+    <t:setIconSize />
 
-      <!--
-      src attribute...
-      -->
-      <l:icon src="/plugin/xxx/icon.png" />
-    </div>
+    <l:tasks>
+      <l:task href=".." icon="icon-up icon-md" title="Title"/>
+      <l:task href=".." icon="folder.png" title="Title"/>
+      <l:task href=".." icon="16x16/package.gif" title="Title"/>
+      <l:task href=".." icon="images/16x16/package.gif" title="Title"/>
+      <l:task href=".." icon="/images/16x16/package.gif" title="Title"/>
+
+      <!-- unknown icon urls... -->
+      <l:task href=".." icon="/plugin/xxx/icon.png" title="Title"/>
+      <l:task href=".." icon="plugin/xxx/icon.png" title="Title"/>
+    </l:tasks>
+
   </l:main-panel>
 </l:layout>
 </j:jelly>

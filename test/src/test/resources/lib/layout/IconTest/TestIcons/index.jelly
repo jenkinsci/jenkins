@@ -23,24 +23,26 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
 <l:layout title="">
   <l:main-panel>
+    <div id="iconsBlock">
+      <l:icon class="icon-empty icon-sm" />
+      <l:icon class="icon-empty icon-md" />
+      <l:icon class="icon-empty icon-lg" />
+      <l:icon class="icon-empty icon-xlg" />
 
-    <t:setIconSize />
+      <!--
+      class specs not in "normal" order...
+      -->
+      <l:icon class="icon-sm icon-empty " />
+      <l:icon class="icon-md icon-empty" />
 
-    <l:tasks>
-      <l:task href=".." icon="icon-up icon-md" title="Title"/>
-      <l:task href=".." icon="folder.png" title="Title"/>
-      <l:task href=".." icon="16x16/blue.gif" title="Title"/>
-      <l:task href=".." icon="images/16x16/blue.gif" title="Title"/>
-      <l:task href=".." icon="/images/16x16/blue.gif" title="Title"/>
-
-      <!-- unknown icon urls... -->
-      <l:task href=".." icon="/plugin/xxx/icon.png" title="Title"/>
-      <l:task href=".." icon="plugin/xxx/icon.png" title="Title"/>
-    </l:tasks>
-
+      <!--
+      src attribute...
+      -->
+      <l:icon src="/plugin/xxx/icon.png" />
+    </div>
   </l:main-panel>
 </l:layout>
 </j:jelly>
