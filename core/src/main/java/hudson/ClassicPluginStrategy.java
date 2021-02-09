@@ -391,7 +391,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
             // initialize plugin
             try {
                 Plugin plugin = wrapper.getPlugin();
-                plugin.setServletContext(pluginManager.context);
+                if (plugin != null) {
+                    plugin.setServletContext(pluginManager.context);
+                }
+                else {
+                    throw new NullPointerException("Failed to initialize the plugin " + wrapper.getDisplayName());
+                }
                 startPlugin(wrapper);
             } catch(Throwable t) {
                 // gracefully handle any error in plugin.
@@ -403,7 +408,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void startPlugin(PluginWrapper plugin) throws Exception {
-        plugin.getPlugin().start();
+        final Plugin plugin1 = plugin.getPlugin();
+        if (plugin1 != null) {
+            plugin1.start();
+        }
+        else {
+            throw new Exception("Failed to start plugin: " + plugin.getDisplayName());
+        }
     }
 
     @Override
