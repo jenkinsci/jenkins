@@ -1564,7 +1564,7 @@ public class Util {
      * @deprecated Use {@code isAbsoluteOrSchemeRelativeUri} instead if your goal is to prevent open redirects
      */
     @Deprecated
-    @RestrictedSince("1.651.2 / 2.TODO")
+    @RestrictedSince("1.651.2 / 2.3")
     @Restricted(NoExternalUse.class)
     public static boolean isAbsoluteUri(@NonNull String uri) {
         int idx = uri.indexOf(':');
