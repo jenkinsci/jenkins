@@ -282,12 +282,12 @@ THE SOFTWARE.
       <dependency><!-- StAX implementation. See HUDSON-2547. -->
         <groupId>org.codehaus.woodstox</groupId>
         <artifactId>wstx-asl</artifactId>
-        <version>3.2.9</version>
+        <version>4.0.0</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.6.0</version>
+        <version>5.7.0</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
