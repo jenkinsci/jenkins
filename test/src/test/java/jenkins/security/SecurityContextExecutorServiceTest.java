@@ -133,7 +133,7 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableCollectionAgainstAllContexts() throws Exception {
-        Collection<Callable<SecurityContext>> callables = new LinkedList<Callable<SecurityContext>>();
+        Collection<Callable<SecurityContext>> callables = new LinkedList<>();
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
             public SecurityContext call() throws Exception {
                 return SecurityContextHolder.getContext();

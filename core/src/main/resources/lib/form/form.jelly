@@ -53,7 +53,6 @@ THE SOFTWARE.
       Default: false
     </st:attribute>
   </st:documentation>
-  <j:set var="divBasedFormLayout" value="true" />
   <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
     <div width="100%" class="${attrs.tableClass}">
       <d:invokeBody/>

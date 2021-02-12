@@ -46,7 +46,6 @@ import hudson.util.XStream2;
 
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
-import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
@@ -1016,7 +1015,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @deprecated Use {@link #addFor(hudson.model.Run)}
      */
     @Deprecated
-    public synchronized void add(@NonNull AbstractBuild b) throws IOException {
+    public void add(@NonNull AbstractBuild b) throws IOException {
         addFor(b);
     }
 
@@ -1025,7 +1024,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @param b {@link Run} to be referenced in {@link #usages}
      * @since 1.577
      */
-    public synchronized void addFor(@NonNull Run b) throws IOException {
+    public void addFor(@NonNull Run b) throws IOException {
         add(b.getParent().getFullName(), b.getNumber());
     }
 

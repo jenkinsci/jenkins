@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -384,7 +385,7 @@ public class JenkinsTest {
         }
 
         public HttpResponse doDynamic() {
-            assertEquals("anonymous", Jenkins.get().getAuthentication2().getName());
+            assertEquals("anonymous", Jenkins.getAuthentication2().getName());
             count++;
             return HttpResponses.html("OK");
         }
@@ -530,7 +531,7 @@ public class JenkinsTest {
         j.jenkins.reload();
         
         final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
         assertThat("We should have additional enabled protocol", 
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
         assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
@@ -550,7 +551,7 @@ public class JenkinsTest {
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
-        assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertNotSame("The protocol list must have been really refreshed", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
         assertThat("We should have disabled one protocol", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
 
@@ -574,7 +575,7 @@ public class JenkinsTest {
         j.jenkins.reload();
         
         final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, reloadedProtocols);
         assertThat("There should be two additional enabled protocols",
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
         assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
@@ -598,7 +599,7 @@ public class JenkinsTest {
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
-        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertNotSame("The protocol list must have been really reloaded", agentProtocolsBeforeReload, j.jenkins.getAgentProtocols());
         assertThat("We should have disabled two protocols", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
         assertProtocolDisabled(protocolToDisable1, "after the roundtrip");

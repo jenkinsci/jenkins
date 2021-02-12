@@ -1,4 +1,4 @@
-@import  "./abstracts/theme.less";
+@import "./abstracts/theme.less";
 
 .ui-refresh {
     .page-header {
@@ -78,12 +78,17 @@
         }
     }
 
-    #visible-am-container.visible #visible-am-button {
+    .am-container.visible .am-button {
         background-color: var(--header-link-bg-active-v2);
     }
 
-    #visible-am-button .am-monitor__count {
+    .am-button .am-monitor__count {
         color: var(--monitor-color-v2);
         background-color: var(--monitor-bg-v2);
+    }
+
+    .am-button.security-am .am-monitor__count {
+        color: var(--sec-monitor-color-v2);
+        background-color: var(--sec-monitor-bg-v2);
     }
 }

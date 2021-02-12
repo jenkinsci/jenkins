@@ -30,6 +30,7 @@ import org.junit.runners.model.Statement;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Builder for creating a {@link FakeMap}
@@ -48,7 +49,7 @@ public class FakeMapBuilder implements TestRule {
 
     public FakeMapBuilder add(int n) throws IOException {
         File build = new File(dir, Integer.toString(n));
-        FileUtils.writeStringToFile(new File(build, "n"), Integer.toString(n));
+        FileUtils.writeStringToFile(new File(build, "n"), Integer.toString(n), StandardCharsets.US_ASCII);
         build.mkdir();
         return this;
     }

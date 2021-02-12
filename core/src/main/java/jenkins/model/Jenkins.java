@@ -453,7 +453,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private static Jenkins theInstance;
 
-    private transient volatile boolean isQuietingDown;
+    @CheckForNull
+    private transient volatile QuietDownInfo quietDownInfo;
     private transient volatile boolean terminating;
     @GuardedBy("Jenkins.class")
     private transient boolean cleanUpStarted;
@@ -2799,7 +2800,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Exported
     public boolean isQuietingDown() {
-        return isQuietingDown;
+        return quietDownInfo != null;
+    }
+
+    /**
+     * Returns quiet down reason if it was indicated.
+     * @return
+     *      Reason if it was indicated. null otherwise
+     *      @since TODO
+     */
+    @Exported
+    @CheckForNull
+    public String getQuietDownReason() {
+        final QuietDownInfo info = quietDownInfo;
+        return info != null ? info.reason : null;
     }
 
     /**
@@ -3491,7 +3505,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     command.run();
                 }
             }, new ReactorListener() {
-                final Level level = Level.parse(Configuration.getStringConfigParameter("termLogLevel", "FINE"));
+                final Level level = Level.parse(SystemProperties.getString(Jenkins.class.getName() + "." +"termLogLevel", "FINE"));
 
                 public void onTaskStarted(Task t) {
                     LOGGER.log(level, "Started {0}", InitReactorRunner.getDisplayName(t));
@@ -3877,7 +3891,24 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpRedirect doQuietDown() {
         try {
-            return doQuietDown(false,0);
+            return doQuietDown(false, 0, null);
+        } catch (IOException | InterruptedException e) {
+            throw new AssertionError(); // impossible
+        }
+    }
+
+    /**
+     * Quiet down Jenkins - preparation for a restart
+     * Presented for compatibility.
+     *
+     * @param block Block until the system really quiets down and no builds are running
+     * @param timeout If non-zero, only block up to the specified number of milliseconds
+     * @deprecated since TODO; use {@link #doQuietDown(boolean, int, String)} instead.
+     */
+    @Deprecated
+    public synchronized HttpRedirect doQuietDown(boolean block, int timeout) {
+        try {
+            return doQuietDown(block, timeout, null);
         } catch (IOException | InterruptedException e) {
             throw new AssertionError(); // impossible
         }
@@ -3888,17 +3919,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
+     * @param reason Quiet reason that will be visible to user
+     * @since TODO
      */
     @RequirePOST
-    public HttpRedirect doQuietDown(@QueryParameter boolean block, @QueryParameter int timeout) throws InterruptedException, IOException {
+    public HttpRedirect doQuietDown(@QueryParameter boolean block,
+                                    @QueryParameter int timeout,
+                                    @QueryParameter @CheckForNull String reason) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(MANAGE);
-            isQuietingDown = true;
+            quietDownInfo = new QuietDownInfo(reason);
         }
         if (block) {
             long waitUntil = timeout;
             if (timeout > 0) waitUntil += System.currentTimeMillis();
-            while (isQuietingDown
+            while (isQuietingDown()
                    && (timeout <= 0 || System.currentTimeMillis() < waitUntil)
                    && !RestartListener.isAllReady()) {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(1));
@@ -3913,7 +3948,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(MANAGE);
-        isQuietingDown = false;
+        quietDownInfo = null;
         getQueue().scheduleMaintenance();
         return new HttpRedirect(".");
     }
@@ -4335,7 +4370,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void safeRestart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = restartableLifecycle();
         // Quiet down so that we won't launch new builds.
-        isQuietingDown = true;
+        quietDownInfo = new QuietDownInfo();
 
         new Thread("safe-restart thread") {
             final String exitUser = getAuthentication2().getName();
@@ -4344,10 +4379,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
 
                     // Wait 'til we have no active executors.
-                    doQuietDown(true, 0);
+                    doQuietDown(true, 0, null);
 
                     // Make sure isQuietingDown is still true.
-                    if (isQuietingDown) {
+                    if (isQuietingDown()) {
                         servletContext.setAttribute("app",new HudsonIsRestarting());
                         // give some time for the browser to load the "reloading" page
                         LOGGER.info("Restart in 10 seconds");
@@ -4432,7 +4467,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public HttpResponse doSafeExit(StaplerRequest req) throws IOException {
         checkPermission(ADMINISTER);
-        isQuietingDown = true;
+        quietDownInfo = new QuietDownInfo();
         final String exitUser = getAuthentication2().getName();
         final String exitAddr = req!=null ? req.getRemoteAddr() : "unknown";
         new Thread("safe-exit thread") {
@@ -4443,9 +4478,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.info(String.format("Shutting down VM as requested by %s from %s",
                                                 exitUser, exitAddr));
                     // Wait 'til we have no active executors.
-                    doQuietDown(true, 0);
+                    doQuietDown(true, 0, null);
                     // Make sure isQuietingDown is still true.
-                    if (isQuietingDown) {
+                    if (isQuietingDown()) {
                         cleanUp();
                         System.exit(0);
                     }
@@ -4816,7 +4851,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public boolean isSubjectToMandatoryReadPermissionCheck(String restOfPath) {
         for (String name : ALWAYS_READABLE_PATHS) {
-            if (restOfPath.startsWith(name)) {
+            if (restOfPath.startsWith("/" + name + "/") || restOfPath.equals("/" + name)) {
                 return false;
             }
         }
@@ -5246,8 +5281,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public static String VIEW_RESOURCE_PATH = "/resources/TBD";
 
-    public static boolean PARALLEL_LOAD = Configuration.getBooleanConfigParameter("parallelLoad", true);
-    public static boolean KILL_AFTER_LOAD = Configuration.getBooleanConfigParameter("killAfterLoad", false);
+    public static boolean PARALLEL_LOAD = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "parallelLoad", true);
+    public static boolean KILL_AFTER_LOAD = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "killAfterLoad", false);
     /**
      * @deprecated No longer used.
      */
@@ -5269,7 +5304,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Switch to enable people to use a shorter workspace name.
      */
-    private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
+    private static final String WORKSPACE_DIRNAME = SystemProperties.getString(Jenkins.class.getName() + "." + "workspaceDirName", "workspace");
 
     /**
      * Default value of job's builds dir.
@@ -5358,19 +5393,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
-    private static final ImmutableSet<String> ALWAYS_READABLE_PATHS = ImmutableSet.of(
-        "/login",
-        "/logout",
-        "/accessDenied",
-        "/adjuncts/",
-        "/error",
-        "/oops",
-        "/signup",
-        "/tcpSlaveAgentListener",
-        "/federatedLoginService/",
-        "/securityRealm",
-        "/instance-identity"
-    );
+    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(ImmutableSet.of(
+        "login",
+        "loginError",
+        "logout",
+        "accessDenied",
+        "adjuncts",
+        "error",
+        "oops",
+        "signup",
+        "tcpSlaveAgentListener",
+        "federatedLoginService",
+        "securityRealm",
+        "instance-identity"
+    ));
+
+    static {
+        final String paths = SystemProperties.getString(Jenkins.class.getName() + ".additionalReadablePaths");
+        if (paths != null) {
+            LOGGER.log(INFO, "SECURITY-2047 override: Adding the following paths to ALWAYS_READABLE_PATHS: " + paths);
+            ALWAYS_READABLE_PATHS.addAll(Arrays.stream(paths.split(",")).map(String::trim).collect(Collectors.toSet()));
+        }
+    }
 
     /**
      * {@link Authentication} object that represents the anonymous user.
@@ -5425,4 +5469,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    private static final class QuietDownInfo {
+
+        @CheckForNull
+        final String reason;
+
+        QuietDownInfo() {
+            this(null);
+        }
+
+        QuietDownInfo(final String reason) {
+            this.reason = reason;
+        }
+    }
 }

@@ -26,6 +26,7 @@ package hudson.model;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class RunParameterValueTest {
@@ -56,8 +57,8 @@ public class RunParameterValueTest {
         }
         rpv = (RunParameterValue) Run.XSTREAM2.fromXML("<hudson.model.RunParameterValue><name>whatever</name><runId>bogus</runId></hudson.model.RunParameterValue>");
         assertEquals("whatever", rpv.getName());
-        assertEquals(null, rpv.getJobName());
-        assertEquals(null, rpv.getNumber());
+        assertNull(rpv.getJobName());
+        assertNull(rpv.getNumber());
    }
 
 }

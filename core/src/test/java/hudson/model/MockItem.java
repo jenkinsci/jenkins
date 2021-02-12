@@ -34,7 +34,7 @@ import java.util.List;
 public class MockItem extends Queue.Item {
 
     public MockItem(long id) {
-        super(null, Collections.<Action>emptyList(), id, null);
+        super(null, Collections.emptyList(), id, null);
     }
 
     public MockItem(Queue.Task task) {

@@ -35,7 +35,6 @@ import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import jenkins.tasks.filters.EnvVarsFilterGlobalConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

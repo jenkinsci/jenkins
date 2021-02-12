@@ -36,16 +36,14 @@ THE SOFTWARE.
 
           <p>${%installBlurb}</p>
 
-          <form action="doInstall" method="post">
-            <table>
-              <f:entry title="${%Installation Directory}">
-                <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" -->
-              </f:entry>
-              <f:block>
-                <f:submit value="${%Install}" />
-              </f:block>
-            </table>
-          </form>
+          <f:form action="doInstall" method="post" name="install">
+            <f:entry title="${%Installation Directory}">
+              <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" -->
+            </f:entry>
+            <f:block>
+              <f:submit value="${%Install}" />
+            </f:block>
+          </f:form>
         </j:when>
 
         <!-- already installed -->

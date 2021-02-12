@@ -166,9 +166,7 @@ public class WaitNodeOnlineCommandTest {
     public void waitNodeOnlineShouldSuccessOnOnlineNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
-        while (true) {
-            if(slave.toComputer().isOnline())
-                break;
+        while (!slave.toComputer().isOnline()) {
             Thread.sleep(100);
         }
 

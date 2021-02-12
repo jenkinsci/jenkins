@@ -230,7 +230,7 @@ public class HistoryPageFilter<T> {
         return queueItems.size() + runs.size();
     }
 
-    private void sort(List<? extends Object> items) {
+    private void sort(List<?> items) {
         // Queue items can start building out of order with how they got added to the queue. Sorting them
         // before adding to the page. They'll still get displayed before the building items coz they end
         // up in a different list in HistoryPageFilter.

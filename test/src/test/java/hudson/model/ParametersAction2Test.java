@@ -139,7 +139,7 @@ public class ParametersAction2Test {
     @Issue("SECURITY-170")
     public void whitelistedParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.<ParameterDefinition>asList(
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
                 new StringParameterDefinition("foo", "foo"),
                 new StringParameterDefinition("bar", "bar"))));
 
