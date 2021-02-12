@@ -236,7 +236,7 @@ public class InstallState implements ExtensionPoint {
     }
 
     private static void reloadUpdateSiteData() {
-        Timer.get().schedule(UpdateCenter::updateDefaultSite, 0, TimeUnit.SECONDS);
+        Timer.get().submit(UpdateCenter::updateDefaultSite);
     }
 
     /**
