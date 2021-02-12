@@ -29,6 +29,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,6 +39,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.stapler.StaplerAccessibleType;
+import jenkins.util.Timer;
 import org.apache.commons.lang.StringUtils;
 /**
  * Jenkins install state.
@@ -209,7 +212,8 @@ public class InstallState implements ExtensionPoint {
             applyForcedChanges();
 
             // Schedule an update of the update center after a Jenkins upgrade
-            UpdateCenter.updateDefaultSite();
+            reloadUpdateSiteData();
+
 
             InstallUtil.saveLastExecVersion();
         }
@@ -230,7 +234,11 @@ public class InstallState implements ExtensionPoint {
         }
 
     }
-    
+
+    private static void reloadUpdateSiteData() {
+        Timer.get().schedule(UpdateCenter::updateDefaultSite, 0, TimeUnit.SECONDS);
+    }
+
     /**
      * Downgrade of an existing Jenkins install.
      */
@@ -242,7 +250,7 @@ public class InstallState implements ExtensionPoint {
         }
         public void initializeState() {
             // Schedule an update of the update center after a Jenkins downgrade
-            UpdateCenter.updateDefaultSite();
+            reloadUpdateSiteData();
 
             InstallUtil.saveLastExecVersion();
         }
