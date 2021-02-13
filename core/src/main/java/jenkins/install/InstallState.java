@@ -43,7 +43,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * In order to hook into the setup wizard lifecycle, you should
  * include something in a script that call
- * to `onSetupWizardInitialized` with a callback
+ * to {@code onSetupWizardInitialized} with a callback
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
