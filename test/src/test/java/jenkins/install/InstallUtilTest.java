@@ -23,6 +23,7 @@
  */
 package jenkins.install;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import hudson.security.ACL;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,6 +54,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.springframework.security.core.Authentication;
+import javax.servlet.ServletException;
 
 /**
  * Test
@@ -84,7 +85,7 @@ public class InstallUtilTest {
      * Test jenkins startup sequences and the changes to the startup type..
      */
     @Test
-    public void test_typeTransitions() {
+    public void test_typeTransitions() throws IOException, ServletException {
         InstallUtil.getLastExecVersionFile().delete();
         InstallUtil.getConfigFile().delete();
         
@@ -98,7 +99,7 @@ public class InstallUtilTest {
         //   1. A successful run of the install wizard.
         //   2. A success upgrade.
         //   3. A successful restart.
-        InstallUtil.saveLastExecVersion();
+        Jenkins.get().getSetupWizard().completeSetup();
 
         // Fudge things a little now, pretending there's a restart...
 
