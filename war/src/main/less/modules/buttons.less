@@ -47,13 +47,15 @@
 
   &:hover,
   &:focus {
-    color: var(--primary);
-    border-color: var(--primary);
+    color: var(--btn-secondary-color--hover);
+    border-color: var(--btn-secondary-border--hover);
+    background-color: var(--btn-secondary-bg--hover);
   }
 
   &:active {
-    color: var(--primary-active);
-    border-color: var(--primary-active);
+    color: var(--btn-secondary-color--active);
+    border-color: var(--btn-secondary-border--active);
+    background-color: var(--btn-secondary-bg--active);
   }
 }
 
@@ -61,16 +63,17 @@
   color: var(--primary);
   background-color: transparent;
   border-color: transparent;
+  font-weight: var(--btn-link-font-weight);
 
   &:hover,
   &:focus {
-    color: var(--primary-hover);
+    color: var(--btn-link-color--hover);
     background-color: var(--btn-link-bg--hover);
     border-color: var(--btn-link-bg--hover);
   }
 
   &:active {
-    color: var(--primary-active);
+    color: var(--btn-link-color--active);
     background-color: var(--btn-link-bg--active);
     border-color: var(--btn-link-bg--active);
   }
@@ -108,9 +111,9 @@ a.yui-button:visited {
   min-height: 2rem;
   cursor: pointer;
   user-select: none;
-  font-size: var(--font-size-xs);
-  line-height: 1rem;
-  font-weight: bold;
+  font-size: var(--btn-font-size);
+  line-height: var(--btn-line-height);
+  font-weight: var(--btn-font-weight);
   text-align: center;
   vertical-align: middle;
   text-decoration: none;
@@ -185,8 +188,8 @@ a.yui-button.large-button {
   padding: 0.5rem 1rem;
   min-width: 6.5rem;
   min-height: 2.5rem;
-  font-size: var(--font-size-sm);
-  line-height: 1.25rem;
+  font-size: var(--btn-large-font-size);
+  line-height: var(--btn-large-line-height);
 
   .svg-icon,
   i {
