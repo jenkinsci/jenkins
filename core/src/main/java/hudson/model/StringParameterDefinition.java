@@ -98,7 +98,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
 
     @DataBoundSetter
     public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
+        this.defaultValue = Util.fixEmpty(defaultValue);
     }
 
     /**

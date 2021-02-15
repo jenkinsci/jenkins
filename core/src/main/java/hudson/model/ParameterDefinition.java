@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -153,7 +154,7 @@ public abstract class ParameterDefinition implements
      */
     @DataBoundSetter
     public void setDescription(@CheckForNull String description) {
-        this.description = description;
+        this.description = Util.fixEmpty(description);
     }
 
     /**
