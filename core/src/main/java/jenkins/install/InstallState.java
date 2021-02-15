@@ -29,8 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +44,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * In order to hook into the setup wizard lifecycle, you should
  * include something in a script that call
- * to `onSetupWizardInitialized` with a callback
+ * to {@code onSetupWizardInitialized} with a callback
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
@@ -213,9 +211,6 @@ public class InstallState implements ExtensionPoint {
 
             // Schedule an update of the update center after a Jenkins upgrade
             reloadUpdateSiteData();
-
-
-            InstallUtil.saveLastExecVersion();
         }
 
         /**
