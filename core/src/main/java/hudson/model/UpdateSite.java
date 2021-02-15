@@ -411,8 +411,9 @@ public class UpdateSite {
      *      The short name of the plugin. Corresponds to {@link PluginWrapper#getShortName()}.
      *
      * @return
-     *      null if no such information is found.
+     *      {@code null} if no such information is found.
      */
+    @CheckForNull
     public Plugin getPlugin(String artifactId) {
         Data dt = getData();
         if(dt==null)    return null;
