@@ -112,7 +112,7 @@ public abstract class ParameterDefinition implements
     }
 
     /**
-     * @deprecated Prefer {@link #ParameterDefinition(String)} with a {@link DataBoundConstructor} and allow {@link #setDescription} to be used as needed
+     * @deprecated Prefer {@link #ParameterDefinition(String)} with a {@link org.kohsuke.stapler.DataBoundConstructor} and allow {@link #setDescription} to be used as needed
      */
     @Deprecated
     public ParameterDefinition(@NonNull String name, String description) {
