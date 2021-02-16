@@ -143,11 +143,7 @@ public class SetupWizard extends PageDecorator {
         Jenkins jenkins = Jenkins.get();
         
         if(newInstall) {
-            // this was determined to be a new install, don't run the update wizard here
-            setCurrentLevel(Jenkins.getVersion());
-            
-            // Create an admin user by default with a 
-            // difficult password
+            // Create an admin user by default with a difficult password
             FilePath iapf = getInitialAdminPasswordFile();
             if(jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
                 try (BulkChange bc = new BulkChange(jenkins)) {
@@ -460,7 +456,7 @@ public class SetupWizard extends PageDecorator {
     }
 
     /*package*/ void setCurrentLevel(VersionNumber v) throws IOException {
-        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString());
+        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString(), StandardCharsets.UTF_8);
     }
     
     /**
