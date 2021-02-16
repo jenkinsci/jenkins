@@ -211,6 +211,8 @@ public class InstallState implements ExtensionPoint {
 
             // Schedule an update of the update center after a Jenkins upgrade
             reloadUpdateSiteData();
+            
+            InstallUtil.saveLastExecVersion();
         }
 
         /**
