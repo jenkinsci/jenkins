@@ -37,6 +37,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.stapler.StaplerAccessibleType;
+import jenkins.util.Timer;
 import org.apache.commons.lang.StringUtils;
 /**
  * Jenkins install state.
@@ -208,7 +209,8 @@ public class InstallState implements ExtensionPoint {
         public void initializeState() {
             applyForcedChanges();
 
-            InstallUtil.saveLastExecVersion();
+            // Schedule an update of the update center after a Jenkins upgrade
+            reloadUpdateSiteData();
         }
 
         /**
@@ -227,7 +229,11 @@ public class InstallState implements ExtensionPoint {
         }
 
     }
-    
+
+    private static void reloadUpdateSiteData() {
+        Timer.get().submit(UpdateCenter::updateAllSitesNow);
+    }
+
     /**
      * Downgrade of an existing Jenkins install.
      */
@@ -238,6 +244,9 @@ public class InstallState implements ExtensionPoint {
             super("DOWNGRADE", true);
         }
         public void initializeState() {
+            // Schedule an update of the update center after a Jenkins downgrade
+            reloadUpdateSiteData();
+
             InstallUtil.saveLastExecVersion();
         }
     }
