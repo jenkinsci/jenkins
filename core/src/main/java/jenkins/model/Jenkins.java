@@ -342,7 +342,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private String installStateName;
+    private transient String installStateName;
 
     @Deprecated
     private InstallState installState;
@@ -1050,6 +1050,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         // Invalidate the protocols cache after the reload
         agentProtocols = null;
+
+        // no longer persisted
+        installStateName = null;
         return this;
     }
 
@@ -1100,7 +1103,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             getSetupWizard().onInstallStateUpdate(newState);
             newState.initializeState();
         }
-        saveQuietly();
     }
 
     /**
