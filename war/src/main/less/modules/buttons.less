@@ -7,11 +7,14 @@
   background-color: var(--danger);
   border-color: var(--danger);
 
-  &:hover,
-  &:focus {
+  &:hover {
     color: var(--btn-text-color);
     background-color: var(--danger-hover);
     border-color: var(--danger-hover);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem var(--focus-btn-danger);
   }
 
   &:active {
@@ -26,11 +29,14 @@
   background-color: var(--btn-primary-bg);
   border-color: var(--btn-primary-bg);
 
-  &:hover,
-  &:focus {
+  &:hover {
     color: var(--btn-text-color);
     background-color: var(--btn-primary-bg-hover);
     border-color: var(--btn-primary-bg-hover);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem var(--focus-btn-primary);
   }
 
   &:active {
@@ -45,11 +51,17 @@
   border-color: var(--btn-secondary-border);
   background-color: var(--btn-secondary-bg);
 
-  &:hover,
-  &:focus {
+  &:hover {
     color: var(--btn-secondary-color--hover);
     border-color: var(--btn-secondary-border--hover);
     background-color: var(--btn-secondary-bg--hover);
+  }
+
+  &:focus {
+    color: var(--btn-secondary-color--focus);
+    border-color: var(--btn-secondary-border--focus);
+    background-color: var(--btn-secondary-bg--focus);
+    box-shadow: 0 0 0 0.2rem var(--focus-btn-secondary);
   }
 
   &:active {
@@ -70,6 +82,10 @@
     color: var(--btn-link-color--hover);
     background-color: var(--btn-link-bg--hover);
     border-color: var(--btn-link-bg--hover);
+  }
+
+  &:focus {
+    box-shadow: none;
   }
 
   &:active {
@@ -128,7 +144,6 @@ a.yui-button:visited {
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 0.2rem --var(focus); // TODO come back to this
   }
 
   display: inline-flex;
