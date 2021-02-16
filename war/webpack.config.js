@@ -18,7 +18,6 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/plugin-manager-ui.js"),
       path.join(__dirname, "src/main/less/plugin-manager-ui.less"),
     ],
-    "upgradeWizard": [path.join(__dirname, "src/main/js/upgradeWizard.js")],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
       path.join(__dirname, "src/main/js/add-item.less"),
