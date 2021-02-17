@@ -7,7 +7,8 @@
   background-color: var(--danger);
   border-color: var(--danger);
 
-  &:hover {
+  &:hover,
+  &:focus {
     color: var(--btn-text-color);
     background-color: var(--danger-hover);
     border-color: var(--danger-hover);
@@ -29,7 +30,8 @@
   background-color: var(--btn-primary-bg);
   border-color: var(--btn-primary-bg);
 
-  &:hover {
+  &:hover,
+  &:focus {
     color: var(--btn-text-color);
     background-color: var(--btn-primary-bg-hover);
     border-color: var(--btn-primary-bg-hover);
@@ -136,9 +138,9 @@ a.yui-button:visited {
   border: 2px solid;
   border-radius: 4px;
   transition:
- color 0.15s ease-in-out,
-    background-color 0.15s ease-in-out,
-    border-color 0.15s ease-in-out;
+  color 0.15s ease-in-out,
+  background-color 0.15s ease-in-out,
+  border-color 0.15s ease-in-out;
 
   .button-secondary();
 
