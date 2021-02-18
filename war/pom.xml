@@ -266,13 +266,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
-                  <version>1.8</version>
+                  <version>1.11</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>javadoc</artifactId>
-                  <version>1.1</version>
+                  <version>1.6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -284,7 +284,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>1.26</version> <!-- TODO or pick up https://github.com/jenkinsci/ldap-plugin/pull/49 -->
+                  <version>2.3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

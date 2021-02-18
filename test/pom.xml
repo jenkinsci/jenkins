@@ -66,7 +66,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1.75</version>
+        <version>1.76</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -99,7 +99,7 @@ THE SOFTWARE.
      <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.3</version>
+      <version>6.15</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -133,7 +133,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.20</version>
+      <version>1.21</version>
       <!-- TODO define property for this and share with war/pom.xml-->
       <scope>test</scope>
     </dependency>
@@ -151,12 +151,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.javassist</groupId>
-      <artifactId>javassist</artifactId>
-      <version>3.27.0-GA</version>
       <scope>test</scope>
     </dependency>
     <dependency>

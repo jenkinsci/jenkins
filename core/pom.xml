@@ -518,7 +518,7 @@ THE SOFTWARE.
     <dependency> <!-- Not included into BOM, plugins should use one from structs-plugin -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>symbol-annotation</artifactId>
-      <version>1.1</version>
+      <version>1.21</version>
     </dependency>
 
     <dependency>

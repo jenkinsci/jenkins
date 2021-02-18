@@ -50,7 +50,7 @@ THE SOFTWARE.
       <dependency> <!-- https://docs.spring.io/spring-security/site/docs/5.4.0-M1/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.4.2</version>
+        <version>5.4.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -227,7 +227,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>localizer</artifactId>
-        <version>1.28</version>
+        <version>1.31</version>
       </dependency>
       <dependency>
         <groupId>antlr</groupId>
@@ -287,7 +287,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.6.0</version>
+        <version>5.7.0</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>

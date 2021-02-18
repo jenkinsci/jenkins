@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.279</revision>
+    <revision>2.281</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -111,7 +111,7 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
     <access-modifier-checker.version>1.21</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.0</junit.jupiter.version>
+    <junit.jupiter.version>5.7.1</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
   </properties>
 
@@ -281,7 +281,7 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>1.2</version>
+          <version>3.0.0</version>
           <configuration>
             <!--
               during the development, debug profile will cause

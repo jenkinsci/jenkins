@@ -137,6 +137,7 @@ public class LogRecorderTest {
         return r;
     }
 
+    @SuppressWarnings("deprecation") /* testing deprecated variant */
     private static boolean includes(String target, String logger) {
         LogRecord r = createLogRecord(logger, Level.INFO, "whatever");
         return new LogRecorder.Target(target, Level.INFO).includes(r);

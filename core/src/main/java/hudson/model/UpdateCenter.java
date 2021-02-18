@@ -36,6 +36,7 @@ import hudson.security.Permission;
 import hudson.util.VersionNumber;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 import jenkins.security.stapler.StaplerDispatchable;
@@ -2582,6 +2583,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void updateAllSitesNow() {
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
+            try {
+                site.updateDirectlyNow();
+            } catch (IOException e) {
+                LOGGER.log(WARNING, MessageFormat.format("Failed to update the update site ''{0}''. " +
+                        "Plugin upgrades may fail.", site.getId()), e);
+            }
+        }
     }
 
     @Restricted(NoExternalUse.class)
