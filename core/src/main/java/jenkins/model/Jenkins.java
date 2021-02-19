@@ -183,6 +183,7 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
+import java.util.Base64;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -4552,6 +4553,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             try {
+                LOGGER.log(Level.INFO, "Administrative Groovy script by " + Jenkins.getAuthentication().getName() + " from " + req.getRemoteAddr() + ": (base64) " + Base64.getEncoder().encodeToString(text.getBytes()));
                 req.setAttribute("output",
                         RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {
