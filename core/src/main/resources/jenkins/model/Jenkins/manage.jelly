@@ -77,6 +77,7 @@ THE SOFTWARE.
                     </j:when>
                     <j:otherwise>
                       <l:icon src="${iconUrl}"
+                              class="icon"
                               alt="[${%alt}]" />
                     </j:otherwise>
                   </j:choose>
@@ -96,6 +97,7 @@ THE SOFTWARE.
                     </j:when>
                     <j:otherwise>
                       <l:icon src="${iconUrl}"
+                              class="icon"
                               alt="[${%alt}]" />
                     </j:otherwise>
                   </j:choose>
@@ -115,6 +117,7 @@ THE SOFTWARE.
                     </j:when>
                     <j:otherwise>
                       <l:icon src="${iconUrl}"
+                              class="icon"
                               alt="[${%alt}]" />
                     </j:otherwise>
                   </j:choose>
