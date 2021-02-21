@@ -788,8 +788,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
-
-            InstallUtil.saveLastExecVersion();
         } else {
             final Set<DetachedPluginsUtil.DetachedPlugin> forceUpgrade = new HashSet<>();
             // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in WEB-INF/detached-plugins/
@@ -1353,7 +1351,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
         List<JSONObject> plugins = new ArrayList<>();
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
-            plugins = site.getAvailables().stream()
+            List<JSONObject> sitePlugins = site.getAvailables().stream()
                 .filter(plugin -> {
                     if (StringUtils.isBlank(query)) {
                         return true;
@@ -1367,7 +1365,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                             .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
                         plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
                 })
-                .limit(limit)
+                .limit(Math.max(limit - plugins.size(), 1))
                 .sorted((o1, o2) -> {
                     String o1DisplayName = o1.getDisplayName();
                     if (o1.name.equalsIgnoreCase(query) ||
@@ -1451,6 +1449,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     return jsonObject;
                 })
                 .collect(toList());
+            plugins.addAll(sitePlugins);
             if (plugins.size() >= limit) {
                 break;
             }

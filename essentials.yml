@@ -4,4 +4,4 @@ ath:
   athRevision: "acceptance-test-harness-1.85"
   athImage: "jenkins/ath:acceptance-test-harness-1.80"
   tests:
-    - *
+    - '*'
