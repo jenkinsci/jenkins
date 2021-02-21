@@ -282,7 +282,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-folder-error icon-sm", "16x16/folder-error.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder icon-sm", "16x16/folder.gif", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_SMALL_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-gear2 icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_SMALL_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-go-next icon-sm", "16x16/go-next.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green icon-sm", "16x16/green.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-sm", "16x16/green_anime.gif", Icon.ICON_SMALL_STYLE));
@@ -298,7 +298,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-lock icon-sm", "16x16/lock.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt-anime icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE, true));
-        icons.addIcon(new Icon("icon-notepad icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_SMALL_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-notepad icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_SMALL_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-package icon-sm", "16x16/package.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-person icon-sm", "16x16/person.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-plugin icon-sm", "16x16/plugin.gif", Icon.ICON_SMALL_STYLE));
@@ -336,13 +336,13 @@ public class IconSet {
         icons.addIcon(new Icon("icon-folder-error icon-sm", "16x16/folder-error.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder-open icon-sm", "16x16/folder-open.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-folder icon-sm", "16x16/folder.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_SMALL_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-gear2 icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_SMALL_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-go-next icon-sm", "16x16/go-next.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-grey icon-sm", "16x16/grey.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-help icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_SMALL_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-help icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_SMALL_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-hourglass icon-sm", "16x16/hourglass.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-lock icon-sm", "16x16/lock.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-notepad icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_SMALL_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-notepad icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_SMALL_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-orange-square icon-sm", "16x16/orange-square.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-package icon-sm", "16x16/package.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-person icon-sm", "16x16/person.png", Icon.ICON_SMALL_STYLE));
@@ -385,7 +385,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-folder-delete icon-md", "24x24/folder-delete.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-gear icon-md", "24x24/gear.gif", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-gear2 icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-graph icon-md", "24x24/graph.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green icon-md", "24x24/green.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-md", "24x24/green_anime.gif", Icon.ICON_MEDIUM_STYLE));
@@ -401,12 +401,12 @@ public class IconSet {
         icons.addIcon(new Icon("icon-monitor icon-md", "24x24/monitor.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-new-computer icon-md", "24x24/new-computer.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-new-document icon-md", "24x24/new-document.gif", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-new-package icon-md", "material-icons/svg-sprite-content-symbol.svg#ic_add_circle_outline_24px", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-new-package icon-md", "material-icons/svg-sprite-content-symbol.svg#ic_add_circle_outline_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-new-user icon-md", "24x24/new-user.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-next icon-md", "24x24/next.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt icon-md", "build-status/build-status-sprite.svg#never-built", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt-anime icon-md", "build-status/build-status-sprite.svg#never-built", Icon.ICON_MEDIUM_STYLE, true));
-        icons.addIcon(new Icon("icon-notepad icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-notepad icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-orange-square icon-md", "24x24/orange-square.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-package icon-md", "24x24/package.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-previous icon-md", "24x24/previous.gif", Icon.ICON_MEDIUM_STYLE));
@@ -427,7 +427,7 @@ public class IconSet {
 
         icons.addIcon(new Icon("icon-accept icon-md", "24x24/accept.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-attribute icon-md", "24x24/attribute.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-clipboard icon-md", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-clipboard icon-md", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-clock icon-md", "24x24/clock.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-computer-x icon-md", "24x24/computer-x.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-computer icon-md", "24x24/computer.png", Icon.ICON_MEDIUM_STYLE));
@@ -440,19 +440,19 @@ public class IconSet {
         icons.addIcon(new Icon("icon-folder-delete icon-md", "24x24/folder-delete.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-folder icon-md", "24x24/folder.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-gear icon-md", "24x24/gear.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-gear2 icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-graph icon-md", "24x24/graph.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-grey icon-md", "24x24/grey.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-help icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-help icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-installer icon-md", "24x24/installer.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-lock icon-md", "24x24/lock.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-md", "24x24/monitor.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-new-computer icon-md", "24x24/new-computer.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-new-document icon-md", "24x24/new-document.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-new-package icon-md", "material-icons/svg-sprite-content-symbol.svg#ic_add_circle_outline_24px", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-new-package icon-md", "material-icons/svg-sprite-content-symbol.svg#ic_add_circle_outline_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-new-user icon-md", "24x24/new-user.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-next icon-md", "24x24/next.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-notepad icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_MEDIUM_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-notepad icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-orange-square icon-md", "24x24/orange-square.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-package icon-md", "24x24/package.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-plugin icon-md", "24x24/plugin.png", Icon.ICON_MEDIUM_STYLE));
@@ -511,14 +511,14 @@ public class IconSet {
 
         icons.addIcon(new Icon("icon-accept icon-lg", "32x32/accept.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-attribute icon-lg", "32x32/attribute.png", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-clipboard icon-lg", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_LARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-clipboard icon-lg", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_LARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-clock icon-lg", "32x32/clock.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-computer-x icon-lg", "32x32/computer-x.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-computer icon-lg", "32x32/computer.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-empty icon-lg", "32x32/empty.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-error icon-lg", "32x32/error.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-folder icon-lg", "32x32/folder.png", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-lg", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_LARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-gear2 icon-lg", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_LARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-graph icon-lg", "32x32/graph.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-grey icon-lg", "32x32/grey.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-lock icon-lg", "32x32/lock.png", Icon.ICON_LARGE_STYLE));
@@ -550,7 +550,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-fingerprint icon-xlg", "48x48/fingerprint.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-folder-delete icon-xlg", "48x48/folder-delete.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-folder icon-xlg", "48x48/folder.gif", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_XLARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-gear2 icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_XLARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-graph icon-xlg", "48x48/graph.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-green icon-xlg", "48x48/green.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-green-anime icon-xlg", "48x48/green_anime.gif", Icon.ICON_XLARGE_STYLE));
@@ -567,7 +567,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-network icon-xlg", "48x48/network.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt icon-xlg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt-anime icon-xlg", "build-status/build-status-sprite.svg#never-built", Icon.ICON_XLARGE_STYLE, true));
-        icons.addIcon(new Icon("icon-notepad icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_XLARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-notepad icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_XLARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-orange-square icon-xlg", "48x48/orange-square.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-package icon-xlg", "48x48/package.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-plugin icon-xlg", "48x48/plugin.gif", Icon.ICON_XLARGE_STYLE));
@@ -589,7 +589,7 @@ public class IconSet {
 
         icons.addIcon(new Icon("icon-accept icon-xlg", "48x48/accept.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-attribute icon-xlg", "48x48/attribute.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-clipboard icon-xlg", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_XLARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-clipboard icon-xlg", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_XLARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-computer-x icon-xlg", "48x48/computer-x.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-computer icon-xlg", "48x48/computer.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-document icon-xlg", "48x48/document.png", Icon.ICON_XLARGE_STYLE));
@@ -598,15 +598,15 @@ public class IconSet {
         icons.addIcon(new Icon("icon-fingerprint icon-xlg", "48x48/fingerprint.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-folder-delete icon-xlg", "48x48/folder-delete.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-folder icon-xlg", "48x48/folder.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_XLARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-gear2 icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_settings_24px", Icon.ICON_XLARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-graph icon-xlg", "48x48/graph.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-grey icon-xlg", "48x48/grey.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-help icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_XLARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-help icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_XLARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-installer icon-xlg", "48x48/installer.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-lock icon-xlg", "48x48/lock.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-xlg", "48x48/monitor.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-network icon-xlg", "48x48/network.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-notepad icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_XLARGE_STYLE, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-notepad icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_history_24px", Icon.ICON_XLARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-orange-square icon-xlg", "48x48/orange-square.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-package icon-xlg", "48x48/package.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-plugin icon-xlg", "48x48/plugin.png", Icon.ICON_XLARGE_STYLE));

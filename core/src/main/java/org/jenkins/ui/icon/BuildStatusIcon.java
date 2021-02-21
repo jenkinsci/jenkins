@@ -4,7 +4,7 @@ public class BuildStatusIcon extends Icon {
     private boolean inProgress;
 
     public BuildStatusIcon(String classSpec, String url, String style, boolean inProgress) {
-        super(classSpec, url, style, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE);
+        super(classSpec, url, style, IconFormat.EXTERNAL_SVG_SPRITE);
         this.inProgress = inProgress;
     }
 

@@ -20,7 +20,7 @@ public class WeatherIcon extends Icon {
     }
 
     public WeatherIcon(String classSpec, String style, Status status) {
-        super(classSpec, status.url, style, IconType.CORE, IconFormat.EXTERNAL_SVG_SPRITE);
+        super(classSpec, status.url, style, IconFormat.EXTERNAL_SVG_SPRITE);
     }
 
 }

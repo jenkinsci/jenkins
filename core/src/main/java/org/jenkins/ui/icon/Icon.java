@@ -101,6 +101,26 @@ public class Icon {
         this(classSpec, url, style, iconType, IconFormat.IMG);
     }
 
+    /**
+     * Creates an icon.
+     *
+     * @param classSpec The icon class names.
+     * @param url       The icon image url.
+     * @param style     The icon style.
+     * @param iconFormat the {@link IconFormat}.
+     * @since TODO
+     */
+    public Icon(String classSpec, String url, String style, IconFormat iconFormat) {
+        this(classSpec, url, style, IconType.CORE, iconFormat);
+        if (url != null) {
+            if (url.startsWith("images/")) {
+                this.iconType = IconType.CORE;
+            } else if (url.startsWith("plugin/")) {
+                this.iconType = IconType.PLUGIN;
+            }
+        }
+    }
+
     public Icon(String classSpec, String url, String style, IconType iconType, IconFormat iconFormat) {
         this.classSpec = classSpec;
         this.normalizedSelector = toNormalizedCSSSelector(classSpec);
