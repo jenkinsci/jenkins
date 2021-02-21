@@ -31,7 +31,10 @@ import static org.hamcrest.Matchers.nullValue;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.Computer;
+import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Slave;
 import jenkins.model.Jenkins;
@@ -39,6 +42,7 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class CreateNodeCommandTest {
@@ -144,5 +148,24 @@ public class CreateNodeCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Node 'ExistingSlave' already exists"));
         assertThat(result, hasNoStandardOutput());
         assertThat(result, failedWith(4));
+    }
+
+    @Test
+    @Issue("SECURITY-2021")
+    public void createNodeShouldFailIfNodeIsNotGood() {
+        int nodeListSizeBefore = j.jenkins.getNodes().size();
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.CREATE, Jenkins.READ)
+                .withStdin(CreateNodeCommandTest.class.getResourceAsStream("node_sec2021.xml"))
+                .invoke()
+                ;
+
+        assertThat(result.stderr(), containsString(Messages.Hudson_UnsafeChar('/')));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, failedWith(1));
+
+        // ensure not side effects
+        assertEquals(nodeListSizeBefore, j.jenkins.getNodes().size());
     }
 }

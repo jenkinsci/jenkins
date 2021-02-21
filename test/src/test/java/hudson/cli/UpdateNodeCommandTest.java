@@ -31,8 +31,12 @@ import static org.hamcrest.Matchers.nullValue;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.Computer;
+import hudson.model.Messages;
 import hudson.model.Node;
+import hudson.model.Slave;
 import jenkins.model.Jenkins;
 
 import org.junit.Before;
@@ -111,4 +115,26 @@ public class UpdateNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
     }
 
+    @Test
+    @Issue("SECURITY-2021")
+    public void updateNodeShouldFailForDotDot() throws Exception {
+        String okName = "MyNode";
+        Slave node = j.createSlave(okName, null, null);
+        // currently <dummy>, but doing so will be a bit more future-proof
+        String defaultDescription = node.getNodeDescription();
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
+                .withStdin(UpdateNodeCommandTest.class.getResourceAsStream("node_sec2021.xml"))
+                .invokeWithArgs(okName)
+                ;
+
+        assertThat(result.stderr(), containsString(Messages.Hudson_UnsafeChar('/')));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, failedWith(1));
+
+        assertEquals(okName, node.getNodeName());
+        // ensure the other data were not saved
+        assertEquals(defaultDescription, node.getNodeDescription());
+    }
 }
