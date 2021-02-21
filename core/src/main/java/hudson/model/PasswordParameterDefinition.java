@@ -54,6 +54,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = Secret.fromString(defaultValue);
     }
 
+    // TODO consider switching @DataBoundConstructor to a PasswordParameterDefinition(String) overload
     @DataBoundConstructor
     public PasswordParameterDefinition(String name, Secret defaultValueAsSecret, String description) {
         super(name, description);

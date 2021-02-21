@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Util;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 
@@ -48,7 +49,7 @@ public class StringParameterValue extends ParameterValue {
 
     public StringParameterValue(String name, String value, String description) {
         super(name, description);
-        this.value = value;
+        this.value = Util.fixNull(value);
     }
 
     /**
