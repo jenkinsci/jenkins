@@ -183,6 +183,7 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
+import java.io.InterruptedIOException;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -1896,13 +1897,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     // even if we want to offer this atomic operation, CopyOnWriteArrayList
     // offers no such operation
     public void setViews(Collection<View> views) throws IOException {
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             this.views.clear();
             for (View v : views) {
                 addView(v);
             }
-        } finally {
             bc.commit();
         }
     }
@@ -3810,8 +3809,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @POST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             checkPermission(MANAGE);
 
             JSONObject json = req.getSubmittedForm();
@@ -3828,7 +3826,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 FormApply.success(req.getContextPath()+'/').generateResponse(req, rsp, null);
             else
                 FormApply.success("configure").generateResponse(req, rsp, null);    // back to config
-        } finally {
+
             bc.commit();
         }
     }
@@ -3866,14 +3864,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public synchronized void doConfigExecutorsSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(ADMINISTER);
 
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             JSONObject json = req.getSubmittedForm();
 
             ExtensionList.lookupSingleton(MasterBuildConfiguration.class).configure(req,json);
 
             getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
-        } finally {
+
             bc.commit();
         }
 
@@ -4354,11 +4351,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     // give some time for the browser to load the "reloading" page
                     Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-                    LOGGER.info(String.format("Restarting VM as requested by %s",exitUser));
+                    LOGGER.info(String.format("Restarting VM as requested by %s", exitUser));
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
                     lifecycle.restart();
-                } catch (InterruptedException | IOException e) {
+                } catch (InterruptedException | InterruptedIOException e) {
+                    LOGGER.log(Level.WARNING, "Interrupted while trying to restart Jenkins", e);
+                    Thread.currentThread().interrupt();
+                } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
                 }
             }
@@ -4555,6 +4555,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 req.setAttribute("output",
                         RemotingDiagnostics.executeGroovy(text, channel));
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new ServletException(e);
             }
         }
@@ -4966,9 +4967,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @QueryParameter String jobName) {
         displayName = displayName.trim();
 
-        if(LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Current job name is " + jobName);
-        }
+        LOGGER.fine(() -> "Current job name is " + jobName);
 
         if(!isNameUnique(displayName, jobName)) {
             return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(displayName));
@@ -5159,7 +5158,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 }
                 LOGGER.info("Jenkins is in dev mode, using version: " + ver);
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Unable to read Jenkins version: " + e.getMessage(), e);
+                LOGGER.log(WARNING, e, () -> "Unable to read Jenkins version: " + e.getMessage());
             }
         }
         
@@ -5413,7 +5412,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     static {
         final String paths = SystemProperties.getString(Jenkins.class.getName() + ".additionalReadablePaths");
         if (paths != null) {
-            LOGGER.log(INFO, "SECURITY-2047 override: Adding the following paths to ALWAYS_READABLE_PATHS: " + paths);
+            LOGGER.info(() -> "SECURITY-2047 override: Adding the following paths to ALWAYS_READABLE_PATHS: " + paths);
             ALWAYS_READABLE_PATHS.addAll(Arrays.stream(paths.split(",")).map(String::trim).collect(Collectors.toSet()));
         }
     }
