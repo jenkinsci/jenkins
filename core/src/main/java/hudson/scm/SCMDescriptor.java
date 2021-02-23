@@ -80,7 +80,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
-    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    @Restricted(NoExternalUse.class) @RestrictedSince("2.209")
     public int getGeneration() {
         return atomicGeneration.get();
     }
@@ -90,7 +90,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
-    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    @Restricted(NoExternalUse.class) @RestrictedSince("2.209")
     public void incrementGeneration() {
         atomicGeneration.incrementAndGet();
     }

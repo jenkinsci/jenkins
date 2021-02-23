@@ -1080,7 +1080,7 @@ public class SlaveComputer extends Computer {
      * Helper method for Jelly.
      */
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.163")
     public static List<SlaveSystemInfo> getSystemInfoExtensions() {
         return SlaveSystemInfo.all();
     }

@@ -220,7 +220,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.220")
     public String getUserId() {
         return userId;
     }
@@ -232,7 +232,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.220")
     public void setUserId(String userId){
     }
 
