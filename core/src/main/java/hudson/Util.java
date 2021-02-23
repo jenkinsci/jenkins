@@ -1474,7 +1474,7 @@ public class Util {
      * @throws IllegalArgumentException When {@code derived} does not derive from {@code base}, or when {@code base}
      *                                  does not contain the specified method.
      * @throws AbstractMethodError If the derived class doesn't override the given method.
-     * @since TODO
+     * @since 2.259
      */
     public static <T> T ifOverridden(Supplier<T> supplier, @NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
         if (isOverridden(base, derived, methodName, types)) {

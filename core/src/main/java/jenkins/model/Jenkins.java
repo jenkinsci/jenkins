@@ -2809,7 +2809,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns quiet down reason if it was indicated.
      * @return
      *      Reason if it was indicated. null otherwise
-     *      @since TODO
+     *      @since 2.267
      */
     @Exported
     @CheckForNull
@@ -3905,7 +3905,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
-     * @deprecated since TODO; use {@link #doQuietDown(boolean, int, String)} instead.
+     * @deprecated since 2.267; use {@link #doQuietDown(boolean, int, String)} instead.
      */
     @Deprecated
     public synchronized HttpRedirect doQuietDown(boolean block, int timeout) {
@@ -3922,7 +3922,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
      * @param reason Quiet reason that will be visible to user
-     * @since TODO
+     * @since 2.267
      */
     @RequirePOST
     public HttpRedirect doQuietDown(@QueryParameter boolean block,
@@ -4498,7 +4498,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Gets the {@link Authentication} object that represents the user
      * associated with the current request.
-     * @since TODO
+     * @since 2.266
      */
     public static @NonNull Authentication getAuthentication2() {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
@@ -5423,7 +5423,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Because Spring Security creates its own {@link AnonymousAuthenticationToken} instances, the code must not
      * expect the singleton semantics. This is just a convenient instance.
      *
-     * @since TODO
+     * @since 2.266
      */
     public static final Authentication ANONYMOUS2 = new AnonymousAuthenticationToken("anonymous", "anonymous", Collections.singleton(new SimpleGrantedAuthority("anonymous")));
 

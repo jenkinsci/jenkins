@@ -1514,7 +1514,7 @@ public class UpdateSite {
 
         /**
          * Checks whether a plugin has a desired category
-         * @since TODO
+         * @since 2.272
          */
         public boolean hasCategory(String category) {
             if (categories == null) {
@@ -1526,7 +1526,7 @@ public class UpdateSite {
 
         /**
          * Get categories stream for further search.
-         * @since TODO
+         * @since 2.272
          */
         public Stream<String> getCategoriesStream() {
             return categories != null ? Arrays.stream(categories) : Stream.empty();

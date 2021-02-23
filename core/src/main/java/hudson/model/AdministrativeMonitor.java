@@ -162,7 +162,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *
      * This will be used to determine which icon will be used in the navigation bar.
      *
-     * @since TODO
+     * @since 2.267
      */
     public boolean isSecurity() {
         return false;

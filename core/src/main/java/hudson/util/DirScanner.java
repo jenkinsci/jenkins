@@ -116,7 +116,7 @@ public abstract class DirScanner implements Serializable {
         }
 
         /**
-         * @since TODO
+         * @since 2.275 and 2.263.2
          */
         @Restricted(NoExternalUse.class)
         public Glob(String includes, String excludes, boolean useDefaultExcludes, boolean followSymlinks) {

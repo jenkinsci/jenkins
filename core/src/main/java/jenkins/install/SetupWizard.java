@@ -124,7 +124,7 @@ public class SetupWizard extends PageDecorator {
      *
      * If you do not provide any value to that system property, the default admin account will not have an API Token.
      *
-     * @since TODO (for the existence of the sysprop, not the availability to plugin)
+     * @since 2.260 (with NoExternalUse)
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
