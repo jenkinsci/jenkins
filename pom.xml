@@ -169,7 +169,7 @@ THE SOFTWARE.
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
         <version>[0]</version>
-        <!--
+        <!-- 
               "[0]" is a range that must be exaclty 0
               this is different to "0" which is hint to use version 0.
               therefore unless anyone else uses ranges (they should not) this version will always win
