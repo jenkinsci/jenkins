@@ -66,7 +66,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
      * <p>
      * If the user name and the password pair doesn't match, throw {@link AuthenticationException} to reject the login
      * attempt.
-     * @since TODO
+     * @since 2.266
      */
     protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
         if (Util.isOverridden(AbstractPasswordBasedSecurityRealm.class, getClass(), "authenticate", String.class, String.class)) {

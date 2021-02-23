@@ -277,7 +277,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @param noFollowLinks if true then do not follow links.
      * @return a list of {@code /}-separated relative names of children (files directly inside or in subdirectories)
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
-     * @since TODO
+     * @since 2.275 and 2.263.2
      */
     @Restricted(NoExternalUse.class)
     public @NonNull Collection<String> list(@NonNull String includes, @CheckForNull String excludes, boolean useDefaultExcludes,
@@ -350,7 +350,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      *               If non-empty, a trailing slash will be enforced.
      * @return the number of files inside the archive (not the folders)
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
-     * @since TODO
+     * @since 2.275 and 2.263.2
      */
     public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
                    boolean noFollowLinks, String prefix) throws IOException {
@@ -661,6 +661,18 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
 
             @Override
+            public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
+                           boolean noFollowLinks, String prefix) throws IOException {
+                String rootPath = determineRootPath();
+                DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
+                ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.createZipWithoutSymlink(prefix) : ArchiverFactory.ZIP;
+                try (Archiver archiver = archiverFactory.create(outputStream)) {
+                    globScanner.scan(f, FilePath.ignoringSymlinks(archiver, rootPath, noFollowLinks));
+                    return archiver.countEntries();
+                }
+            }
+
+            @Override
             public boolean hasSymlink(boolean noFollowLinks) throws IOException {
                 String rootPath = determineRootPath();
                 return FilePath.isSymlink(f, rootPath, noFollowLinks);
@@ -952,6 +964,18 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 try {
                     String rootPath = root == null ? null : root.getRemote();
                     return f.act(new Scanner(includes, excludes, useDefaultExcludes, rootPath, noFollowLinks));
+                } catch (InterruptedException x) {
+                    throw new IOException(x);
+                }
+            }
+
+            @Override
+            public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
+                                    boolean noFollowLinks, String prefix) throws IOException {
+                try {
+                    String rootPath = root == null ? null : root.getRemote();
+                    DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
+                    return f.zip(outputStream, globScanner, rootPath, noFollowLinks, prefix);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }

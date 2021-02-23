@@ -45,9 +45,18 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class FileParameterDefinition extends ParameterDefinition {
+
+    /**
+     * @since TODO
+     */
     @DataBoundConstructor
+    public FileParameterDefinition(String name) {
+        super(name);
+    }
+
     public FileParameterDefinition(String name, String description) {
-        super(name, description);
+        this(name);
+        setDescription(description);
     }
 
     public FileParameterValue createValue(StaplerRequest req, JSONObject jo) {

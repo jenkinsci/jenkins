@@ -361,7 +361,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * logged in.
      *
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
-     * @since TODO
+     * @since 2.266
      */
     public @NonNull Authentication impersonate2() throws UsernameNotFoundException {
         return this.impersonate(this.getUserDetailsForImpersonation2());
@@ -388,7 +388,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
-     * @since TODO
+     * @since 2.266
      */
     public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService2 userDetailsService = new ImpersonatingUserDetailsService2(
@@ -596,7 +596,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param a the supplied {@link Authentication} .
      * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
-     * @since TODO
+     * @since 2.266
      */
     public static @CheckForNull User get2(@CheckForNull Authentication a) {
         if (a == null || a instanceof AnonymousAuthenticationToken)

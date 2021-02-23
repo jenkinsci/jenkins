@@ -108,7 +108,7 @@ public final class XMLUtils {
      * @return The XML {@link Document}.
      * @throws SAXException Error parsing the XML stream data e.g. badly formed XML.
      * @throws IOException Error reading from the steam.
-     * @since TODO
+     * @since 2.265
      */
     public static @NonNull Document parse(@NonNull InputStream stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
@@ -153,7 +153,7 @@ public final class XMLUtils {
      * @return The parsed document.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws IOException Error reading from the file.
-     * @since TODO
+     * @since 2.265
      */
     public static @NonNull Document parse(@NonNull File file) throws SAXException, IOException {
         if (!file.exists() || !file.isFile()) {

@@ -663,4 +663,44 @@ public class PluginManagerTest {
         // This would throw NPE
         uc.getPluginsWithUnavailableUpdates();
     }
+
+    @Test @Issue("JENKINS-64840")
+    public void searchMultipleUpdateSites() throws Exception {
+        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = PluginManagerTest.class.getResource("/plugins/search-test-update-center1.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        assertNotNull(site.getData());
+        url = PluginManagerTest.class.getResource("/plugins/search-test-update-center2.json");
+        site = new UpdateSite("secondary", url.toString());
+        sites.add(site);
+        final Future<FormValidation> future = site.updateDirectly(false);
+        if (future != null) {
+            assertEquals(FormValidation.ok(), future.get());
+        }
+        assertNotNull(site.getData());
+
+        //Dummy plugin is found in the second site (should have worked before the fix)
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=dummy&limit=5");
+        JSONObject json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        JSONArray data = json.getJSONArray("data");
+        assertEquals("Should be one search hit for dummy", 1, data.size());
+
+        //token-macro plugin is found in the first site (didn't work before the fix)
+        response = r.getJSON("pluginManager/pluginsSearch?query=token&limit=5");
+        json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        data = json.getJSONArray("data");
+        assertEquals("Should be one search hit for token", 1, data.size());
+
+        //hello-world plugin is found in the first site and hello-huston in the second (didn't work before the fix)
+        response = r.getJSON("pluginManager/pluginsSearch?query=hello&limit=5");
+        json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        data = json.getJSONArray("data");
+        assertEquals("Should be two search hits for hello", 2, data.size());
+    }
 }

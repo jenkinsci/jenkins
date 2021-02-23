@@ -30,6 +30,7 @@ import net.sf.json.JSONObject;
 import hudson.Extension;
 
 import java.util.Objects;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * {@link ParameterDefinition} that is either 'true' or 'false'.
@@ -37,12 +38,20 @@ import java.util.Objects;
  * @author huybrechts
  */
 public class BooleanParameterDefinition extends SimpleParameterDefinition {
-    private final boolean defaultValue;
+    private boolean defaultValue;
 
+    /**
+     * @since TODO
+     */
     @DataBoundConstructor
+    public BooleanParameterDefinition(String name) {
+        super(name);
+    }
+
     public BooleanParameterDefinition(String name, boolean defaultValue, String description) {
-        super(name, description);
-        this.defaultValue = defaultValue;
+        this(name);
+        setDefaultValue(defaultValue);
+        setDescription(description);
     }
 
     @Override
@@ -57,6 +66,14 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
 
     public boolean isDefaultValue() {
         return defaultValue;
+    }
+
+    /**
+     * @since TODO
+     */
+    @DataBoundSetter
+    public void setDefaultValue(boolean defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     @Override

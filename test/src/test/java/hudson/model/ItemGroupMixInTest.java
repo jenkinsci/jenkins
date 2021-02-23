@@ -24,7 +24,12 @@
 
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
@@ -33,11 +38,13 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,6 +53,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -53,10 +61,12 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 public class ItemGroupMixInTest {
 
@@ -259,4 +269,51 @@ public class ItemGroupMixInTest {
     });
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
+
+  @Issue("SECURITY-1923")
+  @Test
+  public void doCreateItemWithValidXmlAndBadField() throws Exception {
+    final String CREATOR = "create_user";
+
+    r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+    MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+    mas.grant(Item.CREATE, Item.CONFIGURE, Item.READ, Jenkins.READ)
+            .everywhere()
+            .to(CREATOR);
+    r.jenkins.setAuthorizationStrategy(mas);
+
+    JenkinsRule.WebClient wc = r.createWebClient();
+    wc.login(CREATOR);
+    WebRequest req = new WebRequest(wc.createCrumbedUrl("createItem?name=testProject"), HttpMethod.POST);
+    req.setAdditionalHeader("Content-Type", "application/xml");
+    req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
+
+    try {
+      wc.getPage(req);
+      fail("Should have returned failure.");
+    } catch (FailingHttpStatusCodeException e) {
+      // This really shouldn't return 500, but that's what it does now.
+      assertThat(e.getStatusCode(), equalTo(500));
+    }
+
+    OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
+    Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
+
+    assertThat(data.size(), equalTo(0));
+
+    odm.doDiscard(null, null);
+
+    User.AllUsers.scanAll();
+    boolean createUser = false;
+    User badUser = User.getById("foo", createUser);
+
+    assertNull("Should not have created user.", badUser);
+  }
+
+  private static final String VALID_XML_BAD_FIELD_USER_XML =
+          "<hudson.model.User>\n" +
+                  "  <id>foo</id>\n" +
+                  "  <fullName>Foo User</fullName>\n" +
+                  "  <badField/>\n" +
+                  "</hudson.model.User>\n";
 }

@@ -34,6 +34,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.Objects;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Parameter whose value is a string value.
@@ -41,21 +42,32 @@ import java.util.Objects;
 public class StringParameterDefinition extends SimpleParameterDefinition {
 
     private String defaultValue;
-    private final boolean trim;
+    private boolean trim;
 
+    /**
+     * @since TODO
+     */
     @DataBoundConstructor
+    public StringParameterDefinition(String name) {
+        super(name);
+    }
+
     public StringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
-        super(name, description);
-        this.defaultValue = defaultValue;
-        this.trim = trim;
+        this(name);
+        setDefaultValue(defaultValue);
+        setDescription(description);
+        setTrim(trim);
     }
 
     public StringParameterDefinition(String name, String defaultValue, String description) {
-        this(name, defaultValue, description, false);
+        this(name);
+        setDefaultValue(defaultValue);
+        setDescription(description);
     }
     
     public StringParameterDefinition(String name, String defaultValue) {
-        this(name, defaultValue, null, false);
+        this(name);
+        setDefaultValue(defaultValue);
     }
 
     @Override
@@ -83,9 +95,10 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         }
         return defaultValue;
     }
-    
+
+    @DataBoundSetter
     public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
+        this.defaultValue = Util.fixEmpty(defaultValue);
     }
 
     /**
@@ -97,6 +110,14 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
      */
     public boolean isTrim() {
         return trim;
+    }
+
+    /**
+     * @since TODO
+     */
+    @DataBoundSetter
+    public void setTrim(boolean trim) {
+        this.trim = trim;
     }
     
     @Override

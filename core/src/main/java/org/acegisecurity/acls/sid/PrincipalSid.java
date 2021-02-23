@@ -37,7 +37,7 @@ public class PrincipalSid implements Sid {
     }
 
     /**
-     * @since TODO
+     * @since 2.266
      */
     public PrincipalSid(Authentication a) {
         Object p = a.getPrincipal();

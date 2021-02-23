@@ -50,7 +50,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     }
 
     /**
-     * @since TODO
+     * @since 2.266
      */
     public Collection<? extends GrantedAuthority> getAuthorities2() {
         String[] roles = this.roles;    // capture to a variable for immutability

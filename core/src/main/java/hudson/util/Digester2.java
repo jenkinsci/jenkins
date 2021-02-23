@@ -80,7 +80,7 @@ public class Digester2 extends Digester {
 
     /**
      * @param processSecurely true iff this should configure the parser to prevent XXE.
-     * @since TODO
+     * @since 2.275 and 2.263.2
      */
     public Digester2(boolean processSecurely) {
         if (processSecurely) {
@@ -91,7 +91,7 @@ public class Digester2 extends Digester {
     /**
      * @param reader the reader
      * @param processSecurely true iff this should configure the parser to prevent XXE.
-     * @since TODO
+     * @since 2.275 and 2.263.2
      */
     public Digester2(XMLReader reader, boolean processSecurely) {
         super(reader);
