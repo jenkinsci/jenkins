@@ -32,3 +32,10 @@ junit jaxb
 bouncycastle-api jaxb
 command-launcher jaxb
 jdk-tool jaxb
+
+# JENKINS-55582
+bouncycastle-api instance-identity
+bouncycastle-api command-launcher
+trilead-api instance-identity
+jdk-tool instance-identity
+bouncycastle-api jdk-tool

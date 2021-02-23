@@ -159,7 +159,6 @@ public class ClassFilterImplTest {
         ClassFilterImpl filter = new ClassFilterImpl();
         filter.check("org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl");
         filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
-        filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }
 
     @TestExtension("xstreamRequiresWhitelist")

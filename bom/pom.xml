@@ -422,11 +422,6 @@ THE SOFTWARE.
       <!-- Modules -->
       <dependency>
         <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>instance-identity</artifactId>
-        <version>2.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
         <artifactId>ssh-cli-auth</artifactId>
         <version>1.8</version>
       </dependency>
