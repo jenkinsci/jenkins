@@ -388,9 +388,9 @@ public abstract class Slave extends Node implements Serializable {
             // so that browsers can download them in the right file name.
             // see http://support.microsoft.com/kb/260519 and http://www.boutell.com/newfaq/creating/forcedownload.html
             rsp.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-            InputStream in = con.getInputStream();
-            rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
-            in.close();
+            try (InputStream in = con.getInputStream()) {
+                rsp.serveFile(req, in, con.getLastModified(), con.getContentLengthLong(), "*.jar");
+            }
         }
 
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
