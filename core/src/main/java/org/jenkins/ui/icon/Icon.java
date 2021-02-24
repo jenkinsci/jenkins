@@ -24,6 +24,8 @@
 package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,6 +123,7 @@ public class Icon {
         }
     }
 
+    @Restricted(NoExternalUse.class)
     public Icon(String classSpec, String url, String style, IconType iconType, IconFormat iconFormat) {
         this.classSpec = classSpec;
         this.normalizedSelector = toNormalizedCSSSelector(classSpec);
@@ -140,6 +143,7 @@ public class Icon {
 
     /**
      * Is the Icon an SVG?
+     * @since TODO
      */
     public boolean isSvgSprite() {
         return iconFormat == IconFormat.EXTERNAL_SVG_SPRITE;
