@@ -27,6 +27,9 @@ package org.jenkins.ui.icon;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+/**
+ * All the weather icons
+ */
 @Restricted(NoExternalUse.class)
 public class WeatherIcon extends Icon {
     enum Status {
