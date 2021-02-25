@@ -427,11 +427,6 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>ssh-cli-auth</artifactId>
-        <version>1.8</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
         <artifactId>slave-installer</artifactId>
         <version>1.7</version>
       </dependency>
@@ -454,11 +449,6 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.modules</groupId>
         <artifactId>systemd-slave-installer</artifactId>
         <version>1.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>sshd</artifactId>
-        <version>2.7</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

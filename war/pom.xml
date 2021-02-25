@@ -112,10 +112,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>ssh-cli-auth</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>slave-installer</artifactId>
     </dependency>
     <dependency>
@@ -133,10 +129,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>systemd-slave-installer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>sshd</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -391,6 +383,12 @@ THE SOFTWARE.
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
                   <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.modules</groupId>
+                  <artifactId>sshd</artifactId>
+                  <version>${sshd.plugin.version}</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
