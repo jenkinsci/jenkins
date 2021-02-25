@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,7 +40,7 @@ public class DetachedPluginsUtilTest {
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPluginsSince2_161 =
                     DetachedPluginsUtil.getDetachedPlugins(new VersionNumber("2.161"));
 
-            assertThat(mapToPluginShortName(detachedPluginsSince2_161), contains("jaxb", "trilead-api"));
+            assertThat(mapToPluginShortName(detachedPluginsSince2_161), hasItems("jaxb", "trilead-api"));
         }
     }
 

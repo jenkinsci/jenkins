@@ -103,12 +103,8 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.13</version>
+      <version>5.14</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>ssh-cli-auth</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -159,10 +155,6 @@ THE SOFTWARE.
           <artifactId>instance-identity</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>sshd</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -420,6 +412,12 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
+                  <groupId>org.jenkins-ci.modules</groupId>
+                  <artifactId>sshd</artifactId>
+                  <version>${sshd.plugin.version}</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
                   <version>1.0.4</version>
@@ -630,7 +628,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.11.0</version>
+            <version>1.11.2</version>
             <executions>
 
               <execution>
