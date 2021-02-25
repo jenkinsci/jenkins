@@ -272,7 +272,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>javadoc</artifactId>
-                  <version>1.6</version>
+                  <version>1.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
