@@ -57,7 +57,7 @@ public class RingBufferLogHandler extends Handler {
     /**
      * @return int DEFAULT_RING_BUFFER_SIZE
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
-     * @since TODO
+     * @since 2.259
      */
     public static int getDefaultRingBufferSize() {
         return DEFAULT_RING_BUFFER_SIZE;

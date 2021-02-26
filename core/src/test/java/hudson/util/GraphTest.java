@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import java.awt.*;
 
-public class Security2025GraphTest {
+public class GraphTest {
 
     public static final int DEFAULT_W = 400;
     public static final int DEFAULT_H = 300;

@@ -49,7 +49,7 @@ public abstract class SecurityListener implements ExtensionPoint {
      * This might be via the web UI, or via REST (using API token or Basic), or CLI (remoting, auth, ssh)
      * or any other way plugins can propose.
      * @param details details of the newly authenticated user, such as name and groups.
-     * @since TODO
+     * @since 2.266
      */
     protected void authenticated2(@NonNull UserDetails details) {
         authenticated(org.acegisecurity.userdetails.UserDetails.fromSpring(details));
@@ -101,7 +101,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     protected void loggedOut(@NonNull String username){}
 
     /**
-     * @since TODO
+     * @since 2.266
      */
     public static void fireAuthenticated2(@NonNull UserDetails details) {
         if (LOGGER.isLoggable(Level.FINE)) {

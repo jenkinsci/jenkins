@@ -55,12 +55,11 @@ import java.util.Optional;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-//TODO rename to HeteroListTest after security release
-public class HeteroListSEC2035Test {
+public class HeteroListTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 

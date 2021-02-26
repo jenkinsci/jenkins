@@ -773,7 +773,7 @@ public class Fingerprint implements ModelObject, Saveable {
         /**
          * Converter Implementation for RangeSet.
          *
-         * @since TODO
+         * @since 2.253
          */
         public static final class ConverterImpl implements Converter {
             private final Converter collectionConv; // used to convert ArrayList in it

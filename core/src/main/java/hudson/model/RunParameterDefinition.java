@@ -63,6 +63,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
     private final String runId;
     private final RunParameterFilter filter;
 
+    // TODO consider a simplified @DataBoundConstructor using @DataBoundSetter for description & filter
     /**
      * @since 1.517
      */

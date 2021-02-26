@@ -34,8 +34,6 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Predicate;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -45,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class RepeatablePropertyTest extends HudsonTestCase implements Describable<RepeatablePropertyTest> {
 
@@ -86,20 +85,16 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
         // * 1 ExcitingObjectCotainer
         // * no ExcitingObject
         final HtmlForm form = getForm("nested");
-        List<HtmlTextInput> containerNameInputs = form.getElementsByAttribute("input", "type", "text");
-        CollectionUtils.filter(containerNameInputs, new Predicate<HtmlTextInput>() {
-            @Override
-            public boolean evaluate(HtmlTextInput input) {
-                return input.getNameAttribute().endsWith(".containerName");
-            }
-        });
-        List<HtmlTextInput> greatPropertyInputs = form.getElementsByAttribute("input", "type", "text");
-        CollectionUtils.filter(greatPropertyInputs, new Predicate<HtmlTextInput>() {
-            @Override
-            public boolean evaluate(HtmlTextInput input) {
-                return input.getNameAttribute().endsWith(".greatProperty");
-            }
-        });
+        List<HtmlTextInput> containerNameInputs =
+                form.getElementsByAttribute("input", "type", "text").stream()
+                        .map(HtmlTextInput.class::cast)
+                        .filter((input) -> input.getNameAttribute().endsWith(".containerName"))
+                        .collect(Collectors.toList());
+        List<HtmlTextInput> greatPropertyInputs =
+                form.getElementsByAttribute("input", "type", "text").stream()
+                        .map(HtmlTextInput.class::cast)
+                        .filter((input) -> input.getNameAttribute().endsWith(".greatProperty"))
+                        .collect(Collectors.toList());
         assertEquals(1, containerNameInputs.size());
         assertEquals(0, greatPropertyInputs.size());
     }

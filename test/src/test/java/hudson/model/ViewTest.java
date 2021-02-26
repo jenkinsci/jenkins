@@ -24,9 +24,14 @@
 package hudson.model;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.ExtensionList;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.views.ViewsTabBar;
 import jenkins.model.Jenkins;
 import org.jenkins.ui.icon.Icon;
@@ -60,6 +65,7 @@ import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.net.HttpURLConnection;
 import java.util.Collections;
@@ -72,7 +78,13 @@ import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -101,6 +113,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public class ViewTest {
+
+    private static final String CREATE_VIEW = "create_view";
+    private static final String CONFIGURATOR = "configure_user";
 
     @Rule public JenkinsRule j = new JenkinsRule();
     @Rule
@@ -654,6 +669,327 @@ public class ViewTest {
         return given(mock(View.class).getViewName()).willReturn(viewName).getMock();
     }
 
+    public void prepareSec1923() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+        mas.grant(View.CREATE, View.READ, Jenkins.READ)
+                .everywhere()
+                .to(CREATE_VIEW);
+        mas.grant(View.CONFIGURE, View.READ, Jenkins.READ)
+                .everywhere()
+                .to(CONFIGURATOR);
+        j.jenkins.setAuthorizationStrategy(mas);
+    }
+
+    @Test
+    @Issue("SECURITY-1923")
+    public void simplifiedOriginalDescription() throws Exception {
+        this.prepareSec1923();
+
+        /*  This is a simplified version of the original report in SECURITY-1923.
+            The XML is broken, because the root element doesn't have a matching end.
+            The last line is almost a matching end, but it lacks the slash character.
+            Instead that line gets interpreted as another contained element, one that
+            doesn't actually exist on the class. This causes it to get logged by the
+            old data monitor. */
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login(CREATE_VIEW);
+
+        /*  The view to create has to be nonexistent, otherwise a different code path is followed
+            and the vulnerability doesn't manifest. */
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("createView?name=nonexistent"), HttpMethod.POST);
+        req.setAdditionalHeader("Content-Type", "application/xml");
+        req.setRequestBody(ORIGINAL_BAD_USER_XML);
+
+        try {
+            wc.getPage(req);
+            fail("Should have returned failure.");
+        } catch (FailingHttpStatusCodeException e) {
+            // This really shouldn't return 500, but that's what it does now.
+            assertThat(e.getStatusCode(), equalTo(500));
+
+            // This should have a different message, but this is the current behavior demonstrating the problem.
+            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
+        }
+
+        OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
+        Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
+
+        assertThat(data.size(), equalTo(0));
+
+        odm.doDiscard(null, null);
+
+        View view = j.getInstance().getView("nonexistent");
+
+        // The view should still be nonexistent, as we gave it a user and not a view.
+        assertNull("Should not have created view.", view);
+
+        User.AllUsers.scanAll();
+        boolean createUser = false;
+        User badUser = User.getById("foo", createUser);
+
+        assertNull("Should not have created user.", badUser);
+    }
+
+    @Test
+    @Issue("SECURITY-1923")
+    public void simplifiedWithValidXmlAndBadField() throws Exception {
+        this.prepareSec1923();
+
+        /*  This is the same thing as the original report, except it uses valid XML.
+            It just adds in additional invalid field, which gets picked up by the old data monitor.
+            Way too much duplicated code here, but this is just for demonstration. */
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login(CREATE_VIEW);
+
+        /*  The view to create has to be nonexistent, otherwise a different code path is followed
+            and the vulnerability doesn't manifest. */
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("createView?name=nonexistent"), HttpMethod.POST);
+        req.setAdditionalHeader("Content-Type", "application/xml");
+        req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
+
+        try {
+            wc.getPage(req);
+            fail("Should have returned failure.");
+        } catch (FailingHttpStatusCodeException e) {
+            // This really shouldn't return 500, but that's what it does now.
+            assertThat(e.getStatusCode(), equalTo(500));
+
+            // This should have a different message, but this is the current behavior demonstrating the problem.
+            assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
+        }
+
+        OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
+        Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
+
+        assertThat(data.size(), equalTo(0));
+
+        odm.doDiscard(null, null);
+
+        View view = j.getInstance().getView("nonexistent");
+
+        // The view should still be nonexistent, as we gave it a user and not a view.
+        assertNull("Should not have created view.", view);
+
+        User.AllUsers.scanAll();
+        boolean createUser = false;
+        User badUser = User.getById("foo", createUser);
+
+        assertNull("Should not have created user.", badUser);
+    }
+
+    @Test
+    @Issue("SECURITY-1923")
+    public void configDotXmlWithValidXmlAndBadField() throws Exception {
+        this.prepareSec1923();
+
+        ListView view = new ListView("view1", j.jenkins);
+        j.jenkins.addView(view);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.login(CONFIGURATOR);
+        WebRequest req = new WebRequest(wc.createCrumbedUrl(String.format("%s/config.xml", view.getUrl())), HttpMethod.POST);
+        req.setAdditionalHeader("Content-Type", "application/xml");
+        req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
+
+        try {
+            wc.getPage(req);
+            fail("Should have returned failure.");
+        } catch (FailingHttpStatusCodeException e) {
+            // This really shouldn't return 500, but that's what it does now.
+            assertThat(e.getStatusCode(), equalTo(500));
+        }
+
+        OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
+        Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
+
+        assertThat(data.size(), equalTo(0));
+
+        odm.doDiscard(null, null);
+
+        User.AllUsers.scanAll();
+        boolean createUser = false;
+        User badUser = User.getById("foo", createUser);
+
+        assertNull("Should not have created user.", badUser);
+    }
+
+    private static final String VALID_XML_BAD_FIELD_USER_XML =
+            "<hudson.model.User>\n" +
+                    "  <id>foo</id>\n" +
+                    "  <fullName>Foo User</fullName>\n" +
+                    "  <badField/>\n" +
+                    "</hudson.model.User>\n";
+
+    private static final String ORIGINAL_BAD_USER_XML =
+            "<hudson.model.User>\n" +
+                    "  <id>foo</id>\n" +
+                    "  <fullName>Foo User</fullName>\n" +
+                    "<hudson.model.User>\n";
+
+
+    @Test
+    @Issue("SECURITY-2171")
+    public void newJob_xssPreventedInId() throws Exception {
+        CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
+        customizableTLID.customId = "regularclass\" onclick=alert(123) other=\"";
+        customizableTLID.customDisplayName = "DN-xss-id";
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.label')).filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
+        assertThat(result, instanceOf(HTMLElement.class));
+        HTMLElement resultElement = (HTMLElement) result;
+        assertThat(resultElement.getAttribute("onclick", null), nullValue());
+    }
+
+    @Test
+    @Issue("SECURITY-2171")
+    public void newJob_xssPreventedInDisplayName() throws Exception {
+        CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
+        customizableTLID.customId = "xss-dn";
+        customizableTLID.customDisplayName = "DN <img src=x onerror=console.warn(123)>";
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object result = page.executeJavaScript("document.querySelector('.xss-dn .label').innerHTML").getJavaScriptResult();
+        assertThat(result, instanceOf(String.class));
+        String resultString = (String) result;
+        assertThat(resultString, not(containsString("<")));
+    }
+
+    @Test
+    public void newJob_descriptionSupportsHtml() throws Exception {
+        CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
+        customizableTLID.customId = "html-desc";
+        customizableTLID.customDescription = "Super <strong>looong</strong> description";
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object result = page.executeJavaScript("document.querySelector('.html-desc .desc strong')").getJavaScriptResult();
+        assertThat(result, instanceOf(HTMLElement.class));
+        assertThat(((HTMLElement) result).getTagName(), is("STRONG"));
+    }
+
+    @Test
+    @Issue("SECURITY-2171")
+    public void newJob_xssPreventedInGetIconFilePathPattern() throws Exception {
+        CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
+        customizableTLID.customId = "xss-ifpp";
+        customizableTLID.customIconClassName = null;
+        customizableTLID.customIconFilePathPattern = "\"><img src=x onerror=\"alert(123)";
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object resultIconChildrenCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon').children.length").getJavaScriptResult();
+        assertThat(resultIconChildrenCount, instanceOf(Integer.class));
+        int resultIconChildrenCountInt = (int) resultIconChildrenCount;
+        assertEquals(1, resultIconChildrenCountInt);
+
+        Object resultImgAttributesCount = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon img').attributes.length").getJavaScriptResult();
+        assertThat(resultImgAttributesCount, instanceOf(Integer.class));
+        int resultImgAttributesCountInt = (int) resultImgAttributesCount;
+        assertEquals(1, resultImgAttributesCountInt);
+    }
+
+    @Test
+    public void newJob_iconClassName() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object resultClassNames = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon img').className").getJavaScriptResult();
+        assertThat(resultClassNames, instanceOf(String.class));
+        String resultClassNamesString = (String) resultClassNames;
+        List<String> resultClassNamesList = Arrays.asList(resultClassNamesString.split(" "));
+        assertThat(resultClassNamesList, hasItem("icon-xlg"));
+        assertThat(resultClassNamesList, hasItem("icon-freestyle-project"));
+
+        Object resultSrc = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon img').src").getJavaScriptResult();
+        assertThat(resultSrc, instanceOf(String.class));
+        String resultSrcString = (String) resultSrc;
+        assertThat(resultSrcString, containsString("48x48"));
+        assertThat(resultSrcString, containsString("freestyleproject.png"));
+    }
+
+    @Test
+    public void newJob_twoLetterIcon() throws Exception {
+        CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
+        customizableTLID.customId = "two-letters-desc";
+        customizableTLID.customDisplayName = "Two words";
+        customizableTLID.customIconClassName = null;
+        customizableTLID.customIconFilePathPattern = null;
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object result = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .default-icon')").getJavaScriptResult();
+        assertThat(result, instanceOf(HTMLElement.class));
+        HTMLElement resultHtml = (HTMLElement) result;
+        HTMLElement spanA = (HTMLElement) resultHtml.getFirstElementChild();
+        HTMLElement spanB = (HTMLElement) resultHtml.getLastElementChild();
+        assertThat(spanA.getClassName_js(), is("a"));
+        assertThat(spanA.getInnerText(), is("T"));
+        assertThat(spanB.getClassName_js(), is("b"));
+        assertThat(spanB.getInnerText(), is("w"));
+    }
+
+    @TestExtension
+    public static class CustomizableTLID extends TopLevelItemDescriptor {
+
+        public String customId = "ID-not-yet-defined";
+        public String customDisplayName = "DisplayName-not-yet-defined";
+        public String customDescription = "Description-not-yet-defined";
+        public String customIconFilePathPattern = "IconFilePathPattern-not-yet-defined";
+        public String customIconClassName = "IconClassName-not-yet-defined";
+
+        public CustomizableTLID() {
+            super(FreeStyleProject.class);
+        }
+
+        @Override
+        public String getId() {
+            return customId;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return customDisplayName;
+        }
+
+        @Override
+        public String getDescription() {
+            return customDescription;
+        }
+
+        @Override
+        public @CheckForNull String getIconFilePathPattern() {
+            return customIconFilePathPattern;
+        }
+
+        @Override
+        public String getIconClassName() {
+            return customIconClassName;
+        }
+
+        @Override
+        public TopLevelItem newInstance(ItemGroup parent, String name) {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+    
     //Duplication with ViewTest.CompositeView from core unit test module - unfortunately it is inaccessible from here
     private static class DummyCompositeView extends View implements ViewGroup {
 

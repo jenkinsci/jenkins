@@ -1,5 +1,5 @@
 {{#each plugins}}
-    <tr>
+    <tr data-plugin-id="{{ this.name }}" data-plugin-version="{{ this.version }}">
         {{#if @root/admin }}
             <td class="pane">
                 <input type="checkbox" name="plugin.{{ this.name }}.{{ this.sourceId }}">
