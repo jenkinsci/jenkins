@@ -84,11 +84,11 @@ THE SOFTWARE.
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
           <div class="tr help-sibling">
-            <div colspan="3">
-              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
+            <div colspan="3" style="display: flex;">
+              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}" style="flex: 1;">
                 <b>${descriptor.displayName}</b>
-                <f:helpLink url="${help}"/>
               </div>
+              <f:helpLink url="${help}"/>
             </div>
           </div>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
