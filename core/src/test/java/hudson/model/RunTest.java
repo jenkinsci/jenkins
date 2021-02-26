@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -267,7 +268,7 @@ public class RunTest {
         treeSet.add(r1);
         treeSet.add(r2);
 
-        assertTrue(r1.compareTo(r2) != 0);
+        assertNotEquals(0, r1.compareTo(r2));
         assertEquals(2, treeSet.size());
     }
 
