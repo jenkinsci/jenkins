@@ -30,7 +30,6 @@ import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -2733,14 +2732,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new ExtensionRefreshException(ef+" doesn't support refresh");
         }
 
-        List<ExtensionComponentSet> fragments = Lists.newArrayList();
+        List<ExtensionComponentSet> fragments = new ArrayList<>();
         for (ExtensionFinder ef : finders) {
             fragments.add(ef.refresh());
         }
         ExtensionComponentSet delta = ExtensionComponentSet.union(fragments).filtered();
 
         // if we find a new ExtensionFinder, we need it to list up all the extension points as well
-        List<ExtensionComponent<ExtensionFinder>> newFinders = Lists.newArrayList(delta.find(ExtensionFinder.class));
+        List<ExtensionComponent<ExtensionFinder>> newFinders = new ArrayList<>(delta.find(ExtensionFinder.class));
         while (!newFinders.isEmpty()) {
             ExtensionFinder f = newFinders.remove(newFinders.size()-1).getInstance();
 
