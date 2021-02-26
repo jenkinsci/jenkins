@@ -100,7 +100,7 @@ public class CauseTest {
         Cause causeA = new Cause.UserIdCause(null);
         causeA.print(listener);
 
-        assertEquals(baos.toString().trim(),"Started by user unknown or anonymous");
+        assertEquals("Started by user unknown or anonymous", baos.toString().trim());
         baos.reset();
 
         //SYSTEM userid  - getDisplayName() should be SYSTEM
@@ -114,7 +114,7 @@ public class CauseTest {
         Cause causeC = new Cause.UserIdCause("abc123");
         causeC.print(listener);
 
-        assertEquals(baos.toString().trim(),"Started by user unknown or anonymous");
+        assertEquals("Started by user unknown or anonymous", baos.toString().trim());
         baos.reset();
 
         //More or less standard operation

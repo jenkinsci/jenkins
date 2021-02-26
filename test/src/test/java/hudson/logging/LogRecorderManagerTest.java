@@ -64,7 +64,7 @@ public class LogRecorderManagerTest {
         form.getSelectByName("level").getOptionByValue("finest").setSelected(true);
         j.submit(form);
 
-        assertEquals(logger.getLevel(), Level.FINEST);
+        assertEquals(Level.FINEST, logger.getLevel());
     }
 
     @Issue({"JENKINS-18274", "JENKINS-63458"})

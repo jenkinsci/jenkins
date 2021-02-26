@@ -84,6 +84,6 @@ public class Security914Test {
         
         Page p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, p.getWebResponse().getStatusCode());
-        assertEquals(p.getWebResponse().getContentType(), "text/html");
+        assertEquals("text/html", p.getWebResponse().getContentType());
     }
 }

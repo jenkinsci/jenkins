@@ -49,8 +49,8 @@ public class RobustReflectionConverterTest {
     @Test
     public void robustUnmarshalling() {
         Point p = read(new XStream2());
-        assertEquals(p.x,1);
-        assertEquals(p.y,2);
+        assertEquals(1, p.x);
+        assertEquals(2, p.y);
     }
 
     private Point read(XStream xs) {

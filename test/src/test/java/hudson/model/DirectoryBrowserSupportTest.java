@@ -193,7 +193,7 @@ public class DirectoryBrowserSupportTest {
 
         HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-            assertEquals("Header set: " + header, page.getWebResponse().getResponseHeaderValue(header), DirectoryBrowserSupport.DEFAULT_CSP_VALUE);
+            assertEquals("Header set: " + header, DirectoryBrowserSupport.DEFAULT_CSP_VALUE, page.getWebResponse().getResponseHeaderValue(header));
         }
 
         String propName = DirectoryBrowserSupport.class.getName() + ".CSP";

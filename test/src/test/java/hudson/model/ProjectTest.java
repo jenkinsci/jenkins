@@ -234,7 +234,7 @@ public class ProjectTest {
         j.jenkins.setQuietPeriod(0);
         assertEquals("Quiet period is not set so it should be the same as global quiet period.", 0, p.getQuietPeriod());
         p.setQuietPeriod(10);
-        assertEquals("Quiet period was set.",p.getQuietPeriod(),10);
+        assertEquals("Quiet period was set.", 10, p.getQuietPeriod());
     }
     
     @Test
@@ -622,7 +622,7 @@ public class ProjectTest {
         wc.withBasicCredentials(user.getId(), "password");
         WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
-        assertEquals(p.getWebResponse().getStatusCode(), 200);
+        assertEquals(200, p.getWebResponse().getStatusCode());
 
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
