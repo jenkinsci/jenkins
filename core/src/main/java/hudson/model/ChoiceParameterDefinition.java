@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Util;
 import hudson.util.FormValidation;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author huybrechts
@@ -47,7 +50,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     public ChoiceParameterDefinition(@NonNull String name, @NonNull String[] choices, String description) {
         super(name, description);
-        this.choices = new ArrayList<>(Arrays.asList(choices));
+        this.choices = Stream.of(choices).map(Util::fixNull).collect(Collectors.toCollection(ArrayList::new));
         defaultValue = null;
     }
 
@@ -57,6 +60,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = defaultValue;
     }
 
+    // TODO consider switching @DataBoundConstructor to a ChoiceParameterDefinition(String) overload
     /**
      * Databound constructor for reflective instantiation.
      *

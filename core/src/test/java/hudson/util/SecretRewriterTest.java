@@ -49,14 +49,15 @@ public class SecretRewriterTest {
     }
 
     private String roundtrip(String before) throws Exception {
-        SecretRewriter sr = new SecretRewriter(null);
+        SecretRewriter sr = new SecretRewriter();
         File f = File.createTempFile("test", "xml", tmp.getRoot());
         FileUtils.write(f, before, Charset.defaultCharset());
-        sr.rewrite(f, null);
+        sr.rewrite(f);
         //assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
         return FileUtils.readFileToString(f, Charset.defaultCharset()).replaceAll(System.getProperty("line.separator"), "\n").trim();
     }
 
+    @SuppressWarnings("deprecation")
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, HistoricalSecrets.getLegacyKey());

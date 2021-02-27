@@ -170,7 +170,7 @@ public abstract class ACL {
      * <p>
      * Note that {@link #SYSTEM2} can be passed in as the authentication parameter,
      * in which case you should probably just assume it has every permission.
-     * @since TODO
+     * @since 2.266
      */
     public boolean hasPermission2(@NonNull Authentication a, @NonNull Permission permission) {
         if (Util.isOverridden(ACL.class, getClass(), "hasPermission", org.acegisecurity.Authentication.class, Permission.class)) {
@@ -192,7 +192,7 @@ public abstract class ACL {
      * Creates a simple {@link ACL} implementation based on a “single-abstract-method” easily implemented via lambda syntax.
      * @param impl the implementation of {@link ACL#hasPermission2(Authentication, Permission)}
      * @return an adapter to that lambda
-     * @since TODO
+     * @since 2.266
      */
     public static ACL lambda2(final BiFunction<Authentication, Permission, Boolean> impl) {
         return new ACL() {
@@ -249,7 +249,7 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @return false
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 2.266
      */
     public boolean hasCreatePermission2(@NonNull Authentication a, @NonNull ItemGroup c,
                                        @NonNull TopLevelItemDescriptor d) {
@@ -302,7 +302,7 @@ public abstract class ACL {
      * @param d the descriptor of the view to be created.
      * @return false
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 2.266
      */
     public boolean hasCreatePermission2(@NonNull Authentication a, @NonNull ViewGroup c,
                                        @NonNull ViewDescriptor d) {
@@ -368,7 +368,7 @@ public abstract class ACL {
      * <p>
      * This is used when Hudson is performing computation for itself, instead
      * of acting on behalf of an user, such as doing builds.
-     * @since TODO
+     * @since 2.266
      */
     public static final Authentication SYSTEM2 = new UsernamePasswordAuthenticationToken(SYSTEM_USERNAME,"SYSTEM");
 
@@ -390,7 +390,7 @@ public abstract class ACL {
      * <p>
      * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
      * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
-     * @since TODO
+     * @since 2.266
      * @deprecated use try with resources and {@link #as2(Authentication)}
      */
     @Deprecated
@@ -413,7 +413,7 @@ public abstract class ACL {
      * Safer variant of {@link #impersonate2(Authentication)} that does not require a finally-block.
      * @param auth authentication, such as {@link #SYSTEM2}
      * @param body an action to run with this alternate authentication in effect
-     * @since TODO
+     * @since 2.266
      * @deprecated use try with resources and {@link #as2(Authentication)}
      */
     @Deprecated
@@ -439,7 +439,7 @@ public abstract class ACL {
      * Safer variant of {@link #impersonate2(Authentication)} that does not require a finally-block.
      * @param auth authentication, such as {@link #SYSTEM2}
      * @param body an action to run with this alternate authentication in effect (try {@link NotReallyRoleSensitiveCallable})
-     * @since TODO
+     * @since 2.266
      * @deprecated use try with resources and {@link #as2(Authentication)}
      */
     @Deprecated
@@ -474,7 +474,7 @@ public abstract class ACL {
      * </pre>
      * @param auth the new authentication.
      * @return the previous authentication context
-     * @since TODO
+     * @since 2.266
      */
     @NonNull
     public static ACLContext as2(@NonNull Authentication auth) {
@@ -518,7 +518,7 @@ public abstract class ACL {
      * Checks if the given authentication is anonymous by checking its class.
      * @see Jenkins#ANONYMOUS2
      * @see AnonymousAuthenticationToken
-     * @since TODO
+     * @since 2.266
      */
     public static boolean isAnonymous2(@NonNull Authentication authentication) {
         //TODO use AuthenticationTrustResolver instead to be consistent through the application

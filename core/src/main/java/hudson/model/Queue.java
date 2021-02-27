@@ -41,7 +41,6 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.labels.LabelAssignmentAction;
-import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
@@ -1841,11 +1840,6 @@ public class Queue extends ResourceController implements Saveable {
      * transient Task, extend {@link TransientTask} marker interface.
      *
      * <p>
-     * Plugins are encouraged to extend from {@link AbstractQueueTask}
-     * instead of implementing this interface directly, to maintain
-     * compatibility with future changes to this interface.
-     *
-     * <p>
      * Plugins are encouraged to implement {@link AccessControlled} otherwise
      * the tasks will be hidden from display in the queue.
      *
@@ -1991,7 +1985,7 @@ public class Queue extends ResourceController implements Saveable {
          * based on whether this {@link Authentication} is allowed to use them.
          *
          * @return by default, {@link ACL#SYSTEM2}
-         * @since TODO
+         * @since 2.266
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task)
          */
@@ -2025,7 +2019,7 @@ public class Queue extends ResourceController implements Saveable {
          * older versions of Jenkins may not have this method implemented. Called private method _getDefaultAuthenticationOf(Task) on {@link Tasks}
          * to avoid {@link AbstractMethodError}.
          *
-         * @since TODO
+         * @since 2.266
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task, Queue.Item)
          */
@@ -2336,7 +2330,7 @@ public class Queue extends ResourceController implements Saveable {
          * return the identity of the user who queued the task, or {@link ACL#SYSTEM2} to bypass the access control
          * and run as the super user.
          *
-         * @since TODO
+         * @since 2.266
          */
         @NonNull
         public Authentication authenticate2() {

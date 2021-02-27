@@ -157,7 +157,6 @@ public class ClassFilterImplTest {
     @Issue("JENKINS-49543")
     public void moduleClassesShouldBeWhitelisted() throws Exception {
         ClassFilterImpl filter = new ClassFilterImpl();
-        filter.check("org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl");
         filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
         filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }

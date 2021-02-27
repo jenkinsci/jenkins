@@ -41,10 +41,6 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
         -moz-animation-duration: @duration;
         -moz-animation-iteration-count: infinite;
         -moz-animation-timing-function: linear;
-        -ms-animation-name: spin;
-        -ms-animation-duration: @duration;
-        -ms-animation-iteration-count: infinite;
-        -ms-animation-timing-function: linear;
         animation-name: spin;
         animation-duration: @duration;
         animation-iteration-count: infinite;
@@ -54,7 +50,6 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
     .no-spin() {
         -webkit-animation-name: none;
         -moz-animation-name: none;
-        -ms-animation-name: none;
         animation-name: none;
     }
 

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.62</version>
+    <version>1.63</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.278</revision>
+    <revision>2.282</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -109,10 +109,13 @@ THE SOFTWARE.
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
     <!-- TODO keep these in sync -->
-    <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
-    <access-modifier-checker.version>1.16</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.0</junit.jupiter.version>
+    <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
+    <access-modifier-checker.version>1.21</access-modifier-checker.version>
+    <junit.jupiter.version>5.7.1</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
+
+    <!-- SSHD plugin version -->
+    <sshd.plugin.version>3.0.1</sshd.plugin.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -140,7 +143,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.7.0</version>
+        <version>3.8.0</version>
       </dependency>
 
       <dependency>
@@ -219,7 +222,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>2.7</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -282,7 +284,7 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>1.2</version>
+          <version>3.0.0</version>
           <configuration>
             <!--
               during the development, debug profile will cause
@@ -320,7 +322,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
               <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.4</version>
+              <version>1.5</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -360,12 +362,12 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.17</version>
+          <version>1.18</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>antlr-maven-plugin</artifactId>
-          <version>2.1</version>
+          <version>2.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -424,7 +426,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.1.1</version>
           <configuration>
              <consoleOutput>true</consoleOutput>
              <failsOnError>true</failsOnError>

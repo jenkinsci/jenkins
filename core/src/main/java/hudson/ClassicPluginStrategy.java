@@ -390,7 +390,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
             // initialize plugin
             try {
-                Plugin plugin = wrapper.getPlugin();
+                Plugin plugin = wrapper.getPluginOrFail();
                 plugin.setServletContext(pluginManager.context);
                 startPlugin(wrapper);
             } catch(Throwable t) {
@@ -403,7 +403,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void startPlugin(PluginWrapper plugin) throws Exception {
-        plugin.getPlugin().start();
+        plugin.getPluginOrFail().start();
     }
 
     @Override

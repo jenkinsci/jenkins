@@ -1474,7 +1474,7 @@ public class Util {
      * @throws IllegalArgumentException When {@code derived} does not derive from {@code base}, or when {@code base}
      *                                  does not contain the specified method.
      * @throws AbstractMethodError If the derived class doesn't override the given method.
-     * @since TODO
+     * @since 2.259
      */
     public static <T> T ifOverridden(Supplier<T> supplier, @NonNull Class<?> base, @NonNull Class<?> derived, @NonNull String methodName, @NonNull Class<?>... types) {
         if (isOverridden(base, derived, methodName, types)) {
@@ -1564,7 +1564,7 @@ public class Util {
      * @deprecated Use {@code isAbsoluteOrSchemeRelativeUri} instead if your goal is to prevent open redirects
      */
     @Deprecated
-    @RestrictedSince("1.651.2 / 2.TODO")
+    @RestrictedSince("1.651.2 / 2.3")
     @Restricted(NoExternalUse.class)
     public static boolean isAbsoluteUri(@NonNull String uri) {
         int idx = uri.indexOf(':');

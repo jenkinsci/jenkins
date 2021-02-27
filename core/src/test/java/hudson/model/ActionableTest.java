@@ -70,6 +70,7 @@ public class ActionableTest {
             return "morenope";
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         @NonNull
         public List<Action> getActions() {

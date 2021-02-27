@@ -189,7 +189,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.13</version>
+      <version>1.18</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -398,7 +398,7 @@ THE SOFTWARE.
     <dependency><!-- groovy shell uses this but uses an optional dependency. Not included into BOM -->
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>2.12</version>
+      <version>2.14.6</version>
       <scope>compile</scope>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
@@ -776,7 +776,7 @@ THE SOFTWARE.
       </plugin>
       <plugin><!-- skip slow dependency analysis -->
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
+        <version>3.1.1</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>

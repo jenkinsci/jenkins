@@ -30,28 +30,38 @@ import org.xml.sax.SAXParseException;
 
 import java.io.FileNotFoundException;
 import java.net.ConnectException;
+import java.util.Locale;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-public class Digester2Security2147Test {
+public class Digester2Test {
 
     private static final String RESOURCE_FILE_NAME = "Digester2Security2147TestData.xml";
 
     @Issue("SECURITY-2147")
     @Test
     public void testProtection() throws Exception {
+        Locale defaultLocale = Locale.getDefault();
         try {
-            new Digester2().parse(Digester2Security2147Test.class.getResourceAsStream(RESOURCE_FILE_NAME));
-            Assert.fail("expected exception");
-        } catch (SAXParseException ex) {
-            Assert.assertThat(ex.getMessage(), containsString("DOCTYPE is disallowed"));
+            // otherwise it's not passing on machine not running english as OS language
+            Locale.setDefault(Locale.ENGLISH);
+            try {
+                new Digester2().parse(Digester2Test.class.getResourceAsStream(RESOURCE_FILE_NAME));
+                Assert.fail("expected exception");
+            } catch (SAXParseException ex) {
+                assertThat(ex.getMessage(), containsString("DOCTYPE is disallowed"));
+            }
+        }
+        finally {
+            Locale.setDefault(defaultLocale);
         }
     }
     @Issue("SECURITY-2147")
     @Test
     public void testUnsafeBehavior() throws Exception {
         try {
-            new Digester2(false).parse(Digester2Security2147Test.class.getResourceAsStream(RESOURCE_FILE_NAME));
+            new Digester2(false).parse(Digester2Test.class.getResourceAsStream(RESOURCE_FILE_NAME));
             Assert.fail("expected exception");
         } catch (FileNotFoundException|ConnectException ex) {
             // network or file access is bad
@@ -64,7 +74,7 @@ public class Digester2Security2147Test {
         final String key = Digester2.class.getName() + ".UNSAFE";
         try {
             System.setProperty(key, "true");
-            new Digester2().parse(Digester2Security2147Test.class.getResourceAsStream(RESOURCE_FILE_NAME));
+            new Digester2().parse(Digester2Test.class.getResourceAsStream(RESOURCE_FILE_NAME));
             Assert.fail("expected exception");
         } catch (FileNotFoundException|ConnectException ex) {
             // network or file access is bad

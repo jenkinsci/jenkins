@@ -73,7 +73,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * Otherwise, {@link #setUp(Context, Run, TaskListener, EnvVars)} applies.
      *
      * @return {@code true} if this wrapper requires a workspace context; {@code false} otherwise.
-     * @since TODO
+     * @since 2.258
      */
     public boolean requiresWorkspace() {
         return true;
@@ -119,7 +119,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @throws IllegalStateException if this wrapper requires a workspace context
      * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
-     * @since TODO
+     * @since 2.258
      */
     public void setUp(Context context, Run<?,?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // If this wrapper requires a workspace, this is the wrong method to call.
@@ -221,7 +221,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * Otherwise, {@link #tearDown(Run, TaskListener)} applies.
          *
          * @return {@code true} when this end-of-wrapped-block callback requires a workspace context; {@code false} otherwise.
-         * @since TODO
+         * @since 2.258
          */
         @Restricted(Beta.class) // to indicate it is to be called by Jenkins internals only; not part of the normal API
         public final boolean requiresWorkspace() {
@@ -264,7 +264,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @throws IllegalStateException if this end-of-wrapped-block callback requires a workspace
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
-         * @since TODO
+         * @since 2.258
          */
         public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
             // If this callback requires a workspace, this is the wrong method to call.

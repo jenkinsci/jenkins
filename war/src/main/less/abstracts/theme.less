@@ -25,6 +25,9 @@
   --danger: #cc0003;
   --warning: #ea6b19;
   --focus: #3fb3f7;
+  --focus-btn-primary: fade(#0b6aa2, 50%);
+  --focus-btn-secondary: fade(#0b6aa2, 50%);
+  --focus-btn-danger: fade(#cc0003, 50%);
 
   // State colors
   --primary-hover: #0587d4;
@@ -123,15 +126,36 @@
   --text-color: var(--black);
   --text-color-secondary: var(--secondary);
 
-  // Buttons
+  // Button generic
+  --btn-font-weight: bold;
+  --btn-text-color: var(--white);
+  --btn-font-size: var(--font-size-xs);
+  --btn-line-height: 1rem;
+  --btn-large-font-size: var(--font-size-sm);
+  --btn-large-line-height: 1.25rem;
+  // Button primary
   --btn-primary-bg: var(--primary);
   --btn-primary-bg-hover: var(--primary-hover);
   --btn-primary-bg-active: var(--primary-active);
+  // Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
   --btn-secondary-border: var(--medium-grey);
-  --btn-text-color: var(--white);
+  --btn-secondary-color--hover: var(--primary);
+  --btn-secondary-bg--hover: var(--btn-secondary-bg);
+  --btn-secondary-border--hover: var(--primary);
+  --btn-secondary-color--focus: var(--primary);
+  --btn-secondary-bg--focus: var(--btn-secondary-bg);
+  --btn-secondary-border--focus: var(--primary);
+  --btn-secondary-color--active: var(--primary-active);
+  --btn-secondary-bg--active: var(--btn-secondary-bg);
+  --btn-secondary-border--active: var(--primary-active);
+  // Button link
+  --btn-link-color: var(--primary);
+  --btn-link-font-weight: var(--link-font-weight);
+  --btn-link-color--hover: var(--primary-hover);
   --btn-link-bg--hover: var(--very-light-grey);
+  --btn-link-color--active: var(--primary-active);
   --btn-link-bg--active: var(--light-grey);
 
   // Help area

@@ -642,7 +642,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         /**
-         * @since TODO
+         * @since 2.266
          */
         public Collection<? extends GrantedAuthority> getAuthorities2() {
             // TODO

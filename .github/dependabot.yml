@@ -31,3 +31,9 @@ updates:
       - dependency-name: "org.jfree:jfreechart"
       # needs guava upgrades first https://github.com/jenkinsci/jenkins/pull/5200#pullrequestreview-579741619
       - dependency-name: "com.google.inject:guice"
+      # the dependency is actually provided by the Web container, hence it is aligned with Jetty. See https://github.com/jenkinsci/jenkins/pull/5211
+      - dependency-name: "javax.servlet:javax.servlet-api"
+      # log4j 1.2.17 is the final 1.x release
+      - dependency-name: "log4j:log4j"
+      # using a newer version clashes in RequireUpperBoundDeps with plugins using a valid script-security dependency
+      - dependency-name: "org.jenkins-ci:symbol-annotation"

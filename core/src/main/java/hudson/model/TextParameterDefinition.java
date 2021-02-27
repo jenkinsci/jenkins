@@ -35,9 +35,19 @@ import java.util.Objects;
  * {@link StringParameterDefinition} that uses textarea, instead of text box.
  */
 public class TextParameterDefinition extends StringParameterDefinition {
+
+    /**
+     * @since TODO
+     */
     @DataBoundConstructor
+    public TextParameterDefinition(String name) {
+        super(name);
+    }
+
     public TextParameterDefinition(String name, String defaultValue, String description) {
-        super(name, defaultValue, description);
+        this(name);
+        setDefaultValue(defaultValue);
+        setDescription(description);
     }
 
     @Extension @Symbol({"text","textParam"})

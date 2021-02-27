@@ -31,18 +31,20 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import hudson.model.UpdateCenter;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.stapler.StaplerAccessibleType;
+import jenkins.util.Timer;
 import org.apache.commons.lang.StringUtils;
 /**
  * Jenkins install state.
  *
  * In order to hook into the setup wizard lifecycle, you should
  * include something in a script that call
- * to `onSetupWizardInitialized` with a callback, for example:
- * 
- * See <em>{@code upgradeWizard.js}</em> for an example
+ * to {@code onSetupWizardInitialized} with a callback
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
@@ -196,8 +198,44 @@ public class InstallState implements ExtensionPoint {
      * Upgrade of an existing Jenkins install.
      */
     @Extension
-    public static final InstallState UPGRADE = new UpgradeWizard();
-    
+    public static final InstallState UPGRADE = new Upgrade();
+    private static final class Upgrade extends InstallState {
+
+        Upgrade() {
+            super("UPGRADE", true);
+        }
+
+        @Override
+        public void initializeState() {
+            applyForcedChanges();
+
+            // Schedule an update of the update center after a Jenkins upgrade
+            reloadUpdateSiteData();
+            
+            InstallUtil.saveLastExecVersion();
+        }
+
+        /**
+         * Put here the different changes that are enforced after an update.
+         */
+        private void applyForcedChanges(){
+            // Disable the legacy system of API Token only if the new system was not installed
+            // in such case it means there was already an upgrade before
+            // and potentially the admin has re-enabled the features
+            ApiTokenPropertyConfiguration apiTokenPropertyConfiguration = ApiTokenPropertyConfiguration.get();
+            if(!apiTokenPropertyConfiguration.hasExistingConfigFile()){
+                LOGGER.log(Level.INFO, "New API token system configured with insecure options to keep legacy behavior");
+                apiTokenPropertyConfiguration.setCreationOfLegacyTokenEnabled(false);
+                apiTokenPropertyConfiguration.setTokenGenerationOnCreationEnabled(false);
+            }
+        }
+
+    }
+
+    private static void reloadUpdateSiteData() {
+        Timer.get().submit(UpdateCenter::updateAllSitesNow);
+    }
+
     /**
      * Downgrade of an existing Jenkins install.
      */
@@ -208,6 +246,9 @@ public class InstallState implements ExtensionPoint {
             super("DOWNGRADE", true);
         }
         public void initializeState() {
+            // Schedule an update of the update center after a Jenkins downgrade
+            reloadUpdateSiteData();
+
             InstallUtil.saveLastExecVersion();
         }
     }
