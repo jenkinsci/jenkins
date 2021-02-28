@@ -33,8 +33,8 @@ import org.kohsuke.stapler.StaplerResponse;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.security.ApiTokenProperty;
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.HttpResponses;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Authorization token to allow projects to trigger themselves under the secured environment.

@@ -41,7 +41,6 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.labels.LabelAssignmentAction;
-import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
@@ -68,6 +67,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.nio.file.Files;
 
+import hudson.security.Permission;
 import hudson.util.Futures;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -107,16 +107,15 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.util.AtmostOneTaskExecutor;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 import org.jenkinsci.bytecode.AdaptField;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -131,14 +130,15 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnegative;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * Build queue.
@@ -347,7 +347,7 @@ public class Queue extends ResourceController implements Saveable {
 
     private transient final Condition condition = lock.newCondition();
 
-    public Queue(@Nonnull LoadBalancer loadBalancer) {
+    public Queue(@NonNull LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
         // if all the executors are busy doing something, then the queue won't be maintained in
         // timely fashion, so use another thread to make sure it happens.
@@ -358,8 +358,7 @@ public class Queue extends ResourceController implements Saveable {
         return loadBalancer;
     }
 
-    public void setLoadBalancer(@Nonnull LoadBalancer loadBalancer) {
-        if(loadBalancer==null)  throw new IllegalArgumentException();
+    public void setLoadBalancer(@NonNull LoadBalancer loadBalancer) {
         this.loadBalancer = loadBalancer.sanitize();
     }
 
@@ -390,74 +389,60 @@ public class Queue extends ResourceController implements Saveable {
             blockedProjects.clear();
             buildables.clear();
             pendings.clear();
-            // first try the old format
-            File queueFile = getQueueFile();
+
+            File queueFile = getXMLQueueFile();
             if (queueFile.exists()) {
-                try (BufferedReader in = Files.newBufferedReader(Util.fileToPath(queueFile), Charset.defaultCharset())) {
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        AbstractProject j = Jenkins.get().getItemByFullName(line, AbstractProject.class);
-                        if (j != null)
-                            j.scheduleBuild();
-                    }
-                }
-                // discard the queue file now that we are done
-                queueFile.delete();
-            } else {
-                queueFile = getXMLQueueFile();
-                if (queueFile.exists()) {
-                    Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
-                    List items;
+                Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
+                List items;
 
-                    if (unmarshaledObj instanceof State) {
-                        State state = (State) unmarshaledObj;
-                        items = state.items;
-                        WaitingItem.COUNTER.set(state.counter);
-                    } else {
-                        // backward compatibility - it's an old List queue.xml
-                        items = (List) unmarshaledObj;
-                        long maxId = 0;
-                        for (Object o : items) {
-                            if (o instanceof Item) {
-                                maxId = Math.max(maxId, ((Item)o).id);
-                            }
-                        }
-                        WaitingItem.COUNTER.set(maxId);
-                    }
-
+                if (unmarshaledObj instanceof State) {
+                    State state = (State) unmarshaledObj;
+                    items = state.items;
+                    WaitingItem.COUNTER.set(state.counter);
+                } else {
+                    // backward compatibility - it's an old List queue.xml
+                    items = (List) unmarshaledObj;
+                    long maxId = 0;
                     for (Object o : items) {
-                        if (o instanceof Task) {
-                            // backward compatibility
-                            schedule((Task)o, 0);
-                        } else if (o instanceof Item) {
-                            Item item = (Item)o;
-
-                            if (item.task == null) {
-                                continue;   // botched persistence. throw this one away
-                            }
-
-                            if (item instanceof WaitingItem) {
-                                item.enter(this);
-                            } else if (item instanceof BlockedItem) {
-                                item.enter(this);
-                            } else if (item instanceof BuildableItem) {
-                                item.enter(this);
-                            } else {
-                                throw new IllegalStateException("Unknown item type! " + item);
-                            }
+                        if (o instanceof Item) {
+                            maxId = Math.max(maxId, ((Item)o).id);
                         }
                     }
-
-                    // I just had an incident where all the executors are dead at AbstractProject._getRuns()
-                    // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
-                    // object that doesn't appear to be de-serialized properly.
-                    // I don't know how this problem happened, but to diagnose this problem better
-                    // when it happens again, save the old queue file for introspection.
-                    File bk = new File(queueFile.getPath() + ".bak");
-                    bk.delete();
-                    queueFile.renameTo(bk);
-                    queueFile.delete();
+                    WaitingItem.COUNTER.set(maxId);
                 }
+
+                for (Object o : items) {
+                    if (o instanceof Task) {
+                        // backward compatibility
+                        schedule((Task)o, 0);
+                    } else if (o instanceof Item) {
+                        Item item = (Item)o;
+
+                        if (item.task == null) {
+                            continue;   // botched persistence. throw this one away
+                        }
+
+                        if (item instanceof WaitingItem) {
+                            item.enter(this);
+                        } else if (item instanceof BlockedItem) {
+                            item.enter(this);
+                        } else if (item instanceof BuildableItem) {
+                            item.enter(this);
+                        } else {
+                            throw new IllegalStateException("Unknown item type! " + item);
+                        }
+                    }
+                }
+
+                // I just had an incident where all the executors are dead at AbstractProject._getRuns()
+                // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
+                // object that doesn't appear to be de-serialized properly.
+                // I don't know how this problem happened, but to diagnose this problem better
+                // when it happens again, save the old queue file for introspection.
+                File bk = new File(queueFile.getPath() + ".bak");
+                bk.delete();
+                queueFile.renameTo(bk);
+                queueFile.delete();
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
@@ -516,10 +501,6 @@ public class Queue extends ResourceController implements Saveable {
             lock.unlock();
         }
         scheduleMaintenance();
-    }
-
-    private File getQueueFile() {
-        return new File(Jenkins.get().getRootDir(), "queue.txt");
     }
 
     /*package*/ File getXMLQueueFile() {
@@ -588,7 +569,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      *      That said, one can still look at {@link Queue.Item#future}, {@link Queue.Item#getId()}, etc.
      */
-    public @Nonnull ScheduleResult schedule2(Task p, int quietPeriod, List<Action> actions) {
+    public @NonNull ScheduleResult schedule2(Task p, int quietPeriod, List<Action> actions) {
         // remove nulls
         actions = new ArrayList<>(actions);
         actions.removeIf(Objects::isNull);
@@ -618,7 +599,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      *      That said, one can still look at {@link WaitingItem#future}, {@link WaitingItem#getId()}, etc.
      */
-    private @Nonnull ScheduleResult scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
+    private @NonNull ScheduleResult scheduleInternal(Task p, int quietPeriod, List<Action> actions) {
         lock.lock();
         try { try {
             Calendar due = new GregorianCalendar();
@@ -692,11 +673,11 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Deprecated
     public boolean add(Task p, int quietPeriod) {
-    	return schedule(p, quietPeriod)!=null;
+        return schedule(p, quietPeriod)!=null;
     }
 
     public @CheckForNull WaitingItem schedule(Task p, int quietPeriod) {
-    	return schedule(p, quietPeriod, new Action[0]);
+        return schedule(p, quietPeriod, new Action[0]);
     }
 
     /**
@@ -705,21 +686,21 @@ public class Queue extends ResourceController implements Saveable {
      */
     @Deprecated
     public boolean add(Task p, int quietPeriod, Action... actions) {
-    	return schedule(p, quietPeriod, actions)!=null;
+        return schedule(p, quietPeriod, actions)!=null;
     }
 
     /**
      * Convenience wrapper method around {@link #schedule(Task, int, List)}
      */
     public @CheckForNull WaitingItem schedule(Task p, int quietPeriod, Action... actions) {
-    	return schedule2(p, quietPeriod, actions).getCreateItem();
+        return schedule2(p, quietPeriod, actions).getCreateItem();
     }
 
     /**
      * Convenience wrapper method around {@link #schedule2(Task, int, List)}
      */
-    public @Nonnull ScheduleResult schedule2(Task p, int quietPeriod, Action... actions) {
-    	return schedule2(p, quietPeriod, Arrays.asList(actions));
+    public @NonNull ScheduleResult schedule2(Task p, int quietPeriod, Action... actions) {
+        return schedule2(p, quietPeriod, Arrays.asList(actions));
     }
 
     /**
@@ -811,7 +792,7 @@ public class Queue extends ResourceController implements Saveable {
             r = checkPermissionsAndAddToList(r, p);
         }
         for (BuildableItem p : reverse(s.pendings)) {
-            r= checkPermissionsAndAddToList(r, p);
+            r = checkPermissionsAndAddToList(r, p);
         }
         Item[] items = new Item[r.size()];
         r.toArray(items);
@@ -819,9 +800,10 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<Item> checkPermissionsAndAddToList(List<Item> r, Item t) {
-        if (t.task instanceof hudson.security.AccessControlled) {
-            if (((hudson.security.AccessControlled)t.task).hasPermission(hudson.model.Item.READ)
-                    || ((hudson.security.AccessControlled) t.task).hasPermission(hudson.security.Permission.READ)) {
+        if (t.task instanceof AccessControlled) {
+            AccessControlled taskAC = (AccessControlled) t.task;
+            if (taskAC.hasPermission(hudson.model.Item.READ)
+                    || taskAC.hasPermission(Permission.READ)) {
                 r.add(t);
             }
         }
@@ -850,7 +832,7 @@ public class Queue extends ResourceController implements Saveable {
             r = filterDiscoverableItemListBasedOnPermissions(r, p);
         }
         for (BuildableItem p : reverse(s.pendings)) {
-            r= filterDiscoverableItemListBasedOnPermissions(r, p);
+            r = filterDiscoverableItemListBasedOnPermissions(r, p);
         }
         StubItem[] items = new StubItem[r.size()];
         r.toArray(items);
@@ -859,7 +841,9 @@ public class Queue extends ResourceController implements Saveable {
 
     private List<StubItem> filterDiscoverableItemListBasedOnPermissions(List<StubItem> r, Item t) {
         if (t.task instanceof hudson.model.Item) {
-            if (!((hudson.model.Item)t.task).hasPermission(hudson.model.Item.READ) && ((hudson.model.Item)t.task).hasPermission(hudson.model.Item.DISCOVER)) {
+            hudson.model.Item taskAsItem = (hudson.model.Item) t.task;
+            if (!taskAsItem.hasPermission(hudson.model.Item.READ) 
+                    && taskAsItem.hasPermission(hudson.model.Item.DISCOVER)) {
                 r.add(new StubItem(new StubTask(t.task)));
             }
         }
@@ -1020,7 +1004,7 @@ public class Queue extends ResourceController implements Saveable {
      *    use {@link #strictCountBuildableItemsFor(hudson.model.Label)}.
      * @return Number of {@link BuildableItem}s for the specified label. 
      */
-    public @Nonnegative int countBuildableItemsFor(@CheckForNull Label l) {
+    public /* @java.annotation.Nonnegative */ int countBuildableItemsFor(@CheckForNull Label l) {
         Snapshot snapshot = this.snapshot;
         int r = 0;
         for (BuildableItem bi : snapshot.buildables)
@@ -1044,7 +1028,7 @@ public class Queue extends ResourceController implements Saveable {
      * @return Number of {@link BuildableItem}s for the specified label.
      * @since 1.615
      */
-    public @Nonnegative int strictCountBuildableItemsFor(@CheckForNull Label l) {
+    public /* @java.annotation.Nonnegative */ int strictCountBuildableItemsFor(@CheckForNull Label l) {
         Snapshot _snapshot = this.snapshot;
         int r = 0;
         for (BuildableItem bi : _snapshot.buildables)
@@ -1245,7 +1229,7 @@ public class Queue extends ResourceController implements Saveable {
     private CauseOfBlockage getCauseOfBlockageForTask(Task task) {
         CauseOfBlockage causeOfBlockage = task.getCauseOfBlockage();
         if (causeOfBlockage != null) {
-            return task.getCauseOfBlockage();
+            return causeOfBlockage;
         }
 
         if (!canRun(task.getResourceList())) {
@@ -1629,9 +1613,16 @@ public class Queue extends ResourceController implements Saveable {
                 } else {
 
                     List<JobOffer> candidates = new ArrayList<>(parked.size());
-                    List<CauseOfBlockage> reasons = new ArrayList<>(parked.size());
+                    Map<Node, CauseOfBlockage> reasonMap = new HashMap<>();
                     for (JobOffer j : parked.values()) {
-                        CauseOfBlockage reason = j.getCauseOfBlockage(p);
+                        Node offerNode = j.getNode();
+                        CauseOfBlockage reason;
+                        if (reasonMap.containsKey(offerNode)) {
+                            reason = reasonMap.get(offerNode);
+                        } else {
+                            reason = j.getCauseOfBlockage(p);
+                            reasonMap.put(offerNode, reason);
+                        }
                         if (reason == null) {
                             LOGGER.log(Level.FINEST,
                                     "{0} is a potential candidate for task {1}",
@@ -1639,7 +1630,6 @@ public class Queue extends ResourceController implements Saveable {
                             candidates.add(j);
                         } else {
                             LOGGER.log(Level.FINEST, "{0} rejected {1}: {2}", new Object[] {j, taskDisplayName, reason});
-                            reasons.add(reason);
                         }
                     }
 
@@ -1651,6 +1641,7 @@ public class Queue extends ResourceController implements Saveable {
                         // check if we can execute other projects
                         LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
                                 new Object[]{p, candidates, parked.values()});
+                        List<CauseOfBlockage> reasons = reasonMap.values().stream().filter(Objects::nonNull).collect(Collectors.toList());
                         p.transientCausesOfBlockage = reasons.isEmpty() ? null : reasons;
                         continue;
                     }
@@ -1780,19 +1771,13 @@ public class Queue extends ResourceController implements Saveable {
             LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}",
                     new Object[]{p.task.getFullDisplayName(), c.getName()});
         }
-        return new Runnable() {
-            @Override public void run() {
-                c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                makePending(p);
-            }
+        return () -> {
+            c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+            makePending(p);
         };
     }
 
-    private static Hash<Node> NODE_HASH = new Hash<Node>() {
-        public String hash(Node node) {
-            return node.getNodeName();
-        }
-    };
+    private final static Hash<Node> NODE_HASH = Node::getNodeName;
 
     private boolean makePending(BuildableItem p) {
         // LOGGER.info("Making "+p.task+" pending"); // REMOVE
@@ -1853,11 +1838,6 @@ public class Queue extends ResourceController implements Saveable {
      * Pending {@link Task}s are persisted when Hudson shuts down, so
      * it needs to be persistable via XStream. To create a non-persisted
      * transient Task, extend {@link TransientTask} marker interface.
-     *
-     * <p>
-     * Plugins are encouraged to extend from {@link AbstractQueueTask}
-     * instead of implementing this interface directly, to maintain
-     * compatibility with future changes to this interface.
      *
      * <p>
      * Plugins are encouraged to implement {@link AccessControlled} otherwise
@@ -2004,13 +1984,26 @@ public class Queue extends ResourceController implements Saveable {
          * When the task execution touches other objects inside Jenkins, the access control is performed
          * based on whether this {@link Authentication} is allowed to use them.
          *
-         * @return by default, {@link ACL#SYSTEM}
-         * @since 1.520
+         * @return by default, {@link ACL#SYSTEM2}
+         * @since 2.266
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task)
          */
-        default @Nonnull Authentication getDefaultAuthentication() {
-            return ACL.SYSTEM;
+        default @NonNull Authentication getDefaultAuthentication2() {
+            if (Util.isOverridden(Queue.Task.class, getClass(), "getDefaultAuthentication")) {
+                return getDefaultAuthentication().toSpring();
+            } else {
+                return ACL.SYSTEM2;
+            }
+        }
+
+        /**
+         * @deprecated use {@link #getDefaultAuthentication2()}
+         * @since 1.520
+         */
+        @Deprecated
+        default @NonNull org.acegisecurity.Authentication getDefaultAuthentication() {
+            return org.acegisecurity.Authentication.fromSpring(getDefaultAuthentication2());
         }
 
         /**
@@ -2026,13 +2019,27 @@ public class Queue extends ResourceController implements Saveable {
          * older versions of Jenkins may not have this method implemented. Called private method _getDefaultAuthenticationOf(Task) on {@link Tasks}
          * to avoid {@link AbstractMethodError}.
          *
-         * @since 1.592
+         * @since 2.266
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task, Queue.Item)
          */
-        default @Nonnull Authentication getDefaultAuthentication(Queue.Item item) {
-            return getDefaultAuthentication();
+        default @NonNull Authentication getDefaultAuthentication2(Queue.Item item) {
+            if (Util.isOverridden(Queue.Task.class, getClass(), "getDefaultAuthentication", Queue.Item.class)) {
+                return getDefaultAuthentication(item).toSpring();
+            } else {
+                return getDefaultAuthentication2();
+            }
         }
+
+        /**
+         * @deprecated use {@link #getDefaultAuthentication2(Queue.Item)}
+         * @since 1.592
+         */
+        @Deprecated
+        default @NonNull org.acegisecurity.Authentication getDefaultAuthentication(Queue.Item item) {
+            return org.acegisecurity.Authentication.fromSpring(getDefaultAuthentication2(item));
+        }
+
     }
 
     /**
@@ -2053,7 +2060,7 @@ public class Queue extends ResourceController implements Saveable {
          * {@link AbstractMethodError}.
          * Use {@link Executables#getParentOf(Queue.Executable)} that avoids this.
          */
-        @Nonnull SubTask getParent();
+        @NonNull SubTask getParent();
 
         /**
          * Called by {@link Executor} to perform the task.
@@ -2110,7 +2117,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
 
-		/**
+        /**
          * Project to be built.
          */
         @Exported
@@ -2195,7 +2202,7 @@ public class Queue extends ResourceController implements Saveable {
          * @return Required {@link Label}. Otherwise null, indicating it can run on anywhere.
 
          */
-        public @CheckForNull Label getAssignedLabelFor(@Nonnull SubTask st) {
+        public @CheckForNull Label getAssignedLabelFor(@NonNull SubTask st) {
             for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
                 Label l = laa.getAssignedLabel(st);
                 if (l!=null)    return l;
@@ -2280,13 +2287,13 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Exported
         public String getParams() {
-        	StringBuilder s = new StringBuilder();
-        	for (ParametersAction pa : getActions(ParametersAction.class)) {
+            StringBuilder s = new StringBuilder();
+            for (ParametersAction pa : getActions(ParametersAction.class)) {
                 for (ParameterValue p : pa.getParameters()) {
                     s.append('\n').append(p.getShortDescription());
                 }
-        	}
-        	return s.toString();
+            }
+            return s.toString();
         }
 
         /**
@@ -2298,14 +2305,12 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         public String getDisplayName() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+            return null;
+        }
 
-		public String getSearchUrl() {
-			// TODO Auto-generated method stub
-			return null;
-		}
+        public String getSearchUrl() {
+            return null;
+        }
 
         /** @deprecated Use {@link #doCancelItem} instead. */
         @Deprecated
@@ -2322,19 +2327,28 @@ public class Queue extends ResourceController implements Saveable {
          *
          * When the task execution touches other objects inside Jenkins, the access control is performed
          * based on whether this {@link Authentication} is allowed to use them. Implementers, if you are unsure,
-         * return the identity of the user who queued the task, or {@link ACL#SYSTEM} to bypass the access control
+         * return the identity of the user who queued the task, or {@link ACL#SYSTEM2} to bypass the access control
          * and run as the super user.
          *
-         * @since 1.520
+         * @since 2.266
          */
-        @Nonnull
-        public Authentication authenticate() {
+        @NonNull
+        public Authentication authenticate2() {
             for (QueueItemAuthenticator auth : QueueItemAuthenticatorProvider.authenticators()) {
-                Authentication a = auth.authenticate(this);
+                Authentication a = auth.authenticate2(this);
                 if (a!=null)
                     return a;
             }
-            return task.getDefaultAuthentication(this);
+            return task.getDefaultAuthentication2(this);
+        }
+
+        /**
+         * @deprecated use {@link #authenticate2}
+         * @since 1.520
+         */
+        @Deprecated
+        public org.acegisecurity.Authentication authenticate() {
+            return org.acegisecurity.Authentication.fromSpring(authenticate2());
         }
 
         @Restricted(DoNotUse.class) // only for Stapler export
@@ -2353,7 +2367,7 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
 
-        private Object readResolve() {
+        protected Object readResolve() {
             this.future = new FutureImpl(task);
             return this;
         }
@@ -2400,9 +2414,9 @@ public class Queue extends ResourceController implements Saveable {
     @ExportedBean(defaultVisibility = 999)
     public static class StubTask {
 
-        private String name;
+        private final String name;
 
-        public StubTask(@Nonnull Queue.Task base) {
+        public StubTask(@NonNull Queue.Task base) {
             this.name = base.getName();
         }
 
@@ -2436,11 +2450,11 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.300-ish.
      */
     public interface QueueAction extends Action {
-    	/**
-    	 * Returns whether the new item should be scheduled.
-    	 * An action should return true if the associated task is 'different enough' to warrant a separate execution.
-    	 */
-	    boolean shouldSchedule(List<Action> actions);
+        /**
+         * Returns whether the new item should be scheduled.
+         * An action should return true if the associated task is 'different enough' to warrant a separate execution.
+         */
+        boolean shouldSchedule(List<Action> actions);
     }
 
     /**
@@ -2458,28 +2472,28 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.316
      */
     public static abstract class QueueDecisionHandler implements ExtensionPoint {
-    	/**
-    	 * Returns whether the new item should be scheduled.
+        /**
+         * Returns whether the new item should be scheduled.
          *
          * @param actions
          *      List of actions that are to be made available as {@link AbstractBuild#getActions()}
          *      upon the start of the build. This list is live, and can be mutated.
-    	 */
-    	public abstract boolean shouldSchedule(Task p, List<Action> actions);
+         */
+        public abstract boolean shouldSchedule(Task p, List<Action> actions);
 
-    	/**
-    	 * All registered {@link QueueDecisionHandler}s
-    	 */
-    	public static ExtensionList<QueueDecisionHandler> all() {
-    		return ExtensionList.lookup(QueueDecisionHandler.class);
-    	}
+        /**
+         * All registered {@link QueueDecisionHandler}s
+         */
+        public static ExtensionList<QueueDecisionHandler> all() {
+            return ExtensionList.lookup(QueueDecisionHandler.class);
+        }
     }
 
     /**
      * {@link Item} in the {@link Queue#waitingList} stage.
      */
     public static final class WaitingItem extends Item implements Comparable<WaitingItem> {
-	private static final AtomicLong COUNTER = new AtomicLong(0);
+        private static final AtomicLong COUNTER = new AtomicLong(0);
 
         /**
          * This item can be run after this time.
@@ -2817,69 +2831,67 @@ public class Queue extends ResourceController implements Saveable {
     static {
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 
-			@Override
-			@SuppressWarnings("unchecked")
-			public boolean canConvert(Class klazz) {
-				return hudson.model.Item.class.isAssignableFrom(klazz);
-			}
+            @Override
+            public boolean canConvert(Class klazz) {
+                return hudson.model.Item.class.isAssignableFrom(klazz);
+            }
 
-			@Override
-			public Object fromString(String string) {
+            @Override
+            public Object fromString(String string) {
                 Object item = Jenkins.get().getItemByFullName(string);
                 if(item==null)  throw new NoSuchElementException("No such job exists: "+string);
                 return item;
-			}
+            }
 
-			@Override
-			public String toString(Object item) {
-				return ((hudson.model.Item) item).getFullName();
-			}
+            @Override
+            public String toString(Object item) {
+                return ((hudson.model.Item) item).getFullName();
+            }
         });
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
 
-			@SuppressWarnings("unchecked")
-			@Override
-			public boolean canConvert(Class klazz) {
-				return Run.class.isAssignableFrom(klazz);
-			}
+            @Override
+            public boolean canConvert(Class klazz) {
+                return Run.class.isAssignableFrom(klazz);
+            }
 
-			@Override
-			public Object fromString(String string) {
-				String[] split = string.split("#");
-				String projectName = split[0];
-				int buildNumber = Integer.parseInt(split[1]);
-				Job<?,?> job = (Job<?,?>) Jenkins.get().getItemByFullName(projectName);
+            @Override
+            public Object fromString(String string) {
+                String[] split = string.split("#");
+                String projectName = split[0];
+                int buildNumber = Integer.parseInt(split[1]);
+                Job<?,?> job = (Job<?,?>) Jenkins.get().getItemByFullName(projectName);
                 if(job==null)  throw new NoSuchElementException("No such job exists: "+projectName);
-				Run<?,?> run = job.getBuildByNumber(buildNumber);
+                Run<?,?> run = job.getBuildByNumber(buildNumber);
                 if(run==null)  throw new NoSuchElementException("No such build: "+string);
-				return run;
-			}
+                return run;
+            }
 
-			@Override
-			public String toString(Object object) {
-				Run<?,?> run = (Run<?,?>) object;
-				return run.getParent().getFullName() + "#" + run.getNumber();
-			}
+            @Override
+            public String toString(Object object) {
+                Run<?,?> run = (Run<?,?>) object;
+                return run.getParent().getFullName() + "#" + run.getNumber();
+            }
         });
 
         /*
          * Reconnect every reference to Queue by the singleton.
          */
         XSTREAM.registerConverter(new AbstractSingleValueConverter() {
-			@Override
-			public boolean canConvert(Class klazz) {
-				return Queue.class.isAssignableFrom(klazz);
-			}
+            @Override
+            public boolean canConvert(Class klazz) {
+                return Queue.class.isAssignableFrom(klazz);
+            }
 
-			@Override
-			public Object fromString(String string) {
+            @Override
+            public Object fromString(String string) {
                 return Jenkins.get().getQueue();
-			}
+            }
 
-			@Override
-			public String toString(Object item) {
+            @Override
+            public String toString(Object item) {
                 return "queue";
-			}
+            }
         });
     }
 
@@ -2912,49 +2924,49 @@ public class Queue extends ResourceController implements Saveable {
      * {@link ArrayList} of {@link Item} with more convenience methods.
      */
     private class ItemList<T extends Item> extends ArrayList<T> {
-    	public T get(Task task) {
-    		for (T item: this) {
-    			if (item.task.equals(task)) {
-    				return item;
-    			}
-    		}
-    		return null;
-    	}
+        public T get(Task task) {
+            for (T item: this) {
+                if (item.task.equals(task)) {
+                    return item;
+                }
+            }
+            return null;
+        }
 
-    	public List<T> getAll(Task task) {
-    		List<T> result = new ArrayList<>();
-    		for (T item: this) {
-    			if (item.task.equals(task)) {
-    				result.add(item);
-    			}
-    		}
-    		return result;
-    	}
+        public List<T> getAll(Task task) {
+            List<T> result = new ArrayList<>();
+            for (T item: this) {
+                if (item.task.equals(task)) {
+                    result.add(item);
+                }
+            }
+            return result;
+        }
 
-    	public boolean containsKey(Task task) {
-    		return get(task) != null;
-    	}
+        public boolean containsKey(Task task) {
+            return get(task) != null;
+        }
 
-    	public T remove(Task task) {
-    		Iterator<T> it = iterator();
-    		while (it.hasNext()) {
-    			T t = it.next();
-    			if (t.task.equals(task)) {
-    				it.remove();
-    				return t;
-    			}
-    		}
-    		return null;
-    	}
+        public T remove(Task task) {
+            Iterator<T> it = iterator();
+            while (it.hasNext()) {
+                T t = it.next();
+                if (t.task.equals(task)) {
+                    it.remove();
+                    return t;
+                }
+            }
+            return null;
+        }
 
-    	public void put(Task task, T item) {
-    		assert item.task.equals(task);
-    		add(item);
-    	}
+        public void put(Task task, T item) {
+            assert item.task.equals(task);
+            add(item);
+        }
 
-    	public ItemList<T> values() {
-    		return this;
-    	}
+        public ItemList<T> values() {
+            return this;
+        }
 
         /**
          * Works like {@link #remove(Task)} but also marks the {@link Item} as cancelled.
@@ -3128,7 +3140,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         @VisibleForTesting @Restricted(NoExternalUse.class)
-        /*package*/ @Nonnull Future<?> getNextSave() {
+        /*package*/ @NonNull Future<?> getNextSave() {
             synchronized (lock) {
                 return nextSave == null
                         ? Futures.precomputed(null)

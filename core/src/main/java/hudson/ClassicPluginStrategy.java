@@ -54,7 +54,7 @@ import org.apache.tools.zip.ZipExtraField;
 import org.apache.tools.zip.ZipOutputStream;
 import org.jenkinsci.bytecode.Transformer;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -221,6 +221,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         if (disableFile.exists()) {
             LOGGER.info("Plugin " + archive.getName() + " is disabled");
         }
+        if (paths.isEmpty()) {
+            LOGGER.info("No classpaths found for plugin " + archive.getName());
+        }
 
         // compute dependencies
         List<PluginWrapper.Dependency> dependencies = new ArrayList<>();
@@ -271,9 +274,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * @see DetachedPluginsUtil#getImpliedDependencies(String, String)
+     *
+     * @deprecated since 2.163
      */
-    @Deprecated // since TODO
-    @Nonnull
+    @Deprecated
+    @NonNull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         return DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion);
     }
@@ -385,7 +390,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
             // initialize plugin
             try {
-                Plugin plugin = wrapper.getPlugin();
+                Plugin plugin = wrapper.getPluginOrFail();
                 plugin.setServletContext(pluginManager.context);
                 startPlugin(wrapper);
             } catch(Throwable t) {
@@ -398,7 +403,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void startPlugin(PluginWrapper plugin) throws Exception {
-        plugin.getPlugin().start();
+        plugin.getPluginOrFail().start();
     }
 
     @Override
@@ -513,7 +518,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         final long dirTime = archive.lastModified();
         // this ZipOutputStream is reused and not created for each directory
-        try (ZipOutputStream wrappedZOut = new ZipOutputStream(new NullOutputStream()) {
+        try (ZipOutputStream wrappedZOut = new ZipOutputStream(NullOutputStream.NULL_OUTPUT_STREAM) {
             @Override
             public void putNextEntry(ZipEntry ze) throws IOException {
                 ze.setTime(dirTime+1999);   // roundup
@@ -714,6 +719,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
+    /* Unused since 1.527, see https://github.com/jenkinsci/jenkins/commit/47de54d070f67af95b4fefb6d006a72bb31a5cb8 */
+    @Deprecated
     public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
     public static boolean DISABLE_TRANSFORMER = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }

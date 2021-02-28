@@ -45,7 +45,7 @@ import hudson.slaves.ComputerLauncher;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import jenkins.security.MasterToSlaveCallable;
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,7 +64,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for old Remoting agent versions

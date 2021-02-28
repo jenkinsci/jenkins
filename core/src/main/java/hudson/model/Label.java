@@ -58,14 +58,12 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -75,7 +73,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Group of {@link Node}s.
@@ -89,19 +87,19 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Display name of this label.
      */
-    @Nonnull
+    @NonNull
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
-    @Nonnull
+    @NonNull
     public transient final LoadStatistics loadStatistics;
-    @Nonnull
+    @NonNull
     public transient final NodeProvisioner nodeProvisioner;
 
-    public Label(@Nonnull String name) {
+    public Label(@NonNull String name) {
         this.name = name;
          // passing these causes an infinite loop - getTotalExecutors(),getBusyExecutors());
         this.loadStatistics = new LoadStatistics(0,0) {
@@ -145,7 +143,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
-    @Nonnull
+    @NonNull
     public String getDisplayName() {
         return name;
     }
@@ -204,7 +202,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     public boolean isSelfLabel() {
         Set<Node> nodes = getNodes();
-        return nodes.size() == 1 && nodes.iterator().next().getSelfLabel() == this;
+        return nodes.size() == 1 && nodes.iterator().next().getSelfLabel().equals(this);
     }
 
     private static class NodeSorter implements Comparator<Node>, Serializable {
@@ -411,38 +409,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
         // denormalize for performance
         // we don't need to respect security as much when returning a simple count
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             int result = 0;
-            // top level gives the map without checking security of items in the map
-            // therefore best performance
-            for (TopLevelItem topLevelItem : Jenkins.get().getItemMap().values()) {
-                if (topLevelItem instanceof AbstractProject) {
-                    final AbstractProject project = (AbstractProject) topLevelItem;
-                    if (matches(project.getAssignedLabelString())) {
-                        result++;
-                    }
-                }
-                if (topLevelItem instanceof ItemGroup) {
-                    Stack<ItemGroup> q = new Stack<>();
-                    q.push((ItemGroup) topLevelItem);
-
-                    while (!q.isEmpty()) {
-                        ItemGroup<?> parent = q.pop();
-                        // we run the risk of permissions checks in ItemGroup#getItems()
-                        // not much we can do here though
-                        for (Item i : parent.getItems()) {
-                            if (i instanceof AbstractProject) {
-                                final AbstractProject project = (AbstractProject) i;
-                                if (matches(project.getAssignedLabelString())) {
-                                    result++;
-                                }
-                            }
-                            if (i instanceof ItemGroup) {
-                                q.push((ItemGroup) i);
-                            }
-                        }
-                    }
-                }
+            for (AbstractProject ignored : Jenkins.get().allItems(AbstractProject.class, p -> matches(p.getAssignedLabelString()))) {
+                ++result;
             }
             return tiedJobsCount = result;
         }

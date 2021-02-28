@@ -45,8 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import net.sf.json.JSONException;
 import org.kohsuke.stapler.Stapler;
@@ -158,7 +158,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      * @throws FormException Data submission error
      */
     @CheckForNull
-    public T newInstanceFromRadioList(@Nonnull JSONObject parent, @Nonnull String name) throws FormException {
+    public T newInstanceFromRadioList(@NonNull JSONObject parent, @NonNull String name) throws FormException {
         try {
             return newInstanceFromRadioList(parent.getJSONObject(name));
         } catch (JSONException ex) {
@@ -179,6 +179,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean add(D d) {
         boolean r = super.add(d);
         getDescriptorExtensionList().add(d);

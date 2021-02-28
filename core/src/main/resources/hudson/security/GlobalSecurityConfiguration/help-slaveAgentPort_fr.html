@@ -1,6 +1,9 @@
 ﻿<div>
-  Jenkins utilise un port TCP pour communiquer avec les agents-esclaves
-  lancés par JNLP. Normalement, ce numéro de port est choisi au hasard pour
+  Si vous n'utilisez pas d'agent à connexions entrantes, il est recommandé de
+  désactiver ce port, il s'agit du comportement par défaut.
+  Jenkins utilise un port TCP pour communiquer avec les agents
+  à connexions entrantes.
+  Normalement, ce numéro de port est choisi au hasard pour
   éviter les collisions, mais cela peut compliquer la sécurisation du
   système. Vous pouvez donc spécifier un numéro de port fixe afin de 
   permettre la configuration de votre firewall.

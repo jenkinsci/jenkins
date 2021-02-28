@@ -29,11 +29,12 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import jenkins.model.Jenkins;
 import jenkins.slaves.RemotingWorkDirSettings;
+import jenkins.util.SystemProperties;
 import jenkins.util.java.JavaUtils;
 import jenkins.websocket.WebSockets;
 import org.jenkinsci.Symbol;
@@ -71,10 +72,17 @@ public class JNLPLauncher extends ComputerLauncher {
     @CheckForNull
     public final String vmargs;
 
-    @Nonnull
+    @NonNull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
     private boolean webSocket;
+
+    /**
+     * @see #getInboundAgentUrl()
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public static final String CUSTOM_INBOUND_URL_PROPERTY = "jenkins.agent.inboundUrl";
 
     /**
      * Constructor.
@@ -132,13 +140,13 @@ public class JNLPLauncher extends ComputerLauncher {
      * 
      * @since 2.72
      */
-    @Nonnull
+    @NonNull
     public RemotingWorkDirSettings getWorkDirSettings() {
         return workDirSettings;
     }
 
     @DataBoundSetter
-    public final void setWorkDirSettings(@Nonnull RemotingWorkDirSettings workDirSettings) {
+    public final void setWorkDirSettings(@NonNull RemotingWorkDirSettings workDirSettings) {
         this.workDirSettings = workDirSettings;
     }
     
@@ -181,9 +189,9 @@ public class JNLPLauncher extends ComputerLauncher {
      * @param computer Computer
      * @return Command line options for launching with the WorkDir
      */
-    @Nonnull
+    @NonNull
     @Restricted(NoExternalUse.class)
-    public String getWorkDirOptions(@Nonnull Computer computer) {
+    public String getWorkDirOptions(@NonNull Computer computer) {
         if(!(computer instanceof SlaveComputer)) {
             return "";
         }
@@ -243,10 +251,29 @@ public class JNLPLauncher extends ComputerLauncher {
      * This flag is checked in {@code config.jelly} before displaying the
      * Java Web Start button.
      * @return {@code true} if Java Web Start button should be displayed.
-     * @since FIXME
+     * @since 2.153
      */
     @Restricted(NoExternalUse.class) // Jelly use
     public boolean isJavaWebStartSupported() {
         return JavaUtils.isRunningWithJava8OrBelow();
+    }
+
+    /**
+     * Overrides the url that inbound TCP agents should connect to
+     * as advertised in the agent.jnlp file. If not set, the default
+     * behavior is unchanged and returns the root URL.
+     *
+     * This enables using a private address for inbound tcp agents,
+     * separate from Jenkins root URL.
+     *
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-63222">JENKINS-63222</a>
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getInboundAgentUrl() {
+        String url = SystemProperties.getString(CUSTOM_INBOUND_URL_PROPERTY);
+        if (url == null || url.isEmpty()) {
+            return Jenkins.get().getRootUrl();
+        }
+        return url;
     }
 }

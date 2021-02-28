@@ -34,7 +34,11 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import static org.junit.Assert.*;
+import java.util.logging.SimpleFormatter;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -63,7 +67,7 @@ public class LogRecorderManagerTest {
         assertEquals(logger.getLevel(), Level.FINEST);
     }
 
-    @Issue("JENKINS-18274")
+    @Issue({"JENKINS-18274", "JENKINS-63458"})
     @Test public void loggingOnSlaves() throws Exception {
         // TODO could also go through WebClient to assert that the config UI works
         LogRecorderManager mgr = j.jenkins.getLog();
@@ -93,11 +97,16 @@ public class LogRecorderManagerTest {
         assertFalse(ch.call(new Log(Level.FINER, "ns3", "not displayed")));
         assertTrue(ch.call(new Log(Level.INFO, "ns4", "msg #4")));
         assertFalse(ch.call(new Log(Level.FINE, "ns4", "not displayed")));
+        assertTrue(ch.call(new Log(Level.INFO, "other", "msg #5 {0,number,0.0} {1,number,0.0} ''OK?''", new Object[] {1.0, 2.0})));
+        assertTrue(ch.call(new LambdaLog(Level.FINE, "ns1")));
+        assertFalse(ch.call(new LambdaLog(Level.FINER, "ns1")));
         List<LogRecord> recs = c.getLogRecords();
-        assertEquals(show(recs), 4, recs.size());
+        assertEquals(show(recs), 6, recs.size());
+        // Would of course prefer to get "msg #5 1.0 2.0 'OK?'" but all attempts to fix this have ended in disaster (JENKINS-63458):
+        assertEquals("msg #5 {0,number,0.0} {1,number,0.0} ''OK?''", new SimpleFormatter().formatMessage(recs.get(1)));
         recs = r1.getSlaveLogRecords().get(c);
         assertNotNull(recs);
-        assertEquals(show(recs), 2, recs.size());
+        assertEquals(show(recs), 3, recs.size());
         recs = r2.getSlaveLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 1, recs.size());
@@ -107,20 +116,45 @@ public class LogRecorderManagerTest {
         assertTrue(text, text.contains("msg #2"));
         assertFalse(text, text.contains("msg #3"));
         assertFalse(text, text.contains("msg #4"));
+        assertTrue(text, text.contains("LambdaLog @FINE"));
+        assertFalse(text, text.contains("LambdaLog @FINER"));
     }
 
     private static final class Log extends MasterToSlaveCallable<Boolean,Error> {
         private final Level level;
         private final String logger;
         private final String message;
+        private final Object[] params;
         Log(Level level, String logger, String message) {
+            this(level, logger, message, null);
+        }
+        Log(Level level, String logger, String message, Object[] params) {
             this.level = level;
             this.logger = logger;
             this.message = message;
+            this.params = params;
         }
         @Override public Boolean call() throws Error {
             Logger log = Logger.getLogger(logger);
-            log.log(level, message);
+            if (params != null) {
+                log.log(level, message, params);
+            } else {
+                log.log(level, message);
+            }
+            return log.isLoggable(level);
+        }
+    }
+
+    private static final class LambdaLog extends MasterToSlaveCallable<Boolean,Error> {
+        private final Level level;
+        private final String logger;
+        LambdaLog(Level level, String logger) {
+            this.level = level;
+            this.logger = logger;
+        }
+        @Override public Boolean call() throws Error {
+            Logger log = Logger.getLogger(logger);
+            log.log(level, () -> "LambdaLog @" + level);
             return log.isLoggable(level);
         }
     }

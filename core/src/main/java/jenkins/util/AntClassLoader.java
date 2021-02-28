@@ -32,8 +32,8 @@ import org.apache.tools.ant.util.ReflectUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -769,7 +769,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
 
     @FunctionalInterface
     private interface Converter<T> {
-        T convert(@Nonnull JarFile jarFile, @Nonnull JarEntry entry) throws IOException;
+        T convert(@NonNull JarFile jarFile, @NonNull JarEntry entry) throws IOException;
     }
 
     @CheckForNull
@@ -960,7 +960,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return an enumeration of URLs for the resources
      * @exception IOException if I/O errors occurs (can't happen)
      */
-    protected Enumeration/*<URL>*/ findResources(String name) throws IOException {
+    public Enumeration/*<URL>*/ findResources(String name) throws IOException {
         return findResources(name, true);
     }
 

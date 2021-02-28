@@ -90,7 +90,7 @@ ConfigSection.prototype.getRows = function() {
     var numNewRows = 0;
 
     rows.push(curTr);
-    while(curTr.size() === 1 && !curTr.hasClass('section-header-row')) {
+    while(curTr.length === 1 && !curTr.hasClass('section-header-row')) {
         rows.push(curTr);
         if (!curTr.hasClass(this.id)) {
             numNewRows++;
@@ -155,7 +155,7 @@ ConfigSection.prototype.hasText = function(text) {
         var row = sectionRows[i1];
         var elementsWithText = $(selector, row);
 
-        if (elementsWithText.size() > 0) {
+        if (elementsWithText.length > 0) {
             return true;
         }
     }

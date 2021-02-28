@@ -25,16 +25,9 @@ package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
-import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
-import jenkins.security.SecurityListener;
-import org.acegisecurity.Authentication;
-import jenkins.security.BasicApiTokenHelper;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.userdetails.UserDetails;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
+import java.io.IOException;
+import java.net.URLEncoder;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -45,8 +38,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLEncoder;
+import jenkins.model.Jenkins;
+import jenkins.security.BasicApiTokenHelper;
+import jenkins.security.SecurityListener;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Implements the dual authentication mechanism.
@@ -109,7 +108,7 @@ public class BasicAuthenticationFilter implements Filter {
             // normal requests, or security not enabled
             if(req.getUserPrincipal()!=null) {
                 // before we route this request, integrate the container authentication
-                // to Acegi. For anonymous users that doesn't have user principal,
+                // to Spring Security. For anonymous users that doesn't have user principal,
                 // AnonymousProcessingFilter that follows this should create
                 // an Authentication object.
                 SecurityContextHolder.getContext().setAuthentication(new ContainerAuthentication(req));
@@ -141,10 +140,10 @@ public class BasicAuthenticationFilter implements Filter {
         {
             User u = BasicApiTokenHelper.isConnectingUsingApiToken(username, password);
             if(u != null){
-                UserDetails userDetails = u.getUserDetailsForImpersonation();
+                UserDetails userDetails = u.getUserDetailsForImpersonation2();
                 Authentication auth = u.impersonate(userDetails);
 
-                SecurityListener.fireAuthenticated(userDetails);
+                SecurityListener.fireAuthenticated2(userDetails);
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 try {

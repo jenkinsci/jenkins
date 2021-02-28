@@ -36,6 +36,7 @@ import hudson.tasks.Builder;
 import hudson.util.ReflectionUtils.Parameter;
 import jenkins.model.Jenkins;
 
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -43,7 +44,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletException;
 
 import java.io.File;
@@ -114,6 +115,7 @@ import static hudson.Util.*;
  * @since 1.294
  */
 public abstract class FormValidation extends IOException implements HttpResponse {
+    /* package */ static /* non-final for Groovy */ boolean APPLY_CONTENT_SECURITY_POLICY_HEADERS = SystemProperties.getBoolean(FormValidation.class.getName() + ".applyContentSecurityPolicyHeaders", true);
     /**
      * Indicates the kind of result.
      */
@@ -219,7 +221,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * @return Validation of the least successful kind aggregating all child messages.
      * @since 1.590
      */
-    public static @Nonnull FormValidation aggregate(@Nonnull Collection<FormValidation> validations) {
+    public static @NonNull FormValidation aggregate(@NonNull Collection<FormValidation> validations) {
         if (validations == null || validations.isEmpty()) return FormValidation.ok();
 
         if (validations.size() == 1) return validations.iterator().next();
@@ -551,6 +553,11 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     protected void respond(StaplerResponse rsp, String html) throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
+        if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
+            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                rsp.setHeader(header, "sandbox; default-src 'none';");
+            }
+        }
         rsp.getWriter().print(html);
     }
 

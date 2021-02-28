@@ -24,15 +24,22 @@
 package hudson.model;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+
+import java.net.HttpURLConnection;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -79,5 +86,46 @@ public class ComputerSetTest {
         assertThat(ComputerSet.getComputerNames(), contains("aNode"));
         j.createSlave("anAnotherNode", "", null);
         assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
+    }
+
+    @Test
+    public void managePermissionCanConfigure() throws Exception {
+        final String USER = "user";
+        final String MANAGER = "manager";
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                // Read access
+                .grant(Jenkins.READ).everywhere().to(USER)
+
+                // Read and Manage
+                .grant(Jenkins.READ).everywhere().to(MANAGER)
+                .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
+        );
+
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+
+        // Jenkins.READ can access /computer but not /computer/configure
+        wc.login(USER);
+        HtmlPage page = wc.goTo("computer/");
+        assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        String responseContent = page.getWebResponse().getContentAsString();
+        // the "Node Monitoring" link in the sidepanel is not visible
+        assertThat(responseContent, not(containsString("Node Monitoring")));
+        page = wc.goTo("computer/configure");
+        assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
+
+        // Jenkins.MANAGER can access /computer and /computer/configure
+        wc.login(MANAGER);
+        page = wc.goTo("computer/");
+        assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        responseContent = page.getWebResponse().getContentAsString();
+        // the "Node Monitoring" link in the sidepanel is visible
+        assertThat(responseContent, containsString("Node Monitoring"));
+        page = wc.goTo("computer/configure");
+        assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
+        // and the OK (save) button is visible
+        responseContent = page.getWebResponse().getContentAsString();
+        assertThat(responseContent, containsString("OK"));
     }
 }

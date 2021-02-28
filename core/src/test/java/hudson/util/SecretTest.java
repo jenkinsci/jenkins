@@ -34,7 +34,10 @@ import jenkins.model.Jenkins;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.lang.RandomStringUtils;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -64,8 +67,9 @@ public class SecretTest {
 
     @Test
     public void encryptedValuePattern() {
+        final Random random = new Random();
         for (int i = 1; i < 100; i++) {
-            String plaintext = RandomStringUtils.random(new Random().nextInt(i));
+            String plaintext = RandomStringUtils.random(random.nextInt(i));
             String ciphertext = Secret.fromString(plaintext).getEncryptedValue();
             //println "${plaintext} → ${ciphertext}"
             assert ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches();
@@ -117,6 +121,7 @@ public class SecretTest {
      * Secret persisted with Jenkins.getSecretKey() should still decrypt OK.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void migrationFromLegacyKeyToConfidentialStore() throws Exception {
         SecretKey legacy = HistoricalSecrets.getLegacyKey();
         for (String str : new String[] {"Hello world", "", "\u0000unprintable"}) {

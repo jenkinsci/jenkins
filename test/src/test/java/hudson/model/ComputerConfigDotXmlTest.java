@@ -26,27 +26,34 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.security.ACL;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,6 +64,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * @author ogondza
@@ -70,23 +79,24 @@ public class ComputerConfigDotXmlTest {
 
     private Computer computer;
     private SecurityContext oldSecurityContext;
+    private AutoCloseable mocks;
 
     @Before
     public void setUp() throws Exception {
 
-        MockitoAnnotations.initMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         computer = spy(rule.createSlave().toComputer());
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        oldSecurityContext = ACL.impersonate(User.get("user").impersonate());
+        oldSecurityContext = ACL.impersonate2(User.get("user").impersonate2());
     }
 
     @After
-    public void tearDown() {
-
+    public void tearDown() throws Exception {
+        mocks.close();
         SecurityContextHolder.setContext(oldSecurityContext);
     }
 
-    @Test(expected = AccessDeniedException2.class)
+    @Test(expected = AccessDeniedException3.class)
     public void configXmlGetShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("GET");
@@ -96,7 +106,7 @@ public class ComputerConfigDotXmlTest {
         computer.doConfigDotXml(req, rsp);
     }
 
-    @Test(expected = AccessDeniedException2.class)
+    @Test(expected = AccessDeniedException3.class)
     public void configXmlPostShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("POST");
@@ -146,7 +156,7 @@ public class ComputerConfigDotXmlTest {
 
     @Test
     @Issue("SECURITY-343")
-    public void emptyNodeMonitorDataWithoutConnect() throws Exception {
+    public void emptyNodeMonitorDataWithoutConnect() {
         rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
 
         assertTrue(computer.getMonitorData().isEmpty());
@@ -154,7 +164,7 @@ public class ComputerConfigDotXmlTest {
 
     @Test
     @Issue("SECURITY-343")
-    public void populatedNodeMonitorDataWithConnect() throws Exception {
+    public void populatedNodeMonitorDataWithConnect() {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
         auth.add(Computer.CONNECT, "user");
@@ -162,7 +172,32 @@ public class ComputerConfigDotXmlTest {
         assertFalse(computer.getMonitorData().isEmpty());
     }
 
+    @Issue("SECURITY-2021")
+    @Test
+    public void nodeNameReferencesParentDir() throws Exception {
+        Computer computer = rule.createSlave("anything", null).toComputer();
 
+        JenkinsRule.WebClient wc = rule.createWebClient();
+        WebRequest req = new WebRequest(wc.createCrumbedUrl(String.format("%s/config.xml", computer.getUrl())), HttpMethod.POST);
+        req.setAdditionalHeader("Content-Type", "application/xml");
+        req.setRequestBody(VALID_XML_BAD_NAME_XML);
+
+        try {
+            wc.getPage(req);
+            fail("Should have returned failure.");
+        } catch (FailingHttpStatusCodeException e) {
+            assertThat(e.getStatusCode(), equalTo(400));
+        }
+        File configDotXml = new File(rule.jenkins.getRootDir(), "config.xml");
+        String configDotXmlContents = new String(Files.readAllBytes(configDotXml.toPath()), StandardCharsets.UTF_8);
+
+        assertThat(configDotXmlContents, not(containsString("<name>../</name>")));
+    }
+
+    private static final String VALID_XML_BAD_NAME_XML =
+            "<slave>\n" +
+                    "  <name>../</name>\n" +
+                    "</slave>";
 
     private OutputStream captureOutput() throws IOException {
 
@@ -171,7 +206,7 @@ public class ComputerConfigDotXmlTest {
         when(rsp.getOutputStream()).thenReturn(new ServletOutputStream() {
 
             @Override
-            public void write(int b) throws IOException {
+            public void write(int b) {
                 baos.write(b);
             }
 

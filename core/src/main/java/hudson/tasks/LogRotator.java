@@ -34,15 +34,14 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.logging.Logger;
 
+import hudson.util.RunList;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 
 import hudson.Extension;
 import hudson.model.Job;
@@ -157,8 +156,8 @@ public class LogRotator extends BuildDiscarder {
             // and we would need to load the rest anyway, to delete them.
             // (Using RunMap.headMap would not suffice, since we do not know if some recent builds have been deleted for other reasons,
             // so simply subtracting numToKeep from the currently last build number might cause us to delete too many.)
-            List<? extends Run<?,?>> builds = job.getBuilds();
-            for (Run r : copy(builds.subList(Math.min(builds.size(), numToKeep), builds.size()))) {
+            RunList<? extends Run<?,?>> builds = job.getBuilds();
+            for (Run r : builds.subList(Math.min(builds.size(), numToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
@@ -186,8 +185,8 @@ public class LogRotator extends BuildDiscarder {
         }
 
         if(artifactNumToKeep!=null && artifactNumToKeep!=-1) {
-            List<? extends Run<?,?>> builds = job.getBuilds();
-            for (Run r : copy(builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size()))) {
+            RunList<? extends Run<?,?>> builds = job.getBuilds();
+            for (Run r : builds.subList(Math.min(builds.size(), artifactNumToKeep), builds.size())) {
                 if (shouldKeepRun(r, lsb, lstb)) {
                     continue;
                 }
@@ -251,13 +250,6 @@ public class LogRotator extends BuildDiscarder {
         } else {
             return false;
         }
-    }
-
-    /**
-     * Creates a copy since we'll be deleting some entries from them.
-     */
-    private <R> Collection<R> copy(Iterable<R> src) {
-        return Lists.newArrayList(src);
     }
 
     public int getDaysToKeep() {

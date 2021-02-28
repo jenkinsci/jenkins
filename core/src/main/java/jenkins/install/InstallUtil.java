@@ -34,10 +34,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.inject.Provider;
 
 import org.apache.commons.io.FileUtils;
@@ -160,9 +161,8 @@ public class InstallUtil {
 
         VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());
 
-        // Neither the top level config or the lastExecVersionFile have a version
-        // stored in them, which means it's a new install.
-        if (FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion) || lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
+        // has the setup wizard been completed?
+        if (!SetupWizard.getUpdateStateFile().exists()) {
             Jenkins j = Jenkins.get();
             
             // Allow for skipping
@@ -177,15 +177,6 @@ public class InstallUtil {
                 }
             }
 
-            if (!FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion)) {
-                // Edge case: used Jenkins 1 but did not save the system config page,
-                // the version is not persisted and returns 1.0, so try to check if
-                // they actually did anything
-                if (!j.getItemMap().isEmpty() || !j.getNodes().isEmpty()) {
-                    return InstallState.UPGRADE;
-                }
-            }
-            
             return InstallState.INITIAL_SECURITY_SETUP;
         }
 
@@ -221,7 +212,7 @@ public class InstallUtil {
      * @return The last saved Jenkins instance version.
      * @see #saveLastExecVersion()
      */
-    public static @Nonnull String getLastExecVersion() {
+    public static @NonNull String getLastExecVersion() {
         File lastExecVersionFile = getLastExecVersionFile();
         if (lastExecVersionFile.exists()) {
             try {
@@ -265,7 +256,7 @@ public class InstallUtil {
      * Save a specific version as the last execute version.
      * @param version The version to save.
      */
-    static void saveLastExecVersion(@Nonnull String version) {
+    static void saveLastExecVersion(@NonNull String version) {
         File lastExecVersionFile = getLastExecVersionFile();
         try {
             FileUtils.write(lastExecVersionFile, version, Charset.defaultCharset());

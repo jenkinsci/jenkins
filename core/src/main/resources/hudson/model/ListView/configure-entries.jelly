@@ -29,14 +29,6 @@ THE SOFTWARE.
 
  <f:section title="${%Job Filters}">
   
-  <f:entry title="${%Status Filter}" help="/help/view-config/statusFilter.html">
-    <select name="statusFilter" class="setting-input">
-      <f:option value="" selected="${it.statusFilter==null}">${%All selected jobs}</f:option>
-      <f:option value="1" selected="${it.statusFilter==true}">${%Enabled jobs only}</f:option>
-      <f:option value="2" selected="${it.statusFilter==false}">${%Disabled jobs only}</f:option>
-    </select>
-  </f:entry>
-  
   <f:entry field="recurse">
     <f:checkbox title="${%Recurse in subfolders}" id="recurse" />
   </f:entry>

@@ -24,6 +24,9 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import static hudson.Util.fixEmpty;
+import static hudson.util.FormValidation.APPLY_CONTENT_SECURITY_POLICY_HEADERS;
+
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import hudson.Util;
@@ -32,7 +35,6 @@ import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -48,6 +50,7 @@ import java.net.URLConnection;
 import java.util.Locale;
 
 import static hudson.Util.fixEmpty;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Base class that provides the framework for doing on-the-fly form field validation.
@@ -230,6 +233,11 @@ public abstract class FormFieldValidator {
         } else {
             response.setContentType("text/html;charset=UTF-8");
             // 1x16 spacer needed for IE since it doesn't support min-height
+            if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
+                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                    response.setHeader(header, "sandbox; default-src 'none';");
+                }
+            }
             response.getWriter().print("<div class="+ cssClass +"><img src='"+
                     request.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
                     message+"</div>");
@@ -523,7 +531,7 @@ public abstract class FormFieldValidator {
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;
-            Exception exceptions[] = {null};
+            Exception[] exceptions = {null};
             DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
                 @Override
                 public void ok() {

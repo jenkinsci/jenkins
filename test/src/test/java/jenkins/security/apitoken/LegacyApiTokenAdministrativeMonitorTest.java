@@ -44,7 +44,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class LegacyApiTokenAdministrativeMonitorTest {
@@ -78,7 +78,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         LegacyApiTokenAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(LegacyApiTokenAdministrativeMonitor.class);
         assertFalse(monitor.isActivated());
         
-        ApiTokenStore.TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Not Legacy");
+        TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Not Legacy");
         // "new" token does not trigger the monitor
         assertFalse(monitor.isActivated());
         
@@ -399,7 +399,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
                 simulateUseOfLegacyToken(user);
                 Thread.sleep(1);
                 
-                ApiTokenStore.TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Fresh and recent token");
+                TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Fresh and recent token");
                 simulateUseOfToken(user, tokenInfo.plainValue);
             } else {
                 simulateUseOfLegacyToken(user);
@@ -409,7 +409,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
             }
         } else {
             if (recent) {
-                ApiTokenStore.TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Recent token");
+                TokenUuidAndPlainValue tokenInfo = apiTokenProperty.getTokenStore().generateNewToken("Recent token");
                 Thread.sleep(1);
                 
                 simulateUseOfLegacyToken(user);

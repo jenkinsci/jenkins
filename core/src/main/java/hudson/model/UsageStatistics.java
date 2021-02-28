@@ -36,7 +36,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
@@ -194,7 +194,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         }
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredGlobalConfigPagePermission() {
         return Jenkins.MANAGE;

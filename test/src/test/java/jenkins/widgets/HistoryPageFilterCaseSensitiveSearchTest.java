@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,7 +14,6 @@ import org.mockito.Mockito;
 import com.google.common.collect.ImmutableList;
 import hudson.model.Job;
 import hudson.model.ModelObject;
-import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
@@ -23,6 +21,7 @@ import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 /**
  * TODO: Code partially duplicated with HistoryPageFilterTest in core
@@ -65,11 +64,11 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         UsernamePasswordAuthenticationToken testUserAuthentication = new UsernamePasswordAuthenticationToken(TEST_USER_NAME, "any");
-        try (ACLContext ignored = ACL.as(testUserAuthentication)) {
+        try (ACLContext ignored = ACL.as2(testUserAuthentication)) {
             User.get(TEST_USER_NAME).addProperty(new UserSearchProperty(false));
 
             //test logic
-            final List<ModelObject> runs = ImmutableList.<ModelObject>of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+            final List<ModelObject> runs = ImmutableList.of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
             assertNoMatchingBuildsForGivenSearchStringAndRunItems(searchString, runs, assertionOnSearchResults);
         }
 
@@ -83,7 +82,7 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
         historyPageFilter.setSearchString(searchString);
 
         //when
-        historyPageFilter.add(runs, Collections.<Queue.Item>emptyList());
+        historyPageFilter.add(runs, Collections.emptyList());
 
         //then
         assertionOnSearchResults.doAssertion(historyPageFilter);

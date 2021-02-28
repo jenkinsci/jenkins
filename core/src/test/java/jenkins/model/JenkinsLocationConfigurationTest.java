@@ -23,7 +23,7 @@
  */
 package jenkins.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -68,6 +68,9 @@ public class JenkinsLocationConfigurationTest {
         // Quoted value
         config.setAdminAddress("\""+email2+"\"");
         assertEquals(email2, config.getAdminAddress());
+
+        config.setAdminAddress("    test@foo.bar     ");
+        assertEquals(email,config.getAdminAddress());
     }
     
     @Test

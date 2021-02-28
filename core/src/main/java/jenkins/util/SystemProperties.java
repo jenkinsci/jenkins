@@ -39,8 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -74,9 +74,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * <p>While it looks like it on first glance, this cannot be mapped to {@link EnvVars},
  * because {@link EnvVars} is only for build variables, not Jenkins itself variables.
+ *
+ * @since 2.236
  */
 @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "Currently Jenkins instance may have one ond only one context")
-@Restricted(NoExternalUse.class)
 public class SystemProperties {
 
     @FunctionalInterface
@@ -87,9 +88,10 @@ public class SystemProperties {
 
     private static final Handler NULL_HANDLER = key -> null;
 
-    private static @Nonnull Handler handler = NULL_HANDLER;
+    private static @NonNull Handler handler = NULL_HANDLER;
 
     // declared in WEB-INF/web.xml
+    @Restricted(NoExternalUse.class)
     public static final class Listener implements ServletContextListener, OnMaster {
 
         /**
@@ -122,12 +124,15 @@ public class SystemProperties {
 
     /**
      * Mark a key whose value should be made accessible in agent JVMs.
+     *
+     * @param key Property key to be explicitly allowed
      */
     public static void allowOnAgent(String key) {
         ALLOW_ON_AGENT.add(key);
     }
 
     @Extension
+    @Restricted(NoExternalUse.class)
     public static final class AgentCopier extends ComputerListener {
         @Override
         public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
@@ -183,26 +188,7 @@ public class SystemProperties {
      */
     @CheckForNull
     public static String getString(String key) {
-        String value = System.getProperty(key); // keep passing on any exceptions
-        if (value != null) {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
-            }
-            return value;
-        }
-        
-        value = handler.getString(key);
-        if (value != null) {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
-            }
-            return value;
-        }
-        
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "Property (not found): {0}", key);
-        }
-        return null;
+        return getString(key, null);
     }
 
     /**

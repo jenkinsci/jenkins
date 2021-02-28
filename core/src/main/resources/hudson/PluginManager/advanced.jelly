@@ -28,7 +28,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout title="${%Update Center}" permission="${app.ADMINISTER}">
+    <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}">
+        <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}" />
         <st:include page="sidepanel.jelly"/>
         <l:main-panel>
             <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
@@ -42,12 +43,15 @@ THE SOFTWARE.
                                 <j:set var="descriptor" value="${it.proxyDescriptor}"/>
                                 <st:include from="${descriptor}" page="${descriptor.configPage}"/>
                             </j:scope>
+                          <l:isAdmin>
                             <f:block>
                                 <f:submit/>
                             </f:block>
+                          </l:isAdmin>
                         </f:form>
                     </section>
 
+                  <l:isAdmin>
                     <section>
                         <h2>${%Upload Plugin}</h2>
                         <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
@@ -66,6 +70,7 @@ THE SOFTWARE.
                             </f:block>
                         </f:form>
                     </section>
+                  </l:isAdmin>
 
                     <section>
                         <h2>${%Update Site}</h2>
@@ -74,9 +79,11 @@ THE SOFTWARE.
                                 <f:textbox name="site"
                                            value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"/>
                             </f:entry>
+                          <l:isAdmin>
                             <f:block>
                                 <f:submit/>
                             </f:block>
+                          </l:isAdmin>
                         </f:form>
                         <j:set var="hasNonDefault" value="${false}"/>
                         <j:forEach var="site" items="${app.updateCenter.sites}">

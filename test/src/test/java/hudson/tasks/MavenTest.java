@@ -63,7 +63,12 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -269,7 +274,7 @@ public class MavenTest {
     @Issue("JENKINS-18898")
     @Test public void testNullHome() {
         EnvVars env = new EnvVars();
-        new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
+        new MavenInstallation("_", "", Collections.emptyList()).buildEnvVars(env);
         assertTrue(env.isEmpty());
     }
 

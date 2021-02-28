@@ -31,7 +31,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Configures the project naming strategy.
@@ -63,7 +63,7 @@ public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguratio
         return true;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Permission getRequiredGlobalConfigPagePermission() {
         return Jenkins.MANAGE;

@@ -5,7 +5,34 @@ function updateListBox(listBox,url,config) {
     config = object(config);
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
-    var status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
+
+    // Hacky function to retrofit compatibility with tables-to-divs
+    // If the <select> tag parent is a <td> element we can consider it's following a
+    // form entry using tables-to-divs markup.
+    function getStatusElement() {
+        function getStatusForTabularForms() {
+            return findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
+        }
+        function getStatusForDivBasedForms() {
+            var settingMain = listBox.closest('.setting-main')
+            if (!settingMain) {
+                console.warn("Couldn't find the expected parent element (.setting-main) for element", listBox)
+                return;
+            }
+
+            return settingMain.nextElementSibling;
+        }
+
+        return listBox.parentNode.tagName === 'TD'
+            ? getStatusForTabularForms()
+            : getStatusForDivBasedForms();
+    }
+
+    var status = getStatusElement();
+    if (!status) {
+        console.warn("Couldn't find the expected status element")
+        return;
+    }
     if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }

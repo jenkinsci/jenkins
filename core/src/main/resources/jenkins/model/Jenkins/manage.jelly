@@ -49,7 +49,7 @@ THE SOFTWARE.
     <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
       <section class="manage-page__category">
         <h2>${category.key.label}</h2>
-
+        ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
         <div class="manage-page__row">
         <j:forEach var="m" items="${category.value}">
           <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />

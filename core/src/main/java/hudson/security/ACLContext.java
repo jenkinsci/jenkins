@@ -23,10 +23,10 @@
  */
 package hudson.security;
 
-import javax.annotation.Nonnull;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * A {@link AutoCloseable} that captures the previous {@link SecurityContext} and restores it on {@link #close()}
@@ -38,24 +38,33 @@ public class ACLContext implements AutoCloseable {
     /**
      * The previous context.
      */
-    @Nonnull
+    @NonNull
     private final SecurityContext previousContext;
 
     /**
-     * Private constructor to ensure only instance creation is from {@link ACL#as(Authentication)}.
+     * Private constructor to ensure only instance creation is from {@link ACL#as2(Authentication)}.
      * @param previousContext the previous context
      */
-    ACLContext(@Nonnull SecurityContext previousContext) {
+    ACLContext(@NonNull SecurityContext previousContext) {
         this.previousContext = previousContext;
     }
 
     /**
      * Accessor for the previous context.
      * @return the previous context.
+     * @since 2.266
      */
-    @Nonnull
-    public SecurityContext getPreviousContext() {
+    @NonNull
+    public SecurityContext getPreviousContext2() {
         return previousContext;
+    }
+
+    /**
+     * @deprecated use {@link #getPreviousContext2}
+     */
+    @Deprecated
+    public org.acegisecurity.context.SecurityContext getPreviousContext() {
+        return org.acegisecurity.context.SecurityContext.fromSpring(getPreviousContext2());
     }
 
     @Override

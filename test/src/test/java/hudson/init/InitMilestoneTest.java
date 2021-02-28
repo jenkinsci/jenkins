@@ -1,6 +1,5 @@
 package hudson.init;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

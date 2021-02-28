@@ -31,22 +31,18 @@ import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-
-import jenkins.model.Configuration;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
 
-    public static boolean LOG_STARTUP_PERFORMANCE = Configuration.getBooleanConfigParameter("logStartupPerformance", false);
+    public static boolean LOG_STARTUP_PERFORMANCE = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "logStartupPerformance", false);
 
     private static final Logger LOGGER = Logger.getLogger(AbstractCIBase.class.getName());
 
@@ -89,17 +85,31 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         c.kill();
     }
 
-    /* =================================================================================================================
-    * Package-protected, but accessed API
-    * ============================================================================================================== */
+    private final Set<String> disabledAdministrativeMonitors = new HashSet<>();
 
-    /*package*/ final CopyOnWriteArraySet<String> disabledAdministrativeMonitors = new CopyOnWriteArraySet<>();
-
-    @Restricted(NoExternalUse.class)
-    public CopyOnWriteArraySet<String> getDisabledAdministrativeMonitors(){
-    	return disabledAdministrativeMonitors;
+    /**
+     * Get the disabled administrative monitors
+     *
+     * @since 2.230
+     */
+    public Set<String> getDisabledAdministrativeMonitors(){
+        synchronized (this.disabledAdministrativeMonitors) {
+            return new HashSet<>(disabledAdministrativeMonitors);
+        }
     }
-    
+
+    /**
+     * Set the disabled administrative monitors
+     *
+     * @since 2.230
+     */
+    public void setDisabledAdministrativeMonitors(Set<String> disabledAdministrativeMonitors) {
+        synchronized (this.disabledAdministrativeMonitors) {
+            this.disabledAdministrativeMonitors.clear();
+            this.disabledAdministrativeMonitors.addAll(disabledAdministrativeMonitors);
+        }
+    }
+
     /* =================================================================================================================
      * Implementation provided
      * ============================================================================================================== */

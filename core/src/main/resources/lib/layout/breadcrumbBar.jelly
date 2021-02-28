@@ -45,7 +45,15 @@ THE SOFTWARE.
                 <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
                   <li class="item">
                     <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null} inside">
-                      ${anc.object.displayName}
+                      <!-- Workaround to set desired name to first breadcrumb (instead of Jenkins) -->
+                      <j:choose>
+                        <j:when test="${anc.object == app}">
+                          ${%Dashboard}
+                        </j:when>
+                        <j:otherwise>
+                          ${anc.object.displayName}
+                        </j:otherwise>
+                      </j:choose>
                     </a>
                   </li>
                   <j:choose>

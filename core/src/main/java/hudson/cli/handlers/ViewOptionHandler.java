@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
 
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -39,7 +38,8 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Refers to {@link View} by its name.

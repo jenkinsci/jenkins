@@ -28,7 +28,7 @@ import hudson.security.SecurityRealm;
 import java.util.ArrayList;
 import jenkins.model.Jenkins;
 
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -59,7 +59,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @see SecurityRealm
  */
-public class PluginServletFilter implements Filter, ExtensionPoint {
+public final class PluginServletFilter implements Filter, ExtensionPoint {
     private final List<Filter> list = new CopyOnWriteArrayList<>();
 
     private /*almost final*/ FilterConfig config;

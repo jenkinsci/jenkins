@@ -92,12 +92,11 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
+import net.jcip.annotations.GuardedBy;
 import javax.servlet.ServletException;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -118,9 +117,9 @@ import java.net.Inet4Address;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import static javax.servlet.http.HttpServletResponse.*;
 
@@ -194,6 +193,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected transient List<Action> transientActions;
 
     protected final Object statusChangeLock = new Object();
+
+    private final Object logDirLock = new String("logDirLock");
 
     /**
      * Keeps track of stack traces to track the termination requests for this computer.
@@ -275,7 +276,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
-    public void addAction(@Nonnull Action a) {
+    public void addAction(@NonNull Action a) {
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
@@ -290,7 +291,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #getLogDir()
      * @see #relocateOldLogs()
      */
-    public @Nonnull File getLogFile() {
+    public @NonNull File getLogFile() {
         return new File(getLogDir(),"slave.log");
     }
 
@@ -301,12 +302,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @since 1.613
      */
-    protected @Nonnull File getLogDir() {
+    protected @NonNull File getLogDir() {
         File dir = new File(Jenkins.get().getRootDir(),"logs/slaves/"+nodeName);
-        try {
-            IOUtils.mkdirs(dir);
-        } catch (IOException x) {
-            LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
+        synchronized (logDirLock) {
+            try {
+                IOUtils.mkdirs(dir);
+            } catch (IOException x) {
+                LOGGER.log(Level.SEVERE, "Failed to create agent log directory " + dir, x);
+            }
         }
         return dir;
     }
@@ -322,14 +325,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the string representation of the agent log.
      */
     public String getLog() throws IOException {
-        return Util.loadFile(getLogFile());
+        return Util.loadFile(getLogFile(), /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset());
     }
 
     /**
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText<Computer> getLogText() {
-        checkPermission(CONNECT);
+        checkAnyPermission(CONNECT, EXTENDED_READ);
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
@@ -563,7 +566,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns {@link Node#getNodeName() the name of the node}.
      */
-    public @Nonnull String getName() {
+    public @NonNull String getName() {
         return nodeName != null ? nodeName : "";
     }
 
@@ -763,7 +766,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     @Exported
-    @Override public @Nonnull String getDisplayName() {
+    @Override public @NonNull String getDisplayName() {
         return nodeName;
     }
 
@@ -887,12 +890,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             // we have too many executors
             // send signal to all idle executors to potentially kill them off
             // need the Queue maintenance lock held to prevent concurrent job assignment on the idle executors
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    for( Executor e : executors )
-                        if(e.isIdle())
-                            e.interrupt();
+            Queue.withLock(() -> {
+                for (Executor e : executors) {
+                    if (e.isIdle()) {
+                        e.interrupt();
+                    }
                 }
             });
         }
@@ -1074,7 +1076,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Restricted(DoNotUse.class)
     @Exported
-    public @Nonnull String getDescription() {
+    public @NonNull String getDescription() {
         Node node = getNode();
         return (node != null) ? node.getNodeDescription() : "";
     }
@@ -1084,18 +1086,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
     protected void removeExecutor(final Executor e) {
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                synchronized (Computer.this) {
-                    executors.remove(e);
-                    oneOffExecutors.remove(e);
-                    addNewExecutorIfNecessary();
-                    if (!isAlive()) {
-                        AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
-                        if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
-                            ciBase.removeComputer(Computer.this);
-                        }
+        final Runnable task = () -> {
+            synchronized (Computer.this) {
+                executors.remove(e);
+                oneOffExecutors.remove(e);
+                addNewExecutorIfNecessary();
+                if (!isAlive()) {
+                    AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
+                    if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
+                        ciBase.removeComputer(Computer.this);
                     }
                 }
             }
@@ -1123,12 +1122,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Called from {@link Jenkins#cleanUp}.
      */
     public void interrupt() {
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                for (Executor e : executors) {
-                    e.interruptForShutdown();
-                }
+        Queue.withLock(() -> {
+            for (Executor e : executors) {
+                e.interruptForShutdown();
             }
         });
     }
@@ -1197,7 +1193,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see ProcStarter#envs(Map)
      * @since 1.489
      */
-    public @Nonnull EnvVars buildEnvironment(@Nonnull TaskListener listener) throws IOException, InterruptedException {
+    public @NonNull EnvVars buildEnvironment(@NonNull TaskListener listener) throws IOException, InterruptedException {
         EnvVars env = new EnvVars();
 
         Node node = getNode();
@@ -1362,7 +1358,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Executors.newCachedThreadPool(
                 new ExceptionCatchingThreadFactory(
                     new NamingThreadFactory(
-                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM));
+                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM2));
 
 //
 //
@@ -1626,7 +1622,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
      * @see hudson.model.Node#isAcceptingTasks()
      */
-    @OverridingMethodsMustInvokeSuper
+    @OverrideMustInvoke
     public boolean isAcceptingTasks() {
         final Node node = getNode();
         return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());
@@ -1665,11 +1661,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /*package*/ static void relocateOldLogs(File dir) {
         final Pattern logfile = Pattern.compile("slave-(.*)\\.log(\\.[0-9]+)?");
-        File[] logfiles = dir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return logfile.matcher(name).matches();
-            }
-        });
+        File[] logfiles = dir.listFiles((dir1, name) -> logfile.matcher(name).matches());
         if (logfiles==null)     return;
 
         for (File f : logfiles) {
@@ -1698,31 +1690,31 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Restricted(NoExternalUse.class)
     public static class DisplayExecutor implements ModelObject {
 
-        @Nonnull
+        @NonNull
         private final String displayName;
-        @Nonnull
+        @NonNull
         private final String url;
-        @Nonnull
+        @NonNull
         private final Executor executor;
 
-        public DisplayExecutor(@Nonnull String displayName, @Nonnull String url, @Nonnull Executor executor) {
+        public DisplayExecutor(@NonNull String displayName, @NonNull String url, @NonNull Executor executor) {
             this.displayName = displayName;
             this.url = url;
             this.executor = executor;
         }
 
         @Override
-        @Nonnull
+        @NonNull
         public String getDisplayName() {
             return displayName;
         }
 
-        @Nonnull
+        @NonNull
         public String getUrl() {
             return url;
         }
 
-        @Nonnull
+        @NonNull
         public Executor getExecutor() {
             return executor;
         }
@@ -1747,11 +1739,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
             DisplayExecutor that = (DisplayExecutor) o;
 
-            if (!executor.equals(that.executor)) {
-                return false;
-            }
-
-            return true;
+            return executor.equals(that.executor);
         }
 
         @Extension(ordinal = Double.MAX_VALUE)
@@ -1803,6 +1791,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static final Permission[] EXTENDED_READ_AND_CONNECT =
+            new Permission[] { EXTENDED_READ, CONNECT };
 
     // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
     // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,

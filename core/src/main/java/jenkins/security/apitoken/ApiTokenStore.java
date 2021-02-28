@@ -32,10 +32,10 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Restricted(NoExternalUse.class)
@@ -87,7 +88,7 @@ public class ApiTokenStore {
     }
     
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-    public synchronized @Nonnull Collection<HashedToken> getTokenListSortedByName() {
+    public synchronized @NonNull Collection<HashedToken> getTokenListSortedByName() {
         return tokenList.stream()
                 .sorted(SORT_BY_LOWERCASED_NAME)
                 .collect(Collectors.toList());
@@ -101,7 +102,7 @@ public class ApiTokenStore {
      * Defensive approach to avoid involuntary change since the UUIDs are generated at startup only for UI
      * and so between restart they change
      */
-    public synchronized void reconfigure(@Nonnull Map<String, JSONObject> tokenStoreDataMap) {
+    public synchronized void reconfigure(@NonNull Map<String, JSONObject> tokenStoreDataMap) {
         tokenList.forEach(hashedToken -> {
             JSONObject receivedTokenData = tokenStoreDataMap.get(hashedToken.uuid);
             if (receivedTokenData == null) {
@@ -122,7 +123,7 @@ public class ApiTokenStore {
     /**
      * Remove the legacy token present and generate a new one using the given secret.
      */
-    public synchronized void regenerateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
+    public synchronized void regenerateTokenFromLegacy(@NonNull Secret newLegacyApiToken) {
         deleteAllLegacyAndGenerateNewOne(newLegacyApiToken, false);
     }
     
@@ -131,13 +132,13 @@ public class ApiTokenStore {
      * <p>
      * Otherwise, no effect.
      */
-    public synchronized void regenerateTokenFromLegacyIfRequired(@Nonnull Secret newLegacyApiToken) {
+    public synchronized void regenerateTokenFromLegacyIfRequired(@NonNull Secret newLegacyApiToken) {
         if(tokenList.stream().noneMatch(HashedToken::isLegacy)){
             deleteAllLegacyAndGenerateNewOne(newLegacyApiToken, true);
         }
     }
     
-    private void deleteAllLegacyAndGenerateNewOne(@Nonnull Secret newLegacyApiToken, boolean migrationFromExistingLegacy) {
+    private void deleteAllLegacyAndGenerateNewOne(@NonNull Secret newLegacyApiToken, boolean migrationFromExistingLegacy) {
         deleteAllLegacyTokens();
         addLegacyToken(newLegacyApiToken, migrationFromExistingLegacy);
     }
@@ -147,7 +148,7 @@ public class ApiTokenStore {
         tokenList.removeIf(HashedToken::isLegacy);
     }
     
-    private void addLegacyToken(@Nonnull Secret legacyToken, boolean migrationFromExistingLegacy) {
+    private void addLegacyToken(@NonNull Secret legacyToken, boolean migrationFromExistingLegacy) {
         String tokenUserUseNormally = Util.getDigestOf(legacyToken.getPlainText());
         
         String secretValueHashed = this.plainSecretToHashInHex(tokenUserUseNormally);
@@ -172,35 +173,71 @@ public class ApiTokenStore {
      * Create a new token with the given name and return it id and secret value. 
      * Result meant to be sent / displayed and then discarded.
      */
-    public synchronized @Nonnull TokenUuidAndPlainValue generateNewToken(@Nonnull String name) {
+    public synchronized @NonNull TokenUuidAndPlainValue generateNewToken(@NonNull String name) {
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
+        // 32-char in hex
         String secretValue = Util.toHexString(random);
         String tokenTheUserWillUse = HASH_VERSION + secretValue;
         assert tokenTheUserWillUse.length() == 2 + 32;
         
-        String secretValueHashed = this.plainSecretToHashInHex(secretValue);
+        HashedToken token = prepareAndStoreToken(name, secretValue);
+        
+        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
+    }
+    
+    private static final int VERSION_LENGTH = 2; 
+    private static final int HEX_CHAR_LENGTH = 32; 
+    private static final Pattern CHECK_32_HEX_CHAR = Pattern.compile("[a-f0-9]{32}");
+    
+    /**
+     * Be careful with this method. Depending on how the tokenPlainValue was stored/sent to this method, 
+     * it could be a good idea to generate a new token randomly and revoke this one.
+     */
+    public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) {
+        if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
+            LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
+            throw new IllegalArgumentException("The token must consist of 2 characters for the version and 32 hex-characters for the secret");
+        }
+        
+        String hashVersion = tokenPlainValue.substring(0, VERSION_LENGTH);
+        if (!HASH_VERSION.equals(hashVersion)) {
+            throw new IllegalArgumentException("The given version is not recognized: " + hashVersion);
+        }
+        
+        String tokenPlainHexValue = tokenPlainValue.substring(VERSION_LENGTH);
+        tokenPlainHexValue = tokenPlainHexValue.toLowerCase();
+        if (!CHECK_32_HEX_CHAR.matcher(tokenPlainHexValue).matches()) {
+            throw new IllegalArgumentException("The secret part of the token must consist of 32 hex-characters");
+        }
+        
+        HashedToken token = prepareAndStoreToken(name, tokenPlainHexValue);
+        
+        return token.uuid;
+    }
+    
+    private @NonNull HashedToken prepareAndStoreToken(@NonNull String name, @NonNull String tokenPlainValue) {
+        String secretValueHashed = this.plainSecretToHashInHex(tokenPlainValue);
         
         HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
         HashedToken token = HashedToken.buildNew(name, hashValue);
         
         this.addToken(token);
-        
-        return new TokenUuidAndPlainValue(token.uuid, tokenTheUserWillUse);
+        return token;
     }
     
-    private @Nonnull String plainSecretToHashInHex(@Nonnull String secretValueInPlainText) {
+    private @NonNull String plainSecretToHashInHex(@NonNull String secretValueInPlainText) {
         byte[] hashBytes = plainSecretToHashBytes(secretValueInPlainText);
         return Util.toHexString(hashBytes);
     }
     
-    private @Nonnull byte[] plainSecretToHashBytes(@Nonnull String secretValueInPlainText) {
+    private @NonNull byte[] plainSecretToHashBytes(@NonNull String secretValueInPlainText) {
         // ascii is sufficient for hex-format
         return hashedBytes(secretValueInPlainText.getBytes(StandardCharsets.US_ASCII));
     }
     
-    private @Nonnull byte[] hashedBytes(byte[] tokenBytes) {
+    private @NonNull byte[] hashedBytes(byte[] tokenBytes) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance(HASH_ALGORITHM);
@@ -214,7 +251,7 @@ public class ApiTokenStore {
      * Search in the store if there is a token with the same secret as the one given
      * @return {@code null} iff there is no matching token
      */
-    public synchronized @CheckForNull HashedToken findMatchingToken(@Nonnull String token) {
+    public synchronized @CheckForNull HashedToken findMatchingToken(@NonNull String token) {
         String plainToken;
         if (isLegacyToken(token)) {
             plainToken = token;
@@ -228,7 +265,7 @@ public class ApiTokenStore {
     /**
      * Determine if the given token was generated by the legacy system or the new one
      */
-    private boolean isLegacyToken(@Nonnull String token) {
+    private boolean isLegacyToken(@NonNull String token) {
         return token.length() != TOKEN_LENGTH_V2;
     }
     
@@ -237,7 +274,7 @@ public class ApiTokenStore {
      * @param token assumed the token is not a legacy one and represent the full token (version + hash)
      * @return the hash part
      */
-    private @Nonnull String getHashOfToken(@Nonnull String token) {
+    private @NonNull String getHashOfToken(@NonNull String token) {
         /*
          * Structure of the token:
          * 
@@ -251,7 +288,7 @@ public class ApiTokenStore {
      * Search in the store if there is a matching token that has the same secret.
      * @return {@code null} iff there is no matching token
      */
-    private @CheckForNull HashedToken searchMatch(@Nonnull String plainSecret) {
+    private @CheckForNull HashedToken searchMatch(@NonNull String plainSecret) {
         byte[] hashedBytes = plainSecretToHashBytes(plainSecret);
         for (HashedToken token : tokenList) {
             if (token.match(hashedBytes)) {
@@ -268,7 +305,7 @@ public class ApiTokenStore {
      * @param tokenUuid The identifier of the token, could be retrieved directly from the {@link HashedToken#getUuid()}
      * @return the revoked token corresponding to the given {@code tokenUuid} if one was found, otherwise {@code null}
      */
-    public synchronized @CheckForNull HashedToken revokeToken(@Nonnull String tokenUuid) {
+    public synchronized @CheckForNull HashedToken revokeToken(@NonNull String tokenUuid) {
         for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext(); ) {
             HashedToken token = iterator.next();
             if (token.uuid.equals(tokenUuid)) {
@@ -281,11 +318,19 @@ public class ApiTokenStore {
         return null;
     }
     
+    public synchronized void revokeAllTokens() {
+        tokenList.clear();
+    }
+    
+    public synchronized void revokeAllTokensExcept(@NonNull String tokenUuid) {
+        tokenList.removeIf(token -> !token.uuid.equals(tokenUuid));
+    }
+    
     /**
      * Given a token identifier and a name, the system will try to find a corresponding token and rename it
      * @return {@code true} iff the token was found and the rename was successful
      */
-    public synchronized boolean renameToken(@Nonnull String tokenUuid, @Nonnull String newName) {
+    public synchronized boolean renameToken(@NonNull String tokenUuid, @NonNull String newName) {
         for (HashedToken token : tokenList) {
             if (token.uuid.equals(tokenUuid)) {
                 token.rename(newName);
@@ -317,29 +362,6 @@ public class ApiTokenStore {
         }
     }
     
-    /**
-     * Contains information about the token and the secret value.
-     * It should not be stored as is, but just displayed once to the user and then forget about it.
-     */
-    @Immutable
-    public static class TokenUuidAndPlainValue {
-        /**
-         * The token identifier to allow manipulation of the token
-         */
-        public final String tokenUuid;
-        
-        /**
-         * Confidential information, must not be stored.<p>
-         * It's meant to be send only one to the user and then only store the hash of this value.
-         */
-        public final String plainValue;
-        
-        private TokenUuidAndPlainValue(String tokenUuid, String plainValue) {
-            this.tokenUuid = tokenUuid;
-            this.plainValue = plainValue;
-        }
-    }
-    
     public static class HashedToken implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -366,7 +388,7 @@ public class ApiTokenStore {
             }
         }
         
-        public static @Nonnull HashedToken buildNew(@Nonnull String name, @Nonnull HashValue value) {
+        public static @NonNull HashedToken buildNew(@NonNull String name, @NonNull HashValue value) {
             HashedToken result = new HashedToken();
             result.name = name;
             result.creationDate = new Date();
@@ -376,7 +398,7 @@ public class ApiTokenStore {
             return result;
         }
     
-        public static @Nonnull HashedToken buildNewFromLegacy(@Nonnull HashValue value, boolean migrationFromExistingLegacy) {
+        public static @NonNull HashedToken buildNewFromLegacy(@NonNull HashValue value, boolean migrationFromExistingLegacy) {
             HashedToken result = new HashedToken();
             result.name = Messages.ApiTokenProperty_LegacyTokenName();
             if(migrationFromExistingLegacy){

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -42,8 +41,8 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <host>localhost</host><!-- HTTP listener host/interface -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>12.14.1</node.version>
-    <yarn.version>1.21.1</yarn.version>
+    <node.version>14.15.1</node.version>
+    <yarn.version>1.22.10</yarn.version>
   </properties>
 
   <dependencyManagement>
@@ -82,6 +81,10 @@ THE SOFTWARE.
           <artifactId>metainf-services</artifactId>
           <groupId>org.kohsuke.metainf-services</groupId>
         </exclusion>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -100,66 +103,32 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.9</version>
+      <version>5.14</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>2.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>ssh-cli-auth</artifactId>
-      <version>1.8</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>slave-installer</artifactId>
-      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>launchd-slave-installer</artifactId>
-      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>upstart-slave-installer</artifactId>
-      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>systemd-slave-installer</artifactId>
-      <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>sshd</artifactId>
-      <version>2.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.ui</groupId>
-      <artifactId>jquery-detached</artifactId>
-      <version>1.2.1</version>
-      <classifier>core-assets</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.ui</groupId>
-      <artifactId>bootstrap</artifactId>
-      <version>1.3.2</version>
-      <classifier>core-assets</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.ui</groupId>
-          <artifactId>jquery-detached</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -288,20 +257,14 @@ THE SOFTWARE.
                 -->
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>cvs</artifactId>
-                  <version>2.11</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
-                  <version>1.8</version>
+                  <version>1.11</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>javadoc</artifactId>
-                  <version>1.1</version>
+                  <version>1.6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -313,7 +276,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>1.11</version>
+                  <version>2.3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -325,13 +288,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.0</version>
+                  <version>2.3.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.21</version>
+                  <version>1.32.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -361,27 +324,27 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.71</version>
+                  <version>1.75</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1.26.1</version>
+                  <version>1.29</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>2.35</version>
+                  <version>2.40</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>2.20</version>
+                  <version>2.22</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -395,7 +358,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>structs</artifactId>
-                  <version>1.18</version>
+                  <version>1.20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -423,6 +386,12 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
+                  <groupId>org.jenkins-ci.modules</groupId>
+                  <artifactId>sshd</artifactId>
+                  <version>${sshd.plugin.version}</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
                   <version>1.0.4</version>
@@ -430,6 +399,27 @@ THE SOFTWARE.
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
+              <stripVersion>true</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+          <execution> <!-- see jetty-maven-plugin config and WebAppMain -->
+            <id>support-log-formatter</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.jenkins.lib</groupId>
+                  <artifactId>support-log-formatter</artifactId>
+                  <version>1.0</version>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}</outputDirectory>
               <stripVersion>true</stripVersion>
               <overWriteIfNewer>true</overWriteIfNewer>
               <overWriteReleases>false</overWriteReleases>
@@ -526,8 +516,8 @@ THE SOFTWARE.
             </systemProperty>
           </systemProperties>
           <webApp>
-            <!-- Allows resources to be reloaded. -->
-            <extraClasspath>${project.basedir}/../core/src/main/resources,${project.basedir}/../core/target/classes</extraClasspath>
+            <!-- Allows resources to be reloaded, and enable nicer console logging. -->
+            <extraClasspath>${project.basedir}/../core/src/main/resources,${project.basedir}/../core/target/classes,${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
             <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern><!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
@@ -556,7 +546,7 @@ THE SOFTWARE.
                   <archive>${project.build.directory}/${project.build.finalName}.war</archive>
                   <arguments>
                     <argument>-tsa</argument>
-                    <argument>http://timestamp.comodoca.com/rfc3161</argument>
+                    <argument>http://timestamp.digicert.com</argument>
                   </arguments>
                 </configuration>
               </execution>
@@ -606,7 +596,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.6</version>
+            <version>1.11.2</version>
             <executions>
 
               <execution>

@@ -27,7 +27,7 @@ package jenkins.util.io;
 import hudson.Functions;
 import org.junit.rules.ExternalResource;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,7 +40,7 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -65,14 +65,14 @@ public class FileLockerRule extends ExternalResource {
             throw new CompositeIOException("Could not unlock all files", exceptions).asUncheckedIOException();
     }
 
-    public synchronized void acquireLock(@Nonnull File file) throws IOException {
+    public synchronized void acquireLock(@NonNull File file) throws IOException {
         assertTrue(Functions.isWindows());
         assertThat(file + " is already locked.", locks, not(hasKey(file)));
         Closeable lock = new FileInputStream(file);
         locks.put(file, lock);
     }
 
-    public synchronized void releaseLock(@Nonnull File file) throws Exception {
+    public synchronized void releaseLock(@NonNull File file) throws Exception {
         assertTrue(Functions.isWindows());
         assertThat(file + " is not locked.", locks, hasKey(file));
         locks.remove(file).close();

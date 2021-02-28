@@ -7,14 +7,13 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.kohsuke.MetaInfServices;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +67,7 @@ public abstract class ConfidentialStore {
     /**
      * Retrieves the currently active singleton instance of {@link ConfidentialStore}.
      */
-    public static @Nonnull ConfidentialStore get() {
+    public static @NonNull ConfidentialStore get() {
         if (TEST!=null) return TEST.get();
 
         Jenkins j = Jenkins.getInstanceOrNull();

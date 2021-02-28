@@ -16,15 +16,15 @@ import java.util.Set;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * Expose the data needed for /whoAmI, so it can be exposed by Api.
@@ -70,8 +70,8 @@ public class WhoAmI implements UnprotectedRootAction {
         return auth().toString();
     }
 
-    private @Nonnull Authentication auth() {
-        return Jenkins.getAuthentication();
+    private @NonNull Authentication auth() {
+        return Jenkins.getAuthentication2();
     }
 
     @Exported
@@ -88,7 +88,7 @@ public class WhoAmI implements UnprotectedRootAction {
 
     // Used by Jelly
     @Restricted(NoExternalUse.class)
-    public boolean isHeaderDangerous(@Nonnull String name) {
+    public boolean isHeaderDangerous(@NonNull String name) {
         return dangerousHeaders.contains(name.toLowerCase(Locale.ENGLISH));
     }
 

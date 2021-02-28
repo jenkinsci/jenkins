@@ -34,12 +34,10 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ExtensionList;
 import hudson.model.User;
-import hudson.remoting.Base64;
-import static hudson.security.HudsonPrivateSecurityRealm.CLASSIC;
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
 import hudson.security.pages.SignupPage;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +51,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -67,10 +71,9 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.WithoutJenkins;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -81,7 +84,7 @@ public class HudsonPrivateSecurityRealmTest {
     private SpySecurityListenerImpl spySecurityListener;
 
     @Before
-    public void linkExtension() throws Exception {
+    public void linkExtension() {
         spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
 
@@ -91,19 +94,6 @@ public class HudsonPrivateSecurityRealmTest {
         field.setAccessible(true);
         field.set(null, null);
     }
-
-    @Test
-    @WithoutJenkins
-    public void hashCompatibility() {
-        String old = CLASSIC.encodePassword("hello world", null);
-        assertTrue(PASSWORD_ENCODER.isPasswordValid(old,"hello world",null));
-
-        String secure = PASSWORD_ENCODER.encodePassword("hello world", null);
-        assertTrue(PASSWORD_ENCODER.isPasswordValid(old,"hello world",null));
-
-        assertNotEquals(secure, old);
-    }
-
 
     @Issue("SECURITY-243")
     @Test
@@ -197,11 +187,10 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
 
-    private static final String basicHeader(String user, String pass) throws UnsupportedEncodingException {
+    private static String basicHeader(String user, String pass) {
         String str = user +':' + pass;
-        String auth = Base64.encode(str.getBytes("US-ASCII"));
-        String authHeader = "Basic " + auth;
-        return authHeader;
+        String auth = java.util.Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
+        return "Basic " + auth;
     }
 
     @Test
@@ -288,7 +277,7 @@ public class HudsonPrivateSecurityRealmTest {
 
         createAccountByAdmin("alice");
         // no new event in such case
-        assertEquals(true, spySecurityListener.loggedInUsernames.isEmpty());
+        assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
 
         selfRegistration("bob");
         assertEquals("bob", spySecurityListener.loggedInUsernames.get(0));
@@ -420,16 +409,16 @@ public class HudsonPrivateSecurityRealmTest {
 
     @TestExtension
     public static class SpySecurityListenerImpl extends SecurityListener {
-        private List<String> loggedInUsernames = new ArrayList<>();
-        private List<String> createdUsers = new ArrayList<String>();
+        private final List<String> loggedInUsernames = new ArrayList<>();
+        private final List<String> createdUsers = new ArrayList<>();
 
         @Override
-        protected void loggedIn(@Nonnull String username) {
+        protected void loggedIn(@NonNull String username) {
             loggedInUsernames.add(username);
         }
 
         @Override
-        protected void userCreated(@Nonnull String username) { createdUsers.add(username); }
+        protected void userCreated(@NonNull String username) { createdUsers.add(username); }
     }
 
     @Issue("SECURITY-786")
@@ -465,7 +454,6 @@ public class HudsonPrivateSecurityRealmTest {
             checkUserCannotBeCreatedWith(securityRealm, "Stargåte" + i, password, "Test" + i, email);
             i++;
             checkUserCannotBeCreatedWith(securityRealm, "te\u0000st" + i, password, "Test" + i, email);
-            i++;
         }
     }
     
@@ -508,7 +496,6 @@ public class HudsonPrivateSecurityRealmTest {
             assertNotNull(User.getById("125213" + i, false));
             i++;
             checkUserCannotBeCreatedWith_custom(securityRealm, "TEST12" + i, password, "Test" + i, email, currentRegex);
-            i++;
         }
     }
 

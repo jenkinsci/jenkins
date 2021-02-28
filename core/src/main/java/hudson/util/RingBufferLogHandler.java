@@ -54,6 +54,15 @@ public class RingBufferLogHandler extends Handler {
         records = new LogRecord[ringSize];
     }
 
+    /**
+     * @return int DEFAULT_RING_BUFFER_SIZE
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @since 2.259
+     */
+    public static int getDefaultRingBufferSize() {
+        return DEFAULT_RING_BUFFER_SIZE;
+    }
+
     public synchronized void publish(LogRecord record) {
         int len = records.length;
         records[(start+size)%len]=record;

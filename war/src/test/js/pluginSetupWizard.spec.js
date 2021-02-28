@@ -66,21 +66,21 @@ var ajaxMocks = function(responseMappings) {
         '/jenkins/updateCenter/installStatus': new LastResponse([{
             status: 'ok',
             data: { // first, return nothing by default, no ongoing install
-            	state: 'NEW',
-            	jobs: []
-        	}
+                state: 'NEW',
+                jobs: []
+            }
         },
         {
             status: 'ok',
             data: {
-            	state: 'INSTALLING_PLUGINS',
-            	jobs: [
-	              {
-	                  name: 'subversion',
-	                  type: 'InstallJob',
-	                  installStatus: 'Success'
-	              }
-	            ]
+                state: 'INSTALLING_PLUGINS',
+                jobs: [
+                  {
+                      name: 'subversion',
+                      type: 'InstallJob',
+                      installStatus: 'Success'
+                  }
+                ]
             }
         }]),
         '/jenkins/pluginManager/plugins': {
@@ -242,7 +242,7 @@ describe("pluginSetupWizard.js", function () {
         test(function() {
             // Make sure the dialog was shown
             var $wizard = $body.find('.plugin-setup-wizard');
-            expect($wizard.size()).toBe(1);
+            expect($wizard.length).toBe(1);
 
             done();
         }, { $, $body });
@@ -296,10 +296,10 @@ describe("pluginSetupWizard.js", function () {
         test(function() {
             // Make sure the dialog was shown
             var wizard = $body.find('.plugin-setup-wizard');
-            expect(wizard.size()).toBe(1);
+            expect(wizard.length).toBe(1);
 
             var goButton = $body.find('.install-recommended');
-            expect(goButton.size()).toBe(1);
+            expect(goButton.length).toBe(1);
 
             // validate a call to installPlugins with our defaults
             validatePlugins(['subversion'], function() {
@@ -367,8 +367,8 @@ describe("pluginSetupWizard.js", function () {
         };
 
         test(function() {
-            expect($body.find('.install-done').size()).toBe(0);
-            expect($body.find('.install-done-restart').size()).toBe(1);
+            expect($body.find('.install-done').length).toBe(0);
+            expect($body.find('.install-done-restart').length).toBe(1);
             done();
         }, { ajaxMappings, $, $body });
     });
@@ -391,8 +391,8 @@ describe("pluginSetupWizard.js", function () {
             },
         };
         test(function() {
-            expect($body.find('.install-done').size()).toBe(0);
-            expect($body.find('.install-done-restart').size()).toBe(0);
+            expect($body.find('.install-done').length).toBe(0);
+            expect($body.find('.install-done-restart').length).toBe(0);
             done();
         }, { ajaxMappings, $, $body });
     });
@@ -415,8 +415,8 @@ describe("pluginSetupWizard.js", function () {
             },
         };
         test(function() {
-            expect($body.find('.install-done').size()).toBe(1);
-            expect($body.find('.install-done-restart').size()).toBe(0);
+            expect($body.find('.install-done').length).toBe(1);
+            expect($body.find('.install-done-restart').length).toBe(0);
             done();
         }, { ajaxMappings, $, $body });
     });
@@ -492,7 +492,7 @@ describe("pluginSetupWizard.js", function () {
         };
         test(function() {
             var goButton = $body.find('.install-recommended');
-            expect(goButton.size()).toBe(1);
+            expect(goButton.length).toBe(1);
 
             // validate a call to installPlugins with our defaults
             setTimeout(function() {

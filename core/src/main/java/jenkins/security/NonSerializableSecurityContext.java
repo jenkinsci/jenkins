@@ -15,12 +15,14 @@
 package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextImpl;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.userdetails.UserDetails;
 
 import javax.servlet.http.HttpSession;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * The same as {@link SecurityContextImpl} but doesn't serialize {@link Authentication}.
@@ -42,6 +44,7 @@ import javax.servlet.http.HttpSession;
  * @since 1.509
  */
 @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "It is not intended to be serialized. Default values will be used in case of deserialization")
+@Restricted(NoExternalUse.class)
 public class NonSerializableSecurityContext implements SecurityContext {
     private transient Authentication authentication;
 

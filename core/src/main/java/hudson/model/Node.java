@@ -59,13 +59,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
@@ -74,6 +73,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.springframework.security.core.Authentication;
 
 /**
  * Base type of Jenkins agents (although in practice, you probably extend {@link Slave} to define a new agent type).
@@ -147,7 +147,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      "" if this is master
      */
     @Exported(visibility=999)
-    @Nonnull
+    @NonNull
     public abstract String getNodeName();
 
     /**
@@ -282,11 +282,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {
-        return new TagCloud<>(getAssignedLabels(), new WeightFunction<LabelAtom>() {
-            public float weight(LabelAtom item) {
-                return item.getTiedJobCount();
-            }
-        });
+        return new TagCloud<>(getAssignedLabels(), Label::getTiedJobCount);
     }
     /**
      * Returns the possibly empty set of labels that are assigned to this node,
@@ -348,7 +344,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the special label that represents this node itself.
      */
-    @Nonnull
+    @NonNull
     @WithBridgeMethods(Label.class)
     public LabelAtom getSelfLabel() {
         return LabelAtom.get(getNodeName());
@@ -398,8 +394,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             }
         }
 
-        Authentication identity = item.authenticate();
-        if (!(SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !hasPermission(identity, Computer.BUILD)) {
+        Authentication identity = item.authenticate2();
+        if (!(SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !hasPermission2(identity, Computer.BUILD)) {
             // doesn't have a permission
             return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(), getDisplayName()));
         }
@@ -461,15 +457,15 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return new FilePath(ch,absolutePath);
     }
 
+    @Deprecated
     public FileSystemProvisioner getFileSystemProvisioner() {
-        // TODO: make this configurable or auto-detectable or something else
         return FileSystemProvisioner.DEFAULT;
     }
 
     /**
      * Gets the {@link NodeProperty} instances configured for this {@link Node}.
      */
-    public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
+    public abstract @NonNull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
     /**
      * Gets the specified property or null if the property is not configured for this Node.
@@ -526,7 +522,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
         final AtomicReference<BindInterceptor> old = new AtomicReference<>();
-        old.set(req.setBindListener(new BindInterceptor() {
+        old.set(req.setBindInterceptor(new BindInterceptor() {
             @Override
             public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
                 if (jsonForProperties != jsonSource) {
@@ -537,9 +533,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                     DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<>(Saveable.NOOP, getNodeProperties().toList());
                     tmp.rebuild(req, jsonForProperties, NodeProperty.all());
                     return tmp.toList();
-                } catch (FormException e) {
-                    throw new IllegalArgumentException(e);
-                } catch (IOException e) {
+                } catch (FormException | IOException e) {
                     throw new IllegalArgumentException(e);
                 }
             }

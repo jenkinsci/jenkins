@@ -46,7 +46,7 @@ public class ResourceBundleUtilTest {
         Assert.assertEquals("Inicializando registros de log", bundle.getString("LogRecorderManager.init"));
 
         // Test caching - should get the same bundle instance back...
-        Assert.assertTrue(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt")) == bundle);
+        Assert.assertSame(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt")), bundle);
     }
 
     /**

@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import jenkins.security.NotReallyRoleSensitiveCallable;
-import org.acegisecurity.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 import org.xml.sax.SAXException;
 
 /**
@@ -229,12 +229,13 @@ public abstract class ItemGroupMixIn {
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
-                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
+                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication2().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
                 }
             }
         }
         src.getDescriptor().checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, src.getDescriptor());
+        Jenkins.checkGoodName(name);
         ItemListener.checkBeforeCopy(src, parent);
 
         T result = (T)createProject(src.getDescriptor(),name,false);
@@ -264,6 +265,7 @@ public abstract class ItemGroupMixIn {
 
         Jenkins.get().getProjectNamingStrategy().checkName(name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
+        Jenkins.checkGoodName(name);
 
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
@@ -280,7 +282,7 @@ public abstract class ItemGroupMixIn {
                 }
             });
 
-            success = acl.getACL().hasCreatePermission(Jenkins.getAuthentication(), parent, result.getDescriptor())
+            success = acl.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), parent, result.getDescriptor())
                 && result.getDescriptor().isApplicableIn(parent);
 
             add(result);
@@ -311,6 +313,7 @@ public abstract class ItemGroupMixIn {
 
         Jenkins.get().getProjectNamingStrategy().checkName(name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
+        Jenkins.checkGoodName(name);
 
         TopLevelItem item = type.newInstance(parent, name);
         item.onCreatedFromScratch();

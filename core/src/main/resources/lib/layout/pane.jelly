@@ -39,7 +39,7 @@ THE SOFTWARE.
       (so that the title can stretch to the entire table width.
     </st:attribute>
     <st:attribute name="id">
-      @id of the table, if specified.
+      @id of the table, if specified. Required for a pane to be collapsible.
     </st:attribute>
     <st:attribute name="class">
       Pane table class specification.
@@ -47,16 +47,27 @@ THE SOFTWARE.
     <st:attribute name="footer">
       Footer of the box. Can include HTML.
     </st:attribute>
+    <st:attribute name="collapsedText">
+      Text shown instead of the regular pane content when it is collapsed.
+    </st:attribute>
   </st:documentation>
   <j:set var="paneIsCollapsed" value="${h.isCollapsed(attrs.id)}" />
   <div class="container-fluid pane-frame track-mouse ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
     <div class="row">
       <div class="col-xs-24 pane-header">
-        <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
-           title="${paneIsCollapsed ? '%expand' : '%collapse'}">
-          <l:icon alt="${paneIsCollapsed ? '%expand' : '%collapse'}" class="${paneIsCollapsed ? 'icon-expand' : 'icon-collapse'} icon-sm"/>
-        </a>
-        <j:out value="${title}"/>
+        <span class="pane-header-title">
+          <j:out value="${title}"/>
+        </span>
+
+        <j:if test="${attrs.id != null}">
+          <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
+             title="${paneIsCollapsed ? '%expand' : '%collapse'}">
+
+            <j:set var="svgIconId"
+                   value="${paneIsCollapsed ? 'ic_expand_more_24px' : 'ic_expand_less_24px'}" />
+            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#${svgIconId}" />
+          </a>
+        </j:if>
       </div>
     </div>
     <j:choose>

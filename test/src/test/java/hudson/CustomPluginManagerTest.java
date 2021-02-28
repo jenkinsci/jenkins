@@ -79,7 +79,7 @@ public class CustomPluginManagerTest {
 
     private void check(Class<? extends CustomPluginManager> klass) {
         assertTrue("Correct plugin manager installed", klass.isAssignableFrom(r.getPluginManager().getClass()));
-        assertNotNull("Plugin 'tasks' installed", r.jenkins.getPlugin("tasks"));
+        assertNotNull("Plugin 'htmlpublisher' installed", r.jenkins.getPlugin("htmlpublisher"));
     }
 
     // An interface not to override every constructor.
@@ -87,7 +87,7 @@ public class CustomPluginManagerTest {
     }
 
     @Issue("JENKINS-34681")
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(CustomPluginManager1.class)
     @Test public void customPluginManager1() {
         check(CustomPluginManager1.class);
@@ -100,7 +100,7 @@ public class CustomPluginManagerTest {
     }
 
     @Issue("JENKINS-34681")
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(CustomPluginManager2.class)
     @Test public void customPluginManager2() {
         check(CustomPluginManager2.class);
@@ -113,7 +113,7 @@ public class CustomPluginManagerTest {
     }
 
     @Issue("JENKINS-34681")
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(CustomPluginManager3.class)
     @Test public void customPluginManager3() {
         check(CustomPluginManager3.class);
@@ -126,7 +126,7 @@ public class CustomPluginManagerTest {
     }
 
     @Issue("JENKINS-34681")
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(BadCustomPluginManager.class)
     @Test public void badCustomPluginManager() {
         assertFalse("Custom plugin manager not installed", r.getPluginManager() instanceof CustomPluginManager);
