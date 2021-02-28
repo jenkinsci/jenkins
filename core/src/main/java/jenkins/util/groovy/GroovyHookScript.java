@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 
 /**
  * A collection of Groovy scripts that are executed as various hooks.
@@ -38,10 +39,11 @@ import jenkins.model.Jenkins;
  * @author Kohsuke Kawaguchi
  */
 public class GroovyHookScript {
+    private static final String ROOT_PATH = SystemProperties.getString(GroovyHookScript.class.getName() + ".ROOT_PATH");
     private final String hook;
     private final Binding bindings = new Binding();
     private final ServletContext servletContext;
-    private final File home;
+    private final File rootDir;
     private final ClassLoader loader;
 
     @Deprecated
@@ -53,10 +55,10 @@ public class GroovyHookScript {
         this(hook, j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader);
     }
 
-    public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File home, @NonNull ClassLoader loader) {
+    public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {
         this.hook = hook;
         this.servletContext = servletContext;
-        this.home = home;
+        this.rootDir = ROOT_PATH != null ? new File(ROOT_PATH) : jenkinsHome;
         this.loader = loader;
     }
 
@@ -93,10 +95,10 @@ public class GroovyHookScript {
             }
         }
 
-        File script = new File(home, hookGroovy);
+        File script = new File(rootDir, hookGroovy);
         execute(script);
 
-        File scriptD = new File(home, hookGroovyD);
+        File scriptD = new File(rootDir, hookGroovyD);
         if (scriptD.isDirectory()) {
             File[] scripts = scriptD.listFiles(new FileFilter() {
                 public boolean accept(File f) {

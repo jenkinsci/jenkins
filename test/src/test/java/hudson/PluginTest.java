@@ -27,7 +27,6 @@ package hudson;
 import hudson.model.UpdateCenter;
 import jenkins.model.Jenkins;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;

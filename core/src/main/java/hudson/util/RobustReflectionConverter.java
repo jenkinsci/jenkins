@@ -57,7 +57,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import net.jcip.annotations.GuardedBy;
+
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import jenkins.util.xstream.CriticalXStreamException;
+import org.acegisecurity.Authentication;
 
 /**
  * Custom {@link ReflectionConverter} that handle errors more gracefully.
@@ -72,6 +77,9 @@ import jenkins.util.xstream.CriticalXStreamException;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RobustReflectionConverter implements Converter {
+
+    private static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAllAuthentications", false);
+    private static /* non-final for Groovy */ boolean RECORD_FAILURES_FOR_ADMINS = SystemProperties.getBoolean(RobustReflectionConverter.class.getName() + ".recordFailuresForAdmins", false);
 
     protected final ReflectionProvider reflectionProvider;
     protected final Mapper mapper;
@@ -368,8 +376,8 @@ public class RobustReflectionConverter implements Converter {
             reader.moveUp();
         }
 
-        // Report any class/field errors in Saveable objects
-        if (context.get("ReadError") != null && context.get("Saveable") == result) {
+        // Report any class/field errors in Saveable objects if it happens during loading of existing data from disk
+        if (shouldReportUnloadableDataForCurrentUser() && context.get("ReadError") != null && context.get("Saveable") == result) {
             // Avoid any error in OldDataMonitor to be catastrophic. See JENKINS-62231 and JENKINS-59582
             // The root cause is the OldDataMonitor extension is not ready before a plugin triggers an error, for 
             // example when trying to load a field that was created by a new version and you downgrade to the previous
@@ -390,6 +398,26 @@ public class RobustReflectionConverter implements Converter {
             context.put("ReadError", null);
         }
         return result;
+    }
+
+    /**
+     * Returns whether the current user authentication is allowed to have errors loading data reported.
+     *
+     * <p>{@link ACL#SYSTEM} always has errors reported.
+     * If {@link #RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS} is {@code true}, errors are reported for all authentications.
+     * Otherwise errors are reported for users with {@link Jenkins#ADMINISTER} permission if {@link #RECORD_FAILURES_FOR_ADMINS} is {@code true}.</p>
+     *
+     * @return whether the current user authentication is allowed to have errors loading data reported.
+     */
+    private static boolean shouldReportUnloadableDataForCurrentUser() {
+        if (RECORD_FAILURES_FOR_ALL_AUTHENTICATIONS) {
+            return true;
+        }
+        final Authentication authentication = Jenkins.getAuthentication();
+        if (authentication.equals(ACL.SYSTEM)) {
+            return true;
+        }
+        return RECORD_FAILURES_FOR_ADMINS && Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     }
 
     public static void addErrorInContext(UnmarshallingContext context, Throwable e) {

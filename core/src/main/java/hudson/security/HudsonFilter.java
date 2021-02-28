@@ -130,7 +130,7 @@ public class HudsonFilter implements Filter {
     /**
      * Reset the proxies and filter for a change in {@link SecurityRealm}.
      */
-    public void reset(SecurityRealm securityRealm) throws ServletException {
+    public synchronized void reset(SecurityRealm securityRealm) throws ServletException {
         if (securityRealm != null) {
             SecurityRealm.SecurityComponents sc = securityRealm.getSecurityComponents();
             AUTHENTICATION_MANAGER.setDelegate(sc.manager2);

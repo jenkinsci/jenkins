@@ -728,7 +728,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns all the registered {@link SCMDescriptor}s.
      */
     public static DescriptorExtensionList<SCM,SCMDescriptor<?>> all() {
-        return Jenkins.get().<SCM,SCMDescriptor<?>>getDescriptorList(SCM.class);
+        return Jenkins.get().getDescriptorList(SCM.class);
     }
 
     /**

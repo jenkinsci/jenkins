@@ -350,7 +350,7 @@ public class HistoryPageFilterTest {
     @Test
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_params() throws IOException {
-        List<ModelObject> runs = ImmutableList.<ModelObject>of(
+        List<ModelObject> runs = ImmutableList.of(
                 new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")),
                 new MockBuild(1).withBuildParameters(ImmutableMap.of("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);

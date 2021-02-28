@@ -30,20 +30,9 @@ import hudson.model.AbstractBuild;
 import java.io.IOException;
 
 /**
- * Represents a workspace snapshot created by {@link FileSystemProvisioner}.
- *
- * <p>
- * This class encapsulates a logic to use the snapshot elsewhere.
- * The instance will be persisted with the {@link AbstractBuild} object
- * as an {@link Action}.
- *
- * <p>
- * TODO: how to garbage-collect this object, especially for zfs?
- * perhaps when a new build is started?
- *
- * @see FileSystemProvisioner
- * @author Kohsuke Kawaguchi
+ * @deprecated Unused.
  */
+@Deprecated
 public abstract class WorkspaceSnapshot implements Action {
     /**
      * Restores the snapshot to the given file system location.

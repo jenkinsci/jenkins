@@ -43,7 +43,9 @@ import java.util.regex.Pattern;
 
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.IOUtils;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -144,7 +146,7 @@ public class FunctionsTest {
         when(j.getItemGroup()).thenReturn(j);
         createMockAncestors(req, createAncestor(view, "."), createAncestor(j, "../.."));
         TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Arrays.asList(i));
+        when(view.getItems()).thenReturn(Collections.singletonList(i));
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("job/i/", result);
     }
@@ -179,7 +181,7 @@ public class FunctionsTest {
         when(view.getOwner().getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/");
-        when(view.getItems()).thenReturn(Collections.<TopLevelItem>emptyList());
+        when(view.getItems()).thenReturn(Collections.emptyList());
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("/jenkins/job/i/", result);
     }
@@ -201,7 +203,7 @@ public class FunctionsTest {
         when(parent.getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../../.."), createAncestor(parent, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/", "parent/job/i/");
-        when(view.getItems()).thenReturn(Arrays.asList(i));
+        when(view.getItems()).thenReturn(Collections.singletonList(i));
         String result = Functions.getRelativeLinkTo(i);
         assertEquals("job/i/", result);
     }
@@ -518,7 +520,8 @@ public class FunctionsTest {
         stack1.cause(stack2);
         stack2.cause(stack1);
         //Format changed in 11.0.9 / 8.0.272 (JDK-8226809 / JDK-8252444 / JDK-8252489)
-        if ((getVersion().getDigitAt(0) == 11 && getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9"))) ||
+
+        if ((getVersion().isNewerThanOrEqualTo(new VersionNumber("11.0.9"))) ||
                 (getVersion().getDigitAt(0) == 8 && getVersion().isNewerThanOrEqualTo(new VersionNumber("8.0.272")))) {
             assertPrintThrowable(stack1,
                     "p.Exc1\n" +
@@ -555,10 +558,10 @@ public class FunctionsTest {
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
-        assertEquals(sw.toString().replace(IOUtils.LINE_SEPARATOR, "\n"), traditional);
+        assertThat(sw.toString().replace(System.lineSeparator(), "\n"), is(traditional));
         String actual = Functions.printThrowable(t);
         System.out.println(actual);
-        assertEquals(actual.replace(IOUtils.LINE_SEPARATOR, "\n"), custom);
+        assertThat(actual.replace(System.lineSeparator(), "\n"), is(custom));
     }
     private static final class Stack extends Throwable {
         private static final Pattern LINE = Pattern.compile("(.+)[.](.+)[.](.+):(\\d+)");

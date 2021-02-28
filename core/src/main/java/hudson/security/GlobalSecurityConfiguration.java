@@ -193,7 +193,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     }
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.222")
     public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
 
     /**

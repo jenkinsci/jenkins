@@ -47,7 +47,6 @@ public class FormFieldValidatorTest {
 
     @Test
     @Issue("JENKINS-2771")
-    @WithPlugin("tasks.jpi")
     public void configure() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.createWebClient().getPage(p, "configure");

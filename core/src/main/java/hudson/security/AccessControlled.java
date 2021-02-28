@@ -76,7 +76,7 @@ public interface AccessControlled {
 
     /**
      * Convenient short-cut for {@code getACL().hasPermission2(a, permission)}
-     * @since TODO
+     * @since 2.266
      */
     default boolean hasPermission2(@NonNull Authentication a, @NonNull Permission permission) {
         if (a.equals(ACL.SYSTEM2)) {

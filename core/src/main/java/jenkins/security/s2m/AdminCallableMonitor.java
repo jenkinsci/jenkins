@@ -34,6 +34,11 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     }
 
     @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
+    @Override
     public boolean isActivated() {
         return !rule.rejected.describe().isEmpty();
     }

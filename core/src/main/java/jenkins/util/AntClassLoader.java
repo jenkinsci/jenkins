@@ -960,7 +960,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return an enumeration of URLs for the resources
      * @exception IOException if I/O errors occurs (can't happen)
      */
-    protected Enumeration/*<URL>*/ findResources(String name) throws IOException {
+    public Enumeration/*<URL>*/ findResources(String name) throws IOException {
         return findResources(name, true);
     }
 

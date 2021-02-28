@@ -124,7 +124,7 @@ public final class Result implements Serializable, CustomExportedBean {
      * @param r2
      *      a result (may be {@code null})
      * @return the worst result (may be {@code null})
-     * @since TODO
+     * @since 2.257
      */
     public static Result combine(Result r1, Result r2) {
         if (r1 == null) {
