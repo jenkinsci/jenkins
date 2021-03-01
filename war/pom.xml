@@ -258,13 +258,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ant</artifactId>
-                  <version>1.11</version>
+                  <version>1.8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>javadoc</artifactId>
-                  <version>1.6</version>
+                  <version>1.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -276,7 +276,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>2.3</version>
+                  <version>2.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
