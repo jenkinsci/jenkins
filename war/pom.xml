@@ -103,7 +103,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <!-- TODO: Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
+      <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
       <version>5.15</version>
       <scope>test</scope>
     </dependency>
