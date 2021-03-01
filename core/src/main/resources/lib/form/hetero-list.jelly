@@ -84,8 +84,8 @@ THE SOFTWARE.
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
           <div class="tr help-sibling">
-            <div colspan="3" style="display: flex;">
-              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}" style="flex: 1;">
+            <div colspan="3">
+              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
                 <b>${descriptor.displayName}</b>
               </div>
               <f:helpLink url="${help}"/>
