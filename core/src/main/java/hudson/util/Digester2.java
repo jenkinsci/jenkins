@@ -24,8 +24,8 @@
 package hudson.util;
 
 import jenkins.util.SystemProperties;
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.Rule;
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.Rule;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -152,12 +152,12 @@ public class Digester2 extends Digester {
         @Override
         public void begin(String namespace, String name, Attributes attributes) throws Exception {
             Object instance = clazz.newInstance();
-            digester.push(instance);
+            getDigester().push(instance);
         }
 
         @Override
         public void end(String namespace, String name) throws Exception {
-            digester.pop();
+            getDigester().pop();
         }
     }
 }
