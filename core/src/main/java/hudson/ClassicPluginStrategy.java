@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
@@ -343,7 +342,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             finder.scout(type, hudson);
         }
 
-        List<ExtensionComponent<T>> r = Lists.newArrayList();
+        List<ExtensionComponent<T>> r = new ArrayList<>();
         for (ExtensionFinder finder : finders) {
             try {
                 r.addAll(finder.find(type, hudson));
@@ -354,7 +353,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
         }
 
-        List<ExtensionComponent<T>> filtered = Lists.newArrayList();
+        List<ExtensionComponent<T>> filtered = new ArrayList<>();
         for (ExtensionComponent<T> e : r) {
             if (ExtensionFilter.isAllowed(type,e))
                 filtered.add(e);

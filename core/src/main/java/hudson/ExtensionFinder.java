@@ -25,8 +25,6 @@ package hudson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -259,7 +257,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         /**
          * Map from {@link GuiceExtensionAnnotation#annotationType} to {@link GuiceExtensionAnnotation}
          */
-        private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = Maps.newHashMap();
+        private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = new HashMap<>();
 
         public GuiceFinder() {
             refreshExtensionAnnotations();
@@ -307,7 +305,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         private ImmutableList<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
-            List<IndexItem<?,Object>> indices = Lists.newArrayList();
+            List<IndexItem<?,Object>> indices = new ArrayList<>();
             for (GuiceExtensionAnnotation<?> gea : extensionAnnotations.values()) {
                 Iterables.addAll(indices, Index.load(gea.annotationType, Object.class, classLoader));
             }
@@ -330,7 +328,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         public synchronized ExtensionComponentSet refresh() throws ExtensionRefreshException {
             refreshExtensionAnnotations();
             // figure out newly discovered sezpoz components
-            List<IndexItem<?, Object>> delta = Lists.newArrayList();
+            List<IndexItem<?, Object>> delta = new ArrayList<>();
             for (Class<? extends Annotation> annotationType : extensionAnnotations.keySet()) {
                 delta.addAll(Sezpoz.listDelta(annotationType,sezpozIndex));
             }
@@ -346,7 +344,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             try {
                 final Injector child = container.createChildInjector(modules);
                 container = child;
-                List<IndexItem<?, Object>> l = Lists.newArrayList(sezpozIndex);
+                List<IndexItem<?, Object>> l = new ArrayList<>(sezpozIndex);
                 l.addAll(deltaExtensions.getLoadedIndex());
                 sezpozIndex = l;
 
@@ -661,7 +659,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             final List<IndexItem<Extension, Object>> delta = listDelta(Extension.class,old);
 
-            List<IndexItem<Extension,Object>> r = Lists.newArrayList(old);
+            List<IndexItem<Extension,Object>> r = new ArrayList<>(old);
             r.addAll(delta);
             indices = ImmutableList.copyOf(r);
 
@@ -675,7 +673,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         static <T extends Annotation> List<IndexItem<T,Object>> listDelta(Class<T> annotationType, List<? extends IndexItem<?,Object>> old) {
             // list up newly discovered components
-            final List<IndexItem<T,Object>> delta = Lists.newArrayList();
+            final List<IndexItem<T,Object>> delta = new ArrayList<>();
             ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
             for (IndexItem<T,Object> ii : Index.load(annotationType, Object.class, cl)) {
                 if (!old.contains(ii)) {

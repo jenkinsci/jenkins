@@ -31,9 +31,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -141,7 +142,7 @@ public class EnvVarsTest {
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
         assertEquals(Arrays.asList("B", "A", "C"), order.subList(0, 3));
-        assertEquals(Sets.newHashSet("E", "D"), new HashSet<>(order.subList(3, order.size())));
+        assertThat(new HashSet<>(order.subList(3, order.size())), containsInAnyOrder("E", "D"));
     }
 
     @Test
