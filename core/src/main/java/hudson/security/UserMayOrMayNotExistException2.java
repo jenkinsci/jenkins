@@ -36,7 +36,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * This happens, for example, when the security realm is on top of the servlet implementation,
  * there's no way of even knowing if an user of a given name exists or not.
  *
- * @since TODO
+ * @since 2.266
  */
 public class UserMayOrMayNotExistException2 extends UsernameNotFoundException {
 

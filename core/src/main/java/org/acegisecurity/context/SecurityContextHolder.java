@@ -26,7 +26,6 @@ package org.acegisecurity.context;
 
 import hudson.model.User;
 import hudson.security.ACL;
-import org.acegisecurity.Authentication;
 
 /**
  * @deprecated Use {@link ACL#as(User)} or {@link org.springframework.security.core.context.SecurityContext}.

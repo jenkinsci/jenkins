@@ -32,6 +32,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -71,7 +72,7 @@ public class AtomicFileWriter extends Writer {
      * Writes with UTF-8 encoding.
      */
     public AtomicFileWriter(File f) throws IOException {
-        this(f,"UTF-8");
+        this(toPath(f), StandardCharsets.UTF_8);
     }
 
     /**
@@ -88,7 +89,7 @@ public class AtomicFileWriter extends Writer {
      * Wraps potential {@link java.nio.file.InvalidPathException} thrown by {@link File#toPath()} in an
      * {@link IOException} for backward compatibility.
      *
-     * @param file
+     * @param file file to obtain the path of
      * @return the path for that file
      * @see File#toPath()
      */

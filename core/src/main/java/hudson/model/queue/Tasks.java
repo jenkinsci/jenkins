@@ -99,7 +99,7 @@ public class Tasks {
      * in case some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Item)} takes (for example) actions into consideration.
      * @param t a task
      * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate2(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication2()}
-     * @since TODO
+     * @since 2.266
      */
     public static @NonNull Authentication getAuthenticationOf2(@NonNull Task t) {
         for (QueueItemAuthenticator qia : QueueItemAuthenticatorProvider.authenticators()) {

@@ -29,7 +29,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.Util;
-import hudson.slaves.WorkspaceList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;

@@ -103,16 +103,12 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.13</version>
+      <version>5.15</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>ssh-cli-auth</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -133,10 +129,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>systemd-slave-installer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.modules</groupId>
-      <artifactId>sshd</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
@@ -284,7 +276,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ldap</artifactId>
-                  <version>1.26</version> <!-- TODO or pick up https://github.com/jenkinsci/ldap-plugin/pull/49 -->
+                  <version>2.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -391,6 +383,12 @@ THE SOFTWARE.
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>jaxb</artifactId>
                   <version>2.3.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.modules</groupId>
+                  <artifactId>sshd</artifactId>
+                  <version>${sshd.plugin.version}</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -598,7 +596,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.6</version>
+            <version>1.11.2</version>
             <executions>
 
               <execution>

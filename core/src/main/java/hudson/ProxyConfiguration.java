@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.Lists;
 import com.thoughtworks.xstream.XStream;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
@@ -45,6 +44,7 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -215,7 +215,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     public static List<Pattern> getNoProxyHostPatterns(String noProxyHost) {
         if (noProxyHost==null)  return Collections.emptyList();
 
-        List<Pattern> r = Lists.newArrayList();
+        List<Pattern> r = new ArrayList<>();
         for (String s : noProxyHost.split("[ \t\n,|]+")) {
             if (s.length()==0)  continue;
             r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));

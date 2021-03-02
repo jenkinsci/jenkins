@@ -30,8 +30,6 @@ import hudson.Functions;
 import hudson.Launcher;
 import hudson.console.ConsoleLogFilter;
 import hudson.console.LineTransformationOutputStream;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -48,14 +46,10 @@ import hudson.scm.ChangeLogParser;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.slaves.ComputerLauncher;
-import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.tasks.Maven;
 import hudson.tasks.Shell;
-import hudson.tasks.Maven.MavenInstallation;
-import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,13 +67,11 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.ToolInstallations;
 
 public class SimpleBuildWrapperTest {
 
@@ -164,18 +156,6 @@ public class SimpleBuildWrapperTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithDisposer());
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
-        r.assertLogContains("ran DisposerImpl #1", b);
-        r.assertLogNotContains("ran DisposerImpl #2", b);
-    }
-    @Test public void disposerWithMaven() throws Exception {
-        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
-        r.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(maven);
-        MavenModuleSet p = r.createProject(MavenModuleSet.class, "p");
-        p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
-        p.setIsFingerprintingDisabled(true);
-        p.setIsArchivingDisabled(true);
-        p.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
-        MavenModuleSetBuild b = p.scheduleBuild2(0).get();
         r.assertLogContains("ran DisposerImpl #1", b);
         r.assertLogNotContains("ran DisposerImpl #2", b);
     }

@@ -49,7 +49,7 @@ import java.util.Base64;
  * @since 1.162 and restricted since TODO
  */
 @Restricted(NoExternalUse.class)
-@RestrictedSince("TODO")
+@RestrictedSince("2.236")
 public class Protector {
     private static final String ALGORITHM_MODE = "AES/CBC/PKCS5Padding";
     private static final String ALGORITHM = "AES";

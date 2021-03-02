@@ -73,9 +73,7 @@ public class WaitNodeOfflineCommandTest {
     public void waitNodeOfflineShouldSucceedOnOfflineNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().setTemporarilyOffline(true);
-        while (true) {
-            if(slave.toComputer().isOffline())
-                break;
+        while (!slave.toComputer().isOffline()) {
             Thread.sleep(100);
         }
 
@@ -102,9 +100,7 @@ public class WaitNodeOfflineCommandTest {
     public void waitNodeOfflineShouldSucceedOnDisconnectedNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().disconnect();
-        while (true) {
-            if(slave.toComputer().isOffline())
-                break;
+        while (!slave.toComputer().isOffline()) {
             Thread.sleep(100);
         }
 

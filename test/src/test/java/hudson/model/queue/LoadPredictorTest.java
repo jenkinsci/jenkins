@@ -23,13 +23,11 @@
  */
 package hudson.model.queue;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import hudson.model.Action;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Node;
@@ -93,7 +91,7 @@ public class LoadPredictorTest {
     }
 
     private BuildableItem wrap(Queue.Task t) {
-        return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<Action>()));
+        return new BuildableItem(new WaitingItem(new GregorianCalendar(),t,new ArrayList<>()));
     }
 
     /**

@@ -45,6 +45,12 @@ THE SOFTWARE.
         <j:choose>
           <j:when test="${empty(files)}">
             ${%No files in directory}
+           <j:if test="${showSymlinkWarning}">
+             <p>
+                <img id="symlinkalert" src="${imagesURL}/16x16/warning.png"/>
+               ${%Symlinks are hidden}
+             </p>
+            </j:if>
           </j:when>
           <j:otherwise>
             <table class="fileList">
@@ -105,7 +111,13 @@ THE SOFTWARE.
                   </div>
                 </td>
               </tr>
-            </table>
+           </table>
+           <j:if test="${showSymlinkWarning}">
+             <p>
+                <img id="alert" src="${imagesURL}/16x16/warning.png"/>
+               ${%Symlinks are hidden}
+             </p>
+            </j:if>
           </j:otherwise>
         </j:choose>
       </div>

@@ -55,7 +55,6 @@ import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
 
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
