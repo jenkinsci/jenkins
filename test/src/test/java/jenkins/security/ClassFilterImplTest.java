@@ -158,7 +158,6 @@ public class ClassFilterImplTest {
     public void moduleClassesShouldBeWhitelisted() throws Exception {
         ClassFilterImpl filter = new ClassFilterImpl();
         filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
-        filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }
 
     @TestExtension("xstreamRequiresWhitelist")

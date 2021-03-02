@@ -92,6 +92,7 @@ THE SOFTWARE.
 
     <matrix-auth.version>2.6.5</matrix-auth.version>
     <matrix-project.version>1.18</matrix-project.version>
+    <instance-identity.version>3.0</instance-identity.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
