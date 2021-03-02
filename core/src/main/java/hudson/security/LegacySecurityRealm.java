@@ -101,6 +101,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
             DESCRIPTOR = this;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.LegacySecurityRealm_Displayname();
         }

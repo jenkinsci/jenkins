@@ -163,6 +163,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         viewGroupMixIn.addView(view);
     }
 
+    @Override
     public View getPrimaryView() {
         return viewGroupMixIn.getPrimaryView();
     }
@@ -240,6 +241,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.get().getViewsTabBar();
     }
 
+    @Override
     public List<Action> getViewActions() {
         // Jenkins.get().getViewActions() are tempting but they are in a wrong scope
         return Collections.emptyList();

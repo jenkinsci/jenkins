@@ -1926,6 +1926,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return this; // cancel out super.writeReplace()
             }
 
+            @Override
             public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
                 return proxy.act(callable);
             }

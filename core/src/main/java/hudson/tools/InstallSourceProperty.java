@@ -64,6 +64,7 @@ public class InstallSourceProperty extends ToolProperty<ToolInstallation> {
 
     @Extension @Symbol("installSource")
     public static class DescriptorImpl extends ToolPropertyDescriptor {
+        @Override
         public String getDisplayName() {
             return Messages.InstallSourceProperty_DescriptorImpl_displayName();
         }

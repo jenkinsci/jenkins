@@ -59,6 +59,7 @@ public abstract class CaptchaSupport extends AbstractDescribableImpl<CaptchaSupp
     
     abstract public void generateImage(String id, OutputStream ios) throws IOException;
 
+    @Override
     public CaptchaSupportDescriptor getDescriptor() {
         return (CaptchaSupportDescriptor)super.getDescriptor();
     }

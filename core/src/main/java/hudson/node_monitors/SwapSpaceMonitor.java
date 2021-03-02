@@ -99,6 +99,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
             return new MonitorTask();
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.SwapSpaceMonitor_DisplayName();
         }

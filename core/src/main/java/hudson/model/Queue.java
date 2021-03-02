@@ -1377,6 +1377,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param runnable the operation to perform.
      * @since 1.592
      */
+    @Override
     protected void _withLock(Runnable runnable) {
         lock.lock();
         try {
@@ -1417,6 +1418,7 @@ public class Queue extends ResourceController implements Saveable {
      * @throws T the exception of the callable
      * @since 1.592
      */
+    @Override
     protected <V, T extends Throwable> V _withLock(hudson.remoting.Callable<V, T> callable) throws T {
         lock.lock();
         try {
@@ -1436,6 +1438,7 @@ public class Queue extends ResourceController implements Saveable {
      * @throws Exception if the callable throws an exception.
      * @since 1.592
      */
+    @Override
     protected <V> V _withLock(java.util.concurrent.Callable<V> callable) throws Exception {
         lock.lock();
         try {

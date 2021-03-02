@@ -48,24 +48,29 @@ public abstract class QueueTaskFilter implements Queue.Task {
         this.base = base;
     }
 
+    @Override
     public Label getAssignedLabel() {
         return base.getAssignedLabel();
     }
 
+    @Override
     public Node getLastBuiltOn() {
         return base.getLastBuiltOn();
     }
 
     @Deprecated
+    @Override
     public boolean isBuildBlocked() {
         return base.isBuildBlocked();
     }
 
     @Deprecated
+    @Override
     public String getWhyBlocked() {
         return base.getWhyBlocked();
     }
 
+    @Override
     public CauseOfBlockage getCauseOfBlockage() {
         return base.getCauseOfBlockage();
     }
@@ -78,6 +83,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getFullDisplayName();
     }
 
+    @Override
     public long getEstimatedDuration() {
         return base.getEstimatedDuration();
     }
@@ -98,6 +104,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getUrl();
     }
 
+    @Override
     public boolean isConcurrentBuild() {
         return base.isConcurrentBuild();
     }
@@ -106,14 +113,17 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getDisplayName();
     }
 
+    @Override
     public ResourceList getResourceList() {
         return base.getResourceList();
     }
 
+    @Override
     public Collection<? extends SubTask> getSubTasks() {
         return base.getSubTasks();
     }
 
+    @Override
     public Object getSameNodeConstraint() {
         return base.getSameNodeConstraint();
     }

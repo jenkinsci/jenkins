@@ -215,6 +215,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             return MIN;
         }
 
+        @Override
         public long getInitialDelay() {
             return MIN - TimeUnit.SECONDS.toMillis(Calendar.getInstance().get(Calendar.SECOND));
         }

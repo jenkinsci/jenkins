@@ -1937,6 +1937,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 this.message = message;
             }
 
+            @Override
             public String getMessage() {
                 return message.toString();
             }

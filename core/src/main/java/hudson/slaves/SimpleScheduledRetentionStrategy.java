@@ -245,6 +245,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
 
     @Extension @Symbol("schedule")
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+        @Override
         public String getDisplayName() {
             return Messages.SimpleScheduledRetentionStrategy_displayName();
         }

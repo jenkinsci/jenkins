@@ -162,6 +162,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * Returns {@link BuildStepMonitor#NONE} by default, as {@link JobProperty}s normally don't depend
      * on its previous result.
      */
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }

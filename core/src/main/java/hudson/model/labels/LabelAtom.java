@@ -132,6 +132,7 @@ public class LabelAtom extends Label implements Saveable {
     /**
      * @since 1.580
      */
+    @Override
     public String getDescription() {
         return description;
     }
@@ -304,10 +305,12 @@ public class LabelAtom extends Label implements Saveable {
             super(XSTREAM);
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return LabelAtom.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             if (context.get(IN_NESTED)==null) {
                 context.put(IN_NESTED,true);
@@ -320,6 +323,7 @@ public class LabelAtom extends Label implements Saveable {
                 leafLabelConverter.marshal(source,writer,context);
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             if (context.get(IN_NESTED)==null) {
                 context.put(IN_NESTED,true);

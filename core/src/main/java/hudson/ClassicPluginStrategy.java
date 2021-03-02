@@ -529,6 +529,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                  * Forces the fixed timestamp for directories to make sure
                  * classes.jar always get a consistent checksum.
                  */
+                @Override
                 protected void zipDir(Resource dir, ZipOutputStream zOut, String vPath,
                                       int mode, ZipExtraField[] extra)
                     throws IOException {

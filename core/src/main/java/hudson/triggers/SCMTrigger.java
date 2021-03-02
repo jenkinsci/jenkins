@@ -294,6 +294,7 @@ public class SCMTrigger extends Trigger<Item> {
             return r;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.SCMTrigger_DisplayName();
         }

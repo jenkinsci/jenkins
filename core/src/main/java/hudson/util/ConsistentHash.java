@@ -158,6 +158,7 @@ public class ConsistentHash<T> {
                     return (T) owner[(start + (pos++)) % owner.length];
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }

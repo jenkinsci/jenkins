@@ -52,6 +52,7 @@ public class PluginFirstClassLoader
 
     private List<URL> urls = new ArrayList<>();
 
+    @Override
     public void addPathFiles( Collection<File> paths )
         throws IOException
     {

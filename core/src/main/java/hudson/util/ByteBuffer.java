@@ -46,6 +46,7 @@ public class ByteBuffer extends OutputStream {
     private int size = 0;
 
 
+    @Override
     public synchronized void write(byte[] b, int off, int len) throws IOException {
         ensureCapacity(len);
         System.arraycopy(b,off,buf,size,len);
@@ -94,6 +95,7 @@ public class ByteBuffer extends OutputStream {
                 }
             }
 
+            @Override
             public int read(byte[] b, int off, int len) throws IOException {
                 synchronized(ByteBuffer.this) {
                     if(size==pos)
@@ -107,12 +109,14 @@ public class ByteBuffer extends OutputStream {
             }
 
 
+            @Override
             public int available() throws IOException {
                 synchronized(ByteBuffer.this) {
                     return size-pos;
                 }
             }
 
+            @Override
             public long skip(long n) throws IOException {
                 synchronized(ByteBuffer.this) {
                     int diff = (int) Math.min(n,size-pos);

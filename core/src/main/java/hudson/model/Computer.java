@@ -262,6 +262,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns the transient {@link Action}s associated with the computer.
      */
     @SuppressWarnings("deprecation")
+    @Override
     public List<Action> getActions() {
         List<Action> result = new ArrayList<>(super.getActions());
         synchronized (this) {

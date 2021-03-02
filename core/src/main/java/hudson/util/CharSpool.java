@@ -63,6 +63,7 @@ public final class CharSpool extends Writer {
         pos = 0;
     }
 
+    @Override
     public void write(int c) {
         renew();
         last[pos++] = (char)c;

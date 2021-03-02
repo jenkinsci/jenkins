@@ -47,6 +47,7 @@ public class MavenErrorNote extends ConsoleNote {
 
     @Extension @Symbol("mavenErrors")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @Override
         public String getDisplayName() {
             return "Maven Errors";
         }

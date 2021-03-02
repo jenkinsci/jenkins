@@ -101,6 +101,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
          *      and reports a nice error message.
          * @since 1.150
          */
+        @Override
         public boolean tearDown( AbstractBuild build, BuildListener listener ) throws IOException, InterruptedException {
             if (build instanceof Build)
                 return tearDown((Build)build, listener);

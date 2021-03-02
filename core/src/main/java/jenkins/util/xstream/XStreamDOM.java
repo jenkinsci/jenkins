@@ -373,6 +373,7 @@ public class XStreamDOM {
         public void close() {
         }
 
+        @Override
         public String peekNextChild() {
             return current().peekNextChild();
         }
@@ -457,6 +458,7 @@ public class XStreamDOM {
         public void close() {
         }
 
+        @Override
         public HierarchicalStreamWriter underlyingWriter() {
             return this;
         }

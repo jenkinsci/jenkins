@@ -165,6 +165,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return Items.fromNameList(owner.getParent(), childProjects, (Class<Job<?, ?>>) (Class) Job.class);
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
@@ -355,6 +356,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @Extension @Symbol("downstream")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @Override
         public String getDisplayName() {
             return Messages.BuildTrigger_DisplayName();
         }
