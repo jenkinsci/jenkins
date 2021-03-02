@@ -658,7 +658,7 @@ public class PluginManagerTest {
         Assert.assertNull("This test requires the plugin with ID 'legacy' to not exist in update sites", uc.getPlugin("legacy"));
 
         // ensure data is loaded - probably unnecessary, but closer to reality
-        Assert.assertSame(uc.getSite("default").updateDirectlyNow().kind, FormValidation.Kind.OK);
+        Assert.assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
 
         // This would throw NPE
         uc.getPluginsWithUnavailableUpdates();

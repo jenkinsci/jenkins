@@ -306,8 +306,8 @@ public class ParametersAction2Test {
 
         assertEquals(1, p1.getLastBuild().getAction(ParametersAction.class).getParameters().size());
         assertEquals(1, p2.getLastBuild().getAction(ParametersAction.class).getParameters().size());
-        assertEquals(p1.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p1");
-        assertEquals(p2.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p2");
+        assertEquals("for p1", p1.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue());
+        assertEquals("for p2", p2.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue());
     }
 
     @Issue("JENKINS-49573")

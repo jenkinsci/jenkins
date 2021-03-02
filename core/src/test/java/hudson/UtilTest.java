@@ -148,7 +148,7 @@ public class UtilTest {
     public void testEncodeSpaces() {
         final String urlWithSpaces = "http://hudson/job/Hudson Job";
         String encoded = Util.encode(urlWithSpaces);
-        assertEquals(encoded, "http://hudson/job/Hudson%20Job");
+        assertEquals("http://hudson/job/Hudson%20Job", encoded);
     }
 
     /**

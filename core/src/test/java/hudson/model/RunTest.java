@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -115,24 +116,24 @@ public class RunTest {
     @Test
     public void artifactListDisambiguation1() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
-        assertEquals(a.get(0).getDisplayPath(), "c.xml");
-        assertEquals(a.get(1).getDisplayPath(), "g.xml");
-        assertEquals(a.get(2).getDisplayPath(), "j.xml");
+        assertEquals("c.xml", a.get(0).getDisplayPath());
+        assertEquals("g.xml", a.get(1).getDisplayPath());
+        assertEquals("j.xml", a.get(2).getDisplayPath());
     }
 
     @Test
     public void artifactListDisambiguation2() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
-        assertEquals(a.get(0).getDisplayPath(), "c.xml");
-        assertEquals(a.get(1).getDisplayPath(), "f/g.xml");
-        assertEquals(a.get(2).getDisplayPath(), "i/g.xml");
+        assertEquals("c.xml", a.get(0).getDisplayPath());
+        assertEquals("f/g.xml", a.get(1).getDisplayPath());
+        assertEquals("i/g.xml", a.get(2).getDisplayPath());
     }
 
     @Test
     public void artifactListDisambiguation3() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
-        assertEquals(a.get(0).getDisplayPath(), "a.xml");
-        assertEquals(a.get(1).getDisplayPath(), "a/a.xml");
+        assertEquals("a.xml", a.get(0).getDisplayPath());
+        assertEquals("a/a.xml", a.get(1).getDisplayPath());
     }
 
     @Issue("JENKINS-26777")
@@ -267,7 +268,7 @@ public class RunTest {
         treeSet.add(r1);
         treeSet.add(r2);
 
-        assertTrue(r1.compareTo(r2) != 0);
+        assertNotEquals(0, r1.compareTo(r2));
         assertEquals(2, treeSet.size());
     }
 

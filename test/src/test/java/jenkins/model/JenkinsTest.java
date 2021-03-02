@@ -694,7 +694,7 @@ public class JenkinsTest {
         j.jenkins.save();
         VersionNumber storedVersion = Jenkins.getStoredVersion();
         assertNotNull(storedVersion);
-        assertEquals(storedVersion.toString(), "1.0");
+        assertEquals("1.0", storedVersion.toString());
 
         Jenkins.VERSION = null;
         j.jenkins.save();

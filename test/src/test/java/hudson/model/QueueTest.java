@@ -1016,7 +1016,7 @@ public class QueueTest {
             if (element.getNodeName().equals("task")) {
                 for (DomNode child: ((DomElement) element).getChildNodes()) {
                     if (child.getNodeName().equals("name")) {
-                        assertEquals(child.asText(), "project");
+                        assertEquals("project", child.asText());
                     } else if (child.getNodeName().equals("url")) {
                         assertNotNull(child.asText());
                     }

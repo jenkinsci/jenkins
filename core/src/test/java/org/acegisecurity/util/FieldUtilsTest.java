@@ -14,7 +14,7 @@ public class FieldUtilsTest {
     public void setProtectedFieldValue_Should_fail_silently_to_set_public_final_fields_in_InnerClass() throws Exception {
         InnerClassWithPublicFinalField sut = new InnerClassWithPublicFinalField();
         FieldUtils.setProtectedFieldValue("myField", sut, "test");
-        assertEquals(sut.getMyField(), "original");
+        assertEquals("original", sut.getMyField());
     }
 
     @Test
@@ -22,14 +22,14 @@ public class FieldUtilsTest {
     public void setProtectedFieldValue_Should_fail_silently_to_set_public_final_fields_in_OuterClass() throws Exception {
         OuterClassWithPublicFinalField sut = new OuterClassWithPublicFinalField();
         FieldUtils.setProtectedFieldValue("myField", sut, "test");
-        assertEquals(sut.getMyField(), "original");
+        assertEquals("original", sut.getMyField());
     }
 
     @Test
     public void setProtectedFieldValue_Should_Succeed() throws Exception {
         InnerClassWithProtectedField sut = new InnerClassWithProtectedField();
         FieldUtils.setProtectedFieldValue("myProtectedField", sut, "test");
-        assertEquals(sut.getMyNonFinalField(), "test");
+        assertEquals("test", sut.getMyNonFinalField());
     }
 
     @Test

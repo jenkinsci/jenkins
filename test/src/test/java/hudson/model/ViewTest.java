@@ -196,7 +196,7 @@ public class ViewTest {
         j.submit(form);
 
         assertTrue(proxyView instanceof ProxyView);
-        assertEquals(((ProxyView) proxyView).getProxiedViewName(), "listView");
+        assertEquals("listView", ((ProxyView) proxyView).getProxiedViewName());
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
     }
 
