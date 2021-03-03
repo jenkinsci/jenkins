@@ -115,7 +115,7 @@ THE SOFTWARE.
     <powermock.version>2.0.9</powermock.version>
 
     <!-- SSHD plugin version -->
-    <sshd.plugin.version>3.0.1</sshd.plugin.version>
+    <sshd.plugin.version>3.0.3</sshd.plugin.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
