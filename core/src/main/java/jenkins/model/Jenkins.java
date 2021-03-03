@@ -5480,6 +5480,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
     private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
+        "404", // .jelly
         "login", // .jelly
         "loginError", // .jelly
         "logout", // #doLogout

@@ -265,6 +265,10 @@ THE SOFTWARE.
     <exception-type>java.lang.Throwable</exception-type>
     <location>/oops</location>
   </error-page>
+  <error-page>
+    <error-code>404</error-code>
+    <location>/404</location>
+  </error-page>
 
   <session-config>
     <cookie-config>
