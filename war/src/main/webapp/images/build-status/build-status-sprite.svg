@@ -28,14 +28,9 @@
 		<path d="M10.843 16.894L6.6 12.65l2.121-2.121 2.121 2.121 4.951-4.95 2.122 2.121-7.072 7.073z"></path>
 	</symbol>
 
-	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-unstable">
-		<g transform="translate(6.500000, 5.800000)" stroke="none" stroke-width="1" fill-rule="evenodd">
-			<path d="M8.20952565,2.68742667e-12 L9.85,1.61515262 L6.02142305,5.38484738 L4.3809487,7 L1.1,3.76969475 L2.74047435,2.15454213 L4.38,3.769 L8.20952565,2.68742667e-12 Z" id="Combined-Shape-Copy"></path>
-			<circle id="Oval-Copy-14" cx="5.5" cy="10.4" r="1.5"></circle>
-			<circle id="Oval-Copy-15" cx="9.5" cy="10.4" r="1.5"></circle>
-			<circle id="Oval-Copy-16" cx="1.5" cy="10.4" r="1.5"></circle>
-		</g>
-	</symbol>
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" id="last-unstable">
+		<path fill="currentColor" d="M15.504 14.5c.55 0 .774-.384.498-.86l-4.504-7.78c-.275-.475-.72-.476-.996 0l-4.504 7.78c-.275.475-.053.86.498.86h9.008zM11.5 13h-1v-1h1v1zm0-2h-1V9h1v2z" fill-rule="evenodd"/>
+	</svg>
 
 	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-aborted">
 		<g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd">
