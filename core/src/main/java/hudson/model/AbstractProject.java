@@ -364,6 +364,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @since 1.319
      */
     @Exported
+    @Override
     public boolean isConcurrentBuild() {
         return concurrentBuild;
     }
@@ -377,6 +378,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * If this project is configured to be always built on this node,
      * return that {@link Node}. Otherwise null.
      */
+    @Override
     public @CheckForNull Label getAssignedLabel() {
         if(canRoam)
             return null;
@@ -452,6 +454,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @since 1.401
      */
+    @Override
     public String getBuildNowText() {
         // For compatibility, still use the deprecated replacer if specified.
         return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, ParameterizedJobMixIn.ParameterizedJob.super.getBuildNowText());
@@ -595,6 +598,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return b != null ? b.getModuleRoots() : null;
     }
 
+    @Override
     public int getQuietPeriod() {
         return quietPeriod!=null ? quietPeriod : Jenkins.get().getQuietPeriod();
     }
@@ -998,6 +1002,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      null if no information is available (for example,
      *      if no build was done yet.)
      */
+    @Override
     public Node getLastBuiltOn() {
         // where was it built on?
         AbstractBuild b = getLastBuild();
@@ -1007,6 +1012,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return b.getBuiltOn();
     }
 
+    @Override
     public Object getSameNodeConstraint() {
         return this; // in this way, any member that wants to run with the main guy can nominate the project itself
     }
@@ -1122,6 +1128,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return null;
     }
 
+    @Override
     public List<SubTask> getSubTasks() {
         List<SubTask> r = new ArrayList<>();
         r.add(this);
@@ -1167,6 +1174,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * List of necessary resources to perform the build of this project.
      */
+    @Override
     public ResourceList getResourceList() {
         final Set<ResourceActivity> resourceActivities = getResourceActivities();
         final List<ResourceList> resourceLists = new ArrayList<>(1 + resourceActivities.size());

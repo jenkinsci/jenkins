@@ -135,6 +135,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         public Downloadable createDownloadable() {
             final DescriptorImpl delegate = this;
             return new Downloadable(getId()) {
+                @Override
                 public JSONObject reduce(List<JSONObject> jsonList) {
                     if (isDefaultSchema(jsonList)) {
                         return delegate.reduce(jsonList);
@@ -200,6 +201,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * <p>
          * By default we use the fully-qualified class name of the {@link DownloadFromUrlInstaller} subtype.
          */
+        @Override
         public String getId() {
             return clazz.getName().replace('$','.');
         }

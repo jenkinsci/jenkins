@@ -111,6 +111,7 @@ public class BatchFile extends CommandInterpreter {
             return "/help/project-config/batch.html";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.BatchFile_DisplayName();
         }
