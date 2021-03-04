@@ -87,8 +87,8 @@ THE SOFTWARE.
             <div colspan="3">
               <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
                 <b>${descriptor.displayName}</b>
-                <f:helpLink url="${help}"/>
               </div>
+              <f:helpLink url="${help}"/>
             </div>
           </div>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
