@@ -45,7 +45,7 @@ THE SOFTWARE.
           <j:set var="browser" value="${changeSet.browser}"/>
           <j:set var="hadChanges" value="${true}"/>
           <h2><a href="${b.number}/changes">${b.displayName}
-            (<i:formatDate value="${b.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
+            (<formatDate value="${b.timestamp.time.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</a></h2>
 
           <ol>
             <j:forEach var="c" items="${changeSet.iterator()}" varStatus="loop">

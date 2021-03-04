@@ -8,6 +8,7 @@ import jsModules from 'jenkins-js-modules';
 $(function() {
     loadScripts();
     loadCSS();
+    reformatDates();
 });
 
 function loadScripts() {
@@ -34,4 +35,19 @@ function loadCSS() {
             $(this).remove();
         }
     });
+}
+
+function reformatDates() {
+    const formatDateElements = document.getElementsByTagName('formatDate');
+    for (let x of formatDateElements) {
+        const dateValue = x.getAttribute('value');
+        const dateStyle = x.getAttribute('dateStyle');
+        const timeStyle = x.getAttribute('timeStyle');
+
+        const dt = new Date(parseInt(dateValue));
+
+        const options = {dateStyle, timeStyle};
+        let dateTimeFormat = new Intl.DateTimeFormat(navigator.language, options);
+        x.innerHTML = dateTimeFormat.format(dt);
+    }
 }

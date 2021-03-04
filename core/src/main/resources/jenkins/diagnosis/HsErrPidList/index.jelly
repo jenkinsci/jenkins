@@ -46,7 +46,7 @@ THE SOFTWARE.
               </a>
             </td>
             <td data="${f.lastModified}">
-              <i:formatDate value="${f.lastModifiedDate}" type="both" dateStyle="medium" timeStyle="medium"/>
+              <formatDate value="${f.lastModifiedDate.time}" type="both" dateStyle="medium" timeStyle="medium"/>
               <st:nbsp />
               (${%ago(f.timeSpanString)})
             </td>

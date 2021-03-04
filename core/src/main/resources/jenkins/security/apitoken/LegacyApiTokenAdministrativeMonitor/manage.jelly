@@ -62,7 +62,7 @@ THE SOFTWARE.
                                 <j:set var="creationDateFormat" value="${%NoCreationDate}" />
                                 <j:set var="creationDateValue" value="${%NoCreationDateValue}" />
                                 <j:if test="${legacyToken.creationDate != null}">
-                                    <i:formatDate var="creationDateFormat" value="${legacyToken.creationDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                    <formatDate var="creationDateFormat" value="${legacyToken.creationDate.time}" type="both" dateStyle="medium" timeStyle="medium" />
                                     <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc. -->
                                     <j:set var="creationDateValue" value="${legacyStats.numDaysCreation}" />
                                 </j:if>
@@ -70,7 +70,7 @@ THE SOFTWARE.
                                 <j:set var="lastUseDateFormat" value="${%NoLastUse}" />
                                 <j:set var="lastUseDateValue" value="${%NoLastUseValue}" />
                                 <j:if test="${legacyStats.lastUseDate != null}">
-                                    <i:formatDate var="lastUseDateFormat" value="${legacyStats.lastUseDate}" type="both" dateStyle="medium" timeStyle="medium" />
+                                    <formatDate var="lastUseDateFormat" value="${legacyStats.lastUseDate.time}" type="both" dateStyle="medium" timeStyle="medium" />
                                     <!--TODO convert to "Today", "Tomorrow", "4 days ago", "2 weeks ago", etc. -->
                                     <j:set var="lastUseDateValue" value="${legacyStats.numDaysUse}" />
                                 </j:if>
