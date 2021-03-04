@@ -29,5 +29,5 @@ THE SOFTWARE.
     By default we further delegate it to clazz, but this hook allows Descriptors to
     do something more sophisticated if needed.
   -->
-  <st:include page="newInstanceDetail.jelly" class="${it.clazz}" optional="true"/>
+  <st:include page="newInstanceDetail.jelly" clazz="${it.clazz}" optional="true"/>
 </j:jelly>

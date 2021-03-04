@@ -75,7 +75,7 @@ THE SOFTWARE.
 
   <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}" minimum="${attrs.minimum ?: 0}" enableTopButton="${attrs.enableTopButton}">
     <div style="width:100%">
-      <st:include page="config.jelly" class="${descriptor.clazz}" />
+      <st:include page="config.jelly" clazz="${descriptor.clazz}" />
       <d:invokeBody/>
     </div>
   </f:repeatable>

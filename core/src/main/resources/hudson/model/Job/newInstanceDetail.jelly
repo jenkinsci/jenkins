@@ -29,5 +29,5 @@ THE SOFTWARE.
 
     "it" is a descriptor when this file is called.
   -->
-  <st:include page="newJobDetail.jelly" class="${it.clazz}" optional="true"/>
+  <st:include page="newJobDetail.jelly" clazz="${it.clazz}" optional="true"/>
 </j:jelly>

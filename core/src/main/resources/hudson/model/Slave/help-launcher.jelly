@@ -32,7 +32,7 @@ THE SOFTWARE.
         <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}">
           <dt><b>${d.displayName}</b></dt>
           <dd>
-            <st:include class="${d.clazz}" page="help.jelly" optional="true"/>
+            <st:include clazz="${d.clazz}" page="help.jelly" optional="true"/>
           </dd>
         </j:forEach>
       </dl>

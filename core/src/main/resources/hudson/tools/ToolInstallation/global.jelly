@@ -34,7 +34,7 @@ THE SOFTWARE.
           >
             <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
             <div>
-              <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
+              <st:include page="config.jelly" from="${descriptor}" clazz="${descriptor.clazz}"/>
               <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
               <l:isAdmin>
                 <f:entry title="">

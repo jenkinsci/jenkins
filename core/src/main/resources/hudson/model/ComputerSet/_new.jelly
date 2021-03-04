@@ -38,7 +38,7 @@ THE SOFTWARE.
 
         <!-- main body of the configuration -->
         <j:set var="it" value="${null}" />
-        <st:include class="${requestScope.descriptor.clazz}" page="configure-entries.jelly" />
+        <st:include clazz="${requestScope.descriptor.clazz}" page="configure-entries.jelly" />
         
         <f:block>
           <input type="hidden" name="type" value="${request.getParameter('mode')}"/>

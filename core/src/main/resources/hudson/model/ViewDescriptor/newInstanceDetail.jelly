@@ -3,4 +3,4 @@
   load it from there
 -->
 <?jelly escape-by-default='true'?>
-<st:include page="newViewDetail.jelly" class="${it.clazz}" xmlns:st="jelly:stapler"/>
+<st:include page="newViewDetail.jelly" clazz="${it.clazz}" xmlns:st="jelly:stapler"/>
