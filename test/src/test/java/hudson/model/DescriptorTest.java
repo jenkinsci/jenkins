@@ -131,7 +131,7 @@ public class DescriptorTest {
         rule.configRoundtrip(p);
         rule.assertLogContains("[D1, D2]", rule.buildAndAssertSuccess(p));
     }
-    public static abstract class D extends AbstractDescribableImpl<D> {
+    public abstract static class D extends AbstractDescribableImpl<D> {
         @Override public String toString() {return getDescriptor().getDisplayName();}
     }
     public static class D1 extends D {

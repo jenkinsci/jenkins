@@ -150,7 +150,7 @@ public final class CronTab {
         return true;
     }
 
-    private static abstract class CalendarField {
+    private abstract static class CalendarField {
         /**
          * {@link Calendar} field ID.
          */

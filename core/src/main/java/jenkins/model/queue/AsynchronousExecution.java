@@ -102,7 +102,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
      * has not been called yet.
      */
     @CheckForNull
-    public synchronized final Executor getExecutor() {
+    public final synchronized Executor getExecutor() {
         return executor;
     }
 
@@ -112,7 +112,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
      * after releasing any problematic locks.
      */
     @Restricted(NoExternalUse.class)
-    public synchronized final void setExecutorWithoutCompleting(@NonNull Executor executor) {
+    public final synchronized void setExecutorWithoutCompleting(@NonNull Executor executor) {
         assert this.executor == null;
         this.executor = executor;
     }
@@ -122,7 +122,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
      * Must be called after {@link #setExecutorWithoutCompleting(Executor)}.
      */
     @Restricted(NoExternalUse.class)
-    public synchronized final void maybeComplete() {
+    public final synchronized void maybeComplete() {
         assert this.executor != null;
         if (result != null) {
             executor.completedAsynchronous(result != NULL ? result : null);
@@ -134,7 +134,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
      * To be called when the task is actually complete.
      * @param error normally null (preferable to handle errors yourself), but may be specified to simulate an exception from {@link Executable#run}, as per {@link ExecutorListener#taskCompletedWithProblems}
      */
-    public synchronized final void completed(@CheckForNull Throwable error) {
+    public final synchronized void completed(@CheckForNull Throwable error) {
         if (executor!=null) {
             executor.completedAsynchronous(error);
         } else {

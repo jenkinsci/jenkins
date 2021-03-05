@@ -242,7 +242,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         final VersionNumber min;
         final VersionNumber max;
         final boolean single;
-        final public String extra;
+        public final String extra;
 
         public VersionRange(VersionRange previous, String version, String extra) {
             if (previous == null) {

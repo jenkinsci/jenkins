@@ -202,7 +202,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.607
      * @see Executor#resetWorkUnit(String)
      */
-    private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList<>());
+    private final transient List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * This method captures the information of a request to terminate a computer instance. Method is public as

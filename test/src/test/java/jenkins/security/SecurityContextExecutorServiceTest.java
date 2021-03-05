@@ -47,7 +47,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class SecurityContextExecutorServiceTest {
 
-    final private int NUM_THREADS = 10;
+    private final int NUM_THREADS = 10;
     private ExecutorService wrappedService = null;
     private SecurityContext systemContext = null;
     private SecurityContext userContext = null;

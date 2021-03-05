@@ -67,9 +67,9 @@ public class MissingClassTelemetry extends Telemetry {
     private static MissingClassEvents events = new MissingClassEvents();
 
     // When we begin to gather these data
-    private final static LocalDate START = LocalDate.of(2019, 4, 1);
+    private static final LocalDate START = LocalDate.of(2019, 4, 1);
     // Gather for 2 years (who knows how long people will need to migrate to Java 11)
-    private final static LocalDate END = START.plusMonths(24);
+    private static final LocalDate END = START.plusMonths(24);
 
     // The types of exceptions which can be reported
     private static final Set reportableExceptions =
@@ -82,7 +82,7 @@ public class MissingClassTelemetry extends Telemetry {
      * Packages removed from java8 up to java11
      * https://blog.codefx.org/java/java-11-migration-guide/
      */
-    private final static String[] MOVED_PACKAGES = new String[] {"javax.activation", "javax.annotation", "javax.jws",
+    private static final String[] MOVED_PACKAGES = new String[] {"javax.activation", "javax.annotation", "javax.jws",
             "javax.rmi", "javax.transaction", "javax.xml.bind", "javax.xml.soap", "javax.xml.ws", "org.omg",
             "javax.activity", "com.sun", "sun"};
 

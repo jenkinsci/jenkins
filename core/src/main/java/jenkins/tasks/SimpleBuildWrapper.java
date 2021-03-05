@@ -208,7 +208,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * An optional callback to run at the end of the wrapped block.
      * Must be safely serializable, so it receives runtime context comparable to that of the original setup.
      */
-    public static abstract class Disposer implements Serializable {
+    public abstract static class Disposer implements Serializable {
 
         @CheckForNull
         private Boolean wrapperRequiresWorkspace;

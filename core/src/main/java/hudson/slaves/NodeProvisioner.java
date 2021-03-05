@@ -372,7 +372,7 @@ public class NodeProvisioner {
      * Extension point for node provisioning strategies.
      * @since 1.588
      */
-    public static abstract class Strategy implements ExtensionPoint {
+    public abstract static class Strategy implements ExtensionPoint {
 
         /**
          * Called by {@link NodeProvisioner#update()} to apply this strategy against the specified state.

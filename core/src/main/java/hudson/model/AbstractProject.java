@@ -152,7 +152,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * State returned from {@link SCM#poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)}.
      */
-    private volatile transient SCMRevisionState pollingBaseline = null;
+    private transient volatile SCMRevisionState pollingBaseline = null;
 
     private transient LazyBuildMixIn<P,R> buildMixIn;
 
@@ -1877,7 +1877,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *
      * @since 1.294
      */
-    public static abstract class AbstractProjectDescriptor extends TopLevelItemDescriptor {
+    public abstract static class AbstractProjectDescriptor extends TopLevelItemDescriptor {
         /**
          * {@link AbstractProject} subtypes can override this method to veto some {@link Descriptor}s
          * from showing up on their configuration screen. This is often useful when you are building
@@ -2048,7 +2048,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * @deprecated Use {@link jenkins.model.labels.LabelValidator} instead.
      */
     @Deprecated
-    public static abstract class LabelValidator implements ExtensionPoint {
+    public abstract static class LabelValidator implements ExtensionPoint {
 
         /**
          * Check the use of the label within the specified context.

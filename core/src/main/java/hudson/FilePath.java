@@ -1136,7 +1136,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * The code is the same as {@link SlaveToMasterFileCallable}, but used as a marker to
      * designate those impls that use {@link FilePathFilter}.
      */
-    /*package*/ static abstract class SecureFileCallable<T> extends SlaveToMasterFileCallable<T> {
+    /*package*/ abstract static class SecureFileCallable<T> extends SlaveToMasterFileCallable<T> {
     }
 
     /**
@@ -1174,7 +1174,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.482
      * @see AbstractInterceptorCallableWrapper
      */
-    public static abstract class FileCallableWrapperFactory implements ExtensionPoint {
+    public abstract static class FileCallableWrapperFactory implements ExtensionPoint {
 
         public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
 
@@ -1185,7 +1185,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
      * @since 1.482
      */
-    public static abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
+    public abstract static class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
         private static final long serialVersionUID = 1L;
 
         private final DelegatingCallable<T, IOException> callable;

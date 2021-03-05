@@ -78,7 +78,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
     public final CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
-    private final static TargetComparator TARGET_COMPARATOR = new TargetComparator();
+    private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
     
     @Restricted(NoExternalUse.class)
     Target[] orderedTargets() {

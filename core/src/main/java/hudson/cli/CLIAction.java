@@ -76,7 +76,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(CLIAction.class.getName());
 
-    private transient final Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+    private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
 
     public String getIconFileName() {
         return null;

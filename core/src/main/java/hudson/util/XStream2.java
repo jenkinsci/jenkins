@@ -326,7 +326,7 @@ public class XStream2 extends XStream {
         mapperInjectionPoint.setDelegate(m);
     }
 
-    final static class MapperInjectionPoint extends MapperDelegate {
+    static final class MapperInjectionPoint extends MapperDelegate {
         public MapperInjectionPoint(Mapper wrapped) {
             super(wrapped);
         }
@@ -473,7 +473,7 @@ public class XStream2 extends XStream {
      *     ...
      * </pre>
      */
-    public static abstract class PassthruConverter<T> implements Converter {
+    public abstract static class PassthruConverter<T> implements Converter {
         private Converter converter;
 
         public PassthruConverter(XStream2 xstream) {

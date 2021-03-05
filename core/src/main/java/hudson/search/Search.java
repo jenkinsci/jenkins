@@ -418,5 +418,5 @@ public class Search implements StaplerProxy {
     @Restricted(NoExternalUse.class)
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Search.class.getName() + ".skipPermissionCheck");
 
-    private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

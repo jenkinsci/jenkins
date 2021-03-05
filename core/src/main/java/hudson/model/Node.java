@@ -105,7 +105,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Newly copied agents get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
-    protected volatile transient boolean holdOffLaunchUntilSave;
+    protected transient volatile boolean holdOffLaunchUntilSave;
 
     public String getDisplayName() {
         return getNodeName(); // default implementation

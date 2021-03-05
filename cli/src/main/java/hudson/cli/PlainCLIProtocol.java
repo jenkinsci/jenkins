@@ -174,7 +174,7 @@ class PlainCLIProtocol {
         }
     }
 
-    static abstract class EitherSide implements Closeable {
+    abstract static class EitherSide implements Closeable {
 
         private final Output out;
 
@@ -252,7 +252,7 @@ class PlainCLIProtocol {
 
     }
 
-    static abstract class ServerSide extends EitherSide {
+    abstract static class ServerSide extends EitherSide {
 
         ServerSide(Output out) {
             super(out);
@@ -311,7 +311,7 @@ class PlainCLIProtocol {
 
     }
 
-    static abstract class ClientSide extends EitherSide {
+    abstract static class ClientSide extends EitherSide {
 
         ClientSide(Output out) {
             super(out);

@@ -137,9 +137,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * The class being described by this descriptor.
      */
-    public transient final Class<? extends T> clazz;
+    public final transient Class<? extends T> clazz;
 
-    private transient final Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<>(2);
+    private final transient Map<String,CheckMethod> checkMethods = new ConcurrentHashMap<>(2);
 
     /**
      * Lazily computed list of properties on {@link #clazz} and on the descriptor itself.
@@ -235,7 +235,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @see #getHelpFile(String) 
      */
-    private transient final Map<String,HelpRedirect> helpRedirect = new HashMap<>(2);
+    private final transient Map<String,HelpRedirect> helpRedirect = new HashMap<>(2);
 
     private static class HelpRedirect {
         private final Class<? extends Describable> owner;

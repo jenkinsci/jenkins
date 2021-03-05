@@ -314,7 +314,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
         ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
-    private transient final Queue queue;
+    private final transient Queue queue;
 
     // flag indicating if we have loaded the jenkins configuration or not yet.
     private transient volatile boolean configLoaded = false;
@@ -322,7 +322,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Stores various objects scoped to {@link Jenkins}.
      */
-    public transient final Lookup lookup = new Lookup();
+    public final transient Lookup lookup = new Lookup();
 
     /**
      * We update this field to the current version of Jenkins whenever we save {@code config.xml}.
@@ -435,7 +435,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Root directory of the system.
      */
-    public transient final File root;
+    public final transient File root;
 
     /**
      * Where are we in the initialization?
@@ -445,7 +445,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * All {@link Item}s keyed by their {@link Item#getName() name}s.
      */
-    /*package*/ transient final Map<String,TopLevelItem> items = new CopyOnWriteMap.Tree<>(CaseInsensitiveComparator.INSTANCE);
+    /*package*/ final transient Map<String,TopLevelItem> items = new CopyOnWriteMap.Tree<>(CaseInsensitiveComparator.INSTANCE);
 
     /**
      * The sole instance.
@@ -467,7 +467,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *     STARTUP_MARKER_FILE.get(); // returns false if we are on a fresh startup. True for next startups.
      * }
      */
-    private transient static FileBoolean STARTUP_MARKER_FILE;
+    private static transient FileBoolean STARTUP_MARKER_FILE;
 
     private volatile List<JDK> jdks = new ArrayList<>();
 
@@ -488,18 +488,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
      */
     @SuppressWarnings("rawtypes")
-    private transient final Map<Class, ExtensionList> extensionLists = new ConcurrentHashMap<>();
+    private final transient Map<Class, ExtensionList> extensionLists = new ConcurrentHashMap<>();
 
     /**
      * All {@link DescriptorExtensionList} keyed by their {@link DescriptorExtensionList#describableType}.
      */
     @SuppressWarnings("rawtypes")
-    private transient final Map<Class, DescriptorExtensionList> descriptorLists = new ConcurrentHashMap<>();
+    private final transient Map<Class, DescriptorExtensionList> descriptorLists = new ConcurrentHashMap<>();
 
     /**
      * {@link Computer}s in this Jenkins system. Read-only.
      */
-    protected transient final Map<Node,Computer> computers = new CopyOnWriteMap.Hash<>();
+    protected final transient Map<Node,Computer> computers = new CopyOnWriteMap.Hash<>();
 
     /**
      * Active {@link Cloud}s.
@@ -540,7 +540,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.607
      */
-    private transient final Nodes nodes = new Nodes(this);
+    private final transient Nodes nodes = new Nodes(this);
 
     /**
      * Quiet period.
@@ -567,28 +567,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private volatile String primaryView;
 
-    private transient final ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+    private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
         protected List<View> views() { return views; }
         protected String primaryView() { return primaryView; }
         protected void primaryView(String name) { primaryView=name; }
     };
 
 
-    private transient final FingerprintMap fingerprintMap = new FingerprintMap();
+    private final transient FingerprintMap fingerprintMap = new FingerprintMap();
 
     /**
      * Loaded plugins.
      */
-    public transient final PluginManager pluginManager;
+    public final transient PluginManager pluginManager;
 
     public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
 
-    private transient final Object tcpSlaveAgentListenerLock = new Object();
+    private final transient Object tcpSlaveAgentListenerLock = new Object();
 
     /**
      * List of registered {@link SCMListener}s.
      */
-    private transient final CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<>();
+    private final transient CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<>();
 
     /**
      * TCP agent port.
@@ -657,7 +657,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * All labels known to Jenkins. This allows us to reuse the same label instances
      * as much as possible, even though that's not a strict requirement.
      */
-    private transient final ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<>();
+    private final transient ConcurrentHashMap<String,Label> labels = new ConcurrentHashMap<>();
 
     /**
      * Load statistics of the entire system.
@@ -665,7 +665,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This includes every executor and every job in the system.
      */
     @Exported
-    public transient final OverallLoadStatistics overallLoad = new OverallLoadStatistics();
+    public final transient OverallLoadStatistics overallLoad = new OverallLoadStatistics();
 
     /**
      * Load statistics of the free roaming jobs and agents.
@@ -675,13 +675,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.467
      */
     @Exported
-    public transient final LoadStatistics unlabeledLoad = new UnlabeledLoadStatistics();
+    public final transient LoadStatistics unlabeledLoad = new UnlabeledLoadStatistics();
 
     /**
      * {@link NodeProvisioner} that reacts to {@link #unlabeledLoad}.
      * @since 1.467
      */
-    public transient final NodeProvisioner unlabeledNodeProvisioner = new NodeProvisioner(null,unlabeledLoad);
+    public final transient NodeProvisioner unlabeledNodeProvisioner = new NodeProvisioner(null,unlabeledLoad);
 
     /**
      * @deprecated as of 1.467
@@ -692,16 +692,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     @Deprecated
-    public transient final NodeProvisioner overallNodeProvisioner = unlabeledNodeProvisioner;
+    public final transient NodeProvisioner overallNodeProvisioner = unlabeledNodeProvisioner;
 
 
-    public transient final ServletContext servletContext;
+    public final transient ServletContext servletContext;
 
     /**
      * Transient action list. Useful for adding navigation items to the navigation bar
      * on the left.
      */
-    private transient final List<Action> actions = new CopyOnWriteArrayList<>();
+    private final transient List<Action> actions = new CopyOnWriteArrayList<>();
 
     /**
      * List of master node properties
@@ -718,22 +718,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @see AdministrativeMonitor
      */
-    public transient final List<AdministrativeMonitor> administrativeMonitors = getExtensionList(AdministrativeMonitor.class);
+    public final transient List<AdministrativeMonitor> administrativeMonitors = getExtensionList(AdministrativeMonitor.class);
 
     /**
      * Widgets on Jenkins.
      */
-    private transient final List<Widget> widgets = getExtensionList(Widget.class);
+    private final transient List<Widget> widgets = getExtensionList(Widget.class);
 
     /**
      * {@link AdjunctManager}
      */
-    private transient final AdjunctManager adjuncts;
+    private final transient AdjunctManager adjuncts;
 
     /**
      * Code that handles {@link ItemGroup} work.
      */
-    private transient final ItemGroupMixIn itemGroupMixIn = new ItemGroupMixIn(this,this) {
+    private final transient ItemGroupMixIn itemGroupMixIn = new ItemGroupMixIn(this,this) {
         @Override
         protected void add(TopLevelItem item) {
             items.put(item.getName(),item);
@@ -821,9 +821,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * container start/stop. Persisted outside {@code config.xml} to avoid
      * accidental exposure.
      */
-    private transient final String secretKey;
+    private final transient String secretKey;
 
-    private transient final UpdateCenter updateCenter = UpdateCenter.createUpdateCenter(null);
+    private final transient UpdateCenter updateCenter = UpdateCenter.createUpdateCenter(null);
 
     /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
@@ -838,9 +838,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Bound to "/log".
      */
-    private transient final LogRecorderManager log = new LogRecorderManager();
+    private final transient LogRecorderManager log = new LogRecorderManager();
 
-    private transient final boolean oldJenkinsJVM;
+    private final transient boolean oldJenkinsJVM;
 
     protected Jenkins(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
         this(root, context, null);
@@ -5122,7 +5122,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * The idea here is to overlap the CPU and I/O, so we want more threads than CPU numbers.
      */
-    /*package*/ transient final ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
+    /*package*/ final transient ExecutorService threadPoolForLoad = new ThreadPoolExecutor(
         TWICE_CPU_NUM, TWICE_CPU_NUM,
         5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new NamingThreadFactory(new DaemonThreadFactory(), "Jenkins load"));
 

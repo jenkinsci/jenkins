@@ -231,7 +231,7 @@ public class SCMTrigger extends Trigger<Item> {
          * of a potential workspace lock between a build and a polling, we may end up using executor threads unwisely --- they
          * may block.
          */
-        private transient final SequentialExecutionQueue queue = new SequentialExecutionQueue(Executors.newSingleThreadExecutor(threadFactory()));
+        private final transient SequentialExecutionQueue queue = new SequentialExecutionQueue(Executors.newSingleThreadExecutor(threadFactory()));
 
         /**
          * Whether the projects should be polled all in one go in the order of dependencies. The default behavior is
