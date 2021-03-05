@@ -1566,6 +1566,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Alias for {@link #getDescriptor(String)}.
      */
+    @Override
     public Descriptor getDescriptorByName(String id) {
         return getDescriptor(id);
     }
@@ -1790,6 +1791,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #getAllItems(Class)
      * @since 2.221
      */
+    @Override
     public List<TopLevelItem> getItems(Predicate<TopLevelItem> pred) {
         List<TopLevelItem> viewableItems = new ArrayList<>();
         for (TopLevelItem item : items.values()) {
@@ -1846,6 +1848,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return names;
     }
 
+    @Override
     public List<Action> getViewActions() {
         return getActions();
     }
@@ -1920,6 +1923,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns the primary {@link View} that renders the top-page of Jenkins.
      */
     @Exported
+    @Override
     public View getPrimaryView() {
         return viewGroupMixIn.getPrimaryView();
      }
@@ -1936,6 +1940,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         this.viewsTabBar = viewsTabBar;
     }
 
+    @Override
     public Jenkins getItemGroup() {
         return this;
    }
@@ -2531,6 +2536,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new FilePath((VirtualChannel)null,absolutePath);
     }
 
+    @Override
     public ClockDifference getClockDifference() {
         return ClockDifference.ZERO;
     }
@@ -3044,6 +3050,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Called by {@link Job#renameTo(String)} to update relevant data structure.
      * assumed to be synchronized on Jenkins by the caller.
      */
+    @Override
     public void onRenamed(TopLevelItem job, String oldName, String newName) throws IOException {
         items.remove(oldName);
         items.put(newName,job);
@@ -3499,18 +3506,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new Reactor(tf).execute(Runnable::run, new ReactorListener() {
                 final Level level = Level.parse(SystemProperties.getString(Jenkins.class.getName() + "." +"termLogLevel", "FINE"));
 
+                @Override
                 public void onTaskStarted(Task t) {
                     LOGGER.log(level, "Started {0}", InitReactorRunner.getDisplayName(t));
                 }
 
+                @Override
                 public void onTaskCompleted(Task t) {
                     LOGGER.log(level, "Completed {0}", InitReactorRunner.getDisplayName(t));
                 }
 
+                @Override
                 public void onTaskFailed(Task t, Throwable err, boolean fatal) {
                     LOGGER.log(SEVERE, err, () -> "Failed " + InitReactorRunner.getDisplayName(t));
                 }
 
+                @Override
                 public void onAttained(Milestone milestone) {
                     Level lv = level;
                     String s = "Attained " + milestone.toString();

@@ -200,6 +200,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         // failing to record fingerprints is an error but not fatal
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
@@ -326,6 +327,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
     @Extension @Symbol("fingerprint")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @Override
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();
         }

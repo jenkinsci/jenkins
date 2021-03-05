@@ -81,6 +81,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Entry<Integer,R>> {
                 return new SimpleImmutableEntry<>(owner.getNumberOf(r), r);
             }
 
+            @Override
             public void remove() {
                 if (last==null)
                     throw new UnsupportedOperationException();

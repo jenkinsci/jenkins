@@ -102,6 +102,7 @@ public class InstallState implements ExtensionPoint {
         InitialSetupCompleted() {
             super("INITIAL_SETUP_COMPLETED", true);
         }
+        @Override
         public void initializeState() {
             Jenkins j = Jenkins.get();
             try {
@@ -122,6 +123,7 @@ public class InstallState implements ExtensionPoint {
         CreateAdminUser() {
             super("CREATE_ADMIN_USER", false);
         }
+        @Override
         public void initializeState() {
             Jenkins j = Jenkins.get();
             // Skip this state if not using the security defaults
@@ -138,6 +140,7 @@ public class InstallState implements ExtensionPoint {
         ConfigureInstance() {
             super("CONFIGURE_INSTANCE", false);
         }
+        @Override
         public void initializeState() {
             // Skip this state if a boot script already configured the root URL
             // in case we add more fields in this page, this should be adapted
@@ -163,6 +166,7 @@ public class InstallState implements ExtensionPoint {
         InitialSecuritySetup() {
             super("INITIAL_SECURITY_SETUP", false);
         }
+        @Override
         public void initializeState() {
             try {
                 Jenkins.get().getSetupWizard().init(true);
@@ -189,6 +193,7 @@ public class InstallState implements ExtensionPoint {
         Restart() {
             super("RESTART", true);
         }
+        @Override
         public void initializeState() {
             InstallUtil.saveLastExecVersion();
         }
@@ -245,6 +250,7 @@ public class InstallState implements ExtensionPoint {
         Downgrade() {
             super("DOWNGRADE", true);
         }
+        @Override
         public void initializeState() {
             // Schedule an update of the update center after a Jenkins downgrade
             reloadUpdateSiteData();

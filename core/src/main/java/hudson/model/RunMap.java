@@ -113,6 +113,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
                 return last;
             }
 
+            @Override
             public void remove() {
                 if (last==null)
                     throw new UnsupportedOperationException();

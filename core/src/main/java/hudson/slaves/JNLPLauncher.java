@@ -204,6 +204,7 @@ public class JNLPLauncher extends ComputerLauncher {
             DESCRIPTOR = this;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
         }
