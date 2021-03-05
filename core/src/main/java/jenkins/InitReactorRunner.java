@@ -7,7 +7,6 @@ import hudson.init.InitReactorListener;
 import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
-import jenkins.model.Configuration;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingExecutorService;
 import org.jvnet.hudson.reactor.Milestone;
@@ -64,19 +63,23 @@ public class InitReactorRunner {
     private ReactorListener buildReactorListener() throws IOException {
         List<ReactorListener> r = Lists.newArrayList(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()));
         r.add(new ReactorListener() {
-            final Level level = Level.parse( Configuration.getStringConfigParameter("initLogLevel", "FINE") );
+            final Level level = Level.parse( SystemProperties.getString(Jenkins.class.getName() + "." + "initLogLevel", "FINE") );
+            @Override
             public void onTaskStarted(Task t) {
                 LOGGER.log(level, "Started {0}", getDisplayName(t));
             }
 
+            @Override
             public void onTaskCompleted(Task t) {
                 LOGGER.log(level, "Completed {0}", getDisplayName(t));
             }
 
+            @Override
             public void onTaskFailed(Task t, Throwable err, boolean fatal) {
                 LOGGER.log(SEVERE, "Failed " + getDisplayName(t), err);
             }
 
+            @Override
             public void onAttained(Milestone milestone) {
                 Level lv = level;
                 String s = "Attained "+milestone.toString();

@@ -171,6 +171,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             return description;
         }
 
+        @Override
         public boolean isForceExistingJobs() {
             return forceExistingJobs;
         }

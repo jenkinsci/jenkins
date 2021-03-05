@@ -268,7 +268,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      This parameter allows you to redirect people to different pages depending on who they are.
      * @return
      *      never null.
-     * @since TODO
+     * @since 2.266
      * @see #doLogout(StaplerRequest, StaplerResponse) 
      */
     protected String getPostLogOutUrl2(StaplerRequest req, Authentication auth) {
@@ -395,7 +395,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      If the security realm cannot even tell if the user exists or not.
      * @return
      *      never null.
-     * @since TODO
+     * @since 2.266
      */
     public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "loadUserByUsername", String.class)) {
@@ -436,7 +436,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *                     may still return {@code null}
      * @throws UserMayOrMayNotExistException2 if no conclusive result could be determined regarding the group existence.
      * @throws UsernameNotFoundException     if the group does not exist.
-     * @since TODO
+     * @since 2.266
      */
     public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers)
             throws UsernameNotFoundException {
@@ -727,7 +727,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public static final class SecurityComponents {
         /**
-         * @since TODO
+         * @since 2.266
          */
         public final AuthenticationManager manager2;
         /**
@@ -736,7 +736,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         @Deprecated
         public final org.acegisecurity.AuthenticationManager manager;
         /**
-         * @since TODO
+         * @since 2.266
          */
         public final UserDetailsService userDetails2;
         /**
@@ -745,7 +745,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         @Deprecated
         public final org.acegisecurity.userdetails.UserDetailsService userDetails;
         /**
-         * @since TODO
+         * @since 2.266
          */
         public final RememberMeServices rememberMe2;
         /**
@@ -761,7 +761,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
 
         /**
-         * @since TODO
+         * @since 2.266
          */
         public SecurityComponents(AuthenticationManager manager) {
             // we use UserDetailsServiceProxy here just as an implementation that fails all the time,
@@ -778,7 +778,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
 
         /**
-         * @since TODO
+         * @since 2.266
          */
         public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails) {
             this(manager,userDetails,createRememberMeService(userDetails));
@@ -793,7 +793,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
 
         /**
-         * @since TODO
+         * @since 2.266
          */
         public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails, RememberMeServices rememberMe) {
             assert manager!=null && userDetails!=null && rememberMe!=null;
@@ -843,7 +843,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * {@link GrantedAuthority} that represents the built-in "authenticated" role, which is granted to
      * anyone non-anonymous.
-     * @since TODO
+     * @since 2.266
      */
     public static final GrantedAuthority AUTHENTICATED_AUTHORITY2 = new SimpleGrantedAuthority("authenticated");
 

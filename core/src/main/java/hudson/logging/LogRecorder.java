@@ -451,9 +451,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                         }
                     }
                 }
-            } catch (IOException x) {
-                continue;
-            } catch (InterruptedException x) {
+            } catch (IOException | InterruptedException x) {
                 continue;
             }
             if (!recs.isEmpty()) {

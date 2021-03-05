@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Random;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -66,7 +65,7 @@ public class SecurityRealmTest {
         WebResponse response = j.createWebClient()
                 .goTo("securityRealm/captcha", "")
                 .getWebResponse();
-        assertEquals(response.getContentAsString(), "");
+        assertEquals("", response.getContentAsString());
 
         securityRealm.setCaptchaSupport(new DummyCaptcha());
 

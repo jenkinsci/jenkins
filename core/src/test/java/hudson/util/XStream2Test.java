@@ -36,7 +36,6 @@ import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-import com.thoughtworks.xstream.security.ForbiddenClassException;
 import hudson.model.Result;
 import hudson.model.Run;
 import java.io.StringReader;

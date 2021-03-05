@@ -85,6 +85,7 @@ public class Iterators {
             return cur.next();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -139,6 +140,7 @@ public class Iterators {
             return next;
         }
 
+        @Override
         public void remove() {
             core.remove();
         }
@@ -180,6 +182,7 @@ public class Iterators {
                     return itr.previous();
                 }
 
+                @Override
                 public void remove() {
                     itr.remove();
                 }
@@ -205,6 +208,7 @@ public class Iterators {
                     return itr.next();
                 }
 
+                @Override
                 public void remove() {
                     itr.remove();
                 }
@@ -295,6 +299,7 @@ public class Iterators {
                 return itr.next();
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
@@ -385,6 +390,7 @@ public class Iterators {
                 }
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }

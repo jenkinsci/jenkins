@@ -35,7 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.WithPlugin;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -47,7 +46,6 @@ public class FormFieldValidatorTest {
 
     @Test
     @Issue("JENKINS-2771")
-    @WithPlugin("tasks.jpi")
     public void configure() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.createWebClient().getPage(p, "configure");

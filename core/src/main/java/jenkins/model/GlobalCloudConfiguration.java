@@ -26,7 +26,7 @@ import java.io.IOException;
 @Extension
 @Symbol("cloud")
 @Restricted(NoExternalUse.class)
-@RestrictedSince("TODO")
+@RestrictedSince("2.205")
 public class GlobalCloudConfiguration implements RootAction {
 
     @CheckForNull

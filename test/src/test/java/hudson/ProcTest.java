@@ -6,7 +6,7 @@ import static org.junit.Assume.assumeFalse;
 
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.Proc.RemoteProc;
+import hudson.Launcher.RemoteLauncher.ProcImpl;
 import hudson.remoting.Pipe;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
@@ -34,7 +34,7 @@ public class ProcTest {
     public JenkinsRule j = new JenkinsRule();
 
     /**
-     * Makes sure that the output flushing and {@link RemoteProc#join()} is synced.
+     * Makes sure that the output flushing and {@link ProcImpl#join()} is synced.
      */
     @Test
     public void remoteProcOutputSync() throws Exception {

@@ -46,10 +46,12 @@ public class ArchitectureMonitor extends NodeMonitor {
             return new GetArchTask();
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.ArchitectureMonitor_DisplayName();
         }
 
+        @Override
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new ArchitectureMonitor();
         }

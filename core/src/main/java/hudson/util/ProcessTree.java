@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -434,6 +433,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     vetoersExist = channelToMaster.call(new DoVetoersExist());
                 }
             }
+            catch (InterruptedException ie) {
+                // If we receive an InterruptedException here, we probably can't do much anyway.
+                // Perhaps we should just return at this point since we probably can't do anything else.
+                // It might make sense to introduce retries, but it's probably not going to get better.
+                LOGGER.log(Level.FINE, "Caught InterruptedException while checking if vetoers exist: ", ie);
+                Thread.interrupted(); // Clear the interrupt flag and just accept that no known vetoers exist.
+            }
             catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
             }
@@ -741,11 +747,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         ProcfsUnix(boolean vetoersExist) {
             super(vetoersExist);
             
-            File[] processes = new File("/proc").listFiles(new FileFilter() {
-                public boolean accept(File f) {
-                    return f.isDirectory();
-                }
-            });
+            File[] processes = new File("/proc").listFiles(File::isDirectory);
             if(processes==null) {
                 LOGGER.info("No /proc");
                 return;
@@ -1924,6 +1926,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return this; // cancel out super.writeReplace()
             }
 
+            @Override
             public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
                 return proxy.act(callable);
             }

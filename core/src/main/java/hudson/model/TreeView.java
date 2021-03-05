@@ -179,6 +179,7 @@ public class TreeView extends View implements ViewGroup {
     }
 
     public static final class DescriptorImpl extends ViewDescriptor {
+        @Override
         public String getDisplayName() {
             return "Tree View";
         }
@@ -188,10 +189,12 @@ public class TreeView extends View implements ViewGroup {
         return Jenkins.get().getViewsTabBar();
     }
 
+    @Override
     public ItemGroup<? extends TopLevelItem> getItemGroup() {
         return getOwner().getItemGroup();
     }
 
+    @Override
     public List<Action> getViewActions() {
         return owner.getViewActions();
     }

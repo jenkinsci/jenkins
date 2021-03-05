@@ -52,6 +52,7 @@ public class MavenMojoNote extends ConsoleNote {
 
     @Extension @Symbol("mavenMojos")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @Override
         public String getDisplayName() {
             return "Maven Mojos";
         }

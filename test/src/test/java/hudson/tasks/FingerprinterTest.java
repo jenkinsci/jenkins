@@ -259,7 +259,7 @@ public class FingerprinterTest {
         Collection<Fingerprint> fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
             assertTrue(f.getOriginal().is(upstream));
-            assertEquals(f.getOriginal().getName(), renamedProject1);
+            assertEquals(renamedProject1, f.getOriginal().getName());
             assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
         }
         
@@ -268,7 +268,7 @@ public class FingerprinterTest {
         fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
             assertTrue(f.getOriginal().is(upstream));
-            assertEquals(f.getOriginal().getName(), renamedProject1);
+            assertEquals(renamedProject1, f.getOriginal().getName());
             assertNotEquals(f.getOriginal().getName(), oldUpstreamName);
         }
          

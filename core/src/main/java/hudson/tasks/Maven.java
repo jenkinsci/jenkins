@@ -443,6 +443,7 @@ public class Maven extends Builder {
             return super.getHelpFile(fieldName);
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
         }
@@ -751,6 +752,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
+            @Override
             public String getDisplayName() {
                 return Messages.InstallFromApache();
             }

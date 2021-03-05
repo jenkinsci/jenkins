@@ -77,6 +77,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
             DESCRIPTOR = this;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.FreeStyleProject_DisplayName();
         }

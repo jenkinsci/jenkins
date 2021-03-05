@@ -41,7 +41,6 @@ import static hudson.util.Iterators.reverse;
 
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.labels.LabelAssignmentAction;
-import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.Executables;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
@@ -108,6 +107,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import net.jcip.annotations.GuardedBy;
@@ -389,74 +389,60 @@ public class Queue extends ResourceController implements Saveable {
             blockedProjects.clear();
             buildables.clear();
             pendings.clear();
-            // first try the old format
-            File queueFile = getQueueFile();
+
+            File queueFile = getXMLQueueFile();
             if (queueFile.exists()) {
-                try (BufferedReader in = Files.newBufferedReader(Util.fileToPath(queueFile), Charset.defaultCharset())) {
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        AbstractProject j = Jenkins.get().getItemByFullName(line, AbstractProject.class);
-                        if (j != null)
-                            j.scheduleBuild();
-                    }
-                }
-                // discard the queue file now that we are done
-                queueFile.delete();
-            } else {
-                queueFile = getXMLQueueFile();
-                if (queueFile.exists()) {
-                    Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
-                    List items;
+                Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
+                List items;
 
-                    if (unmarshaledObj instanceof State) {
-                        State state = (State) unmarshaledObj;
-                        items = state.items;
-                        WaitingItem.COUNTER.set(state.counter);
-                    } else {
-                        // backward compatibility - it's an old List queue.xml
-                        items = (List) unmarshaledObj;
-                        long maxId = 0;
-                        for (Object o : items) {
-                            if (o instanceof Item) {
-                                maxId = Math.max(maxId, ((Item)o).id);
-                            }
-                        }
-                        WaitingItem.COUNTER.set(maxId);
-                    }
-
+                if (unmarshaledObj instanceof State) {
+                    State state = (State) unmarshaledObj;
+                    items = state.items;
+                    WaitingItem.COUNTER.set(state.counter);
+                } else {
+                    // backward compatibility - it's an old List queue.xml
+                    items = (List) unmarshaledObj;
+                    long maxId = 0;
                     for (Object o : items) {
-                        if (o instanceof Task) {
-                            // backward compatibility
-                            schedule((Task)o, 0);
-                        } else if (o instanceof Item) {
-                            Item item = (Item)o;
-
-                            if (item.task == null) {
-                                continue;   // botched persistence. throw this one away
-                            }
-
-                            if (item instanceof WaitingItem) {
-                                item.enter(this);
-                            } else if (item instanceof BlockedItem) {
-                                item.enter(this);
-                            } else if (item instanceof BuildableItem) {
-                                item.enter(this);
-                            } else {
-                                throw new IllegalStateException("Unknown item type! " + item);
-                            }
+                        if (o instanceof Item) {
+                            maxId = Math.max(maxId, ((Item)o).id);
                         }
                     }
-
-                    // I just had an incident where all the executors are dead at AbstractProject._getRuns()
-                    // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
-                    // object that doesn't appear to be de-serialized properly.
-                    // I don't know how this problem happened, but to diagnose this problem better
-                    // when it happens again, save the old queue file for introspection.
-                    File bk = new File(queueFile.getPath() + ".bak");
-                    bk.delete();
-                    queueFile.renameTo(bk);
-                    queueFile.delete();
+                    WaitingItem.COUNTER.set(maxId);
                 }
+
+                for (Object o : items) {
+                    if (o instanceof Task) {
+                        // backward compatibility
+                        schedule((Task)o, 0);
+                    } else if (o instanceof Item) {
+                        Item item = (Item)o;
+
+                        if (item.task == null) {
+                            continue;   // botched persistence. throw this one away
+                        }
+
+                        if (item instanceof WaitingItem) {
+                            item.enter(this);
+                        } else if (item instanceof BlockedItem) {
+                            item.enter(this);
+                        } else if (item instanceof BuildableItem) {
+                            item.enter(this);
+                        } else {
+                            throw new IllegalStateException("Unknown item type! " + item);
+                        }
+                    }
+                }
+
+                // I just had an incident where all the executors are dead at AbstractProject._getRuns()
+                // because runs is null. Debugger revealed that this is caused by a MatrixConfiguration
+                // object that doesn't appear to be de-serialized properly.
+                // I don't know how this problem happened, but to diagnose this problem better
+                // when it happens again, save the old queue file for introspection.
+                File bk = new File(queueFile.getPath() + ".bak");
+                bk.delete();
+                queueFile.renameTo(bk);
+                queueFile.delete();
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load the queue file " + getXMLQueueFile(), e);
@@ -515,10 +501,6 @@ public class Queue extends ResourceController implements Saveable {
             lock.unlock();
         }
         scheduleMaintenance();
-    }
-
-    private File getQueueFile() {
-        return new File(Jenkins.get().getRootDir(), "queue.txt");
     }
 
     /*package*/ File getXMLQueueFile() {
@@ -1247,7 +1229,7 @@ public class Queue extends ResourceController implements Saveable {
     private CauseOfBlockage getCauseOfBlockageForTask(Task task) {
         CauseOfBlockage causeOfBlockage = task.getCauseOfBlockage();
         if (causeOfBlockage != null) {
-            return task.getCauseOfBlockage();
+            return causeOfBlockage;
         }
 
         if (!canRun(task.getResourceList())) {
@@ -1395,6 +1377,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param runnable the operation to perform.
      * @since 1.592
      */
+    @Override
     protected void _withLock(Runnable runnable) {
         lock.lock();
         try {
@@ -1435,6 +1418,7 @@ public class Queue extends ResourceController implements Saveable {
      * @throws T the exception of the callable
      * @since 1.592
      */
+    @Override
     protected <V, T extends Throwable> V _withLock(hudson.remoting.Callable<V, T> callable) throws T {
         lock.lock();
         try {
@@ -1454,6 +1438,7 @@ public class Queue extends ResourceController implements Saveable {
      * @throws Exception if the callable throws an exception.
      * @since 1.592
      */
+    @Override
     protected <V> V _withLock(java.util.concurrent.Callable<V> callable) throws Exception {
         lock.lock();
         try {
@@ -1631,9 +1616,16 @@ public class Queue extends ResourceController implements Saveable {
                 } else {
 
                     List<JobOffer> candidates = new ArrayList<>(parked.size());
-                    List<CauseOfBlockage> reasons = new ArrayList<>(parked.size());
+                    Map<Node, CauseOfBlockage> reasonMap = new HashMap<>();
                     for (JobOffer j : parked.values()) {
-                        CauseOfBlockage reason = j.getCauseOfBlockage(p);
+                        Node offerNode = j.getNode();
+                        CauseOfBlockage reason;
+                        if (reasonMap.containsKey(offerNode)) {
+                            reason = reasonMap.get(offerNode);
+                        } else {
+                            reason = j.getCauseOfBlockage(p);
+                            reasonMap.put(offerNode, reason);
+                        }
                         if (reason == null) {
                             LOGGER.log(Level.FINEST,
                                     "{0} is a potential candidate for task {1}",
@@ -1641,7 +1633,6 @@ public class Queue extends ResourceController implements Saveable {
                             candidates.add(j);
                         } else {
                             LOGGER.log(Level.FINEST, "{0} rejected {1}: {2}", new Object[] {j, taskDisplayName, reason});
-                            reasons.add(reason);
                         }
                     }
 
@@ -1653,6 +1644,7 @@ public class Queue extends ResourceController implements Saveable {
                         // check if we can execute other projects
                         LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
                                 new Object[]{p, candidates, parked.values()});
+                        List<CauseOfBlockage> reasons = reasonMap.values().stream().filter(Objects::nonNull).collect(Collectors.toList());
                         p.transientCausesOfBlockage = reasons.isEmpty() ? null : reasons;
                         continue;
                     }
@@ -1851,11 +1843,6 @@ public class Queue extends ResourceController implements Saveable {
      * transient Task, extend {@link TransientTask} marker interface.
      *
      * <p>
-     * Plugins are encouraged to extend from {@link AbstractQueueTask}
-     * instead of implementing this interface directly, to maintain
-     * compatibility with future changes to this interface.
-     *
-     * <p>
      * Plugins are encouraged to implement {@link AccessControlled} otherwise
      * the tasks will be hidden from display in the queue.
      *
@@ -2001,7 +1988,7 @@ public class Queue extends ResourceController implements Saveable {
          * based on whether this {@link Authentication} is allowed to use them.
          *
          * @return by default, {@link ACL#SYSTEM2}
-         * @since TODO
+         * @since 2.266
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task)
          */
@@ -2035,7 +2022,7 @@ public class Queue extends ResourceController implements Saveable {
          * older versions of Jenkins may not have this method implemented. Called private method _getDefaultAuthenticationOf(Task) on {@link Tasks}
          * to avoid {@link AbstractMethodError}.
          *
-         * @since TODO
+         * @since 2.266
          * @see QueueItemAuthenticator
          * @see Tasks#getDefaultAuthenticationOf(Queue.Task, Queue.Item)
          */
@@ -2346,7 +2333,7 @@ public class Queue extends ResourceController implements Saveable {
          * return the identity of the user who queued the task, or {@link ACL#SYSTEM2} to bypass the access control
          * and run as the super user.
          *
-         * @since TODO
+         * @since 2.266
          */
         @NonNull
         public Authentication authenticate2() {

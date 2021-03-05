@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+<l:layout title="Testing the effect of validateButton">
+  <l:main-panel>
+    <f:hetero-list name="no-care" descriptors="${it.descriptorList}"/>
+  </l:main-panel>
+</l:layout>
+</j:jelly>

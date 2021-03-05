@@ -119,6 +119,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     @Extension @Symbol("toolLocation")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
+        @Override
         public String getDisplayName() {
             return Messages.ToolLocationNodeProperty_displayName();
         }

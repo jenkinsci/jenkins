@@ -49,7 +49,6 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;

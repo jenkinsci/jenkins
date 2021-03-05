@@ -53,7 +53,7 @@ import jenkins.model.WorkspaceWriter;
 import jenkins.model.Jenkins;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
-import hudson.model.Cause.LegacyCodeCause;
+import hudson.model.Cause.UserIdCause;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -234,7 +234,7 @@ public class ProjectTest {
         j.jenkins.setQuietPeriod(0);
         assertEquals("Quiet period is not set so it should be the same as global quiet period.", 0, p.getQuietPeriod());
         p.setQuietPeriod(10);
-        assertEquals("Quiet period was set.",p.getQuietPeriod(),10);
+        assertEquals("Quiet period was set.", 10, p.getQuietPeriod());
     }
     
     @Test
@@ -303,7 +303,7 @@ public class ProjectTest {
     public void testScheduleBuild2() throws IOException, InterruptedException{
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
-        p.scheduleBuild(0, new LegacyCodeCause(), new Action[0]);
+        p.scheduleBuild(0, new UserIdCause(), new Action[0]);
         assertNotNull("Project should be in queue.", Queue.getInstance().getItem(p));
         p.setAssignedLabel(null);
         int count = 0;
@@ -526,8 +526,8 @@ public class ProjectTest {
 
         Map<Integer,Fingerprint.RangeSet> relationship = upstream.getRelationship(downstream);
         assertFalse("Project upstream should have relationship with downstream", relationship.isEmpty());
-        assertTrue("Relationship should contain upstream #3", relationship.keySet().contains(3));
-        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.keySet().contains(4));
+        assertTrue("Relationship should contain upstream #3", relationship.containsKey(3));
+        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.containsKey(4));
         assertEquals("downstream #2 should be the first build which depends on upstream #3", 2, relationship.get(3).min());
         assertEquals("downstream #3 should be the last build which depends on upstream #3", 3, relationship.get(3).max()-1);
         assertEquals("downstream #4 should depend only on upstream #5", 4, relationship.get(5).min());
@@ -622,7 +622,7 @@ public class ProjectTest {
         wc.withBasicCredentials(user.getId(), "password");
         WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
-        assertEquals(p.getWebResponse().getStatusCode(), 200);
+        assertEquals(200, p.getWebResponse().getStatusCode());
 
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
@@ -836,7 +836,7 @@ public class ProjectTest {
 
         @Override
         public Collection<? extends Action> createFor(AbstractProject target) {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             if(createAction)
                 actions.add(new TransientAction());
             return actions;
@@ -922,7 +922,7 @@ public class ProjectTest {
 
         @Override
         public Collection getSubTasks() {
-            ArrayList<SubTask> list = new ArrayList<SubTask>();
+            ArrayList<SubTask> list = new ArrayList<>();
             list.add(new SubTaskImpl());
             return list;
         }
@@ -935,7 +935,7 @@ public class ProjectTest {
 
         @Override
         public Collection<? extends SubTask> forProject(AbstractProject<?, ?> p) {
-            ArrayList<SubTask> list = new ArrayList<SubTask>();
+            ArrayList<SubTask> list = new ArrayList<>();
             if(createSubTask){
                 list.add(new SubTaskImpl2());
             }
@@ -1008,7 +1008,7 @@ public class ProjectTest {
 
         @Override
         public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
-            List<NodeProvisioner.PlannedNode> r = new ArrayList<NodeProvisioner.PlannedNode>();
+            List<NodeProvisioner.PlannedNode> r = new ArrayList<>();
 
             //Always provision...even if there is no workload.
             while(excessWorkload >= 0) {

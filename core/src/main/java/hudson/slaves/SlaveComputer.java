@@ -645,9 +645,9 @@ public class SlaveComputer extends Computer {
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
-                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
-                    RemotingVersionInfo.getMinimumSupportedVersion()));
+            log.printf("WARNING: Remoting version is older than a minimum required one (%s). " +
+                            "Connection will not be rejected, but the compatibility is NOT guaranteed%n",
+                    RemotingVersionInfo.getMinimumSupportedVersion());
         }
 
         boolean _isUnix = channel.call(new DetectOS());
@@ -1080,7 +1080,7 @@ public class SlaveComputer extends Computer {
      * Helper method for Jelly.
      */
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.163")
     public static List<SlaveSystemInfo> getSystemInfoExtensions() {
         return SlaveSystemInfo.all();
     }

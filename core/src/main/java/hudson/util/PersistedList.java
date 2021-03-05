@@ -166,10 +166,12 @@ public class PersistedList<T> extends AbstractList<T> {
     }
 
 
+    @Override
     public void clear() {
         data.clear();
     }
 
+    @Override
     public Iterator<T> iterator() {
         return data.iterator();
     }

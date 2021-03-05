@@ -115,6 +115,14 @@ the repository maintainers will integrate it, prepare changelogs, and
 ensure it gets released in one of upcoming Weekly releases.
 There is no additional action required from pull request authors at this point.
 
+## IntelliJ suggestion
+
+In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
+The setting can be found in Settings -> Editor -> General -> On Save -> Remove trailing spaces on: `Modified lines`
+This will help minimize the diff, which makes reviewing PRs easier.
+
+We also do not recommend `*` imports in the production code.
+Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '*'_ and Names count to use import with '*'_ to a high value, e.g. 100. 
 ## Copyright
 
 The Jenkins core is licensed under [MIT license], with a few exceptions in bundled classes.
@@ -146,7 +154,6 @@ just submit a pull request.
 * [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
 * [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
-[download Maven]: https://maven.apache.org/download.cgi
 [Preparing for Plugin Development]: https://jenkins.io/doc/developer/tutorial/prepare/
 [newbie friendly issues]: https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
 [Participate]: https://jenkins.io/participate/
@@ -162,3 +169,4 @@ just submit a pull request.
 [ci.jenkins.io]: https://ci.jenkins.io/
 [Jenkins Pipeline]: https://jenkins.io/doc/book/pipeline/
 [Jenkinsfile]: ./Jenkinsfile
+[download Maven here]: https://maven.apache.org/download.cgi
