@@ -42,7 +42,7 @@ f.section(title: _("Administrative monitors configuration")) {
                                 checked: am.enabled,
                                 json: am.id)
                         if (am.isSecurity()) {
-                            span(style: 'border: 1px solid grey; color: grey; border-radius: 4px; padding: 3px; margin-left: 5px;', _("Security"))
+                            span(style: 'margin-left: 0.5rem', class: 'am-badge', _("Security"))
                         }
                     }
                     div(class: "tr") {
