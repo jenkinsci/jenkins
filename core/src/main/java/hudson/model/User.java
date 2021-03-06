@@ -720,7 +720,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return r;
     }
 
-    public @Override String toString() {
+    @Override
+    public String toString() {
         return id;
     }
 

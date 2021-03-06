@@ -258,11 +258,13 @@ public class HeteroListTest {
                 return "XSS: <img src=x onerror=console.warn('" + getClass().getName() +"') />";
             }
 
-            public @Override Xss[] getInstallations() {
+            @Override
+            public Xss[] getInstallations() {
                 return installations;
             }
 
-            public @Override void setInstallations(Xss... xsses) {
+            @Override
+            public void setInstallations(Xss... xsses) {
                 this.installations = xsses;
             }
 
