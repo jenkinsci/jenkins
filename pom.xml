@@ -436,6 +436,9 @@ THE SOFTWARE.
              <!-- define here because checkstyle and multi module is a PITA -->
              <checkstyleRules>
                <module name="Checker">
+                 <module name="NewlineAtEndOfFile">
+                   <property name="lineSeparator" value="lf"/>
+                 </module>
                  <module name="TreeWalker">
                    <module name="IllegalImport">
                      <!-- prevent the use of jsr-305 annotations -->
