@@ -30,7 +30,6 @@ import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
-import jenkins.model.Messages;
 import hudson.util.FormValidation;
 import java.io.IOException;
 
