@@ -449,6 +449,7 @@ THE SOFTWARE.
                        Miscellaneous: https://checkstyle.sourceforge.io/config_misc.html
                    -->
                    <module name="ArrayTypeStyle"/>
+                   <module name="OuterTypeFilename"/>
                    <!--
                        Modifiers: https://checkstyle.sourceforge.io/config_modifier.html
                    -->
