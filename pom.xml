@@ -450,6 +450,7 @@ THE SOFTWARE.
                    -->
                    <module name="ArrayTypeStyle"/>
                    <module name="OuterTypeFilename"/>
+                   <module name="UpperEll"/>
                    <!--
                        Modifiers: https://checkstyle.sourceforge.io/config_modifier.html
                    -->
