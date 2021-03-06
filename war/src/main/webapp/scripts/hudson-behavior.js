@@ -895,7 +895,7 @@ function rowvgStartEachRow(recursive,f) {
                 event.preventDefault();
             }
         })
-        registerRegexpValidator(e,/^(\d+|)$/,"Not an integer");
+        registerRegexpValidator(e,/^((\-?\d+)|)$/,"Not an integer");
     });
 
     Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) {
