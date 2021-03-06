@@ -361,7 +361,11 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
                     quotedArgs.append('"');
                 }
             }
-            if (quoted) quotedArgs.append('"'); else quotedArgs.append(arg);
+            if (quoted) {
+                quotedArgs.append('"');
+            } else {
+                quotedArgs.append(arg);
+            }
             
             windowsCommand.add(quotedArgs, mask.get(i));
         }

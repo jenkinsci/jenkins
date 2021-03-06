@@ -446,6 +446,7 @@ THE SOFTWARE.
                    -->
                    <module name="CovariantEquals"/>
                    <module name="EqualsHashCode"/>
+                   <module name="OneStatementPerLine"/>
                    <!--
                        Imports: https://checkstyle.sourceforge.io/config_imports.html
                    -->
