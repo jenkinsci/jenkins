@@ -449,6 +449,7 @@ THE SOFTWARE.
                    <module name="OneStatementPerLine"/>
                    <module name="PackageDeclaration"/>
                    <module name="SimplifyBooleanExpression"/>
+                   <module name="StringLiteralEquality"/>
                    <!--
                        Imports: https://checkstyle.sourceforge.io/config_imports.html
                    -->
