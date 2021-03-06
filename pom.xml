@@ -450,6 +450,10 @@ THE SOFTWARE.
                    <module name="PackageDeclaration"/>
                    <module name="SimplifyBooleanExpression"/>
                    <module name="StringLiteralEquality"/>
+                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration"/>
+                   <module name="UnnecessarySemicolonAfterTypeMemberDeclaration"/>
+                   <module name="UnnecessarySemicolonInEnumeration"/>
+                   <module name="UnnecessarySemicolonInTryWithResources"/>
                    <!--
                        Imports: https://checkstyle.sourceforge.io/config_imports.html
                    -->
