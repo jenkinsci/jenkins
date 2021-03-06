@@ -166,6 +166,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
       </plugin>
       <plugin>
@@ -176,6 +177,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
             <id>old-remoting-for-test</id>
@@ -217,6 +219,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <skip>true</skip>
         </configuration>
@@ -224,6 +227,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <fork>true</fork>
         </configuration>
@@ -246,6 +250,7 @@ THE SOFTWARE.
         <plugins>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <configuration>
               <groups>org.jvnet.hudson.test.SmokeTest</groups>
             </configuration>
