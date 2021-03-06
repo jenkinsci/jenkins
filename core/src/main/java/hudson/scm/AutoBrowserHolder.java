@@ -45,7 +45,7 @@ final class AutoBrowserHolder {
     private RepositoryBrowser cache;
     private SCM owner;
 
-    public AutoBrowserHolder(SCM owner) {
+    AutoBrowserHolder(SCM owner) {
         this.owner = owner;
     }
 

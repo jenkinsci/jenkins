@@ -82,11 +82,11 @@ public class CLI {
             throw new NotTalkingToJenkinsException(c);
     }
     /*package*/ static final class NotTalkingToJenkinsException extends IOException {
-        public NotTalkingToJenkinsException(String s) {
+        NotTalkingToJenkinsException(String s) {
             super(s);
         }
 
-        public NotTalkingToJenkinsException(URLConnection c) {
+        NotTalkingToJenkinsException(URLConnection c) {
             super("There's no Jenkins running at " + c.getURL().toString());
         }
     }
@@ -372,7 +372,7 @@ public class CLI {
     private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException {
         LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
         FullDuplexHttpStream streams = new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
-        try (final ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
+        try (ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
             connection.start(args);
             InputStream is = streams.getInputStream();
             if (is.read() != 0) { // cf. FullDuplexHttpService

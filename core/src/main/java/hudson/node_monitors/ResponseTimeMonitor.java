@@ -115,7 +115,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         private final Data cur;
         private final long start = System.currentTimeMillis();
 
-        public Step2(Data cur) {
+        Step2(Data cur) {
             this.cur = cur;
         }
 

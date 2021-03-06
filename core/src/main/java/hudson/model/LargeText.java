@@ -222,7 +222,7 @@ public class LargeText {
         protected ByteBuf buf;
         protected int pos;
 
-        public Mark(ByteBuf buf) {
+        Mark(ByteBuf buf) {
             this.buf = buf;
         }
     }
@@ -232,7 +232,7 @@ public class LargeText {
      * to the output yet.
      */
     private static final class HeadMark extends Mark {
-        public HeadMark(ByteBuf buf) {
+        HeadMark(ByteBuf buf) {
             super(buf);
         }
 
@@ -259,7 +259,7 @@ public class LargeText {
      * Points to the end of the region.
      */
     private static final class TailMark extends Mark {
-        public TailMark(ByteBuf buf) {
+        TailMark(ByteBuf buf) {
             super(buf);
         }
 
@@ -287,7 +287,7 @@ public class LargeText {
         private int size = 0;
         private ByteBuf next;
 
-        public ByteBuf(ByteBuf previous, Session f) throws IOException {
+        ByteBuf(ByteBuf previous, Session f) throws IOException {
             if(previous!=null) {
                 assert previous.next==null;
                 previous.next = this;
@@ -323,7 +323,7 @@ public class LargeText {
     private static final class FileSession implements Session {
         private final RandomAccessFile file;
 
-        public FileSession(File file) throws IOException {
+        FileSession(File file) throws IOException {
             this.file = new RandomAccessFile(file,"r");
         }
 
@@ -351,7 +351,7 @@ public class LargeText {
         private final InputStream in;
 
         @SuppressWarnings("deprecation")
-        public BufferSession(ByteBuffer buf) {
+        BufferSession(ByteBuffer buf) {
             this.in = buf.newInputStream();
         }
 

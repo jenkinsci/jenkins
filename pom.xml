@@ -448,6 +448,7 @@ THE SOFTWARE.
                        Modifiers: https://checkstyle.sourceforge.io/config_modifier.html
                    -->
                    <module name="ModifierOrder"/>
+                   <module name="RedundantModifier"/>
                  </module>
                </module>
              </checkstyleRules>

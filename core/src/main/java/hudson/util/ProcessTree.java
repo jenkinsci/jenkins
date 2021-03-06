@@ -359,7 +359,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
             private IOSProcess process;
             
-            public CheckVetoes(IOSProcess processToCheck) {
+            CheckVetoes(IOSProcess processToCheck) {
                 process = processToCheck;
             }
         
@@ -724,7 +724,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     abstract static class Unix extends Local {
-        public Unix(boolean vetoersExist) {
+        Unix(boolean vetoersExist) {
             super(vetoersExist);
         }
 
@@ -942,7 +942,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
 
     static class Linux extends ProcfsUnix {
-        public Linux(boolean vetoersExist) {
+        Linux(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1052,7 +1052,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class AIX extends ProcfsUnix {
-        public AIX(boolean vetoersExist) {
+        AIX(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1374,7 +1374,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class Solaris extends ProcfsUnix {
-        public Solaris(boolean vetoersExist) {
+        Solaris(boolean vetoersExist) {
             super(vetoersExist);
         }
         

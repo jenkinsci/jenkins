@@ -97,7 +97,7 @@ static class FingerprintParams {
     final @CheckForNull Run build;
     final String fileName;
 
-    public FingerprintParams(@CheckForNull Run build, @NonNull String fileName) {
+    FingerprintParams(@CheckForNull Run build, @NonNull String fileName) {
         this.build = build;
         this.fileName = fileName;
 

@@ -2997,7 +2997,7 @@ public class Queue extends ResourceController implements Saveable {
         private final List<BuildableItem> buildables;
         private final List<BuildableItem> pendings;
 
-        public Snapshot(Set<WaitingItem> waitingList, List<BlockedItem> blockedProjects, List<BuildableItem> buildables,
+        Snapshot(Set<WaitingItem> waitingList, List<BlockedItem> blockedProjects, List<BuildableItem> buildables,
                         List<BuildableItem> pendings) {
             this.waitingList = new LinkedHashSet<>(waitingList);
             this.blockedProjects = new ArrayList<>(blockedProjects);
