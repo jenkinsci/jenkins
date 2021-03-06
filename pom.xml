@@ -442,6 +442,10 @@ THE SOFTWARE.
                  <module name="UniqueProperties"/>
                  <module name="TreeWalker">
                    <!--
+                       Design: https://checkstyle.sourceforge.io/config_design.html
+                   -->
+                   <module name="OneTopLevelClass"/>
+                   <!--
                        Coding: https://checkstyle.sourceforge.io/config_coding.html
                    -->
                    <module name="CovariantEquals"/>
