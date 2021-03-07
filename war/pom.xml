@@ -41,7 +41,7 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <host>localhost</host><!-- HTTP listener host/interface -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>14.15.1</node.version>
+    <node.version>14.16.0</node.version>
     <yarn.version>1.22.10</yarn.version>
   </properties>
 
