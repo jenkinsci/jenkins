@@ -24,6 +24,7 @@
 
 package jenkins;
 
+import com.google.common.collect.Iterators;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.jar.JarFile;
 
-import com.google.common.collect.Iterators;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
