@@ -104,7 +104,7 @@ public class ClassFilterImpl extends ClassFilter {
         ClassFilter.setDefault(ClassFilter.NONE); // even Method on the standard blacklist is going to explode
     }
 
-    //@VisibleForTesting
+    @VisibleForTesting
     /*package*/ ClassFilterImpl() {}
 
     /** Whether a given class is blacklisted. */

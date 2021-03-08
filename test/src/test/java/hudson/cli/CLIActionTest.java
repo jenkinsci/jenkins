@@ -91,7 +91,7 @@ public class CLIActionTest {
     private static final String ADMIN = "admin@mycorp.com";
 
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
-        List<String> commands = new ArrayList(Arrays.asList( "java",
+        List<String> commands = new ArrayList<>(Arrays.asList("java",
                                                              "-jar",
                                                              jar.getAbsolutePath(),
                                                              "-s",

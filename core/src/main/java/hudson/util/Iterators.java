@@ -311,7 +311,7 @@ public class Iterators {
      */
     public static <T> Iterator<T> removeNull(final Iterator<T> itr) {
         Iterable<T> iterable = () -> itr;
-        return StreamSupport.stream(iterable.spliterator(), false).filter(t -> t != null).iterator();
+        return StreamSupport.stream(iterable.spliterator(), false).filter(Objects::nonNull).iterator();
     }
 
     /**
@@ -322,8 +322,8 @@ public class Iterators {
      */
     @SafeVarargs
     public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
-        return () -> new FlattenIterator<T,Iterable<? extends T>>(Collections.unmodifiableList(StreamSupport.stream(
-            Arrays.stream(iterables).spliterator(), true).collect( Collectors.toList()))) {
+        return () -> new FlattenIterator<T,Iterable<? extends T>>(Collections.unmodifiableList(
+            Arrays.stream(iterables).collect(Collectors.toList()))) {
             protected Iterator<T> expand(Iterable<? extends T> iterable) {
                 return Iterators.<T>cast(iterable).iterator();
             }

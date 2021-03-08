@@ -217,7 +217,7 @@ public class LogRotator extends BuildDiscarder {
             String msg = String.format(
                     "Failed to rotate logs for [%s]",
                     exceptionMap.keySet().stream().
-                        filter(run -> run!=null).
+                        filter(Objects::nonNull).
                         map(Run::toString).
                         collect(Collectors.joining(", "))
             );
