@@ -52,7 +52,7 @@ public class ClassPathTest {
         for (File jar : new File(WarExploder.getExplodedDir(), "WEB-INF/lib").listFiles((dir, name) -> name.endsWith(".jar"))) {
             String jarname = jar.getName();
             try (JarFile jf = new JarFile(jar)) {
-                Iterators.forEnumeration( jf.entries()).forEachRemaining( e -> {
+                Iterators.forEnumeration(jf.entries()).forEachRemaining(e -> {
                     String name = e.getName();
                     if (name.startsWith("META-INF/") || name.endsWith("/") || !name.contains("/")) {
                         return;
