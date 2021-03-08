@@ -84,6 +84,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -476,7 +477,7 @@ public class Queue extends ResourceController implements Saveable {
             try {
                 queueFile.write(state);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to write out the queue file " + getXMLQueueFile(), e);
+                LOGGER.log(e instanceof ClosedByInterruptException ? Level.FINE : Level.WARNING, "Failed to write out the queue file " + getXMLQueueFile(), e);
             }
         } finally {
             lock.unlock();
