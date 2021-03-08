@@ -442,6 +442,10 @@ THE SOFTWARE.
                  <module name="UniqueProperties"/>
                  <module name="TreeWalker">
                    <!--
+                       Annotations: https://checkstyle.sourceforge.io/config_annotation.html
+                   -->
+                   <module name="MissingOverride"/>
+                   <!--
                        Design: https://checkstyle.sourceforge.io/config_design.html
                    -->
                    <module name="OneTopLevelClass"/>
