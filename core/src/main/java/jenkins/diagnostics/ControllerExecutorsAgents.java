@@ -30,7 +30,7 @@ import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
 @Extension
-@Symbol("controllerExecutorsAgents")
+@Symbol("controllerExecutorsWithAgents")
 public class ControllerExecutorsAgents extends AdministrativeMonitor {
 
     @Override
