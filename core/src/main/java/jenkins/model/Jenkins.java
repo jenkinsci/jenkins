@@ -27,6 +27,7 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -3203,7 +3204,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Checks the correctness of the newBuildsDirValue for use as {@link #buildsDir}.
      * @param newBuildsDirValue the candidate newBuildsDirValue for updating {@link #buildsDir}.
      */
-    //@VisibleForTesting
+    @VisibleForTesting
     /*private*/ static void checkRawBuildsDir(String newBuildsDirValue) throws InvalidBuildsDir {
 
         // do essentially what expandVariablesForDirectory does, without an Item
