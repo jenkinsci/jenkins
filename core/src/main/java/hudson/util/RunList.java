@@ -215,10 +215,22 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * @since 2.279
      */
     public RunList<R> filter(Predicate<R> predicate) {
+        size = null;
+        first = null;
         base = StreamSupport.stream(base.spliterator(), false).
             filter(predicate).
-            collect( Collectors.toList());
+            collect(Collectors.toList());
         return this;
+    }
+
+    /**
+     * Returns elements that satisfy the given predicate.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.544
+     * @deprecated use {@link #filter(Predicate)}
+     */
+    public RunList<R> filter(com.google.common.base.Predicate<R> predicate) {
+        return filter((Predicate<R>) predicate::apply);
     }
 
     /**
