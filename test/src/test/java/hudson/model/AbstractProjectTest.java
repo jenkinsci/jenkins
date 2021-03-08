@@ -283,7 +283,7 @@ public class AbstractProjectTest {
     public void renameJobLostBuilds() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("initial");
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertEquals( 1, p.getBuilds().stream().count());
+        assertEquals(1, p.getBuilds().stream().count());
         p.renameTo("edited");
         p._getRuns().purgeCache();
         assertEquals(1, p.getBuilds().stream().count());

@@ -68,7 +68,7 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
             User.get(TEST_USER_NAME).addProperty(new UserSearchProperty(false));
 
             //test logic
-            final List<ModelObject> runs = Arrays.asList(new MockRun( 2, Result.FAILURE), new MockRun( 1, Result.SUCCESS));
+            final List<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
             assertNoMatchingBuildsForGivenSearchStringAndRunItems(searchString, runs, assertionOnSearchResults);
         }
 

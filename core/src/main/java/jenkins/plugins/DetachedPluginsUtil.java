@@ -51,7 +51,7 @@ public class DetachedPluginsUtil {
 
     static {
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugins.txt")) {
-            DETACHED_LIST = Collections.unmodifiableList(configLines( is).map( line -> {
+            DETACHED_LIST = Collections.unmodifiableList(configLines(is).map(line -> {
                 String[] pieces = line.split(" ");
 
                 // defaults to Java 1.0 to install unconditionally if unspecified

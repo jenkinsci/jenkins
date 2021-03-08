@@ -328,7 +328,7 @@ public class HistoryPageFilterTest {
     @Test
     @Issue("JENKINS-42645")
     public void should_be_case_insensitive_by_default() throws IOException {
-        List<ModelObject> runs = Arrays.asList(new MockRun( 2, Result.FAILURE), new MockRun( 1, Result.SUCCESS));
+        List<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
     }
 

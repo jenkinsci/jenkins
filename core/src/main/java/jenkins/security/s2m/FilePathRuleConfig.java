@@ -68,7 +68,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
         if (token.equals("all"))
             return OpMatcher.ALL;
 
-        final Set ops = Collections.unmodifiableSet( new HashSet<>(Arrays.asList( token.split( ","))));
+        final Set ops = Collections.unmodifiableSet(new HashSet<>(Arrays.asList( token.split( ","))));
         return op -> ops.contains(op);
     }
 
