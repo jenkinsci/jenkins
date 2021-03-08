@@ -109,7 +109,7 @@ import org.jenkinsci.remoting.util.LoggingChannelListener;
  */
 public class SlaveComputer extends Computer {
     private volatile Channel channel;
-    private volatile transient boolean acceptingTasks = true;
+    private transient volatile boolean acceptingTasks = true;
     private Charset defaultCharset;
     private Boolean isUnix;
     /**

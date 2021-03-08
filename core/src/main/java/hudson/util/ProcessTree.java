@@ -723,7 +723,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     }
 
-    static abstract class Unix extends Local {
+    abstract static class Unix extends Local {
         public Unix(boolean vetoersExist) {
             super(vetoersExist);
         }
@@ -743,7 +743,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * {@link ProcessTree} based on /proc.
      */
-    static abstract class ProcfsUnix extends Unix {
+    abstract static class ProcfsUnix extends Unix {
         ProcfsUnix(boolean vetoersExist) {
             super(vetoersExist);
             
@@ -1841,7 +1841,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Represents a local process tree, where this JVM and the process tree run on the same system.
      * (The opposite of {@link Remote}.)
      */
-    public static abstract class Local extends ProcessTree {
+    public abstract static class Local extends ProcessTree {
         @Deprecated
         Local() {
         }

@@ -118,7 +118,7 @@ public abstract class LabelExpression extends Label {
         return l.getExpression();
     }
 
-    public static abstract class Binary extends LabelExpression {
+    public abstract static class Binary extends LabelExpression {
         public final Label lhs,rhs;
 
         public Binary(Label lhs, Label rhs, LabelOperatorPrecedence op) {

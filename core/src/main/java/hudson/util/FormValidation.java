@@ -303,7 +303,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * <p>
      * This is used as a piece in a bigger validation effort.
      */
-    public static abstract class FileValidator {
+    public abstract static class FileValidator {
         public abstract FormValidation validate(File f);
 
         /**
@@ -458,7 +458,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * <p>
      * This allows the check method to call various utility methods in a concise syntax.
      */
-    public static abstract class URLCheck {
+    public abstract static class URLCheck {
         /**
          * Opens the given URL and reads text content from it.
          * This method honors Content-type header.

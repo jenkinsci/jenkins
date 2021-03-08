@@ -1122,7 +1122,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     @Extension
-    public final static PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
+    public static final PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
 
     /**
      * Administrative Monitor for failed plugins

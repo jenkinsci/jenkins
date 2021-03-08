@@ -396,7 +396,7 @@ public class MappingWorksheet {
         return executors.get(index);
     }
 
-    public static abstract class ExecutorSlot {
+    public abstract static class ExecutorSlot {
         public abstract Executor getExecutor();
 
         public abstract boolean isAvailable();

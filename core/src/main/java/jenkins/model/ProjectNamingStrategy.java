@@ -207,7 +207,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
         }
     }
 
-    public static abstract class ProjectNamingStrategyDescriptor extends Descriptor<ProjectNamingStrategy> {
+    public abstract static class ProjectNamingStrategyDescriptor extends Descriptor<ProjectNamingStrategy> {
     }
 
 }

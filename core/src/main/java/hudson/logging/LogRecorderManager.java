@@ -69,7 +69,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#name name}.
      */
-    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
+    public final transient Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
 
     public String getDisplayName() {
         return Messages.LogRecorderManager_DisplayName();

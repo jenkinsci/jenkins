@@ -121,7 +121,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         return null;
     }
 
-    public static abstract class DescriptorImpl<T extends DownloadFromUrlInstaller> extends ToolInstallerDescriptor<T> {
+    public abstract static class DescriptorImpl<T extends DownloadFromUrlInstaller> extends ToolInstallerDescriptor<T> {
         
         @SuppressWarnings("deprecation") // intentionally adding dynamic item here
         protected DescriptorImpl() {

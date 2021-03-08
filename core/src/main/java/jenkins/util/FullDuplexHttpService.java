@@ -149,7 +149,7 @@ public abstract class FullDuplexHttpService {
     /**
      * HTTP response that allows a client to use this service.
      */
-    public static abstract class Response extends HttpResponses.HttpResponseException {
+    public abstract static class Response extends HttpResponses.HttpResponseException {
 
         private final Map<UUID, FullDuplexHttpService> services;
 

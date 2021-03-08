@@ -56,7 +56,7 @@ public class Iterators {
     /**
      * Produces {A,B,C,D,E,F} from {{A,B},{C},{},{D,E,F}}.
      */
-    public static abstract class FlattenIterator<U,T> implements Iterator<U> {
+    public abstract static class FlattenIterator<U,T> implements Iterator<U> {
         private final Iterator<? extends T> core;
         private Iterator<U> cur;
 
@@ -96,7 +96,7 @@ public class Iterators {
      *
      * @since 1.150
      */
-    public static abstract class FilterIterator<T> implements Iterator<T> {
+    public abstract static class FilterIterator<T> implements Iterator<T> {
         private final Iterator<? extends T> core;
         private T next;
         private boolean fetched;

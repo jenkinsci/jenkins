@@ -327,11 +327,11 @@ public class Queue extends ResourceController implements Saveable {
         }
     }
 
-    private volatile transient LoadBalancer loadBalancer;
+    private transient volatile LoadBalancer loadBalancer;
 
-    private volatile transient QueueSorter sorter;
+    private transient volatile QueueSorter sorter;
 
-    private transient final AtmostOneTaskExecutor<Void> maintainerThread = new AtmostOneTaskExecutor<>(new Callable<Void>() {
+    private final transient AtmostOneTaskExecutor<Void> maintainerThread = new AtmostOneTaskExecutor<>(new Callable<Void>() {
         @Override
         public Void call() throws Exception {
             maintain();
@@ -344,9 +344,9 @@ public class Queue extends ResourceController implements Saveable {
         }
     });
 
-    private transient final ReentrantLock lock = new ReentrantLock();
+    private final transient ReentrantLock lock = new ReentrantLock();
 
-    private transient final Condition condition = lock.newCondition();
+    private final transient Condition condition = lock.newCondition();
 
     public Queue(@NonNull LoadBalancer loadBalancer) {
         this.loadBalancer =  loadBalancer.sanitize();
@@ -1781,7 +1781,7 @@ public class Queue extends ResourceController implements Saveable {
         };
     }
 
-    private final static Hash<Node> NODE_HASH = Node::getNodeName;
+    private static final Hash<Node> NODE_HASH = Node::getNodeName;
 
     private boolean makePending(BuildableItem p) {
         // LOGGER.info("Making "+p.task+" pending"); // REMOVE
@@ -2093,7 +2093,7 @@ public class Queue extends ResourceController implements Saveable {
      * Item in a queue.
      */
     @ExportedBean(defaultVisibility = 999)
-    public static abstract class Item extends Actionable {
+    public abstract static class Item extends Actionable {
 
         private final long id;
 
@@ -2475,7 +2475,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      * @since 1.316
      */
-    public static abstract class QueueDecisionHandler implements ExtensionPoint {
+    public abstract static class QueueDecisionHandler implements ExtensionPoint {
         /**
          * Returns whether the new item should be scheduled.
          *
@@ -2565,7 +2565,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Common part between {@link BlockedItem} and {@link BuildableItem}.
      */
-    public static abstract class NotWaitingItem extends Item {
+    public abstract static class NotWaitingItem extends Item {
         /**
          * When did this job exit the {@link Queue#waitingList} phase?
          */
@@ -2653,7 +2653,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * {@link Item} in the {@link Queue#buildables} stage.
      */
-    public final static class BuildableItem extends NotWaitingItem {
+    public static final class BuildableItem extends NotWaitingItem {
         /**
          * Set to true when this is added to the {@link Queue#pendings} list.
          */
@@ -2764,7 +2764,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      * @since 1.519
      */
-    public final static class LeftItem extends Item {
+    public static final class LeftItem extends Item {
         public final WorkUnitContext outcome;
 
         /**

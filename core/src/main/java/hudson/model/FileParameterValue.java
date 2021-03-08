@@ -77,7 +77,7 @@ public class FileParameterValue extends ParameterValue {
     public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE = 
             Boolean.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
 
-    private transient final FileItem file;
+    private final transient FileItem file;
 
     /**
      * The name of the originally uploaded file.

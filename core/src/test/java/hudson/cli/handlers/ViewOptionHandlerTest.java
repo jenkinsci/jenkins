@@ -275,7 +275,7 @@ public class ViewOptionHandlerTest {
         });
     }
 
-    private static abstract class CompositeView extends View implements ViewGroup {
+    private abstract static class CompositeView extends View implements ViewGroup {
         protected CompositeView(String name) {
             super(name);
         }
