@@ -100,14 +100,6 @@ public class RunList<R extends Run> extends AbstractList<R> {
             distinct().
             sorted(Comparator.comparingLong(Run::getTimeInMillis)).
             collect(Collectors.toList());
-
-//        return Iterables.mergeSorted(runLists, new Comparator<R>() {
-//            public int compare(R o1, R o2) {
-//                long lhs = o1.getTimeInMillis();
-//                long rhs = o2.getTimeInMillis();
-//                return Long.compare(rhs, lhs);
-//            }
-//        });
     }
 
     private RunList(Iterable<R> c) {
