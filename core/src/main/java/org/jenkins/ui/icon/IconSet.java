@@ -511,7 +511,7 @@ public class IconSet {
 
         icons.addIcon(new Icon("icon-accept icon-lg", "32x32/accept.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-attribute icon-lg", "32x32/attribute.png", Icon.ICON_LARGE_STYLE));
-        icons.addIcon(new Icon("icon-clipboard icon-lg", "svgs/clipboard-list-solid.svg#clipboard-list-solid", Icon.ICON_LARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
+        icons.addIcon(new Icon("icon-clipboard icon-lg", "32x32/clipboard.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-clock icon-lg", "32x32/clock.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-computer-x icon-lg", "32x32/computer-x.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-computer icon-lg", "32x32/computer.png", Icon.ICON_LARGE_STYLE));
@@ -621,5 +621,8 @@ public class IconSet {
         icons.addIcon(new Icon("icon-terminal icon-xlg", "48x48/terminal.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-user icon-xlg", "48x48/user.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-warning icon-xlg", "48x48/warning.png", Icon.ICON_XLARGE_STYLE));
+
+        // Capture a list of the core icons.
+        icons.coreIcons.putAll(icons.iconsByCSSSelector);
     }
 }
