@@ -23,6 +23,7 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -55,6 +56,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * The default case insensitive strategy.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static IdStrategy CASE_INSENSITIVE = new CaseInsensitive();
 
     /**

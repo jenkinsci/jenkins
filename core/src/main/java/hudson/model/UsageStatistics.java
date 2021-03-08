@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
@@ -287,5 +288,6 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     private static final long DAY = DAYS.toMillis(1);
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

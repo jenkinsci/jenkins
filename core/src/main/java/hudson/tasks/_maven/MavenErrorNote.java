@@ -23,6 +23,7 @@
  */
 package hudson.tasks._maven;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -53,6 +54,6 @@ public class MavenErrorNote extends ConsoleNote {
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("^\\[ERROR\\]");
+    public static final Pattern PATTERN = Pattern.compile("^\\[ERROR\\]");
 }
 

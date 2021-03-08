@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
 import jenkins.util.SystemProperties;
@@ -43,6 +44,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     private boolean excludeClientIPFromCrumb;
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final: Groovy Console */ boolean EXCLUDE_SESSION_ID = SystemProperties.getBoolean(DefaultCrumbIssuer.class.getName() + ".EXCLUDE_SESSION_ID");
 
     @DataBoundConstructor

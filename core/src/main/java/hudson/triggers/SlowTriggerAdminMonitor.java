@@ -1,9 +1,11 @@
 package hudson.triggers;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -28,7 +30,8 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     @NonNull
     private final Map<String, Value> errors = new ConcurrentHashMap<>();
 
-    public static int MAX_ENTRIES = 10;
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ int MAX_ENTRIES = SystemProperties.getInteger(SlowTriggerAdminMonitor.class.getName() + ".maxEntries", 10);
 
     @NonNull
     private static final Logger LOGGER = Logger.getLogger(SlowTriggerAdminMonitor.class.getName());

@@ -28,6 +28,7 @@ package hudson;
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.AbstractProject;
@@ -2906,6 +2907,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Default bound for {@link #validateAntFileMask(String, int, boolean)}.
      * @since 1.592
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
@@ -3288,6 +3290,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     private static final long serialVersionUID = 1L;
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());

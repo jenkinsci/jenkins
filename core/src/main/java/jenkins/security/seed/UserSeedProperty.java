@@ -23,6 +23,7 @@
  */
 package jenkins.security.seed;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.model.User;
@@ -64,12 +65,14 @@ public class UserSeedProperty extends UserProperty {
      * If we disable the seed, we can still use it to write / store information but not verifying the data using it.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean DISABLE_USER_SEED = SystemProperties.getBoolean(UserSeedProperty.class.getName() + ".disableUserSeed");
 
     /**
      * Hide the user seed section from the UI to prevent accidental use
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean HIDE_USER_SEED_SECTION = SystemProperties.getBoolean(UserSeedProperty.class.getName() + ".hideUserSeedSection");
 
     public static final String USER_SESSION_SEED = "_JENKINS_SESSION_SEED";

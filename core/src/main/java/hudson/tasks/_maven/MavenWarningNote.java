@@ -55,5 +55,5 @@ public class MavenWarningNote extends ConsoleNote {
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("^\\[WARNING\\]");
+    public static final Pattern PATTERN = Pattern.compile("^\\[WARNING\\]");
 }
