@@ -25,7 +25,6 @@ package hudson.util;
 
 import java.util.function.Predicate;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.Node;
@@ -97,7 +96,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {
 
         return StreamSupport.stream(runLists.spliterator(), false).
-            flatMap( rs -> StreamSupport.stream(rs.spliterator(), false )).
+            flatMap(rs -> StreamSupport.stream(rs.spliterator(), false)).
             distinct().
             sorted(Comparator.comparingLong(Run::getTimeInMillis)).
             collect(Collectors.toList());
