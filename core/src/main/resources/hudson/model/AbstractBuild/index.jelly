@@ -56,7 +56,7 @@ THE SOFTWARE.
         <t:editableDescription permission="${it.UPDATE}" />
       </div>
 
-      <table style="margin-top: 1em; margin-left:1em;">
+      <div>
         <t:artifactList build="${it}" caption="${%Build Artifacts}"
           permission="${it.ARTIFACTS}" />
 
@@ -107,9 +107,11 @@ THE SOFTWARE.
 
         <!-- give actions a chance to contribute summary item -->
         <j:forEach var="a" items="${it.allActions}">
-          <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+          <div style="margin-top: 1em;">
+            <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+          </div>
         </j:forEach>
-      </table>
+      </div>
 
       <st:include page="main.jelly" optional="true" />
 
