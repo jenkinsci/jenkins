@@ -23,7 +23,6 @@
  */
 package jenkins.widgets;
 
-import com.google.common.collect.Iterables;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
@@ -41,6 +40,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * History page filter.
@@ -136,7 +138,8 @@ public class HistoryPageFilter<T> {
      */
     public void add(@NonNull Iterable<T> runItems, @NonNull List<Queue.Item> queueItems) {
         sort(queueItems);
-        addInternal(Iterables.concat(queueItems, runItems));
+        addInternal(Stream.concat(queueItems.stream(), StreamSupport.stream(runItems.spliterator(), false))
+                        .collect(Collectors.toList()));
     }
 
     /**

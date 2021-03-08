@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.Maps;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Queue.Task;
@@ -33,6 +32,7 @@ import hudson.model.queue.MappingWorksheet.Mapping;
 import hudson.util.ConsistentHash;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -86,7 +86,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
 
                 // Build a Map to pass in rather than repeatedly calling hash.add() because each call does lots of expensive work
                 List<ExecutorChunk> chunks = ws.works(i).applicableExecutorChunks();
-                Map<ExecutorChunk, Integer> toAdd = Maps.newHashMapWithExpectedSize(chunks.size());
+                Map<ExecutorChunk, Integer> toAdd = new HashMap( chunks.size());
                 for (ExecutorChunk ec : chunks) {
                     toAdd.put(ec, ec.size()*100);
                 }

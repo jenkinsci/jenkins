@@ -24,8 +24,6 @@
 
 package hudson.tasks;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
@@ -120,7 +118,7 @@ public class FingerprinterTest {
     private static class FingerprintAddingBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            build.addAction(new Fingerprinter.FingerprintAction(build, ImmutableMap.of(singleFiles2[0], "fakefingerprint")));
+            build.addAction(new Fingerprinter.FingerprintAction(build, Collections.singletonMap(singleFiles2[0],"fakefingerprint")));
             return true;
         }
     }
@@ -134,7 +132,7 @@ public class FingerprinterTest {
         assertThat(build.getActions(Fingerprinter.FingerprintAction.class), hasSize(1));
 
         Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
-        assertEquals(action.getRecords().keySet(), ImmutableSet.of(singleFiles2[0], singleFiles[0]));
+        assertEquals(action.getRecords().keySet(), new HashSet<>(Arrays.asList(singleFiles2[0], singleFiles[0])));
     }
 
     @Test public void multipleUpstreamDependencies() throws Exception {

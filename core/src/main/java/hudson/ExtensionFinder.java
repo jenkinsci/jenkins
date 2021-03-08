@@ -23,8 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -69,6 +67,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Discovers the implementations of an extension point.
@@ -304,12 +304,13 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
 
-        private ImmutableList<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
+        private List<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
             List<IndexItem<?,Object>> indices = new ArrayList<>();
             for (GuiceExtensionAnnotation<?> gea : extensionAnnotations.values()) {
-                Iterables.addAll(indices, Index.load(gea.annotationType, Object.class, classLoader));
+                indices.addAll(StreamSupport.stream(Index.load(gea.annotationType, Object.class, classLoader).spliterator(), false).
+                                collect(Collectors.toList()));
             }
-            return ImmutableList.copyOf(indices);
+            return Collections.unmodifiableList(indices);
         }
 
         public Injector getContainer() {
@@ -641,7 +642,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             // 5. dead lock
             if (indices==null) {
                 ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                indices = ImmutableList.copyOf(Index.load(Extension.class, Object.class, cl));
+                indices = Collections.unmodifiableList(StreamSupport.stream(Index.load(Extension.class, Object.class, cl).spliterator(), false)
+                                                                            .collect(Collectors.toList()));
             }
             return indices;
         }
@@ -661,7 +663,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             List<IndexItem<Extension,Object>> r = new ArrayList<>(old);
             r.addAll(delta);
-            indices = ImmutableList.copyOf(r);
+            indices = Collections.unmodifiableList(r);
 
             return new ExtensionComponentSet() {
                 @Override

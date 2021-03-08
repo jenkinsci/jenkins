@@ -24,8 +24,6 @@
 
 package jenkins.security;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import hudson.ExtensionList;
 import hudson.Main;
 import hudson.remoting.ClassFilter;
@@ -106,7 +104,7 @@ public class ClassFilterImpl extends ClassFilter {
         ClassFilter.setDefault(ClassFilter.NONE); // even Method on the standard blacklist is going to explode
     }
 
-    @VisibleForTesting
+    //@VisibleForTesting
     /*package*/ ClassFilterImpl() {}
 
     /** Whether a given class is blacklisted. */
@@ -117,7 +115,7 @@ public class ClassFilterImpl extends ClassFilter {
     static final Set<String> WHITELISTED_CLASSES;
     static {
         try (InputStream is = ClassFilterImpl.class.getResourceAsStream("whitelisted-classes.txt")) {
-            WHITELISTED_CLASSES = ImmutableSet.copyOf(IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toSet()));
+            WHITELISTED_CLASSES = Collections.unmodifiableSet(IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toSet()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }

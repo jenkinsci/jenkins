@@ -24,8 +24,6 @@
  */
 package hudson;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
@@ -61,6 +59,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -220,7 +219,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
      * depends on the plugin e.g. UI support library bundle plugin.
      */
-    private static Set<String> CORE_ONLY_DEPENDANT = ImmutableSet.copyOf(Collections.singletonList("jenkins-core"));
+    private static Set<String> CORE_ONLY_DEPENDANT = Collections.unmodifiableSet(new HashSet<>( Arrays.asList("jenkins-core")));
 
     /**
      * Set the list of components that depend on this plugin.
@@ -823,7 +822,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 // It includes MANDATORY, NONE:
                 // with NONE, the process only fail if mandatory dependent plugins exists
                 // As of getDependents has all the dependents, we get the difference between them and only the optionals
-                dependentsToCheck = Sets.difference(this.getDependents(), this.getOptionalDependents());
+                dependentsToCheck = this.getDependents().
+                    stream().
+                    filter(element -> !this.getOptionalDependents().contains(element)).
+                    collect(Collectors.toSet());
         }
         return dependentsToCheck;
     }

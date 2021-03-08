@@ -1,7 +1,5 @@
 package hudson.cli;
 
-import com.google.common.collect.Lists;
-
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
@@ -92,7 +90,7 @@ public class CLIActionTest {
     private static final String ADMIN = "admin@mycorp.com";
 
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
-        List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* TODO until it is the default */ "-webSocket");
+        List<String> commands = Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* TODO until it is the default */ "-webSocket");
         if (useApiToken) {
             commands.add("-auth");
             commands.add(ADMIN + ":" + User.get(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());

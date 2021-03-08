@@ -24,9 +24,8 @@
 package hudson.util;
 
 import java.util.function.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
-import edu.umd.cs.findbugs.annotations.Nullable;
+
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.Node;
@@ -37,6 +36,8 @@ import hudson.model.View;
 import hudson.util.Iterators.CountingPredicate;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
@@ -94,13 +95,20 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {
-        return Iterables.mergeSorted(runLists, new Comparator<R>() {
-            public int compare(R o1, R o2) {
-                long lhs = o1.getTimeInMillis();
-                long rhs = o2.getTimeInMillis();
-                return Long.compare(rhs, lhs);
-            }
-        });
+
+        return StreamSupport.stream(runLists.spliterator(), false).
+            flatMap( rs -> StreamSupport.stream(rs.spliterator(), false )).
+            distinct().
+            sorted(Comparator.comparingLong(Run::getTimeInMillis)).
+            collect(Collectors.toList());
+
+//        return Iterables.mergeSorted(runLists, new Comparator<R>() {
+//            public int compare(R o1, R o2) {
+//                long lhs = o1.getTimeInMillis();
+//                long rhs = o2.getTimeInMillis();
+//                return Long.compare(rhs, lhs);
+//            }
+//        });
     }
 
     private RunList(Iterable<R> c) {
@@ -208,33 +216,9 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * @since 2.279
      */
     public RunList<R> filter(Predicate<R> predicate) {
-        return filter(new PredicateAdapter(predicate));
-    }
-
-    private static class PredicateAdapter<T> implements com.google.common.base.Predicate<T> {
-        private final Predicate<T> predicate;
-
-        public PredicateAdapter(Predicate<T> predicate) {
-            this.predicate = predicate;
-        }
-
-        @Override
-        public boolean apply(@Nullable T r) {
-            return predicate.test(r);
-        }
-    }
-
-    /**
-     * Returns elements that satisfy the given predicate.
-     * <em>Warning:</em> this method mutates the original list and then returns it.
-     * @since 1.544
-     * @deprecated use {@link #filter(Predicate)}
-     */
-    @Deprecated
-    public RunList<R> filter(com.google.common.base.Predicate<R> predicate) {
-        size = null;
-        first = null;
-        base = Iterables.filter(base,predicate);
+        base = StreamSupport.stream(base.spliterator(), false).
+            filter(predicate).
+            collect( Collectors.toList());
         return this;
     }
 
@@ -254,7 +238,9 @@ public class RunList<R extends Run> extends AbstractList<R> {
 
             @Override
             public String toString() {
-                return Iterables.toString(this);
+                return StreamSupport.stream(this.spliterator(), false).
+                    collect(Collectors.toList()).
+                    toString();
             }
         };
         return this;

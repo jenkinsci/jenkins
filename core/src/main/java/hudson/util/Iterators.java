@@ -23,10 +23,7 @@
  */
 package hudson.util;
 
-import com.google.common.annotations.Beta;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +32,9 @@ import java.util.ListIterator;
 import java.util.AbstractList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -310,7 +310,8 @@ public class Iterators {
      * Wraps another iterator and throws away nulls.
      */
     public static <T> Iterator<T> removeNull(final Iterator<T> itr) {
-        return com.google.common.collect.Iterators.filter(itr, Predicates.notNull());
+        Iterable<T> iterable = () -> itr;
+        return StreamSupport.stream(iterable.spliterator(), false).filter(t -> t != null).iterator();
     }
 
     /**
@@ -321,7 +322,8 @@ public class Iterators {
      */
     @SafeVarargs
     public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
-        return () -> new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
+        return () -> new FlattenIterator<T,Iterable<? extends T>>(Collections.unmodifiableList(StreamSupport.stream(
+            Arrays.stream(iterables).spliterator(), true).collect( Collectors.toList()))) {
             protected Iterator<T> expand(Iterable<? extends T> iterable) {
                 return Iterators.<T>cast(iterable).iterator();
             }
@@ -349,6 +351,7 @@ public class Iterators {
     }
 
     @SafeVarargs
+    @Deprecated
     public static <T> Iterator<T> sequence(Iterator<? extends T>... iterators) {
         return com.google.common.collect.Iterators.concat(iterators);
     }
@@ -402,7 +405,7 @@ public class Iterators {
     }
 
     /**
-     * Similar to {@link com.google.common.collect.Iterators#skip} except not {@link Beta}.
+     * Call next until skip count
      * @param iterator some iterator
      * @param count a nonnegative count
      */
@@ -416,4 +419,20 @@ public class Iterators {
         }
     }
 
+    /**
+     *
+     * @param iterator the iterator
+     * @param position – position of the element to return
+     * @return the element at the specified position in iterator
+     */
+    public static <T> T get(Iterator<T> iterator, int position){
+        int skipped = 0;
+        while (iterator.hasNext()) {
+            T t = iterator.next();
+            if (skipped++ == position) {
+                return t;
+            }
+        }
+        throw new IndexOutOfBoundsException();
+    }
 }

@@ -35,13 +35,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.HashMultimap;
 import hudson.util.RunList;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.HashMultimap;
 
 import hudson.Extension;
 import hudson.model.Job;
@@ -145,7 +144,7 @@ public class LogRotator extends BuildDiscarder {
         HashMultimap<Run<?,?>, IOException> exceptionMap = HashMultimap.create();
         
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
-        
+
         // always keep the last successful and the last stable builds
         Run lsb = job.getLastSuccessfulBuild();
         Run lstb = job.getLastStableBuild();
@@ -217,7 +216,10 @@ public class LogRotator extends BuildDiscarder {
             //Collate all encountered exceptions into a single exception and throw that
             String msg = String.format(
                     "Failed to rotate logs for [%s]",
-                    Joiner.on(", ").join(exceptionMap.keySet())
+                    exceptionMap.keySet().stream().
+                        filter(run -> run!=null).
+                        map(Run::toString).
+                        collect(Collectors.joining(", "))
             );
             throw new CompositeIOException(msg, new ArrayList<>(exceptionMap.values()));
         }

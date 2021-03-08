@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -68,6 +67,9 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.security.access.AccessDeniedException;
@@ -1169,13 +1171,15 @@ public class Fingerprint implements ModelObject, Saveable {
             for (TransientFingerprintFacetFactory fff : TransientFingerprintFacetFactory.all()) {
                 fff.createFor(this,transientFacets);
             }
-            this.transientFacets = ImmutableList.copyOf(transientFacets);
+            this.transientFacets = Collections.unmodifiableList(transientFacets);
         }
 
         return new AbstractCollection<FingerprintFacet>() {
             @Override
             public Iterator<FingerprintFacet> iterator() {
-                return Iterators.sequence(facets.iterator(), transientFacets.iterator());
+                return Stream.concat(StreamSupport.stream(facets.spliterator(), false),
+                                     StreamSupport.stream(transientFacets.spliterator(), false)).
+                    iterator();
             }
 
             @Override

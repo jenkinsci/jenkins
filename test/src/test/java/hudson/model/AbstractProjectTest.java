@@ -34,7 +34,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.common.collect.Iterables;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -60,6 +59,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.Future;
+import java.util.stream.StreamSupport;
+
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -164,7 +165,7 @@ public class AbstractProjectTest {
 
     /**
      * Tests the &lt;optionalBlock @field> round trip behavior by using
-     * {@link AbstractProject#concurrentBuild}
+     * {@link AbstractProject#isConcurrentBuild()}
      */
     @Test
     public void optionalBlockDataBindingRoundtrip() throws Exception {
@@ -282,19 +283,19 @@ public class AbstractProjectTest {
     public void renameJobLostBuilds() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("initial");
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals( 1, p.getBuilds().stream().count());
         p.renameTo("edited");
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         MockFolder d = j.jenkins.createProject(MockFolder.class, "d");
         Items.move(p, d);
         assertEquals(p, j.jenkins.getItemByFullName("d/edited"));
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         d.renameTo("d2");
         p = j.jenkins.getItemByFullName("d2/edited", FreeStyleProject.class);
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
     }
 
     @Test

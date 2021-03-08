@@ -23,8 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -84,6 +82,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -700,7 +700,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 HashSet<String> r = new HashSet<>();
                 for (User u : getCulprits())
                     r.add(u.getId());
-                culprits = ImmutableSortedSet.copyOf(r);
+                culprits = Collections.unmodifiableSet(r);
                 CheckPoint.CULPRITS_DETERMINED.report();
             }
         }
@@ -980,7 +980,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return new EnvironmentList(buildEnvironments); 
         }
         
-        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : ImmutableList.copyOf(buildEnvironments));
+        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : Collections.unmodifiableList(buildEnvironments));
     }
 
     public Calendar due() {

@@ -27,9 +27,6 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -2506,11 +2503,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Restricted(NoExternalUse.class)
     public static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
-        return Util.replaceMacro(base, ImmutableMap.of(
-                "JENKINS_HOME", Jenkins.get().getRootDir().getPath(),
-                "ITEM_ROOTDIR", itemRootDir,
-                "ITEM_FULLNAME", itemFullName,   // legacy, deprecated
-                "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
+        Map<String, String> map = new HashMap<>(4);
+        map.put("JENKINS_HOME", Jenkins.get().getRootDir().getPath());
+        map.put("ITEM_ROOTDIR", itemRootDir);
+        map.put("ITEM_FULLNAME", itemFullName); // legacy, deprecated
+        map.put("ITEM_FULL_NAME", itemFullName.replace(':','$')); // safe, see JENKINS-12251
+        return Util.replaceMacro(base, Collections.unmodifiableMap(map));
 
     }
 
@@ -3205,7 +3203,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Checks the correctness of the newBuildsDirValue for use as {@link #buildsDir}.
      * @param newBuildsDirValue the candidate newBuildsDirValue for updating {@link #buildsDir}.
      */
-    @VisibleForTesting
+    //@VisibleForTesting
     /*private*/ static void checkRawBuildsDir(String newBuildsDirValue) throws InvalidBuildsDir {
 
         // do essentially what expandVariablesForDirectory does, without an Item
@@ -5393,7 +5391,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
-    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(ImmutableSet.of(
+    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
         "login",
         "loginError",
         "logout",
