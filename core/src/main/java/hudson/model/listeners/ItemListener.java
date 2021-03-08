@@ -23,7 +23,6 @@
  */
 package hudson.model.listeners;
 
-import com.google.common.base.Function;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
 import hudson.Extension;
@@ -32,6 +31,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
 import hudson.security.ACL;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -172,10 +172,10 @@ public class ItemListener implements ExtensionPoint {
     }
 
     // TODO JENKINS-21224 generalize this to a method perhaps in ExtensionList and use consistently from all listeners
-    private static void forAll(final /* java.util.function.Consumer<ItemListener> */Function<ItemListener,Void> consumer) {
+    private static void forAll(final Consumer<ItemListener> consumer) {
         for (ItemListener l : all()) {
             try {
-                consumer.apply(l);
+                consumer.accept(l);
             } catch (RuntimeException x) {
                 LOGGER.log(Level.WARNING, "failed to send event to listener of " + l.getClass(), x);
             }
@@ -187,7 +187,6 @@ public class ItemListener implements ExtensionPoint {
             if (l != null) {
                 l.onCopied(src, result);
             }
-            return null;
         });
     }
 
@@ -217,7 +216,6 @@ public class ItemListener implements ExtensionPoint {
             if (l != null) {
                 l.onCreated(item);
             }
-            return null;
         });
     }
 
@@ -226,7 +224,6 @@ public class ItemListener implements ExtensionPoint {
             if (l != null) {
                 l.onUpdated(item);
             }
-            return null;
         });
     }
 
@@ -236,7 +233,6 @@ public class ItemListener implements ExtensionPoint {
             if (l != null) {
                 l.onDeleted(item);
             }
-            return null;
         });
     }
 
@@ -262,14 +258,12 @@ public class ItemListener implements ExtensionPoint {
                 if (l != null) {
                     l.onRenamed(rootItem, oldName, newName);
                 }
-                return null;
             });
         }
         forAll(l -> {
             if (l!= null) {
                 l.onLocationChanged(rootItem, oldFullName, newFullName);
             }
-            return null;
         });
         if (rootItem instanceof ItemGroup) {
             for (final Item child : Items.allItems2(ACL.SYSTEM2, (ItemGroup)rootItem, Item.class)) {
@@ -281,7 +275,6 @@ public class ItemListener implements ExtensionPoint {
                     if (l != null) {
                         l.onLocationChanged(child, childOld, childNew);
                     }
-                    return null;
                 });
             }
         }
