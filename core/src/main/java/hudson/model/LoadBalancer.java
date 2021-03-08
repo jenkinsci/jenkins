@@ -86,7 +86,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
 
                 // Build a Map to pass in rather than repeatedly calling hash.add() because each call does lots of expensive work
                 List<ExecutorChunk> chunks = ws.works(i).applicableExecutorChunks();
-                Map<ExecutorChunk, Integer> toAdd = new HashMap( chunks.size());
+                Map<ExecutorChunk, Integer> toAdd = new HashMap<>();
                 for (ExecutorChunk ec : chunks) {
                     toAdd.put(ec, ec.size()*100);
                 }
