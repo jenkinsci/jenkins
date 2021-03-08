@@ -847,7 +847,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.siom79.japicmp</groupId>
             <artifactId>japicmp-maven-plugin</artifactId>
-            <version>0.14.4-20200728.214757-1</version> <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
+            <version>0.15.3</version> <!-- TODO https://github.com/siom79/japicmp/pull/266 -->
             <configuration>
               <parameter>
                 <!-- see https://siom79.github.io/japicmp/MavenPlugin.html -->
