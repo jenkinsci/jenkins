@@ -1178,7 +1178,7 @@ public class Fingerprint implements ModelObject, Saveable {
             @Override
             public Iterator<FingerprintFacet> iterator() {
                 return Stream.concat(StreamSupport.stream(facets.spliterator(), false),
-                                     StreamSupport.stream(transientFacets.spliterator(), false)).
+                                     transientFacets.stream()).
                     iterator();
             }
 
