@@ -86,9 +86,17 @@
   .yuimenuitemlabel {
     color: var(--menu-text-color);
     font-weight: normal;
+    // Done to align icons
+    display: flex;
+    align-items: center;
 
     &:visited {
       color: var(--menu-text-color);
+    }
+
+    // Align icons and text within
+    span {
+      display: inline-block;
     }
   }
 

@@ -24,6 +24,8 @@
 package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +61,7 @@ public class Icon {
     private final String url;
     private final String style;
     private IconType iconType;
+    private IconFormat iconFormat;
 
     /**
      * Creates a {@link IconType#CORE core} icon.
@@ -97,11 +100,37 @@ public class Icon {
      * @param iconType  The icon type.
      */
     public Icon(String classSpec, String url, String style, IconType iconType) {
+        this(classSpec, url, style, iconType, IconFormat.IMG);
+    }
+
+    /**
+     * Creates an icon.
+     *
+     * @param classSpec The icon class names.
+     * @param url       The icon image url.
+     * @param style     The icon style.
+     * @param iconFormat the {@link IconFormat}.
+     * @since TODO
+     */
+    public Icon(String classSpec, String url, String style, IconFormat iconFormat) {
+        this(classSpec, url, style, IconType.CORE, iconFormat);
+        if (url != null) {
+            if (url.startsWith("images/")) {
+                this.iconType = IconType.CORE;
+            } else if (url.startsWith("plugin/")) {
+                this.iconType = IconType.PLUGIN;
+            }
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public Icon(String classSpec, String url, String style, IconType iconType, IconFormat iconFormat) {
         this.classSpec = classSpec;
         this.normalizedSelector = toNormalizedCSSSelector(classSpec);
         this.url = toNormalizedIconUrl(url);
         this.style = style;
         this.iconType = iconType;
+        this.iconFormat = iconFormat;
     }
 
     /**
@@ -110,6 +139,14 @@ public class Icon {
      */
     public String getClassSpec() {
         return classSpec;
+    }
+
+    /**
+     * Is the Icon an SVG?
+     * @since TODO
+     */
+    public boolean isSvgSprite() {
+        return iconFormat == IconFormat.EXTERNAL_SVG_SPRITE;
     }
 
     /**
