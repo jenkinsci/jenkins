@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -102,7 +103,7 @@ public class CLITest {
     }
     private void doInterrupt(FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        List<String> args = Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString());
+        List<String> args = new ArrayList<>(Arrays.asList( "java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString()));
         args.addAll(Arrays.asList(modeArgs));
         args.addAll(Arrays.asList("build", "-s", "-v", "p"));
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(args).stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).start();
