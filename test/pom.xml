@@ -139,8 +139,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.21</version>
-      <!-- TODO define property for this and share with war/pom.xml-->
+      <version>1.22</version>
       <scope>test</scope>
     </dependency>
     <dependency>
