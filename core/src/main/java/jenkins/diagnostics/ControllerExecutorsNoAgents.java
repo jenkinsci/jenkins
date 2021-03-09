@@ -39,6 +39,11 @@ public class ControllerExecutorsNoAgents extends AdministrativeMonitor {
     }
 
     @Override
+    public boolean isSecurity() {
+        return true;
+    }
+
+    @Override
     public boolean isActivated() {
         return !Main.isDevelopmentMode && Jenkins.get().getNumExecutors() > 0 &&
                 Jenkins.get().clouds.isEmpty() && Jenkins.get().getNodes().isEmpty();
