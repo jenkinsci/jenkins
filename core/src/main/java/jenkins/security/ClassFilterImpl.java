@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.ExtensionList;
 import hudson.Main;
 import hudson.remoting.ClassFilter;
