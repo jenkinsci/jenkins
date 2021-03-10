@@ -574,6 +574,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-enforcer-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <executions>
               <execution>
                 <id>enforce-versions</id>
@@ -682,6 +683,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <configuration>
               <filesets>
                 <fileset>
