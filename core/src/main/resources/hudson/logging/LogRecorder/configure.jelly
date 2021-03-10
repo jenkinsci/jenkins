@@ -54,7 +54,12 @@ THE SOFTWARE.
                 ${%Logger}
               </th>
               <td width="60%">
-                <f:textbox field="name" autoCompleteUrl="autoCompleteLoggerName" />
+                <table width="100%">
+                  <f:entry>
+                    <f:textbox field="name" checkUrl="checkName" checkDependsOn="level"
+                               autoCompleteUrl="autoCompleteLoggerName" autocomplete="off"/>
+                  </f:entry>
+                </table>
               </td>
               <th style="white-space:nowrap;">
                 ${%Log level}

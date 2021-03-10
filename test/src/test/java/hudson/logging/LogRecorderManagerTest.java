@@ -23,26 +23,28 @@
  */
 package hudson.logging;
 
-import jenkins.security.MasterToSlaveCallable;
-import org.jvnet.hudson.test.Url;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
-import java.util.List;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import hudson.util.FormValidation;
+import jenkins.security.MasterToSlaveCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.Url;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -65,6 +67,34 @@ public class LogRecorderManagerTest {
         j.submit(form);
 
         assertEquals(Level.FINEST, logger.getLevel());
+    }
+    
+    @Issue("JENKINS-62472")
+    @Test public void logRecorderCheckName() {
+        LogRecorder testRecorder = new LogRecorder("test");
+        String warning = FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning()).toString();
+        assertEquals(warning, testRecorder.doCheckName("", null).toString());
+        assertEquals(warning, testRecorder.doCheckName("", "illegalArgument").toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.ALL.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINEST.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", "illegalArgument"));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", null));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.ALL.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINEST.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("", Level.CONFIG.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("", Level.INFO.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("", Level.WARNING.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("", Level.SEVERE.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("", Level.OFF.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("a", Level.CONFIG.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("a", Level.INFO.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("a", Level.WARNING.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("a", Level.SEVERE.getName()));
+        assertEquals(FormValidation.ok(),testRecorder.doCheckName("a", Level.OFF.getName()));
     }
 
     @Issue({"JENKINS-18274", "JENKINS-63458"})
