@@ -44,10 +44,10 @@ THE SOFTWARE.
         </p>
         <l:isAdmin>
           <div class="grey-anime-preload" style="display:none">
-            <l:icon class="icon-grey-anime icon-md"/>
+            <l:icon class="icon-nobuilt-anime icon-md"/>
             <l:icon class="icon-blue icon-md"/>
             <l:icon class="icon-red icon-md"/>
-            <l:icon class="icon-grey icon-md"/>
+            <l:icon class="icon-nobuilt icon-md"/>
           </div>
           <p class="info" style="font-weight: normal">
             <j:if test="${app.lifecycle.canRestart()}">
