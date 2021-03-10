@@ -25,8 +25,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="alert alert-warning">
-    <form method="post" action="${rootURL}/computer/(master)/configure" name="${it.id}">
-      <f:submit name="yes" value="${%Manage}"/>
+    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+      <f:submit name="agent" value="Set up agent"/>
+      <f:submit name="cloud" value="Set up cloud"/>
       <f:submit name="no" value="${%Dismiss}"/>
     </form>
     ${%ExecutorsWarning}

@@ -28,6 +28,11 @@ import hudson.Main;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+
+import java.io.IOException;
 
 @Extension
 @Symbol("controllerExecutorsWithoutAgents")
@@ -41,6 +46,20 @@ public class ControllerExecutorsNoAgents extends AdministrativeMonitor {
     @Override
     public boolean isSecurity() {
         return true;
+    }
+
+    @RequirePOST
+    public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if (Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            if(req.hasParameter("no")) {
+                disable(true);
+                rsp.sendRedirect(req.getContextPath() + "/manage");
+            } else if (req.hasParameter("cloud")) {
+                rsp.sendRedirect(req.getContextPath() + "/configureClouds");
+            } else if (req.hasParameter("agent")) {
+                rsp.sendRedirect(req.getContextPath() + "/computer/new");
+            }
+        }
     }
 
     @Override

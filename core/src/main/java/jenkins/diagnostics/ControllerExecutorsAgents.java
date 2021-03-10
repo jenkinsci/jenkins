@@ -28,6 +28,11 @@ import hudson.Main;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+
+import java.io.IOException;
 
 @Extension
 @Symbol("controllerExecutorsWithAgents")
@@ -47,6 +52,18 @@ public class ControllerExecutorsAgents extends AdministrativeMonitor {
     public boolean isActivated() {
         return !Main.isDevelopmentMode && Jenkins.get().getNumExecutors() > 0 &&
                 (!Jenkins.get().clouds.isEmpty() || !Jenkins.get().getNodes().isEmpty());
+    }
+
+    @RequirePOST
+    public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        if (Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+            if(req.hasParameter("no")) {
+                disable(true);
+                rsp.sendRedirect(req.getContextPath() + "/manage");
+            } else if (req.hasParameter("yes")) {
+                rsp.sendRedirect(req.getContextPath() + "/computer/(master)/configure");
+            }
+        }
     }
 
 }
