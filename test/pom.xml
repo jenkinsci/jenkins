@@ -105,7 +105,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>1.32.1</version>
+      <version>1.33</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
