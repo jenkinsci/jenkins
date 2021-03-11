@@ -254,7 +254,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * Subclasses can extend this for data migration from old field storing home directory.
      */
-    protected static abstract class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
+    protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
         public ToolConverter(XStream2 xstream) { super(xstream); }
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;

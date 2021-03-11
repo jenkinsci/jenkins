@@ -61,7 +61,7 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 	
 	private static class PaneStatusPropertiesSessionFallback extends PaneStatusProperties {
 		
-		private final static String attribute = "jenkins_pane_%s_collapsed";
+		private static final String attribute = "jenkins_pane_%s_collapsed";
 		
 		@Override
 		public boolean isCollapsed(String paneId) {

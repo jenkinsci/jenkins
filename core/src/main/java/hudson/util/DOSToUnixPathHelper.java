@@ -17,7 +17,7 @@ class DOSToUnixPathHelper {
         void error(String string);
         void validate(File fexe);
     }
-    static private boolean checkPrefix(String prefix, Helper helper) {
+    private static boolean checkPrefix(String prefix, Helper helper) {
         File f = constructFile(prefix);
         if(f.exists()) {
             helper.checkExecutable(f);

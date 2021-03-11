@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright (c) 2021 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,50 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util;
 
-import static org.junit.Assert.assertEquals;
+package org.jenkins.ui.icon;
 
-import org.junit.Test;
-
-import java.io.StringWriter;
-import java.io.Writer;
-import java.io.IOException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * @author Kohsuke Kawaguchi
+ * An icon used for build statuses
  */
-public class LineEndNormalizingWriterTest {
+@Restricted(NoExternalUse.class)
+public class BuildStatusIcon extends Icon {
+    private boolean inProgress;
 
-    @Test
-    public void test1() throws IOException {
-        StringWriter sw = new StringWriter();
-        Writer w = new LineEndNormalizingWriter(sw);
-
-        w.write("abc\r\ndef\r");
-        w.write("\n");
-
-        assertEquals(sw.toString(),"abc\r\ndef\r\n");
+    public BuildStatusIcon(String classSpec, String url, String style, boolean inProgress) {
+        super(classSpec, url, style, IconFormat.EXTERNAL_SVG_SPRITE);
+        this.inProgress = inProgress;
     }
 
-    @Test
-    public void test2() throws IOException {
-        StringWriter sw = new StringWriter();
-        Writer w = new LineEndNormalizingWriter(sw);
-
-        w.write("abc\ndef\n");
-        w.write("\n");
-
-        assertEquals(sw.toString(),"abc\r\ndef\r\n\r\n");
+    public BuildStatusIcon(String classSpec, String url, String style) {
+        this(classSpec, url, style, false);
     }
 
-    @Test
-    public void test3() throws IOException {
-        StringWriter sw = new StringWriter();
-        Writer w = new LineEndNormalizingWriter(sw);
+    @Override
+    public boolean isSvgSprite() {
+        return super.isSvgSprite();
+    }
 
-        w.write("\r\n\n");
+    public boolean isBuildStatus() {
+        return true;
+    }
 
-        assertEquals(sw.toString(),"\r\n\r\n");
+    public boolean isInProgress() {
+       return inProgress;
     }
 }

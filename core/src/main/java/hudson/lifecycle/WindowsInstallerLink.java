@@ -90,6 +90,7 @@ public class WindowsInstallerLink extends ManagementLink {
         return Messages.WindowsInstallerLink_DisplayName();
     }
 
+    @Override
     public String getDescription() {
         return Messages.WindowsInstallerLink_Description();
     }
@@ -192,12 +193,14 @@ public class WindowsInstallerLink extends ManagementLink {
         // initiate an orderly shutdown after we finished serving this request
         new Thread("terminator") {
             @SuppressFBWarnings(value = "DM_EXIT", justification = "Exit is really intended.")
+            @Override
             public void run() {
                 try {
                     Thread.sleep(1000);
 
                     // let the service start after we close our sockets, to avoid conflicts
                     Runtime.getRuntime().addShutdownHook(new Thread("service starter") {
+                        @Override
                         public void run() {
                             try {
                                 if(!oldRoot.equals(installationDir)) {

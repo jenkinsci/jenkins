@@ -216,7 +216,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         }
     }
     
-    public static abstract class HttpResponseExceptionChild extends HttpResponses.HttpResponseException {
+    public abstract static class HttpResponseExceptionChild extends HttpResponses.HttpResponseException {
     }
     
     public static class ExceptionImplementingOnlyHttpResponse extends RuntimeException implements HttpResponse {
@@ -524,7 +524,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 //        public void doAnnotatedJsonOutputFilter() { replyOk(); }
     }
     
-    public static abstract class RequestAndResponse implements StaplerRequest, StaplerResponse {
+    public abstract static class RequestAndResponse implements StaplerRequest, StaplerResponse {
         @Override
         public CollectionAndEnumeration getHeaderNames() {
             return null;
@@ -535,7 +535,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
             return null;
         }
         
-        public static abstract class CollectionAndEnumeration implements Collection, Enumeration {
+        public abstract static class CollectionAndEnumeration implements Collection, Enumeration {
         }
     }
     

@@ -1,5 +1,6 @@
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Computer;
 import hudson.model.Node;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +73,7 @@ public class CloudSlaveRetentionStrategy<T extends Computer> extends RetentionSt
     }
 
     // for debugging, it's convenient to be able to reduce this time
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static long TIMEOUT = SystemProperties.getLong(CloudSlaveRetentionStrategy.class.getName()+".timeout", TimeUnit.MINUTES.toMillis(10));
 
     private static final Logger LOGGER = Logger.getLogger(CloudSlaveRetentionStrategy.class.getName());

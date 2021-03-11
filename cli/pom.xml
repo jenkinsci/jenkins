@@ -109,12 +109,12 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <!-- Version specified in grandparent POM -->
       </plugin>
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>3.2.1</version>
+          <version>3.2.4</version>
           <executions>
               <execution>
                   <phase>package</phase>
@@ -170,6 +170,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
             <id>add-source</id>

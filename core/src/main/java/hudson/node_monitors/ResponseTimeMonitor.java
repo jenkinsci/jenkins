@@ -81,6 +81,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             return monitoringData;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.ResponseTimeMonitor_DisplayName();
         }

@@ -60,9 +60,9 @@ import static org.junit.Assert.fail;
 public class QuietDownCommandTest {
 
     private CLICommandInvoker command;
-    private final static QueueTest.TestFlyweightTask task
+    private static final QueueTest.TestFlyweightTask task
             = new QueueTest.TestFlyweightTask(new AtomicInteger(), null);
-    private final static String TEST_REASON = "test reason";
+    private static final String TEST_REASON = "test reason";
 
     @Rule
     public final JenkinsRule j = new JenkinsRule();

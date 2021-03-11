@@ -112,6 +112,7 @@ public class TarInputStream extends FilterInputStream {
      * Closes this stream. Calls the TarBuffer's close() method.
      * @throws IOException on error
      */
+    @Override
     public void close() throws IOException {
         this.buffer.close();
     }
@@ -137,6 +138,7 @@ public class TarInputStream extends FilterInputStream {
      * @return The number of available bytes for the current entry.
      * @throws IOException for signature
      */
+    @Override
     public int available() throws IOException {
         if (this.entrySize - this.entryOffset > Integer.MAX_VALUE) {
             return Integer.MAX_VALUE;
@@ -154,6 +156,7 @@ public class TarInputStream extends FilterInputStream {
      * @return the number actually skipped
      * @throws IOException on error
      */
+    @Override
     public long skip(long numToSkip) throws IOException {
         // REVIEW
         // This is horribly inefficient, but it ensures that we
@@ -177,6 +180,7 @@ public class TarInputStream extends FilterInputStream {
      *
      * @return False.
      */
+    @Override
     public boolean markSupported() {
         return false;
     }
@@ -186,12 +190,14 @@ public class TarInputStream extends FilterInputStream {
      *
      * @param markLimit The limit to mark.
      */
+    @Override
     public void mark(int markLimit) {
     }
 
     /**
      * Since we do not support marking just yet, we do nothing.
      */
+    @Override
     public void reset() {
     }
 
@@ -296,6 +302,7 @@ public class TarInputStream extends FilterInputStream {
      * @return The byte read, or -1 at EOF.
      * @throws IOException on error
      */
+    @Override
     public int read() throws IOException {
         int num = this.read(this.oneBuf, 0, 1);
         return num == -1 ? -1 : ((int) this.oneBuf[0]) & 0xFF;
@@ -314,6 +321,7 @@ public class TarInputStream extends FilterInputStream {
      * @return The number of bytes read, or -1 at EOF.
      * @throws IOException on error
      */
+    @Override
     public int read(byte[] buf, int offset, int numToRead) throws IOException {
         int totalRead = 0;
 

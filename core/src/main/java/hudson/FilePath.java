@@ -28,6 +28,7 @@ package hudson;
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.AbstractProject;
@@ -484,13 +485,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *             Any symlinks between a file and root should be ignored.
      *             Symlinks in the parentage outside root will not be checked.
      * @param noFollowLinks true if it should not follow links.
+     * @param prefix The portion of file path that will be added at the beginning of the relative path inside the archive.
+     *               If non-empty, a trailing forward slash will be enforced.
      *
      * @return The number of files/directories archived.
      *          This is only really useful to check for a situation where nothing
      */
     @Restricted(NoExternalUse.class)
-    public int zip(OutputStream out, DirScanner scanner, String verificationRoot, boolean noFollowLinks) throws IOException, InterruptedException {
-        ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.ZIP_WTHOUT_FOLLOWING_SYMLINKS : ArchiverFactory.ZIP;
+    public int zip(OutputStream out, DirScanner scanner, String verificationRoot, boolean noFollowLinks, String prefix) throws IOException, InterruptedException {
+        ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.createZipWithoutSymlink(prefix) : ArchiverFactory.ZIP;
         return archive(archiverFactory, out, scanner, verificationRoot, noFollowLinks);
     }
 
@@ -1134,7 +1137,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * The code is the same as {@link SlaveToMasterFileCallable}, but used as a marker to
      * designate those impls that use {@link FilePathFilter}.
      */
-    /*package*/ static abstract class SecureFileCallable<T> extends SlaveToMasterFileCallable<T> {
+    /*package*/ abstract static class SecureFileCallable<T> extends SlaveToMasterFileCallable<T> {
     }
 
     /**
@@ -1172,7 +1175,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.482
      * @see AbstractInterceptorCallableWrapper
      */
-    public static abstract class FileCallableWrapperFactory implements ExtensionPoint {
+    public abstract static class FileCallableWrapperFactory implements ExtensionPoint {
 
         public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
 
@@ -1183,7 +1186,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
      * @since 1.482
      */
-    public static abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
+    public abstract static class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
         private static final long serialVersionUID = 1L;
 
         private final DelegatingCallable<T, IOException> callable;
@@ -2904,6 +2907,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Default bound for {@link #validateAntFileMask(String, int, boolean)}.
      * @since 1.592
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
@@ -3286,6 +3290,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     private static final long serialVersionUID = 1L;
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());

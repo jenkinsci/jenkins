@@ -103,7 +103,7 @@ public abstract class SpySecurityListener extends SecurityListener {
         }
 
         public void assertNoNewEvents(){
-            assertEquals("list of event should be empty", eventList.size(), 0);
+            assertEquals("list of event should be empty", 0, eventList.size());
         }
 
         public void clear(){

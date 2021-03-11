@@ -1,5 +1,6 @@
 package jenkins.security.stapler;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
@@ -269,8 +270,10 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
     }
 
     @Restricted(NoExternalUse.class)
-    public static boolean SKIP_TYPE_CHECK = SystemProperties.getBoolean(TypedFilter.class.getName() + ".skipTypeCheck");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ boolean SKIP_TYPE_CHECK = SystemProperties.getBoolean(TypedFilter.class.getName() + ".skipTypeCheck");
 
     @Restricted(NoExternalUse.class)
-    public static boolean PROHIBIT_STATIC_ACCESS = SystemProperties.getBoolean(TypedFilter.class.getName() + ".prohibitStaticAccess", true);
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    public static /* Script Console modifiable */ boolean PROHIBIT_STATIC_ACCESS = SystemProperties.getBoolean(TypedFilter.class.getName() + ".prohibitStaticAccess", true);
 }

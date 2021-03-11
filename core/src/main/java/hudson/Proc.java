@@ -505,6 +505,7 @@ public abstract class Proc {
     /**
      * Debug switch to have the thread display the process it's waiting for.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean SHOW_PID = false;
     
     /**

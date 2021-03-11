@@ -55,7 +55,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      *
      * @return never null
      */
-    public synchronized static Lifecycle get() {
+    public static synchronized Lifecycle get() {
         if(INSTANCE==null) {
             Lifecycle instance;
             String p = SystemProperties.getString("hudson.lifecycle");

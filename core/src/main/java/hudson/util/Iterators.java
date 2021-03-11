@@ -56,7 +56,7 @@ public class Iterators {
     /**
      * Produces {A,B,C,D,E,F} from {{A,B},{C},{},{D,E,F}}.
      */
-    public static abstract class FlattenIterator<U,T> implements Iterator<U> {
+    public abstract static class FlattenIterator<U,T> implements Iterator<U> {
         private final Iterator<? extends T> core;
         private Iterator<U> cur;
 
@@ -85,6 +85,7 @@ public class Iterators {
             return cur.next();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -95,7 +96,7 @@ public class Iterators {
      *
      * @since 1.150
      */
-    public static abstract class FilterIterator<T> implements Iterator<T> {
+    public abstract static class FilterIterator<T> implements Iterator<T> {
         private final Iterator<? extends T> core;
         private T next;
         private boolean fetched;
@@ -139,6 +140,7 @@ public class Iterators {
             return next;
         }
 
+        @Override
         public void remove() {
             core.remove();
         }
@@ -180,6 +182,7 @@ public class Iterators {
                     return itr.previous();
                 }
 
+                @Override
                 public void remove() {
                     itr.remove();
                 }
@@ -205,6 +208,7 @@ public class Iterators {
                     return itr.next();
                 }
 
+                @Override
                 public void remove() {
                     itr.remove();
                 }
@@ -295,6 +299,7 @@ public class Iterators {
                 return itr.next();
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
@@ -385,6 +390,7 @@ public class Iterators {
                 }
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }

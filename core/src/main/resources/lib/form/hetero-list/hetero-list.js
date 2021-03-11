@@ -1,5 +1,3 @@
-// @include lib.form.dragdrop.dragdrop
-
 // do the ones that extract innerHTML so that they can get their original HTML before
 // other behavior rules change them (like YUI buttons.)
 Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) {
@@ -37,7 +35,8 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         });
         Element.remove(prototypes);
 
-        var withDragDrop = initContainerDD(e);
+        // Initialize drag & drop for this component
+        var withDragDrop = registerSortableDragDrop(e);
 
         var menuAlign = (btn.getAttribute("menualign")||"tl-bl");
 
@@ -106,7 +105,8 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
                 }
                 (e.hasClassName("honor-order") ? findInsertionPoint() : insertionPoint).insert({before:nc});
 
-                if(withDragDrop)    prepareDD(nc);
+                // Initialize drag & drop for this component
+                if(withDragDrop) registerSortableDragDrop(nc);
 
                 new YAHOO.util.Anim(nc, {
                     opacity: { to:1 }

@@ -29,6 +29,7 @@ package hudson.model;
 
 import com.jcraft.jzlib.GZIPInputStream;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
@@ -167,7 +168,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private static /* non-final for Groovy */ int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
 
-    protected transient final @NonNull JobT project;
+    protected final transient @NonNull JobT project;
 
     /**
      * Build number.
@@ -190,7 +191,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * External code should use {@link #getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected volatile transient RunT previousBuild;
+    protected transient volatile RunT previousBuild;
 
     /**
      * Next build. Can be null.
@@ -198,14 +199,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * External code should use {@link #getNextBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected volatile transient RunT nextBuild;
+    protected transient volatile RunT nextBuild;
 
     /**
      * Pointer to the next younger build in progress. This data structure is lazily updated,
      * so it may point to the build that's already completed. This pointer is set to 'this'
      * if the computation determines that everything earlier than this build is already completed.
      */
-    /* does not compile on JDK 7: private*/ volatile transient RunT previousBuildInProgress;
+    /* does not compile on JDK 7: private*/ transient volatile RunT previousBuildInProgress;
 
     /** ID as used for historical build records; otherwise null. */
     private @CheckForNull String id;
@@ -249,7 +250,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * The current build state.
      */
-    private volatile transient State state;
+    private transient volatile State state;
 
     private enum State {
         /**
@@ -300,7 +301,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * If the build is in progress, remember {@link RunExecution} that's running it.
      * This field is not persisted.
      */
-    private volatile transient RunExecution runner;
+    private transient volatile RunExecution runner;
 
     /**
      * Artifact manager associated with this build, if any.
@@ -1906,7 +1907,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     setResult(job.run(listener));
 
-                    LOGGER.log(FINEST, "{0} main build action completed: {1}", new Object[] {this, result});
+                    LOGGER.log(FINE, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
                 } catch (ThreadDeath t) {
                     throw t;
@@ -2196,7 +2197,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Used to implement {@link #getBuildStatusSummary}.
      * @since 1.575
      */
-    public static abstract class StatusSummarizer implements ExtensionPoint {
+    public abstract static class StatusSummarizer implements ExtensionPoint {
         /**
          * Possibly summarizes the reasons for a build’s status.
          * @param run a completed build
@@ -2659,6 +2660,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Run.class.getName() + ".skipPermissionCheck");
 
 

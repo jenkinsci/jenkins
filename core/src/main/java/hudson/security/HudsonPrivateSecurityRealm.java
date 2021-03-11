@@ -539,10 +539,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         return Jenkins.get().getACL();
     }
 
+    @Override
     public void checkPermission(Permission permission) {
         Jenkins.get().checkPermission(permission);
     }
 
+    @Override
     public boolean hasPermission(Permission permission) {
         return Jenkins.get().hasPermission(permission);
     }
@@ -642,7 +644,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         /**
-         * @since TODO
+         * @since 2.266
          */
         public Collection<? extends GrantedAuthority> getAuthorities2() {
             // TODO
@@ -951,6 +953,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
+        @Override
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
         }

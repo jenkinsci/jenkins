@@ -41,6 +41,9 @@ f.section(title: _("Administrative monitors configuration")) {
                                 title: am.displayName,
                                 checked: am.enabled,
                                 json: am.id)
+                        if (am.isSecurity()) {
+                            span(style: 'margin-left: 0.5rem', class: 'am-badge', _("Security"))
+                        }
                     }
                     div(class: "tr") {
                         div(class: "setting-description") {

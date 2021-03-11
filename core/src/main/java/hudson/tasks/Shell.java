@@ -200,6 +200,7 @@ public class Shell extends CommandInterpreter {
             save();
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.Shell_DisplayName();
         }

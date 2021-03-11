@@ -73,6 +73,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
             return item instanceof BuildableItem;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.TimerTrigger_DisplayName();
         }

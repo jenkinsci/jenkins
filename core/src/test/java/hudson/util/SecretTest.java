@@ -121,6 +121,7 @@ public class SecretTest {
      * Secret persisted with Jenkins.getSecretKey() should still decrypt OK.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void migrationFromLegacyKeyToConfidentialStore() throws Exception {
         SecretKey legacy = HistoricalSecrets.getLegacyKey();
         for (String str : new String[] {"Hello world", "", "\u0000unprintable"}) {

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.62</version>
+    <version>1.63</version>
     <relativePath />
   </parent>
 
@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.276</revision>
+    <revision>2.284</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -90,8 +90,8 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <matrix-auth.version>2.6.4</matrix-auth.version>
-    <matrix-project.version>1.17</matrix-project.version>
+    <matrix-auth.version>2.6.5</matrix-auth.version>
+    <matrix-project.version>1.18</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
@@ -99,7 +99,7 @@ THE SOFTWARE.
     <changelog.url>https://jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.6</remoting.version>
+    <remoting.version>4.7</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -109,9 +109,9 @@ THE SOFTWARE.
     <findbugs.excludeFilterFile>${project.basedir}/../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
 
     <!-- TODO keep these in sync -->
-    <access-modifier-annotation.version>1.16</access-modifier-annotation.version>
-    <access-modifier-checker.version>1.16</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.0</junit.jupiter.version>
+    <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
+    <access-modifier-checker.version>1.21</access-modifier-checker.version>
+    <junit.jupiter.version>5.7.1</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
   </properties>
 
@@ -140,7 +140,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.7.0</version>
+        <version>3.8.0</version>
       </dependency>
 
       <dependency>
@@ -219,15 +219,17 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>2.7</version>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <!-- Version specified in parent POM -->
           <configuration>
             <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -242,14 +244,17 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
+          <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
             <doclint>all,-missing</doclint>
@@ -258,14 +263,17 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
+          <!-- Version specified in parent POM -->
           <configuration>
             <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
@@ -279,10 +287,11 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>1.2</version>
+          <version>3.0.0</version>
           <configuration>
             <!--
               during the development, debug profile will cause
@@ -298,6 +307,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <!--
@@ -314,13 +324,13 @@ THE SOFTWARE.
           -->
           <groupId>org.kohsuke.stapler</groupId>
           <artifactId>maven-stapler-plugin</artifactId>
-          <!-- version specified in grandparent pom -->
+          <!-- version specified in parent pom -->
           <extensions>true</extensions>
           <dependencies>
             <dependency>
               <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
               <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.4</version>
+              <version>1.5</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -332,6 +342,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.cloudbees</groupId>
           <artifactId>maven-license-plugin</artifactId>
+          <!-- Version specified in parent POM -->
           <executions>
             <execution>
               <goals>
@@ -348,6 +359,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>localizer-maven-plugin</artifactId>
+          <!-- Version specified in parent POM -->
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -360,16 +372,17 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.17</version>
+          <version>1.18</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>antlr-maven-plugin</artifactId>
-          <version>2.1</version>
+          <version>2.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -379,16 +392,18 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
+          <!-- Version specified in parent POM -->
         </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <!-- Version specified in parent POM -->
       </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
         	<groupId>org.eclipse.m2e</groupId>
         	<artifactId>lifecycle-mapping</artifactId>
-        	<version>1.0.0</version>
+        	<!-- Version specified in parent POM -->
         	<configuration>
         		<lifecycleMappingMetadata>
         			<pluginExecutions>
@@ -396,6 +411,7 @@ THE SOFTWARE.
         					<pluginExecutionFilter>
         						<groupId>org.apache.maven.plugins</groupId>
         						<artifactId>maven-dependency-plugin</artifactId>
+        						<!-- Version specified in parent POM -->
         						<versionRange>[2.3,)</versionRange>
         						<goals>
         							<goal>list</goal>
@@ -417,6 +433,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
+          <!-- Version specified in parent POM -->
           <configuration>
             <maxHeap>768</maxHeap>
           </configuration>
@@ -424,7 +441,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.1.1</version>
+          <!-- Version specified in parent POM -->
           <configuration>
              <consoleOutput>true</consoleOutput>
              <failsOnError>true</failsOnError>
@@ -456,6 +473,7 @@ THE SOFTWARE.
     <plugins>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
+        <!-- Version specified in parent POM -->
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <arguments>-P release,sign</arguments>
@@ -469,6 +487,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-remote-resources-plugin</artifactId>
+        <!-- Version specified in parent POM -->
         <executions>
           <execution>
             <goals>
@@ -503,6 +522,7 @@ THE SOFTWARE.
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <!-- Version specified in parent POM -->
         <configuration>
           <source>1.${java.level}</source>
           <target>1.${java.level}</target>
@@ -516,6 +536,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <!-- Version specified in parent POM -->
         <executions>
           <execution>
             <id>enforce-banned-dependencies</id>
@@ -541,6 +562,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
+        <!-- Version specified in parent POM -->
       </plugin>
     </plugins>
 
@@ -561,6 +583,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
+            <!-- Version specified in parent POM -->
             <configuration>
               <threshold>High</threshold>
             </configuration>
@@ -612,6 +635,7 @@ THE SOFTWARE.
         <plugins>
           <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
+            <!-- Version specified in parent POM -->
             <inherited>false</inherited>
             <executions>
               <execution>
@@ -630,6 +654,7 @@ THE SOFTWARE.
           </plugin>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
+            <!-- Version specified in parent POM -->
             <executions>
               <execution>
                 <id>sign-artifacts</id>

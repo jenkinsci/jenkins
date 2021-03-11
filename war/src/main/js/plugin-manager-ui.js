@@ -34,7 +34,7 @@ function applyFilter(searchQuery) {
 
         clearOldResults()
         var rows = pluginManagerAvailable({
-            plugins: plugins.filter(plugin => !selectedPlugins.includes(plugin.name)),
+            plugins: plugins.filter(plugin => selectedPlugins.indexOf(plugin.name) === -1),
             admin
         });
 

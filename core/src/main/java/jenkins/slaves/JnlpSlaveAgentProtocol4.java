@@ -110,7 +110,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         }
 
         // prepare our keyStore so we can provide our authentication
-        keyStore = KeyStore.getInstance("JKS");
+        keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         char[] password = constructPassword();
         try {
             keyStore.load(null, password);

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -36,6 +37,7 @@ import hudson.security.Permission;
 import hudson.util.VersionNumber;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 import jenkins.security.stapler.StaplerDispatchable;
@@ -1936,6 +1938,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 this.message = message;
             }
 
+            @Override
             public String getMessage() {
                 return message.toString();
             }
@@ -2109,6 +2112,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Deprecated
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth) {
             this(plugin,site,auth,false);
+        }
+
+        /**
+         * @deprecated use {@link InstallationJob(Plugin, UpdateSite, Authentication, boolean)}
+         */
+        @Deprecated
+        public InstallationJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth, boolean dynamicLoad) {
+            this(plugin, site, auth.toSpring(), dynamicLoad);
         }
 
         public InstallationJob(Plugin plugin, UpdateSite site, Authentication auth, boolean dynamicLoad) {
@@ -2326,6 +2337,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private final PluginManager pm = Jenkins.get().getPluginManager();
 
+        /**
+         * @deprecated use {@link PluginDowngradeJob(Plugin, UpdateSite, Authentication)}
+         */
+        @Deprecated
+        public PluginDowngradeJob(Plugin plugin, UpdateSite site, org.acegisecurity.Authentication auth) {
+            this(plugin, site, auth.toSpring());
+        }
+
+
         public PluginDowngradeJob(Plugin plugin, UpdateSite site, Authentication auth) {
             super(site, auth);
             this.plugin = plugin;
@@ -2410,6 +2430,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Represents the state of the upgrade activity of Jenkins core.
      */
     public final class HudsonUpgradeJob extends DownloadJob {
+
+        /**
+          * @deprecated use {@link HudsonUpgradeJob(UpdateSite site, Authentication auth)}
+         */
+        @Deprecated
+        public HudsonUpgradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
+            super(site, auth.toSpring());
+        }
+
         public HudsonUpgradeJob(UpdateSite site, Authentication auth) {
             super(site, auth);
         }
@@ -2444,6 +2473,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public final class HudsonDowngradeJob extends DownloadJob {
+
+        /**
+         * @deprecated use {@link HudsonDowngradeJob(UpdateSite site, Authentication auth)}
+         */
+        @Deprecated
+        public HudsonDowngradeJob(UpdateSite site, org.acegisecurity.Authentication auth) {
+            super(site, auth.toSpring());
+        }
+
         public HudsonDowngradeJob(UpdateSite site, Authentication auth) {
             super(site, auth);
         }
@@ -2550,6 +2588,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     @Restricted(NoExternalUse.class)
+    public static void updateAllSitesNow() {
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
+            try {
+                site.updateDirectlyNow();
+            } catch (IOException e) {
+                LOGGER.log(WARNING, MessageFormat.format("Failed to update the update site ''{0}''. " +
+                        "Plugin upgrades may fail.", site.getId()), e);
+            }
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
     public static void updateDefaultSite() {
         final UpdateSite site = Jenkins.get().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT);
         if (site == null) {
@@ -2580,6 +2630,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(UpdateCenter.class.getName() + ".skipPermissionCheck");
 
 

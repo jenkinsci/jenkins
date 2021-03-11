@@ -700,6 +700,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return a stream to the required resource or {@code null} if the
      *         resource cannot be found on the loader's classpath.
      */
+    @Override
     public InputStream getResourceAsStream(String name) {
         InputStream resourceStream = null;
         if (isParentFirst(name)) {
@@ -885,6 +886,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      *         resource could not be found or the caller doesn't have
      *         adequate privileges to get the resource.
      */
+    @Override
     public URL getResource(String name) {
         // we need to search the components of the path to see if
         // we can find the class we want.
@@ -960,6 +962,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @return an enumeration of URLs for the resources
      * @exception IOException if I/O errors occurs (can't happen)
      */
+    @Override
     public Enumeration/*<URL>*/ findResources(String name) throws IOException {
         return findResources(name, true);
     }
@@ -1067,6 +1070,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * on the system classpath (when not in isolated mode) or this loader's
      * classpath.
      */
+    @Override
     protected synchronized Class loadClass(String classname, boolean resolve)
             throws ClassNotFoundException {
         // 'sync' is needed - otherwise 2 threads can load the same class
@@ -1337,6 +1341,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
      * @exception ClassNotFoundException if the requested class does not exist
      *                                   on this loader's classpath.
      */
+    @Override
     public Class findClass(String name) throws ClassNotFoundException {
         log("Finding class " + name, Project.MSG_DEBUG);
         return findClassInComponents(name);

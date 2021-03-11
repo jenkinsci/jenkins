@@ -25,6 +25,8 @@
 package hudson.search;
 
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.EditDistance;
 
@@ -415,8 +417,9 @@ public class Search implements StaplerProxy {
     /**
      * Escape hatch for StaplerProxy-based access control
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     @Restricted(NoExternalUse.class)
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Search.class.getName() + ".skipPermissionCheck");
 
-    private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Search.class.getName());
 }

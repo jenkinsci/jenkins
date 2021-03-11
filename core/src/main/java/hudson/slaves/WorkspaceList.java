@@ -109,7 +109,7 @@ public final class WorkspaceList {
     /**
      * Represents a leased workspace that needs to be returned later.
      */
-    public static abstract class Lease implements /*Auto*/Closeable {
+    public abstract static class Lease implements /*Auto*/Closeable {
         public final @NonNull FilePath path;
 
         protected Lease(@NonNull FilePath path) {

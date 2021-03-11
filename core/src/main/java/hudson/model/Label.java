@@ -88,16 +88,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Display name of this label.
      */
     @NonNull
-    protected transient final String name;
+    protected final transient String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
     @NonNull
-    public transient final LoadStatistics loadStatistics;
+    public final transient LoadStatistics loadStatistics;
     @NonNull
-    public transient final NodeProvisioner nodeProvisioner;
+    public final transient NodeProvisioner nodeProvisioner;
 
     public Label(@NonNull String name) {
         this.name = name;

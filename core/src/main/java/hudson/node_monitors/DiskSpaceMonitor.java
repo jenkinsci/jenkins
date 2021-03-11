@@ -61,6 +61,7 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
     }
 
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
+        @Override
         public String getDisplayName() {
             return Messages.DiskSpaceMonitor_DisplayName();
         }

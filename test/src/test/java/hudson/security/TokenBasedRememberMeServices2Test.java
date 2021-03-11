@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,7 +26,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.Stapler;
 import test.security.realm.InMemorySecurityRealm;
 
-import net.jcip.annotations.GuardedBy;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
@@ -316,7 +316,6 @@ public class TokenBasedRememberMeServices2Test {
 
     private static class LoadUserCountingSecurityRealm extends InMemorySecurityRealm {
         // if this class wasn't serialized into config.xml, this could be replaced by @Spy from Mockito
-        @GuardedBy("this")
         private int counter = 0;
 
         @Override

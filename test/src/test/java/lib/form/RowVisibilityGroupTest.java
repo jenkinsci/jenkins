@@ -126,7 +126,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         }
     }
 
-    public static abstract class Drink extends AbstractDescribableImpl<Drink> {
+    public abstract static class Drink extends AbstractDescribableImpl<Drink> {
         public String textbox1;
         public Nested inner;
 

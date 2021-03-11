@@ -134,7 +134,7 @@ public abstract class SU {
         }
     }
 
-    private static abstract class UnixSu {
+    private abstract static class UnixSu {
 
         protected abstract String sudoExe();
 

@@ -67,7 +67,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     }
 
     @Restricted(DoNotUse.class) // WebOnly
-    @RestrictedSince("TODO since")
+    @RestrictedSince("2.235")
     public HttpResponse doTest(StaplerRequest request, @QueryParameter boolean testWithContext) {
         String referer = request.getReferer();
         Jenkins j = Jenkins.get();
@@ -90,7 +90,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     }
 
     @Restricted(DoNotUse.class) // WebOnly
-    @RestrictedSince("TODO since")
+    @RestrictedSince("2.235")
     @StaplerDispatchable
     public void getTestForReverseProxySetup(String rest) {
         Jenkins j = Jenkins.get();
@@ -113,7 +113,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
     @Restricted(DoNotUse.class) // WebOnly
-    @RestrictedSince("TODO since")
+    @RestrictedSince("2.235")
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if(no!=null) { // dismiss

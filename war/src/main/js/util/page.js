@@ -52,26 +52,6 @@ function fireBottomStickerAdjustEvent() {
     Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
 }
 
-// YUI Drag widget does not like to work on elements with a relative position.
-// This tells the element to switch to static position at the start of the drag, so it can work.
-function fixDragEvent(handle) {
-    var isReady = false;
-    var $handle = $(handle);
-    var $chunk = $handle.closest('.repeated-chunk');
-    $handle.add('#ygddfdiv')
-	.mousedown(function(){
-		isReady = true;
-	})
-	.mousemove(function(){
-		if(isReady && !$chunk.hasClass('dragging')){
-		$chunk.addClass('dragging');
-		}
-	}).mouseup(function(){
-		isReady = false;
-		$chunk.removeClass('dragging');
-	});
-}
-
 function removeTextHighlighting(selector) {
     $('span.highlight-split', selector).each(function() {
         var highlightSplit = $(this);
@@ -91,6 +71,5 @@ export default {
     pageHeaderHeight,
     breadcrumbBarHeight,
     fireBottomStickerAdjustEvent,
-    fixDragEvent,
     removeTextHighlighting
 }

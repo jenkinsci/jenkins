@@ -40,6 +40,7 @@ import org.jvnet.hudson.test.Issue;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -147,7 +148,7 @@ public class UtilTest {
     public void testEncodeSpaces() {
         final String urlWithSpaces = "http://hudson/job/Hudson Job";
         String encoded = Util.encode(urlWithSpaces);
-        assertEquals(encoded, "http://hudson/job/Hudson%20Job");
+        assertEquals("http://hudson/job/Hudson%20Job", encoded);
     }
 
     /**
@@ -355,6 +356,7 @@ public class UtilTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testIsAbsoluteUri() {
         assertTrue(Util.isAbsoluteUri("http://foobar/"));
         assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
@@ -562,7 +564,7 @@ public class UtilTest {
         File aa = new File(a, "aa");
         aa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa");
+        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
 
         File b = new File(root, "b");
         b.mkdir();

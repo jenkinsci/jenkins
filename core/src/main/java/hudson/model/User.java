@@ -24,11 +24,12 @@
  */
 package hudson.model;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.Extension;
@@ -127,6 +128,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
 
     /**
@@ -138,6 +140,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * <p>
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-22346">JENKINS-22346</a>.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName() + ".allowNonExistentUserToLogin");
 
     /**
@@ -153,6 +156,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * SECURITY-406.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean ALLOW_USER_CREATION_VIA_URL = SystemProperties.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
 
     /**
@@ -361,7 +365,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * logged in.
      *
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
-     * @since TODO
+     * @since 2.266
      */
     public @NonNull Authentication impersonate2() throws UsernameNotFoundException {
         return this.impersonate(this.getUserDetailsForImpersonation2());
@@ -388,7 +392,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      * @throws UsernameNotFoundException If this user is not a valid user in the backend {@link SecurityRealm}.
-     * @since TODO
+     * @since 2.266
      */
     public @NonNull UserDetails getUserDetailsForImpersonation2() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService2 userDetailsService = new ImpersonatingUserDetailsService2(
@@ -596,7 +600,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param a the supplied {@link Authentication} .
      * @return a {@link User} object for the supplied {@link Authentication} or {@code null}
-     * @since TODO
+     * @since 2.266
      */
     public static @CheckForNull User get2(@CheckForNull Authentication a) {
         if (a == null || a instanceof AnonymousAuthenticationToken)
@@ -1120,7 +1124,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @see FullNameIdResolver
      * @since 1.479
      */
-    public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
+    public abstract static class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
          * context key for realm (domain) where idOrFullName has been retrieved from.

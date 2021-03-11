@@ -823,6 +823,7 @@ table.parameters > tbody:hover {
   margin-top: 5px;
   white-space: normal;
   opacity: 0.6;
+  word-break: break-word;
 }
 
 #buildHistory .build-row-cell {
@@ -1279,6 +1280,14 @@ textarea.rich-editor {
 
 /* ========================= D&D support in heterogenous/repeatable lists = */
 
+.hetero-list-container .has-help {
+    display: flex;
+}
+
+.hetero-list-container .has-help .dd-handle {
+    flex: 1;
+}
+
 .hetero-list-container .dd-handle,
 .repeated-container .dd-handle {
     cursor: move;
@@ -1300,6 +1309,22 @@ textarea.rich-editor {
   margin-left: -1.25rem;
 }
 
+// SortableJS drag & drop classes
+.repeated-chunk--sortable-ghost {
+  height: 100px;
+  width: 100%;
+  overflow: hidden;
+}
+.repeated-chunk--sortable-chosen {
+  height: 100px;
+  width: 100%;
+  background-color: transparent;
+  border: 2px solid var(--primary);
+
+  & > * {
+    display: none;
+  }
+}
 
 /* ========================= plugin update center ========================= */
 
@@ -1465,6 +1490,16 @@ table.progress-bar.red td.progress-bar-done {
     opacity: 0;
     visibility: hidden;
   }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg) translateZ(0); }
+  to { transform: rotate(360deg) translateZ(0); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }
 
 /* ========================= YUI dialog ========================= */
@@ -1652,22 +1687,26 @@ body.no-sticker #bottom-sticker {
 }
 
 /* see the Icon class for the definition of these CSS classes */
-.icon-sm {
+.icon-sm,
+svg.icon-sm {
     width: 16px;
     height: 16px;
 }
 
-.icon-md {
+.icon-md,
+svg.icon-md {
     width: 24px;
     height: 24px;
 }
 
-.icon-lg {
+.icon-lg,
+svg.icon-lg {
     width: 32px;
     height: 32px;
 }
 
-.icon-xlg {
+.icon-xlg,
+svg.icon-xlg {
     width: 48px;
     height: 48px;
 }

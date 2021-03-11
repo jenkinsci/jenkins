@@ -65,7 +65,7 @@ public class SecurityRealmTest {
         WebResponse response = j.createWebClient()
                 .goTo("securityRealm/captcha", "")
                 .getWebResponse();
-        assertEquals(response.getContentAsString(), "");
+        assertEquals("", response.getContentAsString());
 
         securityRealm.setCaptchaSupport(new DummyCaptcha());
 

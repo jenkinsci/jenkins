@@ -52,9 +52,9 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * If this SCM has corresponding {@link RepositoryBrowser},
      * that type. Otherwise this SCM will not have any repository browser.
      */
-    public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
+    public final transient Class<? extends RepositoryBrowser> repositoryBrowser;
     
-    private transient final AtomicInteger atomicGeneration = new AtomicInteger(1);
+    private final transient AtomicInteger atomicGeneration = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
@@ -80,7 +80,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
-    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    @Restricted(NoExternalUse.class) @RestrictedSince("2.209")
     public int getGeneration() {
         return atomicGeneration.get();
     }
@@ -90,7 +90,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @deprecated No longer used by default.
      */
     @Deprecated
-    @Restricted(NoExternalUse.class) @RestrictedSince("TODO")
+    @Restricted(NoExternalUse.class) @RestrictedSince("2.209")
     public void incrementGeneration() {
         atomicGeneration.incrementAndGet();
     }
