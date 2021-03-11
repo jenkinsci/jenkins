@@ -25,11 +25,16 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <t:summary icon="orange-square.png">
+      ${%Caused by}
+      <ul>
     <j:forEach var="entry" items="${it.causeCounts.entrySet()}">
-        <st:include page="description.jelly" it="${entry.key}"/>
-        <j:if test="${entry.value > 1}">
-          <st:nbsp/>${%Ntimes(entry.value)}
-        </j:if>
+        <li>
+            <st:include page="description.jelly" it="${entry.key}"/>
+            <j:if test="${entry.value > 1}">
+              <st:nbsp/>${%Ntimes(entry.value)}
+            </j:if>
+        </li>
     </j:forEach>
+      </ul>
   </t:summary>
 </j:jelly>
