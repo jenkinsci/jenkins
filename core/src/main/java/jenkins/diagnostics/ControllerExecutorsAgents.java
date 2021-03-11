@@ -56,13 +56,11 @@ public class ControllerExecutorsAgents extends AdministrativeMonitor {
 
     @RequirePOST
     public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-            if(req.hasParameter("no")) {
-                disable(true);
-                rsp.sendRedirect(req.getContextPath() + "/manage");
-            } else if (req.hasParameter("yes")) {
-                rsp.sendRedirect(req.getContextPath() + "/computer/(master)/configure");
-            }
+        if (req.hasParameter("no")) {
+            disable(true);
+            rsp.sendRedirect(req.getContextPath() + "/manage");
+        } else if (req.hasParameter("yes")) {
+            rsp.sendRedirect(req.getContextPath() + "/computer/(master)/configure");
         }
     }
 
