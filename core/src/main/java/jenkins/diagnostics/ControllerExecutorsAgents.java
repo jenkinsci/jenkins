@@ -28,6 +28,8 @@ import hudson.Main;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -36,6 +38,7 @@ import java.io.IOException;
 
 @Extension
 @Symbol("controllerExecutorsWithAgents")
+@Restricted(NoExternalUse.class)
 public class ControllerExecutorsAgents extends AdministrativeMonitor {
 
     @Override
