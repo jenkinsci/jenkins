@@ -72,7 +72,7 @@
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
-      <version>1.7.0</version>
+      <version>2.6.0</version>
       <optional>true</optional>
     </dependency>
     <!-- ed25519 algorithm, see JENKINS-45318 -->
