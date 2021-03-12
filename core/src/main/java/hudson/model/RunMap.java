@@ -169,12 +169,12 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     }
 
     @Override
-    protected final int getNumberOf(R r) {
+    protected int getNumberOf(R r) {
         return r.getNumber();
     }
 
     @Override
-    protected final String getIdOf(R r) {
+    protected String getIdOf(R r) {
         return r.getId();
     }
 

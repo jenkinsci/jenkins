@@ -748,7 +748,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String verificationRoot;
         private final boolean noFollowLinks;
 
-        public HasSymlink(String verificationRoot, boolean noFollowLinks) {
+        HasSymlink(String verificationRoot, boolean noFollowLinks) {
             this.verificationRoot = verificationRoot;
             this.noFollowLinks = noFollowLinks;
         }
@@ -768,7 +768,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String verificationRoot;
         private final boolean noFollowLinks;
 
-        public SymlinkRetainingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
+        SymlinkRetainingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
             this.verificationRoot = verificationRoot == null ? null : verificationRoot.remote;
             this.noFollowLinks = noFollowLinks;
         }
@@ -3302,7 +3302,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final FileCallable<T> callable;
         private transient ClassLoader classLoader;
 
-        public FileCallableWrapper(FileCallable<T> callable) {
+        FileCallableWrapper(FileCallable<T> callable) {
             this.callable = callable;
             this.classLoader = callable.getClass().getClassLoader();
         }
@@ -3672,7 +3672,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String verificationRoot;
         private final boolean noFollowLinks;
 
-        public SymlinkDiscardingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
+        SymlinkDiscardingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
             this.verificationRoot = verificationRoot == null ? null : verificationRoot.remote;
             this.noFollowLinks = noFollowLinks;
         }

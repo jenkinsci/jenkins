@@ -55,7 +55,7 @@ class MethodBinder {
     /**
      * @param method
      */
-    public MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
+    MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
         this.method = method;
         this.command = command;
 

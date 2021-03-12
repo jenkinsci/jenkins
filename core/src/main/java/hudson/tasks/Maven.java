@@ -254,7 +254,7 @@ public class Maven extends Builder {
         // command line arguments.
         private final String arguments;
 
-        public DecideDefaultMavenCommand(String arguments) {
+        DecideDefaultMavenCommand(String arguments) {
             this.arguments = arguments;
         }
 

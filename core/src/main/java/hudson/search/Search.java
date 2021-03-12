@@ -323,7 +323,7 @@ public class Search implements StaplerProxy {
     static final class TokenList {
         private final String[] tokens;
 
-        public TokenList(String tokenList) {
+        TokenList(String tokenList) {
             tokens = tokenList!=null ? tokenList.split("(?<=\\s)(?=\\S)") : MemoryReductionUtil.EMPTY_STRING_ARRAY;
         }
 

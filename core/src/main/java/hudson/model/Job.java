@@ -1080,7 +1080,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ChangeLogSet.Entry e;
             int idx;
 
-            public FeedItem(ChangeLogSet.Entry e, int idx) {
+            FeedItem(ChangeLogSet.Entry e, int idx) {
                 this.e = e;
                 this.idx = idx;
             }
@@ -1405,7 +1405,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 class ChartLabel implements Comparable<ChartLabel> {
                     final Run run;
 
-                    public ChartLabel(Run r) {
+                    ChartLabel(Run r) {
                         this.run = r;
                     }
 

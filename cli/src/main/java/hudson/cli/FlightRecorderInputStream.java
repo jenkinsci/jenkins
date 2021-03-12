@@ -135,7 +135,7 @@ class FlightRecorderInputStream extends InputStream {
 
         boolean filled = false;
 
-        public ByteArrayRingBuffer(int capacity) {
+        ByteArrayRingBuffer(int capacity) {
             data = new byte[capacity];
             this.capacity = capacity;
         }

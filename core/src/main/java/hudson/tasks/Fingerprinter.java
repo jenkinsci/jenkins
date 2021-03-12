@@ -251,7 +251,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         final String fileName;
         final String md5sum;
 
-        public Record(boolean produced, String relativePath, String fileName, String md5sum) {
+        Record(boolean produced, String relativePath, String fileName, String md5sum) {
             this.produced = produced;
             this.relativePath = relativePath;
             this.fileName = fileName;

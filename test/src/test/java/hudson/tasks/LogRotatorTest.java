@@ -211,7 +211,8 @@ public class LogRotatorTest {
     }
 
     static class TestsFail extends Publisher {
-        public @Override boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+        @Override
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
             build.setResult(Result.UNSTABLE);
             return true;
         }
@@ -237,7 +238,8 @@ public class LogRotatorTest {
         
         private final ArtifactArchiver archiver = new ArtifactArchiver("f");
 
-        public @Override boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
+        @Override
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
                 throws IOException, InterruptedException {
             archiver.perform(build, launcher, listener);
             Logger.getAnonymousLogger().log(Level.INFO, "Building #{0}", build.getNumber());

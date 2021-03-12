@@ -1026,7 +1026,7 @@ public class SlaveComputer extends Computer {
     private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
         final int ringBufferSize;
 
-        public SlaveInitializer(int ringBufferSize) {
+        SlaveInitializer(int ringBufferSize) {
             this.ringBufferSize = ringBufferSize;
         }
 

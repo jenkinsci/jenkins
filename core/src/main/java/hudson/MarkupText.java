@@ -59,7 +59,7 @@ public class MarkupText extends AbstractMarkupText {
         private final String markup;
 
 
-        public Tag(int pos, String markup) {
+        Tag(int pos, String markup) {
             this.pos = pos;
             this.markup = markup;
         }

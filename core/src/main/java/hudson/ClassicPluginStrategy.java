@@ -577,7 +577,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         private volatile List<PluginWrapper> transientDependencies;
 
-        public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
+        DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
             this._for = archive;
             this.dependencies = dependencies;

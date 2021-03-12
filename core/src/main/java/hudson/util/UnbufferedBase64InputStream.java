@@ -65,7 +65,8 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
         while (n>0) {
             int ch = read();
             if (ch<0)   break;
-            n--; r++;
+            n--;
+            r++;
         }
         return r;
     }

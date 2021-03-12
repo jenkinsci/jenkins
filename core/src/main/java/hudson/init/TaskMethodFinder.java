@@ -37,7 +37,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     private final Class<T> type;
     private final Class<? extends Enum> milestoneType;
 
-    public TaskMethodFinder(Class<T> type, Class<? extends Enum> milestoneType, ClassLoader cl) {
+    TaskMethodFinder(Class<T> type, Class<? extends Enum> milestoneType, ClassLoader cl) {
         this.type = type;
         this.milestoneType = milestoneType;
         this.cl = cl;
