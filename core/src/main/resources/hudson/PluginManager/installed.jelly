@@ -119,6 +119,14 @@ THE SOFTWARE.
                       </j:otherwise>
                     </j:choose>
                   </div>
+                  <j:set var="issueTrackerReportUrl" value="${p.getIssueTrackerReportUrl()}"/>
+                  <j:if test="${issueTrackerReportUrl != null}">
+                    <div class="excerpt">
+                      <a href="${issueTrackerReportUrl}" rel="noopener nofollow noreferrer" target="_blank">
+                        ${%reportIssue}
+                      </a>
+                    </div>
+                  </j:if>
                   <j:if test="${!p.getActiveWarnings().isEmpty()}">
                     <div class="alert alert-danger">${%securityWarning}
                       <ul>
