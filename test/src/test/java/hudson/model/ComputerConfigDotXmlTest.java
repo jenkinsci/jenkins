@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.spy;
@@ -96,24 +97,24 @@ public class ComputerConfigDotXmlTest {
         SecurityContextHolder.setContext(oldSecurityContext);
     }
 
-    @Test(expected = AccessDeniedException3.class)
+    @Test
     public void configXmlGetShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("GET");
 
         rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
 
-        computer.doConfigDotXml(req, rsp);
+        assertThrows(AccessDeniedException3.class, () -> computer.doConfigDotXml(req, rsp));
     }
 
-    @Test(expected = AccessDeniedException3.class)
+    @Test
     public void configXmlPostShouldFailForUnauthorized() throws Exception {
 
         when(req.getMethod()).thenReturn("POST");
 
         rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
 
-        computer.doConfigDotXml(req, rsp);
+        assertThrows(AccessDeniedException3.class, () -> computer.doConfigDotXml(req, rsp));
     }
 
     @Test
