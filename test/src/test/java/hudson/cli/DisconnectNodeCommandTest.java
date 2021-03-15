@@ -29,7 +29,6 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -263,42 +262,5 @@ public class DisconnectNodeCommandTest {
         assertThat(slave2.toComputer().isOffline(), equalTo(true));
         assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
-    }
-
-    @Ignore("TODO currently failing")
-    @Test
-    public void disconnectNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = j.jenkins.getComputer("");
-        assertThat(masterComputer.isOnline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), equalTo(null));
-
-        CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("");
-        assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo(null));
-
-        masterComputer.connect(true);
-        masterComputer.waitUntilOnline();
-        assertThat(masterComputer.isOnline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), equalTo(null));
-
-        result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("");
-        assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo(null));
-
-        result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("");
-        assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo(null));
     }
 }
