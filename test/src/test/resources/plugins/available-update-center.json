@@ -8,7 +8,7 @@ updateCenter.post(
     },
     "id": "default",
     "plugins": {
-        "dummy2": { // Lower key so case insensitive
+        "dummy2": {
             "buildDate": "Dec 17, 2008",
             "dependencies": [],
             "developers": [],
