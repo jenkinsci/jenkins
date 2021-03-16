@@ -258,18 +258,6 @@ THE SOFTWARE.
                 -->
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>ant</artifactId>
-                  <version>1.8</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>javadoc</artifactId>
-                  <version>1.1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>external-monitor-job</artifactId>
                   <version>1.4</version>
                   <type>hpi</type>
@@ -574,6 +562,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-enforcer-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <executions>
               <execution>
                 <id>enforce-versions</id>
@@ -682,6 +671,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <configuration>
               <filesets>
                 <fileset>

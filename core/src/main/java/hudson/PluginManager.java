@@ -1115,7 +1115,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final JarURLConnection jarURLConnection = (JarURLConnection) uc;
             final String entryName = jarURLConnection.getEntryName();
             
-            try(final JarFile jarFile = jarURLConnection.getJarFile()) {
+            try(JarFile jarFile = jarURLConnection.getJarFile()) {
                 final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
                     try(InputStream i = jarFile.getInputStream(entry)) {

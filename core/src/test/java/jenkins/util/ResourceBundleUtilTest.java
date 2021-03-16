@@ -30,6 +30,8 @@ import org.junit.Test;
 import java.util.Locale;
 import java.util.MissingResourceException;
 
+import static org.junit.Assert.assertThrows;
+
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
@@ -69,8 +71,8 @@ public class ResourceBundleUtilTest {
     /**
      * Test unknown bundle.
      */
-    @Test(expected = MissingResourceException.class)
+    @Test
     public void test_unknown_bundle() {
-        ResourceBundleUtil.getBundle("hudson.blah.Whatever");
+        assertThrows(MissingResourceException.class, () -> ResourceBundleUtil.getBundle("hudson.blah.Whatever"));
     }
 }

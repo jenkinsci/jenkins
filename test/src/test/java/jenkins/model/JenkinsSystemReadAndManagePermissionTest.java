@@ -13,6 +13,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -79,7 +80,7 @@ public class JenkinsSystemReadAndManagePermissionTest {
         // THEN the changes on fields forbidden to a Jenkins.MANAGE permission are not saved
         Config config = GlobalConfiguration.all().get(Config.class);
 
-        assert config != null;
+        assertNotNull(config);
         assertNull("shouldn't be allowed to change a GlobalConfiguration that needs Overall/Administer", config.getNumber());
     }
 

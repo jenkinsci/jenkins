@@ -50,7 +50,6 @@ import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 import hudson.util.TagCloud;
-import hudson.util.TagCloud.WeightFunction;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;

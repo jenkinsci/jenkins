@@ -323,7 +323,7 @@ public class XStreamDOM {
         private final Stack<Pointer> pointers = new Stack<>();
 
 
-        public ReaderImpl(XStreamDOM current) {
+        ReaderImpl(XStreamDOM current) {
             super(new XmlFriendlyReplacer());
             pointers.push(new Pointer(current));
         }

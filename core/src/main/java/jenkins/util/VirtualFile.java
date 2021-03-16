@@ -1117,7 +1117,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             this.noFollowLinks = noFollowLinks;
         }
 
-        public Scanner(String includes, String excludes, boolean useDefaultExcludes) {
+        Scanner(String includes, String excludes, boolean useDefaultExcludes) {
             this(includes, excludes, useDefaultExcludes, null, false);
         }
 

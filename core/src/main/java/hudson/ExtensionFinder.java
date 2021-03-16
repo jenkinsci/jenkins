@@ -459,7 +459,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             private final List<IndexItem<?,Object>> index;
             private final List<IndexItem<?,Object>> loadedIndex;
 
-            public SezpozModule(List<IndexItem<?,Object>> index) {
+            SezpozModule(List<IndexItem<?,Object>> index) {
                 this.index = index;
                 this.loadedIndex = new ArrayList<>();
             }

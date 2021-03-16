@@ -147,6 +147,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Ignore;
@@ -468,7 +469,8 @@ public class QueueTest {
         assertFalse(Queue.isBlockedByShutdown(task));
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
-        assert task.exec instanceof OneOffExecutor : task.exec;
+        assertNotNull(task.exec);
+        assertThat(task.exec, instanceOf(OneOffExecutor.class));
     }
 
     @Issue("JENKINS-24519")
@@ -481,7 +483,8 @@ public class QueueTest {
         r.createSlave(label);
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
-        assert task.exec instanceof OneOffExecutor : task.exec;
+        assertNotNull(task.exec);
+        assertThat(task.exec, instanceOf(OneOffExecutor.class));
     }
 
     @Issue("JENKINS-41127")

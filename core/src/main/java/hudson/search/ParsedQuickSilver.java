@@ -113,7 +113,7 @@ final class ParsedQuickSilver {
     static final class MethodGetter extends Getter {
         private final Method method;
 
-        public MethodGetter(String url, String searchName, Method method) {
+        MethodGetter(String url, String searchName, Method method) {
             super(url, searchName);
             this.method = method;
         }
@@ -137,7 +137,7 @@ final class ParsedQuickSilver {
     static final class FieldGetter extends Getter {
         private final Field field;
 
-        public FieldGetter(String url, String searchName, Field field) {
+        FieldGetter(String url, String searchName, Field field) {
             super(url, searchName);
             this.field = field;
         }

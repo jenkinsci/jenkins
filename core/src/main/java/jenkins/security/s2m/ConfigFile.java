@@ -20,7 +20,7 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
     @CopyOnWrite
     protected volatile COL parsed;
 
-    public ConfigFile(File file) {
+    ConfigFile(File file) {
         super(file);
     }
 

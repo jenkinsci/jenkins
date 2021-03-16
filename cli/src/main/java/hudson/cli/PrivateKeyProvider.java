@@ -34,14 +34,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.StreamSupport;
 
 import org.apache.sshd.common.config.keys.FilePasswordProvider;
+import org.apache.sshd.common.util.io.resource.PathResource;
 import org.apache.sshd.common.util.security.SecurityUtils;
 
 /**
@@ -52,7 +57,7 @@ import org.apache.sshd.common.util.security.SecurityUtils;
  */
 public class PrivateKeyProvider {
 
-    private List<KeyPair> privateKeys = new ArrayList<>();
+    private final List<KeyPair> privateKeys = new ArrayList<>();
 
     /**
      * Get keys read so far.
@@ -137,9 +142,18 @@ public class PrivateKeyProvider {
     }
 
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
-        return SecurityUtils.loadKeyPairIdentity("key",
+        Iterable<KeyPair> itr = SecurityUtils.loadKeyPairIdentities(null,
+                new PathResource(Paths.get("key")),
                 new ByteArrayInputStream(pemString.getBytes(UTF_8)),
                 FilePasswordProvider.of(passwd));
+        long numLoaded = itr == null ? 0 : StreamSupport.stream(itr.spliterator(), false).count();
+        if (numLoaded <= 0) {
+            throw new InvalidKeyException("Unsupported private key file format: key");
+        }
+        if (numLoaded != 1) {
+            throw new InvalidKeySpecException("Multiple private key pairs N/A: key");
+        }
+        return itr.iterator().next();
     }
 
     private static final Logger LOGGER = Logger.getLogger(PrivateKeyProvider.class.getName());

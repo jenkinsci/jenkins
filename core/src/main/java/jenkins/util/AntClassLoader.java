@@ -1375,7 +1375,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
         // we can find the class we want.
         String classFilename = getClassFilename(name);
         for (File pathComponent : pathComponents) {
-            try (final InputStream stream = getResourceStream(pathComponent, classFilename)) {
+            try (InputStream stream = getResourceStream(pathComponent, classFilename)) {
                 if (stream != null) {
                     log("Loaded from " + pathComponent + " "
                         + classFilename, Project.MSG_DEBUG);

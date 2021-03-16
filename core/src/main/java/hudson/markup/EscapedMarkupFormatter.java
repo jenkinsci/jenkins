@@ -25,8 +25,6 @@ package hudson.markup;
 
 import hudson.Extension;
 import hudson.Util;
-import hudson.markup.MarkupFormatter;
-import hudson.markup.MarkupFormatterDescriptor;
 import java.io.IOException;
 import java.io.Writer;
 

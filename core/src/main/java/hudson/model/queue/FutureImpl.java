@@ -64,7 +64,7 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
         return start;
     }
 
-    public final Executable waitForStart() throws InterruptedException, ExecutionException {
+    public Executable waitForStart() throws InterruptedException, ExecutionException {
         return getStartCondition().get();
     }
 

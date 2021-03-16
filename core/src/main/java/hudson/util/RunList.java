@@ -214,7 +214,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
     private static class PredicateAdapter<T> implements com.google.common.base.Predicate<T> {
         private final Predicate<T> predicate;
 
-        public PredicateAdapter(Predicate<T> predicate) {
+        PredicateAdapter(Predicate<T> predicate) {
             this.predicate = predicate;
         }
 

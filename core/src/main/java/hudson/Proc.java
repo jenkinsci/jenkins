@@ -395,7 +395,7 @@ public abstract class Proc {
             private final InputStream in;
             private final OutputStream out;
 
-            public StdinCopyThread(String threadName, InputStream in, OutputStream out) {
+            StdinCopyThread(String threadName, InputStream in, OutputStream out) {
                 super(threadName);
                 this.in = in;
                 this.out = out;

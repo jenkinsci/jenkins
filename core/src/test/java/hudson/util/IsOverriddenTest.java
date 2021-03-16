@@ -25,6 +25,7 @@ package hudson.util;
 
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Util;
@@ -59,23 +60,23 @@ public class IsOverriddenTest {
      * Negative test.
      * Trying to check for a method which does not exist in the hierarchy.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void isOverriddenNegativeTest() {
-        Util.isOverridden(Base.class, Derived.class, "method2");
+        assertThrows(IllegalArgumentException.class, () -> Util.isOverridden(Base.class, Derived.class, "method2"));
     }
 
     /** Specifying a base class that is not a base class should result in an error. */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void badHierarchyIsReported() {
-        Util.isOverridden(Derived.class, Base.class, "method");
+        assertThrows(IllegalArgumentException.class, () -> Util.isOverridden(Derived.class, Base.class, "method"));
     }
 
     /**
      * Do not inspect private methods.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void avoidPrivateMethodsInspection() {
-        Util.isOverridden(Base.class, Intermediate.class, "aPrivateMethod");
+        assertThrows(IllegalArgumentException.class, () -> Util.isOverridden(Base.class, Intermediate.class, "aPrivateMethod"));
     }
 
     public abstract static class Base<T> {

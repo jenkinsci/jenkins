@@ -49,7 +49,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
 
-import static hudson.Util.fixEmpty;
 import org.springframework.security.access.AccessDeniedException;
 
 /**

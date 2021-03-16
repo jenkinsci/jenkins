@@ -128,7 +128,7 @@ public class InitStrategy {
     private static class FilterByExtension implements FilenameFilter {
         private final List<String> extensions;
 
-        public FilterByExtension(String... extensions) {
+        FilterByExtension(String... extensions) {
             this.extensions = Arrays.asList(extensions);
         }
 

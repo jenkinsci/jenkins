@@ -1155,7 +1155,7 @@ public abstract class Launcher {
         private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {
             private final Map<String, String> modelEnvVars;
 
-            public KillTask(Map<String, String> modelEnvVars) {
+            KillTask(Map<String, String> modelEnvVars) {
                 this.modelEnvVars = modelEnvVars;
             }
 
@@ -1440,7 +1440,7 @@ public abstract class Launcher {
         @NonNull
         private final Map<String,String> envOverrides;
 
-        public RemoteChannelLaunchCallable(@NonNull String[] cmd, @NonNull Pipe out, @NonNull OutputStream err, 
+        RemoteChannelLaunchCallable(@NonNull String[] cmd, @NonNull Pipe out, @NonNull OutputStream err, 
                 @CheckForNull String workDir, @NonNull Map<String,String> envOverrides) {
             this.cmd = cmd;
             this.out = out;

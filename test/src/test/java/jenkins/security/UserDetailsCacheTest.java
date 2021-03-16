@@ -33,6 +33,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -70,17 +71,13 @@ public class UserDetailsCacheTest {
         assertNull(alice1);
     }
 
-    @Test(expected = UsernameNotFoundException.class)
+    @Test
     public void getCachedTrueNotFound() throws Exception {
+
         UserDetailsCache cache = UserDetailsCache.get();
         assertNotNull(cache);
-        try {
-            cache.loadUserByUsername("bob");
-            fail("Bob should not be found");
-        } catch (UsernameNotFoundException e) {
-            //as expected
-        }
-        cache.getCached("bob");
+        assertThrows(UsernameNotFoundException.class, () -> cache.loadUserByUsername("bob"));
+        assertThrows(UsernameNotFoundException.class, () -> cache.getCached("bob"));
     }
 
     @Test

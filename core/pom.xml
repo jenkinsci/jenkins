@@ -595,6 +595,7 @@ THE SOFTWARE.
         <plugin>
          <groupId>org.codehaus.mojo</groupId>
          <artifactId>build-helper-maven-plugin</artifactId>
+         <!-- Version specified in grandparent POM -->
          <executions>
              <execution>
                  <id>add-source</id>
@@ -615,6 +616,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
             <goals>
@@ -714,6 +716,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
             <id>winsw</id>
@@ -740,6 +743,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
@@ -767,7 +771,7 @@ THE SOFTWARE.
       <plugin><!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>${maven-stapler-plugin.version}</version>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <patterns>
             <pattern>/lib/.*</pattern>
@@ -776,7 +780,7 @@ THE SOFTWARE.
       </plugin>
       <plugin><!-- skip slow dependency analysis -->
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.1.1</version>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>

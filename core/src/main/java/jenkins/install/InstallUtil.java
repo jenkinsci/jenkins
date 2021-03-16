@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -80,7 +79,7 @@ public class InstallUtil {
      */
     private static class ProviderChain<T> implements Provider<T> {
         private final Iterator<Function<Provider<T>,T>> functions;
-        public ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
+        ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
             this.functions = functions;
         }
         @Override

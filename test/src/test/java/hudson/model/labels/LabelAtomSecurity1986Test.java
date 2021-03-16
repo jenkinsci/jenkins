@@ -37,6 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -173,11 +174,11 @@ public class LabelAtomSecurity1986Test {
         }
     }
 
-    @Test(expected = Exception.class)
+    @Test
     @Issue("SECURITY-1986")
-    public void programmaticCreationInvalidName() throws IOException {
+    public void programmaticCreationInvalidName() {
         LabelAtom label = new LabelAtom("foo/../goo");
-        label.save();
+        assertThrows(IOException.class, () -> label.save());
     }
 
     @Test

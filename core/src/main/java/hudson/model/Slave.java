@@ -709,7 +709,7 @@ public abstract class Slave extends Node implements Serializable {
         private final long remoteTime = System.currentTimeMillis();
         private final long startTime;
 
-        public GetClockDifference3(long startTime) {
+        GetClockDifference3(long startTime) {
             this.startTime = startTime;
         }
 

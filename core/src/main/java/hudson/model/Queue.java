@@ -65,7 +65,6 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
-import java.nio.file.Files;
 
 import hudson.security.Permission;
 import hudson.util.Futures;
@@ -79,11 +78,9 @@ import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.nio.charset.Charset;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2997,7 +2994,7 @@ public class Queue extends ResourceController implements Saveable {
         private final List<BuildableItem> buildables;
         private final List<BuildableItem> pendings;
 
-        public Snapshot(Set<WaitingItem> waitingList, List<BlockedItem> blockedProjects, List<BuildableItem> buildables,
+        Snapshot(Set<WaitingItem> waitingList, List<BlockedItem> blockedProjects, List<BuildableItem> buildables,
                         List<BuildableItem> pendings) {
             this.waitingList = new LinkedHashSet<>(waitingList);
             this.blockedProjects = new ArrayList<>(blockedProjects);
