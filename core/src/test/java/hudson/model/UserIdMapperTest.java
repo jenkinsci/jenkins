@@ -33,6 +33,7 @@ import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 
 public class UserIdMapperTest {
 
@@ -287,9 +288,9 @@ public class UserIdMapperTest {
         assertThat(directory1.getName(), startsWith("abcdef_"));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testXmlFileCorrupted() throws IOException {
-        UserIdMapper mapper = createUserIdMapper(IdStrategy.CASE_INSENSITIVE);
+        assertThrows(IOException.class, () -> createUserIdMapper(IdStrategy.CASE_INSENSITIVE));
     }
 
     @Test

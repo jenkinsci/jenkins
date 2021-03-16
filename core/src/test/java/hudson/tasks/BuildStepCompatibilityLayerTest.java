@@ -1,5 +1,6 @@
 package hudson.tasks;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -15,13 +16,13 @@ import org.mockito.Mockito;
 public class BuildStepCompatibilityLayerTest {
 
     @Issue("JENKINS-18734")
-    @Test(expected = AbstractMethodError.class)
+    @Test
     @SuppressWarnings("deprecation") /* testing deprecated variant */
     public void testPerformExpectAbstractMethodError() throws InterruptedException, IOException {
 
         FreeStyleBuild mock = Mockito.mock(FreeStyleBuild.class, Mockito.CALLS_REAL_METHODS);
         BuildStepCompatibilityLayer bscl = new BuildStepCompatibilityLayer() {};
-        bscl.perform(mock, null, null);
+        assertThrows(AbstractMethodError.class, () -> bscl.perform(mock, null, null));
 
     }
 
