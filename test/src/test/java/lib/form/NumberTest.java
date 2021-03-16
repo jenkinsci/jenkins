@@ -89,7 +89,7 @@ public class NumberTest {
 
 
     @Test
-    public void minAndMaxValidation() throws IOException, SAXException, InterruptedException {
+    public void minAndMaxValidation() throws IOException, SAXException {
         HtmlPage page = j.createWebClient().goTo("minAndMaxValidation");
         HtmlForm form = page.getFormByName("number");
 
@@ -197,7 +197,7 @@ public class NumberTest {
     }
 
     @TestExtension("minAndMaxValidation")
-    public static class minAndMaxValidation extends InvisibleAction implements RootAction {
+    public static class MinAndMaxValidation extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "minAndMaxValidation";
