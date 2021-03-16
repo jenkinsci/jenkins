@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -259,11 +258,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         List<Dependency> downstreamProjects = new ArrayList<>(
                 graph.getDownstreamDependencies(build.getProject()));
         // Sort topologically
-        downstreamProjects.sort(new Comparator<Dependency>() {
-            public int compare(Dependency lhs, Dependency rhs) {
-                // Swapping lhs/rhs to get reverse sort:
-                return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
-            }
+        downstreamProjects.sort((lhs, rhs) -> {
+            // Swapping lhs/rhs to get reverse sort:
+            return graph.compare(rhs.getDownstreamProject(), lhs.getDownstreamProject());
         });
 
         for (Dependency dep : downstreamProjects) {

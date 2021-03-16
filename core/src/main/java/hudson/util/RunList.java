@@ -94,12 +94,10 @@ public class RunList<R extends Run> extends AbstractList<R> {
     }
 
     private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {
-        return Iterables.mergeSorted(runLists, new Comparator<R>() {
-            public int compare(R o1, R o2) {
-                long lhs = o1.getTimeInMillis();
-                long rhs = o2.getTimeInMillis();
-                return Long.compare(rhs, lhs);
-            }
+        return Iterables.mergeSorted(runLists, (o1, o2) -> {
+            long lhs = o1.getTimeInMillis();
+            long rhs = o2.getTimeInMillis();
+            return Long.compare(rhs, lhs);
         });
     }
 
@@ -268,11 +266,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * @since 1.507
      */
     public RunList<R> limit(final int n) {
-        return limit(new CountingPredicate<R>() {
-            public boolean apply(int index, R input) {
-                return index<n;
-            }
-        });
+        return limit((index, input) -> index<n);
     }
 
     /**
@@ -325,11 +319,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      */
     public RunList<R> byTimestamp(final long start, final long end) {
         return
-        limit(new CountingPredicate<R>() {
-            public boolean apply(int index, R r) {
-                return start<=r.getTimeInMillis();
-            }
-        }).filter((Predicate<R>) r -> r.getTimeInMillis() < end);
+        limit((index, r) -> start<=r.getTimeInMillis()).filter((Predicate<R>) r -> r.getTimeInMillis() < end);
     }
 
     /**
@@ -346,10 +336,6 @@ public class RunList<R extends Run> extends AbstractList<R> {
         // can't publish on-going builds
         return filter((Predicate<R>) r -> !r.isBuilding())
         // put at least 10 builds, but otherwise ignore old builds
-        .limit(new CountingPredicate<R>() {
-            public boolean apply(int index, R r) {
-                return index < 10 || r.getTimeInMillis() >= t;
-            }
-        });
+        .limit((index, r) -> index < 10 || r.getTimeInMillis() >= t);
     }
 }

@@ -47,7 +47,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +58,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -193,11 +191,7 @@ public class UpdateSite {
     @Deprecated
     public @CheckForNull Future<FormValidation> updateDirectly(final boolean signatureCheck) {
         if (! getDataFile().exists() || isDue()) {
-            return Jenkins.get().getUpdateCenter().updateService.submit(new Callable<FormValidation>() {
-                @Override public FormValidation call() throws Exception {
-                    return updateDirectlyNow(signatureCheck);
-                }
-            });
+            return Jenkins.get().getUpdateCenter().updateService.submit(() -> updateDirectlyNow(signatureCheck));
         } else {
             return null;
         }
@@ -391,15 +385,12 @@ public class UpdateSite {
             if(p.getInstalled()==null)
                 r.add(p);
         }
-        r.sort(new Comparator<Plugin>() {
-            @Override
-            public int compare(Plugin plugin, Plugin t1) {
-                final int pop = t1.popularity.compareTo(plugin.popularity);
-                if (pop != 0) {
-                    return pop; // highest popularity first
-                }
-                return plugin.getDisplayName().compareTo(plugin.getDisplayName());
+        r.sort((plugin, t1) -> {
+            final int pop = t1.popularity.compareTo(plugin.popularity);
+            if (pop != 0) {
+                return pop; // highest popularity first
             }
+            return plugin.getDisplayName().compareTo(plugin.getDisplayName());
         });
         return r;
     }

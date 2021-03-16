@@ -49,17 +49,12 @@ import org.jvnet.localizer.Localizable;
  */
 public final class Permission {
 
+    // break eclipse compilation
+//Override
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
      */
-    public static final Comparator<Permission> ID_COMPARATOR = new Comparator<Permission>() {
-
-        // break eclipse compilation 
-        //Override
-        public int compare(@NonNull Permission one, @NonNull Permission two) {
-            return one.getId().compareTo(two.getId());
-        }
-    };
+    public static final Comparator<Permission> ID_COMPARATOR = (one, two) -> one.getId().compareTo(two.getId());
 
     public final @NonNull Class owner;
 

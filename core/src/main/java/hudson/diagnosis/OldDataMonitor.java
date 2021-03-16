@@ -325,12 +325,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
         final String thruVerParam = req.getParameter("thruVer");
         final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
 
-        saveAndRemoveEntries(new Predicate<Map.Entry<SaveableReference, VersionRange>>() {
-            @Override
-            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                VersionNumber version = entry.getValue().max;
-                return version != null && (thruVer == null || !version.isNewerThan(thruVer));
-            }
+        saveAndRemoveEntries(entry -> {
+            VersionNumber version = entry.getValue().max;
+            return version != null && (thruVer == null || !version.isNewerThan(thruVer));
         });
 
         return HttpResponses.forwardToPreviousPage();
@@ -342,12 +339,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
-        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
-            @Override
-            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                return entry.getValue().max == null;
-            }
-        });
+        saveAndRemoveEntries(entry -> entry.getValue().max == null);
 
         return HttpResponses.forwardToPreviousPage();
     }

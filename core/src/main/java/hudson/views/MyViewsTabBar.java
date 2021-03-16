@@ -23,24 +23,24 @@
  */
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.model.MyViewsProperty;
 import hudson.model.View;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
-import hudson.model.MyViewsProperty;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Extension point for adding a MyViewsTabBar header to Projects {@link MyViewsProperty}.
@@ -83,12 +83,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
     @SuppressWarnings("unused") // invoked from stapler view
     public List<View> sort(@NonNull List<? extends View> views) {
         List<View> result = new ArrayList<>(views);
-        result.sort(new Comparator<View>() {
-            @Override
-            public int compare(View o1, View o2) {
-                return o1.getDisplayName().compareTo(o2.getDisplayName());
-            }
-        });
+        result.sort((o1, o2) -> o1.getDisplayName().compareTo(o2.getDisplayName()));
         return result;
     }
 

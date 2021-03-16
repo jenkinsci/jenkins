@@ -67,12 +67,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
             return OpMatcher.ALL;
 
         final ImmutableSet ops = ImmutableSet.copyOf(token.split(","));
-        return new OpMatcher() {
-            @Override
-            public boolean matches(String op) {
-                return ops.contains(op);
-            }
-        };
+        return op -> ops.contains(op);
     }
 
     public boolean checkFileAccess(String op, File path) throws SecurityException {

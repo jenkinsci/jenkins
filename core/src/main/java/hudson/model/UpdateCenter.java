@@ -1611,21 +1611,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.CHECKING);
                     statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
                     // Run the internet check in parallel
-                    internetCheck = updateService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                config.checkConnection(ConnectionCheckJob.this, connectionCheckUrl);
-                            } catch (Exception e) {
-                                if(e.getMessage().contains("Connection timed out")) {
-                                    // Google can't be down, so this is probably a proxy issue
-                                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
-                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl)));
-                                    return;
-                                }
+                    internetCheck = updateService.submit(() -> {
+                        try {
+                            config.checkConnection(ConnectionCheckJob.this, connectionCheckUrl);
+                        } catch (Exception e) {
+                            if(e.getMessage().contains("Connection timed out")) {
+                                // Google can't be down, so this is probably a proxy issue
+                                connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
+                                statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl)));
+                                return;
                             }
-                            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                         }
+                        connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                     });
                 } else {
                     LOGGER.log(WARNING, "Update site ''{0}'' does not declare the connection check URL. "

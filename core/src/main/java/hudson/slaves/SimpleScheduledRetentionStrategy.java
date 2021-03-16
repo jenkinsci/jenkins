@@ -174,21 +174,19 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
             LOGGER.log(INFO, "Trying to launch computer {0} as schedule says it should be on-line at "
                     + "this point in time", new Object[]{c.getName()});
             if (c.isLaunchSupported()) {
-                Computer.threadPoolForRemoting.submit(new Runnable() {
-                    public void run() {
-                        try {
-                            c.connect(true).get();
-                            if (c.isOnline()) {
-                                LOGGER.log(INFO, "Launched computer {0} per schedule", new Object[]{c.getName()});
-                            }
-                            if (keepUpWhenActive && c.isOnline() && !c.isAcceptingTasks()) {
-                                LOGGER.log(INFO,
-                                        "Enabling new jobs for computer {0} as it has started its scheduled uptime",
-                                        new Object[]{c.getName()});
-                                c.setAcceptingTasks(true);
-                            }
-                        } catch (InterruptedException | ExecutionException e) {
+                Computer.threadPoolForRemoting.submit(() -> {
+                    try {
+                        c.connect(true).get();
+                        if (c.isOnline()) {
+                            LOGGER.log(INFO, "Launched computer {0} per schedule", new Object[]{c.getName()});
                         }
+                        if (keepUpWhenActive && c.isOnline() && !c.isAcceptingTasks()) {
+                            LOGGER.log(INFO,
+                                    "Enabling new jobs for computer {0} as it has started its scheduled uptime",
+                                    new Object[]{c.getName()});
+                            c.setAcceptingTasks(true);
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
                     }
                 });
             }
@@ -201,29 +199,23 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                             new Object[]{c.getName()});
                     return 1;
                 } else if (c.isIdle() && c.isAcceptingTasks()) {
-                    Queue.withLock(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (c.isIdle()) {
-                                LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
-                                        new Object[]{c.getName()});
-                                c.disconnect(OfflineCause
-                                        .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
-                            } else {
-                                c.setAcceptingTasks(false);
-                            }
+                    Queue.withLock(() -> {
+                        if (c.isIdle()) {
+                            LOGGER.log(INFO, "Disconnecting computer {0} as it has finished its scheduled uptime",
+                                    new Object[]{c.getName()});
+                            c.disconnect(OfflineCause
+                                    .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
+                        } else {
+                            c.setAcceptingTasks(false);
                         }
                     });
                 } else if (c.isIdle() && !c.isAcceptingTasks()) {
-                    Queue.withLock(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (c.isIdle()) {
-                                LOGGER.log(INFO, "Disconnecting computer {0} as it has finished all jobs running when "
-                                        + "it completed its scheduled uptime", new Object[]{c.getName()});
-                                c.disconnect(OfflineCause
-                                        .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
-                            }
+                    Queue.withLock(() -> {
+                        if (c.isIdle()) {
+                            LOGGER.log(INFO, "Disconnecting computer {0} as it has finished all jobs running when "
+                                    + "it completed its scheduled uptime", new Object[]{c.getName()});
+                            c.disconnect(OfflineCause
+                                    .create(Messages._SimpleScheduledRetentionStrategy_FinishedUpTime()));
                         }
                     });
                 }

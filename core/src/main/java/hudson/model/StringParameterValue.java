@@ -63,11 +63,7 @@ public class StringParameterValue extends ParameterValue {
 
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
-        return new VariableResolver<String>() {
-            public String resolve(String name) {
-                return StringParameterValue.this.name.equals(name) ? value : null;
-            }
-        };
+        return name -> StringParameterValue.this.name.equals(name) ? value : null;
     }
 
     @Override
