@@ -25,6 +25,14 @@ public class TagTest {
     public void testVariousDefaultTagLibs() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         {
+            final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/jellyViewWithReallyStaticTag");
+            assertThat(page.getWebResponse().getContentAsString(), containsString("<h1 class=\"title\">It works from Jelly!</h1>"));
+        }
+        {
+            final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyViewWithReallyStaticTag");
+            assertThat(page.getWebResponse().getContentAsString(), containsString("<h1 class=\"title\">It works from Groovy!</h1>"));
+        }
+        {
             final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyViewWithTagLibTag");
             assertThat(page.getWebResponse().getContentAsString(), containsString("class:thisIsFromGroovy"));
         }
