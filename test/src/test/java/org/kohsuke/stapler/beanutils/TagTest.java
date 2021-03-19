@@ -31,6 +31,12 @@ public class TagTest {
     public void testVariousDefaultTagLibs() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         {
+            final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/jellyDefineTagLib");
+            final String content = page.getWebResponse().getContentAsString();
+            assertThat(content, containsString("<div class=\"theFirstClass\">Label:theFirstLabel</div>"));
+            assertThat(content, containsString("<div class=\"theSecondClass\">Label:theSecondLabel</div>"));
+        }
+        {
             final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/jellyViewWithReallyStaticTag");
             assertThat(page.getWebResponse().getContentAsString(), containsString("<h1 class=\"title\">It works from Jelly!</h1>"));
         }
