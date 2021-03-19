@@ -45,14 +45,14 @@ public final class AgentComputerUtil {
      */
     @CheckForNull
     public static VirtualChannel getChannelToMaster() {
-        if (Jenkins.getInstanceOrNull() != null) {// check if calling thread is on master or on agent
-            return FilePath.localChannel;
-        }
-
         // if this method is called from within the agent computation thread, this should work
         Channel c = Channel.current();
         if (c != null && Boolean.TRUE.equals(c.getProperty("slave"))) {
             return c;
+        }
+
+        if (Jenkins.getInstanceOrNull() != null) {// check if calling thread is on master or on agent
+            return FilePath.localChannel;
         }
 
         return null;
