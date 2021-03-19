@@ -3,8 +3,6 @@ package org.kohsuke.stapler.beanutils;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
-import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -16,8 +14,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
+/**
+ * This test suite contains tests related to Commons BeanUtils use in Stapler.
+ * BeanUtils 1.9.4 and newer no longer support the 'class' attribute due to
+ * potential abuse in some applications processing untrusted input. The very
+ * common Stapler {@code st:include} tag has such an attribute, and these tests
+ * assert that the workaround implemented in Stapler works (and that the problem
+ * is fairly narrow to begin with).
+ */
 public class TagTest {
-    public static final String ROOT_ACTION_URL = "tagtest";
+    private static final String ROOT_ACTION_URL = "tagtest";
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
