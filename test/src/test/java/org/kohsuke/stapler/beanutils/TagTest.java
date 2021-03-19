@@ -22,6 +22,19 @@ public class TagTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
+    public void testVariousDefaultTagLibs() throws Exception {
+        final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        {
+            final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyViewWithTagLibTag");
+            assertThat(page.getWebResponse().getContentAsString(), containsString("class:thisIsFromGroovy"));
+        }
+        {
+            final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/jellyViewWithTagLibTag");
+            assertThat(page.getWebResponse().getContentAsString(), containsString("class:thisIsFromJelly"));
+        }
+    }
+
+    @Test
     public void testWeird() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         {
@@ -35,7 +48,7 @@ public class TagTest {
             // With a Groovy wrapper defining the tag library so it can be resolved by class name, it works
             final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyCallingJellyBuilderJellyThenInclude");
             assertThat(page.getWebResponse().getContentAsString(), containsString(":thisIsJellyInclude"));
-            // We're called from StaticTagLibrary, and assumed to be DynaTag
+            // We're called from StaticTagLibrary, and assumed to be DynaTag (also, TagLibrary#getTag is needed, no returning null!)
         }
         {
             // Groovy with DynaTag works
@@ -68,7 +81,7 @@ public class TagTest {
             }
             {
                 final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/jellyStIncludeClassByName");
-                assertThat(page.getWebResponse().getStatusCode(), is(500));
+                assertThat(page.getWebResponse().getStatusCode(), is(500)); // this has never worked, no conversion takes place (sadly)
             }
         }
         { // Groovy views
@@ -115,7 +128,7 @@ public class TagTest {
                 }
                 {
                     final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/jellyStIncludeClassByName");
-                    assertThat(page.getWebResponse().getStatusCode(), is(500));
+                    assertThat(page.getWebResponse().getStatusCode(), is(500)); // this has never worked, no conversion takes place (sadly)
                 }
             }
             { // Groovy views
@@ -125,7 +138,7 @@ public class TagTest {
                 }
                 {
                     final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyLibWithClassInclude");
-                    assertThat(page.getWebResponse().getStatusCode(), is(500));
+                    assertThat(page.getWebResponse().getStatusCode(), is(500)); // the error we're preventing
                 }
                 {
                     final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyLibWithItInclude");
@@ -137,7 +150,7 @@ public class TagTest {
                 }
                 {
                     final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyNamespaceWithClassInclude");
-                    assertThat(page.getWebResponse().getStatusCode(), is(500));
+                    assertThat(page.getWebResponse().getStatusCode(), is(500)); // the error we're preventing
                 }
                 {
                     final HtmlPage page = wc.goTo(ROOT_ACTION_URL + "/groovyNamespaceWithItInclude");
