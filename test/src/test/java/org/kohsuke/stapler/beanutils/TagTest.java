@@ -55,7 +55,7 @@ public class TagTest {
     }
 
     @Test
-    public void testWeird() throws Exception {
+    public void testUserDefinedTagLibrary() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         {
             // This Jelly page, standalone, does cannot resolve the 'my' tag library
