@@ -52,6 +52,18 @@ THE SOFTWARE.
     <st:attribute name="field">
       Used for databinding.
     </st:attribute>
+    <st:attribute name="checkUrl">
+      If specified, the value entered in this input field will be checked (via AJAX)
+      against this URL, and errors will be rendered under the text field.
+
+      If @field is specified, this will be inferred automatically,
+      which is the recommended approach.
+    </st:attribute>
+    <st:attribute name="checkMethod" use="optional" type="String">
+      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
+      If any other value is specified then requests will use POST.
+      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.TODO.
+    </st:attribute>
   </st:documentation>
   <f:prepareDatabinding/>
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->

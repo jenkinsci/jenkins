@@ -216,7 +216,7 @@ var FormChecker = {
     },
 
     sendRequest : function(url, params) {
-        if (params.method == "post") {
+        if (params.method != "get") {
             var idx = url.indexOf('?');
             params.parameters = url.substring(idx + 1);
             url = url.substring(0, idx);
@@ -531,7 +531,7 @@ function registerValidator(e) {
             return url+ q.toString();
         }
     };
-    var method = e.getAttribute("checkMethod") || "get";
+    var method = e.getAttribute("checkMethod") || "post";
 
     var url = e.targetUrl();
     try {
