@@ -47,7 +47,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -391,15 +390,12 @@ public class UpdateSite {
             if(p.getInstalled()==null)
                 r.add(p);
         }
-        r.sort(new Comparator<Plugin>() {
-            @Override
-            public int compare(Plugin plugin, Plugin t1) {
-                final int pop = t1.popularity.compareTo(plugin.popularity);
-                if (pop != 0) {
-                    return pop; // highest popularity first
-                }
-                return plugin.getDisplayName().compareTo(plugin.getDisplayName());
+        r.sort((plugin, t1) -> {
+            final int pop = t1.popularity.compareTo(plugin.popularity);
+            if (pop != 0) {
+                return pop; // highest popularity first
             }
+            return plugin.getDisplayName().compareTo(t1.getDisplayName());
         });
         return r;
     }
