@@ -316,7 +316,7 @@ public class Nodes implements Saveable {
      */
     public void load() throws IOException {
         final File nodesDir = getNodesDir();
-        final File[] subdirs = nodesDir.listFiles(child -> child.isDirectory());
+        final File[] subdirs = nodesDir.listFiles(File::isDirectory);
         final Map<String, Node> newNodes = new TreeMap<>();
         if (subdirs != null) {
             for (File subdir : subdirs) {

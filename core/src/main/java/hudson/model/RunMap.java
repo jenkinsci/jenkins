@@ -155,7 +155,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      *      Use {@link ReverseComparator}
      */
     @Deprecated
-    public static final Comparator<Comparable> COMPARATOR = (o1, o2) -> o2.compareTo(o1);
+    public static final Comparator<Comparable> COMPARATOR = Comparator.reverseOrder();
 
     /**
      * {@link Run} factory.

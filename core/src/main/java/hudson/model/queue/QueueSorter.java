@@ -27,7 +27,7 @@ public abstract class QueueSorter implements ExtensionPoint {
      *
      * @since 1.618
      */
-    public static final Comparator<Queue.BlockedItem> DEFAULT_BLOCKED_ITEM_COMPARATOR = (o1, o2) -> Long.compare(o1.getInQueueSince(), o2.getInQueueSince());
+    public static final Comparator<Queue.BlockedItem> DEFAULT_BLOCKED_ITEM_COMPARATOR = Comparator.comparingLong(Queue.Item::getInQueueSince);
 
     /**
      * Sorts the buildable items list. The items at the beginning will be executed

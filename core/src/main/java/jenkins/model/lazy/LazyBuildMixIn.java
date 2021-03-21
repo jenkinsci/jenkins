@@ -137,7 +137,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
     }
 
     private RunMap<RunT> createBuildRunMap() {
-        RunMap<RunT> r = new RunMap<>(asJob().getBuildDir(), (RunMap.Constructor<RunT>) dir -> loadBuild(dir));
+        RunMap<RunT> r = new RunMap<>(asJob().getBuildDir(), (RunMap.Constructor<RunT>) this::loadBuild);
         RunIdMigrator runIdMigrator = asJob().runIdMigrator;
         assert runIdMigrator != null;
         r.runIdMigrator = runIdMigrator;

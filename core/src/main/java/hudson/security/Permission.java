@@ -54,7 +54,7 @@ public final class Permission {
     /**
      * Comparator that orders {@link Permission} objects based on their ID.
      */
-    public static final Comparator<Permission> ID_COMPARATOR = (one, two) -> one.getId().compareTo(two.getId());
+    public static final Comparator<Permission> ID_COMPARATOR = Comparator.comparing(Permission::getId);
 
     public final @NonNull Class owner;
 
