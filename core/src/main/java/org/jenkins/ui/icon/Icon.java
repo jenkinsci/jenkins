@@ -110,7 +110,7 @@ public class Icon {
      * @param url       The icon image url.
      * @param style     The icon style.
      * @param iconFormat the {@link IconFormat}.
-     * @since TODO
+     * @since 2.283
      */
     public Icon(String classSpec, String url, String style, IconFormat iconFormat) {
         this(classSpec, url, style, IconType.CORE, iconFormat);
@@ -143,7 +143,7 @@ public class Icon {
 
     /**
      * Is the Icon an SVG?
-     * @since TODO
+     * @since 2.283
      */
     public boolean isSvgSprite() {
         return iconFormat == IconFormat.EXTERNAL_SVG_SPRITE;
