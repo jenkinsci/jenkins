@@ -14,6 +14,7 @@ import java.nio.file.StandardOpenOption;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 public class FileChannelWriterTest {
@@ -46,13 +47,12 @@ public class FileChannelWriterTest {
         assertContent("hello é è à");
     }
 
-    @Test(expected = ClosedChannelException.class)
+    @Test
     public void close() throws Exception {
         writer.write("helloooo");
         writer.close();
 
-        writer.write("helloooo");
-        fail("Should have failed the line above");
+        assertThrows(ClosedChannelException.class, () -> writer.write("helloooo"));
     }
 
 

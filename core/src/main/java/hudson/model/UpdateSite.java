@@ -391,6 +391,7 @@ public class UpdateSite {
                 return pop; // highest popularity first
             }
             return plugin.getDisplayName().compareTo(plugin.getDisplayName());
+            return plugin.getDisplayName().compareTo(t1.getDisplayName());
         });
         return r;
     }

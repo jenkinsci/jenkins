@@ -105,7 +105,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>1.32.1</version>
+      <version>1.33</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -132,7 +132,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.48</version>
+      <version>1.49</version>
       <!-- TODO define property for this and share with war/pom.xml-->
       <scope>test</scope>
     </dependency>

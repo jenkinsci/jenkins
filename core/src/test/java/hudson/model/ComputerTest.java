@@ -1,5 +1,8 @@
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.FilePath;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
@@ -30,9 +33,9 @@ public class ComputerTest {
 
             Computer.relocateOldLogs(d);
 
-            assert dir.list().size()==1; // asserting later that this one child is the logs/ directory
-            assert dir.child("logs/slaves/abc/slave.log").exists();
-            assert dir.child("logs/slaves/def/slave.log.5").exists();
+            assertEquals(1, dir.list().size()); // asserting later that this one child is the logs/ directory
+            assertTrue(dir.child("logs/slaves/abc/slave.log").exists());
+            assertTrue(dir.child("logs/slaves/def/slave.log.5").exists());
         } finally {
             dir.deleteRecursive();
         }
