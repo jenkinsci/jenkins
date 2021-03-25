@@ -21,7 +21,8 @@ public class NewViewLink extends TransientViewActionFactory {
     public static final String URL_NAME = "newView";
 
     @Override
-    public List<Action> createFor(View v) {
+    public List<Action> createFor(final View v) {
+
         return Collections.singletonList(new Action() {
 
             @Override
@@ -44,7 +45,10 @@ public class NewViewLink extends TransientViewActionFactory {
 
             @Override
             public String getUrlName() {
-                return Jenkins.get().getRootUrl() + URL_NAME;
+                // the current URL can be inside an actual View (/job/foo/view/wibble)
+                // so we can not be relative
+                // if the ItemGroup is Jenkins root then this is ""
+                return "/" + v.getOwner().getUrl() + URL_NAME;
             }
 
             private boolean hasPermission(View view) {
