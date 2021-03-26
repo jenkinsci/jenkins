@@ -52,7 +52,8 @@ public class NewViewLink extends TransientViewActionFactory {
             }
 
             private boolean hasPermission(View view) {
-                return view.hasPermission(View.CREATE);
+                // new views are created on the owning ViewGroup not the indiviual view so check the permission on that
+                return view.getOwner().hasPermission(View.CREATE);
             }
 
         });
