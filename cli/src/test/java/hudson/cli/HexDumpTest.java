@@ -1,5 +1,6 @@
 package hudson.cli;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,7 +15,8 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 @Execution(ExecutionMode.CONCURRENT)
 public class HexDumpTest {
 
-  @ParameterizedTest
+  @DisplayName("Test HexDump.toHex(byte[] buf)")
+  @ParameterizedTest(name = "{index} => expected: {0}, buf: {1}")
   @MethodSource("testToHex1Sources")
   public void testToHex1(String expected, byte[] buf) {
     assertEquals(expected, HexDump.toHex(buf));
@@ -30,7 +32,8 @@ public class HexDumpTest {
     );
   }
 
-  @ParameterizedTest
+  @DisplayName("Test HexDump.toHex(byte[] buf, int start, int len)")
+  @ParameterizedTest(name = "{index} => expected: {0}, buf: {1}, start: {2}, len: {3}")
   @MethodSource("testToHex2Sources")
   public void testToHex2(String expected, byte[] buf, int start, int len) {
     assertEquals(expected, HexDump.toHex(buf, start, len));
