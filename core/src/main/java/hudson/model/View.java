@@ -475,7 +475,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return false;
     }
 
-    private final static int FILTER_LOOP_MAX_COUNT = 10;
+    private static final int FILTER_LOOP_MAX_COUNT = 10;
 
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
         if (!isFilterQueue()) {
@@ -1110,7 +1110,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } else {
             ctx = null;
         }
-        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all(Jenkins.getAuthentication(), getOwner().getItemGroup()))) {
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all2(Jenkins.getAuthentication2(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<>();
 
@@ -1291,7 +1291,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
         for (ViewDescriptor d : DescriptorVisibilityFilter.apply(owner, all())) {
             if (d.isApplicableIn(owner) && d.isInstantiable()
-                    && owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, d)) {
+                    && owner.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), owner, d)) {
                 r.add(d);
             }
         }
@@ -1426,5 +1426,5 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public static final Message<View> NEW_PRONOUN = new Message<>();
 
-    private final static Logger LOGGER = Logger.getLogger(View.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(View.class.getName());
 }

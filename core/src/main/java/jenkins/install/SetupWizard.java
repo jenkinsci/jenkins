@@ -33,10 +33,6 @@ import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -77,6 +73,10 @@ import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -94,6 +94,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * The security token parameter name
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
@@ -124,7 +125,7 @@ public class SetupWizard extends PageDecorator {
      *
      * If you do not provide any value to that system property, the default admin account will not have an API Token.
      *
-     * @since TODO (for the existence of the sysprop, not the availability to plugin)
+     * @since 2.260 (with NoExternalUse)
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -143,11 +144,7 @@ public class SetupWizard extends PageDecorator {
         Jenkins jenkins = Jenkins.get();
         
         if(newInstall) {
-            // this was determined to be a new install, don't run the update wizard here
-            setCurrentLevel(Jenkins.getVersion());
-            
-            // Create an admin user by default with a 
-            // difficult password
+            // Create an admin user by default with a difficult password
             FilePath iapf = getInitialAdminPasswordFile();
             if(jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
                 try (BulkChange bc = new BulkChange(jenkins)) {
@@ -312,7 +309,7 @@ public class SetupWizard extends PageDecorator {
             HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
             try {
                 if(securityRealm.getAllUsers().size() == 1) {
-                    HudsonPrivateSecurityRealm.Details details = securityRealm.loadUserByUsername(SetupWizard.initialSetupAdminUserName);
+                    HudsonPrivateSecurityRealm.Details details = securityRealm.load(SetupWizard.initialSetupAdminUserName);
                     FilePath iapf = getInitialAdminPasswordFile();
                     if (iapf.exists()) {
                         if (details.isPasswordCorrect(iapf.readToString().trim())) {
@@ -378,7 +375,7 @@ public class SetupWizard extends PageDecorator {
 
             // ... and then login
             Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
-            auth = securityRealm.getSecurityComponents().manager.authenticate(auth);
+            auth = securityRealm.getSecurityComponents().manager2.authenticate(auth);
             SecurityContextHolder.getContext().setAuthentication(auth);
             
             HttpSession session = req.getSession(false);
@@ -460,7 +457,7 @@ public class SetupWizard extends PageDecorator {
     }
 
     /*package*/ void setCurrentLevel(VersionNumber v) throws IOException {
-        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString());
+        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString(), StandardCharsets.UTF_8);
     }
     
     /**
@@ -737,6 +734,7 @@ public class SetupWizard extends PageDecorator {
                 } else if (req.getRequestURI().equals(req.getContextPath() + "/")) {
                     Jenkins.get().checkPermission(Jenkins.ADMINISTER);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
+                        @Override
                         public String getRequestURI() {
                             return getContextPath() + "/setupWizard/";
                         }

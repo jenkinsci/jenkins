@@ -100,6 +100,7 @@ public class MyView extends View {
             return Jenkins.get().isUseSecurity();
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.MyView_DisplayName();
         }

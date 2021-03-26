@@ -134,7 +134,7 @@ public class MappingWorksheet {
             if (c.assignedLabel!=null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
+            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission2(item.authenticate2(), Computer.BUILD))
                 return false;   // tasks don't have a permission to run on this node
 
             return true;
@@ -396,7 +396,7 @@ public class MappingWorksheet {
         return executors.get(index);
     }
 
-    public static abstract class ExecutorSlot {
+    public abstract static class ExecutorSlot {
         public abstract Executor getExecutor();
 
         public abstract boolean isAvailable();

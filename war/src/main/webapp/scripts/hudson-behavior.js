@@ -216,7 +216,7 @@ var FormChecker = {
     },
 
     sendRequest : function(url, params) {
-        if (params.method == "post") {
+        if (params.method != "get") {
             var idx = url.indexOf('?');
             params.parameters = url.substring(idx + 1);
             url = url.substring(0, idx);
@@ -500,13 +500,16 @@ var tooltip;
 //========================================================
 // using tag names in CSS selector makes the processing faster
 function registerValidator(e) {
-    var settingMain = e.closest('.setting-main')
-    if (!settingMain) {
+
+    // Retrieve the validation error area
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr) {
         console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
         return;
     }
     // find the validation-error-area
-    e.targetElement = settingMain.nextElementSibling;
+    e.targetElement = tr.firstChild.nextSibling;
+
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
@@ -515,8 +518,8 @@ function registerValidator(e) {
             try {
                 return eval(url); // need access to 'this', so no 'geval'
             } catch (e) {
-                if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid Javascript: "+e);
-                if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid Javascript: "+e,"warn");
+                if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid JavaScript: "+e);
+                if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid JavaScript: "+e,"warn");
                 return url; // return plain url as fallback
             }
         } else {
@@ -528,7 +531,7 @@ function registerValidator(e) {
             return url+ q.toString();
         }
     };
-    var method = e.getAttribute("checkMethod") || "get";
+    var method = e.getAttribute("checkMethod") || "post";
 
     var url = e.targetUrl();
     try {
@@ -545,7 +548,14 @@ function registerValidator(e) {
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
             onComplete : function(x) {
-                target.innerHTML = x.responseText;
+                if (x.status == 200) {
+                    // All FormValidation responses are 200
+                    target.innerHTML = x.responseText;
+                } else {
+                    // Content is taken from FormValidation#_errorWithMarkup
+                    // TODO Add i18n support
+                    target.innerHTML = "<div class='error'>An internal error occurred during form field validation (HTTP " + x.status + "). Please reload the page and if the problem persists, ask the administrator for help.</div>";
+                }
                 Behaviour.applySubtree(target);
             }
         });
@@ -611,7 +621,15 @@ function makeButton(e,onclick) {
     var h = e.onclick;
     var clsName = e.className;
     var n = e.name;
-    var btn = new YAHOO.widget.Button(e,{});
+
+    var attributes = {};
+    // YUI Button class interprets value attribute of <input> as HTML
+    // similar to how the child nodes of a <button> are treated as HTML.
+    // in standard HTML, we wouldn't expect the former case, yet here we are!
+    if (e.tagName === 'INPUT') {
+        attributes.label = e.value.escapeHTML();
+    }
+    var btn = new YAHOO.widget.Button(e, attributes);
     if(onclick!=null)
         btn.addListener("click",onclick);
     if(h!=null)
@@ -753,7 +771,8 @@ function labelAttachPreviousOnClick() {
 
 function helpButtonOnClick() {
     var tr = findFollowingTR(this, "help-area", "help-sibling") ||
-             findFollowingTR(this, "help-area", "setting-help");
+             findFollowingTR(this, "help-area", "setting-help") ||
+             findFollowingTR(this, "help-area");
     var div = $(tr).down();
     if (!div.hasClassName("help"))
         div = div.next().down();
@@ -877,18 +896,48 @@ function rowvgStartEachRow(recursive,f) {
     Behaviour.specify("INPUT.required", "input-required", ++p, function(e) { registerRegexpValidator(e,/./,"Field is required"); });
 
     // validate form values to be an integer
-    Behaviour.specify("INPUT.number", "input-number", ++p, function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); });
-    Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); });
+    Behaviour.specify("INPUT.number", "input-number", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
+        registerRegexpValidator(e,/^((\-?\d+)|)$/,"Not an integer");
+    });
+
+    Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
+        registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer");
+    });
 
     Behaviour.specify("INPUT.non-negative-number-required", "input-non-negative-number-required", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
     });
 
     Behaviour.specify("INPUT.positive-number", "input-positive-number", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
+                event.preventDefault();
+            }
+        })
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
     });
 
     Behaviour.specify("INPUT.positive-number-required", "input-positive-number-required", ++p, function(e) {
+        e.addEventListener('keypress', function (event) {
+            if (event.which === 69 || event.which === 101) { // Prevent user input 'e', 'E', '.'
+                event.preventDefault();
+            }
+        })
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 
@@ -1857,8 +1906,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                 blockUnwrap(blockWraps[i]);
             }
 
-            removeZeroWidthSpaces(displayName);
-            removeZeroWidthSpaces(desc);
             buildName.classList.remove('block');
             buildName.removeAttribute('style');
             buildDetails.classList.remove('block');
@@ -1872,10 +1919,8 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         // Undo everything from the previous poll.
         resetCellOverflows();
 
-        // Insert zero-width spaces so as to allow text to wrap, allowing us to get the true clientWidth.
-        insertZeroWidthSpacesInElementText(displayName, 2);
+        // Mark the text as multiline, if it has more than one line
         if (desc) {
-            insertZeroWidthSpacesInElementText(desc, 30);
             markMultiline();
         }
 
@@ -1887,13 +1932,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         var controlsOverflowParams;
         if (buildControls) {
             controlsOverflowParams = getElementOverflowParams(buildControls);
-        }
-
-        if (nameOverflowParams.isOverflowed) {
-            // If the name is overflowed, lets remove the zero-width spaces we added above and
-            // re-add zero-width spaces with a bigger max word sizes.
-            removeZeroWidthSpaces(displayName);
-            insertZeroWidthSpacesInElementText(displayName, 20);
         }
 
         function fitToControlsHeight(element) {
@@ -2058,16 +2096,6 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         var bh = $('buildHistory');
         var dataTable = getDataTable(bh);
         var rows = dataTable.rows;
-
-        // Insert zero-width spaces in text that may cause overflow distortions.
-        var displayNames = $(bh).getElementsBySelector('.display-name');
-        for (var i = 0; i < displayNames.length; i++) {
-            insertZeroWidthSpacesInElementText(displayNames[i], 2);
-        }
-        var descriptions = $(bh).getElementsBySelector('.desc');
-        for (var i = 0; i < descriptions.length; i++) {
-            insertZeroWidthSpacesInElementText(descriptions[i], 30);
-        }
 
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
@@ -2330,85 +2358,6 @@ function getElementOverflowParams(element) {
         return  overflowParams;
     } finally {
         element.classList.remove('force-nowrap');
-    }
-}
-
-var zeroWidthSpace = String.fromCharCode(8203);
-var ELEMENT_NODE = 1;
-var TEXT_NODE = 3;
-function insertZeroWidthSpacesInText(textNode, maxWordSize) {
-    if (textNode.textContent.length < maxWordSize) {
-        return;
-    }
-
-    // capture the original text
-    textNode.preZWSText = textNode.textContent;
-
-    var words = textNode.textContent.split(/\s+/);
-    var newTextContent = '';
-
-    var splitRegex = new RegExp('.{1,' + maxWordSize + '}', 'g');
-    for (var i = 0; i < words.length; i++) {
-        var word = words[i];
-        var wordTokens = word.match(splitRegex);
-        if (wordTokens) {
-            for (var ii = 0; ii < wordTokens.length; ii++) {
-                if (newTextContent.length === 0) {
-                    newTextContent += wordTokens[ii];
-                } else {
-                    newTextContent += zeroWidthSpace + wordTokens[ii];
-                }
-            }
-        } else {
-            newTextContent += word;
-        }
-        newTextContent += ' ';
-    }
-
-    textNode.textContent = newTextContent;
-}
-function insertZeroWidthSpacesInElementText(element, maxWordSize) {
-    if (element.classList.contains('zws-inserted')) {
-        // already done.
-        return;
-    }
-    if (!element.hasChildNodes()) {
-        return;
-    }
-
-    var children = element.childNodes;
-    for (var i = 0; i < children.length; i++) {
-        var child = children[i];
-        if (child.nodeType === TEXT_NODE) {
-            insertZeroWidthSpacesInText(child, maxWordSize);
-        } else if (child.nodeType === ELEMENT_NODE) {
-            insertZeroWidthSpacesInElementText(child, maxWordSize);
-        }
-    }
-
-    element.classList.add('zws-inserted');
-}
-function removeZeroWidthSpaces(element) {
-    if (element) {
-        if (!element.classList.contains('zws-inserted')) {
-            // Doesn't have ZWSed text.
-            return;
-        }
-        if (!element.hasChildNodes()) {
-            return;
-        }
-
-        var children = element.childNodes;
-        for (var i = 0; i < children.length; i++) {
-            var child = children[i];
-            if (child.nodeType === TEXT_NODE && child.preZWSText) {
-                child.textContent = child.preZWSText;
-            } else if (child.nodeType === ELEMENT_NODE) {
-                removeZeroWidthSpaces(child);
-            }
-        }
-
-        element.classList.remove('zws-inserted');
     }
 }
 
@@ -2775,20 +2724,6 @@ var toggleCheckboxes = function(toggle) {
     }
 };
 
-// this used to be in prototype.js but it must have been removed somewhere between 1.4.0 to 1.5.1
-String.prototype.trim = function() {
-    var temp = this;
-    var obj = /^(\s*)([\W\w]*)(\b\s*$)/;
-    if (obj.test(temp))
-        temp = temp.replace(obj, '$2');
-    obj = /  /g;
-    while (temp.match(obj))
-        temp = temp.replace(obj, " ");
-    return temp;
-}
-
-
-
 var hoverNotification = (function() {
     var msgBox;
     var body;
@@ -3031,6 +2966,8 @@ var notificationBar = {
             this.div.onclick = function() {
                 self.hide();
             };
+        } else {
+            this.div.innerHTML = "";
         }
     },
     // cancel pending auto-hide timeout
@@ -3049,7 +2986,19 @@ var notificationBar = {
     show : function (text,options) {
         options = options || {};
         this.init();
-        this.div.innerHTML = "<div style=color:"+(options.iconColor || this.defaultIconColor)+";display:inline-block;><svg viewBox='0 0 24 24' focusable='false' class='svg-icon'><use href='"+rootURL+"/images/material-icons/"+(options.icon || this.defaultIcon)+"'></use></svg></div><span> "+text+"</span>";
+        var icon = this.div.appendChild(document.createElement("div"));
+        icon.style.display = "inline-block";
+        if (options.iconColor || this.defaultIconColor) {
+            icon.style.color = options.iconColor || this.defaultIconColor;
+        }
+        var svg = icon.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "svg"));
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("focusable", "false");
+        svg.setAttribute("class", "svg-icon");
+        var use = svg.appendChild(document.createElementNS("http://www.w3.org/2000/svg","use"));
+        use.setAttribute("href", rootURL + "/images/material-icons/" + (options.icon || this.defaultIcon));
+        var message = this.div.appendChild(document.createElement("span"));
+        message.appendChild(document.createTextNode(text));
 
         this.div.className=options.alertClass || this.defaultAlertClass;
         this.div.classList.add("notif-alert-show");

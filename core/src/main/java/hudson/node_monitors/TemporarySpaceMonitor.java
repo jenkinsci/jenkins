@@ -75,6 +75,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
             DESCRIPTOR = this;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }

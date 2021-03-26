@@ -24,10 +24,10 @@
 package hudson.model;
 
 import hudson.util.ByteBuffer;
-import hudson.util.CharSpool;
-import hudson.util.LineEndNormalizingWriter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.framework.io.CharSpool;
+import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 
@@ -81,6 +81,7 @@ public class LargeText {
         this.completed = completed;
     }
 
+    @SuppressWarnings("deprecation")
     public LargeText(final ByteBuffer memory, boolean completed) {
         this.source = new Source() {
             public Session open() throws IOException {
@@ -119,10 +120,12 @@ public class LargeText {
                 else        return -1; // EOF
             }
 
+            @Override
             public int read(byte[] buf, int off, int len) throws IOException {
                 return session.read(buf,off,len);
             }
 
+            @Override
             public void close() throws IOException {
                 session.close();
             }
@@ -219,7 +222,7 @@ public class LargeText {
         protected ByteBuf buf;
         protected int pos;
 
-        public Mark(ByteBuf buf) {
+        Mark(ByteBuf buf) {
             this.buf = buf;
         }
     }
@@ -229,7 +232,7 @@ public class LargeText {
      * to the output yet.
      */
     private static final class HeadMark extends Mark {
-        public HeadMark(ByteBuf buf) {
+        HeadMark(ByteBuf buf) {
             super(buf);
         }
 
@@ -256,7 +259,7 @@ public class LargeText {
      * Points to the end of the region.
      */
     private static final class TailMark extends Mark {
-        public TailMark(ByteBuf buf) {
+        TailMark(ByteBuf buf) {
             super(buf);
         }
 
@@ -284,7 +287,7 @@ public class LargeText {
         private int size = 0;
         private ByteBuf next;
 
-        public ByteBuf(ByteBuf previous, Session f) throws IOException {
+        ByteBuf(ByteBuf previous, Session f) throws IOException {
             if(previous!=null) {
                 assert previous.next==null;
                 previous.next = this;
@@ -320,7 +323,7 @@ public class LargeText {
     private static final class FileSession implements Session {
         private final RandomAccessFile file;
 
-        public FileSession(File file) throws IOException {
+        FileSession(File file) throws IOException {
             this.file = new RandomAccessFile(file,"r");
         }
 
@@ -347,7 +350,8 @@ public class LargeText {
     private static final class BufferSession implements Session {
         private final InputStream in;
 
-        public BufferSession(ByteBuffer buf) {
+        @SuppressWarnings("deprecation")
+        BufferSession(ByteBuffer buf) {
             this.in = buf.newInputStream();
         }
 

@@ -224,7 +224,7 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         // SYSTEM user is always eligible to see tokens
-        if (Jenkins.getAuthentication() == ACL.SYSTEM) {
+        if (Jenkins.getAuthentication2().equals(ACL.SYSTEM2)) {
             return true;
         }
 

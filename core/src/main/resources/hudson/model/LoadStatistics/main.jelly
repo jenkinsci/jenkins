@@ -24,7 +24,8 @@ THE SOFTWARE.
 
 <!-- renders an HTML fragment that shows trend graph -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:adjunct includes="hudson.model.LoadStatistics.resources"/>
   <h1>
     <l:icon class="icon-monitor icon-xlg"/>
     ${%title(it.displayName)}
@@ -43,39 +44,41 @@ THE SOFTWARE.
     ${%Timespan}:
     <j:choose>
       <j:when test="${type != 'sec10'}">
-        <a href="?type=sec10">${%Short}</a>
+        <a href="?type=sec10" tooltip="${%timeScale10sec}">${%Short}</a>
       </j:when>
       <j:otherwise>
-        ${%Short}
+        <span tooltip="${%timeScale10sec}">${%Short}</span>
       </j:otherwise>
     </j:choose>
     <st:nbsp />
     <j:choose>
       <j:when test="${type != 'min'}">
-        <a href="?type=min">${%Medium}</a>
+        <a href="?type=min" tooltip="${%timeScaleMinute}">${%Medium}</a>
       </j:when>
       <j:otherwise>
-        ${%Medium}
+        <span tooltip="${%timeScaleMinute}">${%Medium}</span>
       </j:otherwise>
     </j:choose>
     <st:nbsp />
     <j:choose>
       <j:when test="${type != 'hour'}">
-        <a href="?type=hour">${%Long}</a>
+        <a href="?type=hour" tooltip="${%timeScaleHour}">${%Long}</a>
       </j:when>
       <j:otherwise>
-        ${%Long}
+        <span tooltip="${%timeScaleHour}">${%Long}</span>
       </j:otherwise>
     </j:choose>
   </div>
-  <script type="text/javascript">
-    var w = document.getElementById('main-panel').offsetWidth - 30;
-    document.write('<img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=' + w + '&amp;height=500" alt="[${%Load statistics graph}]" />');
-  </script>
+  <div class="js-load-graph" 
+       data-graph-type="${type}" data-graph-parent-selector="#main-panel" 
+       data-graph-base-url="${prefix?:'loadStatistics'}" data-graph-alt="${%Load statistics graph}">
+    <!-- The graph will be loaded dynamically by JS -->
+  </div>
   <noscript>
+    <!-- The noscript alternative does not have the possibility to adjust the image to the available space -->
     <img src="${prefix?:'loadStatistics'}/graph?type=${type}&amp;width=500&amp;height=300" alt="[${%Load statistics graph}]" />
   </noscript>
-  <div style="margin-top: 2em;">
+  <p>
     ${%blurb}
-  </div>
+  </p>
 </j:jelly>

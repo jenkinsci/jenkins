@@ -287,5 +287,5 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         }
     }
 
-    private final static Logger LOGGER = Logger.getLogger(DescribableList.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DescribableList.class.getName());
 }

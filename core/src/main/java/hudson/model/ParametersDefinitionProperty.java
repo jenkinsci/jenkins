@@ -246,7 +246,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private static class DefinitionsAbstractList extends AbstractList<String> {
         private final List<ParameterDefinition> parameterDefinitions;
 
-        public DefinitionsAbstractList(List<ParameterDefinition> parameterDefinitions) {
+        DefinitionsAbstractList(List<ParameterDefinition> parameterDefinitions) {
             this.parameterDefinitions = parameterDefinitions;
         }
 

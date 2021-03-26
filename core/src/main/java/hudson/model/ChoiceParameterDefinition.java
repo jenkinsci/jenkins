@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Util;
 import hudson.util.FormValidation;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -19,6 +20,9 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author huybrechts
@@ -46,7 +50,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
 
     public ChoiceParameterDefinition(@NonNull String name, @NonNull String[] choices, String description) {
         super(name, description);
-        this.choices = new ArrayList<>(Arrays.asList(choices));
+        this.choices = Stream.of(choices).map(Util::fixNull).collect(Collectors.toCollection(ArrayList::new));
         defaultValue = null;
     }
 
@@ -56,6 +60,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = defaultValue;
     }
 
+    // TODO consider switching @DataBoundConstructor to a ChoiceParameterDefinition(String) overload
     /**
      * Databound constructor for reflective instantiation.
      *
@@ -164,6 +169,34 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         StringParameterValue parameterValue = new StringParameterValue(getName(), value, getDescription());
         checkValue(parameterValue, value);
         return parameterValue;
+    }
+
+    @Override
+    public int hashCode() {
+        if (ChoiceParameterDefinition.class != getClass()) {
+            return super.hashCode();
+        }
+        return Objects.hash(getName(), getDescription(), choices, defaultValue);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (ChoiceParameterDefinition.class != getClass())
+            return super.equals(obj);
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ChoiceParameterDefinition other = (ChoiceParameterDefinition) obj;
+        if (!Objects.equals(getName(), other.getName()))
+            return false;
+        if (!Objects.equals(getDescription(), other.getDescription()))
+            return false;
+        if (!Objects.equals(choices, other.choices))
+                return false;
+        return Objects.equals(defaultValue, other.defaultValue);
     }
 
     @Extension @Symbol({"choice","choiceParam"})

@@ -46,7 +46,6 @@ import hudson.util.XStream2;
 
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.fingerprints.FingerprintStorage;
-import jenkins.fingerprints.GlobalFingerprintConfiguration;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
@@ -71,8 +70,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * A file being tracked by Jenkins.
@@ -125,7 +124,7 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         private boolean hasPermissionToDiscoverBuild() {
             // We expose the data to Jenkins administrators in order to
-            // let them manage the data for deleted jobs (also works for SYSTEM)
+            // let them manage the data for deleted jobs (also works for SYSTEM2)
             final Jenkins instance = Jenkins.get();
             if (instance.hasPermission(Jenkins.ADMINISTER)) {
                 return true;
@@ -774,7 +773,7 @@ public class Fingerprint implements ModelObject, Saveable {
         /**
          * Converter Implementation for RangeSet.
          *
-         * @since TODO
+         * @since 2.253
          */
         public static final class ConverterImpl implements Converter {
             private final Converter collectionConv; // used to convert ArrayList in it
@@ -831,7 +830,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public static final class ProjectRenameListener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldName, final String newName) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 locationChanged(item, oldName, newName);
             }
         }
@@ -1016,7 +1015,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @deprecated Use {@link #addFor(hudson.model.Run)}
      */
     @Deprecated
-    public synchronized void add(@NonNull AbstractBuild b) throws IOException {
+    public void add(@NonNull AbstractBuild b) throws IOException {
         addFor(b);
     }
 
@@ -1025,7 +1024,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @param b {@link Run} to be referenced in {@link #usages}
      * @since 1.577
      */
-    public synchronized void addFor(@NonNull Run b) throws IOException {
+    public void addFor(@NonNull Run b) throws IOException {
         add(b.getParent().getFullName(), b.getNumber());
     }
 
@@ -1452,9 +1451,9 @@ public class Fingerprint implements ModelObject, Saveable {
         }
           
         // Probably it failed due to the missing Item.DISCOVER
-        // We try to retrieve the job using SYSTEM user and to check permissions manually.
-        final Authentication userAuth = Jenkins.getAuthentication();
-        try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+        // We try to retrieve the job using SYSTEM2 user and to check permissions manually.
+        final Authentication userAuth = Jenkins.getAuthentication2();
+        try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
             final Item itemBySystemUser = jenkins.getItemByFullName(fullName);
             if (itemBySystemUser == null) {
                 return false;
@@ -1462,14 +1461,14 @@ public class Fingerprint implements ModelObject, Saveable {
 
             // To get the item existence fact, a user needs Item.DISCOVER for the item
             // and Item.READ for all container folders.
-            boolean canDiscoverTheItem = itemBySystemUser.hasPermission(userAuth, Item.DISCOVER);
+            boolean canDiscoverTheItem = itemBySystemUser.hasPermission2(userAuth, Item.DISCOVER);
             if (canDiscoverTheItem) {
                 ItemGroup<?> current = itemBySystemUser.getParent();
                 do {
                     if (current instanceof Item) {
                         final Item i = (Item) current;
                         current = i.getParent();
-                        if (!i.hasPermission(userAuth, Item.READ)) {
+                        if (!i.hasPermission2(userAuth, Item.READ)) {
                             canDiscoverTheItem = false;
                         }
                     } else {

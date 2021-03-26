@@ -24,13 +24,14 @@
 package jenkins.security.apitoken;
 
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Contains information about the token and the secret value.
  * It should not be stored as is, but just displayed once to the user and then forget about it.
+ * @since This was added in 2.260 but marked NoExternalUse, opened as Beta in 2.265
  */
-@Restricted(NoExternalUse.class)
+@Restricted(Beta.class)
 public class TokenUuidAndPlainValue {
     /**
      * The token identifier to allow manipulation of the token

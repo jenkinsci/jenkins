@@ -268,10 +268,10 @@ public class JNLPLauncherTest {
      * Adds an Inbound TCP agent to the system and returns it.
      */
     private Computer addTestAgent(ComputerLauncher launcher) throws Exception {
-        List<Node> agents = new ArrayList<Node>(j.jenkins.getNodes());
+        List<Node> agents = new ArrayList<>(j.jenkins.getNodes());
         File dir = Util.createTempDir();
         agents.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
-                launcher, RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
+                launcher, RetentionStrategy.INSTANCE, new ArrayList<>()));
         j.jenkins.setNodes(agents);
         Computer c = j.jenkins.getComputer("test");
         assertNotNull(c);

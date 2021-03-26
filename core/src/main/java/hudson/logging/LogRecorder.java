@@ -88,7 +88,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     public transient final CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
-    private final static TargetComparator TARGET_COMPARATOR = new TargetComparator();
+    private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
 
     @DataBoundConstructor
     public LogRecorder(String name) {
@@ -539,9 +539,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
                         }
                     }
                 }
-            } catch (IOException x) {
-                continue;
-            } catch (InterruptedException x) {
+            } catch (IOException | InterruptedException x) {
                 continue;
             }
             if (!recs.isEmpty()) {

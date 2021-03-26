@@ -29,30 +29,30 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.Stapler;
-import org.springframework.dao.DataAccessException;
 
 import javax.servlet.http.HttpSession;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class WhoAmITest {
 
@@ -205,15 +205,15 @@ public class WhoAmITest {
     private static class SecurityRealmImpl extends AbstractPasswordBasedSecurityRealm {
 
         @Override
-        protected UserDetails authenticate(String username, String password) throws AuthenticationException {
+        protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             return createUserDetails(username);
         }
 
-        @Override public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+        @Override public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
             return createUserDetails(username);
         }
 
-        @Override public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+        @Override public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
             return null;
         }
 
@@ -229,8 +229,8 @@ public class WhoAmITest {
                     return "[toString()=S3cr3t]";
                 }
 
-                @Override public GrantedAuthority[] getAuthorities() {
-                    return new GrantedAuthority[0];
+                @Override public Collection<? extends GrantedAuthority> getAuthorities() {
+                    return Collections.emptySet();
                 }
 
                 @Override public String getPassword() {

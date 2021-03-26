@@ -64,7 +64,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -89,16 +88,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Display name of this label.
      */
     @NonNull
-    protected transient final String name;
+    protected final transient String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
     private transient volatile int tiedJobsCount;
 
     @Exported
     @NonNull
-    public transient final LoadStatistics loadStatistics;
+    public final transient LoadStatistics loadStatistics;
     @NonNull
-    public transient final NodeProvisioner nodeProvisioner;
+    public final transient NodeProvisioner nodeProvisioner;
 
     public Label(@NonNull String name) {
         this.name = name;
@@ -410,7 +409,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
 
         // denormalize for performance
         // we don't need to respect security as much when returning a simple count
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             int result = 0;
             for (AbstractProject ignored : Jenkins.get().allItems(AbstractProject.class, p -> matches(p.getAssignedLabelString()))) {
                 ++result;

@@ -27,6 +27,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    <st:attribute name="page"/>
+  </st:documentation>
   <l:tabBar>
     <l:tab name="${%Updates}" active="${page=='updates'}" href="." />
     <l:tab name="${%Available}" active="${page=='available'}" href="./available" />

@@ -185,6 +185,7 @@ public class AllView extends View {
             return true;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.Hudson_ViewName();
         }

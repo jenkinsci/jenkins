@@ -50,8 +50,6 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.common.collect.Lists;
-import static com.google.common.collect.Sets.newHashSet;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.util.SystemProperties;
@@ -242,8 +240,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             parametersAction.safeParameters = this.safeParameters;
             return parametersAction;
         }
-        List<ParameterValue> combinedParameters = Lists.newArrayList(overrides);
-        Set<String> names = newHashSet();
+        List<ParameterValue> combinedParameters = new ArrayList<>(overrides);
+        Set<String> names = new HashSet<>();
 
         for(ParameterValue v : overrides) {
             if (v == null) continue;

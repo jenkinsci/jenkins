@@ -69,6 +69,7 @@ public final class DumbSlave extends Slave {
     @Extension @Symbol({"permanent" /*because this is in effect the canonical agent type*/,
             "dumb", "slave"})
     public static final class DescriptorImpl extends SlaveDescriptor {
+        @Override
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();
         }

@@ -33,17 +33,16 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.LegacyAuthorizationStrategy;
 import hudson.util.HttpResponses;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.springframework.security.core.Authentication;
 
 /**
  * Display an administrative monitor if we expect {@link QueueItemAuthenticator} to be a useful security measure,
@@ -65,6 +64,11 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
             return false;
         }
         return !isQueueItemAuthenticatorPresent() || !isQueueItemAuthenticatorConfigured() || isAnyBuildLaunchedAsSystemWithAuthenticatorPresent();
+    }
+
+    @Override
+    public boolean isSecurity() {
+        return true;
     }
 
     @RequirePOST
@@ -92,7 +96,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
     }
 
     public boolean isAnyBuildLaunchedAsSystemWithAuthenticatorPresent() {
-        // you configured a QueueItemAuthenticator, but builds are still running as SYSTEM
+        // you configured a QueueItemAuthenticator, but builds are still running as SYSTEM2
         return anyBuildLaunchedAsSystemWithAuthenticatorPresent;
     }
 
@@ -127,8 +131,8 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
             }
 
             // TODO this is probably not intended to be used as a getter -- seems potentially unstable
-            Authentication buildAuthentication = li.authenticate();
-            boolean buildRunsAsSystem = buildAuthentication == ACL.SYSTEM;
+            Authentication buildAuthentication = li.authenticate2();
+            boolean buildRunsAsSystem = buildAuthentication.equals(ACL.SYSTEM2);
             if (!buildRunsAsSystem) {
                 LOGGER.log(Level.FINE, displayName + " does not run as SYSTEM");
                 return;

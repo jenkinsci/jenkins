@@ -43,8 +43,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenTestHelper;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +60,8 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class ItemsTest {
 
@@ -292,7 +292,7 @@ public class ItemsTest {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 CLICommand cmd = new CreateJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("attacker").impersonate2());
                 int status = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs(target).returnCode();
                 if (status != 0) {
                     throw new AbortException("CLI command failed with status " + status);
@@ -305,7 +305,7 @@ public class ItemsTest {
                 r.createFreeStyleProject("dupe");
                 CLICommand cmd = new CopyJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("attacker").impersonate2());
                 int status = invoker.invokeWithArgs("dupe", target).returnCode();
                 r.jenkins.getItem("dupe").delete();
                 if (status != 0) {
@@ -317,7 +317,7 @@ public class ItemsTest {
         MOVE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 try {
-                    SecurityContext orig = ACL.impersonate(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                    SecurityContext orig = ACL.impersonate2(User.getOrCreateByIdOrFullName("attacker").impersonate2());
                     try {
                         Items.move(r.jenkins.getItemByFullName("d", MockFolder.class).createProject(FreeStyleProject.class, target), r.jenkins);
                     } finally {

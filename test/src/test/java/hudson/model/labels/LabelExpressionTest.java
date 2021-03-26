@@ -143,11 +143,11 @@ public class LabelExpressionTest {
     public void setLabelString() throws Exception {
         DumbSlave s = j.createSlave("foo", "", null);
 
-        assertSame(s.getLabelString(), "");
+        assertSame("", s.getLabelString());
 
         s.setLabelString("bar");
 
-        assertSame(s.getLabelString(), "bar");
+        assertSame("bar", s.getLabelString());
     }
 
     /**
@@ -188,14 +188,14 @@ public class LabelExpressionTest {
     public void laxParsing() {
         // this should parse as an atom
         LabelAtom l = (LabelAtom) j.jenkins.getLabel("lucene.zones.apache.org (Solaris 10)");
-        assertEquals(l.getName(),"lucene.zones.apache.org (Solaris 10)");
-        assertEquals(l.getExpression(),"\"lucene.zones.apache.org (Solaris 10)\"");
+        assertEquals("lucene.zones.apache.org (Solaris 10)", l.getName());
+        assertEquals("\"lucene.zones.apache.org (Solaris 10)\"", l.getExpression());
     }
 
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
         assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
-        DumbSlave slave = new DumbSlave("abc def (xyz) : test", "dummy",
+        DumbSlave slave = new DumbSlave("abc def (xyz) test", "dummy",
                 j.createTmpDir().getPath(), "1", Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
         j.jenkins.addNode(slave);
 

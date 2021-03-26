@@ -42,6 +42,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 
 /**
  * @author pjanouse
@@ -86,6 +87,20 @@ public class CancelQuietDownCommandTest {
                 .invoke();
         assertThat(result, succeededSilently());
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+    }
+
+    @Test
+    public void cancelQuietDownShouldResetQuietReason() throws Exception {
+        final String testReason = "reason";
+        Jenkins.getActiveInstance().doQuietDown(false, 0, testReason);
+        QuietDownCommandTest.assertJenkinsInQuietMode(j);
+        assertThat(j.jenkins.getQuietDownReason(), equalTo(testReason));
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
+                .invoke();
+        assertThat(result, succeededSilently());
+        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+        assertThat(j.jenkins.getQuietDownReason(), nullValue());
     }
 
     //

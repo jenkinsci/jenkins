@@ -5,14 +5,14 @@
   border-radius: 4px;
 }
 
-.pane-header, .pane-footer {
-  padding: 8px 0px;
+.pane-header,
+.pane-footer {
+  padding: 8px 0;
   color: var(--pane-header-text-color);
   background: var(--pane-header-bg);
   border: var(--pane-border-width) solid var(--pane-header-border-color);
   border-left: none;
   border-right: none;
-  color: var(--pane-header-text-color);
 }
 
 .pane {
@@ -54,10 +54,14 @@ table.stripped tr:nth-of-type(even) {
 table.stripped-even tr:nth-child(even) {
   background: var(--even-row-color);
 }
+
 table.stripped-odd tr:nth-child(odd) {
   background: var(--even-row-color);
 }
-table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
+
+table.stripped tr:hover,
+table.stripped-even tr:hover,
+table.stripped-odd tr:hover {
   background: var(--table-striped-bg--hover) !important;
 }
 
@@ -88,7 +92,8 @@ table.bigtable {
 }
 
 // Keep this for tables still wrapped by .pane-frame
-.pane-frame table, .pane-frame .bigtable tr {
+.pane-frame table,
+.pane-frame .bigtable tr {
   border: none; /* Border will be provided by the pane-frame */
 }
 
@@ -113,6 +118,7 @@ table.bigtable {
     text-align: right;
   }
 }
+
 .bigtable tfoot th,
 .bigtable .sortbottom th {
   color: var(--text-color);
@@ -123,6 +129,7 @@ table.bigtable {
   border-top: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
   vertical-align: middle;
 }
+
 .bigtable tr:last-child td {
   border-bottom: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
 }

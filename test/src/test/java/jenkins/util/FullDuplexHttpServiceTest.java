@@ -70,7 +70,7 @@ public class FullDuplexHttpServiceTest {
     }
     @TestExtension("smokes")
     public static class Endpoint extends InvisibleAction implements RootAction {
-        private transient final Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+        private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
         @Override
         public String getUrlName() {
             return "test";

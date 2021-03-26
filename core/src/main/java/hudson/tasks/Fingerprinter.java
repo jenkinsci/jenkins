@@ -51,7 +51,6 @@ import hudson.util.FormValidation;
 import hudson.util.PackedMap;
 import hudson.util.RunList;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.Symbol;
@@ -78,6 +77,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Records fingerprints of the specified files.
@@ -200,6 +200,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         // failing to record fingerprints is an error but not fatal
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
@@ -250,7 +251,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         final String fileName;
         final String md5sum;
 
-        public Record(boolean produced, String relativePath, String fileName, String md5sum) {
+        Record(boolean produced, String relativePath, String fileName, String md5sum) {
             this.produced = produced;
             this.relativePath = relativePath;
             this.fileName = fileName;
@@ -326,6 +327,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
     @Extension @Symbol("fingerprint")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @Override
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();
         }

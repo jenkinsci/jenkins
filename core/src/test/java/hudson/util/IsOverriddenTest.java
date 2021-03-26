@@ -25,6 +25,7 @@ package hudson.util;
 
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Util;
@@ -59,26 +60,26 @@ public class IsOverriddenTest {
      * Negative test.
      * Trying to check for a method which does not exist in the hierarchy.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void isOverriddenNegativeTest() {
-        Util.isOverridden(Base.class, Derived.class, "method2");
+        assertThrows(IllegalArgumentException.class, () -> Util.isOverridden(Base.class, Derived.class, "method2"));
     }
 
     /** Specifying a base class that is not a base class should result in an error. */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void badHierarchyIsReported() {
-        Util.isOverridden(Derived.class, Base.class, "method");
+        assertThrows(IllegalArgumentException.class, () -> Util.isOverridden(Derived.class, Base.class, "method"));
     }
 
     /**
      * Do not inspect private methods.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void avoidPrivateMethodsInspection() {
-        Util.isOverridden(Base.class, Intermediate.class, "aPrivateMethod");
+        assertThrows(IllegalArgumentException.class, () -> Util.isOverridden(Base.class, Intermediate.class, "aPrivateMethod"));
     }
 
-    public static abstract class Base<T> {
+    public abstract static class Base<T> {
         protected abstract void method();
         private void aPrivateMethod() {}
         public void setX(T t) {}
@@ -104,7 +105,7 @@ public class IsOverriddenTest {
         errors.checkSucceeds(() -> {assertThat("X4 overrides X.m1", Util.isOverridden(X.class, X4.class, "m1"), is(true)); return null;});
         errors.checkSucceeds(() -> {assertThat("X4 overrides X.m2", Util.isOverridden(X.class, X4.class, "m2"), is(true)); return null;});
     }
-    public static interface X {
+    public interface X {
         void m1();
         default void m2() {}
     }
@@ -150,12 +151,12 @@ public class IsOverriddenTest {
     private interface I2 extends I1 {
         default String bar() { return "default"; }
     }
-    private static abstract class C1 implements I1 {
+    private abstract static class C1 implements I1 {
     }
-    private static abstract class C2 extends C1 implements I2 {
+    private abstract static class C2 extends C1 implements I2 {
         @Override public abstract String foo();
     }
-    private static abstract class C3 extends C2 {
+    private abstract static class C3 extends C2 {
         @Override public String foo() { return "foo"; }
     }
     private static class C4 extends C3 implements I1 {

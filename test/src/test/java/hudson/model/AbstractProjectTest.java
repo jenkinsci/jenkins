@@ -55,7 +55,6 @@ import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
 
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -197,7 +196,7 @@ public class AbstractProjectTest {
 
         form = j.createWebClient().getPage(p, "configure").getFormByName("config");
         input = form.getInputByName("blockBuildWhenUpstreamBuilding");
-        assert input.isChecked() : "blockBuildWhenUpstreamBuilding check box is not checked.";
+        assertTrue("blockBuildWhenUpstreamBuilding check box is not checked.", input.isChecked());
     }
 
     /**

@@ -133,7 +133,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Changes in this build.
      */
-    private volatile transient WeakReference<ChangeLogSet<? extends Entry>> changeSet;
+    private transient volatile WeakReference<ChangeLogSet<? extends Entry>> changeSet;
 
     /**
      * Cumulative list of people who contributed to the build problem.
@@ -156,7 +156,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected transient List<Environment> buildEnvironments;
 
-    private transient final LazyBuildMixIn.RunMixIn<P,R> runMixIn = new LazyBuildMixIn.RunMixIn<P,R>() {
+    private final transient LazyBuildMixIn.RunMixIn<P,R> runMixIn = new LazyBuildMixIn.RunMixIn<P,R>() {
         @Override protected R asRun() {
             return _this();
         }
@@ -499,7 +499,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                 workspace = lease.path.getRemote();
                 listener.getLogger().println(Messages.AbstractBuild_BuildingInWorkspace(workspace));
-                node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
 
                 for (WorkspaceListener wl : WorkspaceListener.all()) {
                     wl.beforeUse(AbstractBuild.this, lease.path, listener);

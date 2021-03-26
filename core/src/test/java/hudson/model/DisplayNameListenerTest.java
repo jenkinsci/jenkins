@@ -46,7 +46,7 @@ public class DisplayNameListenerTest {
         // make sure the displayname is equals to the name as it should be null
         assertEquals(dest.getName(), dest.getDisplayName());
     }
-    
+
     @Test
     public void testOnRenamedOldNameEqualsDisplayName() throws Exception {
         DisplayNameListener listener = new DisplayNameListener();

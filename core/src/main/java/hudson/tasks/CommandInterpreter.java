@@ -76,6 +76,7 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
         return command;
     }
 
+    @Override
     public @NonNull List<EnvVarsFilterLocalRule> buildEnvVarsFilterRules() {
         return configuredLocalRules == null ? Collections.emptyList() : new ArrayList<>(configuredLocalRules);
     }

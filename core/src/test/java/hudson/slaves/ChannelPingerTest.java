@@ -29,9 +29,16 @@ public class ChannelPingerTest {
 
     private Map<String, String> savedSystemProperties = new HashMap<>();
 
+    private AutoCloseable mocks;
+
+    @After
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         mockStatic(ChannelPinger.class);
     }
 

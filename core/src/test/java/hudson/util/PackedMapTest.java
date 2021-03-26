@@ -28,7 +28,7 @@ public class PackedMapTest {
         PackedMap<String,String> p = PackedMap.of(o);
         assertEquals("b",p.get("a"));
         assertEquals("d", p.get("c"));
-        assertEquals(p.size(),2);
+        assertEquals(2, p.size());
         for (Entry<String,String> e : p.entrySet()) {
             System.out.println(e.getKey()+'='+e.getValue());
         }

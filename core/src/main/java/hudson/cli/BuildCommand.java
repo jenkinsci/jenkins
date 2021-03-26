@@ -49,7 +49,6 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -166,7 +165,7 @@ public class BuildCommand extends CLICommand {
             throw new IllegalStateException(msg);
         }
 
-        Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication().getName())), a);
+        Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication2().getName())), a);
         QueueTaskFuture<? extends Run<?,?>> f = item != null ? (QueueTaskFuture)item.getFuture() : null;
         
         if (wait || sync || follow) {

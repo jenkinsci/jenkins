@@ -107,7 +107,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
      * </dd>
      * </dl>
      */
-    public static abstract class Solution extends AbstractModelObject implements ExtensionPoint {
+    public abstract static class Solution extends AbstractModelObject implements ExtensionPoint {
         /**
          * Human-readable ID of this monitor, which needs to be unique within the system.
          *

@@ -11,10 +11,13 @@
 #side-panel .pane-header {
   font-size: var(--font-size-sm);
   display: inline-flex;
+  font-weight: bold;
 }
+
 #side-panel .pane-footer {
   font-size: var(--font-size-xs);
 }
+
 #side-panel .pane-header,
 #side-panel .pane-footer {
   color: var(--link-dark-color);
@@ -24,13 +27,11 @@
   padding: 0.5rem 1.25rem;
 }
 
-#side-panel .pane-header {
-  font-weight: bold;
-}
 #side-panel .pane-header-title {
   display: inline-block;
   flex: 1;
 }
+
 #side-panel .pane-header .expand,
 #side-panel .pane-header .collapse {
   margin-left: auto;
@@ -68,6 +69,7 @@
 #side-panel .pane-footer a,
 #side-panel .pane-content a {
   .link-dark();
+
   text-decoration: underline;
 }
 
@@ -99,82 +101,101 @@
 .build-row {
   padding: 3px 4px 3px 4px;
 }
+
 .build-row.model-link-active {
   background: var(--very-light-grey) !important;
 }
+
 .build-row-cell {
   font-size: var(--font-size-xs);
 }
+
 .build-row-cell .pane.build-name {
   width: 25%;
   font-weight: bold;
   vertical-align: top;
 }
+
 .build-row-cell .pane.build-details {
   width: 50%;
 }
+
 .build-row-cell .pane.build-controls {
   width: 25%;
   text-align: right;
 }
+
 .build-row-cell .pane.build-details.block {
   width: 100%;
 }
+
 .build-row.multi-line .build-row-cell .pane.build-name.block {
   width: 100%;
 }
+
 .build-row-cell .pane.build-controls.block {
   width: 100%;
 }
+
 .build-row-cell .pane.build-name .build-icon,
 .build-row-cell .pane.build-name .display-name {
   display: inline-block;
 }
+
 .build-row-cell .pane.build-name .build-icon {
   position: absolute;
 }
+
 .build-row-cell .build-stop {
   display: inline-block;
   width: 30%;
 }
+
 .build-row-cell .build-badge {
   display: inline-block;
   text-align: right;
   width: 70%;
   padding: 2px 0;
 }
+
 .build-row-cell .build-badge > span {
   display: inline-block;
   max-width: 256px;
   padding: 0 1px;
   overflow: hidden;
 }
+
 .build-row-cell .build-badge > span + span {
   margin: 0 0 0 2px !important;
 }
+
 @media (min-width: 1170px) {
   .build-row-cell .build-badge > span {
     max-width: 296px;
   }
 }
+
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
 }
+
 .build-row .build-row-cell .pane,
-#side-panel .build-row .build-row-cell .pane,
-.build-row .build-row-cell .pane {
-  padding: 0px 2px; /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+#side-panel .build-row .build-row-cell .pane {
+  padding: 0 2px; /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
   display: inline-block;
   overflow: hidden;
 }
+
 .build-row.multi-line .build-row-cell .block {
   display: block;
   overflow: auto;
 }
+
 .build-row.multi-line .build-row-cell .indent-multiline {
   margin-top: 5px;
 }
+
 .build-row.multi-line .build-row-cell .left-bar {
   position: absolute;
   top: 19px;
@@ -182,12 +203,15 @@
   left: 14px;
   border-left: 1px solid var(--medium-grey);
 }
+
 .build-row-cell .pane.build-name .display-name {
   margin-left: 20px;
 }
+
 .build-row-cell .indent-multiline {
   padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
 }
+
 .build-row.overflow-checked .build-row-cell {
   visibility: visible;
 }

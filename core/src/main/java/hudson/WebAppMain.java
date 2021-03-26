@@ -123,7 +123,7 @@ public class WebAppMain implements ServletContextListener {
      * Written for the requirements of JENKINS-50669
      * @return int This returns DEFAULT_RING_BUFFER_SIZE
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
-     * @since TODO
+     * @since 2.259
      */
     public static int getDefaultRingBufferSize() {
         return RingBufferLogHandler.getDefaultRingBufferSize();
@@ -434,7 +434,7 @@ public class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        try (ACLContext old = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext old = ACL.as2(ACL.SYSTEM2)) {
             Jenkins instance = Jenkins.getInstanceOrNull();
             try {
                 if (instance != null) {

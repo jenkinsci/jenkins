@@ -362,7 +362,7 @@ public abstract class Cause {
     public static class UserCause extends Cause {
         private String authenticationName;
         public UserCause() {
-            this.authenticationName = Jenkins.getAuthentication().getName();
+            this.authenticationName = Jenkins.getAuthentication2().getName();
         }
 
         /**

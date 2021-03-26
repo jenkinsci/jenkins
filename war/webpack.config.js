@@ -14,7 +14,10 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
       path.join(__dirname, "src/main/less/pluginSetupWizard.less"),
     ],
-    "upgradeWizard": [path.join(__dirname, "src/main/js/upgradeWizard.js")],
+    "plugin-manager-ui": [
+      path.join(__dirname, "src/main/js/plugin-manager-ui.js"),
+      path.join(__dirname, "src/main/less/plugin-manager-ui.less"),
+    ],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
       path.join(__dirname, "src/main/js/add-item.less"),
@@ -27,6 +30,7 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.js"),
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
+    "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
 
     // New UI CSS files
     "base-styles-v2": [path.join(__dirname, "src/main/less/base-styles-v2.less")],

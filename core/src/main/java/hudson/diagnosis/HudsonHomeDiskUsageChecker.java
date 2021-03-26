@@ -23,6 +23,7 @@
  */
 package hudson.diagnosis;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
@@ -66,6 +67,7 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
     /**
      * Gets the minimum amount of space to check for, with a default of 10GB
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static long FREE_SPACE_THRESHOLD = Long.getLong(
             HudsonHomeDiskUsageChecker.class.getName() + ".freeSpaceThreshold",
             1024L*1024*1024*10);

@@ -294,7 +294,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
 
         private long timestamp;
 
-        public Record() {
+        Record() {
             super("Monitoring thread for "+getDisplayName()+" started on "+new Date());
         }
 

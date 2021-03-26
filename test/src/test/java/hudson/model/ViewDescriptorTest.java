@@ -104,8 +104,13 @@ public class ViewDescriptorTest {
 
         r.jenkins.addView(myListView);
 
-        assertEquals(r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
-                     "You cannot see me.");
+        assertEquals(
+                "You cannot see me.",
+                r.jenkins
+                        .getView("Rock")
+                        .getProperties()
+                        .get(CustomInvisibleProperty.class)
+                        .getSomeProperty());
 
         //WHEN the users goes with "Edit View" on the configure page
         JenkinsRule.WebClient webClient = r.createWebClient();
@@ -129,8 +134,13 @@ public class ViewDescriptorTest {
         //AND THEN after View save, the invisible property is still persisted with the View.
         assertNotNull("The CustomInvisibleProperty should be persisted on the View.",
                       r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class));
-        assertEquals(r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
-                     "You cannot see me.");
+        assertEquals(
+                "You cannot see me.",
+                r.jenkins
+                        .getView("Rock")
+                        .getProperties()
+                        .get(CustomInvisibleProperty.class)
+                        .getSomeProperty());
 
     }
 

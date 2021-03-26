@@ -1,6 +1,6 @@
 :root {
   // Font related properties
-  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-sans: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
@@ -25,12 +25,19 @@
   --danger: #cc0003;
   --warning: #ea6b19;
   --focus: #3fb3f7;
+  --focus-btn-primary: fade(#0b6aa2, 50%);
+  --focus-btn-secondary: fade(#0b6aa2, 50%);
+  --focus-btn-danger: fade(#cc0003, 50%);
 
   // State colors
   --primary-hover: #0587d4;
   --primary-active: #095683;
   --danger-hover: #eb383b;
   --danger-active: #b50003;
+
+  // Status icon colors
+  --weather-icon-color: var(--primary);
+  --unstable-build-icon-color: var(--notification-warning-icon-color);
 
   // Background colors
   --background: var(--white);
@@ -72,9 +79,13 @@
   --breadcrumbs-text-color: #4d545d;
   --breadcrumbs-item-bg-color--hover: var(--light-grey);
 
-  // Monitor / bell-alert new colors
-  --monitor-bg-v2: #f8d7da;
-  --monitor-color-v2: #721c24;
+  // Non-security Monitor / bell-alert new colors
+  --monitor-bg-v2: #fff3cd;
+  --monitor-color-v2: #856404;
+
+  // Security Monitor / shield new colors
+  --sec-monitor-bg-v2: #f8d7da;
+  --sec-monitor-color-v2: #721c24;
 
   // Alert banners
   // Default
@@ -119,15 +130,36 @@
   --text-color: var(--black);
   --text-color-secondary: var(--secondary);
 
-  // Buttons
+  // Button generic
+  --btn-font-weight: bold;
+  --btn-text-color: var(--white);
+  --btn-font-size: var(--font-size-xs);
+  --btn-line-height: 1rem;
+  --btn-large-font-size: var(--font-size-sm);
+  --btn-large-line-height: 1.25rem;
+  // Button primary
   --btn-primary-bg: var(--primary);
   --btn-primary-bg-hover: var(--primary-hover);
   --btn-primary-bg-active: var(--primary-active);
+  // Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
   --btn-secondary-border: var(--medium-grey);
-  --btn-text-color: var(--white);
+  --btn-secondary-color--hover: var(--primary);
+  --btn-secondary-bg--hover: var(--btn-secondary-bg);
+  --btn-secondary-border--hover: var(--primary);
+  --btn-secondary-color--focus: var(--primary);
+  --btn-secondary-bg--focus: var(--btn-secondary-bg);
+  --btn-secondary-border--focus: var(--primary);
+  --btn-secondary-color--active: var(--primary-active);
+  --btn-secondary-bg--active: var(--btn-secondary-bg);
+  --btn-secondary-border--active: var(--primary-active);
+  // Button link
+  --btn-link-color: var(--primary);
+  --btn-link-font-weight: var(--link-font-weight);
+  --btn-link-color--hover: var(--primary-hover);
   --btn-link-bg--hover: var(--very-light-grey);
+  --btn-link-color--active: var(--primary-active);
   --btn-link-bg--active: var(--light-grey);
 
   // Help area

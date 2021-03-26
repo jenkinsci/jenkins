@@ -6,7 +6,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.util.FormValidation;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -101,7 +101,7 @@ public class AbstractItemTest {
             try {
                 p.doCheckNewName("foo");
                 fail("Expecting AccessDeniedException");
-            } catch (AccessDeniedException2 e) {
+            } catch (AccessDeniedException3 e) {
                 assertThat(e.permission, equalTo(Item.CREATE));
             }
         }

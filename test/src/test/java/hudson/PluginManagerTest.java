@@ -88,12 +88,12 @@ public class PluginManagerTest {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
-        File plugin = new File(dir, "tasks.jpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/tasks.jpi"),plugin);
+        File plugin = new File(dir, "htmlpublisher.jpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"),plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertTrue( new File(r.jenkins.getRootDir(),"plugins/tasks.jpi").exists() );
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/htmlpublisher.jpi").exists() );
     }
 
     /**
@@ -115,9 +115,9 @@ public class PluginManagerTest {
     /**
      * Tests the effect of {@link WithPlugin}.
      */
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @Test public void withRecipeJpi() {
-        assertNotNull(r.jenkins.getPlugin("tasks"));
+        assertNotNull(r.jenkins.getPlugin("htmlpublisher"));
     }
     
     /**
@@ -129,33 +129,12 @@ public class PluginManagerTest {
     }
 
     /**
-     * Makes sure that plugins can see Maven2 plugin that's refactored out in 1.296.
-     */
-    @WithPlugin("tasks.jpi")
-    @Test public void optionalMavenDependency() throws Exception {
-        PluginWrapper.Dependency m2=null;
-        PluginWrapper tasks = r.jenkins.getPluginManager().getPlugin("tasks");
-        for( PluginWrapper.Dependency d : tasks.getOptionalDependencies() ) {
-            if(d.shortName.equals("maven-plugin")) {
-                assertNull(m2);
-                m2 = d;
-            }
-        }
-        assertNotNull(m2);
-
-        // this actually doesn't really test what we need, though, because
-        // I thought test harness is loading the maven classes by itself.
-        // TODO: write a separate test that tests the optional dependency loading
-        tasks.classLoader.loadClass(hudson.maven.agent.AbortException.class.getName());
-    }
-
-    /**
      * Verifies that by the time {@link Plugin#start()} is called, uber classloader is fully functioning.
      * This is necessary as plugin start method can engage in XStream loading activities, and they should
      * resolve all the classes in the system (for example, a plugin X can define an extension point
      * other plugins implement, so when X loads its config it better sees all the implementations defined elsewhere)
      */
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @WithPluginManager(PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart.class)
     @Test public void uberClassLoaderIsAvailableDuringStart() {
         assertTrue(((PluginManagerImpl_for_testUberClassLoaderIsAvailableDuringStart) r.jenkins.pluginManager).tested);
@@ -227,20 +206,20 @@ public class PluginManagerTest {
         assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
-        URL url = PluginManagerTest.class.getResource("/plugins/tasks-update-center.json");
+        URL url = PluginManagerTest.class.getResource("/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         assertNotNull(site.getData());
         assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
-        assertNull(r.jenkins.getPluginManager().getPlugin("tasks"));
-        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><tasks plugin=\"tasks@2.23\"/></whatever>"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
+        List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>"));
         assertEquals(1, jobs.size());
         UpdateCenterJob job = jobs.get(0).get(); // blocks for completion
         assertEquals("InstallationJob", job.getType());
         UpdateCenter.InstallationJob ijob = (UpdateCenter.InstallationJob) job;
-        assertEquals("tasks", ijob.plugin.name);
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("tasks"));
+        assertEquals("htmlpublisher", ijob.plugin.name);
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
         // TODO restart scheduled (SuccessButRequiresRestart) after upgrade or Support-Dynamic-Loading: false
         // TODO dependencies installed or upgraded too
         // TODO required plugin installed but inactive
@@ -454,12 +433,12 @@ public class PluginManagerTest {
     }
 
     @Issue("JENKINS-12753")
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @Test public void dynamicLoadRestartRequiredException() throws Exception {
-        File jpi = new File(r.jenkins.getRootDir(), "plugins/tasks.jpi");
+        File jpi = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi");
         assertTrue(jpi.isFile());
         FileUtils.touch(jpi);
-        File timestamp = new File(r.jenkins.getRootDir(), "plugins/tasks/.timestamp2");
+        File timestamp = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher/.timestamp2");
         assertTrue(timestamp.isFile());
         long lastMod = timestamp.lastModified();
         try {
@@ -471,7 +450,7 @@ public class PluginManagerTest {
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
     }
 
-    @WithPlugin("tasks.jpi")
+    @WithPlugin("htmlpublisher.jpi")
     @Test public void pluginListJSONApi() throws IOException {
         JSONObject response = r.getJSON("pluginManager/plugins").getJSONObject();
 
@@ -493,7 +472,7 @@ public class PluginManagerTest {
     public void requireSystemDuringLoad() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
-        try (ACLContext context = ACL.as(User.getById("underprivileged", true).impersonate())) {
+        try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
             dynamicLoad("require-system-during-load.hpi");
         }
     }
@@ -506,7 +485,7 @@ public class PluginManagerTest {
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         String pluginShortName = "require-system-during-load";
         dynamicLoad(pluginShortName + ".hpi");
-        try (ACLContext context = ACL.as(User.getById("underprivileged", true).impersonate())) {
+        try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
             r.jenkins.pluginManager.start(Collections.singletonList(r.jenkins.pluginManager.getPlugin(pluginShortName)));
         }
     }
@@ -518,7 +497,7 @@ public class PluginManagerTest {
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         String pluginShortName = "require-system-in-initializer";
         dynamicLoad(pluginShortName + ".jpi");
-        try (ACLContext context = ACL.as(User.getById("underprivileged", true).impersonate())) {
+        try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
             r.jenkins.pluginManager.start(Collections.singletonList(r.jenkins.pluginManager.getPlugin(pluginShortName)));
         }
     }
@@ -679,9 +658,49 @@ public class PluginManagerTest {
         Assert.assertNull("This test requires the plugin with ID 'legacy' to not exist in update sites", uc.getPlugin("legacy"));
 
         // ensure data is loaded - probably unnecessary, but closer to reality
-        Assert.assertSame(uc.getSite("default").updateDirectlyNow().kind, FormValidation.Kind.OK);
+        Assert.assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
 
         // This would throw NPE
         uc.getPluginsWithUnavailableUpdates();
+    }
+
+    @Test @Issue("JENKINS-64840")
+    public void searchMultipleUpdateSites() throws Exception {
+        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = PluginManagerTest.class.getResource("/plugins/search-test-update-center1.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        assertNotNull(site.getData());
+        url = PluginManagerTest.class.getResource("/plugins/search-test-update-center2.json");
+        site = new UpdateSite("secondary", url.toString());
+        sites.add(site);
+        final Future<FormValidation> future = site.updateDirectly(false);
+        if (future != null) {
+            assertEquals(FormValidation.ok(), future.get());
+        }
+        assertNotNull(site.getData());
+
+        //Dummy plugin is found in the second site (should have worked before the fix)
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=dummy&limit=5");
+        JSONObject json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        JSONArray data = json.getJSONArray("data");
+        assertEquals("Should be one search hit for dummy", 1, data.size());
+
+        //token-macro plugin is found in the first site (didn't work before the fix)
+        response = r.getJSON("pluginManager/pluginsSearch?query=token&limit=5");
+        json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        data = json.getJSONArray("data");
+        assertEquals("Should be one search hit for token", 1, data.size());
+
+        //hello-world plugin is found in the first site and hello-huston in the second (didn't work before the fix)
+        response = r.getJSON("pluginManager/pluginsSearch?query=hello&limit=5");
+        json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        data = json.getJSONArray("data");
+        assertEquals("Should be two search hits for hello", 2, data.size());
     }
 }

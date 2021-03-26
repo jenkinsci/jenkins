@@ -24,7 +24,16 @@ var breadcrumbs = (function() {
     // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
 
     function makeMenuHtml(icon,displayName) {
-        return (icon!=null ? "<img src='"+icon+"' width=24 height=24 style='margin: 2px;' alt=''> " : "")+displayName;
+        var displaynameSpan = '<span>' + displayName + '</span>';
+        if (icon === null) return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
+
+        // TODO: move this to the API response in a clean way
+        var isSvgSprite = icon.toLowerCase().indexOf('svg#') !== -1;
+        return isSvgSprite
+            ? "<svg class='svg-icon' width='24' height='24' style='margin: 2px 4px 2px 2px;' aria-label='' focusable='false'>" +
+                "<use href='" + icon + "' />" +
+                "</svg>" + displaynameSpan
+            : "<img src='"+icon+"' width=24 height=24 style='margin: 2px 4px 2px 2px;' alt=''>" + displaynameSpan;
     }
 
     Event.observe(window,"load",function(){

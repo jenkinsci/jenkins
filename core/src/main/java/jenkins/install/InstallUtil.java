@@ -79,7 +79,7 @@ public class InstallUtil {
      */
     private static class ProviderChain<T> implements Provider<T> {
         private final Iterator<Function<Provider<T>,T>> functions;
-        public ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
+        ProviderChain(Iterator<Function<Provider<T>,T>> functions) {
             this.functions = functions;
         }
         @Override
@@ -160,9 +160,8 @@ public class InstallUtil {
 
         VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());
 
-        // Neither the top level config or the lastExecVersionFile have a version
-        // stored in them, which means it's a new install.
-        if (FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion) || lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
+        // has the setup wizard been completed?
+        if (!SetupWizard.getUpdateStateFile().exists()) {
             Jenkins j = Jenkins.get();
             
             // Allow for skipping
@@ -177,15 +176,6 @@ public class InstallUtil {
                 }
             }
 
-            if (!FORCE_NEW_INSTALL_VERSION.equals(lastRunVersion)) {
-                // Edge case: used Jenkins 1 but did not save the system config page,
-                // the version is not persisted and returns 1.0, so try to check if
-                // they actually did anything
-                if (!j.getItemMap().isEmpty() || !j.getNodes().isEmpty()) {
-                    return InstallState.UPGRADE;
-                }
-            }
-            
             return InstallState.INITIAL_SECURITY_SETUP;
         }
 

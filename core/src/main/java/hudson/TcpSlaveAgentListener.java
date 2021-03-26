@@ -237,7 +237,7 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private final int id;
 
-        public ConnectionHandler(Socket s, ConnectionHandlerFailureCallback parentTerminator) {
+        ConnectionHandler(Socket s, ConnectionHandlerFailureCallback parentTerminator) {
             this.s = s;
             synchronized(getClass()) {
                 id = iotaGen++;
@@ -356,10 +356,10 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     // This is essentially just to be able to pass the parent thread into the callback, as it can't access it otherwise
-    private static abstract class ConnectionHandlerFailureCallback {
+    private abstract static class ConnectionHandlerFailureCallback {
         private Thread parentThread;
 
-        public ConnectionHandlerFailureCallback(Thread parentThread) {
+        ConnectionHandlerFailureCallback(Thread parentThread) {
             this.parentThread = parentThread;
         }
 

@@ -25,8 +25,6 @@ package hudson;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -216,7 +214,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
     /**
      * Captures information about the annotation that we use to mark Guice-instantiated components.
      */
-    public static abstract class GuiceExtensionAnnotation<T extends Annotation> {
+    public abstract static class GuiceExtensionAnnotation<T extends Annotation> {
         public final Class<T> annotationType;
 
         protected GuiceExtensionAnnotation(Class<T> annotationType) {
@@ -259,7 +257,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         /**
          * Map from {@link GuiceExtensionAnnotation#annotationType} to {@link GuiceExtensionAnnotation}
          */
-        private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = Maps.newHashMap();
+        private Map<Class<? extends Annotation>,GuiceExtensionAnnotation<?>> extensionAnnotations = new HashMap<>();
 
         public GuiceFinder() {
             refreshExtensionAnnotations();
@@ -307,7 +305,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         private ImmutableList<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
-            List<IndexItem<?,Object>> indices = Lists.newArrayList();
+            List<IndexItem<?,Object>> indices = new ArrayList<>();
             for (GuiceExtensionAnnotation<?> gea : extensionAnnotations.values()) {
                 Iterables.addAll(indices, Index.load(gea.annotationType, Object.class, classLoader));
             }
@@ -330,7 +328,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         public synchronized ExtensionComponentSet refresh() throws ExtensionRefreshException {
             refreshExtensionAnnotations();
             // figure out newly discovered sezpoz components
-            List<IndexItem<?, Object>> delta = Lists.newArrayList();
+            List<IndexItem<?, Object>> delta = new ArrayList<>();
             for (Class<? extends Annotation> annotationType : extensionAnnotations.keySet()) {
                 delta.addAll(Sezpoz.listDelta(annotationType,sezpozIndex));
             }
@@ -346,7 +344,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             try {
                 final Injector child = container.createChildInjector(modules);
                 container = child;
-                List<IndexItem<?, Object>> l = Lists.newArrayList(sezpozIndex);
+                List<IndexItem<?, Object>> l = new ArrayList<>(sezpozIndex);
                 l.addAll(deltaExtensions.getLoadedIndex());
                 sezpozIndex = l;
 
@@ -461,7 +459,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             private final List<IndexItem<?,Object>> index;
             private final List<IndexItem<?,Object>> loadedIndex;
 
-            public SezpozModule(List<IndexItem<?,Object>> index) {
+            SezpozModule(List<IndexItem<?,Object>> index) {
                 this.index = index;
                 this.loadedIndex = new ArrayList<>();
             }
@@ -486,14 +484,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     return;
                 }
                 try {
-                    ClassLoader ecl = c.getClassLoader();
-                    if (ecl != null) { // Not bootstrap classloader
-                        Method m = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
-                        m.setAccessible(true);
-                        m.invoke(ecl, c);
-                    }
                     for (Class<?> cc = c; cc != Object.class && cc != null; cc = cc.getSuperclass()) {
-                        /**
+                        /*
                          * See {@link com.google.inject.spi.InjectionPoint#getInjectionPoints(TypeLiteral, boolean, Errors)}
                          */
                         cc.getGenericSuperclass();
@@ -508,7 +500,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     }
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
                 } catch (Exception x) {
-                    throw (LinkageError)new LinkageError("Failed to resolve "+c).initCause(x);
+                    throw new LinkageError("Failed to resolve "+c, x);
                 }
             }
 
@@ -578,7 +570,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                 // so that we invoke them before derived class one. This isn't specified in JSR-250 but implemented
                 // this way in Spring and what most developers would expect to happen.
 
-                final Set<Class> interfaces = ClassUtils.getAllInterfacesAsSet(instance);
+                final Set<Class<?>> interfaces = ClassUtils.getAllInterfacesAsSet(instance);
 
                 while (c != Object.class) {
                     Arrays.stream(c.getDeclaredMethods())
@@ -607,7 +599,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * This allows to introspect metadata for a method which is both declared in parent class and in implemented
      * interface(s). {@code interfaces} typically is obtained by {@link ClassUtils#getAllInterfacesAsSet}
      */
-    Collection<Method> getMethodAndInterfaceDeclarations(Method method, Collection<Class> interfaces) {
+    Collection<Method> getMethodAndInterfaceDeclarations(Method method, Collection<Class<?>> interfaces) {
         final List<Method> methods = new ArrayList<>();
         methods.add(method);
 
@@ -667,7 +659,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             final List<IndexItem<Extension, Object>> delta = listDelta(Extension.class,old);
 
-            List<IndexItem<Extension,Object>> r = Lists.newArrayList(old);
+            List<IndexItem<Extension,Object>> r = new ArrayList<>(old);
             r.addAll(delta);
             indices = ImmutableList.copyOf(r);
 
@@ -681,7 +673,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         static <T extends Annotation> List<IndexItem<T,Object>> listDelta(Class<T> annotationType, List<? extends IndexItem<?,Object>> old) {
             // list up newly discovered components
-            final List<IndexItem<T,Object>> delta = Lists.newArrayList();
+            final List<IndexItem<T,Object>> delta = new ArrayList<>();
             ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
             for (IndexItem<T,Object> ii : Index.load(annotationType, Object.class, cl)) {
                 if (!old.contains(ii)) {

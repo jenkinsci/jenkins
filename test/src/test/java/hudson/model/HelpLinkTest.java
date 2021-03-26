@@ -13,7 +13,6 @@ import org.junit.Test;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
 
 import java.util.List;
 
@@ -79,11 +78,6 @@ public class HelpLinkTest {
     @Test
     public void freestyleConfig() throws Exception {
         clickAllHelpLinks(j.createFreeStyleProject());
-    }
-
-    @Test
-    public void mavenConfig() throws Exception {
-        clickAllHelpLinks(j.jenkins.createProject(MavenModuleSet.class, "mms"));
     }
 
     @Test

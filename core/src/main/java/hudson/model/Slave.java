@@ -220,7 +220,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.220")
     public String getUserId() {
         return userId;
     }
@@ -232,7 +232,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.220")
     public void setUserId(String userId){
     }
 
@@ -388,9 +388,9 @@ public abstract class Slave extends Node implements Serializable {
             // so that browsers can download them in the right file name.
             // see http://support.microsoft.com/kb/260519 and http://www.boutell.com/newfaq/creating/forcedownload.html
             rsp.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-            InputStream in = con.getInputStream();
-            rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
-            in.close();
+            try (InputStream in = con.getInputStream()) {
+                rsp.serveFile(req, in, con.getLastModified(), con.getContentLengthLong(), "*.jar");
+            }
         }
 
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
@@ -574,7 +574,7 @@ public abstract class Slave extends Node implements Serializable {
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
     }
 
-    public static abstract class SlaveDescriptor extends NodeDescriptor {
+    public abstract static class SlaveDescriptor extends NodeDescriptor {
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
         }
@@ -709,7 +709,7 @@ public abstract class Slave extends Node implements Serializable {
         private final long remoteTime = System.currentTimeMillis();
         private final long startTime;
 
-        public GetClockDifference3(long startTime) {
+        GetClockDifference3(long startTime) {
             this.startTime = startTime;
         }
 

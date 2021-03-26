@@ -78,6 +78,7 @@ public class PasswordParameterValue extends ParameterValue {
     }
 
     @NonNull
+    @Override
     public Secret getValue() {
         return value;
     }

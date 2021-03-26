@@ -274,7 +274,7 @@ public class MavenTest {
     @Issue("JENKINS-18898")
     @Test public void testNullHome() {
         EnvVars env = new EnvVars();
-        new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
+        new MavenInstallation("_", "", Collections.emptyList()).buildEnvVars(env);
         assertTrue(env.isEmpty());
     }
 

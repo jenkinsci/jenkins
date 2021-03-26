@@ -38,6 +38,7 @@ import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -56,6 +57,8 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
@@ -66,6 +69,12 @@ import edu.umd.cs.findbugs.annotations.Nullable;
  * @since  1.372
  */
 public class LabelAtom extends Label implements Saveable {
+
+    private static final Pattern PROHIBITED_DOUBLE_DOT = Pattern.compile(".*\\.\\.[\\\\/].*");
+
+    private static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL =
+            SystemProperties.getBoolean(LabelAtom.class.getName() + ".allowFolderTraversal");
+
     private DescribableList<LabelAtomProperty,LabelAtomPropertyDescriptor> properties =
             new DescribableList<>(this);
 
@@ -121,6 +130,7 @@ public class LabelAtom extends Label implements Saveable {
     /**
      * @since 1.580
      */
+    @Override
     public String getDescription() {
         return description;
     }
@@ -167,6 +177,9 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     public void save() throws IOException {
+        if (isInvalidName()) {
+            throw new IOException("Invalid label");
+        }
         if(BulkChange.contains(this))   return;
         try {
             getConfigFile().write(this);
@@ -206,6 +219,10 @@ public class LabelAtom extends Label implements Saveable {
 
         app.checkPermission(Jenkins.ADMINISTER);
 
+        if (isInvalidName()) {
+            throw new FormException("Invalid label", null);
+        }
+
         properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
 
         this.description = req.getSubmittedForm().getString("description");
@@ -214,6 +231,10 @@ public class LabelAtom extends Label implements Saveable {
         save();
 
         FormApply.success(".").generateResponse(req, rsp, null);
+    }
+
+    private boolean isInvalidName() {
+        return !ALLOW_FOLDER_TRAVERSAL && PROHIBITED_DOUBLE_DOT.matcher(name).matches();
     }
 
     /**
@@ -282,10 +303,12 @@ public class LabelAtom extends Label implements Saveable {
             super(XSTREAM);
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return LabelAtom.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             if (context.get(IN_NESTED)==null) {
                 context.put(IN_NESTED,true);
@@ -298,6 +321,7 @@ public class LabelAtom extends Label implements Saveable {
                 leafLabelConverter.marshal(source,writer,context);
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             if (context.get(IN_NESTED)==null) {
                 context.put(IN_NESTED,true);

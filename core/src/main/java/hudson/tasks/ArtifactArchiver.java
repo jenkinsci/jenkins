@@ -323,6 +323,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
@@ -341,6 +342,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             DESCRIPTOR = this; // backward compatibility
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.ArtifactArchiver_DisplayName();
         }

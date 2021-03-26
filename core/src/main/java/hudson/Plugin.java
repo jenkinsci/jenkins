@@ -24,6 +24,8 @@
 package hudson;
 
 import java.util.concurrent.TimeUnit;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -139,9 +141,9 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *
      * <p>
      * This method is called after {@link #setServletContext(ServletContext)} is invoked.
-     * You can also use {@link jenkins.model.Jenkins#getInstance()} to access the singleton hudson instance,
+     * You can also use {@link jenkins.model.Jenkins#get()} to access the singleton Jenkins instance,
      * although the plugin start up happens relatively early in the initialization
-     * stage and not all the data are loaded in Hudson.
+     * stage and not all the data are loaded in Jenkins.
      *
      * <p>
      * If a plugin wants to run an initialization step after all plugins and extension points
@@ -309,6 +311,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
 
     /**

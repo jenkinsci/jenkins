@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.ExtensionPoint;
 import hudson.model.*;
@@ -372,7 +373,7 @@ public class NodeProvisioner {
      * Extension point for node provisioning strategies.
      * @since 1.588
      */
-    public static abstract class Strategy implements ExtensionPoint {
+    public abstract static class Strategy implements ExtensionPoint {
 
         /**
          * Called by {@link NodeProvisioner#update()} to apply this strategy against the specified state.
@@ -803,7 +804,9 @@ public class NodeProvisioner {
          * Give some initial warm up time so that statically connected agents
          * can be brought online before we start allocating more.
          */
+        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
         public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
+        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
         public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
 
         @Override

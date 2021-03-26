@@ -114,7 +114,7 @@ THE SOFTWARE.
                 </script>
 
                 <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
-                  <!-- remember me service only available for Acegi -->
+                  <!-- remember me service only available for Spring Security -->
                   <div class="Checkbox Checkbox-medium">
                     <label class="Checkbox-wrapper">
                       <input

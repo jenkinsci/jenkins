@@ -109,7 +109,7 @@ import org.jenkinsci.remoting.util.LoggingChannelListener;
  */
 public class SlaveComputer extends Computer {
     private volatile Channel channel;
-    private volatile transient boolean acceptingTasks = true;
+    private transient volatile boolean acceptingTasks = true;
     private Charset defaultCharset;
     private Boolean isUnix;
     /**
@@ -285,7 +285,7 @@ public class SlaveComputer extends Computer {
             // do this on another thread so that the lengthy launch operation
             // (which is typical) won't block UI thread.
 
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {// background activity should run like a super user
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {// background activity should run like a super user
                 log.rewind();
                 try {
                     for (ComputerListener cl : ComputerListener.all())
@@ -645,9 +645,9 @@ public class SlaveComputer extends Computer {
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
-                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
-                    RemotingVersionInfo.getMinimumSupportedVersion()));
+            log.printf("WARNING: Remoting version is older than a minimum required one (%s). " +
+                            "Connection will not be rejected, but the compatibility is NOT guaranteed%n",
+                    RemotingVersionInfo.getMinimumSupportedVersion());
         }
 
         boolean _isUnix = channel.call(new DetectOS());
@@ -676,7 +676,7 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 cl.preOnline(this,channel,root,taskListener);
             }
@@ -706,7 +706,7 @@ public class SlaveComputer extends Computer {
                 statusChangeLock.notifyAll();
             }
         }
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 try {
                     cl.onOnline(this,taskListener);
@@ -1026,7 +1026,7 @@ public class SlaveComputer extends Computer {
     private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
         final int ringBufferSize;
 
-        public SlaveInitializer(int ringBufferSize) {
+        SlaveInitializer(int ringBufferSize) {
             this.ringBufferSize = ringBufferSize;
         }
 
@@ -1080,7 +1080,7 @@ public class SlaveComputer extends Computer {
      * Helper method for Jelly.
      */
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.163")
     public static List<SlaveSystemInfo> getSystemInfoExtensions() {
         return SlaveSystemInfo.all();
     }

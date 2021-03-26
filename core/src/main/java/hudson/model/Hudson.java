@@ -60,14 +60,14 @@ public class Hudson extends Jenkins {
      * @deprecated as of 1.286
      */
     @Deprecated
-    private transient final CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
+    private final transient CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
 
     /**
     * List of registered {@link hudson.slaves.ComputerListener}s.
      * @deprecated as of 1.286
      */
     @Deprecated
-    private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
+    private final transient CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
     /** @deprecated Here only for compatibility. Use {@link Jenkins#get} instead. */
     @Deprecated

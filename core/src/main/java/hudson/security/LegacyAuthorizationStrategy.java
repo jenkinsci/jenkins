@@ -57,6 +57,7 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
 
     @Extension @Symbol("legacy")
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+        @Override
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
         }

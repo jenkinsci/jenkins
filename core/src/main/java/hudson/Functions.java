@@ -25,6 +25,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.security.*;
@@ -145,7 +146,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
-import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -159,7 +159,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
+import org.kohsuke.stapler.RawHtmlArgument;
 
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
@@ -170,10 +170,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Utility functions used in views.
@@ -190,6 +190,7 @@ public class Functions {
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
 
     public Functions() {
@@ -302,7 +303,7 @@ public class Functions {
          */
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
-
+        context.setVariable("divBasedFormLayout", true);
         context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
         IconSet.initPageVariables(context);
     }
@@ -643,6 +644,7 @@ public class Functions {
     /**
      * Set to true if you need to use the debug version of YUI.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
 
     /**
@@ -978,7 +980,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Jenkins.get().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.get().getDescriptorList(ComputerLauncher.class);
     }
 
     /**
@@ -1448,7 +1450,7 @@ public class Functions {
     private static class ThreadSorterBase {
         protected Map<Long,String> map = new HashMap<>();
 
-        public ThreadSorterBase() {
+        ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
@@ -1541,9 +1543,6 @@ public class Functions {
                         sb.append('\n');
                         break;
                     case WAITING:
-                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
-                        sb.append('\n');
-                        break;
                     case TIMED_WAITING:
                         sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
@@ -1704,7 +1703,7 @@ public class Functions {
                 summary = summary.substring(0, summary.length() - suffix.length());
             }
         }
-        s.append(summary).append(IOUtils.LINE_SEPARATOR);
+        s.append(summary).append(System.lineSeparator());
         StackTraceElement[] trace = t.getStackTrace();
         int end = trace.length;
         if (higher != null) {
@@ -1718,7 +1717,7 @@ public class Functions {
             }
         }
         for (int i = 0; i < end; i++) {
-            s.append(prefix).append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
+            s.append(prefix).append("\tat ").append(trace[i]).append(System.lineSeparator());
         }
     }
 
@@ -1770,7 +1769,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return ACL.isAnonymous(Jenkins.getAuthentication());
+        return ACL.isAnonymous2(Jenkins.getAuthentication2());
     }
 
     /**

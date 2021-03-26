@@ -54,6 +54,7 @@ class FlightRecorderInputStream extends InputStream {
         final IOException[] error = new IOException[1];
 
         Thread diagnosisThread = new Thread(diagnosisName+" stream corruption diagnosis thread") {
+            @Override
             public void run() {
                 int b;
                 try {
@@ -134,7 +135,7 @@ class FlightRecorderInputStream extends InputStream {
 
         boolean filled = false;
 
-        public ByteArrayRingBuffer(int capacity) {
+        ByteArrayRingBuffer(int capacity) {
             data = new byte[capacity];
             this.capacity = capacity;
         }
