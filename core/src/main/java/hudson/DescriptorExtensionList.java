@@ -244,7 +244,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
     private static final Map<Class, CopyOnWriteArrayList<ExtensionComponent<Descriptor>>> legacyDescriptors = new ConcurrentHashMap<>();
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor<T>>> getLegacyDescriptors(Class<T> type) {
+    private static <T extends Describable<T>> CopyOnWriteArrayList<ExtensionComponent<Descriptor>> getLegacyDescriptors(Class<T> type) {
         return legacyDescriptors.computeIfAbsent(type, key -> new CopyOnWriteArrayList());
     }
 
