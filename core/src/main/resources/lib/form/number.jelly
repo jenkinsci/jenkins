@@ -44,6 +44,22 @@ THE SOFTWARE.
     <st:attribute name="default">
       The default value of the text box, in case both @value is and 'instance[field]' is null.
     </st:attribute>
+    <st:attribute name="min">
+      The minimum of the @value. This becomes the @min of the &lt;input> tag.
+      This will work only @clazz is 'number', 'number-required', 'non-negative-number-required',
+        'positive-number', 'positive-number-required'.
+      If specified, the @value should be greater than this value, or errors will be rendered under the text field.
+      If this value contains non-digit characters, it will not work.
+      If @max is specified and @max is less than this value, both @min and @max will not work.
+    </st:attribute>
+    <st:attribute name="max">
+      The maximum of the @value. This becomes the @max of the &lt;input> tag.
+      This will work only @clazz is 'number', 'number-required', 'non-negative-number-required',
+        'positive-number', 'positive-number-required'.
+      If specified, the @value should be less than this value, or errors will be rendered under the text field.
+      If this value contains non-digit characters, it will not work.
+      If @min is specified and @min is greater than this value, both @min and @max will not work.
+    </st:attribute>
     <!-- Tomcat doesn't like us using the attribute called 'class' -->
     <st:attribute name="clazz">
       Additional CSS class(es) to add (such as client-side validation clazz="required",
