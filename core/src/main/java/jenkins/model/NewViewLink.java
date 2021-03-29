@@ -3,8 +3,10 @@ package jenkins.model;
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.model.Action;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.TransientViewActionFactory;
 import hudson.model.View;
+import hudson.model.ViewGroup;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,40 +24,45 @@ public class NewViewLink extends TransientViewActionFactory {
 
     @Override
     public List<Action> createFor(final View v) {
+        // do not show the action if the viewgroup is not modifiable
+        ViewGroup vg = v.getOwner();
+        if (vg instanceof ModifiableViewGroup) {
+            return Collections.singletonList(new NewViewLinkAction((ModifiableViewGroup)vg));
+        }
+        return Collections.emptyList();
+    }
 
-        return Collections.singletonList(new Action() {
+    private static class NewViewLinkAction implements Action {
 
-            @Override
-            public String getIconFileName() {
-                if (!hasPermission(v)) {
-                    return null;
-                }
+        private ModifiableViewGroup target;
 
+        private NewViewLinkAction(ModifiableViewGroup target) {
+            this.target = target;
+        }
+
+        @Override
+        public String getIconFileName() {
+            if (hasPermission()) {
                 return ICON_FILE_NAME;
             }
+            return null;
+        }
 
-            @Override
-            public String getDisplayName() {
-                if (!hasPermission(v)) {
-                    return null;
-                }
+        @Override
+        public String getDisplayName() {
+            return Messages.NewViewLink_NewView();
+        }
 
-                return Messages.NewViewLink_NewView();
-            }
+        @Override
+        public String getUrlName() {
+            // getUrl returns the path from the root (without the context and no leading slash)
+            // we need to add the slash so that this is not relative to the current URL but to the context
+            return "/" + target.getUrl() + URL_NAME;
+        }
 
-            @Override
-            public String getUrlName() {
-                // the current URL can be inside an actual View (/job/foo/view/wibble)
-                // so we can not be relative
-                // if the ItemGroup is Jenkins root then this is ""
-                return "/" + v.getOwner().getUrl() + URL_NAME;
-            }
+        private boolean hasPermission() {
+            return target.hasPermission(View.CREATE);
+        }
 
-            private boolean hasPermission(View view) {
-                // new views are created on the owning ViewGroup not the indiviual view so check the permission on that
-                return view.getOwner().hasPermission(View.CREATE);
-            }
-
-        });
     }
 }
