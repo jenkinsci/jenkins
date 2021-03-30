@@ -234,7 +234,7 @@ public class UpdateSite {
         }
 
         if (signatureCheck) {
-            FormValidation e = verifySignature(o);
+            FormValidation e = verifySignatureInternal(o);
             if (e.kind!=Kind.OK) {
                 LOGGER.severe(e.toString());
                 return e;
@@ -249,7 +249,7 @@ public class UpdateSite {
     }
 
     public FormValidation doVerifySignature() throws IOException {
-        return verifySignature(getJSONObject());
+        return verifySignatureInternal(getJSONObject());
     }
 
     /**
@@ -269,7 +269,8 @@ public class UpdateSite {
     /**
      * Verifies the signature in the update center data file.
      */
-    private FormValidation verifySignature(JSONObject o) throws IOException {
+    @Restricted(NoExternalUse.class)
+    public final FormValidation verifySignatureInternal(JSONObject o) throws IOException {
         return getJsonSignatureValidator().verifySignature(o);
     }
 
