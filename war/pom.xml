@@ -132,12 +132,6 @@ THE SOFTWARE.
       <artifactId>systemd-slave-installer</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.ui</groupId>
-      <artifactId>handlebars</artifactId>
-      <version>1.1.1</version>
-      <classifier>core-assets</classifier>
-    </dependency>
-    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.

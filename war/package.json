@@ -31,7 +31,7 @@
     "eslint": "^7.1.0",
     "eslint-plugin-only-warn": "^1.0.2",
     "file-loader": "^6.0.0",
-    "handlebars": "^3.0.3",
+    "handlebars": "^3.0.8",
     "handlebars-loader": "^1.7.1",
     "jest": "^26.0.1",
     "jest-handlebars": "^1.0.1",
