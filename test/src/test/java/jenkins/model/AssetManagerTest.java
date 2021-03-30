@@ -46,11 +46,4 @@ public class AssetManagerTest {
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, httpCon.getResponseCode());
     }
-
-    @Test
-    public void handlebarsLoad() throws Exception {
-        URL url = new URL(j.getURL() + "assets/handlebars/jsmodules/handlebars3.js");
-        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-        assertEquals(HttpURLConnection.HTTP_OK, httpCon.getResponseCode());
-    }
 }
