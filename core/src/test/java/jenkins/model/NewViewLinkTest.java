@@ -4,8 +4,11 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import hudson.model.Action;
+import hudson.model.ModifiableViewGroup;
 import hudson.model.View;
 import hudson.model.ViewGroup;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,7 +20,7 @@ public class NewViewLinkTest {
     private NewViewLink newViewLink;
 
     private View view = mock(View.class);
-    private ViewGroup group = mock(ViewGroup.class);
+    private ViewGroup group = mock(ModifiableViewGroup.class);
     private final String viewGroupURL = "abc/";
 
     @Before
@@ -49,9 +52,18 @@ public class NewViewLinkTest {
 
         assertEquals(1, actions.size());
         final Action action = actions.get(0);
-        assertNull(action.getDisplayName());
         assertNull(action.getIconFileName());
         assertEquals("/" + viewGroupURL + NewViewLink.URL_NAME, action.getUrlName());
+    }
+
+    @Test
+    public void getActionsNotModifiableOwner() throws Exception {
+        ViewGroup vg = mock(ViewGroup.class);
+        when(view.getOwner()).thenReturn(vg);
+        when(vg.hasPermission(any())).thenReturn(true);
+
+        final List<Action> actions = newViewLink.createFor(view);
+        assertThat(actions, hasSize(0));
     }
 
 }
