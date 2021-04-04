@@ -23,7 +23,6 @@
  */
 package hudson.security;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.Functions;
@@ -195,8 +194,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.222")
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
+    public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
 
     /**
      * @return

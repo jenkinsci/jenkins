@@ -2659,7 +2659,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Run.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Run.class.getName() + ".skipPermissionCheck");
 
 
     public static class RedirectUp {

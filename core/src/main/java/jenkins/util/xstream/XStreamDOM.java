@@ -35,7 +35,6 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.VariableResolver;
 
@@ -540,6 +539,5 @@ public class XStreamDOM {
         }
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
+    public static final XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
 }

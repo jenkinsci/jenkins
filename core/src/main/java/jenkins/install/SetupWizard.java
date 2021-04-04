@@ -96,8 +96,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * The security token parameter name
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static String initialSetupAdminUserName = "admin";
+    public static final String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 

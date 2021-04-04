@@ -54,6 +54,7 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
@@ -959,7 +960,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
 
     /**
      * Used for CLI binding.

@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 
 import java.awt.Color;
@@ -47,8 +46,7 @@ public class ColorPalette {
     /**
      * Color list usable for generating line charts.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static List<Color> LINE_GRAPH = Collections.unmodifiableList(Arrays.asList(
+    public static final List<Color> LINE_GRAPH = Collections.unmodifiableList(Arrays.asList(
         new Color(0xCC0000),
         new Color(0x3465a4),
         new Color(0x73d216),

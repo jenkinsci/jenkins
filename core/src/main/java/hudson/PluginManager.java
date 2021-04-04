@@ -2432,5 +2432,5 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
 }

@@ -23,7 +23,6 @@
  */
 package jenkins.tools;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Descriptor;
@@ -108,8 +107,7 @@ public class GlobalToolConfiguration extends ManagementLink {
         return d.configure(req, js);
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
+    public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
 
     private static final Logger LOGGER = Logger.getLogger(GlobalToolConfiguration.class.getName());
 }

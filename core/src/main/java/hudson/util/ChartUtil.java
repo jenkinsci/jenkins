@@ -253,8 +253,7 @@ public class ChartUtil {
         yAxis.setRange(min,max);
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static double CHEBYSHEV_N = 3;
+    public static final double CHEBYSHEV_N = 3;
 
     static {
         try {
