@@ -88,7 +88,7 @@ public class ComputerConfigDotXmlTest {
         mocks = MockitoAnnotations.openMocks(this);
         computer = spy(rule.createSlave().toComputer());
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        oldSecurityContext = ACL.impersonate2(User.get("user").impersonate2());
+        oldSecurityContext = ACL.impersonate2(User.getOrCreateByIdOrFullName("user").impersonate2());
     }
 
     @After
@@ -98,7 +98,7 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
-    public void configXmlGetShouldFailForUnauthorized() throws Exception {
+    public void configXmlGetShouldFailForUnauthorized() {
 
         when(req.getMethod()).thenReturn("GET");
 
@@ -108,7 +108,7 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
-    public void configXmlPostShouldFailForUnauthorized() throws Exception {
+    public void configXmlPostShouldFailForUnauthorized() {
 
         when(req.getMethod()).thenReturn("POST");
 

@@ -83,7 +83,7 @@ public class ExecutorTest {
 
         Future<FreeStyleBuild> r = startBlockingBuild(p);
 
-        User johnny = User.get("Johnny");
+        User johnny = User.getOrCreateByIdOrFullName("Johnny");
         p.getLastBuild().getExecutor().interrupt(Result.FAILURE,
                 new UserInterruption(johnny),   // test the merge semantics
                 new UserInterruption(johnny));
@@ -107,7 +107,7 @@ public class ExecutorTest {
         p.setAssignedNode(slave);
 
         Future<FreeStyleBuild> r = startBlockingBuild(p);
-        User johnny = User.get("Johnny");
+        User johnny = User.getOrCreateByIdOrFullName("Johnny");
 
         p.getLastBuild().getBuiltOn().toComputer().disconnect(
                 new OfflineCause.UserCause(johnny, "Taking offline to break your build")

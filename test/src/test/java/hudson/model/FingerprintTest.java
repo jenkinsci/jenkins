@@ -218,9 +218,9 @@ public class FingerprintTest {
         final Fingerprint fp = getFingerprint(build, "test.txt");
         
         // Init Users
-        User user1 = User.get("user1"); // can access project1
-        User user2 = User.get("user2"); // can access project2
-        User user3 = User.get("user3"); // cannot access anything
+        User user1 = User.getOrCreateByIdOrFullName("user1"); // can access project1
+        User user2 = User.getOrCreateByIdOrFullName("user2"); // can access project2
+        User user3 = User.getOrCreateByIdOrFullName("user3"); // cannot access anything
           
         // Project permissions
         setupProjectMatrixAuthStrategy(Jenkins.READ);
@@ -277,7 +277,7 @@ public class FingerprintTest {
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1");   
+        User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(false, Jenkins.READ, Item.DISCOVER);
         setJobPermissionsOnce(project, "user1", Item.DISCOVER); // Prevents the fallback to the folder ACL
         folder.setPermissions("user1", Item.READ);
@@ -304,7 +304,7 @@ public class FingerprintTest {
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1"); // can access project1     
+        User user1 = User.getOrCreateByIdOrFullName("user1"); // can access project1
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
         
         // Ensure we can read the original from user account
@@ -329,7 +329,7 @@ public class FingerprintTest {
         final Fingerprint fp = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1");  
+        User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.READ, Item.DISCOVER);
         project.delete();
 
@@ -347,7 +347,7 @@ public class FingerprintTest {
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1"); 
+        User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(Jenkins.ADMINISTER);
         project.delete();
 

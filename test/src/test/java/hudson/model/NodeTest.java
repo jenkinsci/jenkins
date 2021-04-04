@@ -109,7 +109,7 @@ public class NodeTest {
         Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
 
-        final User someone = User.get("someone@somewhere.com");
+        final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
         ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
@@ -117,7 +117,7 @@ public class NodeTest {
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
-        final User root = User.get("root@localhost");
+        final User root = User.getOrCreateByIdOrFullName("root@localhost");
         ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
@@ -257,7 +257,7 @@ public class NodeTest {
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
         SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
 
-        user = User.get("anonymous");
+        user = User.getOrCreateByIdOrFullName("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));
     }
 

@@ -65,7 +65,7 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
 
         UsernamePasswordAuthenticationToken testUserAuthentication = new UsernamePasswordAuthenticationToken(TEST_USER_NAME, "any");
         try (ACLContext ignored = ACL.as2(testUserAuthentication)) {
-            User.get(TEST_USER_NAME).addProperty(new UserSearchProperty(false));
+            User.getOrCreateByIdOrFullName(TEST_USER_NAME).addProperty(new UserSearchProperty(false));
 
             //test logic
             final List<ModelObject> runs = ImmutableList.of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));

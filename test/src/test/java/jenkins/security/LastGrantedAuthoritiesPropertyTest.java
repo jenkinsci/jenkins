@@ -38,7 +38,7 @@ public class LastGrantedAuthoritiesPropertyTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("alice", "alice:development:us");
 
-        hudson.model.User u = hudson.model.User.get("alice");
+        hudson.model.User u = hudson.model.User.getOrCreateByIdOrFullName("alice");
         LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
         assertAuthorities(p, "alice:authenticated:development:us");
         assertAuthorities(u.impersonate2(), "alice:authenticated:development:us");
