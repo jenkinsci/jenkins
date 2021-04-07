@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2011, CloudBees, Inc.
+Copyright (c) 2021, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-<l:layout title="">
-  <l:main-panel>
-
-    <t:setIconSize />
-
-    <l:tasks>
-      <l:task href=".." icon="icon-up icon-md" title="Title"/>
-      <l:task href=".." icon="folder.png" title="Title"/>
-      <l:task href=".." icon="16x16/blue.gif" title="Title"/>
-      <l:task href=".." icon="images/16x16/blue.gif" title="Title"/>
-      <l:task href=".." icon="/images/16x16/blue.gif" title="Title"/>
-
-      <!-- unknown icon urls... -->
-      <l:task href=".." icon="/plugin/xxx/icon.png" title="Title"/>
-      <l:task href=".." icon="plugin/xxx/icon.png" title="Title"/>
-    </l:tasks>
-
-  </l:main-panel>
-</l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="alert alert-warning">
+    <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+      <f:submit name="agent" value="${%Set up agent}"/>
+      <f:submit name="cloud" value="${%Set up cloud}"/>
+      <f:submit name="no" value="${%Dismiss}"/>
+    </form>
+    ${%ExecutorsWarning}
+  </div>
 </j:jelly>

@@ -295,6 +295,7 @@ public class LogRotator extends BuildDiscarder {
 
     @Extension @Symbol("logRotator")
     public static final class LRDescriptor extends BuildDiscarderDescriptor {
+        @Override
         public String getDisplayName() {
             return "Log Rotation";
         }

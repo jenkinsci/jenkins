@@ -28,6 +28,7 @@ package hudson;
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.model.AbstractProject;
@@ -747,7 +748,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String verificationRoot;
         private final boolean noFollowLinks;
 
-        public HasSymlink(String verificationRoot, boolean noFollowLinks) {
+        HasSymlink(String verificationRoot, boolean noFollowLinks) {
             this.verificationRoot = verificationRoot;
             this.noFollowLinks = noFollowLinks;
         }
@@ -767,7 +768,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String verificationRoot;
         private final boolean noFollowLinks;
 
-        public SymlinkRetainingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
+        SymlinkRetainingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
             this.verificationRoot = verificationRoot == null ? null : verificationRoot.remote;
             this.noFollowLinks = noFollowLinks;
         }
@@ -1136,7 +1137,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * The code is the same as {@link SlaveToMasterFileCallable}, but used as a marker to
      * designate those impls that use {@link FilePathFilter}.
      */
-    /*package*/ static abstract class SecureFileCallable<T> extends SlaveToMasterFileCallable<T> {
+    /*package*/ abstract static class SecureFileCallable<T> extends SlaveToMasterFileCallable<T> {
     }
 
     /**
@@ -1174,7 +1175,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.482
      * @see AbstractInterceptorCallableWrapper
      */
-    public static abstract class FileCallableWrapperFactory implements ExtensionPoint {
+    public abstract static class FileCallableWrapperFactory implements ExtensionPoint {
 
         public abstract <T> DelegatingCallable<T,IOException> wrap(DelegatingCallable<T,IOException> callable);
 
@@ -1185,7 +1186,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
      * @since 1.482
      */
-    public static abstract class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
+    public abstract static class AbstractInterceptorCallableWrapper<T> implements DelegatingCallable<T, IOException> {
         private static final long serialVersionUID = 1L;
 
         private final DelegatingCallable<T, IOException> callable;
@@ -2906,6 +2907,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Default bound for {@link #validateAntFileMask(String, int, boolean)}.
      * @since 1.592
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
@@ -3288,6 +3290,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     private static final long serialVersionUID = 1L;
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());
@@ -3299,7 +3302,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final FileCallable<T> callable;
         private transient ClassLoader classLoader;
 
-        public FileCallableWrapper(FileCallable<T> callable) {
+        FileCallableWrapper(FileCallable<T> callable) {
             this.callable = callable;
             this.classLoader = callable.getClass().getClassLoader();
         }
@@ -3669,7 +3672,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String verificationRoot;
         private final boolean noFollowLinks;
 
-        public SymlinkDiscardingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
+        SymlinkDiscardingFileFilter(FilePath verificationRoot, boolean noFollowLinks) {
             this.verificationRoot = verificationRoot == null ? null : verificationRoot.remote;
             this.noFollowLinks = noFollowLinks;
         }

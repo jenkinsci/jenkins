@@ -41,7 +41,7 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <host>localhost</host><!-- HTTP listener host/interface -->
     <port>8080</port><!-- HTTP listener port -->
-    <node.version>14.15.1</node.version>
+    <node.version>14.16.0</node.version>
     <yarn.version>1.22.10</yarn.version>
   </properties>
 
@@ -104,7 +104,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.15</version>
+      <version>5.16</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -258,18 +258,6 @@ THE SOFTWARE.
                 -->
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>ant</artifactId>
-                  <version>1.8</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>javadoc</artifactId>
-                  <version>1.1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>external-monitor-job</artifactId>
                   <version>1.4</version>
                   <type>hpi</type>
@@ -365,7 +353,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.16.0</version>
+                  <version>2.20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -389,7 +377,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>${sshd.plugin.version}</version>
+                  <version>3.0.3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -451,7 +439,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.38.v20210224</version>
+        <version>9.4.39.v20210325</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
@@ -574,6 +562,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-enforcer-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <executions>
               <execution>
                 <id>enforce-versions</id>
@@ -597,7 +586,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.11.2</version>
+            <version>1.11.3</version>
             <executions>
 
               <execution>
@@ -682,6 +671,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-clean-plugin</artifactId>
+            <!-- Version specified in grandparent POM -->
             <configuration>
               <filesets>
                 <fileset>

@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -214,6 +215,13 @@ public class UpdateSiteTest {
         assertTrue("isLegacyDefault should be true when id is default and url is http://hudson-ci.org/",new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID,"http://hudson-ci.org/").isLegacyDefault());
         assertTrue("isLegacyDefault should be true when url is http://updates.hudson-labs.org/",new UpdateSite("dummy","http://updates.hudson-labs.org/").isLegacyDefault());
         assertFalse("isLegacyDefault should be false with null url",new UpdateSite(null,null).isLegacyDefault());
+    }
+
+    @Test public void getAvailables() throws Exception {
+        UpdateSite site = getUpdateSite("/plugins/available-update-center.json");
+        List<UpdateSite.Plugin> available = site.getAvailables();
+        assertEquals("ALowTitle", available.get(0).getDisplayName());
+        assertEquals("TheHighTitle", available.get(1).getDisplayName());
     }
 
     private UpdateSite getUpdateSite(String path) throws Exception {

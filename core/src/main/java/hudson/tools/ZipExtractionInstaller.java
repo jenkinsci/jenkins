@@ -93,6 +93,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
     @Extension @Symbol("zip")
     public static class DescriptorImpl extends ToolInstallerDescriptor<ZipExtractionInstaller> {
 
+        @Override
         public String getDisplayName() {
             return Messages.ZipExtractionInstaller_DescriptorImpl_displayName();
         }

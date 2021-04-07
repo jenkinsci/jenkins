@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -1937,6 +1938,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 this.message = message;
             }
 
+            @Override
             public String getMessage() {
                 return message.toString();
             }
@@ -2537,7 +2539,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public static final class PluginEntry implements Comparable<PluginEntry> {
         public Plugin plugin;
         public String category;
-        private PluginEntry(Plugin p, String c) { plugin = p; category = c; }
+        private PluginEntry(Plugin p, String c) {
+            plugin = p;
+            category = c;
+        }
 
         public int compareTo(PluginEntry o) {
             int r = category.compareTo(o.category);
@@ -2628,6 +2633,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(UpdateCenter.class.getName() + ".skipPermissionCheck");
 
 

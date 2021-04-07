@@ -216,7 +216,7 @@ var FormChecker = {
     },
 
     sendRequest : function(url, params) {
-        if (params.method == "post") {
+        if (params.method != "get") {
             var idx = url.indexOf('?');
             params.parameters = url.substring(idx + 1);
             url = url.substring(0, idx);
@@ -531,7 +531,7 @@ function registerValidator(e) {
             return url+ q.toString();
         }
     };
-    var method = e.getAttribute("checkMethod") || "get";
+    var method = e.getAttribute("checkMethod") || "post";
 
     var url = e.targetUrl();
     try {
@@ -548,7 +548,14 @@ function registerValidator(e) {
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
             onComplete : function(x) {
-                target.innerHTML = x.responseText;
+                if (x.status == 200) {
+                    // All FormValidation responses are 200
+                    target.innerHTML = x.responseText;
+                } else {
+                    // Content is taken from FormValidation#_errorWithMarkup
+                    // TODO Add i18n support
+                    target.innerHTML = "<div class='error'>An internal error occurred during form field validation (HTTP " + x.status + "). Please reload the page and if the problem persists, ask the administrator for help.</div>";
+                }
                 Behaviour.applySubtree(target);
             }
         });
@@ -593,6 +600,68 @@ function registerRegexpValidator(e,regexp,message) {
         } else {
             this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
             set = true;
+        }
+        return set;
+    }
+    e.onchange.call(e);
+    e = null; // avoid memory leak
+}
+
+/**
+ * Add a validator for number fields which contains 'min', 'max' attribute
+ * @param e Input element
+ */
+function registerMinMaxValidator(e) {
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr) {
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        return;
+    }
+    // find the validation-error-area
+    e.targetElement = tr.firstChild.nextSibling;
+    var checkMessage = e.getAttribute('checkMessage');
+    if (checkMessage) message = checkMessage;
+    var oldOnchange = e.onchange;
+    e.onchange = function() {
+        var set = oldOnchange != null ? oldOnchange.call(this) : false;
+
+        const min = this.getAttribute('min');
+        const max = this.getAttribute('max');
+
+        function isInteger(str) {
+            return str.match(/^-?\d*$/) !== null;
+        }
+
+        if (isInteger(this.value)) {  // Ensure the value is an integer
+            if ((min !== null && isInteger(min)) && (max !== null && isInteger(max))) {  // Both min and max attributes are available
+
+                if (min <= max) {  // Add the validator if min <= max
+                    if (parseInt(min) > parseInt(this.value) || parseInt(this.value) > parseInt(max)) {  // The value is out of range
+                        this.targetElement.innerHTML = "<div class=error>This value should be between " + min + " and " + max + "</div>";
+                        set = true;
+                    } else {
+                        if (!set) this.targetElement.innerHTML = "<div/>";  // The value is valid
+                    }
+                }
+
+            } else if ((min !== null && isInteger(min)) && (max === null || !isInteger(max))) {  // There is only 'min' available
+
+                if (parseInt(min) > parseInt(this.value)) {
+                    this.targetElement.innerHTML = "<div class=error>This value should be larger than " + min + "</div>";
+                    set = true;
+                } else {
+                    if (!set) this.targetElement.innerHTML = "<div/>";
+                }
+
+            } else if ((min === null || !isInteger(min)) && (max !== null && isInteger(max))) {  // There is only 'max' available
+
+                if (parseInt(max) < parseInt(this.value)) {
+                    this.targetElement.innerHTML = "<div class=error>This value should be less than " + max + "</div>";
+                    set = true;
+                } else {
+                    if (!set) this.targetElement.innerHTML = "<div/>";
+                }
+            }
         }
         return set;
     }
@@ -895,7 +964,8 @@ function rowvgStartEachRow(recursive,f) {
                 event.preventDefault();
             }
         })
-        registerRegexpValidator(e,/^(\d+|)$/,"Not an integer");
+        registerMinMaxValidator(e);
+        registerRegexpValidator(e,/^((\-?\d+)|)$/,"Not an integer");
     });
 
     Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) {
@@ -904,6 +974,7 @@ function rowvgStartEachRow(recursive,f) {
                 event.preventDefault();
             }
         })
+        registerMinMaxValidator(e);
         registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer");
     });
 
@@ -913,6 +984,7 @@ function rowvgStartEachRow(recursive,f) {
                 event.preventDefault();
             }
         })
+        registerMinMaxValidator(e);
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
     });
 
@@ -922,6 +994,7 @@ function rowvgStartEachRow(recursive,f) {
                 event.preventDefault();
             }
         })
+        registerMinMaxValidator(e);
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
     });
 
@@ -931,6 +1004,7 @@ function rowvgStartEachRow(recursive,f) {
                 event.preventDefault();
             }
         })
+        registerMinMaxValidator(e);
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 

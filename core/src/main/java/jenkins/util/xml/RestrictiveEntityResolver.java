@@ -15,7 +15,7 @@ import java.io.IOException;
 @Restricted(NoExternalUse.class)
 public final class RestrictiveEntityResolver implements EntityResolver {
 
-    public final static RestrictiveEntityResolver INSTANCE = new RestrictiveEntityResolver();
+    public static final RestrictiveEntityResolver INSTANCE = new RestrictiveEntityResolver();
 
     private RestrictiveEntityResolver() {
         // prevent multiple instantiation.

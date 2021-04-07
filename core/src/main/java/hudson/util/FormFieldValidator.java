@@ -49,7 +49,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
 
-import static hudson.Util.fixEmpty;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -251,7 +250,7 @@ public abstract class FormFieldValidator {
      *      Use {@link FormValidation.URLCheck}
      */
     @Deprecated
-    public static abstract class URLCheck extends FormFieldValidator {
+    public abstract static class URLCheck extends FormFieldValidator {
 
         public URLCheck(StaplerRequest request, StaplerResponse response) {
             // can be used to check the existence of any file in file system

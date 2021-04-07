@@ -475,7 +475,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return false;
     }
 
-    private final static int FILTER_LOOP_MAX_COUNT = 10;
+    private static final int FILTER_LOOP_MAX_COUNT = 10;
 
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
         if (!isFilterQueue()) {
@@ -1357,7 +1357,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
 
             // create a view
-            v = descriptor.newInstance(req,req.getSubmittedForm());
+            JSONObject submittedForm = req.getSubmittedForm();
+            submittedForm.put("name", name);
+            v = descriptor.newInstance(req, submittedForm);
         }
         owner.getACL().checkCreatePermission(owner, v.getDescriptor());
         v.owner = owner;
@@ -1426,5 +1428,5 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public static final Message<View> NEW_PRONOUN = new Message<>();
 
-    private final static Logger LOGGER = Logger.getLogger(View.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(View.class.getName());
 }

@@ -41,8 +41,8 @@ import javax.xml.xpath.XPathFactory;
  */
 public final class XMLUtils {
 
-    private final static Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());
-    private final static String DISABLED_PROPERTY_NAME = XMLUtils.class.getName() + ".disableXXEPrevention";
+    private static final Logger LOGGER = LogManager.getLogManager().getLogger(XMLUtils.class.getName());
+    private static final String DISABLED_PROPERTY_NAME = XMLUtils.class.getName() + ".disableXXEPrevention";
 
     private static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
     private static final String FEATURE_HTTP_XML_ORG_SAX_FEATURES_EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";

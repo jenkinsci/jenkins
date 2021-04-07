@@ -41,7 +41,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     private boolean defaultValue;
 
     /**
-     * @since TODO
+     * @since 2.281
      */
     @DataBoundConstructor
     public BooleanParameterDefinition(String name) {
@@ -69,7 +69,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     }
 
     /**
-     * @since TODO
+     * @since 2.281
      */
     @DataBoundSetter
     public void setDefaultValue(boolean defaultValue) {

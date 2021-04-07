@@ -41,7 +41,7 @@ import jenkins.util.FullDuplexHttpService;
  * @deprecated Unused.
  */
 @Deprecated
-abstract public class FullDuplexHttpChannel extends FullDuplexHttpService {
+public abstract class FullDuplexHttpChannel extends FullDuplexHttpService {
     private Channel channel;
     private final boolean restricted;
 

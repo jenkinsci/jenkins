@@ -29,3 +29,91 @@
   width: 64px;
   height: 64px;
 }
+
+/*****
+ * Build status icons
+ *****/
+
+.animated-spin,
+.icon-blue-anime,
+.icon-red-anime {
+  will-change: transform;
+  // animation: blink 1s infinite linear;
+}
+
+// Mixin to set icon colors
+.status-icon-color(@color, @opacity: 1) {
+  color: @color;
+  fill: @color;
+  opacity: @opacity;
+
+  .svg-icon {
+    color: @color;
+    fill: @color;
+  }
+}
+
+.icon-blue,
+.icon-blue-anime {
+  .status-icon-color(var(--success));
+}
+
+.icon-red,
+.icon-red-anime {
+  .status-icon-color(var(--danger));
+}
+
+.icon-yellow,
+.icon-yellow-anime {
+  .status-icon-color(var(--unstable-build-icon-color));
+}
+
+.icon-aborted,
+.icon-aborted-anime {
+  .status-icon-color(var(--black));
+}
+
+.icon-disabled,
+.icon-disabled-anime {
+  .status-icon-color(var(--black), 0.5);
+}
+
+.icon-nobuilt,
+.icon-nobuilt-anime {
+  .status-icon-color(var(--primary));
+}
+
+[class*="icon-health-"] {
+  color: var(--weather-icon-color);
+  fill: var(--weather-icon-color);
+}
+
+.build-status-icon__wrapper {
+  display: inline-block;
+  position: relative;
+}
+.build-status-icon__outer {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+
+  .svg-icon {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.icon-blue-anime .build-status-icon__outer,
+.icon-red-anime .build-status-icon__outer,
+.icon-yellow-anime .build-status-icon__outer,
+.icon-aborted-anime .build-status-icon__outer,
+.icon-disabled-anime .build-status-icon__outer,
+.icon-nobuilt-anime .build-status-icon__outer {
+  .svg-icon {
+    animation: spin-reverse 2s linear infinite;
+  }
+}

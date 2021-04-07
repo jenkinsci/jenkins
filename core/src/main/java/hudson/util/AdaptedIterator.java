@@ -56,6 +56,7 @@ public abstract class AdaptedIterator<T,U> implements Iterator<U> {
 
     protected abstract U adapt(T item);
 
+    @Override
     public void remove() {
         core.remove();
     }

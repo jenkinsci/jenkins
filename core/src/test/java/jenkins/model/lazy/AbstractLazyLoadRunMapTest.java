@@ -285,7 +285,7 @@ public class AbstractLazyLoadRunMapTest {
         FakeMap map = f.make();
 
         Build x = map.search(Integer.MAX_VALUE, Direction.DESC);
-        assert x.n==201;
+        assertEquals(201, x.n);
     }
 
     @Issue("JENKINS-18065")

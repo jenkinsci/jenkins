@@ -25,8 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.DownloadService;
 import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.util.FormValidation;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
@@ -94,6 +96,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * The security token parameter name
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
@@ -549,19 +552,52 @@ public class SetupWizard extends PageDecorator {
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
             String updateCenterJsonUrl = updateSite.getUrl();
             String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+            VersionNumber version = Jenkins.getVersion();
+            if (version != null && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
+                // Allow remote update site to distinguish based on the current version
+                // This looks a bit hacky but UpdateCenter#toUpdateCenterCheckUrl does something similar
+                suggestedPluginUrl = suggestedPluginUrl + (suggestedPluginUrl.contains("?") ? "&" : "?") + "version=" + version;
+            }
             try {
                 URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
                 
                 try {
+                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
+
+                    JSONObject initialPluginObject = null;
+
                     if(connection instanceof HttpURLConnection) {
                         int responseCode = ((HttpURLConnection)connection).getResponseCode();
                         if(HttpURLConnection.HTTP_OK != responseCode) {
                             throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
                         }
+
+                        if (DownloadService.signatureCheck) {
+                            /* If the platform-plugins.json file was obtained remotely, assume that it's a JSONObject and perform a signature check on it */
+                            initialPluginObject = JSONObject.fromObject(initialPluginJson);
+                            final FormValidation result = updateSite.verifySignatureInternal(initialPluginObject);
+                            if (result.kind != FormValidation.Kind.OK) {
+                                LOGGER.log(Level.WARNING, "Ignoring remote platform-plugins.json: " + result.getMessage());
+                                throw result;
+                            }
+                        }
                     }
-                    
-                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
-                    initialPluginList = JSONArray.fromObject(initialPluginJson);
+
+                    /*
+                        The initial version of this code expected platform-plugins.json to be an array.
+                        This structure does not work when we want to add a signature block, so a wrapper object is also supported.
+                        In that case, the original array is expected to be in the 'categories' key.
+                     */
+                    if (initialPluginObject != null) {
+                        initialPluginList = initialPluginObject.getJSONArray("categories");
+                    } else {
+                        try {
+                            initialPluginList = JSONArray.fromObject(initialPluginJson);
+                        } catch (Exception ex) {
+                            /* Second attempt: It's not a remote file, but still wrapped */
+                            initialPluginList = JSONObject.fromObject(initialPluginJson).getJSONArray("categories");
+                        }
+                    }
                     break updateSiteList;
                 } catch(Exception e) {
                     // not found or otherwise unavailable
@@ -733,6 +769,7 @@ public class SetupWizard extends PageDecorator {
                 } else if (req.getRequestURI().equals(req.getContextPath() + "/")) {
                     Jenkins.get().checkPermission(Jenkins.ADMINISTER);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
+                        @Override
                         public String getRequestURI() {
                             return getContextPath() + "/setupWizard/";
                         }

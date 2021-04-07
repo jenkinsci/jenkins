@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import java.lang.RuntimeException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -158,6 +157,7 @@ public class ConsistentHash<T> {
                     return (T) owner[(start + (pos++)) % owner.length];
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }

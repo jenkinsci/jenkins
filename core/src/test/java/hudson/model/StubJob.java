@@ -34,7 +34,7 @@ import java.util.SortedMap;
 @SuppressWarnings({ "rawtypes" })
 class StubJob extends Job {
 
-    public final static String DEFAULT_STUB_JOB_NAME = "StubJob";
+    public static final String DEFAULT_STUB_JOB_NAME = "StubJob";
     
     public StubJob() {
         super(null, DEFAULT_STUB_JOB_NAME);

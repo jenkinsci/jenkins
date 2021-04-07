@@ -202,7 +202,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.1.4</version>
+        <version>3.1.5</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -287,7 +287,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.7.0</version>
+        <version>5.8.0</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -329,7 +329,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.15</version>
+        <version>1.4.16</version>
       </dependency>
       <dependency>
         <groupId>net.sf.kxml</groupId>

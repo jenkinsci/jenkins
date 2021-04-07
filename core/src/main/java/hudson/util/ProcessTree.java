@@ -359,7 +359,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
             private IOSProcess process;
             
-            public CheckVetoes(IOSProcess processToCheck) {
+            CheckVetoes(IOSProcess processToCheck) {
                 process = processToCheck;
             }
         
@@ -723,8 +723,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     }
 
-    static abstract class Unix extends Local {
-        public Unix(boolean vetoersExist) {
+    abstract static class Unix extends Local {
+        Unix(boolean vetoersExist) {
             super(vetoersExist);
         }
 
@@ -743,7 +743,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * {@link ProcessTree} based on /proc.
      */
-    static abstract class ProcfsUnix extends Unix {
+    abstract static class ProcfsUnix extends Unix {
         ProcfsUnix(boolean vetoersExist) {
             super(vetoersExist);
             
@@ -942,7 +942,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
 
     static class Linux extends ProcfsUnix {
-        public Linux(boolean vetoersExist) {
+        Linux(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1052,7 +1052,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class AIX extends ProcfsUnix {
-        public AIX(boolean vetoersExist) {
+        AIX(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1374,7 +1374,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class Solaris extends ProcfsUnix {
-        public Solaris(boolean vetoersExist) {
+        Solaris(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1841,7 +1841,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Represents a local process tree, where this JVM and the process tree run on the same system.
      * (The opposite of {@link Remote}.)
      */
-    public static abstract class Local extends ProcessTree {
+    public abstract static class Local extends ProcessTree {
         @Deprecated
         Local() {
         }
@@ -1926,6 +1926,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return this; // cancel out super.writeReplace()
             }
 
+            @Override
             public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
                 return proxy.act(callable);
             }

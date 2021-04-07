@@ -997,7 +997,7 @@ public class ViewTest {
         private List<TopLevelItem> jobs;
         private String primaryView;
 
-        private transient final ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+        private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }
             protected String primaryView() { return primaryView; }
             protected void primaryView(String name) { primaryView = name; }

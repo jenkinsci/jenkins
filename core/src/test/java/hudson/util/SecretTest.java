@@ -35,6 +35,7 @@ import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.lang.RandomStringUtils;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -72,16 +73,16 @@ public class SecretTest {
             String plaintext = RandomStringUtils.random(random.nextInt(i));
             String ciphertext = Secret.fromString(plaintext).getEncryptedValue();
             //println "${plaintext} → ${ciphertext}"
-            assert ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches();
+            assertTrue(ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches());
         }
         //Not "plain" text
-        assert !ENCRYPTED_VALUE_PATTERN.matcher("hello world").matches();
+        assertFalse(ENCRYPTED_VALUE_PATTERN.matcher("hello world").matches());
         //Not "plain" text
-        assert !ENCRYPTED_VALUE_PATTERN.matcher("helloworld!").matches();
+        assertFalse(ENCRYPTED_VALUE_PATTERN.matcher("helloworld!").matches());
         //legacy key
-        assert ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr0123456789").matches();
+        assertTrue(ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr0123456789").matches());
         //legacy key
-        assert ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr012345678==").matches();
+        assertTrue(ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr012345678==").matches());
     }
 
     @Test

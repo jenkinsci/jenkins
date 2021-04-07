@@ -195,7 +195,7 @@ public class EnvVars extends TreeMap<String,String> {
             private final Comparator<? super String> comparator;
             public Set<String> referredVariables;
             
-            public TraceResolver(Comparator<? super String> comparator) {
+            TraceResolver(Comparator<? super String> comparator) {
                 this.comparator = comparator;
                 clear();
             }
@@ -214,7 +214,7 @@ public class EnvVars extends TreeMap<String,String> {
             // map from a variable to a set of variables that variable refers.
             private final Map<String, Set<String>> refereeSetMap;
             
-            public VariableReferenceSorter(Map<String, Set<String>> refereeSetMap) {
+            VariableReferenceSorter(Map<String, Set<String>> refereeSetMap) {
                 this.refereeSetMap = refereeSetMap;
             }
             
@@ -239,7 +239,7 @@ public class EnvVars extends TreeMap<String,String> {
         private Map<String, Set<String>> refereeSetMap;
         private List<String> orderedVariableNames;
         
-        public OverrideOrderCalculator(@NonNull EnvVars target, @NonNull Map<String,String> overrides) {
+        OverrideOrderCalculator(@NonNull EnvVars target, @NonNull Map<String,String> overrides) {
             comparator = target.comparator();
             this.target = target;
             this.overrides = overrides;

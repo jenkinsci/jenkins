@@ -107,6 +107,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
                 return last=itr.next();
             }
 
+            @Override
             public void remove() {
                 CopyOnWriteList.this.remove(last);
             }

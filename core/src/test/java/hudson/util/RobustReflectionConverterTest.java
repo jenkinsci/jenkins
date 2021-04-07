@@ -113,7 +113,7 @@ public class RobustReflectionConverterTest {
     public static class Bild {
         Steppe[] steppes;
     }
-    public static abstract class Steppe {
+    public abstract static class Steppe {
         int number;
     }
     @Owner("p1")
@@ -130,7 +130,7 @@ public class RobustReflectionConverterTest {
     public static class Boot {}
     public static class Jacket {}
     @Owner("p2")
-    public static abstract class Lover {}
+    public abstract static class Lover {}
     @Owner("p3")
     public static class Billy extends Lover {}
     @Owner("p4")

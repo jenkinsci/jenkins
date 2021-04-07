@@ -104,6 +104,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
                     };
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }

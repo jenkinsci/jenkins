@@ -529,6 +529,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                  * Forces the fixed timestamp for directories to make sure
                  * classes.jar always get a consistent checksum.
                  */
+                @Override
                 protected void zipDir(Resource dir, ZipOutputStream zOut, String vPath,
                                       int mode, ZipExtraField[] extra)
                     throws IOException {
@@ -576,7 +577,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         private volatile List<PluginWrapper> transientDependencies;
 
-        public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
+        DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
             this._for = archive;
             this.dependencies = dependencies;
@@ -721,5 +722,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /* Unused since 1.527, see https://github.com/jenkinsci/jenkins/commit/47de54d070f67af95b4fefb6d006a72bb31a5cb8 */
     @Deprecated
     public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DISABLE_TRANSFORMER = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }

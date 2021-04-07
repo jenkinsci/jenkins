@@ -202,7 +202,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.607
      * @see Executor#resetWorkUnit(String)
      */
-    private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList<>());
+    private final transient List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * This method captures the information of a request to terminate a computer instance. Method is public as
@@ -262,6 +262,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns the transient {@link Action}s associated with the computer.
      */
     @SuppressWarnings("deprecation")
+    @Override
     public List<Action> getActions() {
         List<Action> result = new ArrayList<>(super.getActions());
         synchronized (this) {
@@ -1544,8 +1545,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
+        Node previous = getNode();
+        if (previous == null) {
+            throw HttpResponses.notFound();
+        }
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
-        Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
+        if (previous.getClass() != result.getClass()) {
+            // ensure node type doesn't change
+            throw HttpResponses.errorWithoutStack(SC_BAD_REQUEST, "Node types do not match");
+        }
+        Jenkins.get().getNodesObject().replaceNode(previous, result);
     }
 
     /**
@@ -1601,6 +1610,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**

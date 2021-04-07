@@ -574,7 +574,7 @@ public abstract class Slave extends Node implements Serializable {
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
     }
 
-    public static abstract class SlaveDescriptor extends NodeDescriptor {
+    public abstract static class SlaveDescriptor extends NodeDescriptor {
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
         }
@@ -709,7 +709,7 @@ public abstract class Slave extends Node implements Serializable {
         private final long remoteTime = System.currentTimeMillis();
         private final long startTime;
 
-        public GetClockDifference3(long startTime) {
+        GetClockDifference3(long startTime) {
             this.startTime = startTime;
         }
 

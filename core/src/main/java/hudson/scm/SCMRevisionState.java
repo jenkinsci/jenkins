@@ -1,5 +1,6 @@
 package hudson.scm;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -44,7 +45,7 @@ public abstract class SCMRevisionState implements Action {
       So instead, here we opt to a design where we tell SCM upfront about what we are comparing
       against (baseline), and have it give us the new state and degree of change in PollingResult.
      */
-
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static SCMRevisionState NONE = new None();
 
     private static final class None extends SCMRevisionState {}

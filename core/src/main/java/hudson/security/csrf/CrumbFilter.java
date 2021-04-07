@@ -64,7 +64,7 @@ public class CrumbFilter implements Filter {
     }
 
     private static class Security1774ServletRequest extends HttpServletRequestWrapper {
-        public Security1774ServletRequest(HttpServletRequest request) {
+        Security1774ServletRequest(HttpServletRequest request) {
             super(request);
         }
 

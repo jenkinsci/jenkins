@@ -52,7 +52,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
         /** The Jexl expression object */
         private org.apache.commons.jexl.Expression expression;
 
-        public JexlExpression(org.apache.commons.jexl.Expression expression) {
+        JexlExpression(org.apache.commons.jexl.Expression expression) {
             this.expression = expression;
         }
 

@@ -24,6 +24,7 @@
 package hudson.security;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import java.util.Date;
 import java.util.Objects;
@@ -65,6 +66,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
     /**
      * Escape hatch for the check on the maximum date for the expiration duration of the remember me cookie
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_TOO_FAR_EXPIRATION_DATE_CHECK = 
             SystemProperties.getBoolean(TokenBasedRememberMeServices2.class.getName() + ".skipTooFarExpirationDateCheck");
 

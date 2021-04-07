@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class ChoiceParameterDefinitionTest {
@@ -110,23 +111,23 @@ public class ChoiceParameterDefinitionTest {
         assertFalse(parameterDefinition.isValid(parameterValue));
     }
 
-    @Test(expected = ClassCastException.class)
+    @Test
     @Issue("JENKINS-62889")
     public void checkValue_WrongValueType() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
         ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition("name", choices, "description");
         BooleanParameterValue parameterValue = new BooleanParameterValue("choice", false);
-        parameterDefinition.isValid(parameterValue);
+        assertThrows(ClassCastException.class, () -> parameterDefinition.isValid(parameterValue));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @Issue("JENKINS-62889")
     public void createValue_Invalid() {
         String stringValue = "single";
         String[] choices = new String[]{stringValue};
         ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition("name", choices, "description");
-        parameterDefinition.createValue("invalid");
+        assertThrows(IllegalArgumentException.class, () -> parameterDefinition.createValue("invalid"));
     }
 
     private void assertCreation(String stringValue, String[] choices, boolean valid) {

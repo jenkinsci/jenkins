@@ -263,39 +263,4 @@ public class DisconnectNodeCommandTest {
         assertThat(slave2.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave2.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
-
-    public void disconnectNodeShouldSucceedOnMaster() throws Exception {
-        final Computer masterComputer = j.jenkins.getComputer("");
-        assertThat(masterComputer.isOnline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), equalTo(null));
-
-        CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("");
-        assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo(null));
-
-        masterComputer.connect(true);
-        masterComputer.waitUntilOnline();
-        assertThat(masterComputer.isOnline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), equalTo(null));
-
-        result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("");
-        assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo(null));
-
-        result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("");
-        assertThat(result, succeededSilently());
-        assertThat(masterComputer.isOffline(), equalTo(true));
-        assertThat(masterComputer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) masterComputer.getOfflineCause()).message, equalTo(null));
-    }
 }

@@ -145,7 +145,7 @@ public class Digester2 extends Digester {
     private static final class ObjectCreateRule2 extends Rule {
         private final Class clazz;
         
-        public ObjectCreateRule2(Class clazz) {
+        ObjectCreateRule2(Class clazz) {
             this.clazz = clazz;
         }
 
