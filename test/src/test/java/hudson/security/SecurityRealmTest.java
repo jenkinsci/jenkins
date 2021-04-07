@@ -25,12 +25,10 @@ package hudson.security;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
 import hudson.security.captcha.CaptchaSupport;
 import org.junit.Rule;
 import org.junit.Test;
