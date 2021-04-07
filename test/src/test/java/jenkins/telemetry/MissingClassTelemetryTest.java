@@ -48,6 +48,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.chrono.ChronoLocalDate;
 
 import static org.junit.Assert.assertEquals;
 
@@ -79,7 +81,7 @@ public class MissingClassTelemetryTest {
     @Test
     public void telemetrySentWorks() throws InterruptedException {
         Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
-
+        Assume.assumeTrue("The telemetry shouldn't be ended", Telemetry.all().get(MissingClassTelemetry.class).getEnd().isAfter(ChronoLocalDate.from(Instant.now())));
         // Generate 5 events
         for(int i = 0; i < 5; i++) {
             try {
