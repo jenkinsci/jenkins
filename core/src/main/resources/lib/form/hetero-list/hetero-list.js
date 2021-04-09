@@ -13,7 +13,7 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         }
         YAHOO.util.Dom.insertAfter(menu,btn);
 
-        var prototypes = $(e.lastChild);
+        var prototypes = $(e.lastElementChild);
         while(!prototypes.hasClassName("prototypes"))
             prototypes = prototypes.previous();
         var insertionPoint = prototypes.previous();    // this is where the new item is inserted.

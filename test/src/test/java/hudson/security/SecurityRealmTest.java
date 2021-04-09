@@ -25,6 +25,7 @@ package hudson.security;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.model.Descriptor;
@@ -50,6 +51,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.jelly.JellyFacet;
 
 public class SecurityRealmTest {
 
@@ -175,4 +177,31 @@ public class SecurityRealmTest {
         public static final class DescriptorImpl extends Descriptor<SecurityRealm> {}
     }
 
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithoutJellyTrace() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage htmlPage = wc.goTo("configureSecurity");
+        HtmlForm configForm = htmlPage.getFormByName("config");
+        j.assertGoodStatus(j.submit(configForm));
+    }
+
+    /**
+     * Ensure the form is still working when using {@link org.kohsuke.stapler.jelly.JellyFacet#TRACE}=true
+     */
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithJellyTrace() throws Exception {
+        boolean currentValue = JellyFacet.TRACE;
+        try {
+            JellyFacet.TRACE = true;
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            HtmlPage htmlPage = wc.goTo("configureSecurity");
+            HtmlForm configForm = htmlPage.getFormByName("config");
+            j.assertGoodStatus(j.submit(configForm));
+        } finally {
+            JellyFacet.TRACE = currentValue;
+        }
+    }
 }

@@ -28,8 +28,11 @@
 		<path d="M10.843 16.894L6.6 12.65l2.121-2.121 2.121 2.121 4.951-4.95 2.122 2.121-7.072 7.073z"></path>
 	</symbol>
 
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" id="last-unstable">
-		<path fill="currentColor" d="M15.504 14.5c.55 0 .774-.384.498-.86l-4.504-7.78c-.275-.475-.72-.476-.996 0l-4.504 7.78c-.275.475-.053.86.498.86h9.008zM11.5 13h-1v-1h1v1zm0-2h-1V9h1v2z" fill-rule="evenodd"/>
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-unstable">
+		<g stroke="currentColor" stroke-width="1">
+			<circle cx="12" cy="16.5" r="1"/>
+			<path d="M11 6.5h2v6h-2z"/>
+		</g>
 	</svg>
 
 	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-aborted">

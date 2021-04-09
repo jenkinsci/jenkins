@@ -25,8 +25,12 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -38,6 +42,7 @@ import static org.mockito.Mockito.when;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -55,12 +60,17 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 
+import hudson.slaves.DumbSlave;
+import jenkins.model.Jenkins;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.FakeLauncher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.PretendSlave;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mock;
@@ -74,6 +84,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class ComputerConfigDotXmlTest {
 
     @Rule public final JenkinsRule rule = new JenkinsRule();
+
+    @Rule
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Mock private StaplerRequest req;
     @Mock private StaplerResponse rsp;
@@ -171,6 +184,29 @@ public class ComputerConfigDotXmlTest {
         auth.add(Computer.CONNECT, "user");
 
         assertFalse(computer.getMonitorData().isEmpty());
+    }
+
+    @Issue("SECURITY-1721")
+    @Test
+    public void cannotChangeNodeType() throws Exception {
+        PretendSlave agent = rule.createPretendSlave(p -> new FakeLauncher.FinishedProc(0));
+        String name = agent.getNodeName();
+        assertThat(name, is(not(emptyOrNullString())));
+        Computer computer = agent.toComputer();
+        assertThat(computer, is(notNullValue()));
+
+        JenkinsRule.WebClient wc = rule.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        WebRequest req = new WebRequest(wc.createCrumbedUrl(String.format("%s/config.xml", computer.getUrl())), HttpMethod.POST);
+        req.setAdditionalHeader("Content-Type", "application/xml");
+        // to ensure maximum compatibility of payload, we'll serialize a real one with the same name
+        DumbSlave mole = new DumbSlave(name, temporaryFolder.newFolder().getPath(), rule.createComputerLauncher(null));
+        req.setRequestBody(Jenkins.XSTREAM.toXML(mole));
+        WebResponse response = wc.getPage(req).getWebResponse();
+        assertThat(response.getStatusCode(), is(400));
+
+        // verify node hasn't been transformed into a DumbSlave
+        Node node = rule.jenkins.getNode(name);
+        assertThat(node, instanceOf(PretendSlave.class));
     }
 
     @Issue("SECURITY-2021")
