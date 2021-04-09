@@ -34,9 +34,13 @@ import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.FreeStyleProject;
+import hudson.model.Job;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
+import jenkins.model.OptionalJobProperty;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -142,6 +146,45 @@ public class ExpandableTextboxTest {
         @WebMethod(name = "submit")
         public HttpResponse doSubmit(StaplerRequest request) {
             return HttpResponses.plainText("method:" + request.getMethod());
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-1498")
+    public void noXssUsingInputValue() throws Exception {
+        XssProperty xssProperty = new XssProperty("</textarea><h1>HACK</h1>");
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(xssProperty);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage configurePage = wc.getPage(p, "configure");
+
+        int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
+
+        HtmlInput xssInput = configurePage.getElementByName("_.xss");
+        HtmlInput expandButton = (HtmlInput) xssInput.getParentNode().getNextSibling().getFirstChild();
+        HtmlElementUtil.click(expandButton);
+
+        // no additional h1, meaning the "payload" is not interpreted
+        int numberOfH1After = configurePage.getElementsByTagName("h1").size();
+
+        assertEquals(numberOfH1Before, numberOfH1After);
+    }
+
+    public static final class XssProperty extends OptionalJobProperty<Job<?,?>> {
+
+        private String xss;
+
+        public XssProperty(String xss){
+            this.xss = xss;
+        }
+
+        public String getXss() {
+            return xss;
+        }
+
+        @TestExtension("noXssUsingInputValue")
+        public static class DescriptorImpl extends OptionalJobProperty.OptionalJobPropertyDescriptor {
         }
     }
 }
