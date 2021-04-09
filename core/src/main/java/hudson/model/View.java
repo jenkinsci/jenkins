@@ -1357,7 +1357,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
 
             // create a view
-            v = descriptor.newInstance(req,req.getSubmittedForm());
+            JSONObject submittedForm = req.getSubmittedForm();
+            submittedForm.put("name", name);
+            v = descriptor.newInstance(req, submittedForm);
         }
         owner.getACL().checkCreatePermission(owner, v.getDescriptor());
         v.owner = owner;

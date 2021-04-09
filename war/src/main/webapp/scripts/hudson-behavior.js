@@ -387,9 +387,9 @@ function findFollowingTR(node, className, nodeClass) {
 function findInFollowingTR(input, className) {
     var node = findFollowingTR(input, className);
     if (node.tagName == 'TR') {
-        node = node.firstChild.nextSibling;
+        node = node.firstElementChild.nextSibling;
     } else {
-        node = node.firstChild;
+        node = node.firstElementChild;
     }
     return node;
 }
@@ -411,8 +411,8 @@ function findPrevious(src,filter) {
     return find(src,filter,function (e) {
         var p = e.previousSibling;
         if(p==null) return e.parentNode;
-        while(p.lastChild!=null)
-            p = p.lastChild;
+        while(p.lastElementChild!=null)
+            p = p.lastElementChild;
         return p;
     });
 }
@@ -421,8 +421,8 @@ function findNext(src,filter) {
     return find(src,filter,function (e) {
         var n = e.nextSibling;
         if(n==null) return e.parentNode;
-        while(n.firstChild!=null)
-            n = n.firstChild;
+        while(n.firstElementChild!=null)
+            n = n.firstElementChild;
         return n;
     });
 }
@@ -450,13 +450,14 @@ function findNextFormItem(src,name) {
     return findFormItem(src,name,findNext);
 }
 
+// This method seems unused in the ecosystem, only grails-plugin was using it but it's blacklisted now
 /**
  * Parse HTML into DOM.
  */
 function parseHtml(html) {
     var c = document.createElement("div");
     c.innerHTML = html;
-    return c.firstChild;
+    return c.firstElementChild;
 }
 
 /**
@@ -508,7 +509,7 @@ function registerValidator(e) {
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstChild.nextSibling;
+    e.targetElement = tr.firstElementChild.nextSibling;
 
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
@@ -589,7 +590,7 @@ function registerRegexpValidator(e,regexp,message) {
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstChild.nextSibling;
+    e.targetElement = tr.firstElementChild.nextSibling;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -618,7 +619,7 @@ function registerMinMaxValidator(e) {
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstChild.nextSibling;
+    e.targetElement = tr.firstElementChild.nextSibling;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -744,15 +745,15 @@ function renderOnDemand(e,callback,noBehaviour) {
         if (contextTagName=="TBODY") {
             c = document.createElement("DIV");
             c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
-            c = c./*JENKINS-15494*/lastChild.firstChild;
+            c = c./*JENKINS-15494*/lastElementChild.firstElementChild;
         } else {
             c = document.createElement(contextTagName);
             c.innerHTML = t.responseText;
         }
 
         var elements = [];
-        while (c.firstChild!=null) {
-            var n = c.firstChild;
+        while (c.firstElementChild!=null) {
+            var n = c.firstElementChild;
             e.parentNode.insertBefore(n,e);
             if (n.nodeType==1 && !noBehaviour)
                 elements.push(n);
@@ -1105,7 +1106,7 @@ function rowvgStartEachRow(recursive,f) {
                     document.body.appendChild(div);
                     div.innerHTML = x.responseText;
                     var id = "map" + (iota++);
-                    div.firstChild.setAttribute("name", id);
+                    div.firstElementChild.setAttribute("name", id);
                     e.setAttribute("usemap", "#" + id);
                 }
             });
@@ -1297,7 +1298,7 @@ function rowvgStartEachRow(recursive,f) {
             changeTo(this,".png");
         };
         e.parentNode.onclick = function(event) {
-            var e = this.firstChild;
+            var e = this.firstElementChild;
             var s = e.getAttribute("state");
             if(s=="plus") {
                 e.setAttribute("state","minus");
@@ -1333,7 +1334,7 @@ function rowvgStartEachRow(recursive,f) {
         var subForms = [];
         var start = findInFollowingTR(e, 'dropdownList-container'), end;
 
-        do { start = start.firstChild; } while (start && !isTR(start));
+        do { start = start.firstElementChild; } while (start && !isTR(start));
 
         if (start && !Element.hasClassName(start,'dropdownList-start'))
             start = findFollowingTR(start, 'dropdownList-start');
@@ -1415,7 +1416,7 @@ function rowvgStartEachRow(recursive,f) {
 
         var edge = document.createElement("div");
         edge.className = "bottom-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstChild);
+        sticker.insertBefore(edge,sticker.firstElementChild);
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
@@ -1456,7 +1457,7 @@ function rowvgStartEachRow(recursive,f) {
 
         var edge = document.createElement("div");
         edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstChild);
+        sticker.insertBefore(edge,sticker.firstElementChild);
 
         var initialBreadcrumbPosition = DOM.getRegion(shadow);
         function adjustSticker() {
@@ -1620,7 +1621,7 @@ function applyNameRefHelper(s,e,id) {
         if(x.getAttribute("nameRef")==null) {
             x.setAttribute("nameRef",id);
             if (x.hasClassName('tr'))
-                applyNameRefHelper(x.firstChild,null,id);
+                applyNameRefHelper(x.firstElementChild,null,id);
         }
     }
 }
@@ -2562,7 +2563,7 @@ function createSearchBox(searchURL) {
             cssWidth =  getStyle(sizer, "minWidth");
         }
         box.style.width =
-        comp.firstChild.style.minWidth = "calc(60px + " + cssWidth + ")";
+        comp.firstElementChild.style.minWidth = "calc(60px + " + cssWidth + ")";
 
         var pos = YAHOO.util.Dom.getXY(box);
         pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
@@ -2876,7 +2877,7 @@ function loadScript(href,callback) {
 
     // Use insertBefore instead of appendChild  to circumvent an IE6 bug.
     // This arises when a base node is used (#2709 and #4378).
-    head.insertBefore( script, head.firstChild );
+    head.insertBefore( script, head.firstElementChild );
 }
 
 // logic behind <f:validateButton />
@@ -2938,8 +2939,8 @@ function applyErrorMessage(elt, rsp) {
         var error = document.getElementById('error-description'); // cf. oops.jelly
         if (error) {
             var div = document.getElementById(id);
-            while (div.firstChild) {
-                div.removeChild(div.firstChild);
+            while (div.firstElementChild) {
+                div.removeChild(div.firstElementChild);
             }
             div.appendChild(error);
         }
@@ -3028,7 +3029,7 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
-            document.body.insertBefore(this.div, document.body.firstChild);
+            document.body.insertBefore(this.div, document.body.firstElementChild);
             var self = this;
             this.div.onclick = function() {
                 self.hide();
