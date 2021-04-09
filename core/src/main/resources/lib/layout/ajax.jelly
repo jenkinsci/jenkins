@@ -42,18 +42,22 @@ THE SOFTWARE.
       evaluating a page that has called l:layout tag.
     </st:attribute>
   </st:documentation>
-  <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
-  <j:choose>
-    <j:when test="${rootURL!=null}">
+  <!-- 
+    j:if tag is implemented without using TagScript like j:choose and thus, does not trigger the flush of the output
+    this has a consequence when using -Dstapler.jelly.trace=true, which adds comments
+  -->
+  <j:set var="standalone" value="${rootURL==null}"/>
+  <j:if test="${!standalone}">
       <!-- no envelope needed, since this is called during full HTML rendering. Don't overwrite content-type either -->
       <d:invokeBody/>
-    </j:when>
-    <j:otherwise>
-      <!-- called to generate partial HTML. set up HTML headers and etc -->
-      <j:set var="ajax" value="true"/>
-      <l:view contentType="${attrs.contentType?:'text/html;charset=UTF-8'}">
-        <d:invokeBody/>
-      </l:view>
-    </j:otherwise>
-  </j:choose>
+  </j:if>
+  <j:if test="${standalone}">
+    <!-- called to generate partial HTML. set up HTML headers and etc -->
+    <j:set var="ajax" value="true"/>
+    <l:view contentType="${attrs.contentType?:'text/html;charset=UTF-8'}">
+      <!-- No "flushing" tag should be used before the contentType or the status is set on the request -->
+      <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+      <d:invokeBody/>
+    </l:view>
+  </j:if>
 </j:jelly>

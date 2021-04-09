@@ -53,6 +53,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
+import org.kohsuke.stapler.jelly.JellyFacet;
 
 import java.util.List;
 import java.io.File;
@@ -212,4 +213,36 @@ public class FreeStyleProjectTest {
                     "  <fullName>Foo User</fullName>\n" +
                     "  <badField/>\n" +
                     "</hudson.model.User>\n";
+
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithoutJellyTrace() throws Exception {
+        FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage htmlPage = wc.goTo(freeStyleProject.getUrl() + "configure");
+        HtmlForm configForm = htmlPage.getFormByName("config");
+        j.assertGoodStatus(j.submit(configForm));
+    }
+
+    /**
+     * Ensure the form is still working when using {@link org.kohsuke.stapler.jelly.JellyFacet#TRACE}=true
+     */
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithJellyTrace() throws Exception {
+        boolean currentValue = JellyFacet.TRACE;
+        try {
+            JellyFacet.TRACE = true;
+
+            FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            HtmlPage htmlPage = wc.goTo(freeStyleProject.getUrl() + "configure");
+            HtmlForm configForm = htmlPage.getFormByName("config");
+            j.assertGoodStatus(j.submit(configForm));
+        } finally {
+            JellyFacet.TRACE = currentValue;
+        }
+    }
 }
