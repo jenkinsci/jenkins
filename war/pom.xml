@@ -375,12 +375,6 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.jenkins-ci.modules</groupId>
-                  <artifactId>sshd</artifactId>
-                  <version>3.0.3</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>trilead-api</artifactId>
                   <version>1.0.4</version>
