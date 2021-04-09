@@ -1561,7 +1561,7 @@ public class Util {
      * implementing this by ourselves allow it to be more lenient about
      * escaping of URI.
      *
-     * @deprecated Use {@code isAbsoluteOrSchemeRelativeUri} instead if your goal is to prevent open redirects
+     * @deprecated Use {@link #isSafeToRedirectTo} instead if your goal is to prevent open redirects
      */
     @Deprecated
     @RestrictedSince("1.651.2 / 2.3")
