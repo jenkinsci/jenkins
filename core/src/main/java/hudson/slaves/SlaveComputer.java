@@ -757,14 +757,12 @@ public class SlaveComputer extends Computer {
     @Override
     public Future<?> disconnect(OfflineCause cause) {
         super.disconnect(cause);
-        return Computer.threadPoolForRemoting.submit(new Runnable() {
-            public void run() {
-                // do this on another thread so that any lengthy disconnect operation
-                // (which could be typical) won't block UI thread.
-                launcher.beforeDisconnect(SlaveComputer.this, taskListener);
-                closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, taskListener);
-            }
+        return Computer.threadPoolForRemoting.submit(() -> {
+            // do this on another thread so that any lengthy disconnect operation
+            // (which could be typical) won't block UI thread.
+            launcher.beforeDisconnect(SlaveComputer.this, taskListener);
+            closeChannel();
+            launcher.afterDisconnect(SlaveComputer.this, taskListener);
         });
     }
 
@@ -900,11 +898,8 @@ public class SlaveComputer extends Computer {
         // constructed.
         if(constructed!=null) {
             if (node instanceof Slave) {
-                Queue.withLock(new Runnable() {
-                    @Override
-                    public void run() {
-                        ((Slave)node).getRetentionStrategy().check(SlaveComputer.this);
-                    }
+                Queue.withLock(() -> {
+                    ((Slave)node).getRetentionStrategy().check(SlaveComputer.this);
                 });
             } else {
                 connect(false);

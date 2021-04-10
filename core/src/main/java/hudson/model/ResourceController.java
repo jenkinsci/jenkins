@@ -97,13 +97,10 @@ public class ResourceController {
             task.run();
         } finally {
            // TODO if AsynchronousExecution, do that later
-            _withLock(new Runnable() {
-                @Override
-                public void run() {
-                    inProgress.remove(activity);
-                    inUse = ResourceList.union(resourceView);
-                    _signalAll();
-                }
+            _withLock(() -> {
+                inProgress.remove(activity);
+                inUse = ResourceList.union(resourceView);
+                _signalAll();
             });
         }
     }
@@ -119,12 +116,7 @@ public class ResourceController {
      */
     public boolean canRun(final ResourceList resources) {
         try {
-            return _withLock(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return !inUse.isCollidingWith(resources);
-                }
-            });
+            return _withLock(() -> !inUse.isCollidingWith(resources));
         } catch (Exception e) {
             throw new IllegalStateException("Inner callable does not throw exception");
         }
@@ -140,12 +132,7 @@ public class ResourceController {
      */
     public Resource getMissingResource(final ResourceList resources) {
         try {
-            return _withLock(new Callable<Resource>() {
-                @Override
-                public Resource call() {
-                    return resources.getConflict(inUse);
-                }
-            });
+            return _withLock(() -> resources.getConflict(inUse));
         } catch (Exception e) {
             throw new IllegalStateException("Inner callable does not throw exception");
         }

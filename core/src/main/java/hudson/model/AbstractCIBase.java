@@ -175,16 +175,13 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     }
 
     /*package*/ void removeComputer(final Computer computer) {
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                Map<Node,Computer> computers = getComputerMap();
-                for (Map.Entry<Node, Computer> e : computers.entrySet()) {
-                    if (e.getValue() == computer) {
-                        computers.remove(e.getKey());
-                        computer.onRemoved();
-                        return;
-                    }
+        Queue.withLock(() -> {
+            Map<Node,Computer> computers = getComputerMap();
+            for (Map.Entry<Node, Computer> e : computers.entrySet()) {
+                if (e.getValue() == computer) {
+                    computers.remove(e.getKey());
+                    computer.onRemoved();
+                    return;
                 }
             }
         });
@@ -205,39 +202,36 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     protected void updateComputerList(final boolean automaticSlaveLaunch) {
         final Map<Node,Computer> computers = getComputerMap();
         final Set<Computer> old = new HashSet<>(computers.size());
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                Map<String,Computer> byName = new HashMap<>();
-                for (Computer c : computers.values()) {
-                    old.add(c);
-                    Node node = c.getNode();
-                    if (node == null)
-                        continue;   // this computer is gone
-                    byName.put(node.getNodeName(),c);
-                }
+        Queue.withLock(() -> {
+            Map<String,Computer> byName = new HashMap<>();
+            for (Computer c : computers.values()) {
+                old.add(c);
+                Node node = c.getNode();
+                if (node == null)
+                    continue;   // this computer is gone
+                byName.put(node.getNodeName(),c);
+            }
 
-                Set<Computer> used = new HashSet<>(old.size());
+            Set<Computer> used = new HashSet<>(old.size());
 
-                updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
-                for (Node s : getNodes()) {
-                    long start = System.currentTimeMillis();
-                    updateComputer(s, byName, used, automaticSlaveLaunch);
-                    if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Took %dms to update node %s",
-                                System.currentTimeMillis() - start, s.getNodeName()));
-                    }
+            updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
+            for (Node s : getNodes()) {
+                long start = System.currentTimeMillis();
+                updateComputer(s, byName, used, automaticSlaveLaunch);
+                if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("Took %dms to update node %s",
+                            System.currentTimeMillis() - start, s.getNodeName()));
                 }
+            }
 
-                // find out what computers are removed, and kill off all executors.
-                // when all executors exit, it will be removed from the computers map.
-                // so don't remove too quickly
-                old.removeAll(used);
-                // we need to start the process of reducing the executors on all computers as distinct
-                // from the killing action which should not excessively use the Queue lock.
-                for (Computer c : old) {
-                    c.inflictMortalWound();
-                }
+            // find out what computers are removed, and kill off all executors.
+            // when all executors exit, it will be removed from the computers map.
+            // so don't remove too quickly
+            old.removeAll(used);
+            // we need to start the process of reducing the executors on all computers as distinct
+            // from the killing action which should not excessively use the Queue lock.
+            for (Computer c : old) {
+                c.inflictMortalWound();
             }
         });
         for (Computer c : old) {

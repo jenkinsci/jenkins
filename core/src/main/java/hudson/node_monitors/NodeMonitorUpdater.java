@@ -21,12 +21,9 @@ import jenkins.util.Timer;
 @Extension
 public class NodeMonitorUpdater extends ComputerListener {
 
-    private static final Runnable MONITOR_UPDATER = new Runnable() {
-        @Override
-        public void run() {
-            for (NodeMonitor nm : Jenkins.get().getComputer().getMonitors()) {
-                nm.triggerUpdate();
-            }
+    private static final Runnable MONITOR_UPDATER = () -> {
+        for (NodeMonitor nm : Jenkins.get().getComputer().getMonitors()) {
+            nm.triggerUpdate();
         }
     };
 

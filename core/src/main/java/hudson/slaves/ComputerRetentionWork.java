@@ -58,18 +58,15 @@ public class ComputerRetentionWork extends PeriodicWork {
     protected void doRun() {
         final long startRun = System.currentTimeMillis();
         for (final Computer c : Jenkins.get().getComputers()) {
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    Node n = c.getNode();
-                    if (n!=null && n.isHoldOffLaunchUntilSave())
-                        return;
-                    if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
-                        // at the moment I don't trust strategies to wait more than 60 minutes
-                        // strategies need to wait at least one minute
-                        final long waitInMins = Math.max(1, Math.min(60, c.getRetentionStrategy().check(c)));
-                        nextCheck.put(c, startRun + TimeUnit.MINUTES.toMillis(waitInMins));
-                    }
+            Queue.withLock(() -> {
+                Node n = c.getNode();
+                if (n!=null && n.isHoldOffLaunchUntilSave())
+                    return;
+                if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
+                    // at the moment I don't trust strategies to wait more than 60 minutes
+                    // strategies need to wait at least one minute
+                    final long waitInMins = Math.max(1, Math.min(60, c.getRetentionStrategy().check(c)));
+                    nextCheck.put(c, startRun + TimeUnit.MINUTES.toMillis(waitInMins));
                 }
             });
         }

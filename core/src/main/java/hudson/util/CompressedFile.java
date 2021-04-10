@@ -143,20 +143,18 @@ public class CompressedFile {
      * the further reading will be done from the compressed stream.
      */
     public void compress() {
-        compressionThread.submit(new Runnable() {
-            public void run() {
-                try {
-                    try (InputStream in = read();
-                         OutputStream os = Files.newOutputStream(gz.toPath());
-                         OutputStream out = new GZIPOutputStream(os)) {
-                        org.apache.commons.io.IOUtils.copy(in, out);
-                    }
-                    // if the compressed file is created successfully, remove the original
-                    file.delete();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to compress "+file,e);
-                    gz.delete(); // in case a processing is left in the middle
+        compressionThread.submit(() -> {
+            try {
+                try (InputStream in = read();
+                     OutputStream os = Files.newOutputStream(gz.toPath());
+                     OutputStream out = new GZIPOutputStream(os)) {
+                    org.apache.commons.io.IOUtils.copy(in, out);
                 }
+                // if the compressed file is created successfully, remove the original
+                file.delete();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to compress "+file,e);
+                gz.delete(); // in case a processing is left in the middle
             }
         });
     }

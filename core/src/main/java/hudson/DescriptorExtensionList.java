@@ -252,19 +252,15 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      * List up all the legacy instances currently in use.
      */
     public static Iterable<Descriptor> listLegacyInstances() {
-        return new Iterable<Descriptor>() {
-            public Iterator<Descriptor> iterator() {
-                return new AdaptedIterator<ExtensionComponent<Descriptor>,Descriptor>(
-                    new FlattenIterator<ExtensionComponent<Descriptor>,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
-                        protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
-                            return v.iterator();
-                        }
-                    }) {
+        return () -> new AdaptedIterator<ExtensionComponent<Descriptor>,Descriptor>(
+            new FlattenIterator<ExtensionComponent<Descriptor>,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
+                protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
+                    return v.iterator();
+                }
+            }) {
 
-                    protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
-                        return item.getInstance();
-                    }
-                };
+            protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
+                return item.getInstance();
             }
         };
     }

@@ -55,11 +55,7 @@ public interface VariableResolver<V> {
     /**
      * Empty resolver that always returns null.
      */
-    VariableResolver NONE = new VariableResolver() {
-        public Object resolve(String name) {
-            return null;
-        }
-    };
+    VariableResolver NONE = name -> null;
 
     /**
      * {@link VariableResolver} backed by a {@link Map}.

@@ -1980,11 +1980,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return Items.findNearest(AbstractProject.class, name, context);
     }
 
-    private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
-        public int compare(Integer o1, Integer o2) {
-            return o2-o1;
-        }
-    };
+    private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = (o1, o2) -> o2-o1;
 
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 

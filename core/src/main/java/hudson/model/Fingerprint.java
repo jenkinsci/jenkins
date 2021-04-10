@@ -59,7 +59,6 @@ import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -362,13 +361,9 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public Iterable<Integer> listNumbers() {
             final List<Range> ranges = getRanges();
-            return new Iterable<Integer>() {
-                public Iterator<Integer> iterator() {
-                    return new Iterators.FlattenIterator<Integer,Range>(ranges) {
-                        protected Iterator<Integer> expand(Range range) {
-                            return Iterators.sequence(range.start,range.end).iterator();
-                        }
-                    };
+            return () -> new Iterators.FlattenIterator<Integer,Range>(ranges) {
+                protected Iterator<Integer> expand(Range range) {
+                    return Iterators.sequence(range.start,range.end).iterator();
                 }
             };
         }
@@ -397,13 +392,9 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public Iterable<Integer> listNumbersReverse() {
             final List<Range> ranges = getRanges();
-            return new Iterable<Integer>() {
-                public Iterator<Integer> iterator() {
-                    return new Iterators.FlattenIterator<Integer,Range>(Iterators.reverse(ranges)) {
-                        protected Iterator<Integer> expand(Range range) {
-                            return Iterators.reverseSequence(range.start,range.end).iterator();
-                        }
-                    };
+            return () -> new Iterators.FlattenIterator<Integer,Range>(Iterators.reverse(ranges)) {
+                protected Iterator<Integer> expand(Range range) {
+                    return Iterators.reverseSequence(range.start,range.end).iterator();
                 }
             };
         }
@@ -1216,12 +1207,10 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public @NonNull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
-        r.sort(new Comparator<FingerprintFacet>() {
-            public int compare(FingerprintFacet o1, FingerprintFacet o2) {
-                long a = o1.getTimestamp();
-                long b = o2.getTimestamp();
-                return Long.compare(a, b);
-            }
+        r.sort((o1, o2) -> {
+            long a = o1.getTimestamp();
+            long b = o2.getTimestamp();
+            return Long.compare(a, b);
         });
         return r;
     }
