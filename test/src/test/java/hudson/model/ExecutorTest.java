@@ -1,7 +1,11 @@
 package hudson.model;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 import hudson.Launcher;
@@ -87,7 +91,7 @@ public class ExecutorTest {
         FreeStyleBuild b = r.get();
 
         // make sure this information is recorded
-        assertEquals(b.getResult(), Result.FAILURE);
+        assertEquals(Result.FAILURE, b.getResult());
         InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
         assertEquals(1,iba.getCauses().size());
         assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
@@ -112,7 +116,7 @@ public class ExecutorTest {
         FreeStyleBuild b = r.get();
 
         String log = b.getLog();
-        assertEquals(b.getResult(), Result.FAILURE);
+        assertEquals(Result.FAILURE, b.getResult());
         assertThat(log, containsString("Finished: FAILURE"));
         assertThat(log, containsString("Build step 'BlockingBuilder' marked build as failure"));
         assertThat(log, containsString("Agent went offline during the build"));

@@ -60,10 +60,7 @@ class FilePathFilterAggregator extends FilePathFilter {
     }
 
     public void remove(FilePathFilter f) {
-        for (Entry e : all) {
-            if (e.filter==f)
-                all.remove(e);
-        }
+        all.removeIf(e -> e.filter == f);
     }
 
     /**

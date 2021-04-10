@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -360,7 +359,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
             private IOSProcess process;
             
-            public CheckVetoes(IOSProcess processToCheck) {
+            CheckVetoes(IOSProcess processToCheck) {
                 process = processToCheck;
             }
         
@@ -433,6 +432,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 if (channelToMaster != null) {
                     vetoersExist = channelToMaster.call(new DoVetoersExist());
                 }
+            }
+            catch (InterruptedException ie) {
+                // If we receive an InterruptedException here, we probably can't do much anyway.
+                // Perhaps we should just return at this point since we probably can't do anything else.
+                // It might make sense to introduce retries, but it's probably not going to get better.
+                LOGGER.log(Level.FINE, "Caught InterruptedException while checking if vetoers exist: ", ie);
+                Thread.interrupted(); // Clear the interrupt flag and just accept that no known vetoers exist.
             }
             catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
@@ -717,8 +723,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     }
 
-    static abstract class Unix extends Local {
-        public Unix(boolean vetoersExist) {
+    abstract static class Unix extends Local {
+        Unix(boolean vetoersExist) {
             super(vetoersExist);
         }
 
@@ -737,15 +743,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * {@link ProcessTree} based on /proc.
      */
-    static abstract class ProcfsUnix extends Unix {
+    abstract static class ProcfsUnix extends Unix {
         ProcfsUnix(boolean vetoersExist) {
             super(vetoersExist);
             
-            File[] processes = new File("/proc").listFiles(new FileFilter() {
-                public boolean accept(File f) {
-                    return f.isDirectory();
-                }
-            });
+            File[] processes = new File("/proc").listFiles(File::isDirectory);
             if(processes==null) {
                 LOGGER.info("No /proc");
                 return;
@@ -940,7 +942,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
 
     static class Linux extends ProcfsUnix {
-        public Linux(boolean vetoersExist) {
+        Linux(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1050,7 +1052,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class AIX extends ProcfsUnix {
-        public AIX(boolean vetoersExist) {
+        AIX(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1372,7 +1374,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class Solaris extends ProcfsUnix {
-        public Solaris(boolean vetoersExist) {
+        Solaris(boolean vetoersExist) {
             super(vetoersExist);
         }
         
@@ -1839,7 +1841,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Represents a local process tree, where this JVM and the process tree run on the same system.
      * (The opposite of {@link Remote}.)
      */
-    public static abstract class Local extends ProcessTree {
+    public abstract static class Local extends ProcessTree {
         @Deprecated
         Local() {
         }
@@ -1924,6 +1926,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return this; // cancel out super.writeReplace()
             }
 
+            @Override
             public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
                 return proxy.act(callable);
             }
@@ -1979,9 +1982,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * This feature involves some native code, so we are allowing the user to disable this
      * in case there's a fatal problem.
      *
-     * <p>
-     * This property supports two names for a compatibility reason.
      */
-    public static boolean enabled = !SystemProperties.getBoolean(ProcessTreeKiller.class.getName()+".disable")
-                                 && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
+    public static boolean enabled = !SystemProperties.getBoolean("hudson.util.ProcessTreeKiller.disable")
+            && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
 }

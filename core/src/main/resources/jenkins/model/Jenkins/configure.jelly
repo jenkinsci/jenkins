@@ -40,7 +40,8 @@ THE SOFTWARE.
         ${it.rootDir}
       </f:entry>
       <f:entry title="${%System Message}" help="/help/system-config/systemMessage.html">
-        <f:textarea name="system_message" value="${it.systemMessage}"
+        <j:set var="readOnlyMode" value="${!h.hasPermission(app.MANAGE)}" />
+        <f:textarea name="system_message" value="${it.systemMessage}" disabled="${readOnlyMode?'true':null}" readonly="${readOnlyMode?'true':null}"
                     codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
       </f:entry>
 
@@ -54,9 +55,9 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
 
-      <l:isAdmin>
+      <l:hasPermission permission="${app.SYSTEM_READ}">
         <st:include page="_cloud-note.jelly"/>
-      </l:isAdmin>
+      </l:hasPermission>
 
       <l:hasAdministerOrManage>
         <f:bottomButtonBar>

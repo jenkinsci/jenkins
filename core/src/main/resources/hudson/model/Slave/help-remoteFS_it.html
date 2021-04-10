@@ -3,37 +3,37 @@
   Un agente deve avere una directory dedicata a Jenkins. Specificare il
   percorso a questa directory sull'agente. È meglio utilizzare un percorso
   assoluto, come <tt>/var/jenkins</tt> o <tt>c:\jenkins</tt>.
-  Questo dovrebbe essere un percorso locale per la macchina agente. Non è
-  necessario che questo percorso sia visibile dal master.
+  Questo percorso deve essere locale al computer agente. Non è necessario
+  che questo percorso sia visibile dal master.
   <p>
-  Gli agenti non conservano dati importanti; tutte le configurazioni dei
-  processi, i registri di compilazione e gli artefatti sono salvati sul master,
+  Gli agenti non mantengono dati importanti; tutte le configurazioni dei
+  processi, i log delle compilazioni e gli artefatti sono salvati sul master,
   per cui sarebbe possibile utilizzare una directory temporanea come directory
   radice dell'agente.
   <br>
-  Ciò nonostante, fornendo a un agente una directory non eliminata, ad esempio,
-  dopo un riavvio della macchina, l'agente è in grado di salvare in cache dati
-  come le installazioni degli strumenti o gli spazi di lavoro delle
-  compilazioni. Ciò impedisce i download non necessari degli strumenti o un
-  nuovo checkout del codice sorgente quando le compilazioni iniziano nuovamente
-  ad essere eseguite su questo agente dopo un riavvio.
+  Tuttavia, fornendo a un agente una directory che non viene eliminata al
+  riavvio del computer, ad esempio, l'agente può eseguire il caching di dati
+  come installazioni di strumenti o spazi di lavoro delle compilazioni. Ciò
+  impedisce il download non necessario di strumenti o evita la necessità di
+  eseguire nuovamente il checkout del codice sorgente quando delle compilazioni
+  riprendono ad essere eseguite dopo un riavvio.
   <p>
   Se si utilizza un percorso relativo, come <tt>./jenkins-agent</tt>, il
-  percorso sarà relativo alla directory di lavoro fornito dal <i>Metodo di
+  percorso sarà relativo alla directory di lavoro fornita dal <i>Metodo di
   avvio</i>.
   <ul>
-  <li>Per i lanciatori per cui Jenkins controlla l'avvio del processo agente,
-  come SSH, la directory di lavoro corrente sarà tipicamente consistente, ad
-  esempio la directory home dell'utente.</li>
-  <li>Per i lanciatori per cui Jenkins non ha controllo sull'avvio del processo
-  agente, come JNLP se lanciato dalla riga di comando o da un collegamento nel
-  browser Web, la directory di lavoro corrente potrebbe cambiare da un avvio
-  dell'agente all'altro e l'utilizzo di un percorso relativo potrebbe
+  <li>Per le utilità di avvio per cui Jenkins controlla l'avvio del processo
+  agente, come SSH, tipicamente la directory di lavoro corrente sarà
+  consistente, ad es. la directory home dell'utente.</li>
+  <li>Per le utilità di avvio per cui Jenkins non ha controllo sull'avvio del
+  processo agente, come agenti che comunicano in ingresso avviati dalla riga
+  di comando, la directory di lavoro corrente potrebbe variare da un avvio
+  all'altro dell'agente e l'utilizzo di un percorso relativo potrebbe
   rivelarsi problematico.
   <br>
-  Il problema principale che si affronta utilizzando percorsi relativi con i
-  lanciatori come JNLP è la proliferazione di spazi di lavoro vecchi e di
-  installazioni di strumenti sulla macchina agente. Ciò può causare problemi
-  legati allo spazio su disco.</li>
+  Il problema principale riscontrato con l'utilizzo dei percorsi relativi con
+  gli agenti che comunicano in ingresso è la proliferazione di spazi di lavoro
+  e di installazioni di strumenti non aggiornati sul computer dell'agente.
+  Ciò può causare problemi di spazio disponibile su disco.</li>
   </ul>
 </div>

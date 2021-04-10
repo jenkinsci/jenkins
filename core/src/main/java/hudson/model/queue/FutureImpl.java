@@ -64,23 +64,21 @@ public final class FutureImpl extends AsyncFutureImpl<Executable> implements Que
         return start;
     }
 
-    public final Executable waitForStart() throws InterruptedException, ExecutionException {
+    public Executable waitForStart() throws InterruptedException, ExecutionException {
         return getStartCondition().get();
     }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         Queue q = Jenkins.get().getQueue();
-        synchronized (q) {
-            synchronized (this) {
-                if(!executors.isEmpty()) {
-                    if(mayInterruptIfRunning)
-                        for (Executor e : executors)
-                            e.interrupt();
-                    return mayInterruptIfRunning;
-                }
-                return q.cancel(task);
+        synchronized (this) {
+            if(!executors.isEmpty()) {
+                if(mayInterruptIfRunning)
+                    for (Executor e : executors)
+                        e.interrupt();
+                return mayInterruptIfRunning;
             }
+            return q.cancel(task);
         }
     }
 

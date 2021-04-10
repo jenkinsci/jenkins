@@ -54,8 +54,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
-    <table width="100%" class="${attrs.tableClass}">
+    <div width="100%" class="${attrs.tableClass}">
       <d:invokeBody/>
-    </table>
+    </div>
   </form>
 </j:jelly>

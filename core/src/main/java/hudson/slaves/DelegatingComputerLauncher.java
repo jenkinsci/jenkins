@@ -74,7 +74,7 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
         getLauncher().beforeDisconnect(computer, listener);
     }
 
-    public static abstract class DescriptorImpl extends Descriptor<ComputerLauncher> {
+    public abstract static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         /**
          * Returns the applicable nested computer launcher types.
          * The default implementation avoids all delegating descriptors, as that creates infinite recursion.

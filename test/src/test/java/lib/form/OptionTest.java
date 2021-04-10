@@ -265,12 +265,12 @@ public class OptionTest {
 
             // first value shown as value
             int indexOfValue = responseContent.indexOf(valueContainsExpected);
-            assertTrue(indexOfValue != -1);
+            assertNotEquals(-1, indexOfValue);
 
             // second as body
             int indexOfBody = responseContent.indexOf(bodyContainsExpected, indexOfValue + 1);
 
-            assertTrue(indexOfBody != -1);
+            assertNotEquals(-1, indexOfBody);
 
             // also check there is no "<script>" present in the answer
             int indexOfScript = responseContent.indexOf("<script>");

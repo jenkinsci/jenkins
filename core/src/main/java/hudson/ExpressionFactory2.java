@@ -1,6 +1,5 @@
 package hudson;
 
-import org.acegisecurity.AcegiSecurityException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.expression.Expression;
@@ -15,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * {@link ExpressionFactory} so that security exception aborts the page rendering.
@@ -52,7 +52,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
         /** The Jexl expression object */
         private org.apache.commons.jexl.Expression expression;
 
-        public JexlExpression(org.apache.commons.jexl.Expression expression) {
+        JexlExpression(org.apache.commons.jexl.Expression expression) {
             this.expression = expression;
         }
 
@@ -72,7 +72,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
                 CURRENT_CONTEXT.set(context);
                 JexlContext jexlContext = new JellyJexlContext( context );
                 return expression.evaluate(jexlContext);
-            } catch (AcegiSecurityException e) {
+            } catch (AccessDeniedException e) {
                 // let the security exception pass through
                 throw e;
             } catch (Exception e) {

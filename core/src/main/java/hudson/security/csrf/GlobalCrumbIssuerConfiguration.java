@@ -23,6 +23,7 @@
  */
 package hudson.security.csrf;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -76,5 +77,6 @@ public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     }
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final */ boolean DISABLE_CSRF_PROTECTION = SystemProperties.getBoolean(GlobalCrumbIssuerConfiguration.class.getName() + ".DISABLE_CSRF_PROTECTION");
 }

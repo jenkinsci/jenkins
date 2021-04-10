@@ -85,7 +85,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
         return dir.child(getToolHome());
     }
 
-    public static abstract class Descriptor<TInstallerClass extends AbstractCommandInstaller>
+    public abstract static class Descriptor<TInstallerClass extends AbstractCommandInstaller>
             extends ToolInstallerDescriptor<TInstallerClass> {
 
         public FormValidation doCheckCommand(@QueryParameter String value) {

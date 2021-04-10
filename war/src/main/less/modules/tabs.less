@@ -1,0 +1,101 @@
+.tabBarFrame {
+  position: relative;
+}
+
+.tabBar {
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tabBar .tab {
+  float: left;
+
+  &:not(:first-child) {
+    margin-left: 0.2rem;
+  }
+}
+
+.tabBar .tab a {
+  position: relative;
+  display: block;
+  min-width: 3rem;
+  border: solid var(--tab-link-border-width) var(--tab-link-border-color);
+  text-decoration: none;
+  padding: var(--tab-link-padding-y) var(--tab-link-padding-x);
+  border-top-left-radius: var(--tab-link-border-radius);
+  border-top-right-radius: var(--tab-link-border-radius);
+  font-weight: var(--tab-link-font-weight);
+  color: var(--tab-link-text-color);
+  background: var(--tab-link-bg);
+  border-color: var(--tab-link-border-color);
+
+  &:hover,
+  &:focus {
+    color: var(--tab-link-text-color--hover);
+    background: var(--tab-link-bg--hover);
+    border-color: var(--tab-link-border-color--hover);
+  }
+
+  &:focus {
+    border-color: var(--focus);
+    outline: none;
+  }
+
+  &:active {
+    color: var(--tab-link-text-color--active);
+    background: var(--tab-link-bg--active);
+    border-color: var(--tab-link-border-color--active);
+  }
+}
+
+.tabBar .tab a.addTab {
+  color: var(--link-color);
+  border: none;
+  padding: 0.25rem;
+  border-radius: var(--tab-link-border-radius);
+  min-width: 0;
+
+  &:hover,
+  &:focus {
+    color: var(--link-color--hover);
+    background: var(--tab-link-bg--hover);
+  }
+
+  &:active {
+    color: var(--link-color--active);
+    background: var(--tab-link-bg--active);
+  }
+}
+
+.tabBar .tab .addTab .svg-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.tabBar .tab [type=radio] {
+  display: none;
+}
+
+.tabBar .tab.active a {
+  border: var(--tab-link-border-width) solid var(--tab-link-checked-border-color);
+  background: var(--tab-link-checked-bg);
+  color: var(--tab-link-checked-text-color);
+  z-index: 2;
+}
+
+.tabBarBaseline {
+  border-top: var(--tab-baseline-width) solid var(--tab-baseline-color);
+  z-index: 1;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+
+  /* Baseline is hidden by default.  See next rule fo adding visibility. */
+  display: var(--tab-baseline-default-display, none);
+}
+
+.tabBarFrame.showBaseline .tabBarBaseline {
+  display: block;
+}

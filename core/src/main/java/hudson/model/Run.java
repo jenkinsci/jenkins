@@ -29,6 +29,7 @@ package hudson.model;
 
 import com.jcraft.jzlib.GZIPInputStream;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
@@ -65,6 +66,7 @@ import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -74,8 +76,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
-import java.lang.UnsupportedOperationException;
-import java.lang.SecurityException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.file.StandardCopyOption;
@@ -118,8 +118,6 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.ArrayUtils;
@@ -135,6 +133,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * A particular execution of {@link Job}.
@@ -166,7 +166,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     private static /* non-final for Groovy */ int TRUNCATED_DESCRIPTION_LIMIT = SystemProperties.getInteger("historyWidget.descriptionLimit", 100);
 
-    protected transient final @NonNull JobT project;
+    protected final transient @NonNull JobT project;
 
     /**
      * Build number.
@@ -189,7 +189,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * External code should use {@link #getPreviousBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected volatile transient RunT previousBuild;
+    protected transient volatile RunT previousBuild;
 
     /**
      * Next build. Can be null.
@@ -197,14 +197,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * External code should use {@link #getNextBuild()}
      */
     @Restricted(NoExternalUse.class)
-    protected volatile transient RunT nextBuild;
+    protected transient volatile RunT nextBuild;
 
     /**
      * Pointer to the next younger build in progress. This data structure is lazily updated,
      * so it may point to the build that's already completed. This pointer is set to 'this'
      * if the computation determines that everything earlier than this build is already completed.
      */
-    /* does not compile on JDK 7: private*/ volatile transient RunT previousBuildInProgress;
+    /* does not compile on JDK 7: private*/ transient volatile RunT previousBuildInProgress;
 
     /** ID as used for historical build records; otherwise null. */
     private @CheckForNull String id;
@@ -248,7 +248,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * The current build state.
      */
-    private volatile transient State state;
+    private transient volatile State state;
 
     private enum State {
         /**
@@ -299,13 +299,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * If the build is in progress, remember {@link RunExecution} that's running it.
      * This field is not persisted.
      */
-    private volatile transient RunExecution runner;
+    private transient volatile RunExecution runner;
 
     /**
      * Artifact manager associated with this build, if any.
      * @since 1.532
      */
     private @CheckForNull ArtifactManager artifactManager;
+
+    /**
+     * If the build is pending delete.
+     */
+    private transient boolean isPendingDelete;
 
     /**
      * Creates a new {@link Run}.
@@ -1533,7 +1538,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.349
      */
     public void writeLogTo(long offset, @NonNull XMLOutput out) throws IOException {
-        getLogText().writeHtmlTo(offset, out.asWriter());
+        long start = offset;
+        if (offset > 0) {
+            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(getLogInputStream())) {
+                if (offset == bufferedInputStream.skip(offset)) {
+                    int r;
+                    do {
+                        r = bufferedInputStream.read();
+                        start = (r == -1)? 0 : start + 1;
+                    } while (r != -1 && r != '\n');
+                }
+            }
+        }
+        getLogText().writeHtmlTo(start, out.asWriter());
     }
 
     /**
@@ -1612,6 +1629,15 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *      if we fail to delete.
      */
     public void delete() throws IOException {
+        synchronized (this) {
+            // Avoid concurrent delete. See https://issues.jenkins-ci.org/browse/JENKINS-61687
+            if (isPendingDelete) {
+                return;
+            }
+
+            isPendingDelete = true;
+        }
+
         File rootDir = getRootDir();
         if (!rootDir.isDirectory()) {
             //No root directory found to delete. Somebody seems to have nuked
@@ -1861,12 +1887,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener = createBuildListener(job, logger, charset);
                     listener.started(getCauses());
 
-                    Authentication auth = Jenkins.getAuthentication();
-                    if (auth.equals(ACL.SYSTEM)) {
+                    Authentication auth = Jenkins.getAuthentication2();
+                    if (auth.equals(ACL.SYSTEM2)) {
                         listener.getLogger().println(Messages.Run_running_as_SYSTEM());
                     } else {
                         String id = auth.getName();
-                        if (!auth.equals(Jenkins.ANONYMOUS)) {
+                        if (!auth.equals(Jenkins.ANONYMOUS2)) {
                             final User usr = User.getById(id, false);
                             if (usr != null) { // Encode user hyperlink for existing users
                                 id = ModelHyperlinkNote.encodeTo(usr);
@@ -1879,7 +1905,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     setResult(job.run(listener));
 
-                    LOGGER.log(FINEST, "{0} main build action completed: {1}", new Object[] {this, result});
+                    LOGGER.log(FINE, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
                 } catch (ThreadDeath t) {
                     throw t;
@@ -2055,7 +2081,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
     }
 
-    private Object writeReplace() {
+    protected Object writeReplace() {
         return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
     private static class Replacer {
@@ -2169,7 +2195,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Used to implement {@link #getBuildStatusSummary}.
      * @since 1.575
      */
-    public static abstract class StatusSummarizer implements ExtensionPoint {
+    public abstract static class StatusSummarizer implements ExtensionPoint {
         /**
          * Possibly summarizes the reasons for a build’s status.
          * @param run a completed build
@@ -2449,8 +2475,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @param id as produced by {@link #getExternalizableId}
      * @return the same run, or null if the job or run was not found
      * @throws IllegalArgumentException if the ID is malformed
+     * @throws AccessDeniedException as per {@link ItemGroup#getItem}
      */
-    public @CheckForNull static Run<?,?> fromExternalizableId(String id) throws IllegalArgumentException {
+    public @CheckForNull static Run<?,?> fromExternalizableId(String id) throws IllegalArgumentException, AccessDeniedException {
         int hash = id.lastIndexOf('#');
         if (hash <= 0) {
             throw new IllegalArgumentException("Invalid id");
@@ -2631,6 +2658,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Run.class.getName() + ".skipPermissionCheck");
 
 

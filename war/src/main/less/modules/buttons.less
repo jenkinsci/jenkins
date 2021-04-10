@@ -1,79 +1,101 @@
-@import '../abstracts/colors.less';
-@import '../abstracts/font.less';
+@import '../abstracts/theme.less';
 
-// Button variant mixins
+// Button: variant mixins
 
 .button-danger() {
-  color: @white;
-  background-color: @danger;
-  border-color: @danger;
+  color: var(--btn-text-color);
+  background-color: var(--danger);
+  border-color: var(--danger);
 
   &:hover,
   &:focus {
-    color: @white;
-    background-color: @danger-hover;
-    border-color: @danger-hover;
+    color: var(--btn-text-color);
+    background-color: var(--danger-hover);
+    border-color: var(--danger-hover);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem var(--focus-btn-danger);
   }
 
   &:active {
-    color: @white;
-    background-color: @danger-active;
-    border-color: @danger-active;
+    color: var(--btn-text-color);
+    background-color: var(--danger-active);
+    border-color: var(--danger-active);
   }
 }
 
 .button-primary() {
-  color: @white;
-  background-color: @btn-primary-bg;
-  border-color: @btn-primary-bg;
+  color: var(--btn-text-color);
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
 
   &:hover,
   &:focus {
-    color: @white;
-    background-color: @btn-primary-bg-hover;
-    border-color: @btn-primary-bg-hover;
+    color: var(--btn-text-color);
+    background-color: var(--btn-primary-bg-hover);
+    border-color: var(--btn-primary-bg-hover);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.2rem var(--focus-btn-primary);
   }
 
   &:active {
-    color: @white;
-    background-color: @btn-primary-bg-active;
-    border-color: @btn-primary-bg-active;
+    color: var(--btn-text-color);
+    background-color: var(--btn-primary-bg-active);
+    border-color: var(--btn-primary-bg-active);
   }
 }
 
 .button-secondary() {
-  color: @btn-secondary-color;
-  border-color: @btn-secondary-border;
-  background-color: @white;
+  color: var(--btn-secondary-color);
+  border-color: var(--btn-secondary-border);
+  background-color: var(--btn-secondary-bg);
 
-  &:hover,
   &:focus {
-    color: @primary-hover;
-    border-color: @primary-hover;
+    color: var(--btn-secondary-color--focus);
+    border-color: var(--btn-secondary-border--focus);
+    background-color: var(--btn-secondary-bg--focus);
+    box-shadow: 0 0 0 0.2rem var(--focus-btn-secondary);
+  }
+
+  // Hover MUST be AFTER the focus declaration for this outlined button.
+  // Otherwise, the hover styles will not be applied when hovering over a focused element
+  &:hover {
+    color: var(--btn-secondary-color--hover);
+    border-color: var(--btn-secondary-border--hover);
+    background-color: var(--btn-secondary-bg--hover);
   }
 
   &:active {
-    color: @primary-active;
-    border-color: @primary-active;
+    color: var(--btn-secondary-color--active);
+    border-color: var(--btn-secondary-border--active);
+    background-color: var(--btn-secondary-bg--active);
   }
 }
 
 .button-link {
-  color: @primary;
+  color: var(--primary);
   background-color: transparent;
   border-color: transparent;
+  font-weight: var(--btn-link-font-weight);
 
   &:hover,
   &:focus {
-    color: @primary-hover;
-    background-color: #f8f8f8;
-    border-color: #f8f8f8;
+    color: var(--btn-link-color--hover);
+    background-color: var(--btn-link-bg--hover);
+    border-color: var(--btn-link-bg--hover);
+  }
+
+  &:focus {
+    box-shadow: none;
   }
 
   &:active {
-    color: @primary-active;
-    background-color: #EAEFF2;
-    border-color: #EAEFF2;
+    color: var(--btn-link-color--active);
+    background-color: var(--btn-link-bg--active);
+    border-color: var(--btn-link-bg--active);
   }
 }
 
@@ -99,7 +121,6 @@ input[type="submit"],
 a.yui-button:link,
 a.yui-button:visited {
   box-sizing: border-box;
-  display: inline-block;
   // vertical padding:
   // 0.375rem == 6px == 32px (target height) - 4px (borders) - 16 (line) / 2
   padding: 0.375rem 1rem;
@@ -107,26 +128,25 @@ a.yui-button:visited {
   margin-left: 0.25rem;
   min-width: 4.5rem;
   min-height: 2rem;
-
   cursor: pointer;
   user-select: none;
-  font-size: @font-size-xs;
-  line-height: 1rem;
-  font-weight: bold;
+  font-size: var(--btn-font-size);
+  line-height: var(--btn-line-height);
+  font-weight: var(--btn-font-weight);
   text-align: center;
   vertical-align: middle;
   text-decoration: none;
-
   border: 2px solid;
   border-radius: 4px;
-
-  transition: all 0.15s ease-in-out;
+  transition:
+  color 0.15s ease-in-out,
+  background-color 0.15s ease-in-out,
+  border-color 0.15s ease-in-out;
 
   .button-secondary();
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(@focus, 0.5);
   }
 
   display: inline-flex;
@@ -186,8 +206,8 @@ a.yui-button.large-button {
   padding: 0.5rem 1rem;
   min-width: 6.5rem;
   min-height: 2.5rem;
-  font-size: @font-size-sm;
-  line-height: 1.25rem;
+  font-size: var(--btn-large-font-size);
+  line-height: var(--btn-large-line-height);
 
   .svg-icon,
   i {
@@ -242,6 +262,7 @@ a.yui-button {
     border-left: 0.35em solid transparent;
   }
 }
+
 .yui-button.yui-menu-button.yui-menu-button-active button,
 .yui-button.yui-split-button.yui-split-button-active button {
   &::after {

@@ -23,6 +23,7 @@
  */
 package hudson.triggers;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -170,7 +171,7 @@ public class SCMTriggerTest {
 
         List<BuildAction> ba = build.getActions(BuildAction.class);
 
-        assertFalse("There should only be one BuildAction.", ba.size()!=1);
+        assertEquals("There should only be one BuildAction.", 1, ba.size());
     }
 
     @TestExtension

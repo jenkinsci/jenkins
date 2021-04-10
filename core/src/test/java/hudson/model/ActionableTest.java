@@ -28,7 +28,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,6 +71,7 @@ public class ActionableTest {
             return "morenope";
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         @NonNull
         public List<Action> getActions() {
@@ -178,29 +183,29 @@ public class ActionableTest {
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addAction_null() {
-        thing.addAction(null);
+        assertThrows(IllegalArgumentException.class, () -> thing.addAction(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void replaceAction_null() {
-        thing.replaceAction(null);
+        assertThrows(IllegalArgumentException.class, () -> thing.replaceAction(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void replaceActions_null() {
-        thing.replaceActions(CauseAction.class, null);
+        assertThrows(IllegalArgumentException.class, () -> thing.replaceActions(CauseAction.class, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void replaceActions_null_null() {
-        thing.replaceActions(null, null);
+        assertThrows(IllegalArgumentException.class, () -> thing.replaceActions(null, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addOrReplaceAction_null() {
-        thing.addOrReplaceAction(null);
+        assertThrows(IllegalArgumentException.class, () -> thing.addOrReplaceAction(null));
     }
 
     @Test
@@ -208,9 +213,9 @@ public class ActionableTest {
         assertFalse(thing.removeAction(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void removeActions_null() {
-        thing.removeActions(null);
+        assertThrows(IllegalArgumentException.class, () -> thing.removeActions(null));
     }
 
     private static class ActionableImpl extends Actionable {

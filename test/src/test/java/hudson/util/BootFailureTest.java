@@ -15,7 +15,10 @@ import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.junit.After;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -137,7 +140,7 @@ public class BootFailureTest {
 
         // second failed boot
         problem = null;
-        runRecord = new ArrayList<String>();
+        runRecord = new ArrayList<>();
         assertNull(j.newHudson());
         assertEquals(2, bootFailures(home));
         assertEquals(Arrays.asList("1", "2"), runRecord);
@@ -181,6 +184,6 @@ public class BootFailureTest {
 
     // to be set by the script
     public static Exception problem;
-    public static List<String> runRecord = new ArrayList<String>();
+    public static List<String> runRecord = new ArrayList<>();
 
 }

@@ -25,7 +25,7 @@
 package hudson.model;
 
 import hudson.EnvVars;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import hudson.Launcher;
 import hudson.model.RunParameterDefinition.RunParameterFilter;
@@ -279,8 +279,8 @@ public class RunParameterDefinitionTest {
             this.result = result;
         }
 
-        public @Override
-        boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             build.setResult(result);
             return true;
         }

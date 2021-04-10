@@ -58,12 +58,18 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.kohsuke.stapler.jelly.JellyFacet;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -269,7 +275,7 @@ public class MavenTest {
     @Issue("JENKINS-18898")
     @Test public void testNullHome() {
         EnvVars env = new EnvVars();
-        new MavenInstallation("_", "", Collections.<ToolProperty<?>>emptyList()).buildEnvVars(env);
+        new MavenInstallation("_", "", Collections.emptyList()).buildEnvVars(env);
         assertTrue(env.isEmpty());
     }
 
@@ -369,5 +375,33 @@ public class MavenTest {
         MavenInstallation maven2 = ToolInstallations.configureDefaultMaven();
         assertNotEquals(maven3.hashCode(), maven2.hashCode());
         assertNotEquals(maven3, maven2);
+    }
+
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithoutJellyTrace() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage htmlPage = wc.goTo("configureTools");
+        HtmlForm configForm = htmlPage.getFormByName("config");
+        j.assertGoodStatus(j.submit(configForm));
+    }
+
+    /**
+     * Ensure the form is still working when using {@link org.kohsuke.stapler.jelly.JellyFacet#TRACE}=true
+     */
+    @Test
+    @Issue("JENKINS-65288")
+    public void submitPossibleWithJellyTrace() throws Exception {
+        boolean currentValue = JellyFacet.TRACE;
+        try {
+            JellyFacet.TRACE = true;
+
+            JenkinsRule.WebClient wc = j.createWebClient();
+            HtmlPage htmlPage = wc.goTo("configureTools");
+            HtmlForm configForm = htmlPage.getFormByName("config");
+            j.assertGoodStatus(j.submit(configForm));
+        } finally {
+            JellyFacet.TRACE = currentValue;
+        }
     }
 }

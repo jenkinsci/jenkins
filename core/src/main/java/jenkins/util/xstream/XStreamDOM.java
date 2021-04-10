@@ -35,6 +35,7 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.util.VariableResolver;
 
@@ -307,9 +308,12 @@ public class XStreamDOM {
                     if (node.children.get(i).tagName.equals(child.tagName))
                         count++;
                 boolean more = false;
-                for (int i=pos; !more && i<node.children.size(); i++)
-                    if (node.children.get(i).tagName.equals(child.tagName))
+                for (int i = pos; i < node.children.size(); i++) {
+                    if (node.children.get(i).tagName.equals(child.tagName)) {
                         more = true;
+                        break;
+                    }
+                }
 
                 if (count==0 && !more)  return child.tagName;   // sole child
                 return child.tagName+'['+count+']';
@@ -319,7 +323,7 @@ public class XStreamDOM {
         private final Stack<Pointer> pointers = new Stack<>();
 
 
-        public ReaderImpl(XStreamDOM current) {
+        ReaderImpl(XStreamDOM current) {
             super(new XmlFriendlyReplacer());
             pointers.push(new Pointer(current));
         }
@@ -370,6 +374,7 @@ public class XStreamDOM {
         public void close() {
         }
 
+        @Override
         public String peekNextChild() {
             return current().peekNextChild();
         }
@@ -454,6 +459,7 @@ public class XStreamDOM {
         public void close() {
         }
 
+        @Override
         public HierarchicalStreamWriter underlyingWriter() {
             return this;
         }
@@ -534,5 +540,6 @@ public class XStreamDOM {
         }
     }
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
 }

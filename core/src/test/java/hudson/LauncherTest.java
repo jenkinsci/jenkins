@@ -34,7 +34,11 @@ import java.nio.charset.Charset;
 
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Assume;
 import org.junit.Rule;
@@ -60,7 +64,7 @@ public class LauncherTest {
                 Thread.sleep(100);
             long start = System.currentTimeMillis();
             p.kill();
-            assertTrue(p.join()!=0);
+            assertNotEquals(0, p.join());
             long end = System.currentTimeMillis();
             long terminationTime = end - start;
             assertTrue("Join did not finish promptly. The completion time (" + terminationTime + "ms) is longer than expected 15s", terminationTime < 15000);

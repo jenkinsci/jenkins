@@ -117,7 +117,7 @@ public class ApiTokenStats implements Saveable {
     }
     
     /**
-     * Will trigger the save if there is some modification
+     * Will trigger the save if there is some modifications
      */
     public synchronized void removeId(@NonNull String tokenUuid) {
         if(areStatsDisabled()){
@@ -126,6 +126,26 @@ public class ApiTokenStats implements Saveable {
         
         boolean tokenRemoved = tokenStats.removeIf(s -> s.tokenUuid.equals(tokenUuid));
         if (tokenRemoved) {
+            save();
+        }
+    }
+    
+    /**
+     * Will trigger the save if there is some modifications
+     */
+    public synchronized void removeAll() {
+        int size = tokenStats.size();
+        tokenStats.clear();
+        if (size > 0) {
+            save();
+        }
+    }
+    
+    public synchronized void removeAllExcept(@NonNull String tokenUuid) {
+        int sizeBefore = tokenStats.size();
+        tokenStats.removeIf(s -> !s.tokenUuid.equals(tokenUuid));
+        int sizeAfter = tokenStats.size();
+        if (sizeBefore != sizeAfter) {
             save();
         }
     }

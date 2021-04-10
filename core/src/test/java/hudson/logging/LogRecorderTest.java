@@ -32,7 +32,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -134,6 +137,7 @@ public class LogRecorderTest {
         return r;
     }
 
+    @SuppressWarnings("deprecation") /* testing deprecated variant */
     private static boolean includes(String target, String logger) {
         LogRecord r = createLogRecord(logger, Level.INFO, "whatever");
         return new LogRecorder.Target(target, Level.INFO).includes(r);

@@ -1,14 +1,13 @@
 package jenkins;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import hudson.ExtensionComponent;
 import hudson.console.ConsoleAnnotatorFactory;
 import hudson.model.PageDecorator;
 import jenkins.install.SetupWizard;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

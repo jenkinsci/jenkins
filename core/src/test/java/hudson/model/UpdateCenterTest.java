@@ -9,7 +9,7 @@ import java.util.Locale;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -114,7 +114,7 @@ public class UpdateCenterTest {
                     buildEntryWithExpectedChecksums(null, null, EMPTY_SHA512), new File("example"));
             fail();
         } catch (Exception e) {
-            assertTrue(e.getMessage().equals("Unable to confirm integrity of downloaded file, refusing installation"));
+            assertEquals("Unable to confirm integrity of downloaded file, refusing installation", e.getMessage());
         }
     }
 
@@ -126,7 +126,7 @@ public class UpdateCenterTest {
                     buildEntryWithExpectedChecksums(null, EMPTY_SHA256, EMPTY_SHA512), new File("example"));
             fail();
         } catch (Exception e) {
-            assertTrue(e.getMessage().equals("Unable to confirm integrity of downloaded file, refusing installation"));
+            assertEquals("Unable to confirm integrity of downloaded file, refusing installation", e.getMessage());
         }
     }
 

@@ -43,11 +43,12 @@ import java.util.HashMap;
 import java.util.Map;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.acegisecurity.Authentication;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.ClassRule;
 
@@ -97,7 +98,7 @@ public class ReverseBuildTriggerTest {
                 .grant(Computer.BUILD).everywhere().to("alice", "bob")
                 .grant(Jenkins.ADMINISTER).everywhere().to("admin");
         r.jenkins.setAuthorizationStrategy(auth);
-        String upstreamName = "upstr3@m"; // do not clash with English messages!
+        String upstreamName = "upstr3am"; // do not clash with English messages!
         final FreeStyleProject upstream = r.createFreeStyleProject(upstreamName);
         String downstreamName = "d0wnstr3am";
         FreeStyleProject downstream = r.createFreeStyleProject(downstreamName);
@@ -130,7 +131,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(1, downstream.getLastBuild().number);
         // Alice can see upstream, so downstream gets built, but the upstream build cannot see downstream:
         auth.grant(Item.READ).onItems(upstream).to("alice", "bob");
-        Map<String,Authentication> qiaConfig = new HashMap<String,Authentication>();
+        Map<String, org.acegisecurity.Authentication> qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
@@ -140,7 +141,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(2, downstream.getLastBuild().number);
         assertEquals(new Cause.UpstreamCause((Run) b), downstream.getLastBuild().getCause(Cause.UpstreamCause.class));
         // Now if upstream build is permitted to report on downstream:
-        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("admin").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
@@ -159,7 +160,7 @@ public class ReverseBuildTriggerTest {
                 .grant(Item.DISCOVER).onItems(upstream).to("alice");
         r.jenkins.setAuthorizationStrategy(auth);
         auth.grant(Item.READ).onItems(downstream).to("alice");
-        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
@@ -172,7 +173,7 @@ public class ReverseBuildTriggerTest {
         // so no message is printed about it, and no Exception neither (JENKINS-42707)
         auth.grant(Item.READ).onItems(upstream).to("bob");
         auth.grant(Item.DISCOVER).onItems(upstream).to("anonymous");
-        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));

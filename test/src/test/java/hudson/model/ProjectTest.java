@@ -28,7 +28,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.security.AccessDeniedException2;
+import hudson.security.AccessDeniedException3;
 import hudson.tasks.*;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -53,7 +53,7 @@ import jenkins.model.WorkspaceWriter;
 import jenkins.model.Jenkins;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
-import hudson.model.Cause.LegacyCodeCause;
+import hudson.model.Cause.UserIdCause;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -79,7 +79,12 @@ import java.util.Collection;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -114,11 +119,11 @@ public class ProjectTest {
         j.jenkins.reload();
         assertEquals("All persistent data should be saved.", "description", p.description);
         assertEquals("All persistent data should be saved.", 5, p.nextBuildNumber);
-        assertEquals("All persistent data should be saved", true, p.disabled);
+        assertTrue("All persistent data should be saved", p.disabled);
     }
     
     @Test
-    public void testOnCreateFromScratch() throws IOException, Exception{
+    public void testOnCreateFromScratch() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
         j.buildAndAssertSuccess(p);
         p.removeRun(p.getLastBuild());
@@ -130,15 +135,15 @@ public class ProjectTest {
     }
     
     @Test
-    public void testOnLoad() throws IOException, Exception{
+    public void testOnLoad() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
         j.buildAndAssertSuccess(p);
         p.removeRun(p.getLastBuild());
         createAction = true;
         p.onLoad(j.jenkins, "project");
-        assertTrue("Project should have a build.", p.getLastBuild()!=null);
-        assertTrue("Project should have a scm.", p.getScm()!=null);
-        assertTrue("Project should have Transient Action TransientAction.", p.getAction(TransientAction.class)!=null);
+        assertNotNull("Project should have a build.", p.getLastBuild());
+        assertNotNull("Project should have a scm.", p.getScm());
+        assertNotNull("Project should have Transient Action TransientAction.", p.getAction(TransientAction.class));
         createAction = false;
     }
     
@@ -153,7 +158,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testPerformDelete() throws IOException, Exception{
+    public void testPerformDelete() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.performDelete();
         assertFalse("Project should be deleted from disk.", p.getConfigFile().exists());
@@ -229,7 +234,7 @@ public class ProjectTest {
         j.jenkins.setQuietPeriod(0);
         assertEquals("Quiet period is not set so it should be the same as global quiet period.", 0, p.getQuietPeriod());
         p.setQuietPeriod(10);
-        assertEquals("Quiet period was set.",p.getQuietPeriod(),10);
+        assertEquals("Quiet period was set.", 10, p.getQuietPeriod());
     }
     
     @Test
@@ -251,7 +256,7 @@ public class ProjectTest {
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
         ((HtmlElement)form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
         // required due to the new default behavior of click
-        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), true);
+        form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
         form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
@@ -298,7 +303,7 @@ public class ProjectTest {
     public void testScheduleBuild2() throws IOException, InterruptedException{
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
-        p.scheduleBuild(0, new LegacyCodeCause(), new Action[0]);
+        p.scheduleBuild(0, new UserIdCause(), new Action[0]);
         assertNotNull("Project should be in queue.", Queue.getInstance().getItem(p));
         p.setAssignedLabel(null);
         int count = 0;
@@ -323,7 +328,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testSaveAfterSet() throws Exception, ReactorException {
+    public void testSaveAfterSet() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setScm(new NullSCM());
         p.setScmCheckoutStrategy(new SCMCheckoutStrategyImpl());
@@ -434,7 +439,7 @@ public class ProjectTest {
     }
     
     @Test
-    public void testCheckout() throws IOException, Exception{
+    public void testCheckout() throws Exception{
         SCM scm = new NullSCM();
         FreeStyleProject p = j.createFreeStyleProject("project");
         Slave slave = j.createOnlineSlave();
@@ -521,8 +526,8 @@ public class ProjectTest {
 
         Map<Integer,Fingerprint.RangeSet> relationship = upstream.getRelationship(downstream);
         assertFalse("Project upstream should have relationship with downstream", relationship.isEmpty());
-        assertTrue("Relationship should contain upstream #3", relationship.keySet().contains(3));
-        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.keySet().contains(4));
+        assertTrue("Relationship should contain upstream #3", relationship.containsKey(3));
+        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.containsKey(4));
         assertEquals("downstream #2 should be the first build which depends on upstream #3", 2, relationship.get(3).min());
         assertEquals("downstream #3 should be the last build which depends on upstream #3", 3, relationship.get(3).max()-1);
         assertEquals("downstream #4 should depend only on upstream #5", 4, relationship.get(5).min());
@@ -543,7 +548,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -562,7 +567,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -599,7 +604,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -617,7 +622,7 @@ public class ProjectTest {
         wc.withBasicCredentials(user.getId(), "password");
         WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
-        assertEquals(p.getWebResponse().getStatusCode(), 200);
+        assertEquals(200, p.getWebResponse().getStatusCode());
 
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
@@ -637,7 +642,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -675,7 +680,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
+            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -831,7 +836,7 @@ public class ProjectTest {
 
         @Override
         public Collection<? extends Action> createFor(AbstractProject target) {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             if(createAction)
                 actions.add(new TransientAction());
             return actions;
@@ -917,7 +922,7 @@ public class ProjectTest {
 
         @Override
         public Collection getSubTasks() {
-            ArrayList<SubTask> list = new ArrayList<SubTask>();
+            ArrayList<SubTask> list = new ArrayList<>();
             list.add(new SubTaskImpl());
             return list;
         }
@@ -930,7 +935,7 @@ public class ProjectTest {
 
         @Override
         public Collection<? extends SubTask> forProject(AbstractProject<?, ?> p) {
-            ArrayList<SubTask> list = new ArrayList<SubTask>();
+            ArrayList<SubTask> list = new ArrayList<>();
             if(createSubTask){
                 list.add(new SubTaskImpl2());
             }
@@ -947,7 +952,7 @@ public class ProjectTest {
         public String projectName;
 
         @Override
-        public Executable createExecutable() throws IOException {
+        public Executable createExecutable() {
             return null;
         }
 
@@ -1003,7 +1008,7 @@ public class ProjectTest {
 
         @Override
         public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
-            List<NodeProvisioner.PlannedNode> r = new ArrayList<NodeProvisioner.PlannedNode>();
+            List<NodeProvisioner.PlannedNode> r = new ArrayList<>();
 
             //Always provision...even if there is no workload.
             while(excessWorkload >= 0) {

@@ -4,16 +4,10 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.acegisecurity.ui.AuthenticationEntryPoint;
-import org.acegisecurity.ui.rememberme.NullRememberMeServices;
-import org.acegisecurity.ui.rememberme.RememberMeServices;
-import org.apache.commons.lang.StringUtils;
-
+import java.io.IOException;
+import java.util.List;
+import static java.util.logging.Level.*;
+import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -22,11 +16,17 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
-
-import static java.util.logging.Level.*;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.NullRememberMeServices;
+import org.springframework.security.web.authentication.RememberMeServices;
 
 /**
  * Takes "username:password" given in the {@code Authorization} HTTP header and authenticates
@@ -40,8 +40,8 @@ import static java.util.logging.Level.*;
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public class BasicHeaderProcessor implements Filter {
-    // these fields are supposed to be injected by Spring
     private AuthenticationEntryPoint authenticationEntryPoint;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
 
@@ -76,7 +76,7 @@ public class BasicHeaderProcessor implements Filter {
 
                 for (BasicHeaderAuthenticator a : all()) {
                     LOGGER.log(FINER, "Attempting to authenticate with {0}", a);
-                    Authentication auth = a.authenticate(req, rsp, username, password);
+                    Authentication auth = a.authenticate2(req, rsp, username, password);
                     if (auth!=null) {
                         LOGGER.log(FINE, "Request authenticated as {0} by {1}", new Object[]{auth,a});
                         success(req, rsp, chain, auth);
@@ -125,17 +125,13 @@ public class BasicHeaderProcessor implements Filter {
         // BASIC protocol is desirable. This behaviour is also consistent with that provided by form and digest,
         // both of which force re-authentication if the respective header is detected (and in doing so replace
         // any existing AnonymousAuthenticationToken). See SEC-610.
-        if (existingAuth instanceof AnonymousAuthenticationToken) {
-            return true;
-        }
-
-        return false;
+        return existingAuth instanceof AnonymousAuthenticationToken;
     }
 
     protected void success(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain, Authentication auth) throws IOException, ServletException {
         rememberMeServices.loginSuccess(req, rsp, auth);
 
-        try (ACLContext ctx = ACL.as(auth)){
+        try (ACLContext ctx = ACL.as2(auth)){
             chain.doFilter(req,rsp);
         }
     }

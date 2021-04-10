@@ -28,7 +28,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;

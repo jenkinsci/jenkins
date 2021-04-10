@@ -46,7 +46,9 @@ import jenkins.model.GlobalConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assume.*;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -155,7 +157,6 @@ public class ClassFilterImplTest {
     @Issue("JENKINS-49543")
     public void moduleClassesShouldBeWhitelisted() throws Exception {
         ClassFilterImpl filter = new ClassFilterImpl();
-        filter.check("org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl");
         filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
         filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }

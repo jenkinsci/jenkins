@@ -117,7 +117,7 @@ public abstract class LineTransformationOutputStream extends OutputStream {
      * Flushing or closing the decorated stream will behave properly.
      * @since 2.173
      */
-    public static abstract class Delegating extends LineTransformationOutputStream {
+    public abstract static class Delegating extends LineTransformationOutputStream {
 
         protected final OutputStream out;
 

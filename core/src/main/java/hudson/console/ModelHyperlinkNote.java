@@ -67,6 +67,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
 
     @Extension @Symbol("hyperlinkToModels")
     public static class DescriptorImpl extends HyperlinkNote.DescriptorImpl {
+        @Override
         public String getDisplayName() {
             return "Hyperlinks to models";
         }

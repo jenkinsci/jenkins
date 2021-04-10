@@ -51,6 +51,7 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Des
     /**
      * Default implementation that does nothing.
      */
+    @Override
     public boolean prebuild(Build build, BuildListener listener) {
         return true;
     }
@@ -59,6 +60,7 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Des
      * Returns {@link BuildStepMonitor#NONE} by default, as {@link Builder}s normally don't depend
      * on its previous result.
      */
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }

@@ -43,7 +43,7 @@ public abstract class OptionalJobProperty<J extends Job<?,?>> extends JobPropert
         return (OptionalJobPropertyDescriptor) super.getDescriptor();
     }
 
-    public static abstract class OptionalJobPropertyDescriptor extends JobPropertyDescriptor {
+    public abstract static class OptionalJobPropertyDescriptor extends JobPropertyDescriptor {
 
         protected OptionalJobPropertyDescriptor(Class<? extends JobProperty<?>> clazz) {
             super(clazz);

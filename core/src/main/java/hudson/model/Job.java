@@ -1007,7 +1007,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * 
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
      */
-    @SuppressWarnings("unchecked")
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<>(3);
         RunT lastSuccessful = getLastSuccessfulBuild();
@@ -1081,7 +1080,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ChangeLogSet.Entry e;
             int idx;
 
-            public FeedItem(ChangeLogSet.Entry e, int idx) {
+            FeedItem(ChangeLogSet.Entry e, int idx) {
                 this.e = e;
                 this.idx = idx;
             }
@@ -1406,7 +1405,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 class ChartLabel implements Comparable<ChartLabel> {
                     final Run run;
 
-                    public ChartLabel(Run r) {
+                    ChartLabel(Run r) {
                         this.run = r;
                     }
 
@@ -1588,5 +1587,5 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new BuildTimelineWidget(getBuilds());
     }
 
-    private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
+    private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
 }

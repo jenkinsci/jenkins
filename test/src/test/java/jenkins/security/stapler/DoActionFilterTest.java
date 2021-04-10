@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -172,7 +171,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         public void doAnnotatedRequirePost() { replyOk(); }
         
         @JavaScriptMethod
-        public void annotatedJavascriptScriptMethod() { replyOk(); }
+        public void annotatedJavaScriptScriptMethod() { replyOk(); }
         
         @RespondSuccess
         public void doAnnotatedResponseSuccess() { replyOk(); }
@@ -217,7 +216,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         }
     }
     
-    public static abstract class HttpResponseExceptionChild extends HttpResponses.HttpResponseException {
+    public abstract static class HttpResponseExceptionChild extends HttpResponses.HttpResponseException {
     }
     
     public static class ExceptionImplementingOnlyHttpResponse extends RuntimeException implements HttpResponse {
@@ -333,7 +332,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     }
     
     @Test
-    public void testAnnotatedMethodOk_annotatedJavascriptScriptMethod() throws Exception {
+    public void testAnnotatedMethodOk_annotatedJavaScriptScriptMethod() throws Exception {
         webApp.setCrumbIssuer(new CrumbIssuer() {
             @Override
             public String issueCrumb(StaplerRequest request) {
@@ -347,10 +346,10 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         });
         
         
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJavascriptScriptMethod/"));
+        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJavaScriptScriptMethod/"));
         settings.setAdditionalHeader("Content-Type", "application/x-stapler-method-invocation");
         settings.setHttpMethod(HttpMethod.POST);
-        settings.setRequestBody(JSONArray.fromObject(Arrays.asList()).toString());
+        settings.setRequestBody(JSONArray.fromObject(Collections.emptyList()).toString());
         assertReachableWithSettings(settings);
     }
     
@@ -415,7 +414,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamSubmittedForm/"));
         settings.setHttpMethod(HttpMethod.POST);
         
-        settings.setRequestParameters(Arrays.asList(
+        settings.setRequestParameters(Collections.singletonList(
                 new NameValuePair(
                         "json",
                         JSONObject.fromObject(new HashMap<String, Object>() {{
@@ -525,7 +524,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 //        public void doAnnotatedJsonOutputFilter() { replyOk(); }
     }
     
-    public static abstract class RequestAndResponse implements StaplerRequest, StaplerResponse {
+    public abstract static class RequestAndResponse implements StaplerRequest, StaplerResponse {
         @Override
         public CollectionAndEnumeration getHeaderNames() {
             return null;
@@ -536,7 +535,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
             return null;
         }
         
-        public static abstract class CollectionAndEnumeration implements Collection, Enumeration {
+        public abstract static class CollectionAndEnumeration implements Collection, Enumeration {
         }
     }
     

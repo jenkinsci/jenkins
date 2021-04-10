@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
 import jenkins.model.item_category.ItemCategory;
-import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.StringUtils;
@@ -45,6 +44,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * {@link Descriptor} for {@link TopLevelItem}s.
@@ -255,6 +255,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      *      This is not a valid operation for {@link Item}s.
      */
     @Deprecated
+    @Override
     public TopLevelItem newInstance(StaplerRequest req) throws FormException {
         throw new UnsupportedOperationException();
     }

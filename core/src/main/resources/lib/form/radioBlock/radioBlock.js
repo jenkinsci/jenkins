@@ -18,7 +18,7 @@ var radioBlockSupport = {
             n = blockStart;
         }
         while((n = n.next()) != blockEnd) {
-          n.style.display = show ? "" : "none";
+            n.style.display = show ? "" : "none";
         }
         layoutUpdateCallback.call();
     }

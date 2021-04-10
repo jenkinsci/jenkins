@@ -41,7 +41,7 @@ import java.beans.Introspector;
 final class ParsedQuickSilver {
     private static final Map<Class,ParsedQuickSilver> TABLE = new HashMap<>();
 
-    synchronized static ParsedQuickSilver get(Class<? extends SearchableModelObject> clazz) {
+    static synchronized ParsedQuickSilver get(Class<? extends SearchableModelObject> clazz) {
         ParsedQuickSilver pqs = TABLE.get(clazz);
         if(pqs==null)
             TABLE.put(clazz,pqs = new ParsedQuickSilver(clazz));
@@ -98,7 +98,7 @@ final class ParsedQuickSilver {
     }
 
 
-    static abstract class Getter {
+    abstract static class Getter {
         final String url;
         final String searchName;
 
@@ -113,7 +113,7 @@ final class ParsedQuickSilver {
     static final class MethodGetter extends Getter {
         private final Method method;
 
-        public MethodGetter(String url, String searchName, Method method) {
+        MethodGetter(String url, String searchName, Method method) {
             super(url, searchName);
             this.method = method;
         }
@@ -137,7 +137,7 @@ final class ParsedQuickSilver {
     static final class FieldGetter extends Getter {
         private final Field field;
 
-        public FieldGetter(String url, String searchName, Field field) {
+        FieldGetter(String url, String searchName, Field field) {
             super(url, searchName);
             this.field = field;
         }

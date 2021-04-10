@@ -23,13 +23,14 @@
  */
 package hudson.security;
 
-import jenkins.model.Jenkins;
-import jenkins.security.ConfidentialStore;
-import org.acegisecurity.ui.rememberme.RememberMeServices;
-import org.acegisecurity.Authentication;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.model.Jenkins;
+import jenkins.security.ConfidentialStore;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.RememberMeServices;
 
 /**
  * {@link RememberMeServices} proxy.
@@ -45,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public class RememberMeServicesProxy implements RememberMeServices {
     private volatile RememberMeServices delegate;
 

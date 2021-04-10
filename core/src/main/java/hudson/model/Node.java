@@ -25,6 +25,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
@@ -49,7 +50,6 @@ import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 import hudson.util.TagCloud;
-import hudson.util.TagCloud.WeightFunction;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -65,7 +65,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
@@ -74,6 +73,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.springframework.security.core.Authentication;
 
 /**
  * Base type of Jenkins agents (although in practice, you probably extend {@link Slave} to define a new agent type).
@@ -99,13 +99,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
     /** @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-46652">JENKINS-46652</a> */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* not final */ boolean SKIP_BUILD_CHECK_ON_FLYWEIGHTS = SystemProperties.getBoolean(Node.class.getName() + ".SKIP_BUILD_CHECK_ON_FLYWEIGHTS", true);
 
     /**
      * Newly copied agents get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
-    protected volatile transient boolean holdOffLaunchUntilSave;
+    protected transient volatile boolean holdOffLaunchUntilSave;
 
     public String getDisplayName() {
         return getNodeName(); // default implementation
@@ -282,11 +283,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Return the possibly empty tag cloud for the labels of this node.
      */
     public TagCloud<LabelAtom> getLabelCloud() {
-        return new TagCloud<>(getAssignedLabels(), new WeightFunction<LabelAtom>() {
-            public float weight(LabelAtom item) {
-                return item.getTiedJobCount();
-            }
-        });
+        return new TagCloud<>(getAssignedLabels(), Label::getTiedJobCount);
     }
     /**
      * Returns the possibly empty set of labels that are assigned to this node,
@@ -398,8 +395,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             }
         }
 
-        Authentication identity = item.authenticate();
-        if (!(SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !hasPermission(identity, Computer.BUILD)) {
+        Authentication identity = item.authenticate2();
+        if (!(SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !hasPermission2(identity, Computer.BUILD)) {
             // doesn't have a permission
             return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(), getDisplayName()));
         }
@@ -461,8 +458,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return new FilePath(ch,absolutePath);
     }
 
+    @Deprecated
     public FileSystemProvisioner getFileSystemProvisioner() {
-        // TODO: make this configurable or auto-detectable or something else
         return FileSystemProvisioner.DEFAULT;
     }
 
@@ -526,7 +523,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
         final JSONObject jsonForProperties = form.optJSONObject("nodeProperties");
         final AtomicReference<BindInterceptor> old = new AtomicReference<>();
-        old.set(req.setBindListener(new BindInterceptor() {
+        old.set(req.setBindInterceptor(new BindInterceptor() {
             @Override
             public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
                 if (jsonForProperties != jsonSource) {
@@ -537,9 +534,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                     DescribableList<NodeProperty<?>, NodePropertyDescriptor> tmp = new DescribableList<>(Saveable.NOOP, getNodeProperties().toList());
                     tmp.rebuild(req, jsonForProperties, NodeProperty.all());
                     return tmp.toList();
-                } catch (FormException e) {
-                    throw new IllegalArgumentException(e);
-                } catch (IOException e) {
+                } catch (FormException | IOException e) {
                     throw new IllegalArgumentException(e);
                 }
             }

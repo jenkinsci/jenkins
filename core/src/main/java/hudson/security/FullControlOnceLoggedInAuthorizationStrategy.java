@@ -100,6 +100,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
             DESCRIPTOR = this;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();
         }

@@ -69,7 +69,6 @@ import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -126,7 +125,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -145,6 +143,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -155,6 +154,9 @@ import java.util.stream.Collectors;
 
 import static hudson.init.InitMilestone.*;
 import static java.util.logging.Level.*;
+import static java.util.stream.Collectors.toList;
+
+import org.springframework.security.core.Authentication;
 
 /**
  * Manages {@link PluginWrapper}s.
@@ -552,7 +554,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     activePlugins.remove(p);
                                     plugins.remove(p);
                                     LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
-                                    return;
                                 } catch (IOException e) {
                                     failedPlugins.add(new FailedPlugin(p.getShortName(), e));
                                     activePlugins.remove(p);
@@ -571,7 +572,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     return;
                                 }
                                 try {
-                                    p.getPlugin().postInitialize();
+                                    p.getPluginOrFail().postInitialize();
                                 } catch (Exception e) {
                                     failedPlugins.add(new FailedPlugin(p.getShortName(), e));
                                     activePlugins.remove(p);
@@ -787,8 +788,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             LOGGER.log(INFO, "Upgraded Jenkins from version {0} to version {1}. Loaded detached plugins (and dependencies): {2}",
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
-
-            InstallUtil.saveLastExecVersion();
         } else {
             final Set<DetachedPluginsUtil.DetachedPlugin> forceUpgrade = new HashSet<>();
             // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in WEB-INF/detached-plugins/
@@ -883,7 +882,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting, @CheckForNull List<PluginWrapper> batch) throws IOException, InterruptedException, RestartRequiredException {
-        try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext context = ACL.as2(ACL.SYSTEM2)) {
             LOGGER.log(FINE, "Attempting to dynamic load {0}", arc);
             PluginWrapper p = null;
             String sn;
@@ -950,8 +949,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     public void start(List<PluginWrapper> plugins) throws Exception {
-      try (ACLContext context = ACL.as(ACL.SYSTEM)) {
-        Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(p -> p.getShortName(), p -> p));
+      try (ACLContext context = ACL.as2(ACL.SYSTEM2)) {
+        Map<String, PluginWrapper> pluginsByName = plugins.stream().collect(Collectors.toMap(PluginWrapper::getShortName, p -> p));
 
         // recalculate dependencies of plugins optionally depending the newly deployed ones.
         for (PluginWrapper depender: this.plugins) {
@@ -979,7 +978,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             throw new IOException("Failed to refresh extensions after installing some plugins", e);
         }
         for (PluginWrapper p : plugins) {
-          p.getPlugin().postInitialize();
+            //TODO:According to the postInitialize() documentation, one may expect that
+            //p.getPluginOrFail() NPE will continue the initialization. Keeping the original behavior ATM
+          p.getPluginOrFail().postInitialize();
         }
 
         // run initializers in the added plugins
@@ -1114,7 +1115,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final JarURLConnection jarURLConnection = (JarURLConnection) uc;
             final String entryName = jarURLConnection.getEntryName();
             
-            try(final JarFile jarFile = jarURLConnection.getJarFile()) {
+            try(JarFile jarFile = jarURLConnection.getJarFile()) {
                 final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
                     try(InputStream i = jarFile.getInputStream(entry)) {
@@ -1343,6 +1344,125 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         LogFactory.release(uberClassLoader);
     }
 
+    @Restricted(NoExternalUse.class)
+    public static boolean isNonMetaLabel(String label) {
+        return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
+    }
+    
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
+        List<JSONObject> plugins = new ArrayList<>();
+        for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
+            List<JSONObject> sitePlugins = site.getAvailables().stream()
+                .filter(plugin -> {
+                    if (StringUtils.isBlank(query)) {
+                        return true;
+                    }
+                    return StringUtils.containsIgnoreCase(plugin.name, query) ||
+                        StringUtils.containsIgnoreCase(plugin.title, query) ||
+                        StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
+                        plugin.hasCategory(query) ||
+                        plugin.getCategoriesStream()
+                            .map(UpdateCenter::getCategoryDisplayName)
+                            .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
+                        plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
+                })
+                .limit(Math.max(limit - plugins.size(), 1))
+                .sorted((o1, o2) -> {
+                    String o1DisplayName = o1.getDisplayName();
+                    if (o1.name.equalsIgnoreCase(query) ||
+                        o1DisplayName.equalsIgnoreCase(query)) {
+                        return -1;
+                    }
+                    String o2DisplayName = o2.getDisplayName();
+                    if (o2.name.equalsIgnoreCase(query) || o2DisplayName.equalsIgnoreCase(query)) {
+                        return 1;
+                    }
+                    if (o1.name.equals(o2.name)) {
+                        return 0;
+                    }
+                    final int pop = Double.compare(o2.popularity, o1.popularity);
+                    if (pop != 0) {
+                        return pop; // highest popularity first
+                    }
+                    return o1DisplayName.compareTo(o2DisplayName);
+                })
+                .map(plugin -> {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", plugin.name);
+                    jsonObject.put("sourceId", plugin.sourceId);
+                    jsonObject.put("title", plugin.title);
+                    jsonObject.put("displayName", plugin.getDisplayName());
+                    jsonObject.put("wiki", plugin.wiki);
+                    jsonObject.put("categories", plugin.getCategoriesStream()
+                        .filter(PluginManager::isNonMetaLabel)
+                        .map(UpdateCenter::getCategoryDisplayName)
+                        .collect(toList())
+                    );
+
+                    if (hasAdoptThisPluginLabel(plugin)) {
+                        jsonObject.put("adoptMe", Messages.PluginManager_adoptThisPlugin());
+                    }
+                    if (plugin.isDeprecated()) {
+                        jsonObject.put("deprecated", Messages.PluginManager_deprecationWarning(plugin.getDeprecation().url));
+                    }
+                    jsonObject.put("excerpt", plugin.excerpt);
+                    jsonObject.put("version", plugin.version);
+                    jsonObject.put("popularity", plugin.popularity);
+                    if (plugin.isForNewerHudson()) {
+                        jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(plugin.requiredCore));
+                    }
+                    if (plugin.isForNewerJava()) {
+                        jsonObject.put("newerJavaRequired", Messages.PluginManager_javaWarning(plugin.minimumJavaVersion));
+                    }
+                    if (plugin.isNeededDependenciesForNewerJava()) {
+                        VersionNumber javaVersion = plugin.getNeededDependenciesMinimumJavaVersion();
+                        if (javaVersion == null) {
+                            throw new IllegalStateException("java version cannot be null here");
+                        }
+                        jsonObject.put("dependenciesNewerJava", Messages.PluginManager_depJavaWarning(javaVersion.toString()));
+                    }
+                    if (plugin.hasWarnings()) {
+                        JSONObject unresolvedSecurityWarnings = new JSONObject();
+                        unresolvedSecurityWarnings.put("text", Messages.PluginManager_securityWarning());
+                        Set<UpdateSite.Warning> pluginWarnings = plugin.getWarnings();
+                        if (pluginWarnings == null) {
+                            throw new IllegalStateException("warnings cannot be null here");
+                        }
+                        List<JSONObject> warnings = pluginWarnings.stream()
+                            .map(warning -> {
+                                JSONObject jsonWarning = new JSONObject();
+                                jsonWarning.put("url", warning.url);
+                                jsonWarning.put("message", warning.message);
+                                return jsonWarning;
+                            }).collect(toList());
+                        unresolvedSecurityWarnings.put("warnings", warnings);
+                        jsonObject.put("unresolvedSecurityWarnings", unresolvedSecurityWarnings);
+                    }
+                    if (plugin.releaseTimestamp != null) {
+                        JSONObject releaseTimestamp = new JSONObject();
+                        releaseTimestamp.put("iso8601", Functions.iso8601DateTime(plugin.releaseTimestamp));
+                        releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
+                        jsonObject.put("releaseTimestamp", releaseTimestamp);
+                    }
+                    if (hasLatestVersionNewerThanOffered(plugin)) {
+                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
+                    }
+                    return jsonObject;
+                })
+                .collect(toList());
+            plugins.addAll(sitePlugins);
+            if (plugins.size() >= limit) {
+                break;
+            }
+        }
+
+        JSONArray mappedPlugins = new JSONArray();
+        mappedPlugins.addAll(plugins);
+        
+        return hudson.util.HttpResponses.okJSON(mappedPlugins);
+    }
+    
     /**
      * Get the list of all plugins - available and installed.
      * @return The list of all plugins - available and installed.
@@ -1547,7 +1667,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             installJobs.add(updateCenter.addJob(updateCenter.new CompleteBatchJob(batch, start, correlationId)));
         }
 
-        final Authentication currentAuth = Jenkins.getAuthentication();
+        final Authentication currentAuth = Jenkins.getAuthentication2();
 
         if (!jenkins.getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
@@ -1577,7 +1697,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     updateCenter.persistInstallStatus();
                     if(!failures) {
-                        try (ACLContext acl = ACL.as(currentAuth)) {
+                        try (ACLContext acl = ACL.as2(currentAuth)) {
                             InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
                         }
                     }
@@ -1588,6 +1708,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return installJobs;
     }
 
+    @CheckForNull
     private UpdateSite.Plugin getPlugin(String pluginName, String siteName) {
         UpdateSite updateSite = Jenkins.get().getUpdateCenter().getById(siteName);
         if (updateSite == null) {
@@ -1605,10 +1726,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         hudson.checkPermission(Jenkins.ADMINISTER);
         UpdateCenter uc = hudson.getUpdateCenter();
         PersistedList<UpdateSite> sites = uc.getSites();
-        for (UpdateSite s : sites) {
-            if (s.getId().equals(UpdateCenter.ID_DEFAULT))
-                sites.remove(s);
-        }
+        sites.removeIf(s -> s.getId().equals(UpdateCenter.ID_DEFAULT));
         sites.add(new UpdateSite(UpdateCenter.ID_DEFAULT, site));
 
         return new HttpRedirect("advanced");
@@ -1655,6 +1773,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
             try {
+                // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+                t.delete();
+
                 fileItem.write(t);
             } catch (Exception e) {
                 // Exception thrown is too generic so at least limit the scope where it can occur
@@ -2105,6 +2226,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return "classLoader " +  getClass().getName();
         }
     }
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
@@ -2238,6 +2360,32 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     }
 
+    /**
+     * {@link AdministrativeMonitor} that checks if there are any plugins that are deprecated.
+     *
+     * @since 2.246
+     */
+    @Restricted(NoExternalUse.class)
+    @Symbol("pluginDeprecation")
+    @Extension
+    public static final class PluginDeprecationMonitor extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_PluginDeprecationMonitor_DisplayName();
+        }
+
+        public boolean isActivated() {
+            return !getDeprecatedPlugins().isEmpty();
+        }
+
+        public Map<PluginWrapper, String> getDeprecatedPlugins() {
+            return Jenkins.get().getPluginManager().getPlugins().stream()
+                    .filter(PluginWrapper::isDeprecated)
+                    .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
+        }
+    }
+
     @Restricted(DoNotUse.class)
     public String unscientific(double d) {
         return String.format(Locale.US, "%15.4f", d);
@@ -2254,16 +2402,20 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean isMetaLabel(String label) {
-        return "adopt-this-plugin".equals(label);
+        return "adopt-this-plugin".equals(label) || "deprecated".equals(label);
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean hasAdoptThisPluginLabel(UpdateSite.Plugin plugin) {
-        final String[] categories = plugin.categories;
-        if (categories == null) {
+        return plugin.hasCategory("adopt-this-plugin");
+    }
+
+    @Restricted(DoNotUse.class) // Used from table.jelly
+    public boolean hasLatestVersionNewerThanOffered(UpdateSite.Plugin plugin) {
+        if (plugin.latest == null) {
             return false;
         }
-        return Arrays.asList(categories).contains("adopt-this-plugin");
+        return !plugin.latest.equalsIgnoreCase(plugin.version); // we can assume that any defined 'latest' will be newer than the actual offered version
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly
@@ -2272,16 +2424,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         if (pluginMeta == null) {
             return false;
         }
-        final String[] categories = pluginMeta.categories;
-        if (categories == null) {
-            return false;
-        }
-        return Arrays.asList(categories).contains("adopt-this-plugin");
+        return pluginMeta.hasCategory("adopt-this-plugin");
     }
 
     /**
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
 }

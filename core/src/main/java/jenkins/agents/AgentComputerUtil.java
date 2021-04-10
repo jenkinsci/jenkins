@@ -28,7 +28,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import jenkins.model.Jenkins;
+import jenkins.util.JenkinsJVM;
 
 public final class AgentComputerUtil {
     private AgentComputerUtil() {
@@ -45,7 +45,7 @@ public final class AgentComputerUtil {
      */
     @CheckForNull
     public static VirtualChannel getChannelToMaster() {
-        if (Jenkins.getInstanceOrNull() != null) {// check if calling thread is on master or on agent
+        if (JenkinsJVM.isJenkinsJVM()) {
             return FilePath.localChannel;
         }
 

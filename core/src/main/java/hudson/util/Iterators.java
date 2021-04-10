@@ -56,7 +56,7 @@ public class Iterators {
     /**
      * Produces {A,B,C,D,E,F} from {{A,B},{C},{},{D,E,F}}.
      */
-    public static abstract class FlattenIterator<U,T> implements Iterator<U> {
+    public abstract static class FlattenIterator<U,T> implements Iterator<U> {
         private final Iterator<? extends T> core;
         private Iterator<U> cur;
 
@@ -85,6 +85,7 @@ public class Iterators {
             return cur.next();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -95,7 +96,7 @@ public class Iterators {
      *
      * @since 1.150
      */
-    public static abstract class FilterIterator<T> implements Iterator<T> {
+    public abstract static class FilterIterator<T> implements Iterator<T> {
         private final Iterator<? extends T> core;
         private T next;
         private boolean fetched;
@@ -139,6 +140,7 @@ public class Iterators {
             return next;
         }
 
+        @Override
         public void remove() {
             core.remove();
         }
@@ -169,23 +171,22 @@ public class Iterators {
      * @since 1.150
      */
     public static <T> Iterable<T> reverse(final List<T> lst) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                final ListIterator<T> itr = lst.listIterator(lst.size());
-                return new Iterator<T>() {
-                    public boolean hasNext() {
-                        return itr.hasPrevious();
-                    }
+        return () -> {
+            final ListIterator<T> itr = lst.listIterator(lst.size());
+            return new Iterator<T>() {
+                public boolean hasNext() {
+                    return itr.hasPrevious();
+                }
 
-                    public T next() {
-                        return itr.previous();
-                    }
+                public T next() {
+                    return itr.previous();
+                }
 
-                    public void remove() {
-                        itr.remove();
-                    }
-                };
-            }
+                @Override
+                public void remove() {
+                    itr.remove();
+                }
+            };
         };
     }
 
@@ -196,23 +197,22 @@ public class Iterators {
      * @since 1.492
      */
     public static <T> Iterable<T> wrap(final Iterable<T> base) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                final Iterator<T> itr = base.iterator();
-                return new Iterator<T>() {
-                    public boolean hasNext() {
-                        return itr.hasNext();
-                    }
+        return () -> {
+            final Iterator<T> itr = base.iterator();
+            return new Iterator<T>() {
+                public boolean hasNext() {
+                    return itr.hasNext();
+                }
 
-                    public T next() {
-                        return itr.next();
-                    }
+                public T next() {
+                    return itr.next();
+                }
 
-                    public void remove() {
-                        itr.remove();
-                    }
-                };
-            }
+                @Override
+                public void remove() {
+                    itr.remove();
+                }
+            };
         };
     }
 
@@ -299,6 +299,7 @@ public class Iterators {
                 return itr.next();
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
@@ -320,13 +321,9 @@ public class Iterators {
      */
     @SafeVarargs
     public static <T> Iterable<T> sequence( final Iterable<? extends T>... iterables ) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
-                    protected Iterator<T> expand(Iterable<? extends T> iterable) {
-                        return Iterators.<T>cast(iterable).iterator();
-                    }
-                };
+        return () -> new FlattenIterator<T,Iterable<? extends T>>(ImmutableList.copyOf(iterables)) {
+            protected Iterator<T> expand(Iterable<? extends T> iterable) {
+                return Iterators.<T>cast(iterable).iterator();
             }
         };
     }
@@ -348,11 +345,7 @@ public class Iterators {
      * Filters another iterator by eliminating duplicates.
      */
     public static <T> Iterable<T> removeDups(final Iterable<T> base) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return removeDups(base.iterator());
-            }
-        };
+        return () -> removeDups(base.iterator());
     }
 
     @SafeVarargs
@@ -397,6 +390,7 @@ public class Iterators {
                 }
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }

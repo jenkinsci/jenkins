@@ -95,7 +95,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
- * See <a href="https://jenkins-ci.org/issue/27268">JENKINS-27268</a>.
+ * See <a href="https://jenkins.io/issue/27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -200,7 +200,6 @@ public abstract class Slave extends Node implements Serializable {
         getAssignedLabels();    // compute labels now
 
         this.nodeProperties.replaceBy(nodeProperties);
-         Slave node = (Slave) Jenkins.get().getNode(name);
 
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
@@ -221,7 +220,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.220")
     public String getUserId() {
         return userId;
     }
@@ -233,7 +232,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.220")
     public void setUserId(String userId){
     }
 
@@ -389,9 +388,9 @@ public abstract class Slave extends Node implements Serializable {
             // so that browsers can download them in the right file name.
             // see http://support.microsoft.com/kb/260519 and http://www.boutell.com/newfaq/creating/forcedownload.html
             rsp.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-            InputStream in = con.getInputStream();
-            rsp.serveFile(req, in, con.getLastModified(), con.getContentLength(), "*.jar" );
-            in.close();
+            try (InputStream in = con.getInputStream()) {
+                rsp.serveFile(req, in, con.getLastModified(), con.getContentLengthLong(), "*.jar");
+            }
         }
 
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
@@ -575,7 +574,7 @@ public abstract class Slave extends Node implements Serializable {
         throw new IllegalStateException(d.getClass()+" needs to extend from SlaveDescriptor");
     }
 
-    public static abstract class SlaveDescriptor extends NodeDescriptor {
+    public abstract static class SlaveDescriptor extends NodeDescriptor {
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
         }
@@ -622,7 +621,6 @@ public abstract class Slave extends Node implements Serializable {
          * @since 2.12
          */
         @NonNull
-        @SuppressWarnings("unchecked") // used by Jelly EL only
         @Restricted(NoExternalUse.class) // used by Jelly EL only
         public final List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, RetentionStrategy.all())
@@ -711,7 +709,7 @@ public abstract class Slave extends Node implements Serializable {
         private final long remoteTime = System.currentTimeMillis();
         private final long startTime;
 
-        public GetClockDifference3(long startTime) {
+        GetClockDifference3(long startTime) {
             this.startTime = startTime;
         }
 

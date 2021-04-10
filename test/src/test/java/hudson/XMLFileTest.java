@@ -9,7 +9,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class XMLFileTest {
 
@@ -41,7 +41,6 @@ public class XMLFileTest {
 
         try (BufferedReader config = new BufferedReader(new FileReader(configFile))) {
             assertThat(config.readLine(), is("<?xml version='1.1' encoding='UTF-8'?>"));
-            config.close();
         }
     }
 }

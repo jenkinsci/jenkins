@@ -55,7 +55,7 @@ final class RobustMapConverter extends MapConverter {
     private Object read(HierarchicalStreamReader reader, UnmarshallingContext context, Map map) {
         reader.moveDown();
         try {
-            return readItem(reader, context, map);
+            return readBareItem(reader, context, map);
         } catch (CriticalXStreamException x) {
             throw x;
         } catch (XStreamException | LinkageError x) {

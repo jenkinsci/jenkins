@@ -24,6 +24,7 @@
  */
 package hudson.triggers;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DependencyRunner;
 import hudson.DependencyRunner.ProjectRunnable;
 import hudson.DescriptorExtensionList;
@@ -215,6 +216,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             return MIN;
         }
 
+        @Override
         public long getInitialDelay() {
             return MIN - TimeUnit.SECONDS.toMillis(Calendar.getInstance().get(Calendar.SECOND));
         }
@@ -301,6 +303,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
     }
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static long CRON_THRESHOLD = 1000*30;    // Default threshold 30s
 
     private static final Logger LOGGER = Logger.getLogger(Trigger.class.getName());

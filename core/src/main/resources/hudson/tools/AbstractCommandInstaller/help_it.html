@@ -1,15 +1,17 @@
 <p>
-    Esegue un comando della shell a scelta per installare lo strumento. Ad
-    esempio, con Ubuntu, assumento che l'utente Jenkins sia elencato in
+    Esegue un comando shell a scelta per installare lo strumento. Esempio su
+    Ubuntu, assumendo che l'utente Jenkins sia elencato in
     <code>/etc/sudoers</code>:
 </p>
 <pre>sudo apt-get --yes install openjdk-6-jdk</pre>
 <p>
-    (In questo caso specificare ad es. <code>/usr/lib/jvm/java-6-openjdk-i386</code> come directory home.)
+    (In questo caso si specifichi ad es. <code>/usr/lib/jvm/java-6-openjdk-i386</code>
+    come directory home.)
 </p>
 <p>
-    Altro esempio: per installare una versione meno recente di Sun JDK 6 per
-    Linux (x86), è possibile utilizzare il <a href="http://jdk-distros.java.net/">DLJ</a> (obsoleto):
+    Come altro esempio, per installare una versione meno recente del Sun JDK 6
+    per Linux (x86), è possibile utilizzare lo strumento obsoleto
+    <a href="http://jdk-distros.java.net/">DLJ</a>:
 </p>
 <pre>bin=jdk-6u13-dlj-linux-i586.bin
 if [ \! -f $bin ]
@@ -18,5 +20,5 @@ then
     sh $bin --unpack --accept-license
 fi</pre>
 <p>
-    (In questo caso specificare <code>jdk1.6.0_13</code> come directory home.)
+    (In questo caso si specifichi <code>jdk1.6.0_13</code> come directory home.)
 </p>

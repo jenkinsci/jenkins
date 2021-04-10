@@ -1,8 +1,5 @@
 package hudson.model;
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Result;
 import hudson.model.utils.AbortExceptionPublisher;
 import hudson.model.utils.IOExceptionPublisher;
 import hudson.model.utils.ResultWriterPublisher;
@@ -44,11 +41,10 @@ public class FreestyleJobPublisherTest {
         p.getPublishersList().add(artifactArchiver); // transfer file to build dir
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
-        assertEquals("Build must fail, because we used FalsePublisher", b.getResult(), Result.FAILURE);
+        assertEquals("Build must fail, because we used FalsePublisher", Result.FAILURE, b.getResult());
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertTrue("Publisher, after publisher with return false status, must see FAILURE status",
-                FileUtils.readFileToString(file).equals(Result.FAILURE.toString()));
+        assertEquals("Publisher, after publisher with return false status, must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
     }
 
     /**
@@ -68,13 +64,12 @@ public class FreestyleJobPublisherTest {
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        assertEquals("Build must fail, because we used AbortExceptionPublisher", b.getResult(), Result.FAILURE);
+        assertEquals("Build must fail, because we used AbortExceptionPublisher", Result.FAILURE, b.getResult());
         j.assertLogNotContains("\tat", b); // log must not contain stacktrace
         j.assertLogContains("Threw AbortException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertTrue("Third publisher must see FAILURE status",
-                FileUtils.readFileToString(file).equals(Result.FAILURE.toString()));
+        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
     }
 
     /**
@@ -94,12 +89,11 @@ public class FreestyleJobPublisherTest {
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        assertEquals("Build must fail, because we used FalsePublisher", b.getResult(), Result.FAILURE);
+        assertEquals("Build must fail, because we used FalsePublisher", Result.FAILURE, b.getResult());
         j.assertLogContains("\tat hudson.model.utils.IOExceptionPublisher", b); // log must contain stacktrace
         j.assertLogContains("Threw IOException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertTrue("Third publisher must see FAILURE status",
-                FileUtils.readFileToString(file).equals(Result.FAILURE.toString()));
+        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
     }
 }

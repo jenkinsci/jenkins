@@ -25,9 +25,9 @@ package hudson.model;
 
 import hudson.Util;
 import hudson.util.KeyedDataStorage;
+import jenkins.fingerprints.FingerprintStorage;
 import jenkins.model.Jenkins;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -50,7 +50,7 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
      * Returns true if there's some data in the fingerprint database.
      */
     public boolean isReady() {
-        return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
+        return FingerprintStorage.get().isReady();
     }
 
     /**
@@ -82,19 +82,12 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
         return super.get(md5sum,createIfNotExist,createParams);
     }
 
-    private byte[] toByteArray(String md5sum) {
-        byte[] data = new byte[16];
-        for( int i=0; i<md5sum.length(); i+=2 )
-            data[i/2] = (byte)Integer.parseInt(md5sum.substring(i,i+2),16);
-        return data;
-    }
-
     protected @NonNull Fingerprint create(@NonNull String md5sum, @NonNull FingerprintParams createParams) throws IOException {
-        return new Fingerprint(createParams.build, createParams.fileName, toByteArray(md5sum));
+        return new Fingerprint(createParams.build, createParams.fileName, Util.fromHexString(md5sum));
     }
 
     protected @CheckForNull Fingerprint load(@NonNull String key) throws IOException {
-        return Fingerprint.load(toByteArray(key));
+        return Fingerprint.load(key);
     }
 
 static class FingerprintParams {
@@ -104,7 +97,7 @@ static class FingerprintParams {
     final @CheckForNull Run build;
     final String fileName;
 
-    public FingerprintParams(@CheckForNull Run build, @NonNull String fileName) {
+    FingerprintParams(@CheckForNull Run build, @NonNull String fileName) {
         this.build = build;
         this.fileName = fileName;
 

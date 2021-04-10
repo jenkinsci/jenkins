@@ -24,6 +24,8 @@
 
 package jenkins.triggers;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -65,17 +67,14 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * Like {@link BuildTrigger} but defined on the downstream project.
@@ -144,12 +143,12 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             downstreamDiscoverable = true;
         }
 
-        Authentication originalAuth = Jenkins.getAuthentication();
+        Authentication originalAuth = Jenkins.getAuthentication2();
         Job upstream = upstreamBuild.getParent();
-        Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
+        Authentication auth = Tasks.getAuthenticationOf2((Queue.Task) job);
 
         Item authUpstream = null;
-        try (ACLContext ctx = ACL.as(auth)) {
+        try (ACLContext ctx = ACL.as2(auth)) {
             authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
         } catch (AccessDeniedException ade) {
@@ -246,7 +245,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
 
         private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 final Map<Job, Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
                 for (Job<?, ?> downstream : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger trigger =
@@ -307,7 +306,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     public static class ItemListenerImpl extends ItemListener {
         @Override
         public void onLocationChanged(Item item, final String oldFullName, final String newFullName) {
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {

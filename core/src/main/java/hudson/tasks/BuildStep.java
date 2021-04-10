@@ -47,10 +47,10 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.WeakHashMap;
 import jenkins.security.QueueItemAuthenticator;
-import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
+import org.springframework.security.core.Authentication;
 
 /**
  * One step of the whole build process.
@@ -102,9 +102,9 @@ public interface BuildStep {
      * <p>When this build step needs to make (direct or indirect) permission checks to {@link ACL}
      * (for example, to locate other projects by name, build them, or access their artifacts)
      * then it must be run under a specific {@link Authentication}.
-     * In such a case, the implementation should check whether {@link Jenkins#getAuthentication} is {@link ACL#SYSTEM},
+     * In such a case, the implementation should check whether {@link Jenkins#getAuthentication2} is {@link ACL#SYSTEM2},
      * and if so, replace it for the duration of this step with {@link Jenkins#ANONYMOUS}.
-     * (Either using {@link ACL#impersonate}, or by making explicit calls to {@link ACL#hasPermission(Authentication, Permission)}.)
+     * (Either using {@link ACL#impersonate2}, or by making explicit calls to {@link ACL#hasPermission2(Authentication, Permission)}.)
      * This would typically happen when no {@link QueueItemAuthenticator} was available, configured, and active.
      *
      * @return
