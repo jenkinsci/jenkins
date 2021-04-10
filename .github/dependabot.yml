@@ -14,9 +14,6 @@ updates:
       - dependency-name: "org.codehaus.groovy:groovy-all"
       # see https://github.com/jenkinsci/jenkins/pull/5184 should be updated with groovy-all
       - dependency-name: "org.fusesource.jansi:jansi"
-      # see https://github.com/jenkinsci/jenkins/pull/4328 and https://github.com/jenkinsci/jenkins/pull/4928#issuecomment-730224123
-      # fix requires investigation, for now we don't want dependabot updating it
-      - dependency-name: "commons-beanutils:commons-beanutils"
       # see https://github.com/jenkinsci/jenkins/pull/5144#pullrequestreview-559661934
       # will require source code changes to replace javax.mail with jakarta.mail 
       # and some handling for plugins that depend on javax.mail being provided by Jenkins core.
