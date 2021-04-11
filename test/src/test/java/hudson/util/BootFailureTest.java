@@ -5,6 +5,7 @@ import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +24,6 @@ import static org.junit.Assert.assertNull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.HudsonHomeLoader;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.NoListenerConfiguration;
@@ -76,7 +76,7 @@ public class BootFailureTest {
                     context.removeBean(noListenerConfiguration);
                     context.addBean(new AbstractLifeCycle() {
                         @Override 
-                        protected void doStart() throws Exception {
+                        protected void doStart() {
                             // default behavior of noListenerConfiguration
                             context.setEventListeners(null);
                             // ensuring our custom context will received the contextInitialized event
@@ -119,19 +119,14 @@ public class BootFailureTest {
     @Test
     public void runBootFailureScript() throws Exception {
         final File home = tmpDir.newFolder();
-        j.with(new HudsonHomeLoader() {
-            @Override
-            public File allocate() throws Exception {
-                return home;
-            }
-        });
+        j.with(() -> home);
 
         // creates a script
-        FileUtils.write(new File(home, "boot-failure.groovy"), "hudson.util.BootFailureTest.problem = exception");
+        FileUtils.write(new File(home, "boot-failure.groovy"), "hudson.util.BootFailureTest.problem = exception", StandardCharsets.UTF_8);
         File d = new File(home, "boot-failure.groovy.d");
         d.mkdirs();
-        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'");
-        FileUtils.write(new File(d, "2.groovy"), "hudson.util.BootFailureTest.runRecord << '2'");
+        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
+        FileUtils.write(new File(d, "2.groovy"), "hudson.util.BootFailureTest.runRecord << '2'", StandardCharsets.UTF_8);
 
         // first failed boot
         makeBootFail = true;
@@ -155,22 +150,17 @@ public class BootFailureTest {
     }
 
     private static int bootFailures(File home) throws IOException {
-        return FileUtils.readLines(BootFailure.getBootFailureFile(home)).size();
+        return FileUtils.readLines(BootFailure.getBootFailureFile(home), StandardCharsets.UTF_8).size();
     }
 
     @Issue("JENKINS-24696")
     @Test
     public void interruptedStartup() throws Exception {
         final File home = tmpDir.newFolder();
-        j.with(new HudsonHomeLoader() {
-            @Override
-            public File allocate() throws Exception {
-                return home;
-            }
-        });
+        j.with(() -> home);
         File d = new File(home, "boot-failure.groovy.d");
         d.mkdirs();
-        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'");
+        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
         j.newHudson();
         assertEquals(Collections.singletonList("1"), runRecord);
     }

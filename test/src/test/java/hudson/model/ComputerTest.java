@@ -109,7 +109,7 @@ public class ComputerTest {
     public void doNotShowUserDetailsInOfflineCause() throws Exception {
         DumbSlave slave = j.createOnlineSlave();
         final Computer computer = slave.toComputer();
-        computer.setTemporarilyOffline(true, new OfflineCause.UserCause(User.get("username"), "msg"));
+        computer.setTemporarilyOffline(true, new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "msg"));
         verifyOfflineCause(computer);
     }
 

@@ -215,7 +215,7 @@ public class CLIEnvVarTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
 
-        return User.get("admin").getProperty(ApiTokenProperty.class).getApiToken();
+        return User.getOrCreateByIdOrFullName("admin").getProperty(ApiTokenProperty.class).getApiToken();
     }
 
     private int launch(String... cmdArgs) throws Exception {
