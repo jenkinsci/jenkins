@@ -39,7 +39,7 @@
                 var graphWidth = availableWidth - padding - quirkyBrowserAdjustment;
 
                 // type in {sec10, min, hour}
-                var graphUrl = baseUrl + "/graph?type" + type + "&width=" + graphWidth + "&height=500";
+                var graphUrl = baseUrl + "/graph?type=" + type + "&width=" + graphWidth + "&height=500";
                 var graphImgTag = document.createElement("img");
                 graphImgTag.src = graphUrl;
                 graphImgTag.alt = graphAlt;
