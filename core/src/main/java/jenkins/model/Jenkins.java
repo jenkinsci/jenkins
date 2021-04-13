@@ -837,7 +837,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Bound to "/log".
      */
-    private final transient LogRecorderManager log = new LogRecorderManager();
+    private transient LogRecorderManager log = new LogRecorderManager();
 
 
     private final transient boolean oldJenkinsJVM;

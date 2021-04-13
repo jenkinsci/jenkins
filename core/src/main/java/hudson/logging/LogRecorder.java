@@ -86,7 +86,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      *
      * @deprecated use {@link #getLoggers()}
      */
-    public transient final CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
+    public final transient CopyOnWriteList<Target> targets = new CopyOnWriteList<>();
     private List<Target> loggers = new ArrayList<>();
     private static final TargetComparator TARGET_COMPARATOR = new TargetComparator();
 
