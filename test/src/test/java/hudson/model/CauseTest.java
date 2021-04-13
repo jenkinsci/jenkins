@@ -28,6 +28,7 @@ import hudson.XmlFile;
 
 import java.io.*;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -36,12 +37,15 @@ import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import hudson.tasks.BuildTrigger;
 import hudson.util.StreamTaskListener;
+import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
 
@@ -140,5 +144,129 @@ public class CauseTest {
         final String content = wc.getPage(build).getWebResponse().getContentAsString();
         Assert.assertFalse(content.contains("Started by remote host <img"));
         Assert.assertTrue(content.contains("Started by remote host &lt;img"));
+    }
+
+    @Test
+    @Issue("SECURITY-1901")
+    public void preventXssInUpstreamDisplayName() throws Exception {
+        j.jenkins.setQuietPeriod(0);
+        FreeStyleProject up = j.createFreeStyleProject("up");
+        up.setDisplayName("Up<script>alert(123)</script>Project");
+
+        FreeStyleProject down = j.createFreeStyleProject("down");
+
+        up.getPublishersList().add(new BuildTrigger(down.getFullName(), false));
+
+        j.jenkins.rebuildDependencyGraph();
+
+        j.buildAndAssertSuccess(up);
+
+        FreeStyleBuild downBuild = this.waitForDownBuild(down);
+
+        ensureXssIsPrevented(downBuild);
+    }
+
+    @Test
+    @Issue("SECURITY-1901")
+    public void preventXssInUpstreamDisplayName_deleted() throws Exception {
+        j.jenkins.setQuietPeriod(0);
+        FreeStyleProject up = j.createFreeStyleProject("up");
+        up.setDisplayName("Up<script>alert(123)</script>Project");
+
+        FreeStyleProject down = j.createFreeStyleProject("down");
+
+        up.getPublishersList().add(new BuildTrigger(down.getFullName(), false));
+
+        j.jenkins.rebuildDependencyGraph();
+
+        FreeStyleBuild upBuild = j.buildAndAssertSuccess(up);
+
+        FreeStyleBuild downBuild = this.waitForDownBuild(down);
+
+        // that will display a different part
+        upBuild.delete();
+
+        ensureXssIsPrevented(downBuild);
+    }
+
+    @Test
+    @Issue("SECURITY-1901")
+    public void preventXssInUpstreamShortDescription() throws Exception {
+        FullNameChangingProject up = j.createProject(FullNameChangingProject.class, "up");
+
+        FreeStyleProject down = j.createFreeStyleProject("down");
+
+        CustomBuild upBuild = j.buildAndAssertSuccess(up);
+
+        up.setVirtualName("Up<script>alert(123)</script>Project");
+        j.assertBuildStatusSuccess(down.scheduleBuild2(0, new Cause.UpstreamCause(upBuild)));
+        up.setVirtualName(null);
+
+        FreeStyleBuild downBuild = this.waitForDownBuild(down);
+
+        ensureXssIsPrevented(downBuild);
+    }
+
+    private void ensureXssIsPrevented(FreeStyleBuild downBuild) throws Exception {
+        AtomicBoolean alertCalled = new AtomicBoolean(false);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.setAlertHandler((page, s) -> alertCalled.set(true));
+        wc.goTo(downBuild.getUrl());
+
+        assertFalse("XSS not prevented", alertCalled.get());
+    }
+
+    private <B extends Build<?, B>> B waitForDownBuild(Project<?, B> down) throws Exception {
+        j.waitUntilNoActivity();
+        B result = down.getBuilds().getLastBuild();
+
+        return result;
+    }
+
+    public static class CustomBuild extends Build<FullNameChangingProject, CustomBuild> {
+        public CustomBuild(FullNameChangingProject job) throws IOException {
+            super(job);
+        }
+    }
+
+    static class FullNameChangingProject extends Project<FullNameChangingProject, CustomBuild> implements TopLevelItem {
+        private volatile String virtualName;
+
+        public FullNameChangingProject(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+
+        public void setVirtualName(String virtualName) {
+            this.virtualName = virtualName;
+        }
+
+        @Override
+        public String getName() {
+            if (virtualName != null) {
+                return virtualName;
+            } else {
+                return super.getName();
+            }
+        }
+
+        @Override
+        protected Class<CustomBuild> getBuildClass() {
+            return CustomBuild.class;
+        }
+
+        @Override
+        public TopLevelItemDescriptor getDescriptor() {
+            return (FreeStyleProject.DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends AbstractProjectDescriptor {
+
+            @Override
+            public FullNameChangingProject newInstance(ItemGroup parent, String name) {
+                return new FullNameChangingProject(parent, name);
+            }
+        }
     }
 }
