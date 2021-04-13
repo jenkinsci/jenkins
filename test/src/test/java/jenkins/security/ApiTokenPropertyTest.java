@@ -98,7 +98,7 @@ public class ApiTokenPropertyTest {
     @Test
     public void security49Upgrade() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User u = User.get("foo");
+        User u = User.getOrCreateByIdOrFullName("foo");
         String historicalInitialValue = Util.getDigestOf(Jenkins.get().getSecretKey() + ":" + u.getId());
 
         // we won't accept historically used initial value as it may be compromised
@@ -122,7 +122,7 @@ public class ApiTokenPropertyTest {
     @Test
     public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User u = User.get("foo");
+        User u = User.getOrCreateByIdOrFullName("foo");
         final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         final String token = t.getApiToken();
         
@@ -137,8 +137,8 @@ public class ApiTokenPropertyTest {
     @Test
     public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.get("foo");
-        User bar = User.get("bar");
+        User foo = User.getOrCreateByIdOrFullName("foo");
+        User bar = User.getOrCreateByIdOrFullName("bar");
         final ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
         final ApiTokenProperty.DescriptorImpl descriptor = (ApiTokenProperty.DescriptorImpl) t.getDescriptor();
         

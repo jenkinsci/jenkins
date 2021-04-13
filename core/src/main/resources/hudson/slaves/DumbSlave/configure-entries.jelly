@@ -32,7 +32,7 @@ THE SOFTWARE.
     <f:textbox field="nodeDescription" />
   </f:entry>
 
-  <f:entry title="${%# of executors}" field="numExecutors">
+  <f:entry title="${%Number of executors}" field="numExecutors">
     <f:number clazz="positive-number-required" min="1" step="1" default="1"/>
   </f:entry>
 

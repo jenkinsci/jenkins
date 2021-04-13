@@ -88,12 +88,12 @@ div {
             // we're in a folder
 
             section(class: "empty-state-section") {
-                h2("This folder is empty", class: "h4")
+                h2(_("This folder is empty"), class: "h4")
 
                 ul(class: "empty-state-section-list") {
                     li(class: "content-block") {
                         a(href: "newJob", class: "content-block__link") {
-                            span("Create a job")
+                            span(_("createJob"))
                             span(class: "trailing-icon") {
                                 l.svgIcon(
                                         class: "icon-sm",
@@ -122,7 +122,7 @@ div {
                     li(class: "content-block") {
                         a(href: "${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}",
                                 class: "content-block__link") {
-                            span("Log in to Jenkins")
+                            span(_("Log in to Jenkins"))
                             span(class: "trailing-icon") {
                                 l.svgIcon(
                                         class: "icon-sm",
@@ -134,7 +134,7 @@ div {
                     if (canSignUp) {
                         li(class: "content-block") {
                             a(href: "signup", class: "content-block__link") {
-                                span("Sign up for Jenkins")
+                                span(_("Sign up for Jenkins"))
                                 span(class: "trailing-icon") {
                                     l.svgIcon(
                                             class: "icon-sm",

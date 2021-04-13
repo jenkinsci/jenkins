@@ -104,7 +104,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.15</version>
+      <version>5.16</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -130,12 +130,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>systemd-slave-installer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.ui</groupId>
-      <artifactId>handlebars</artifactId>
-      <version>1.1.1</version>
-      <classifier>core-assets</classifier>
     </dependency>
     <dependency>
       <!--
@@ -439,7 +433,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.38.v20210224</version>
+        <version>9.4.39.v20210325</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
@@ -586,7 +580,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.11.2</version>
+            <version>1.11.3</version>
             <executions>
 
               <execution>

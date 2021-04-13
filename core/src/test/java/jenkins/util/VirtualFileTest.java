@@ -64,6 +64,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -1347,7 +1348,7 @@ public class VirtualFileTest {
         File childFile1 = new File(parentFile, child1);
         VirtualFile vf1 = new VirtualFileMinimalImplementation(childFile1);
         VirtualFile vf2 = null;
-        assertFalse(vf1.equals(vf2));
+        assertNotEquals(vf1, vf2);
     }
 
     @Test
@@ -1360,7 +1361,7 @@ public class VirtualFileTest {
         String child2 = "child2";
         File childFile2 = new File(parentFile, child2);
         VirtualFile vf2 = new VirtualFileMinimalImplementation(childFile2);
-        assertFalse(vf1.equals(vf2));
+        assertNotEquals(vf1, vf2);
     }
 
     @Test
@@ -1373,7 +1374,7 @@ public class VirtualFileTest {
         String child2 = child1;
         File childFile2 = new File(parentFile, child2);
         VirtualFile vf2 = new VirtualFileMinimalImplementation(childFile2);
-        assertTrue(vf1.equals(vf2));
+        assertEquals(vf1, vf2);
     }
 
     @Test
@@ -1383,7 +1384,7 @@ public class VirtualFileTest {
         String child1 = "child1";
         File childFile1 = new File(parentFile, child1);
         VirtualFile vf1 = new VirtualFileMinimalImplementation(childFile1);
-        assertFalse(vf1.equals(child1));
+        assertNotEquals(vf1, child1);
     }
 
     @Test

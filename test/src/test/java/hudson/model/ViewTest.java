@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
@@ -65,6 +66,7 @@ import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.net.HttpURLConnection;
@@ -900,6 +902,19 @@ public class ViewTest {
         assertThat(resultImgAttributesCount, instanceOf(Integer.class));
         int resultImgAttributesCountInt = (int) resultImgAttributesCount;
         assertEquals(1, resultImgAttributesCountInt);
+    }
+
+    @Test
+    @Issue("SECURITY-1871")
+    public void shouldNotAllowInconsistentViewName() throws IOException {
+        assertNull(j.jenkins.getView("ViewName"));
+        JenkinsRule.WebClient wc = j.createWebClient();
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("createView"), HttpMethod.POST);
+        req.setEncodingType(FormEncodingType.URL_ENCODED);
+        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", "UTF-8"));
+        wc.getPage(req);
+        assertNull(j.jenkins.getView("DifferentViewName"));
+        assertNotNull(j.jenkins.getView("ViewName"));
     }
 
     @Test

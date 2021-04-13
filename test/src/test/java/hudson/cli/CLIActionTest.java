@@ -95,7 +95,7 @@ public class CLIActionTest {
         List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* TODO until it is the default */ "-webSocket");
         if (useApiToken) {
             commands.add("-auth");
-            commands.add(ADMIN + ":" + User.get(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
+            commands.add(ADMIN + ":" + User.getOrCreateByIdOrFullName(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
         }
         commands.addAll(Arrays.asList(args));
         final Launcher.LocalLauncher launcher = new Launcher.LocalLauncher(StreamTaskListener.fromStderr());

@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <st:contentType value="text/html"/>
+    <h1 class="title">It works from Jelly!</h1>
+</j:jelly>

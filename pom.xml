@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.286</revision>
+    <revision>2.289</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -140,7 +140,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.8.0</version>
+        <version>3.9.0</version>
       </dependency>
 
       <dependency>
@@ -445,7 +445,7 @@ THE SOFTWARE.
               <dependency>
                   <groupId>com.puppycrawl.tools</groupId>
                   <artifactId>checkstyle</artifactId>
-                  <version>8.41</version>
+                  <version>8.41.1</version>
               </dependency>
             </dependencies>
           <!-- Version specified in parent POM -->

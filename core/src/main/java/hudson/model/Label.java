@@ -427,7 +427,34 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * This is usually used as a signal that this label is invalid.
      */
     public boolean isEmpty() {
-        return getNodes().isEmpty() && getClouds().isEmpty();
+        return !(hasAnyNodes() || hasAnyClouds());
+    }
+
+    private boolean hasAnyNodes() {
+        Set<Node> nodes = this.nodes;
+        if(nodes!=null) return !nodes.isEmpty();
+
+        Jenkins h = Jenkins.get();
+        if(this.matches(h)) return true;
+        for (Node n : h.getNodes()) {
+            if(this.matches(n))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean hasAnyClouds() {
+        Set<Cloud> clouds = this.clouds;
+        if(clouds==null) {
+            Jenkins h = Jenkins.get();
+            for (Cloud c : h.clouds) {
+                if(c.canProvision(this))
+                    return true;
+            }
+            return false;
+        } else {
+            return !clouds.isEmpty();
+        }
     }
 
     /*package*/ void reset() {

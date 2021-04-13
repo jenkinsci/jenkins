@@ -150,7 +150,7 @@ public class BuildTriggerTest {
         auth.add(Computer.BUILD, "anonymous");
         j.jenkins.setAuthorizationStrategy(auth);
         final FreeStyleProject upstream =j. createFreeStyleProject("upstream");
-        org.acegisecurity.Authentication alice = User.get("alice").impersonate();
+        org.acegisecurity.Authentication alice = User.getOrCreateByIdOrFullName("alice").impersonate();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap("upstream", alice)));
         Map<Permission,Set<String>> perms = new HashMap<>();
         perms.put(Item.READ, Collections.singleton("alice"));
