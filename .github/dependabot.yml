@@ -34,3 +34,6 @@ updates:
       - dependency-name: "log4j:log4j"
       # using a newer version clashes in RequireUpperBoundDeps with plugins using a valid script-security dependency
       - dependency-name: "org.jenkins-ci:symbol-annotation"
+      # Must remain within jetty 9.x until Java 8 support is removed, ignore jetty 10.x and jetty 11.x updates
+      - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
+        versions: ["10.x", "11.x"]
