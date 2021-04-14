@@ -70,6 +70,14 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     
     private static final Logger LOGGER = Logger.getLogger(GlobalSecurityConfiguration.class.getName());
 
+    public SecurityRealm getSecurityRealm() {
+        return Jenkins.get().getSecurityRealm();
+    }
+
+    public AuthorizationStrategy getAuthorizationStrategy() {
+        return Jenkins.get().getAuthorizationStrategy();
+    }
+
     public MarkupFormatter getMarkupFormatter() {
         return Jenkins.get().getMarkupFormatter();
     }
@@ -121,8 +129,9 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         j.checkPermission(Jenkins.ADMINISTER);
 
         j.setDisableRememberMe(json.optBoolean("disableRememberMe", false));
-        j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(json, "realm"));
-        j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(json, "authorization"));    
+        // TODO probably clearer to configure such things with @DataBoundSetter
+        j.setSecurityRealm(req.bindJSON(SecurityRealm.class, json.getJSONObject("securityRealm")));
+        j.setAuthorizationStrategy(req.bindJSON(AuthorizationStrategy.class, json.getJSONObject("authorizationStrategy")));
 
         if (json.has("markupFormatter")) {
             j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, json.getJSONObject("markupFormatter")));
