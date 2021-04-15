@@ -25,7 +25,12 @@ package hudson.slaves;
 
 import hudson.BulkChange;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Label;
+import hudson.model.Result;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.util.ArrayList;

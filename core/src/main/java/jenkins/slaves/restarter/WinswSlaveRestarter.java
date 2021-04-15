@@ -6,8 +6,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.*;
-import static org.apache.commons.io.IOUtils.*;
+import static java.util.logging.Level.FINE;
+import static org.apache.commons.io.IOUtils.copy;
 
 /**
  * With winsw, restart via winsw

@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import java.util.*;
+import java.util.Enumeration;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
