@@ -49,6 +49,7 @@ import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.ServerTcpPort;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.Symbol;
@@ -112,12 +113,16 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
+        JSONObject json = req.getSubmittedForm();
         BulkChange bc = new BulkChange(Jenkins.get());
         try{
-            boolean result = configure(req, req.getSubmittedForm());
+            boolean result = configure(req, json);
             LOGGER.log(Level.FINE, "security saved: "+result);
             Jenkins.get().save();
             FormApply.success(req.getContextPath()+"/manage").generateResponse(req, rsp, null);
+        } catch (JSONException x) {
+            LOGGER.warning(() -> "Bad JSON:\n" + json.toString(2));
+            throw x;
         } finally {
             bc.commit();
         }
