@@ -121,7 +121,7 @@ public class Api extends AbstractModelObject {
                 for (String exclude : excludes) {
                     XPath xExclude = dom.createXPath(exclude);
                     xExclude.setFunctionContext(functionContext);
-                    List<org.dom4j.Node> list = (List<org.dom4j.Node>)xExclude.selectNodes(dom);
+                    List<org.dom4j.Node> list = xExclude.selectNodes(dom);
                     for (org.dom4j.Node n : list) {
                         Element parent = n.getParent();
                         if(parent!=null)

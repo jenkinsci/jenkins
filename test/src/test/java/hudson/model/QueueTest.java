@@ -736,7 +736,7 @@ public class QueueTest {
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
-                return (FreeStyleProject) new FreeStyleProject(parent,name){
+                return new FreeStyleProject(parent,name){
                      @Override
                     public Label getAssignedLabel(){
                         throw new IllegalArgumentException("Test exception"); //cause dead of executor
