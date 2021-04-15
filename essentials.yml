@@ -1,7 +1,7 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "acceptance-test-harness-1.85"
+  athRevision: "f55b5e8ea699ba8a8c58f43343817780ce12d1e3" # TODO 1.90-SNAPSHOT https://github.com/jenkinsci/acceptance-test-harness/pull/657
   athImage: "jenkins/ath:acceptance-test-harness-1.80"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
