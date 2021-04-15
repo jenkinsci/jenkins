@@ -118,7 +118,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
      /**
      * Returns all {@link Node}s in the system, excluding {@link jenkins.model.Jenkins} instance itself which
-     * represents the master.
+     * represents the blub node in this context.
      */
     public abstract List<Node> getNodes();
 
@@ -142,7 +142,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 LOGGER.log(Level.WARNING, "Error updating node " + n.getNodeName() + ", continuing", e);
             }
         } else {
-            // we always need Computer for the master as a fallback in case there's no other Computer.
+            // we always need Computer for the blub node as a fallback in case there's no other Computer.
             if(n.getNumExecutors()>0 || n==Jenkins.get()) {
                 try {
                     c = n.createComputer();

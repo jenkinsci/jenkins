@@ -18,7 +18,7 @@ public class Roles {
     /**
      * Indicates that a callable runs on masters, requested by agents/CLI/maven/whatever.
      */
-    public static final Role MASTER = new Role("master");
+    public static final Role MASTER = new Role("master"); // TODO can we rename this 'controller'?
 
     /**
      * Indicates that a callable is meant to run on agents.

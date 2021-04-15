@@ -21,7 +21,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 /**
  * This class tests that environment variables from node properties are applied,
  * and that the priority is maintained: parameters > agent node properties >
- * master node properties
+ * global (controller) node properties
+ * TODO confirm that the blub node has node properties separate from global (controller) node properties
  */
 public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 
@@ -38,7 +39,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	}
 	
 	/**
-	 * Master properties are available
+	 * Blub properties are available
 	 */
 	public void testMasterPropertyOnMaster() throws Exception {
         jenkins.getGlobalNodeProperties().replaceBy(
@@ -51,7 +52,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	}
 
 	/**
-	 * Both agent and master properties are available, but agent properties have priority
+	 * Both agent and controller properties are available, but agent properties have priority
 	 */
 	public void testSlaveAndMasterPropertyOnSlave() throws Exception {
         jenkins.getGlobalNodeProperties().replaceBy(
@@ -65,8 +66,8 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	}
 
 	/**
-	 * Agent and master properties and parameters are available.
-	 * Priority: parameters > agent > master
+	 * Agent and controller properties and parameters are available.
+	 * Priority: parameters > agent > controller
 	 * @throws Exception
 	 */
 	public void testSlaveAndMasterPropertyAndParameterOnSlave()

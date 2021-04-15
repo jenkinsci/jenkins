@@ -260,7 +260,7 @@ public class LabelExpressionTest {
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
 
-                msg = LabelExpression.validate("master && goo").renderHtml();
+                msg = LabelExpression.validate("blub && goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
                 return null;

@@ -693,7 +693,7 @@ public abstract class Slave extends Node implements Serializable {
 
     private static final class GetClockDifference2 extends MasterToSlaveCallable<GetClockDifference3,IOException> {
         /**
-         * Capture the time on the master when this object is sent to remote, which is when
+         * Capture the time on the controller when this object is sent to remote, which is when
          * {@link GetClockDifference1#writeReplace()} is run.
          */
         private final long startTime = System.currentTimeMillis();

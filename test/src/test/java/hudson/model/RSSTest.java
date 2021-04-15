@@ -179,8 +179,8 @@ public class RSSTest {
     public void checkWithSingleBuild_Rss_All_Computer() throws Exception {
         runSuccessfulBuild();
 
-        String pathPrefix = "computer/(master)/";
-        String displayName = "master";
+        String pathPrefix = "computer/(blub)/";
+        String displayName = "blub";
         String buildType = ALL_BUILD_TYPE;
         String buildTitle = STABLE_BUILD_TITLE;
         XmlPage page = getRssAllPage(pathPrefix);
@@ -191,8 +191,8 @@ public class RSSTest {
     public void checkWithSingleBuild_Rss_Failed_Computer() throws Exception {
         runFailingBuild();
 
-        String pathPrefix = "computer/(master)/";
-        String displayName = "master";
+        String pathPrefix = "computer/(blub)/";
+        String displayName = "blub";
         String buildType = FAILED_BUILD_TYPE;
         String buildTitle = FAILED_BUILD_TITLE;
         XmlPage page = getRssFailedPage(pathPrefix);
@@ -201,8 +201,8 @@ public class RSSTest {
 
     @Test
     public void latestBuilds_Computer() throws Exception {
-        String pathPrefix = "computer/(master)/";
-        String displayName = "master";
+        String pathPrefix = "computer/(blub)/";
+        String displayName = "blub";
         String buildType = LATEST_BUILD_TYPE;
         int expectedLinks = 3;
         int expectedAllLinks = 6;

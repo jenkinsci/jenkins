@@ -60,7 +60,11 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
             if (e.getOwner() instanceof MasterComputer) {
-                env.put("NODE_NAME", "master");
+                if (Jenkins.get().blubMigrationNeeded) {
+                    env.put("NODE_NAME", "master");
+                } else {
+                    env.put("NODE_NAME", "blub");
+                }
             } else {
                 env.put("NODE_NAME", e.getOwner().getName());
             }

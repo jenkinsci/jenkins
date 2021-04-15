@@ -1074,9 +1074,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
     
     /**
-     * Get the root directory of this {@link Run} on the master.
+     * Get the root directory of this {@link Run} on the controller.
      * Files related to this {@link Run} should be stored below this directory.
-     * @return Root directory of this {@link Run} on the master. Never null
+     * @return Root directory of this {@link Run} on the controller. Never null
      */
     @Override
     public @NonNull File getRootDir() {

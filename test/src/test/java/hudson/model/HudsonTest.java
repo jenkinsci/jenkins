@@ -155,35 +155,35 @@ public class HudsonTest {
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(blub)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void computerConfigureLink() throws Exception {
-        HtmlPage page = j.createWebClient().goTo("computer/(master)/configure");
+        HtmlPage page = j.createWebClient().goTo("computer/(blub)/configure");
         j.submit(page.getFormByName("config"));
     }
 
     /**
-     * Configure link from "/computer/(master)/" should work.
+     * Configure link from "/computer/(blub)/" should work.
      */
     @Test
     @Email("http://www.nabble.com/Master-slave-refactor-td21361880.html")
     public void deleteHudsonComputer() throws Exception {
         WebClient wc = j.createWebClient();
-        HtmlPage page = wc.goTo("computer/(master)/");
+        HtmlPage page = wc.goTo("computer/(blub)/");
         for (HtmlAnchor a : page.getAnchors()) {
             assertFalse(a.getHrefAttribute(), a.getHrefAttribute().endsWith("delete"));
         }
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(master)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath()+"computer/(blub)/doDelete"), HttpMethod.POST);
         page = wc.getPage(wc.addCrumb(req));
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
 
-        // the master computer object should be still here
-        page = wc.goTo("computer/(master)/");
+        // the blub computer object should be still here
+        page = wc.goTo("computer/(blub)/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
     }
 

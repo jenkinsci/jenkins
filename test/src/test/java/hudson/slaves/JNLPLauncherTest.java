@@ -307,7 +307,7 @@ public class JNLPLauncherTest {
 
     @Test
     public void testObsoletedJnlpFileDownload() throws Exception {
-        assertJnlpFileDownload("/slave-agent.jnlp");
+        assertJnlpFileDownload("/slave-agent.jnlp"); // deliberately uses old URL
     }
 
     private void assertJnlpFileDownload(String filename) throws Exception {

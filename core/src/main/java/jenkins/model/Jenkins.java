@@ -352,7 +352,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient SetupWizard setupWizard;
 
     /**
-     * Number of executors of the master node.
+     * Number of executors of the blub node.
      */
     private int numExecutors = 2;
 
@@ -643,7 +643,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient Set<String> agentProtocols;
 
     /**
-     * Whitespace-separated labels assigned to the master as a {@link Node}.
+     * Whitespace-separated labels assigned to the blub node as a {@link Node}.
      */
     private String label="";
 
@@ -703,7 +703,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient List<Action> actions = new CopyOnWriteArrayList<>();
 
     /**
-     * List of master node properties
+     * List of blub-specific node properties
      */
     private DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<>(this);
 
@@ -790,11 +790,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #get} is what you normally want.
      * <p>In certain rare cases you may have code that is intended to run before Jenkins starts or while Jenkins is being shut down.
      * For those rare cases use this method.
-     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master.
+     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins controller or blub node.
      * For those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting channel
      * it can do whatever it needs without ever referring to {@link Jenkins};
-     * for example, gather any information you need on the master side before constructing the callable.
-     * If you must do a runtime check whether you are in the master or agent, use {@link JenkinsJVM} rather than this method,
+     * for example, gather any information you need on the controller side before constructing the callable.
+     * If you must do a runtime check whether you are in the controller or agent, use {@link JenkinsJVM} rather than this method,
      * as merely loading the {@link Jenkins} class file into an agent JVM can cause linkage errors under some conditions.
      * @return The instance. Null if the {@link Jenkins} service has not been started, or was already shut down,
      *         or we are running on an unrelated JVM, typically an agent.
@@ -828,6 +828,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
      */
     private Boolean noUsageStatistics;
+
+    /**
+     * If this is false, no migration is needed to reconfigure the built-in node (formerly 'master', now 'blub').
+     * Otherwise, {@link BlubMigration} will show up.
+     */
+    @Restricted(NoExternalUse.class)
+    /* package-private */ Boolean blubMigrationNeeded;
 
     /**
      * HTTP proxy configuration.
@@ -991,7 +998,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             updateComputerList();
 
-            {// master is online now, it's instance must always exist
+            {// blub is online now, it's instance must always exist
                 final Computer c = toComputer();
                 if(c != null) {
                     for (ComputerListener cl : ComputerListener.all()) {
@@ -1000,7 +1007,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         } catch (Exception e) {
                             // Per Javadoc log exceptions but still go online.
                             // NOTE: this does not include Errors, which indicate a fatal problem
-                            LOGGER.log(WARNING, String.format("Exception in onOnline() for the computer listener %s on the Jenkins master node",
+                            LOGGER.log(WARNING, String.format("Exception in onOnline() for the computer listener %s on the blub node",
                                     cl.getClass()), e);
                         }
                     }
@@ -1051,6 +1058,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         // no longer persisted
         installStateName = null;
+
+        if (blubMigrationNeeded == null) {
+            blubMigrationNeeded = true;
+        }
         return this;
     }
 
@@ -1259,10 +1270,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 //    at all when they save their config as the protocol is now opt-out. Any admins that want to
                 //    disable it can do so and will have their preference recorded.
                 // 3. We decide that the protocol needs to be retired. It gets switched back to opt-in. At this point
-                //    the initial opt-in admins, assuming they visited an upgrade to a master with step 2, will
-                //    have the protocol disabled for them. This is what we want. If they didn't upgrade to a master
+                //    the initial opt-in admins, assuming they visited an upgrade to a controller with step 2, will
+                //    have the protocol disabled for them. This is what we want. If they didn't upgrade to a controller
                 //    with step 2, well there is not much we can do to differentiate them from somebody who is upgrading
-                //    from a previous step 3 master and had needed to keep the protocol turned on.
+                //    from a previous step 3 controller and had needed to keep the protocol turned on.
                 //
                 // What we should never do is flip-flop: opt-in -> opt-out -> opt-in -> opt-out as that will basically
                 // clear any preference that an admin has set, but this should be ok as we only ever will be
@@ -1990,7 +2001,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @CLIResolver
     public @CheckForNull Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") @NonNull String name) {
-        if(name.equals("(master)"))
+        if(name.equals("(blub)")
+                || name.equals("(master)")) // backwards compatibility for URLs
             name = "";
 
         for (Computer c : computers.values()) {
@@ -2131,7 +2143,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
-     * represents the master.
+     * represents the blub.
      */
     @NonNull
     public List<Node> getNodes() {
@@ -3128,6 +3140,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public String getLabelString() {
+        // TODO blubmigrationneeded?
         return fixNull(label).trim();
     }
 
@@ -3139,7 +3152,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public LabelAtom getSelfLabel() {
-        return getLabelAtom("master");
+        if (blubMigrationNeeded) {
+            return getLabelAtom("master");
+        }
+        return getLabelAtom("blub");
     }
 
     @Override
@@ -3968,7 +3984,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Obtains the thread dump of all agents (including the master.)
+     * Obtains the thread dump of all agents (including the controller/blub node.)
      *
      * <p>
      * Since this is for diagnostics, it has a built-in precautionary measure against hang agents.
@@ -3987,7 +4003,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
         if (toComputer() == null) {
-            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel));
+            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel)); // TODO blub? Controller? How is this used?
         }
 
         // if the result isn't available in 5 sec, ignore that.
@@ -4328,7 +4344,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
         if (Main.isUnitTest) {
-            throw new RestartNotSupportedException("Restarting the master JVM is not supported in JenkinsRule-based tests");
+            throw new RestartNotSupportedException("Restarting the controller JVM is not supported in JenkinsRule-based tests");
         }
         Lifecycle lifecycle = Lifecycle.get();
         lifecycle.verifyRestartable();
@@ -5005,7 +5021,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public String getUrl() {
-            return "computer/(master)/";
+            return "computer/(blub)/";
         }
 
         public RetentionStrategy getRetentionStrategy() {

@@ -377,7 +377,7 @@ public class NodeTest {
     public void masterComputerConfigDotXml() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
-        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
+        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(blub)/config.xml"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("<hudson/>");
 

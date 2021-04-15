@@ -812,7 +812,7 @@ public class SlaveComputer extends Computer {
         return new Slave.JnlpJar(fileName);
     }
 
-    @WebMethod(name="slave-agent.jnlp")
+    @WebMethod(name="slave-agent.jnlp") // backward compatibility
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
         return doJenkinsAgentJnlp(req, res);
     }
@@ -828,7 +828,7 @@ public class SlaveComputer extends Computer {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
 
-        @WebMethod(name="slave-agent.jnlp")
+        @WebMethod(name="slave-agent.jnlp") // backward compatibility
         public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
@@ -1033,7 +1033,7 @@ public class SlaveComputer extends Computer {
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 
-            // avoid double installation of the handler. Inbound agents can reconnect to the master multiple times
+            // avoid double installation of the handler. Inbound agents can reconnect to the controller multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
             for (Handler h : LOGGER.getHandlers()) {
@@ -1062,12 +1062,12 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the master.
-     * This method can be called from any thread on the master, or from agent (more precisely,
+     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the controller.
+     * This method can be called from any thread on the controller, or from agent (more precisely,
      * it only works from the remoting request-handling thread in agents, which means if you've started
      * separate thread on agents, that'll fail.)
      *
-     * @return null if the calling thread doesn't have any trace of where its master is.
+     * @return null if the calling thread doesn't have any trace of where its controller is.
      * @since 1.362
      * @deprecated Use {@link AgentComputerUtil#getChannelToMaster()} instead.
      */

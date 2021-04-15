@@ -32,11 +32,11 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 
 /**
- * Adds the configuration regarding building on master.
+ * Adds the configuration regarding building on blub node.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=500) @Symbol("masterBuild")
+@Extension(ordinal=500) @Symbol({"blub", "masterBuild"})
 public class MasterBuildConfiguration extends GlobalConfiguration {
     public int getNumExecutors() {
         return Jenkins.get().getNumExecutors();
@@ -57,8 +57,8 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
             }
             
             j.setNumExecutors(json.getInt("numExecutors"));
-            if (req.hasParameter("master.mode"))
-                j.setMode(Mode.valueOf(req.getParameter("master.mode")));
+            if (req.hasParameter("blub.mode"))
+                j.setMode(Mode.valueOf(req.getParameter("blub.mode")));
             else
                 j.setMode(Mode.NORMAL);
 

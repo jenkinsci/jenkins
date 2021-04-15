@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2021, CloudBees, Inc.
+ * Copyright (c) 2021 Daniel Beck
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,52 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.diagnostics;
+package jenkins.model;
 
 import hudson.Extension;
-import hudson.Main;
 import hudson.model.AdministrativeMonitor;
-import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 
+/**
+ * Inform the admin about the migration. This affects the parts of the rename
+ * that cannot be done compatibly: The self-label (although we could probably
+ * improvise something), and the node name as injected into build environments.
+ *
+ * TODO what else could break and needs to be based off blubMigrationNeeded?
+ */
 @Extension
-@Symbol({"executorsOnBlubNodeWithoutAgents", "controllerExecutorsWithoutAgents"})
 @Restricted(NoExternalUse.class)
-public class ControllerExecutorsNoAgents extends AdministrativeMonitor {
-
+@Symbol("blubMigration")
+public class BlubMigration extends AdministrativeMonitor {
     @Override
-    public String getDisplayName() {
-        return Messages.ControllerExecutorsNoAgents_DisplayName();
-    }
-
-    @Override
-    public boolean isSecurity() {
-        return true;
+    public boolean isActivated() {
+        final Boolean v = Jenkins.get().blubMigrationNeeded;
+        return v == null || v;
     }
 
     @RequirePOST
-    public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        if (req.hasParameter("no")) {
+    public void doAct(StaplerRequest req, StaplerResponse rsp, @QueryParameter String yes, @QueryParameter String no) throws IOException, ServletException {
+        if (yes != null) {
+            final Jenkins j = Jenkins.get();
+            j.blubMigrationNeeded = false;
+            j.save();
+        } else if (no != null) {
             disable(true);
-            rsp.sendRedirect(req.getContextPath() + "/manage");
-        } else if (req.hasParameter("cloud")) {
-            rsp.sendRedirect(req.getContextPath() + "/configureClouds");
-        } else if (req.hasParameter("agent")) {
-            rsp.sendRedirect(req.getContextPath() + "/computer/new");
         }
+        rsp.forwardToPreviousPage(req);
     }
 
     @Override
-    public boolean isActivated() {
-        return !Main.isDevelopmentMode && Jenkins.get().getNumExecutors() > 0 &&
-                Jenkins.get().clouds.isEmpty() && Jenkins.get().getNodes().isEmpty();
+    public String getDisplayName() {
+        return "Blub Migration"; // TODO i18n
     }
-
 }
