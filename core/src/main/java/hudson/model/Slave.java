@@ -308,7 +308,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public RetentionStrategy getRetentionStrategy() {
-        return retentionStrategy == null ? RetentionStrategy.INSTANCE : retentionStrategy;
+        return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }
 
     @DataBoundSetter
