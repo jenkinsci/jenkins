@@ -23,7 +23,7 @@
  */
 package hudson.diagnosis;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -325,12 +325,9 @@ public class OldDataMonitor extends AdministrativeMonitor {
         final String thruVerParam = req.getParameter("thruVer");
         final VersionNumber thruVer = thruVerParam.equals("all") ? null : new VersionNumber(thruVerParam);
 
-        saveAndRemoveEntries(new Predicate<Map.Entry<SaveableReference, VersionRange>>() {
-            @Override
-            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                VersionNumber version = entry.getValue().max;
-                return version != null && (thruVer == null || !version.isNewerThan(thruVer));
-            }
+        saveAndRemoveEntries(entry -> {
+            VersionNumber version = entry.getValue().max;
+            return version != null && (thruVer == null || !version.isNewerThan(thruVer));
         });
 
         return HttpResponses.forwardToPreviousPage();
@@ -342,12 +339,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      */
     @RequirePOST
     public HttpResponse doDiscard(StaplerRequest req, StaplerResponse rsp) {
-        saveAndRemoveEntries( new Predicate<Map.Entry<SaveableReference,VersionRange>>() {
-            @Override
-            public boolean apply(Map.Entry<SaveableReference, VersionRange> entry) {
-                return entry.getValue().max == null;
-            }
-        });
+        saveAndRemoveEntries(entry -> entry.getValue().max == null);
 
         return HttpResponses.forwardToPreviousPage();
     }
@@ -366,7 +358,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
          */
         List<SaveableReference> removed = new ArrayList<>();
         for (Map.Entry<SaveableReference,VersionRange> entry : data.entrySet()) {
-            if (matchingPredicate.apply(entry)) {
+            if (matchingPredicate.test(entry)) {
                 Saveable s = entry.getKey().get();
                 if (s != null) {
                     try {

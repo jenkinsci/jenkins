@@ -23,12 +23,14 @@
  */
 package hudson.model;
 
-import com.google.common.io.Resources;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
 
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -162,10 +164,10 @@ public class UsageStatisticsTest {
         return sorted;
     }
 
-    private void compareWithFile(String fileName, Object object) throws IOException {
+    private void compareWithFile(String fileName, Object object) throws IOException, URISyntaxException {
 
         Class clazz = this.getClass();
-        String fileContent = Resources.toString(clazz.getResource(clazz.getSimpleName() + "/" + fileName), StandardCharsets.UTF_8);
+        String fileContent = new String(Files.readAllBytes(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI())), StandardCharsets.UTF_8);
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
