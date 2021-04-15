@@ -130,8 +130,8 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
         j.setDisableRememberMe(json.optBoolean("disableRememberMe", false));
         // TODO probably clearer to configure such things with @DataBoundSetter
-        j.setSecurityRealm(req.bindJSON(SecurityRealm.class, json.getJSONObject("securityRealm")));
-        j.setAuthorizationStrategy(req.bindJSON(AuthorizationStrategy.class, json.getJSONObject("authorizationStrategy")));
+        j.setSecurityRealm(Descriptor.bindJSON(req, SecurityRealm.class, json.getJSONObject("securityRealm")));
+        j.setAuthorizationStrategy(Descriptor.bindJSON(req, AuthorizationStrategy.class, json.getJSONObject("authorizationStrategy")));
 
         if (json.has("markupFormatter")) {
             j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, json.getJSONObject("markupFormatter")));
