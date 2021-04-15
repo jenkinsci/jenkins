@@ -50,7 +50,7 @@ THE SOFTWARE.
       <dependency> <!-- https://docs.spring.io/spring-security/site/docs/5.4.0-M1/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.4.5</version>
+        <version>5.4.6</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
