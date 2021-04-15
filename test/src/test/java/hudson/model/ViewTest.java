@@ -547,7 +547,7 @@ public class ViewTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").
             grant(Jenkins.READ).everywhere().toEveryone().
-            grant(Job.READ).everywhere().toEveryone().
+            grant(Item.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
         ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override

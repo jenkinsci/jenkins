@@ -337,7 +337,7 @@ public class NodeTest {
         n4.setLabelString("label1 label");
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
+        p.setAssignedLabel(Label.parseExpression("label1 && (label2 || label3)"));
 
         // Node 1 should not be tied to any labels
         TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();

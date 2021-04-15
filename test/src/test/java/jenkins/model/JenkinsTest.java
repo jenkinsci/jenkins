@@ -77,6 +77,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -453,7 +454,7 @@ public class JenkinsTest {
             listener.onRestart();
 
         ArgumentCaptor<OfflineCause> captor = ArgumentCaptor.forClass(OfflineCause.class);
-        Mockito.verify(listenerMock).onOffline(Mockito.eq(j.jenkins.toComputer()), captor.capture());
+        Mockito.verify(listenerMock).onOffline(ArgumentMatchers.eq(j.jenkins.toComputer()), captor.capture());
         assertTrue(captor.getValue().toString().contains("restart"));
     }
 

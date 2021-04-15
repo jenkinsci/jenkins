@@ -175,7 +175,7 @@ public class LabelExpressionTest {
     }
 
     private void parseAndVerify(String expected, String expr) throws ANTLRException {
-        assertEquals(expected, LabelExpression.parseExpression(expr).getName());
+        assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
     @Test
@@ -243,7 +243,7 @@ public class LabelExpressionTest {
 
     private void parseShouldFail(String expr) {
         try {
-            LabelExpression.parseExpression(expr);
+            Label.parseExpression(expr);
             fail(expr + " should fail to parse");
         } catch (ANTLRException e) {
             // expected

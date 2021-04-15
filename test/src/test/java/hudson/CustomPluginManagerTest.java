@@ -61,17 +61,17 @@ public class CustomPluginManagerTest {
             @Override
             public void setup(JenkinsRule jenkinsRule, WithCustomLocalPluginManager recipe) throws Exception {
                 jenkinsRule.useLocalPluginManager = true;
-                oldValue = System.getProperty(LocalPluginManager.CUSTOM_PLUGIN_MANAGER);
-                System.setProperty(LocalPluginManager.CUSTOM_PLUGIN_MANAGER, recipe.value().getName());
+                oldValue = System.getProperty(PluginManager.CUSTOM_PLUGIN_MANAGER);
+                System.setProperty(PluginManager.CUSTOM_PLUGIN_MANAGER, recipe.value().getName());
 
             }
 
             @Override
             public void tearDown(JenkinsRule jenkinsRule, WithCustomLocalPluginManager recipe) {
                 if (oldValue != null) {
-                    System.setProperty(LocalPluginManager.CUSTOM_PLUGIN_MANAGER, oldValue);
+                    System.setProperty(PluginManager.CUSTOM_PLUGIN_MANAGER, oldValue);
                 } else {
-                    System.clearProperty(LocalPluginManager.CUSTOM_PLUGIN_MANAGER);
+                    System.clearProperty(PluginManager.CUSTOM_PLUGIN_MANAGER);
                 }
             }
         }

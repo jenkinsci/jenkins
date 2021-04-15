@@ -448,7 +448,7 @@ public class ProjectTest {
         assertNotNull(ws);
         FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
-        BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
+        BuildListener listener = new StreamBuildListener(TaskListener.NULL.getLogger(), Charset.defaultCharset());
         assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
         p.setScm(scm);
         assertTrue("Project should perform checkout without problems.",p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
@@ -572,8 +572,8 @@ public class ProjectTest {
             }
         } 
         auth.add(Jenkins.READ, user.getId());
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.DELETE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.DELETE, user.getId());
 
         // use Basic to speedup the test, normally it's pure UI testing
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -608,9 +608,9 @@ public class ProjectTest {
                fail("AccessDeniedException should be thrown.");
             }
         } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.BUILD, user.getId());
-        auth.add(Job.WIPEOUT, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.BUILD, user.getId());
+        auth.add(Item.WIPEOUT, user.getId());
         auth.add(Jenkins.READ, user.getId());
         Slave slave = j.createOnlineSlave();
         project.setAssignedLabel(slave.getSelfLabel());
@@ -646,8 +646,8 @@ public class ProjectTest {
                fail("AccessDeniedException should be thrown.");
             }
         } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.CONFIGURE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -684,8 +684,8 @@ public class ProjectTest {
                fail("AccessDeniedException should be thrown.");
             }
         } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.CONFIGURE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();

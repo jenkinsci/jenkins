@@ -9,7 +9,6 @@ import hudson.remoting.EngineListener;
 import hudson.remoting.EngineListenerAdapter;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.ComputerListener;
-import jenkins.model.Jenkins.MasterComputer;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,7 +33,7 @@ import jenkins.security.MasterToSlaveCallable;
 public class JnlpSlaveRestarterInstaller extends ComputerListener implements Serializable {
     @Override
     public void onOnline(final Computer c, final TaskListener listener) throws IOException, InterruptedException {
-        MasterComputer.threadPoolForRemoting.submit(new Install(c, listener));
+        Computer.threadPoolForRemoting.submit(new Install(c, listener));
     }
     private static class Install implements Callable<Void> {
         private final Computer c;

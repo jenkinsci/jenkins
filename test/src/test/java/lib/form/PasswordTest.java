@@ -624,7 +624,7 @@ public class PasswordTest {
         }
 
         final MockAuthorizationStrategy a = new MockAuthorizationStrategy();
-        a.grant(Jenkins.READ, Job.READ, Job.EXTENDED_READ).everywhere().toEveryone();
+        a.grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().toEveryone();
         j.jenkins.setAuthorizationStrategy(a);
 
         /* Now go to the page without Item/Configure and expect asterisks */

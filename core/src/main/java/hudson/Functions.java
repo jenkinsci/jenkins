@@ -30,7 +30,6 @@ import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.security.*;
 
-import java.text.SimpleDateFormat;
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
@@ -110,6 +109,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -236,7 +236,7 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static String localDate(Date date) {
-        return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+        return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
     }
 
     public static String rfc822Date(Calendar cal) {
