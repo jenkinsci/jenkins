@@ -286,7 +286,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                 long end_time = System.currentTimeMillis();
                                 if ((end_time - begin_time) > (CRON_THRESHOLD * 1000)) {
                                     TriggerDescriptor descriptor = t.getDescriptor();
-                                    String name = descriptor == null? t.getClass().getName() : descriptor.getDisplayName();
+                                    String name = descriptor.getDisplayName();
                                     final String msg = String.format("Trigger '%s' triggered by '%s' (%s) spent too much time (%s) in its execution, other timers could be delayed.",
                                             name, p.getFullDisplayName(), p.getFullName(), Util.getTimeSpanString(end_time - begin_time));
                                     LOGGER.log(Level.WARNING, msg);
