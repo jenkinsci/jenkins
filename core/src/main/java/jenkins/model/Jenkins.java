@@ -834,7 +834,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Otherwise, {@link BlubMigration} will show up.
      */
     @Restricted(NoExternalUse.class)
-    /* package-private */ Boolean blubMigrationNeeded;
+    /* package-private */ Boolean blubMigrationNeeded = false;
 
     /**
      * HTTP proxy configuration.
