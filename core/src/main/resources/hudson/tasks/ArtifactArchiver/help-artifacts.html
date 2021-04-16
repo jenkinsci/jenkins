@@ -5,4 +5,12 @@
    -- except that <tt>","</tt> (<em>comma</em>) is the only supported separator.
    The base directory is <a href='ws/'>the workspace</a>.
    You can only archive files that are located in your workspace.
+   target/*.jar, target/*.war
+
+   An example on how to archive multiple artifacts from a specific folder:
+   <pre>archiveArtifacts: artifacts: 'target/*.jar'</pre>
+
+   An example on how to archive multiple artifacts with different patterns:
+   <pre>archiveArtifacts: artifacts: 'target/*.jar, target/*.war'</pre>
+
 </div>
