@@ -76,10 +76,7 @@ public class FunctionsTest {
             "ftp://example.com/foo/bar",
             "svn+ssh://nobody@example.com/foo/bar",
         };
-        for(String uri : uris) {
-            String result = Functions.getActionUrl(null, createMockAction(uri));
-            assertEquals(uri, result);
-        }
+        extractedMethod59004(uris); // CAP AL
     }
 
     @Test
@@ -90,11 +87,15 @@ public class FunctionsTest {
             "mailto:nobody@example.com?subject=hello",
             "javascript:alert('hello')",
         };
-        for(String uri : uris) {
-            String result = Functions.getActionUrl(null, createMockAction(uri));
-            assertEquals(uri, result);
-        }
+        extractedMethod59004(uris); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod59004(final String[] uris) { // CAP AL
+        for(String uri : uris) { // CAP AL
+            String result = Functions.getActionUrl(null, createMockAction(uri)); // CAP AL
+            assertEquals(uri, result); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test
     @PrepareForTest(Stapler.class)
