@@ -24,7 +24,6 @@
 
 package jenkins.util;
 
-import com.google.common.collect.ImmutableSet;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
@@ -56,6 +55,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -120,7 +120,7 @@ public class VirtualFileTest {
     @Test public void list() throws Exception {
         File root = tmp.getRoot();
         FilePath rootF = new FilePath(root);
-        Set<String> paths = ImmutableSet.of("top.txt", "sub/mid.txt", "sub/subsub/lowest.txt", ".hg/config.txt", "very/deep/path/here");
+        Set<String> paths = new HashSet<>(Arrays.asList("top.txt", "sub/mid.txt", "sub/subsub/lowest.txt", ".hg/config.txt", "very/deep/path/here"));
         for (String path : paths) {
             rootF.child(path).write("", null);
         }
