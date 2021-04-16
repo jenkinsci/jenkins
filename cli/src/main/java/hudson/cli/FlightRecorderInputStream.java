@@ -142,10 +142,7 @@ class FlightRecorderInputStream extends InputStream {
 
         @Override
         public synchronized void write(int b) {
-            if (pos == capacity) {
-                filled = true;
-                pos = 0;
-            }
+            extractedMethod84229(); // CAP AL
             data[pos++] = (byte) b;
         }
 
@@ -177,10 +174,7 @@ class FlightRecorderInputStream extends InputStream {
             }
 
             // wrap around if necessary
-            if (pos == capacity) {
-                filled = true;
-                pos = 0;
-            }
+            extractedMethod84229(); // CAP AL
 
             // copy anything still left
             if (len > 0) {
@@ -188,6 +182,13 @@ class FlightRecorderInputStream extends InputStream {
                 pos += len;
             }
         }
+ // CAP AL
+        private void extractedMethod84229() { // CAP AL
+            if (pos == capacity) { // CAP AL
+                filled = true; // CAP AL
+                pos = 0; // CAP AL
+            } // CAP AL
+        } // CAP AL
 
     }
 
