@@ -26,43 +26,43 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  */
 public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 
-	private DumbSlave slave;
+	private DumbSlave agent;
 	private FreeStyleProject project;
 
 	/**
 	 * Agent properties are available
 	 */
-	public void testSlavePropertyOnSlave() throws Exception {
-		setVariables(slave, new Entry("KEY", "slaveValue"));
-		Map<String, String> envVars = executeBuild(slave);
-		assertEquals("slaveValue", envVars.get("KEY"));
+	public void testAgentPropertyOnAgent() throws Exception {
+		setVariables(agent, new Entry("KEY", "agentValue"));
+		Map<String, String> envVars = executeBuild(agent);
+		assertEquals("agentValue", envVars.get("KEY"));
 	}
 	
 	/**
 	 * Blub properties are available
 	 */
-	public void testMasterPropertyOnMaster() throws Exception {
+	public void testGlobalPropertyOnBlub() throws Exception {
         jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "masterValue"))));
+                        new Entry("KEY", "globalValue"))));
 
 		Map<String, String> envVars = executeBuild(jenkins);
 
-		assertEquals("masterValue", envVars.get("KEY"));
+		assertEquals("globalValue", envVars.get("KEY"));
 	}
 
 	/**
 	 * Both agent and controller properties are available, but agent properties have priority
 	 */
-	public void testSlaveAndMasterPropertyOnSlave() throws Exception {
+	public void testAgentAndGlobalPropertyOnAgent() throws Exception {
         jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "masterValue"))));
-		setVariables(slave, new Entry("KEY", "slaveValue"));
+                        new Entry("KEY", "globalValue"))));
+		setVariables(agent, new Entry("KEY", "agentValue"));
 
-		Map<String, String> envVars = executeBuild(slave);
+		Map<String, String> envVars = executeBuild(agent);
 
-		assertEquals("slaveValue", envVars.get("KEY"));
+		assertEquals("agentValue", envVars.get("KEY"));
 	}
 
 	/**
@@ -70,16 +70,17 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	 * Priority: parameters > agent > controller
 	 * @throws Exception
 	 */
-	public void testSlaveAndMasterPropertyAndParameterOnSlave()
+	// TODO is this correct? This sets a blub node property, not a global property
+	public void testAgentAndBlubPropertyAndParameterOnAgent()
 			throws Exception {
 		ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
 				new StringParameterDefinition("KEY", "parameterValue"));
 		project.addProperty(pdp);
 
-		setVariables(jenkins, new Entry("KEY", "masterValue"));
-		setVariables(slave, new Entry("KEY", "slaveValue"));
+		setVariables(jenkins, new Entry("KEY", "blubValue"));
+		setVariables(agent, new Entry("KEY", "agentValue"));
 
-		Map<String, String> envVars = executeBuild(slave);
+		Map<String, String> envVars = executeBuild(agent);
 
 		assertEquals("parameterValue", envVars.get("KEY"));
 	}
@@ -93,7 +94,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		assertEquals("value", envVars.get("KEY2"));
 	}
 	
-	public void testFormRoundTripForMaster() throws Exception {
+	public void testFormRoundTripForBlub() throws Exception {
         jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("KEY", "value"))));
@@ -110,17 +111,17 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		assertEquals("value", prop.getEnvVars().get("KEY"));
 	}
 
-	public void testFormRoundTripForSlave() throws Exception {
-		setVariables(slave, new Entry("KEY", "value"));
+	public void testFormRoundTripForAgent() throws Exception {
+		setVariables(agent, new Entry("KEY", "value"));
 		
 		WebClient webClient = new WebClient();
-		HtmlPage page = webClient.getPage(slave, "configure");
+		HtmlPage page = webClient.getPage(agent, "configure");
 		HtmlForm form = page.getFormByName("config");
 		submit(form);
 		
-		assertEquals(1, slave.getNodeProperties().toList().size());
+		assertEquals(1, agent.getNodeProperties().toList().size());
 		
-		EnvironmentVariablesNodeProperty prop = slave.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+		EnvironmentVariablesNodeProperty prop = agent.getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
 		assertEquals(1, prop.getEnvVars().size());
 		assertEquals("value", prop.getEnvVars().get("KEY"));
 	}
@@ -129,7 +130,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 
 	public void setUp() throws Exception {
 		super.setUp();
-		slave = createSlave();
+		agent = createSlave();
 		project = createFreeStyleProject();
 	}
 

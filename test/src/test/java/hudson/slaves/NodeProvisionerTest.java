@@ -84,7 +84,7 @@ public class NodeProvisionerTest {
     }
 
     /**
-     * Scenario: schedule a build and see if one slave is provisioned.
+     * Scenario: schedule a build and see if one agent is provisioned.
      */
     // TODO fragile
     @Test public void autoProvision() throws Exception {
@@ -119,13 +119,13 @@ public class NodeProvisionerTest {
     }
 
     /**
-     * Scenario: make sure we take advantage of statically configured slaves.
+     * Scenario: make sure we take advantage of statically configured agents.
      */
     // TODO fragile
     @Test public void baselineSlaveUsage() throws Exception {
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
-            // add slaves statically upfront
+            // add agents statically upfront
             r.createSlave().toComputer().connect(false).get();
             r.createSlave().toComputer().connect(false).get();
 
@@ -192,7 +192,7 @@ public class NodeProvisionerTest {
     private List<FreeStyleProject> create5SlowJobs(Latch l) throws IOException {
         List<FreeStyleProject> jobs = new ArrayList<>();
         for( int i=0; i<l.init; i++)
-            //set a large delay, to simulate the situation where we need to provision more slaves
+            //set a large delay, to simulate the situation where we need to provision more agents
             // to keep up with the load
             jobs.add(createJob(l.createBuilder()));
         return jobs;

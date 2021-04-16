@@ -246,7 +246,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@link ComputerLauncher} for this SlaveComputer.
+     * Return the {@link ComputerLauncher} for this {@code SlaveComputer}.
      * @since 1.312
      */
     public ComputerLauncher getLauncher() {

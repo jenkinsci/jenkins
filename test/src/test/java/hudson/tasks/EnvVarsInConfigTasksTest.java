@@ -47,7 +47,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
                 withVariable(ant.getHome()),NO_PROPERTIES);
         jenkins.getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(antInstallation);
 
-		// create slaves
+		// create agents
 		EnvVars additionalEnv = new EnvVars(DUMMY_LOCATION_VARNAME, "");
 		slaveEnv = createSlave(new LabelAtom("slaveEnv"), additionalEnv);
 		slaveRegular = createSlave(new LabelAtom("slaveRegular"));

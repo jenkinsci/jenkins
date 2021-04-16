@@ -115,7 +115,7 @@ public abstract class Slave extends Node implements Serializable {
 
     /**
      * Path to the root of the workspace from the view point of this node, such as "/hudson", this need not
-     * be absolute provided that the launcher establishes a consistent working directory, such as "./.jenkins-slave"
+     * be absolute provided that the launcher establishes a consistent working directory, such as "./.jenkins-agent"
      * when used with an SSH launcher.
      *
      * NOTE: if the administrator is using a relative path they are responsible for ensuring that the launcher used
@@ -599,7 +599,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Returns the list of {@link ComputerLauncher} descriptors appropriate to the supplied {@link Slave}.
          *
-         * @param it the {@link Slave} or {@code null} to assume the slave is of type {@link #clazz}.
+         * @param it the {@link Slave} or {@code null} to assume the agent is of type {@link #clazz}.
          * @return the filtered list
          * @since 2.12
          */
@@ -630,7 +630,7 @@ public abstract class Slave extends Node implements Serializable {
         /**
          * Returns the list of {@link NodePropertyDescriptor} appropriate to the supplied {@link Slave}.
          *
-         * @param it the {@link Slave} or {@code null} to assume the slave is of type {@link #clazz}.
+         * @param it the {@link Slave} or {@code null} to assume the agent is of type {@link #clazz}.
          * @return the filtered list
          * @since 2.12
          */
@@ -659,11 +659,11 @@ public abstract class Slave extends Node implements Serializable {
 //
     /**
      * Command line to launch the agent, like
-     * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+     * "ssh myagent java -jar /path/to/hudson-remoting.jar"
      * @deprecated in 1.216
      */
     @Deprecated
-    private transient String agentCommand;
+    private transient String agentCommand; // this was called 'agentCommand' from the beginning; not an accidental 2016 rename
 
     /**
      * Obtains the clock difference between this side and that side of the channel.
