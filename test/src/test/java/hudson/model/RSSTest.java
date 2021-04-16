@@ -180,7 +180,7 @@ public class RSSTest {
         runSuccessfulBuild();
 
         String pathPrefix = "computer/(blub)/";
-        String displayName = "blub";
+        String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = ALL_BUILD_TYPE;
         String buildTitle = STABLE_BUILD_TITLE;
         XmlPage page = getRssAllPage(pathPrefix);
@@ -192,7 +192,7 @@ public class RSSTest {
         runFailingBuild();
 
         String pathPrefix = "computer/(blub)/";
-        String displayName = "blub";
+        String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = FAILED_BUILD_TYPE;
         String buildTitle = FAILED_BUILD_TITLE;
         XmlPage page = getRssFailedPage(pathPrefix);
@@ -202,7 +202,7 @@ public class RSSTest {
     @Test
     public void latestBuilds_Computer() throws Exception {
         String pathPrefix = "computer/(blub)/";
-        String displayName = "blub";
+        String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = LATEST_BUILD_TYPE;
         int expectedLinks = 3;
         int expectedAllLinks = 6;

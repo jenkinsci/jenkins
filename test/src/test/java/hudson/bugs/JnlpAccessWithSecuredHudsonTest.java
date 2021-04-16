@@ -121,7 +121,7 @@ public class JnlpAccessWithSecuredHudsonTest {
         String secret = slave.getComputer().getJnlpMac();
         // To watch it fail: secret = secret.replace('1', '2');
         File slaveJar = tmp.newFile();
-        FileUtils.copyURLToFile(new Slave.JnlpJar("jenkins.jar").getURL(), slaveJar);
+        FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
         Proc p = new hudson.Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().
             stdout(System.out).stderr(System.err).
             cmds(JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(), "-jnlpUrl", r.getURL() + "computer/test/jenkins-agent.jnlp", "-secret", secret).

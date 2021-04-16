@@ -163,8 +163,8 @@ public class ComputerConfigDotXmlTest {
 
         computer.doConfigDotXml(req, rsp);
 
-        final Node updatedSlave = rule.jenkins.getNode("SlaveFromXML");
-        assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
+        final Node updatedSlave = rule.jenkins.getNode("AgentFromXML");
+        assertThat(updatedSlave.getNodeName(), equalTo("AgentFromXML"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
     }
 
