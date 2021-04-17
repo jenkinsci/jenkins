@@ -63,7 +63,7 @@ import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
 import hudson.slaves.DumbSlave;
 import hudson.util.FormValidation;
-import hudson.util.HudsonIsLoading;
+import jenkins.util.JenkinsIsLoading;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -498,7 +498,7 @@ public class ViewTest {
         view.save();
         j.jenkins.doReload();
         //wait until all configuration are reloaded
-        if(j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading){
+        if(j.jenkins.servletContext.getAttribute("app") instanceof JenkinsIsLoading){
             Thread.sleep(500);
         }
         assertTrue("View does not contains job free after load.", j.jenkins.getView(view.getDisplayName()).contains(j.jenkins.getItem(job.getName())));

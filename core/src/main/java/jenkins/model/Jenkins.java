@@ -164,8 +164,8 @@ import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.Futures;
-import hudson.util.HudsonIsLoading;
-import hudson.util.HudsonIsRestarting;
+import jenkins.util.JenkinsIsLoading;
+import jenkins.util.JenkinsIsRestarting;
 import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
 import hudson.util.MultipartFormDataParser;
@@ -4156,7 +4156,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication2().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread
-        WebApp.get(servletContext).setApp(new HudsonIsLoading());
+        WebApp.get(servletContext).setApp(new JenkinsIsLoading());
 
         new Thread("Jenkins config reload thread") {
             @Override
@@ -4287,7 +4287,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Perform a restart of Jenkins, if we can.
      *
-     * This first replaces "app" to {@link HudsonIsRestarting}
+     * This first replaces "app" to {@link JenkinsIsRestarting}
      */
     @CLIMethod(name="restart")
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
@@ -4309,7 +4309,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Queues up a restart of Jenkins for when there are no builds running, if we can.
      *
-     * This first replaces "app" to {@link HudsonIsRestarting}
+     * This first replaces "app" to {@link JenkinsIsRestarting}
      *
      * @since 1.332
      */
@@ -4340,7 +4340,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void restart() throws RestartNotSupportedException {
         final Lifecycle lifecycle = restartableLifecycle();
-        servletContext.setAttribute("app", new HudsonIsRestarting());
+        servletContext.setAttribute("app", new JenkinsIsRestarting());
 
         new Thread("restart thread") {
             final String exitUser = getAuthentication2().getName();
@@ -4383,7 +4383,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown()) {
-                        servletContext.setAttribute("app",new HudsonIsRestarting());
+                        servletContext.setAttribute("app",new JenkinsIsRestarting());
                         // give some time for the browser to load the "reloading" page
                         LOGGER.info("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));

@@ -513,7 +513,7 @@ public class UserTest {
     }
 
     @Test
-    // @Issue("SECURITY-180")
+    @Issue("SECURITY-180")
     public void security180() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
         

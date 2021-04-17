@@ -1,6 +1,7 @@
-package hudson.util;
+package jenkins.util;
 
 import com.gargoylesoftware.htmlunit.Page;
+import jenkins.util.JenkinsIsLoading;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,14 +13,14 @@ import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class HudsonIsLoadingTest {
+public class JenkinsIsLoadingTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
     @Test
     @Issue("JENKINS-55062")
     public void withPrefix() throws Exception {
-        j.jenkins.servletContext.setAttribute("app", new HudsonIsLoading());
+        j.jenkins.servletContext.setAttribute("app", new JenkinsIsLoading());
         JenkinsRule.WebClient wc = j.createWebClient()
                 // this is a failure page already
                 .withThrowExceptionOnFailingStatusCode(false)

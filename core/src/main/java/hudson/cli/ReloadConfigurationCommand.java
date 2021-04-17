@@ -25,7 +25,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.util.HudsonIsLoading;
+import jenkins.util.JenkinsIsLoading;
 import hudson.util.JenkinsReloadFailed;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.WebApp;
@@ -50,7 +50,7 @@ public class ReloadConfigurationCommand extends CLICommand {
         // Or perhaps simpler to inline the thread body of doReload?
         j.doReload();
         Object app;
-        while ((app = WebApp.get(j.servletContext).getApp()) instanceof HudsonIsLoading) {
+        while ((app = WebApp.get(j.servletContext).getApp()) instanceof JenkinsIsLoading) {
             Thread.sleep(100);
         }
         if (app instanceof Jenkins) {

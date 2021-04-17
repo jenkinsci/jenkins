@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util;
+package jenkins.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -36,10 +38,9 @@ import java.io.IOException;
  *
  * Set this object to {@link ServletContext#setAttribute(String, Object)} "app" while
  * the loading activity is taking place.
- * 
- * @author Kohsuke Kawaguchi
  */
-public class HudsonIsLoading {
+@Restricted(NoExternalUse.class)
+public class JenkinsIsLoading {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         rsp.setStatus(SC_SERVICE_UNAVAILABLE);
         req.getView(this,"index.jelly").forward(req,rsp);

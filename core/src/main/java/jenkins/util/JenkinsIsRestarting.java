@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util;
+package jenkins.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -32,14 +34,13 @@ import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import java.io.IOException;
 
 /**
- * Model object used to display "Hudson is restarting".
+ * Model object used to display "Jenkins is restarting".
  * <p>
  * Set this object to {@link ServletContext#setAttribute(String, Object)} "app" while
  * the loading activity is taking place.
- *
- * @author Kohsuke Kawaguchi
  */
-public class HudsonIsRestarting {
+@Restricted(NoExternalUse.class)
+public class JenkinsIsRestarting {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         rsp.setStatus(SC_SERVICE_UNAVAILABLE);
         req.getView(this,"index.jelly").forward(req,rsp);

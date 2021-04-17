@@ -35,7 +35,7 @@ import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.util.BootFailure;
 import jenkins.model.Jenkins;
-import hudson.util.HudsonIsLoading;
+import jenkins.util.JenkinsIsLoading;
 import hudson.util.IncompatibleServletVersionDetected;
 import hudson.util.IncompatibleVMDetected;
 import hudson.util.InsufficientPermissionDetected;
@@ -281,7 +281,7 @@ public class WebAppMain implements ServletContextListener {
 
             installExpressionFactory(event);
 
-            context.setAttribute(APP,new HudsonIsLoading());
+            context.setAttribute(APP,new JenkinsIsLoading());
             if (SystemProperties.getBoolean(FORCE_SESSION_TRACKING_BY_COOKIE_PROP, true)) {
                 context.setSessionTrackingModes(EnumSet.of(SessionTrackingMode.COOKIE));
             }

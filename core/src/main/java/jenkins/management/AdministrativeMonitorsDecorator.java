@@ -27,8 +27,8 @@ import hudson.Extension;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.PageDecorator;
-import hudson.util.HudsonIsLoading;
-import hudson.util.HudsonIsRestarting;
+import jenkins.util.JenkinsIsLoading;
+import jenkins.util.JenkinsIsRestarting;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -159,7 +159,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         Object o = a.getObject();
 
         // don't show while Jenkins is loading
-        if (o instanceof HudsonIsLoading || o instanceof HudsonIsRestarting) {
+        if (o instanceof JenkinsIsLoading || o instanceof JenkinsIsRestarting) {
             return null;
         }
 

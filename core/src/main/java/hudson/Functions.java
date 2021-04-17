@@ -79,8 +79,8 @@ import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
 import hudson.util.FormValidation.CheckMethod;
-import hudson.util.HudsonIsLoading;
-import hudson.util.HudsonIsRestarting;
+import jenkins.util.JenkinsIsLoading;
+import jenkins.util.JenkinsIsRestarting;
 import hudson.util.Iterators;
 import hudson.util.jna.GNUCLibrary;
 import hudson.util.Secret;
@@ -267,8 +267,8 @@ public class Functions {
      * so that the generic layouts can avoid iterating extension lists while Jenkins is starting up.
      * If you attempt to access the extensions list from a UI thread while Jenkins is being shut down, the extensions
      * themselves may no longer be in a valid state and could attempt to revive themselves and block termination.
-     * In actual terms the termination only affects those views required to render {@link HudsonIsRestarting}'s
-     * {@code index.jelly} which is the same set as the {@link HudsonIsLoading} pages so it makes sense to
+     * In actual terms the termination only affects those views required to render {@link JenkinsIsRestarting}'s
+     * {@code index.jelly} which is the same set as the {@link JenkinsIsLoading} pages so it makes sense to
      * use both checks here.
      *
      * @return {@code true} if the extensions lists have been populated.
