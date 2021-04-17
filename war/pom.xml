@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -248,7 +249,7 @@ THE SOFTWARE.
             <configuration>
               <artifactItems>
                 <!--
-                    Detached plugins and their dependencies - detached plugins that used to be bundled plugins
+                  Detached plugins and their dependencies - detached plugins that used to be bundled plugins
                 -->
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
@@ -541,8 +542,8 @@ THE SOFTWARE.
 
 
     <!--
-        The following profiles are required to integration the node/yarn build into this maven build.
-        Hopefully we can push these profiles down into a parent pom.
+      The following profiles are required to integration the node/yarn build into this maven build.
+      Hopefully we can push these profiles down into a parent pom.
     -->
     <profile>
       <id>yarn-execution</id>

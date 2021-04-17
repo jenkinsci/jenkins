@@ -166,13 +166,13 @@ THE SOFTWARE.
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
         <version>[0]</version>
-        <!-- 
-              "[0]" is a range that must be exaclty 0
-              this is different to "0" which is hint to use version 0.
-              therefore unless anyone else uses ranges (they should not) this version will always win
-              We have deployed a version 0 to jenkins repo which has an empty jar
-              This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
-              see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
+        <!--
+          "[0]" is a range that must be exactly 0
+          this is different to "0" which is hint to use version 0.
+          therefore unless anyone else uses ranges (they should not) this version will always win
+          We have deployed a version 0 to jenkins repo which has an empty jar
+          This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
+          see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
         -->
         <scope>provided</scope>
         <optional>true</optional>
@@ -234,9 +234,10 @@ THE SOFTWARE.
             <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
             <compilerArgs>
-            <!--always compile package-info.java for useIncrementalCompilation
-            ref: https://stackoverflow.com/questions/6770455/maven-compiling-package-info-java-to-package-info-class
-             -->
+              <!--
+                always compile package-info.java for useIncrementalCompilation
+                ref: https://stackoverflow.com/questions/6770455/maven-compiling-package-info-java-to-package-info-class
+              -->
               <compilerArg>-Xpkginfo:always</compilerArg>
             </compilerArgs>
           </configuration>
@@ -363,7 +364,7 @@ THE SOFTWARE.
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
-         </plugin>
+        </plugin>
         <plugin>
           <groupId>org.jvnet.hudson.tools</groupId>
           <artifactId>maven-encoding-plugin</artifactId>
@@ -394,41 +395,41 @@ THE SOFTWARE.
           <artifactId>maven-site-plugin</artifactId>
           <!-- Version specified in parent POM -->
         </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <!-- Version specified in parent POM -->
-      </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <!-- Version specified in parent POM -->
+        </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
-        	<groupId>org.eclipse.m2e</groupId>
-        	<artifactId>lifecycle-mapping</artifactId>
-        	<!-- Version specified in parent POM -->
-        	<configuration>
-        		<lifecycleMappingMetadata>
-        			<pluginExecutions>
-        				<pluginExecution>
-        					<pluginExecutionFilter>
-        						<groupId>org.apache.maven.plugins</groupId>
-        						<artifactId>maven-dependency-plugin</artifactId>
-        						<!-- Version specified in parent POM -->
-        						<versionRange>[2.3,)</versionRange>
-        						<goals>
-        							<goal>list</goal>
-        							<goal>unpack-dependencies</goal>
-        						</goals>
-        					</pluginExecutionFilter>
-        					<action>
-        						<ignore />
-        					</action>
-        				</pluginExecution>
-        			</pluginExecutions>
-        		</lifecycleMappingMetadata>
-        	</configuration>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <!-- Version specified in parent POM -->
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <!-- Version specified in parent POM -->
+                    <versionRange>[2.3,)</versionRange>
+                    <goals>
+                      <goal>list</goal>
+                      <goal>unpack-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
         </plugin>
         <plugin>
-	        <groupId>org.codehaus.mojo</groupId>
-	        <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
@@ -442,76 +443,76 @@ THE SOFTWARE.
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <dependencies>
-              <dependency>
-                  <groupId>com.puppycrawl.tools</groupId>
-                  <artifactId>checkstyle</artifactId>
-                  <version>8.41.1</version>
-              </dependency>
-            </dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>8.41.1</version>
+            </dependency>
+          </dependencies>
           <!-- Version specified in parent POM -->
           <configuration>
-             <consoleOutput>true</consoleOutput>
-             <failsOnError>true</failsOnError>
-             <!-- define here because checkstyle and multi module is a PITA -->
-             <checkstyleRules>
-               <module name="Checker">
-                 <module name="NewlineAtEndOfFile" />
-                 <module name="UniqueProperties" />
-                 <module name="TreeWalker">
-                   <!--
-                       Annotations: https://checkstyle.sourceforge.io/config_annotation.html
-                   -->
-                   <module name="MissingOverride" />
-                   <!--
-                       Design: https://checkstyle.sourceforge.io/config_design.html
-                   -->
-                   <module name="OneTopLevelClass" />
-                   <!--
-                       Coding: https://checkstyle.sourceforge.io/config_coding.html
-                   -->
-                   <module name="CovariantEquals" />
-                   <module name="EqualsHashCode" />
-                   <module name="OneStatementPerLine" />
-                   <module name="PackageDeclaration" />
-                   <module name="SimplifyBooleanExpression" />
-                   <module name="StringLiteralEquality" />
-                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
-                   <module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
-                   <module name="UnnecessarySemicolonInEnumeration" />
-                   <module name="UnnecessarySemicolonInTryWithResources" />
-                   <!--
-                       Imports: https://checkstyle.sourceforge.io/config_imports.html
-                   -->
-                   <module name="IllegalImport">
-                     <!-- prevent the use of jsr-305 annotations -->
-                     <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
-                   </module>
-                   <module name="RedundantImport" />
-                   <module name="UnusedImports" />
-                   <!--
-                       Miscellaneous: https://checkstyle.sourceforge.io/config_misc.html
-                   -->
-                   <module name="ArrayTypeStyle" />
-                   <module name="OuterTypeFilename" />
-                   <module name="UpperEll" />
-                   <!--
-                       Modifiers: https://checkstyle.sourceforge.io/config_modifier.html
-                   -->
-                   <module name="ModifierOrder" />
-                   <module name="RedundantModifier" />
-                 </module>
-               </module>
-             </checkstyleRules>
-           </configuration>
-           <executions>
-             <execution>
-               <id>validate</id>
-               <phase>validate</phase>
-               <goals>
-                 <goal>check</goal>
-               </goals>
-             </execution>
-           </executions>
+            <consoleOutput>true</consoleOutput>
+            <failsOnError>true</failsOnError>
+            <!-- define here because checkstyle and multi module is a PITA -->
+            <checkstyleRules>
+              <module name="Checker">
+                <module name="NewlineAtEndOfFile" />
+                <module name="UniqueProperties" />
+                <module name="TreeWalker">
+                  <!--
+                    Annotations: https://checkstyle.sourceforge.io/config_annotation.html
+                  -->
+                  <module name="MissingOverride" />
+                  <!--
+                    Class Design: https://checkstyle.sourceforge.io/config_design.html
+                  -->
+                  <module name="OneTopLevelClass" />
+                  <!--
+                    Coding: https://checkstyle.sourceforge.io/config_coding.html
+                  -->
+                  <module name="CovariantEquals" />
+                  <module name="EqualsHashCode" />
+                  <module name="OneStatementPerLine" />
+                  <module name="PackageDeclaration" />
+                  <module name="SimplifyBooleanExpression" />
+                  <module name="StringLiteralEquality" />
+                  <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
+                  <module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
+                  <module name="UnnecessarySemicolonInEnumeration" />
+                  <module name="UnnecessarySemicolonInTryWithResources" />
+                  <!--
+                    Imports: https://checkstyle.sourceforge.io/config_imports.html
+                  -->
+                  <module name="IllegalImport">
+                    <!-- prevent the use of jsr-305 annotations -->
+                    <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
+                  </module>
+                  <module name="RedundantImport" />
+                  <module name="UnusedImports" />
+                  <!--
+                    Miscellaneous: https://checkstyle.sourceforge.io/config_misc.html
+                  -->
+                  <module name="ArrayTypeStyle" />
+                  <module name="OuterTypeFilename" />
+                  <module name="UpperEll" />
+                  <!--
+                    Modifiers: https://checkstyle.sourceforge.io/config_modifier.html
+                  -->
+                  <module name="ModifierOrder" />
+                  <module name="RedundantModifier" />
+                </module>
+              </module>
+            </checkstyleRules>
+          </configuration>
+          <executions>
+            <execution>
+              <id>validate</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
