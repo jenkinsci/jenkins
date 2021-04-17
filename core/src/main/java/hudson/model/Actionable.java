@@ -146,7 +146,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * <strong>Note: this method will always modify the actions</strong>
      */
-    @SuppressWarnings({"ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void addAction(@NonNull Action a) {
         if(a==null) {
@@ -188,7 +188,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean addOrReplaceAction(@NonNull Action a) {
         if (a == null) {
@@ -246,7 +246,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean removeActions(@NonNull Class<? extends Action> clazz) {
         if (clazz == null) {
@@ -278,7 +278,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
-    @SuppressWarnings({"ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean replaceActions(@NonNull Class<? extends Action> clazz, @NonNull Action a) {
         if (clazz == null) {

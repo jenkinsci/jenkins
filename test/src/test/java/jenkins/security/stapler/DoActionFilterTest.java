@@ -516,7 +516,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         public void doWithRequestAndResponse(RequestAndResponse requestAndResponse) { replyOk(); }
         
         // special case to keep Groovy parameter name, but does not seem to indicate it's automatically a web method
-        @CapturedParameterNames({"req"})
+        @CapturedParameterNames("req")
         public void doAnnotatedResponseSuccess(Object req) { replyOk(); }
         
 //        // as mentioned in its documentation, it requires to have JavaScriptMethod, that has its own test
