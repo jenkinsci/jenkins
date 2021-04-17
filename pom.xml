@@ -470,6 +470,7 @@ THE SOFTWARE.
                   <!--
                     Coding: https://checkstyle.sourceforge.io/config_coding.html
                   -->
+                  <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
                   <module name="EqualsHashCode" />
                   <module name="OneStatementPerLine" />
