@@ -474,6 +474,7 @@ THE SOFTWARE.
                   <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
                   <module name="EqualsHashCode" />
+                  <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
                   <module name="PackageDeclaration" />
                   <module name="SimplifyBooleanExpression" />
