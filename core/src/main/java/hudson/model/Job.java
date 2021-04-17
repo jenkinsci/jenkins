@@ -1415,7 +1415,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                     @Override
                     public boolean equals(Object o) {
-                        // HUDSON-2682 workaround for Eclipse compilation bug
+                        // JENKINS-2682 workaround for Eclipse compilation bug
                         // on (c instanceof ChartLabel)
                         if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
                             return false;

@@ -1947,7 +1947,7 @@ public class Functions {
      * Gets all the {@link PageDecorator}s.
      */
     public static List<PageDecorator> getPageDecorators() {
-        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608 
+        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see JENKINS-3608
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }

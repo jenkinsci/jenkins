@@ -1287,7 +1287,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             }
         }
 
-        // allow the administrator to manually specify the host name as a fallback. HUDSON-5373
+        // allow the administrator to manually specify the host name as a fallback. JENKINS-5373
         cachedHostName = channel.call(new GetFallbackName());
         hostNameCached = true;
         return cachedHostName;

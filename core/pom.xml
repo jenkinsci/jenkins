@@ -477,7 +477,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
     </dependency>
-    <dependency><!-- StAX implementation. See HUDSON-2547. -->
+    <dependency><!-- StAX implementation. See JENKINS-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
     </dependency>
