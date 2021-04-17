@@ -150,6 +150,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         return Collections.singletonList(a);
     }
 
+    @Override
     public TriggerDescriptor getDescriptor() {
         return (TriggerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -212,6 +213,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             cal.set(Calendar.MILLISECOND, 0);
         }
 
+        @Override
         public long getRecurrencePeriod() {
             return MIN;
         }
@@ -221,6 +223,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             return MIN - TimeUnit.SECONDS.toMillis(Calendar.getInstance().get(Calendar.SECOND));
         }
 
+        @Override
         public void doRun() {
             while(new Date().getTime() >= cal.getTimeInMillis()) {
                 LOGGER.log(Level.FINE, "cron checking {0}", cal.getTime());
@@ -253,6 +256,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                 // terminated.
                 // FIXME allow to set a global crontab spec
                 previousSynchronousPolling = scmd.getExecutor().submit(new DependencyRunner(new ProjectRunnable() {
+                    @Override
                     public void run(AbstractProject p) {
                         for (Trigger t : (Collection<Trigger>) p.getTriggers().values()) {
                             if (t instanceof SCMTrigger) {

@@ -40,6 +40,7 @@ public class ConsoleCommand extends CLICommand {
     @Option(name="-n",metaVar="N",usage="Display the last N lines")
     public int n = -1;
 
+    @Override
     protected int run() throws Exception {
         job.checkPermission(Item.READ);
 

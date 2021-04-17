@@ -255,6 +255,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return realm.getUserIdStrategy();
     }
 
+    @Override
     public int compareTo(@NonNull User that) {
         return idStrategy().compare(this.id, that.id);
     }
@@ -268,6 +269,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return "user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
+    @Override
     public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
@@ -675,6 +677,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Returns the user name.
      */
+    @Override
     public @NonNull String getDisplayName() {
         return getFullName();
     }
@@ -797,6 +800,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Save the user configuration.
      */
+    @Override
     public synchronized void save() throws IOException {
         if (!isIdOrFullnameAllowed(id)) {
             throw FormValidation.error(Messages.User_IllegalUsername(id));
@@ -1019,6 +1023,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return Collections.unmodifiableList(actions);
     }
 
+    @Override
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }

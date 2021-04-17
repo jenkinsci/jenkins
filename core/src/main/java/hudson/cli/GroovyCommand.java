@@ -57,6 +57,7 @@ public class GroovyCommand extends CLICommand {
     @Argument(metaVar="ARGUMENTS", index=1, usage="Command line arguments to pass into script.")
     public List<String> remaining = new ArrayList<>();
 
+    @Override
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);

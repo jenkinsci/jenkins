@@ -176,6 +176,7 @@ public class LabelAtom extends Label implements Saveable {
         return new XmlFile(XSTREAM, new File(Jenkins.get().root, "labels/"+name+".xml"));
     }
 
+    @Override
     public void save() throws IOException {
         if (isInvalidName()) {
             throw new IOException("Invalid label");

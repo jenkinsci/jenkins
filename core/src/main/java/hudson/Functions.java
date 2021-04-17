@@ -1255,6 +1255,7 @@ public class Functions {
             return buf.append(c.getName());
         }
 
+        @Override
         public int compareTo(Tag that) {
             int r = Double.compare(that.ordinal, this.ordinal);
             if (r!=0)   return r; // descending for ordinal by reversing the order for compare
@@ -1481,6 +1482,7 @@ public class Functions {
             return map.get(ti.getThreadId());
         }
 
+        @Override
         public int compare(ThreadInfo a, ThreadInfo b) {
             int result = compare(a.getThreadId(), b.getThreadId());
             if (result == 0)
@@ -1493,6 +1495,7 @@ public class Functions {
 
         private static final long serialVersionUID = 5053631350439192685L;
 
+        @Override
         public int compare(Thread a, Thread b) {
             int result = compare(a.getId(), b.getId());
             if (result == 0)

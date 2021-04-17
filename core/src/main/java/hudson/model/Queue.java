@@ -305,6 +305,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Is this executor ready to accept some tasks?
          */
+        @Override
         public boolean isAvailable() {
             return workUnit == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
@@ -452,6 +453,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Persists the queue contents to the disk.
      */
+    @Override
     public void save() {
         if(BulkChange.contains(this))  return;
         if (Jenkins.getInstanceOrNull() == null) {
@@ -2305,10 +2307,12 @@ public class Queue extends ResourceController implements Saveable {
             return task.hasAbortPermission();
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getSearchUrl() {
             return null;
         }
@@ -2511,6 +2515,7 @@ public class Queue extends ResourceController implements Saveable {
             return COUNTER.intValue();
         }
 
+        @Override
         public int compareTo(WaitingItem that) {
             int r = this.timestamp.getTime().compareTo(that.timestamp.getTime());
             if (r != 0) return r;
@@ -2518,6 +2523,7 @@ public class Queue extends ResourceController implements Saveable {
             return Long.compare(this.getId(), that.getId());
         }
 
+        @Override
         public CauseOfBlockage getCauseOfBlockage() {
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
             if (diff >= 0)
@@ -2608,6 +2614,7 @@ public class Queue extends ResourceController implements Saveable {
             this.causeOfBlockage = causeOfBlockage;
         }
 
+        @Override
         public CauseOfBlockage getCauseOfBlockage() {
             if (causeOfBlockage != null) {
                 return causeOfBlockage;
@@ -2617,6 +2624,7 @@ public class Queue extends ResourceController implements Saveable {
             return getCauseOfBlockageForItem(this);
         }
 
+                    @Override
         /*package*/ void enter(Queue q) {
             LOGGER.log(Level.FINE, "{0} is blocked", this);
             blockedProjects.add(this);
@@ -2630,6 +2638,7 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
 
+                    @Override
         /*package*/ boolean leave(Queue q) {
             boolean r = blockedProjects.remove(this);
             if (r) {
@@ -2670,6 +2679,7 @@ public class Queue extends ResourceController implements Saveable {
             super(ni);
         }
 
+        @Override
         public CauseOfBlockage getCauseOfBlockage() {
             Jenkins jenkins = Jenkins.get();
             if(isBlockedByShutdown(task))
@@ -2912,6 +2922,7 @@ public class Queue extends ResourceController implements Saveable {
             Timer.get().scheduleWithFixedDelay(this, interval, interval, TimeUnit.MILLISECONDS);
         }
 
+        @Override
         protected void doRun() {
             Queue q = queue.get();
             if (q != null)

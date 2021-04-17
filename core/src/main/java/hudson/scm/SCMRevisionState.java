@@ -25,14 +25,17 @@ import hudson.model.TaskListener;
  * @since 1.345
  */
 public abstract class SCMRevisionState implements Action {
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return null;
     }
 
+    @Override
     public String getUrlName() {
         return null;
     }

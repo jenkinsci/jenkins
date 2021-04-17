@@ -212,6 +212,7 @@ public class CronTabTest {
     @Test
     public void testHash1() throws Exception {
         CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+            @Override
             public int next(int n) {
                 return n-1;
             }
@@ -236,6 +237,7 @@ public class CronTabTest {
     @Test
     public void testHash2() throws Exception {
         CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+            @Override
             public int next(int n) {
                 return 1;
             }

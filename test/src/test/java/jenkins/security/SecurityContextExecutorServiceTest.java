@@ -55,6 +55,7 @@ public class SecurityContextExecutorServiceTest {
     private volatile SecurityContext runnableThreadContext;
     @Rule
     public JenkinsRule j = new JenkinsRule() {
+        @Override
         public void before() throws Throwable {
             setPluginManager(null);
             super.before();
@@ -80,6 +81,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testRunnableAgainstAllContexts() throws Exception {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 runnableThreadContext = SecurityContextHolder.getContext();
             }
@@ -110,6 +112,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableAgainstAllContexts() throws Exception {
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
+            @Override
             public SecurityContext call() throws Exception {
                 return SecurityContextHolder.getContext();
             }
@@ -135,6 +138,7 @@ public class SecurityContextExecutorServiceTest {
     public void testCallableCollectionAgainstAllContexts() throws Exception {
         Collection<Callable<SecurityContext>> callables = new LinkedList<>();
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
+            @Override
             public SecurityContext call() throws Exception {
                 return SecurityContextHolder.getContext();
             }
@@ -170,6 +174,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testFailedRunnableResetsContext() throws Exception {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 SecurityContextHolder.setContext(nullContext);
                 throw new RuntimeException("Simulate a failure");

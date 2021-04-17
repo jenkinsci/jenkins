@@ -124,6 +124,7 @@ public class DirectoryBrowserSupportTest {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
                 return true;

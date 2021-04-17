@@ -222,6 +222,7 @@ public class QuietDownCommandTest {
 
         boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 assertJenkinsNotInQuietMode();
                 beforeCli.signal();
@@ -267,6 +268,7 @@ public class QuietDownCommandTest {
 
         boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 assertJenkinsNotInQuietMode();
                 beforeCli.signal();
@@ -312,6 +314,7 @@ public class QuietDownCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final FutureTask exec_task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 assertJenkinsNotInQuietMode();
                 final long time_before = System.currentTimeMillis();
@@ -358,6 +361,7 @@ public class QuietDownCommandTest {
 
         boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 assertJenkinsNotInQuietMode();
                 beforeCli.signal();
@@ -403,6 +407,7 @@ public class QuietDownCommandTest {
 
         boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 assertJenkinsNotInQuietMode();
                 final long time_before = System.currentTimeMillis();
@@ -447,6 +452,7 @@ public class QuietDownCommandTest {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         final FutureTask exec_task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 assertJenkinsNotInQuietMode();
                 final long time_before = System.currentTimeMillis();

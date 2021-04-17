@@ -375,14 +375,17 @@ public class JenkinsTest {
     public static class RootActionImpl implements UnprotectedRootAction {
         private int count;
 
+        @Override
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getUrlName() {
             return "foobar";
         }
@@ -429,14 +432,17 @@ public class JenkinsTest {
     @TestExtension("testErrorPageShouldBeAnonymousAccessible")
     public static class ReportError implements UnprotectedRootAction {
 
+        @Override
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getUrlName() {
             return "error";
         }

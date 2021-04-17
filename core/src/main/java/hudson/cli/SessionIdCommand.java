@@ -16,6 +16,7 @@ public class SessionIdCommand extends CLICommand {
         return Messages.SessionIdCommand_ShortDescription();
     }
 
+    @Override
     protected int run() {
         stdout.println(Jenkins.SESSION_HASH);
         return 0;

@@ -50,17 +50,20 @@ import org.springframework.security.web.authentication.RememberMeServices;
 public class RememberMeServicesProxy implements RememberMeServices {
     private volatile RememberMeServices delegate;
 
+    @Override
     public Authentication autoLogin(HttpServletRequest request, HttpServletResponse response) {
         RememberMeServices d = delegate;
         if(d!=null)     return d.autoLogin(request,response);
         return null;
     }
 
+    @Override
     public void loginFail(HttpServletRequest request, HttpServletResponse response) {
         RememberMeServices d = delegate;
         if(d!=null)     d.loginFail(request,response);
     }
 
+    @Override
     public void loginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication successfulAuthentication) {
         RememberMeServices d = delegate;
         if(d!=null)     d.loginSuccess(request,response,successfulAuthentication);

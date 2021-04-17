@@ -93,6 +93,7 @@ public class DependencyGraphTest extends HudsonTestCase {
             super(buildResult);
             this.down = down;
         }
+        @Override
         public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
             graph.addDependency(new DependencyGraph.Dependency(owner, down) {
                 @Override

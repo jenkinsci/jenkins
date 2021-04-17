@@ -75,6 +75,7 @@ public class ChartUtil {
             return run;
         }
 
+        @Override
         public int compareTo(NumberOnlyBuildLabel that) {
             return this.run.number-that.run.number;
         }
@@ -142,6 +143,7 @@ public class ChartUtil {
     @Deprecated
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
         new Graph(-1,defaultW,defaultH) {
+            @Override
             protected JFreeChart createGraph() {
                 return chart;
             }
@@ -170,6 +172,7 @@ public class ChartUtil {
     @Deprecated
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
         new Graph(-1,defaultW,defaultH) {
+            @Override
             protected JFreeChart createGraph() {
                 return chart;
             }

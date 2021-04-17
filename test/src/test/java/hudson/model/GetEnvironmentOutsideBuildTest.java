@@ -29,12 +29,14 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
         // It's unfortunately not working, yet, as whenJenkinsMasterHasNoExecutors is not working as expected
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
 
         this.oldExecNum = Jenkins.get().getNumExecutors();
     }
 
+    @Override
     public void tearDown() throws Exception {
         restoreOldNumExecutors();
         super.tearDown();

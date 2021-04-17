@@ -126,6 +126,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	
 	// //////////////////////// setup //////////////////////////////////////////
 
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 		slave = createSlave();

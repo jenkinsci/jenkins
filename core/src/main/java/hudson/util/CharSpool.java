@@ -41,6 +41,7 @@ public final class CharSpool extends Writer {
     private char[] last = new char[1024];
     private int pos;
 
+    @Override
     public void write(char[] cbuf, int off, int len) {
         while(len>0) {
             int sz = Math.min(last.length-pos,len);
@@ -69,10 +70,12 @@ public final class CharSpool extends Writer {
         last[pos++] = (char)c;
     }
 
+    @Override
     public void flush() {
         // noop
     }
 
+    @Override
     public void close() {
         // noop
     }

@@ -165,6 +165,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
      */
     public abstract ConsoleAnnotator annotate(T context, MarkupText text, int charPos);
 
+    @Override
     public ConsoleAnnotationDescriptor getDescriptor() {
         return (ConsoleAnnotationDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

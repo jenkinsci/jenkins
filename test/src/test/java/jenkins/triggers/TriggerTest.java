@@ -73,10 +73,12 @@ public class TriggerTest {
 
         @Extension
         public static class DescriptorImpl extends TriggerDescriptor {
+            @Override
             public boolean isApplicable(Item item) {
                 return item instanceof BuildableItem;
             }
 
+            @Override
             public String getDisplayName() {
                 return Messages.TimerTrigger_DisplayName();
             }

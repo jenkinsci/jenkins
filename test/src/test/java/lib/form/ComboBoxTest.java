@@ -65,6 +65,7 @@ public class ComboBoxTest extends HudsonTestCase {
         
         @Extension
         public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -84,6 +85,7 @@ public class ComboBoxTest extends HudsonTestCase {
         }
 
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }

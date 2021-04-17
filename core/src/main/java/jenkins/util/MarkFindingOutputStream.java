@@ -24,6 +24,7 @@ public abstract class MarkFindingOutputStream extends OutputStream {
      */
     private int match = 0;
 
+    @Override
     public synchronized void write(int b) throws IOException {
         if (MBYTES[match] == b) {// another byte matched. Good. Keep going...
             match++;

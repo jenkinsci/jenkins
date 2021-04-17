@@ -205,6 +205,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return BuildStepMonitor.NONE;
     }
 
+    @Override
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         if (enableFingerprintsInDependencyGraph) {
             RunList builds = owner.getBuilds();
@@ -349,6 +350,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             return req.bindJSON(Fingerprinter.class, formData);
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -387,14 +389,17 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             ref = null;
         }
 
+        @Override
         public String getIconFileName() {
             return "fingerprint.png";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.Fingerprinter_Action_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "fingerprints";
         }

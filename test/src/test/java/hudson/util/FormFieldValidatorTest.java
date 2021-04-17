@@ -53,6 +53,7 @@ public class FormFieldValidatorTest {
 
     public static class BrokenFormValidatorBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -62,6 +63,7 @@ public class FormFieldValidatorTest {
             }
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }

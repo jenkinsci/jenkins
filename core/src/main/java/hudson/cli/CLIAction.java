@@ -78,14 +78,17 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
 
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return "Jenkins CLI";
     }
 
+    @Override
     public String getUrlName() {
         return "cli";
     }

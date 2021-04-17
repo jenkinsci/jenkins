@@ -111,6 +111,7 @@ public enum BallColor implements StatusIcon {
         return image;
     }
 
+    @Override
     public String getImageOf(String size) {
         return Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/"+size+'/'+image;
     }
@@ -118,6 +119,7 @@ public enum BallColor implements StatusIcon {
     /**
      * Gets the human-readable description used as img/@alt.
      */
+    @Override
     public String getDescription() {
         return description.toString(LocaleProvider.getLocale());
     }

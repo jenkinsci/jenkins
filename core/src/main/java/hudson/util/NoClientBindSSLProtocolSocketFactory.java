@@ -68,6 +68,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int,java.net.InetAddress,int)
      */
+    @Override
     public Socket createSocket(
         String host,
         int port,
@@ -102,6 +103,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
      * 
      * @since 3.0
      */
+    @Override
     public Socket createSocket(
         final String host,
         final int port,
@@ -130,6 +132,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int)
      */
+    @Override
     public Socket createSocket(String host, int port)
         throws IOException, UnknownHostException {
         return SSLSocketFactory.getDefault().createSocket(
@@ -141,6 +144,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.net.Socket,java.lang.String,int,boolean)
      */
+    @Override
     public Socket createSocket(
         Socket socket,
         String host,
@@ -158,6 +162,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
     /**
      * All instances are the same.
      */
+    @Override
     public boolean equals(Object obj) {
         return ((obj != null) && obj.getClass().equals(SSLProtocolSocketFactory.class));
     }
@@ -165,6 +170,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
     /**
      * All instances have the same hash code.
      */
+    @Override
     public int hashCode() {
         return SSLProtocolSocketFactory.class.hashCode();
     }       

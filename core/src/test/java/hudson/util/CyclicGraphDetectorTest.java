@@ -54,6 +54,7 @@ public class CyclicGraphDetectorTest {
          */
         void check() throws Exception {
             new CyclicGraphDetector<String>() {
+                @Override
                 protected Set<String> getEdges(String s) {
                     return edges(s);
                 }

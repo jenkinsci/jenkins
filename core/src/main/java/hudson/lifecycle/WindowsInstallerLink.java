@@ -78,14 +78,17 @@ public class WindowsInstallerLink extends ManagementLink {
         this.hudsonWar = jenkinsWar;
     }
 
+    @Override
     public String getIconFileName() {
         return "installer.gif";
     }
 
+    @Override
     public String getUrlName() {
         return "install";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.WindowsInstallerLink_DisplayName();
     }

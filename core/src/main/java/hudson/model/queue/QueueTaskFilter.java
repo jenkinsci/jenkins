@@ -75,10 +75,12 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getCauseOfBlockage();
     }
 
+    @Override
     public String getName() {
         return base.getName();
     }
 
+    @Override
     public String getFullDisplayName() {
         return base.getFullDisplayName();
     }
@@ -88,18 +90,22 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.getEstimatedDuration();
     }
 
+    @Override
     public @CheckForNull Executable createExecutable() throws IOException {
         return base.createExecutable();
     }
 
+    @Override
     public void checkAbortPermission() {
         base.checkAbortPermission();
     }
 
+    @Override
     public boolean hasAbortPermission() {
         return base.hasAbortPermission();
     }
 
+    @Override
     public String getUrl() {
         return base.getUrl();
     }
@@ -109,6 +115,7 @@ public abstract class QueueTaskFilter implements Queue.Task {
         return base.isConcurrentBuild();
     }
 
+    @Override
     public String getDisplayName() {
         return base.getDisplayName();
     }

@@ -96,6 +96,7 @@ public class HudsonFilter implements Filter {
     @Deprecated
     public static final RememberMeServicesProxy REMEMBER_ME_SERVICES_PROXY = new RememberMeServicesProxy();
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         this.filterConfig = filterConfig;
         // this is how we make us available to the rest of Hudson.
@@ -152,6 +153,7 @@ public class HudsonFilter implements Filter {
         }
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         LOGGER.entering(HudsonFilter.class.getName(), "doFilter");
 
@@ -169,6 +171,7 @@ public class HudsonFilter implements Filter {
         }
     }
 
+    @Override
     public void destroy() {
         // the filter can be null if the filter is not initialized yet.
         if(filter != null)

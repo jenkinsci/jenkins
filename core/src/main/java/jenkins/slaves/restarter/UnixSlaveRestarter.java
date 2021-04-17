@@ -43,6 +43,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
         }
     }
 
+    @Override
     public void restart() throws Exception {
         // close all files upon exec, except stdin, stdout, and stderr
         int sz = LIBC.getdtablesize();

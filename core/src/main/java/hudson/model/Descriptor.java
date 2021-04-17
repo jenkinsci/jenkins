@@ -886,6 +886,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Saves the configuration info to the disk.
      */
+    @Override
     public synchronized void save() {
         if(BulkChange.contains(this))   return;
         try {
@@ -1166,6 +1167,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             return formField;
         }
 
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
                 FormApply.applyResponse("notificationBar.show(" + quote(getMessage())+ ",notificationBar.ERROR)")

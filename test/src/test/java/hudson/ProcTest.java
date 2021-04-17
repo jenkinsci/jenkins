@@ -88,6 +88,7 @@ public class ProcTest {
             this.o = o;
         }
 
+        @Override
         public Void call() throws IOException {
             while (!Thread.interrupted()) {
                 o.write(new byte[256]);
