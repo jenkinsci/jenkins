@@ -118,8 +118,8 @@ public class SCMTriggerTest {
             this.checkoutStarted = checkoutStarted;
         }
 
-        @Override synchronized
-        public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
+        @Override
+        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
             return myRev < 2;
         }
 
