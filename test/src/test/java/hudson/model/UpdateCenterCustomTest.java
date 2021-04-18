@@ -53,7 +53,7 @@ public class UpdateCenterCustomTest {
         
         private static final String PROPERTY_NAME = UpdateCenter.class.getName()+".className";
 
-        public CustomUpdateCenterRule(Class<?> ucClass) {
+        CustomUpdateCenterRule(Class<?> ucClass) {
             this.updateCenterClassName = ucClass.getName();
         }
 

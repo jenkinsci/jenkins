@@ -127,7 +127,7 @@ public class SimpleJobTest {
     @SuppressWarnings("unchecked")
     private static class TestBuild extends Run {
         
-        public TestBuild(Job project, Result result, long duration, TestBuild previousBuild) throws IOException {
+        TestBuild(Job project, Result result, long duration, TestBuild previousBuild) throws IOException {
             super(project);
             this.result = result;
             this.duration = duration;
@@ -156,7 +156,7 @@ public class SimpleJobTest {
         int i;
         private final SortedMap<Integer, TestBuild> runs;
 
-        public TestJob(SortedMap<Integer, TestBuild> runs) {
+        TestJob(SortedMap<Integer, TestBuild> runs) {
             super(rule.jenkins, "name");
             this.runs = runs;
             i = 1;

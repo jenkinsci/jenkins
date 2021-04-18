@@ -90,7 +90,7 @@ public class DirScannerTest {
         
         public final String filename;
         
-        public MatchingFileVisitor(String filename) {
+        MatchingFileVisitor(String filename) {
             this.filename = filename;
         }
     

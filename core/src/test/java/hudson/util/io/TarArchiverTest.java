@@ -141,7 +141,7 @@ public class TarArchiverTest {
         private Exception ex = null;
         private File file;
 
-        public GrowingFileRunnable(File file) {
+        GrowingFileRunnable(File file) {
             this.file = file;
         }
 

@@ -1592,11 +1592,11 @@ public class VirtualFileTest {
 
     private static class VirtualFileMinimalImplementationWithDescendants extends VirtualFileMinimalImplementation {
 
-        public VirtualFileMinimalImplementationWithDescendants(File file) {
+        VirtualFileMinimalImplementationWithDescendants(File file) {
             super(file);
         }
 
-        public VirtualFileMinimalImplementationWithDescendants(File file, File root) {
+        VirtualFileMinimalImplementationWithDescendants(File file, File root) {
             super(file, root);
         }
 

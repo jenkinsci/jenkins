@@ -114,7 +114,7 @@ public class SCMTriggerTest {
         private volatile int myRev = 1;
         private final OneShotEvent checkoutStarted;
 
-        public TestSCM(OneShotEvent checkoutStarted) {
+        TestSCM(OneShotEvent checkoutStarted) {
             this.checkoutStarted = checkoutStarted;
         }
 

@@ -192,7 +192,7 @@ public class TransientActionFactoryTest {
 
         private String allocation;
 
-        public MyProminentProjectAction() {
+        MyProminentProjectAction() {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             new Exception("MyProminentProjectAction allocated at: ").printStackTrace(pw);
