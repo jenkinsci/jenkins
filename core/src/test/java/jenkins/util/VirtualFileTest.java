@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -1512,13 +1512,13 @@ public class VirtualFileTest {
             this.root = root;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String getName() {
             return file.getName();
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public URI toURI() {
             return file.toURI();
@@ -1544,7 +1544,7 @@ public class VirtualFileTest {
             return false;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public VirtualFile[] list() {
             File[] kids = file.listFiles();
@@ -1562,9 +1562,9 @@ public class VirtualFileTest {
             return new VirtualFileMinimalImplementation(kid, root);
         }
 
-        @Nonnull
+        @NonNull
         @Override
-        public VirtualFile child(@Nonnull String name) {
+        public VirtualFile child(@NonNull String name) {
             return child(new File(file, name), root);
         }
 
