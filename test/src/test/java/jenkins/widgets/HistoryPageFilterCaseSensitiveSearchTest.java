@@ -3,7 +3,6 @@ package jenkins.widgets;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Rule;
