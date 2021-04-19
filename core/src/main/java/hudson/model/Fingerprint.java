@@ -33,6 +33,7 @@ import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import hudson.BulkChange;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.listeners.ItemListener;
@@ -1264,7 +1265,7 @@ public class Fingerprint implements ModelObject, Saveable {
             start = System.currentTimeMillis();
 
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         // Implementations are expected to invoke SaveableListener on their own if relevant
         // TODO: Consider improving Saveable Listener API: https://issues.jenkins-ci.org/browse/JENKINS-62543
@@ -1351,7 +1352,7 @@ public class Fingerprint implements ModelObject, Saveable {
         }
 
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FileFingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         Fingerprint loaded = configuredFingerprintStorage.load(id);
 
@@ -1404,7 +1405,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public static void delete(@NonNull String id) throws IOException {
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
 
         configuredFingerprintStorage.delete(id);
 

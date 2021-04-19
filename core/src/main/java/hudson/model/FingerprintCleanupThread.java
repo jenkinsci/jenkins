@@ -77,9 +77,10 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
         }
         FingerprintStorage.get().iterateAndCleanupFingerprints(listener);
 
+        final FileFingerprintStorage fileFingerprintStorage = ExtensionList.lookupSingleton(FileFingerprintStorage.class);
         if (!(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
-                FingerprintStorage.getFileFingerprintStorage().isReady()) {
-            FileFingerprintStorage.getFileFingerprintStorage().iterateAndCleanupFingerprints(listener);
+                fileFingerprintStorage.isReady()) {
+            fileFingerprintStorage.iterateAndCleanupFingerprints(listener);
         }
     }
 
