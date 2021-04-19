@@ -129,7 +129,7 @@ public class UtilTest {
         assertEquals(Messages.Util_millisecond(17), Util.getTimeSpanString(17L));
         // 1ms
         assertEquals(Messages.Util_millisecond(1), Util.getTimeSpanString(1L));
-        // Test HUDSON-2843 (locale with comma as fraction separator got exception for <10 sec)
+        // Test JENKINS-2843 (locale with comma as fraction separator got exception for <10 sec)
         Locale saveLocale = Locale.getDefault();
         Locale.setDefault(Locale.GERMANY);
         try {

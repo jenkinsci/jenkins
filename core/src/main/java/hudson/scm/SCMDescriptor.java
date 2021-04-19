@@ -95,7 +95,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
         atomicGeneration.incrementAndGet();
     }
 
-    // work around HUDSON-4514. The repositoryBrowser field was marked as non-transient until 1.325,
+    // work around JENKINS-4514. The repositoryBrowser field was marked as non-transient until 1.325,
     // causing the field to be persisted and overwritten on the load method.
     @SuppressWarnings({"ConstantConditions"})
     @Override

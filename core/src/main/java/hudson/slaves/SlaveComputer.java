@@ -692,7 +692,7 @@ public class SlaveComputer extends Computer {
                 // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
                 // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,
                 // we'll end up queuing the lot of threads in a pseudo deadlock.
-                // This implementation prevents that by avoiding a lock. HUDSON-1705 is likely a manifestation of this.
+                // This implementation prevents that by avoiding a lock. JENKINS-1705 is likely a manifestation of this.
                 channel.close();
                 throw new IllegalStateException("Already connected");
             }

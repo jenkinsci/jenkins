@@ -93,7 +93,7 @@ public class XStream2Test {
     /**
      * Test marshal/unmarshal round trip for class/field names with _ and $ characters.
      */
-    @Issue("HUDSON-5768")
+    @Issue("JENKINS-5768")
     @Test
     public void xmlRoundTrip() {
         XStream2 xs = new XStream2();
@@ -119,7 +119,7 @@ public class XStream2Test {
      * Throwable/Exception (default ThrowableConverter registered by XStream calls
      * ReflectionConverter directly, rather than our RobustReflectionConverter replacement).
      */
-    @Issue("HUDSON-5769")
+    @Issue("JENKINS-5769")
     @Test
     public void unmarshalThrowableMissingField() {
         Level oldLevel = disableLogging();

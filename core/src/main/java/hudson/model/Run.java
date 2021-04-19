@@ -1937,7 +1937,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 result = Result.FAILURE;
             } finally {
                 long end = System.currentTimeMillis();
-                duration = Math.max(end - start, 0);  // @see HUDSON-5844
+                duration = Math.max(end - start, 0);  // @see JENKINS-5844
 
                 // advance the state.
                 // the significance of doing this is that Jenkins

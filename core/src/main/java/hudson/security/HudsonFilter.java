@@ -111,7 +111,7 @@ public class HudsonFilter implements Filter {
                 LOGGER.fine("Security initialized");
             }
         } catch (ExceptionInInitializerError e) {
-            // see HUDSON-4592. In some containers this happens before
+            // see JENKINS-4592. In some containers this happens before
             // WebAppMain.contextInitialized kicks in, which makes
             // the whole thing fail hard before a nicer error check
             // in WebAppMain.contextInitialized. So for now,
