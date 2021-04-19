@@ -100,7 +100,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
             if (value.length() > 0) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(Messages.CommandInstaller_no_command());
+                return FormValidation.error(Messages.CommandInstaller_no_toolHome());
             }
         }
     }
