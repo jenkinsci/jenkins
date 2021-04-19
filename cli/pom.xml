@@ -50,9 +50,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>access-modifier-annotation</artifactId>
-        <scope>provided</scope>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>access-modifier-annotation</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -112,43 +112,43 @@
         <!-- Version specified in grandparent POM -->
       </plugin>
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>3.2.4</version>
-          <executions>
-              <execution>
-                  <phase>package</phase>
-                  <goals>
-                      <goal>shade</goal>
-                  </goals>
-                  <configuration>
-                      <createDependencyReducedPom>false</createDependencyReducedPom>
-                      <relocations>
-                          <relocation>
-                              <pattern>javax.websocket</pattern>
-                              <shadedPattern>io.jenkins.cli.shaded.javax.websocket</shadedPattern>
-                          </relocation>
-                          <relocation>
-                              <pattern>org</pattern>
-                              <shadedPattern>io.jenkins.cli.shaded.org</shadedPattern>
-                          </relocation>
-                          <relocation>
-                              <pattern>net</pattern>
-                              <shadedPattern>io.jenkins.cli.shaded.net</shadedPattern>
-                          </relocation>
-                      </relocations>
-                      <transformers>
-                          <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                              <mainClass>hudson.cli.CLI</mainClass>
-                              <manifestEntries>
-                                  <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
-                              </manifestEntries>
-                          </transformer>
-                          <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                      </transformers>
-                  </configuration>
-              </execution>
-          </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <relocations>
+                <relocation>
+                  <pattern>javax.websocket</pattern>
+                  <shadedPattern>io.jenkins.cli.shaded.javax.websocket</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org</pattern>
+                  <shadedPattern>io.jenkins.cli.shaded.org</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>net</pattern>
+                  <shadedPattern>io.jenkins.cli.shaded.net</shadedPattern>
+                </relocation>
+              </relocations>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>hudson.cli.CLI</mainClass>
+                  <manifestEntries>
+                    <Jenkins-CLI-Version>${project.version}</Jenkins-CLI-Version>
+                  </manifestEntries>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
@@ -175,14 +175,14 @@
           <execution>
             <id>add-source</id>
             <phase>generate-sources</phase>
-              <goals>
-                 <goal>add-source</goal>
-              </goals>
-              <configuration>
-                <sources>
-                  <source>${project.build.directory}/generated-sources/localizer</source>
-                </sources>
-              </configuration>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/localizer</source>
+              </sources>
+            </configuration>
           </execution>
         </executions>
       </plugin>
