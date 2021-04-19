@@ -1351,7 +1351,7 @@ public class Fingerprint implements ModelObject, Saveable {
         }
 
         FingerprintStorage configuredFingerprintStorage = FingerprintStorage.get();
-        FingerprintStorage fileFingerprintStorage = FileFingerprintStorage.getFileFingerprintStorage();
+        FingerprintStorage fileFingerprintStorage = FingerprintStorage.getFileFingerprintStorage();
 
         Fingerprint loaded = configuredFingerprintStorage.load(id);
 

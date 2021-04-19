@@ -79,7 +79,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
         if (!(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
                 FingerprintStorage.getFileFingerprintStorage().isReady()) {
-            FileFingerprintStorage.getFileFingerprintStorage().iterateAndCleanupFingerprints(listener);
+            FingerprintStorage.getFileFingerprintStorage().iterateAndCleanupFingerprints(listener);
         }
     }
 

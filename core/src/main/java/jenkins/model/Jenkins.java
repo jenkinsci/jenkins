@@ -2574,7 +2574,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public boolean isUseProjectNamingStrategy(){
-        return projectNamingStrategy != DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
+        return projectNamingStrategy != ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
     }
 
     /**
@@ -2672,7 +2672,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     public void setProjectNamingStrategy(ProjectNamingStrategy ns) {
         if(ns == null){
-            ns = DefaultProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
+            ns = ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY;
         }
         projectNamingStrategy = ns;
     }

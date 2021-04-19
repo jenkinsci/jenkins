@@ -410,7 +410,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public String getAssignedLabelString() {
         if (canRoam || assignedNode==null)    return null;
         try {
-            LabelExpression.parseExpression(assignedNode);
+            Label.parseExpression(assignedNode);
             return assignedNode;
         } catch (ANTLRException e) {
             // must be old label or host name that includes whitespace or other unsafe chars

@@ -31,7 +31,6 @@ import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.ListView;
-import hudson.model.labels.LabelExpression;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -104,7 +103,7 @@ public class ListJobsCommandTest {
                 new Axis("axis", "a", "b")
         ));
 
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         matrixProject.setAssignedLabel(label);
 
         CLICommandInvoker.Result result = command.invokeWithArgs("Folder");
