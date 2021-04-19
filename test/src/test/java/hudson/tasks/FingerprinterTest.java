@@ -24,8 +24,6 @@
 
 package hudson.tasks;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
@@ -52,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -127,7 +126,7 @@ public class FingerprinterTest {
     private static class FingerprintAddingBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            build.addAction(new Fingerprinter.FingerprintAction(build, ImmutableMap.of(singleFiles2[0], "fakefingerprint")));
+            build.addAction(new Fingerprinter.FingerprintAction(build, Collections.singletonMap(singleFiles2[0], "fakefingerprint")));
             return true;
         }
     }
@@ -141,7 +140,7 @@ public class FingerprinterTest {
         assertThat(build.getActions(Fingerprinter.FingerprintAction.class), hasSize(1));
 
         Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
-        assertEquals(action.getRecords().keySet(), ImmutableSet.of(singleFiles2[0], singleFiles[0]));
+        assertThat(action.getRecords().keySet(), containsInAnyOrder(singleFiles2[0], singleFiles[0]));
     }
 
     @Test public void multipleUpstreamDependencies() throws Exception {

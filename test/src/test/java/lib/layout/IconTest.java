@@ -26,7 +26,6 @@ package lib.layout;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.common.collect.Lists;
 import hudson.model.BallColor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -45,6 +44,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
@@ -62,7 +63,7 @@ public class IconTest  {
     public void testIcons() throws Exception {
         HtmlPage p = j.createWebClient().goTo("testIcons");
         DomElement iconsBlock = p.getElementById("iconsBlock");
-        List<DomElement> icons = Lists.newArrayList(iconsBlock.getChildElements());
+        List<DomElement> icons = StreamSupport.stream(iconsBlock.getChildElements().spliterator(), false).collect(Collectors.toList());
 
         assertIconToImageOkay(icons.get(0), "/images/16x16/empty.png", "icon-empty icon-sm");
         assertIconToImageOkay(icons.get(1), "/images/24x24/empty.png", "icon-empty icon-md");
@@ -90,11 +91,11 @@ public class IconTest  {
         HtmlPage p = j.createWebClient().goTo("testBallColorTd");
 
         DomElement ballColorAborted = p.getElementById("ballColorAborted");
-        List<DomElement> ballIcons = Lists.newArrayList(ballColorAborted.getChildElements());
+        List<DomElement> ballIcons = StreamSupport.stream(ballColorAborted.getChildElements().spliterator(), false).collect(Collectors.toList());
         assertIconToSvgOkay(ballIcons.get(0), "icon-aborted icon-lg");
 
         DomElement statusIcons = p.getElementById("statusIcons");
-        List<DomElement> statusIconsList = Lists.newArrayList(statusIcons.getChildElements());
+        List<DomElement> statusIconsList = StreamSupport.stream(statusIcons.getChildElements().spliterator(), false).collect(Collectors.toList());
         assertIconToImageOkay(statusIconsList.get(0), "/images/32x32/folder.png", "icon-folder icon-lg");
 
         assertIconToImageOkay(statusIconsList.get(1), "/plugin/12345/icons/s2.png");
@@ -135,7 +136,7 @@ public class IconTest  {
         HtmlPage p = j.createWebClient().goTo("testTasks");
 
         DomElement tasksDiv = p.getElementById("tasks");
-        List<DomElement> taskDivs = Lists.newArrayList(tasksDiv.getChildElements());
+        List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).collect(Collectors.toList());
 
         assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/24x24/up.png", "icon-up icon-md");
         assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/24x24/folder.png", "icon-folder icon-md");
