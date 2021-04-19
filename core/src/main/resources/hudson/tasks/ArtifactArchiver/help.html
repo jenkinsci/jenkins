@@ -12,3 +12,15 @@ Note that the Maven job type automatically archives any produced Maven artifacts
 Any artifacts configured here will be archived on top of that.
 Automatic artifact archiving can be disabled under the advanced Maven options.
 </div>
+
+<br/>
+
+<div>
+  The <a href="https://www.jenkins.io/redirect/pipeline-snippet-generator">Pipeline Snippet Generator</a> generates this example
+  when all arguments are set to true (some arguments by default are true):
+<pre>archiveArtifacts artifacts: '**/*.txt',
+                   allowEmptyArchive: true,
+                   fingerprint: true,
+                   onlyIfSuccessful: true
+</pre>
+</div>
