@@ -6,10 +6,23 @@
    The base directory is <a href='ws/'>the workspace</a>.
    You can only archive files that are located in your workspace.
 
+   <br>
+   <br>
+   <p>
    An example on how to archive multiple artifacts from a specific folder:
-   <pre>archiveArtifacts: artifacts: 'target/*.jar'</pre>
 
+   <pre>archiveArtifacts artifacts: 'target/*.jar'</pre>
+    </p>
+
+   <p>
    An example on how to archive multiple artifacts with different patterns:
-   <pre>archiveArtifacts: artifacts: 'target/*.jar, target/*.war'</pre>
+   <pre>archiveArtifacts artifacts: 'target/*.jar, target/*.war'</pre>
+   </p>
+
+   <p>
+      An example on how to archive multiple nested artifacts:
+      <pre>archiveArtifacts artifacts: '**/*.jar'</pre>
+   </p>
+
 
 </div>
