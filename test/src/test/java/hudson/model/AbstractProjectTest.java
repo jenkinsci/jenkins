@@ -374,9 +374,7 @@ public class AbstractProjectTest {
     @Test
     public void vectorTriggers() throws Exception {
         AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
-        assertEquals(1, p.triggers().size());
-        Trigger<?> t = p.triggers().get(0);
-        assertEquals(SCMTrigger.class, t.getClass());
+        Trigger<?> t = getT72670(p); // CAP AL
         assertEquals("*/10 * * * *", t.getSpec());
     }
 
@@ -398,11 +396,16 @@ public class AbstractProjectTest {
         SCMTrigger newTrigger = new SCMTrigger("H/5 * * * *");
         p.addTrigger(newTrigger);
 
-        assertEquals(1, p.triggers().size());
-        Trigger<?> t = p.triggers().get(0);
-        assertEquals(SCMTrigger.class, t.getClass());
+        Trigger<?> t = getT72670(p); // CAP AL
         assertEquals("H/5 * * * *", t.getSpec());
     }
+ // CAP AL
+    private Trigger<?> getT72670(final AbstractProject<?, ?> p) { // CAP AL
+        assertEquals(1, p.triggers().size()); // CAP AL
+        Trigger<?> t = p.triggers().get(0); // CAP AL
+        assertEquals(SCMTrigger.class, t.getClass()); // CAP AL
+        return t; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-18813")
