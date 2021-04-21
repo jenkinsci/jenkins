@@ -39,3 +39,5 @@ updates:
         versions: ["10.x", "11.x"]
       # Pending https://github.com/siom79/japicmp/pull/266
       - dependency-name: "com.github.siom79.japicmp:japicmp-maven-plugin"
+      # Winstone upgrades require multiple changes in pom.xml.  See https://github.com/jenkinsci/jenkins/pull/5439#discussion_r616418468
+      - dependency-name: "org.jenkins-ci:winstone"
