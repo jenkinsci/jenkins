@@ -30,6 +30,7 @@ import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.Main;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
@@ -40,6 +41,7 @@ import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.util.CopyOnWriteList;
+import jenkins.model.Jenkins;
 import org.jvnet.tiger_types.Types;
 
 import java.io.File;
@@ -203,6 +205,10 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onCompleted(Run, TaskListener)} event.
      */
     public static void fireCompleted(Run r, @NonNull TaskListener listener) {
+        if (Main.isUnitTest && Jenkins.getInstanceOrNull() == null) {
+            // Builds run while a test finishes create unnecessary log spam
+            return;
+        }
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
                 try {
