@@ -28,9 +28,15 @@ public class TcpSlaveAgentListenerTest {
 
         r.getInstance().setSlaveAgentPort(-1);
         wc.assertFails("tcpSlaveAgentListener", HttpURLConnection.HTTP_NOT_FOUND);
+        wc.assertFails("tcp-agent-listener", HttpURLConnection.HTTP_NOT_FOUND);
 
         r.getInstance().setSlaveAgentPort(0);
         Page p = wc.goTo("tcpSlaveAgentListener", "text/plain");
+        assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
+        assertThat(p.getWebResponse().getResponseHeaderValue("X-Instance-Identity"), notNullValue());
+
+        r.getInstance().setSlaveAgentPort(0);
+        p = wc.goTo("tcp-agent-listener", "text/plain");
         assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());
         assertThat(p.getWebResponse().getResponseHeaderValue("X-Instance-Identity"), notNullValue());
     }
