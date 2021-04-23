@@ -18,9 +18,9 @@ Automatic artifact archiving can be disabled under the advanced Maven options.
 <div>
   The <a href="https://www.jenkins.io/redirect/pipeline-snippet-generator">Pipeline Snippet Generator</a> generates this example
   when all arguments are set to true (some arguments by default are true):
-<pre>archiveArtifacts artifacts: '**/*.txt',
+<pre><code>archiveArtifacts artifacts: '**/*.txt',
                    allowEmptyArchive: true,
                    fingerprint: true,
                    onlyIfSuccessful: true
-</pre>
+</code></pre>
 </div>
