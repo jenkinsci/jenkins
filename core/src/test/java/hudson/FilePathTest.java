@@ -955,9 +955,7 @@ public class FilePathTest {
         bFolder.child("_atxt").symlinkTo("../a/a.txt", null);
         // illegal symlinks
         workspaceFolder.child("_protected").symlinkTo("../protected", null);
-        workspaceFolder.child("_nonexistent").symlinkTo("nonexistent", null);
-        workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
-        workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
+        extractedMethod66199(workspaceFolder); // CAP AL
 
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
@@ -1113,9 +1111,7 @@ public class FilePathTest {
         // illegal symlinks
         workspaceFolder.child("_protected").symlinkTo("../protected", null);
         workspaceFolder.child("_protected2").symlinkTo("../../protected", null);
-        workspaceFolder.child("_nonexistent").symlinkTo("nonexistent", null);
-        workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
-        workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
+        extractedMethod66199(workspaceFolder); // CAP AL
         workspaceFolder.child("_secrettxt2").symlinkTo("../../protected/secret.txt", null);
 
         wFolder.mkdirs();
@@ -1146,4 +1142,10 @@ public class FilePathTest {
         assertFalse(symbolicWorkspace.isDescendant("./_secrettxt"));
         assertFalse(symbolicWorkspace.isDescendant("_secrettxt2"));
     }
+ // CAP AL
+    private void extractedMethod66199(final FilePath workspaceFolder) throws IOException, InterruptedException { // CAP AL
+        workspaceFolder.child("_nonexistent").symlinkTo("nonexistent", null); // CAP AL
+        workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null); // CAP AL
+        workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null); // CAP AL
+    } // CAP AL
 }
