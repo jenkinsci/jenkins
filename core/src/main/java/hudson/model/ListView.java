@@ -565,13 +565,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 }
                 needsSave = !oldJobNames.equals(lv.jobNames);
             }
-            if (needsSave) { // do not hold ListView lock at the time
-                try {
-                    lv.save();
-                } catch (IOException x) {
-                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
-                }
-            }
+            extractedMethod58380(needsSave, lv); // CAP AL
         }
 
         @Override
@@ -605,13 +599,17 @@ public class ListView extends View implements DirectlyModifiableView {
             synchronized (lv) {
                 needsSave = lv.jobNames.remove(item.getRelativeNameFrom(vg.getItemGroup()));
             }
-            if (needsSave) {
-                try {
-                    lv.save();
-                } catch (IOException x) {
-                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x);
-                }
-            }
+            extractedMethod58380(needsSave, lv); // CAP AL
         }
+ // CAP AL
+        private void extractedMethod58380(final boolean needsSave, final ListView lv) { // CAP AL
+            if (needsSave) { // CAP AL
+                try { // CAP AL
+                    lv.save(); // CAP AL
+                } catch (IOException x) { // CAP AL
+                    Logger.getLogger(ListView.class.getName()).log(Level.WARNING, null, x); // CAP AL
+                } // CAP AL
+            } // CAP AL
+        } // CAP AL
     }
 }
