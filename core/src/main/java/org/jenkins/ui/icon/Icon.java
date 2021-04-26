@@ -82,13 +82,7 @@ public class Icon {
      */
     public Icon(String classSpec, String url, String style) {
         this(classSpec, url, style, IconType.CORE);
-        if (url != null) {
-            if (url.startsWith("images/")) {
-                this.iconType = IconType.CORE;
-            } else if (url.startsWith("plugin/")) {
-                this.iconType = IconType.PLUGIN;
-            }
-        }
+        extractedMethod20032(url); // CAP AL
     }
 
     /**
@@ -114,14 +108,18 @@ public class Icon {
      */
     public Icon(String classSpec, String url, String style, IconFormat iconFormat) {
         this(classSpec, url, style, IconType.CORE, iconFormat);
-        if (url != null) {
-            if (url.startsWith("images/")) {
-                this.iconType = IconType.CORE;
-            } else if (url.startsWith("plugin/")) {
-                this.iconType = IconType.PLUGIN;
-            }
-        }
+        extractedMethod20032(url); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod20032(final String url) { // CAP AL
+        if (url != null) { // CAP AL
+            if (url.startsWith("images/")) { // CAP AL
+                this.iconType = IconType.CORE; // CAP AL
+            } else if (url.startsWith("plugin/")) { // CAP AL
+                this.iconType = IconType.PLUGIN; // CAP AL
+            } // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Restricted(NoExternalUse.class)
     public Icon(String classSpec, String url, String style, IconType iconType, IconFormat iconFormat) {
