@@ -260,24 +260,24 @@ public class ItemListener implements ExtensionPoint {
                 }
             });
         }
-        forAll(l -> {
-            if (l!= null) {
-                l.onLocationChanged(rootItem, oldFullName, newFullName);
-            }
-        });
+        extractedMethod33827(rootItem, oldFullName, newFullName); // CAP AL
         if (rootItem instanceof ItemGroup) {
             for (final Item child : Items.allItems2(ACL.SYSTEM2, (ItemGroup)rootItem, Item.class)) {
                 final String childNew = child.getFullName();
                 assert childNew.startsWith(newFullName);
                 assert childNew.charAt(newFullName.length()) == '/';
                 final String childOld = oldFullName + childNew.substring(newFullName.length());
-                forAll(l -> {
-                    if (l != null) {
-                        l.onLocationChanged(child, childOld, childNew);
-                    }
-                });
+                extractedMethod33827(child, childOld, childNew); // CAP AL
             }
         }
     }
+ // CAP AL
+    private static void extractedMethod33827(final Item child, final String childOld, final String childNew) { // CAP AL
+        forAll(l -> { // CAP AL
+            if (l != null) { // CAP AL
+                l.onLocationChanged(child, childOld, childNew); // CAP AL
+            } // CAP AL
+        }); // CAP AL
+    } // CAP AL
 
 }
