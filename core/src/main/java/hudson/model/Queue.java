@@ -1378,11 +1378,7 @@ public class Queue extends ResourceController implements Saveable {
     @Override
     protected void _withLock(Runnable runnable) {
         lock.lock();
-        try {
-            runnable.run();
-        } finally {
-            lock.unlock();
-        }
+        extractedMethod55786(runnable); // CAP AL
     }
 
     /**
@@ -1394,16 +1390,20 @@ public class Queue extends ResourceController implements Saveable {
      */
     protected boolean _tryWithLock(Runnable runnable) {
         if (lock.tryLock()) {
-            try {
-                runnable.run();
-            } finally {
-                lock.unlock();
-            }
+            extractedMethod55786(runnable); // CAP AL
             return true;
         } else {
             return false;
         }
     }
+ // CAP AL
+    private void extractedMethod55786(final Runnable runnable) { // CAP AL
+        try { // CAP AL
+            runnable.run(); // CAP AL
+        } finally { // CAP AL
+            lock.unlock(); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     /**
      * Some operations require to be performed with the {@link Queue} lock held. Use one of these methods rather
