@@ -55,9 +55,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
 
        String humanReadableSpace = Functions.humanReadableByteSize(usage.availableSwapSpace);
        
-        long free = usage.availableSwapSpace;
-        free/=1024L;   // convert to KB
-        free/=1024L;   // convert to MB
+        long free = getFree84084(usage); // CAP AL   // convert to MB
         if(free>256 || usage.totalSwapSpace<usage.availableSwapSpace*5)
             return humanReadableSpace; // if we have more than 256MB free or less than 80% filled up, it's OK
 
@@ -69,11 +67,16 @@ public class SwapSpaceMonitor extends NodeMonitor {
         if(usage.availableSwapSpace==-1)
             return -1;
 
-        long free = usage.availableSwapSpace;
-        free/=1024L;   // convert to KB
-        free/=1024L;   // convert to MB
+        long free = getFree84084(usage); // CAP AL   // convert to MB
         return free;
     }
+ // CAP AL
+    private long getFree84084(final MemoryUsage usage) { // CAP AL
+        long free = usage.availableSwapSpace; // CAP AL
+        free/=1024L;   // convert to KB // CAP AL
+        free/=1024L; // CAP AL
+        return free; // CAP AL
+    } // CAP AL
 
     @Override
     public String getColumnCaption() {
