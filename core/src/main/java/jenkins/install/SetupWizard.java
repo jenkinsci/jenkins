@@ -392,11 +392,7 @@ public class SetupWizard extends PageDecorator {
             // include the new seed
             newSession.setAttribute(UserSeedProperty.USER_SESSION_SEED, sessionSeed);
             
-            CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
-            JSONObject data = new JSONObject();
-            if (crumbIssuer != null) {
-                data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
-            }
+            JSONObject data = getData81605(req); // CAP AL
             return HttpResponses.okJSON(data);
         } catch (AccountCreationFailedException e) {
             /*
@@ -435,13 +431,18 @@ public class SetupWizard extends PageDecorator {
         
         InstallUtil.proceedToNextStateFrom(InstallState.CONFIGURE_INSTANCE);
 
-        CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
-        JSONObject data = new JSONObject();
-        if (crumbIssuer != null) {
-            data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
-        }
+        JSONObject data = getData81605(req); // CAP AL
         return HttpResponses.okJSON(data);
     }
+ // CAP AL
+    private JSONObject getData81605(final StaplerRequest req) { // CAP AL
+        CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer(); // CAP AL
+        JSONObject data = new JSONObject(); // CAP AL
+        if (crumbIssuer != null) { // CAP AL
+            data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req)); // CAP AL
+        } // CAP AL
+        return data; // CAP AL
+    } // CAP AL
     
     private void checkRootUrl(Map<String, String> errors, @CheckForNull String rootUrl){
         if(rootUrl == null){
