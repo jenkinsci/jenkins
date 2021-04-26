@@ -984,10 +984,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } else if (!existing.version.equals(plugin.version)) {
                     // allow secondary update centers to publish different versions
                     // TODO refactor to consolidate multiple versions of the same plugin within the one row
-                    final String altKey = plugin.name + ":" + plugin.version;
-                    if (!pluginMap.containsKey(altKey)) {
-                        pluginMap.put(altKey, plugin);
-                    }
+                    extractedMethod14283(plugin, pluginMap); // CAP AL
                 }
             }
         }
@@ -1046,10 +1043,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } else if (!existing.version.equals(plugin.version)) {
                     // allow secondary update centers to publish different versions
                     // TODO refactor to consolidate multiple versions of the same plugin within the one row
-                    final String altKey = plugin.name + ":" + plugin.version;
-                    if (!pluginMap.containsKey(altKey)) {
-                        pluginMap.put(altKey, plugin);
-                    }
+                    extractedMethod14283(plugin, pluginMap); // CAP AL
                 }
             }
         }
@@ -1061,6 +1055,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         return new ArrayList<>(pluginMap.values());
     }
+ // CAP AL
+    private void extractedMethod14283(final Plugin plugin, final Map<String, Plugin> pluginMap) { // CAP AL
+        final String altKey = plugin.name + ":" + plugin.version; // CAP AL
+        if (!pluginMap.containsKey(altKey)) { // CAP AL
+            pluginMap.put(altKey, plugin); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Restricted(NoExternalUse.class)
     public List<Plugin> getPluginsWithUnavailableUpdates() {
