@@ -117,12 +117,7 @@ public class Util {
      */
     @NonNull
     public static <T> List<T> filter( @NonNull Iterable<?> base, @NonNull Class<T> type ) {
-        List<T> r = new ArrayList<>();
-        for (Object i : base) {
-            if(type.isInstance(i))
-                r.add(type.cast(i));
-        }
-        return r;
+        return getR90878(base, type); // CAP AL
     }
 
     /**
@@ -799,13 +794,17 @@ public class Util {
      */
     @NonNull
     public static <T> List<T> createSubList(@NonNull Collection<?> source, @NonNull Class<T> type ) {
-        List<T> r = new ArrayList<>();
-        for (Object item : source) {
-            if(type.isInstance(item))
-                r.add(type.cast(item));
-        }
-        return r;
+        return getR90878(source, type); // CAP AL
     }
+ // CAP AL
+    private static <T> List<T> getR90878(final Iterable source, final Class<T> type) { // CAP AL
+        List<T> r = new ArrayList<>(); // CAP AL
+        for (Object item : source) { // CAP AL
+            if(type.isInstance(item)) // CAP AL
+                r.add(type.cast(item)); // CAP AL
+        } // CAP AL
+        return r; // CAP AL
+    } // CAP AL
 
     /**
      * Escapes non-ASCII characters in URL.
