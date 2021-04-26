@@ -187,10 +187,7 @@ public class QuotedStringTokenizer
                   _hasToken=true;
                   if (escape)
                   {
-                      escape=false;
-                      if(ESCAPABLE_CHARS.indexOf(c)<0)
-                          _token.append('\\');
-                      _token.append(c);
+                      escape = isEscape88690(c); // CAP AL
                   }
                   else if(_delim.indexOf(c)>=0)
                   {
@@ -223,10 +220,7 @@ public class QuotedStringTokenizer
                   _hasToken=true;
                   if (escape)
                   {
-                      escape=false;
-                      if(ESCAPABLE_CHARS.indexOf(c)<0)
-                          _token.append('\\');
-                      _token.append(c);
+                      escape = isEscape88690(c); // CAP AL
                   }
                   else if (c=='\'')
                   {
@@ -249,10 +243,7 @@ public class QuotedStringTokenizer
                   _hasToken=true;
                   if (escape)
                   {
-                      escape=false;
-                      if(ESCAPABLE_CHARS.indexOf(c)<0)
-                          _token.append('\\');
-                      _token.append(c);
+                      escape = isEscape88690(c); // CAP AL
                   }
                   else if (c=='\"')
                   {
@@ -274,6 +265,14 @@ public class QuotedStringTokenizer
 
         return _hasToken;
     }
+ // CAP AL
+    private boolean isEscape88690(final char c) { // CAP AL
+      boolean escape =false; // CAP AL
+      if(ESCAPABLE_CHARS.indexOf(c)<0) // CAP AL
+          _token.append('\\'); // CAP AL
+      _token.append(c); // CAP AL
+      return escape; // CAP AL
+    } // CAP AL
 
     /* ------------------------------------------------------------ */
     @Override
