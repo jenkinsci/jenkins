@@ -406,22 +406,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
             if (checkJob != null) {
                 boolean isOffline = false;
-                for (ConnectionStatus status : checkJob.connectionStates.values()) {
-                    if(ConnectionStatus.FAILED.equals(status)) {
-                        isOffline = true;
-                        break;
-                    }
-                }
+                isOffline = isIsOffline7463(checkJob, isOffline); // CAP AL
                 if (isOffline) {
                     // retry connection states if determined to be offline
                     checkJob.run();
                     isOffline = false;
-                    for (ConnectionStatus status : checkJob.connectionStates.values()) {
-                        if(ConnectionStatus.FAILED.equals(status)) {
-                            isOffline = true;
-                            break;
-                        }
-                    }
+                    isOffline = isIsOffline7463(checkJob, isOffline); // CAP AL
                     if(!isOffline) { // also need to download the metadata
                         updateAllSites();
                     }
@@ -435,6 +425,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
+ // CAP AL
+    private boolean isIsOffline7463(final ConnectionCheckJob checkJob, boolean isOffline) { // CAP AL
+        for (ConnectionStatus status : checkJob.connectionStates.values()) { // CAP AL
+            if(ConnectionStatus.FAILED.equals(status)) { // CAP AL
+                isOffline = true; // CAP AL
+                break; // CAP AL
+            } // CAP AL
+        } // CAP AL
+        return isOffline; // CAP AL
+    } // CAP AL
 
     /**
      * Called to determine if there was an incomplete installation, what the statuses of the plugins are
