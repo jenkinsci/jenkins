@@ -94,9 +94,7 @@ public class FileParameterDefinition extends ParameterDefinition {
             return null;
         }
         FileParameterValue p = new FileParameterValue(getName(), src, getFileName(src.getName()));
-        p.setDescription(getDescription());
-        p.setLocation(getName());
-        return p;
+        return getP48638(p); // CAP AL
 	}
 
     /**
@@ -123,10 +121,14 @@ public class FileParameterDefinition extends ParameterDefinition {
         }
 
         FileParameterValue p = new FileParameterValue(getName(), local, name);
-        p.setDescription(getDescription());
-        p.setLocation(getName());
-        return p;
+        return getP48638(p); // CAP AL
     }
+ // CAP AL
+    private FileParameterValue getP48638(final FileParameterValue p) { // CAP AL
+        p.setDescription(getDescription()); // CAP AL
+        p.setLocation(getName()); // CAP AL
+        return p; // CAP AL
+    } // CAP AL
 
     @Override
     public int hashCode() {
