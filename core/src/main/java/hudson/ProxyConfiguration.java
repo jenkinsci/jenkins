@@ -306,11 +306,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         } else {
             Proxy proxy = p.createProxy(url.getHost());
             con = url.openConnection(proxy);
-            if(p.getUserName()!=null) {
-                // Add an authenticator which provides the credentials for proxy authentication
-                Authenticator.setDefault(p.authenticator);
-                p.jenkins48775workaround(proxy, url);
-            }
+            extractedMethod23813(p, proxy, url); // CAP AL
         }
         
         if(DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
@@ -331,14 +327,18 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
         Proxy proxy = p.createProxy(url.getHost());
         InputStream is = new RetryableHttpStream(url, proxy);
-        if (p.getUserName() != null) {
-            // Add an authenticator which provides the credentials for proxy authentication
-            Authenticator.setDefault(p.authenticator);
-            p.jenkins48775workaround(proxy, url);
-        }
+        extractedMethod23813(p, proxy, url); // CAP AL
 
         return is;
     }
+ // CAP AL
+    private static void extractedMethod23813(final ProxyConfiguration p, final Proxy proxy, final URL url) { // CAP AL
+        if (p.getUserName() != null) { // CAP AL
+            // Add an authenticator which provides the credentials for proxy authentication // CAP AL
+            Authenticator.setDefault(p.authenticator); // CAP AL
+            p.jenkins48775workaround(proxy, url); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     /**
      * If the first URL we try to access with a HTTP proxy is HTTPS then the authentication cache will not have been
