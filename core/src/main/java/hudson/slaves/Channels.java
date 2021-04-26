@@ -107,11 +107,7 @@ public class Channels {
                 };
             }
         };
-        cb.withHeaderStream(header);
-
-        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
-            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
-        }
+        extractedMethod41011(cb, header); // CAP AL
 
         return cb.build(in,out);
     }
@@ -144,14 +140,18 @@ public class Channels {
                 };
             }
         };
-        cb.withHeaderStream(header);
-
-        for (ChannelConfigurator cc : ChannelConfigurator.all()) {
-            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context?
-        }
+        extractedMethod41011(cb, header); // CAP AL
 
         return cb.build(proc.getInputStream(),proc.getOutputStream());
     }
+ // CAP AL
+    private static void extractedMethod41011(final ChannelBuilder cb, final OutputStream header) { // CAP AL
+        cb.withHeaderStream(header); // CAP AL
+         // CAP AL
+        for (ChannelConfigurator cc : ChannelConfigurator.all()) { // CAP AL
+            cc.onChannelBuilding(cb,null);  // TODO: what to pass as a context? // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     /**
      * Launches a new JVM with the given classpath and system properties, establish a communication channel,
