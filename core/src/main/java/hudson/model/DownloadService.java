@@ -108,11 +108,7 @@ public class DownloadService {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSON(URL src) throws IOException {
-        URLConnection con = ProxyConfiguration.open(src);
-        if (con instanceof HttpURLConnection) {
-            // prevent problems from misbehaving plugins disabling redirects by default
-            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
-        }
+        URLConnection con = getCon52039(src); // CAP AL
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             int start = jsonp.indexOf('{');
@@ -133,11 +129,7 @@ public class DownloadService {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSONHTML(URL src) throws IOException {
-        URLConnection con = ProxyConfiguration.open(src);
-        if (con instanceof HttpURLConnection) {
-            // prevent problems from misbehaving plugins disabling redirects by default
-            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
-        }
+        URLConnection con = getCon52039(src); // CAP AL
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, StandardCharsets.UTF_8);
             String preamble = "window.parent.postMessage(JSON.stringify(";
@@ -150,6 +142,15 @@ public class DownloadService {
             }
         }
     }
+ // CAP AL
+    private static URLConnection getCon52039(final URL src) throws IOException { // CAP AL
+        URLConnection con = ProxyConfiguration.open(src); // CAP AL
+        if (con instanceof HttpURLConnection) { // CAP AL
+            // prevent problems from misbehaving plugins disabling redirects by default // CAP AL
+            ((HttpURLConnection) con).setInstanceFollowRedirects(true); // CAP AL
+        } // CAP AL
+        return con; // CAP AL
+    } // CAP AL
 
     /**
      * This installs itself as a listener to changes to the Downloadable extension list and will download the metadata
