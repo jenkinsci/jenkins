@@ -47,7 +47,7 @@ THE SOFTWARE.
                description="${%List of loggers and the log levels to record}"
                help="/help/LogRecorder/logger.html">
         <j:set var="instance" value="${null}" />
-        <f:repeatable var="instance" items="${it.targets}" name="targets">
+        <f:repeatable var="instance" items="${it.loggers}" name="loggers">
           <table width="100%">
             <tr>
               <th style="white-space:nowrap;">

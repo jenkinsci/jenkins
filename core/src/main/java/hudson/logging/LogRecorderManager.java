@@ -26,18 +26,24 @@ package hudson.logging;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FeedAdapter;
 import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.init.Initializer;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static java.util.stream.Collectors.toMap;
+
 import hudson.model.AbstractModelObject;
+import hudson.util.CopyOnWriteMap;
+import java.util.function.Function;
 import jenkins.model.Jenkins;
 import hudson.model.RSS;
-import hudson.util.CopyOnWriteMap;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -67,9 +73,34 @@ import java.util.logging.Logger;
  */
 public class LogRecorderManager extends AbstractModelObject implements ModelObjectWithChildren, StaplerProxy {
     /**
-     * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#name name}.
+     * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#getName()}  name}.
+     *
+     * @deprecated use {@link #getRecorders()} instead
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("TODO")
     public final transient Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
+
+    private List<LogRecorder> recorders;
+
+    @DataBoundConstructor
+    public LogRecorderManager() {
+        this.recorders = new ArrayList<>();
+    }
+
+    public List<LogRecorder> getRecorders() {
+        return recorders;
+    }
+
+    @DataBoundSetter
+    public void setRecorders(List<LogRecorder> recorders) {
+        this.recorders = recorders;
+
+        Map<String, LogRecorder> values = recorders.stream()
+                .collect(toMap(LogRecorder::getName, Function.identity()));
+        ((CopyOnWriteMap<String,LogRecorder>) logRecorders).replaceBy(values);
+    }
 
     public String getDisplayName() {
         return Messages.LogRecorderManager_DisplayName();
@@ -84,7 +115,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     }
 
     public LogRecorder getLogRecorder(String token) {
-        return logRecorders.get(token);
+        return recorders.stream().filter(logRecorder -> logRecorder.getName().equals(token)).findAny().orElse(null);
     }
 
     static File configDir() {
@@ -95,7 +126,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Loads the configuration from disk.
      */
     public void load() throws IOException {
-        logRecorders.clear();
+        recorders.clear();
         File dir = configDir();
         File[] files = dir.listFiles((FileFilter)new WildcardFileFilter("*.xml"));
         if(files==null)     return;
@@ -104,8 +135,9 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             name = name.substring(0,name.length()-4);   // cut off ".xml"
             LogRecorder lr = new LogRecorder(name);
             lr.load();
-            logRecorders.put(name,lr);
+            recorders.add(lr);
         }
+        setRecorders(recorders); // ensure that legacy logRecorders field is synced on load
     }
 
     /**
@@ -116,8 +148,8 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Jenkins.checkGoodName(name);
-        
-        logRecorders.put(name,new LogRecorder(name));
+
+        recorders.add(new LogRecorder(name));
 
         // redirect to the config screen
         return new HttpRedirect(name+"/configure");
@@ -126,7 +158,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         menu.add("all","All Jenkins Logs");
-        for (LogRecorder lr : logRecorders.values()) {
+        for (LogRecorder lr : recorders) {
             menu.add(lr.getSearchUrl(), lr.getDisplayName());
         }
         return menu;
