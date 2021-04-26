@@ -803,10 +803,7 @@ public class FilePathTest {
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
         Util.createSymlink(toDelete.toFile(), "../targetDir", "link", TaskListener.NULL);
-        Files.createFile(toDelete.resolve("foo"));
-        Files.createFile(toDelete.resolve("bar"));
-        FilePath f = new FilePath(toDelete.toFile());
-        f.deleteRecursive();
+        extractedMethod67513(toDelete); // CAP AL
         assertTrue("symlink target should not be deleted", Files.exists(targetDir));
         assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
         assertFalse("could not delete target", Files.exists(toDelete));
@@ -832,15 +829,19 @@ public class FilePathTest {
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
         File junction = WindowsUtil.createJunction(toDelete.resolve("junction").toFile(), targetDir.toFile());
-        Files.createFile(toDelete.resolve("foo"));
-        Files.createFile(toDelete.resolve("bar"));
-        FilePath f = new FilePath(toDelete.toFile());
-        f.deleteRecursive();
+        extractedMethod67513(toDelete); // CAP AL
         assertTrue("junction target should not be deleted", Files.exists(targetDir));
         assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
         assertFalse("could not delete junction", junction.exists());
         assertFalse("could not delete target", Files.exists(toDelete));
     }
+ // CAP AL
+    private void extractedMethod67513(final Path toDelete) throws IOException, InterruptedException { // CAP AL
+        Files.createFile(toDelete.resolve("foo")); // CAP AL
+        Files.createFile(toDelete.resolve("bar")); // CAP AL
+        FilePath f = new FilePath(toDelete.toFile()); // CAP AL
+        f.deleteRecursive(); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-13128")
     @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
