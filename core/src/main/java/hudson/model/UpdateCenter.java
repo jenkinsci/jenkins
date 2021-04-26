@@ -815,10 +815,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return;
         }
 
-        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2());
-        LOGGER.info("Scheduling the core downgrade");
-        addJob(job);
-        rsp.sendRedirect2(".");
+        extractedMethod68943(rsp); // CAP AL
     }
 
     /**
@@ -827,12 +824,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @RequirePOST
     public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2());
-        LOGGER.info("Scheduling the core downgrade");
-
-        addJob(job);
-        rsp.sendRedirect2(".");
+        extractedMethod68943(rsp); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod68943(final StaplerResponse rsp) throws IOException { // CAP AL
+        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2()); // CAP AL
+        LOGGER.info("Scheduling the core downgrade"); // CAP AL
+         // CAP AL
+        addJob(job); // CAP AL
+        rsp.sendRedirect2("."); // CAP AL
+    } // CAP AL
 
     /**
      * Returns String with version of backup .war file,
