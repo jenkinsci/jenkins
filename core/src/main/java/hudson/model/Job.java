@@ -1207,22 +1207,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     .getActions(HealthReportingAction.class)) {
                 final HealthReport report = healthReportingAction
                         .getBuildHealth();
-                if (report != null) {
-                    if (report.isAggregateReport()) {
-                        reports.addAll(report.getAggregatedReports());
-                    } else {
-                        reports.add(report);
-                    }
-                }
+                extractedMethod77911(report, reports); // CAP AL
             }
             final HealthReport report = getBuildStabilityHealthReport();
-            if (report != null) {
-                if (report.isAggregateReport()) {
-                    reports.addAll(report.getAggregatedReports());
-                } else {
-                    reports.add(report);
-                }
-            }
+            extractedMethod77911(report, reports); // CAP AL
 
             Collections.sort(reports);
 
@@ -1233,6 +1221,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         return reports;
     }
+ // CAP AL
+    private void extractedMethod77911(final HealthReport report, final List<HealthReport> reports) { // CAP AL
+        if (report != null) { // CAP AL
+            if (report.isAggregateReport()) { // CAP AL
+                reports.addAll(report.getAggregatedReports()); // CAP AL
+            } else { // CAP AL
+                reports.add(report); // CAP AL
+            } // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     private HealthReport getBuildStabilityHealthReport() {
         // we can give a simple view of build health from the last five builds
