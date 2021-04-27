@@ -88,10 +88,7 @@ public class ParametersTest {
         assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
         assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
 
-        j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        extractedMethod62467(form, project); // CAP AL
 
         assertEquals("newValue", builder.getEnvVars().get("STRING"));
         assertEquals("true", builder.getEnvVars().get("BOOLEAN"));
@@ -120,10 +117,7 @@ public class ParametersTest {
         assertEquals("Choice <2>", opt.asText());
         opt.setSelected(true);
 
-        j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        extractedMethod62467(form, project); // CAP AL
 
         assertNotNull(builder.getEnvVars());
         assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
@@ -200,13 +194,17 @@ public class ParametersTest {
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        extractedMethod62467(form, project); // CAP AL
 
         assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
     }
+ // CAP AL
+    private void extractedMethod62467(final HtmlForm form, final FreeStyleProject project) throws Exception { // CAP AL
+        j.submit(form); // CAP AL
+        Queue.Item q = j.jenkins.getQueue().getItem(project); // CAP AL
+        if (q != null) q.getFuture().get(); // CAP AL
+        else Thread.sleep(1000); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-11543")
