@@ -616,9 +616,7 @@ public class Security400Test {
         FullControlOnceLoggedInAuthorizationStrategy authorizationStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(authorizationStrategy);
         
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-        securityRealm.createAccount("admin", "admin");
+        HudsonPrivateSecurityRealm securityRealm = getSecurityRealm4809(); // CAP AL
         securityRealm.createAccount("secretUser", "secretUser");
         
         { // admin should have access to the user list
@@ -675,9 +673,7 @@ public class Security400Test {
     @Issue("SECURITY-722")
     public void noAccessToAllUsers() throws Exception {
         j.jenkins.setCrumbIssuer(null);
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-        securityRealm.createAccount("admin", "admin");
+        HudsonPrivateSecurityRealm securityRealm = getSecurityRealm4809(); // CAP AL
         
         j.jenkins.setAuthorizationStrategy(
                 new MockAuthorizationStrategy()
@@ -704,6 +700,13 @@ public class Security400Test {
             assertRequestWasBlockedAndResetFlag();
         }
     }
+ // CAP AL
+    private HudsonPrivateSecurityRealm getSecurityRealm4809() throws IOException { // CAP AL
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null); // CAP AL
+        j.jenkins.setSecurityRealm(securityRealm); // CAP AL
+        securityRealm.createAccount("admin", "admin"); // CAP AL
+        return securityRealm; // CAP AL
+    } // CAP AL
     
     // // does not work in 2.60 since the method was added in 2.91+
     // String newLogin = "newUser";
