@@ -112,10 +112,7 @@ public class FingerprintCleanupThreadTest {
         Fingerprint fp = new TestFingerprint(false);
         fp.facets.setOwner(Saveable.NOOP);
         TestFingperprintFacet facet = new TestFingperprintFacet(fp, System.currentTimeMillis(), true);
-        fp.facets.add(facet);
-        configureLocalTestStorage(fp);
-        FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
-        cleanupThread.execute(testTaskListener);
+        extractedMethod12580(fp, facet, testTaskListener); // CAP AL
         String logOutput = testTaskListener.outputStream.toString();
         assertThat(logOutput, containsString("blocked deletion of"));
     }
@@ -127,12 +124,16 @@ public class FingerprintCleanupThreadTest {
         Fingerprint fp = new TestFingerprint(false);
         fp.facets.setOwner(Saveable.NOOP);
         TestFingperprintFacet facet = new TestFingperprintFacet(fp, System.currentTimeMillis(), false);
-        fp.facets.add(facet);
-        configureLocalTestStorage(fp);
-        FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
-        cleanupThread.execute(testTaskListener);
+        extractedMethod12580(fp, facet, testTaskListener); // CAP AL
         assertThat(fpFile.toFile(), is(not(aReadableFile())));
     }
+ // CAP AL
+    private void extractedMethod12580(final Fingerprint fp, final TestFingperprintFacet facet, final TestTaskListener testTaskListener) { // CAP AL
+        fp.facets.add(facet); // CAP AL
+        configureLocalTestStorage(fp); // CAP AL
+        FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread(); // CAP AL
+        cleanupThread.execute(testTaskListener); // CAP AL
+    } // CAP AL
 
     @Test
     public void testExternalStorageCleanupWithoutLocalFingerprints() throws IOException {
