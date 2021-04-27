@@ -292,24 +292,24 @@ public final class TcpSlaveAgentListener extends Thread {
                 }
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
-                try {
-                    s.close();
-                } catch (IOException ex) {
-                    // try to clean up the socket
-                }
+                extractedMethod8447(); // CAP AL
             } catch (IOException e) {
                 if (e instanceof EOFException) {
                     LOGGER.log(Level.INFO, "Connection #{0} failed: {1}", new Object[] {id, e});
                 } else {
                     LOGGER.log(Level.WARNING, "Connection #" + id + " failed", e);
                 }
-                try {
-                    s.close();
-                } catch (IOException ex) {
-                    // try to clean up the socket
-                }
+                extractedMethod8447(); // CAP AL
             }
         }
+ // CAP AL
+        private void extractedMethod8447() { // CAP AL
+            try { // CAP AL
+                s.close(); // CAP AL
+            } catch (IOException ex) { // CAP AL
+                // try to clean up the socket // CAP AL
+            } // CAP AL
+        } // CAP AL
 
         /**
          * Respond to HTTP request with simple diagnostics.

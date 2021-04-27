@@ -95,10 +95,7 @@ public class InstallPluginCommand extends CLICommand {
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromStdin());
                 File f = getTmpFile();
                 FileUtils.copyInputStreamToFile(stdin, f);
-                f = moveToFinalLocation(f);
-                if (dynamicLoad) {
-                    pm.dynamicLoad(f);
-                }
+                extractedMethod37796(f, pm); // CAP AL
                 continue;
             }
 
@@ -108,10 +105,7 @@ public class InstallPluginCommand extends CLICommand {
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromUrl(u));
                 File f = getTmpFile();
                 FileUtils.copyURLToFile(u, f); // TODO JENKINS-58248 proxy
-                f = moveToFinalLocation(f);
-                if (dynamicLoad) {
-                    pm.dynamicLoad(f);
-                }
+                extractedMethod37796(f, pm); // CAP AL
                 continue;
             } catch (MalformedURLException e) {
                 // not an URL
@@ -167,6 +161,13 @@ public class InstallPluginCommand extends CLICommand {
             h.safeRestart();
         return 0; // all success
     }
+ // CAP AL
+    private void extractedMethod37796(File f, final PluginManager pm) throws Exception { // CAP AL
+        f = moveToFinalLocation(f); // CAP AL
+        if (dynamicLoad) { // CAP AL
+            pm.dynamicLoad(f); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     private static File getTmpFile() throws Exception {
         return File.createTempFile("download", ".jpi.tmp", Jenkins.get().getPluginManager().rootDir);

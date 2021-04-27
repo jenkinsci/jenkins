@@ -514,11 +514,7 @@ public class FilePathTest {
 
     @Test public void validateAntFileMask() throws Exception {
         File tmp = temp.getRoot();
-            FilePath d = new FilePath(channels.french, tmp.getPath());
-            d.child("d1/d2/d3").mkdirs();
-            d.child("d1/d2/d3/f.txt").touch(0);
-            d.child("d1/d2/d3/f.html").touch(0);
-            d.child("d1/d2/f.txt").touch(0);
+            FilePath d = getD585(tmp); // CAP AL
             assertValidateAntFileMask(null, d, "**/*.txt");
             assertValidateAntFileMask(null, d, "d1/d2/d3/f.txt");
             assertValidateAntFileMask(null, d, "**/*.html");
@@ -560,11 +556,7 @@ public class FilePathTest {
     @Test public void testValidateCaseSensitivity() throws Exception {
         File tmp = Util.createTempDir();
         try {
-            FilePath d = new FilePath(channels.french, tmp.getPath());
-            d.child("d1/d2/d3").mkdirs();
-            d.child("d1/d2/d3/f.txt").touch(0);
-            d.child("d1/d2/d3/f.html").touch(0);
-            d.child("d1/d2/f.txt").touch(0);
+            FilePath d = getD585(tmp); // CAP AL
 
             assertNull(d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
             assertNull(d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
@@ -574,6 +566,15 @@ public class FilePathTest {
             Util.deleteRecursive(tmp);
         }
     }
+ // CAP AL
+    private FilePath getD585(final File tmp) throws IOException, InterruptedException { // CAP AL
+        FilePath d = new FilePath(channels.french, tmp.getPath()); // CAP AL
+        d.child("d1/d2/d3").mkdirs(); // CAP AL
+        d.child("d1/d2/d3/f.txt").touch(0); // CAP AL
+        d.child("d1/d2/d3/f.html").touch(0); // CAP AL
+        d.child("d1/d2/f.txt").touch(0); // CAP AL
+        return d; // CAP AL
+    } // CAP AL
    
     @Issue("JENKINS-15418")
     @Test public void deleteLongPathOnWindows() throws Exception {
@@ -803,10 +804,7 @@ public class FilePathTest {
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
         Util.createSymlink(toDelete.toFile(), "../targetDir", "link", TaskListener.NULL);
-        Files.createFile(toDelete.resolve("foo"));
-        Files.createFile(toDelete.resolve("bar"));
-        FilePath f = new FilePath(toDelete.toFile());
-        f.deleteRecursive();
+        extractedMethod67513(toDelete); // CAP AL
         assertTrue("symlink target should not be deleted", Files.exists(targetDir));
         assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
         assertFalse("could not delete target", Files.exists(toDelete));
@@ -832,15 +830,19 @@ public class FilePathTest {
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
         File junction = WindowsUtil.createJunction(toDelete.resolve("junction").toFile(), targetDir.toFile());
-        Files.createFile(toDelete.resolve("foo"));
-        Files.createFile(toDelete.resolve("bar"));
-        FilePath f = new FilePath(toDelete.toFile());
-        f.deleteRecursive();
+        extractedMethod67513(toDelete); // CAP AL
         assertTrue("junction target should not be deleted", Files.exists(targetDir));
         assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
         assertFalse("could not delete junction", junction.exists());
         assertFalse("could not delete target", Files.exists(toDelete));
     }
+ // CAP AL
+    private void extractedMethod67513(final Path toDelete) throws IOException, InterruptedException { // CAP AL
+        Files.createFile(toDelete.resolve("foo")); // CAP AL
+        Files.createFile(toDelete.resolve("bar")); // CAP AL
+        FilePath f = new FilePath(toDelete.toFile()); // CAP AL
+        f.deleteRecursive(); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-13128")
     @Test public void copyRecursivePreservesPosixFilePermissions() throws Exception {
@@ -955,9 +957,7 @@ public class FilePathTest {
         bFolder.child("_atxt").symlinkTo("../a/a.txt", null);
         // illegal symlinks
         workspaceFolder.child("_protected").symlinkTo("../protected", null);
-        workspaceFolder.child("_nonexistent").symlinkTo("nonexistent", null);
-        workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
-        workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
+        extractedMethod66199(workspaceFolder); // CAP AL
 
         FilePath secretFile = protectedFolder.child("secret.txt");
         secretFile.write("secrets", StandardCharsets.UTF_8.name());
@@ -1113,9 +1113,7 @@ public class FilePathTest {
         // illegal symlinks
         workspaceFolder.child("_protected").symlinkTo("../protected", null);
         workspaceFolder.child("_protected2").symlinkTo("../../protected", null);
-        workspaceFolder.child("_nonexistent").symlinkTo("nonexistent", null);
-        workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null);
-        workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null);
+        extractedMethod66199(workspaceFolder); // CAP AL
         workspaceFolder.child("_secrettxt2").symlinkTo("../../protected/secret.txt", null);
 
         wFolder.mkdirs();
@@ -1146,4 +1144,10 @@ public class FilePathTest {
         assertFalse(symbolicWorkspace.isDescendant("./_secrettxt"));
         assertFalse(symbolicWorkspace.isDescendant("_secrettxt2"));
     }
+ // CAP AL
+    private void extractedMethod66199(final FilePath workspaceFolder) throws IOException, InterruptedException { // CAP AL
+        workspaceFolder.child("_nonexistent").symlinkTo("nonexistent", null); // CAP AL
+        workspaceFolder.child("_nonexistentUp").symlinkTo("../nonexistent", null); // CAP AL
+        workspaceFolder.child("_secrettxt").symlinkTo("../protected/secret.txt", null); // CAP AL
+    } // CAP AL
 }

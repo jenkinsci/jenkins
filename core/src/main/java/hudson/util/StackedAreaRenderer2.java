@@ -129,10 +129,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
         if (column == 0) {
             if (pass == 1) {
                 // draw item labels, if visible
-                if (isItemLabelVisible(row, column)) {
-                    drawItemLabel(g2, plot.getOrientation(), dataset, row, column,
-                            xx1, yy1, (y1 < 0.0));
-                }
+                extractedMethod38753(row, column, g2, plot, dataset, xx1, yy1, y1); // CAP AL
             }
         } else {
             Number previousValue = dataset.getValue(row, column - 1);
@@ -189,12 +186,16 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                     if (entities != null)
                         addItemEntity(entities, dataset, row, column, p);
                 } else {
-                    if (isItemLabelVisible(row, column)) {
-                        drawItemLabel(g2, plot.getOrientation(), dataset, row,
-                                column, xx1, yy1, (y1 < 0.0));
-                    }
+                    extractedMethod38753(row, column, g2, plot, dataset, xx1, yy1, y1); // CAP AL
                 }
             }
         }
     }
+ // CAP AL
+    private void extractedMethod38753(final int row, final int column, final Graphics2D g2, final CategoryPlot plot, final CategoryDataset dataset, final double xx1, final double yy1, final double y1) { // CAP AL
+        if (isItemLabelVisible(row, column)) { // CAP AL
+            drawItemLabel(g2, plot.getOrientation(), dataset, row, // CAP AL
+                    column, xx1, yy1, (y1 < 0.0)); // CAP AL
+        } // CAP AL
+    } // CAP AL
 }

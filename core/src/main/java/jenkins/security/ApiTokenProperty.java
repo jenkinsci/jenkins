@@ -515,11 +515,7 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
             
-            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
-            if (p == null) {
-                p = forceNewInstance(u, false);
-                u.addProperty(p);
-            }
+            ApiTokenProperty p = getP83155(u); // CAP AL
             
             TokenUuidAndPlainValue tokenUuidAndPlainValue = p.generateNewToken(tokenName);
 
@@ -551,11 +547,7 @@ public class ApiTokenProperty extends UserProperty {
                 tokenName = newTokenName;
             }
             
-            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
-            if (p == null) {
-                p = forceNewInstance(u, false);
-                u.addProperty(p);
-            }
+            ApiTokenProperty p = getP83155(u); // CAP AL
             
             String tokenUuid = p.tokenStore.addFixedNewToken(tokenName, newTokenPlainValue);
             u.save();
@@ -565,6 +557,15 @@ public class ApiTokenProperty extends UserProperty {
             data.put("tokenName", tokenName);
             return HttpResponses.okJSON(data);
         }
+ // CAP AL
+        private ApiTokenProperty getP83155(final User u) throws IOException { // CAP AL
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class); // CAP AL
+            if (p == null) { // CAP AL
+                p = forceNewInstance(u, false); // CAP AL
+                u.addProperty(p); // CAP AL
+            } // CAP AL
+            return p; // CAP AL
+        } // CAP AL
         
         @RequirePOST
         public HttpResponse doRename(@AncestorInPath User u,

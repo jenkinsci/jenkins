@@ -187,10 +187,7 @@ public class QuotedStringTokenizer
                   _hasToken=true;
                   if (escape)
                   {
-                      escape=false;
-                      if(ESCAPABLE_CHARS.indexOf(c)<0)
-                          _token.append('\\');
-                      _token.append(c);
+                      escape = isEscape88690(c); // CAP AL
                   }
                   else if(_delim.indexOf(c)>=0)
                   {
@@ -223,10 +220,7 @@ public class QuotedStringTokenizer
                   _hasToken=true;
                   if (escape)
                   {
-                      escape=false;
-                      if(ESCAPABLE_CHARS.indexOf(c)<0)
-                          _token.append('\\');
-                      _token.append(c);
+                      escape = isEscape88690(c); // CAP AL
                   }
                   else if (c=='\'')
                   {
@@ -249,10 +243,7 @@ public class QuotedStringTokenizer
                   _hasToken=true;
                   if (escape)
                   {
-                      escape=false;
-                      if(ESCAPABLE_CHARS.indexOf(c)<0)
-                          _token.append('\\');
-                      _token.append(c);
+                      escape = isEscape88690(c); // CAP AL
                   }
                   else if (c=='\"')
                   {
@@ -274,6 +265,14 @@ public class QuotedStringTokenizer
 
         return _hasToken;
     }
+ // CAP AL
+    private boolean isEscape88690(final char c) { // CAP AL
+      boolean escape =false; // CAP AL
+      if(ESCAPABLE_CHARS.indexOf(c)<0) // CAP AL
+          _token.append('\\'); // CAP AL
+      _token.append(c); // CAP AL
+      return escape; // CAP AL
+    } // CAP AL
 
     /* ------------------------------------------------------------ */
     @Override
@@ -346,9 +345,7 @@ public class QuotedStringTokenizer
             char c = s.charAt(i);
             if (c=='\\' || c=='"' || c=='\'' || Character.isWhitespace(c) || delim.indexOf(c)>=0)
             {
-                StringBuffer b=new StringBuffer(s.length()+8);
-                quote(b,s);
-                return b.toString();
+                return getVar79131(s); // CAP AL
             }
         }
 
@@ -370,11 +367,15 @@ public class QuotedStringTokenizer
         if (s.length()==0)
             return "\"\"";
 
-        StringBuffer b=new StringBuffer(s.length()+8);
-        quote(b,s);
-        return b.toString();
+        return getVar79131(s); // CAP AL
 
     }
+ // CAP AL
+    private static String getVar79131(final String s) { // CAP AL
+      StringBuffer b=new StringBuffer(s.length()+8); // CAP AL
+      quote(b,s); // CAP AL
+      return b.toString(); // CAP AL
+    } // CAP AL
 
 
     /* ------------------------------------------------------------ */

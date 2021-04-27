@@ -406,22 +406,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
             if (checkJob != null) {
                 boolean isOffline = false;
-                for (ConnectionStatus status : checkJob.connectionStates.values()) {
-                    if(ConnectionStatus.FAILED.equals(status)) {
-                        isOffline = true;
-                        break;
-                    }
-                }
+                isOffline = isIsOffline7463(checkJob, isOffline); // CAP AL
                 if (isOffline) {
                     // retry connection states if determined to be offline
                     checkJob.run();
                     isOffline = false;
-                    for (ConnectionStatus status : checkJob.connectionStates.values()) {
-                        if(ConnectionStatus.FAILED.equals(status)) {
-                            isOffline = true;
-                            break;
-                        }
-                    }
+                    isOffline = isIsOffline7463(checkJob, isOffline); // CAP AL
                     if(!isOffline) { // also need to download the metadata
                         updateAllSites();
                     }
@@ -435,6 +425,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
         }
     }
+ // CAP AL
+    private boolean isIsOffline7463(final ConnectionCheckJob checkJob, boolean isOffline) { // CAP AL
+        for (ConnectionStatus status : checkJob.connectionStates.values()) { // CAP AL
+            if(ConnectionStatus.FAILED.equals(status)) { // CAP AL
+                isOffline = true; // CAP AL
+                break; // CAP AL
+            } // CAP AL
+        } // CAP AL
+        return isOffline; // CAP AL
+    } // CAP AL
 
     /**
      * Called to determine if there was an incomplete installation, what the statuses of the plugins are
@@ -815,10 +815,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return;
         }
 
-        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2());
-        LOGGER.info("Scheduling the core downgrade");
-        addJob(job);
-        rsp.sendRedirect2(".");
+        extractedMethod68943(rsp); // CAP AL
     }
 
     /**
@@ -827,12 +824,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @RequirePOST
     public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2());
-        LOGGER.info("Scheduling the core downgrade");
-
-        addJob(job);
-        rsp.sendRedirect2(".");
+        extractedMethod68943(rsp); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod68943(final StaplerResponse rsp) throws IOException { // CAP AL
+        HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2()); // CAP AL
+        LOGGER.info("Scheduling the core downgrade"); // CAP AL
+         // CAP AL
+        addJob(job); // CAP AL
+        rsp.sendRedirect2("."); // CAP AL
+    } // CAP AL
 
     /**
      * Returns String with version of backup .war file,
@@ -984,10 +985,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } else if (!existing.version.equals(plugin.version)) {
                     // allow secondary update centers to publish different versions
                     // TODO refactor to consolidate multiple versions of the same plugin within the one row
-                    final String altKey = plugin.name + ":" + plugin.version;
-                    if (!pluginMap.containsKey(altKey)) {
-                        pluginMap.put(altKey, plugin);
-                    }
+                    extractedMethod14283(plugin, pluginMap); // CAP AL
                 }
             }
         }
@@ -1046,10 +1044,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } else if (!existing.version.equals(plugin.version)) {
                     // allow secondary update centers to publish different versions
                     // TODO refactor to consolidate multiple versions of the same plugin within the one row
-                    final String altKey = plugin.name + ":" + plugin.version;
-                    if (!pluginMap.containsKey(altKey)) {
-                        pluginMap.put(altKey, plugin);
-                    }
+                    extractedMethod14283(plugin, pluginMap); // CAP AL
                 }
             }
         }
@@ -1061,6 +1056,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         return new ArrayList<>(pluginMap.values());
     }
+ // CAP AL
+    private void extractedMethod14283(final Plugin plugin, final Map<String, Plugin> pluginMap) { // CAP AL
+        final String altKey = plugin.name + ":" + plugin.version; // CAP AL
+        if (!pluginMap.containsKey(altKey)) { // CAP AL
+            pluginMap.put(altKey, plugin); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Restricted(NoExternalUse.class)
     public List<Plugin> getPluginsWithUnavailableUpdates() {

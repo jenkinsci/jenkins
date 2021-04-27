@@ -4611,19 +4611,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void doFingerprintCleanup(StaplerResponse rsp) throws IOException {
         checkPermission(ADMINISTER);
         FingerprintCleanupThread.invoke();
-        rsp.setStatus(HttpServletResponse.SC_OK);
-        rsp.setContentType("text/plain");
-        rsp.getWriter().println("Invoked");
+        extractedMethod1147(rsp); // CAP AL
     }
 
     @RequirePOST
     public void doWorkspaceCleanup(StaplerResponse rsp) throws IOException {
         checkPermission(ADMINISTER);
         WorkspaceCleanupThread.invoke();
-        rsp.setStatus(HttpServletResponse.SC_OK);
-        rsp.setContentType("text/plain");
-        rsp.getWriter().println("Invoked");
+        extractedMethod1147(rsp); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod1147(final StaplerResponse rsp) throws IOException { // CAP AL
+        rsp.setStatus(HttpServletResponse.SC_OK); // CAP AL
+        rsp.setContentType("text/plain"); // CAP AL
+        rsp.getWriter().println("Invoked"); // CAP AL
+    } // CAP AL
 
     /**
      * If the user chose the default JDK, make sure we got 'java' in PATH.

@@ -206,9 +206,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
         current.removeAll(old);
-        if (!found) {
-            addAction(a);
-        }
+        extractedMethod41403(found, a); // CAP AL
         return !found || !old.isEmpty();
     }
 
@@ -303,11 +301,15 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
         current.removeAll(old);
-        if (!found) {
-            addAction(a);
-        }
+        extractedMethod41403(found, a); // CAP AL
         return !(old.isEmpty() && found);
     }
+ // CAP AL
+    private void extractedMethod41403(final boolean found, final Action a) { // CAP AL
+        if (!found) { // CAP AL
+            addAction(a); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */
     @Deprecated

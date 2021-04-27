@@ -1080,12 +1080,7 @@ public class Functions {
                 r.add(new Tag(c.ordinal(), d));
             }
         }
-        Collections.sort(r);
-
-        List<Descriptor> answer = new ArrayList<>(r.size());
-        for (Tag d : r) answer.add(d.d);
-
-        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
+        return getVar66423(r); // CAP AL
     }
 
     /**
@@ -1117,13 +1112,17 @@ public class Functions {
                 r.add(new Tag(c.ordinal(), d));
             }
         }
-        Collections.sort(r);
-
-        List<Descriptor> answer = new ArrayList<>(r.size());
-        for (Tag d : r) answer.add(d.d);
-
-        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer);
+        return getVar66423(r); // CAP AL
     }
+ // CAP AL
+    private static Collection<Descriptor> getVar66423(final List<Tag> r) { // CAP AL
+        Collections.sort(r); // CAP AL
+         // CAP AL
+        List<Descriptor> answer = new ArrayList<>(r.size()); // CAP AL
+        for (Tag d : r) answer.add(d.d); // CAP AL
+         // CAP AL
+        return DescriptorVisibilityFilter.apply(Jenkins.get(),answer); // CAP AL
+    } // CAP AL
 
     /**
      * Like {@link #getSortedDescriptorsForGlobalConfigByDescriptor(Predicate)} but with a constant truth predicate, to include all descriptors.

@@ -2270,9 +2270,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the build number in the body.
      */
     public void doBuildNumber(StaplerResponse rsp) throws IOException {
-        rsp.setContentType("text/plain");
-        rsp.setCharacterEncoding("US-ASCII");
-        rsp.setStatus(HttpServletResponse.SC_OK);
+        extractedMethod74814(rsp); // CAP AL
         rsp.getWriter().print(number);
     }
 
@@ -2280,14 +2278,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the build time stamp in the body.
      */
     public void doBuildTimestamp( StaplerRequest req, StaplerResponse rsp, @QueryParameter String format) throws IOException {
-        rsp.setContentType("text/plain");
-        rsp.setCharacterEncoding("US-ASCII");
-        rsp.setStatus(HttpServletResponse.SC_OK);
+        extractedMethod74814(rsp); // CAP AL
         DateFormat df = format==null ?
                 DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, Locale.ENGLISH) :
                 new SimpleDateFormat(format,req.getLocale());
         rsp.getWriter().print(df.format(getTime()));
     }
+ // CAP AL
+    private void extractedMethod74814(final StaplerResponse rsp) { // CAP AL
+        rsp.setContentType("text/plain"); // CAP AL
+        rsp.setCharacterEncoding("US-ASCII"); // CAP AL
+        rsp.setStatus(HttpServletResponse.SC_OK); // CAP AL
+    } // CAP AL
 
     /**
      * Sends out the raw console output.
