@@ -24,6 +24,8 @@
 
 package hudson.cli;
 
+import java.io.IOException; // CAP AL
+import java.util.concurrent.ExecutionException; // CAP AL
 import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -79,13 +81,7 @@ public class ConsoleCommandTest {
     
     @Issue("JENKINS-52181")
     @Test public void consoleShouldBeAccessibleForUserWithRead() throws Exception {	
-        FreeStyleProject project = j.createFreeStyleProject("aProject");	
-        if (Functions.isWindows()) {
-            project.getBuildersList().add(new BatchFile("echo 1"));
-        } else {
-            project.getBuildersList().add(new Shell("echo 1"));
-        }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        extractedMethod32161(); // CAP AL
         
         final CLICommandInvoker.Result result = command	
                 .authorizedTo(Jenkins.READ, Job.READ)	
@@ -158,13 +154,7 @@ public class ConsoleCommandTest {
 
     @Test public void consoleShouldSuccessWithLastBuild() throws Exception {
 
-        FreeStyleProject project = j.createFreeStyleProject("aProject");
-        if (Functions.isWindows()) {
-            project.getBuildersList().add(new BatchFile("echo 1"));
-        } else {
-            project.getBuildersList().add(new Shell("echo 1"));
-        }
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        extractedMethod32161(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Job.READ, Item.BUILD)
@@ -173,6 +163,16 @@ public class ConsoleCommandTest {
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("echo 1"));
     }
+ // CAP AL
+    private void extractedMethod32161() throws ExecutionException, IOException, InterruptedException { // CAP AL
+        FreeStyleProject project = j.createFreeStyleProject("aProject"); // CAP AL
+        if (Functions.isWindows()) { // CAP AL
+            project.getBuildersList().add(new BatchFile("echo 1")); // CAP AL
+        } else { // CAP AL
+            project.getBuildersList().add(new Shell("echo 1")); // CAP AL
+        } // CAP AL
+        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1")); // CAP AL
+    } // CAP AL
 
     @Test public void consoleShouldSuccessWithSpecifiedBuildNumber() throws Exception {
 
