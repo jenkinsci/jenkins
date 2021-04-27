@@ -185,12 +185,7 @@ public class ParametersAction2Test {
                     Arrays.asList("whitelisted1", "whitelisted2"));
             FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), action));
 
-            assertTrue("whitelisted1 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
-            assertTrue("whitelisted2 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
-            assertFalse("whitelisted3 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+            extractedMethod43832(build); // CAP AL
             j.jenkins.reload();
             //Test again after reload
             p = j.jenkins.getItemByFullName(name, FreeStyleProject.class);
@@ -225,12 +220,7 @@ public class ParametersAction2Test {
                     new StringParameterValue("whitelisted3", "z"),
                     new StringParameterValue("whitelisted4", "w")
             )));
-            assertTrue("whitelisted1 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
-            assertTrue("whitelisted2 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
-            assertFalse("whitelisted3 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+            extractedMethod43832(build); // CAP AL
             assertFalse("whitelisted4 parameter is listed in getParameters",
                        hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted4"));
 
@@ -251,6 +241,15 @@ public class ParametersAction2Test {
             System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         }
     }
+ // CAP AL
+    private void extractedMethod43832(final FreeStyleBuild build) { // CAP AL
+        assertTrue("whitelisted1 parameter is listed in getParameters", // CAP AL
+                   hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1")); // CAP AL
+        assertTrue("whitelisted2 parameter is listed in getParameters", // CAP AL
+                   hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2")); // CAP AL
+        assertFalse("whitelisted3 parameter is listed in getParameters", // CAP AL
+                   hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3")); // CAP AL
+    } // CAP AL
 
 
 
