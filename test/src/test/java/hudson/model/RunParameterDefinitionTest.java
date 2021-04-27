@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import java.io.IOException; // CAP AL
+import java.util.concurrent.ExecutionException; // CAP AL
 import hudson.EnvVars;
 import static org.junit.Assert.assertEquals;
 
@@ -176,11 +178,7 @@ public class RunParameterDefinitionTest {
                                                                              project.getName(),
                                                                              "run description",
                                                                              RunParameterFilter.COMPLETED));
-        paramProject.addProperty(pdp);
-
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
-        assertEquals(Integer.toString(abortedBuild.getNumber()),
-                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
+        extractedMethod73772(paramProject, pdp, abortedBuild); // CAP AL
     }
     
     @Test
@@ -207,11 +205,7 @@ public class RunParameterDefinitionTest {
                                                                              project.getName(),
                                                                              "run description",
                                                                              RunParameterFilter.SUCCESSFUL));
-        paramProject.addProperty(pdp);
-
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
-        assertEquals(Integer.toString(unstableBuild.getNumber()),
-                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
+        extractedMethod73772(paramProject, pdp, unstableBuild); // CAP AL
     }
     
     
@@ -239,12 +233,16 @@ public class RunParameterDefinitionTest {
                                                                              project.getName(),
                                                                              "run description",
                                                                              RunParameterFilter.STABLE));
-        paramProject.addProperty(pdp);
-
-        FreeStyleBuild build = paramProject.scheduleBuild2(0).get();
-        assertEquals(Integer.toString(successfulBuild.getNumber()),
-                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER"));
+        extractedMethod73772(paramProject, pdp, successfulBuild); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod73772(final FreeStyleProject paramProject, final ParametersDefinitionProperty pdp, final FreeStyleBuild successfulBuild) throws ExecutionException, IOException, InterruptedException { // CAP AL
+        paramProject.addProperty(pdp); // CAP AL
+         // CAP AL
+        FreeStyleBuild build = paramProject.scheduleBuild2(0).get(); // CAP AL
+        assertEquals(Integer.toString(successfulBuild.getNumber()), // CAP AL
+                     build.getEnvironment(new LogTaskListener(LOGGER, Level.INFO)).get("RUN_NUMBER")); // CAP AL
+    } // CAP AL
     
     
     @Test
