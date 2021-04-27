@@ -145,10 +145,7 @@ public class ActionableTest {
     @Test
     public void removeAction() {
         CauseAction a1 = new CauseAction();
-        ParametersAction a2 = new ParametersAction();
-        thing.addAction(a1);
-        thing.addAction(a2);
-        assertEquals(Arrays.asList(a1, a2), thing.getActions());
+        ParametersAction a2 = getA236381(a1); // CAP AL
         assertThat(thing.removeAction(a1), is(true));
         assertEquals(Collections.singletonList(a2), thing.getActions());
         assertThat(thing.removeAction(a1), is(false));
@@ -161,15 +158,20 @@ public class ActionableTest {
     @Test
     public void removeActions() {
         CauseAction a1 = new CauseAction();
-        ParametersAction a2 = new ParametersAction();
-        thing.addAction(a1);
-        thing.addAction(a2);
-        assertEquals(Arrays.asList(a1, a2), thing.getActions());
+        ParametersAction a2 = getA236381(a1); // CAP AL
         assertThat(thing.removeActions(CauseAction.class), is(true));
         assertEquals(Collections.singletonList(a2), thing.getActions());
         assertThat(thing.removeActions(CauseAction.class), is(false));
         assertEquals(Collections.singletonList(a2), thing.getActions());
     }
+ // CAP AL
+    private ParametersAction getA236381(final CauseAction a1) { // CAP AL
+        ParametersAction a2 = new ParametersAction(); // CAP AL
+        thing.addAction(a1); // CAP AL
+        thing.addAction(a2); // CAP AL
+        assertEquals(Arrays.asList(a1, a2), thing.getActions()); // CAP AL
+        return a2; // CAP AL
+    } // CAP AL
 
     @SuppressWarnings("deprecation")
     @Test
