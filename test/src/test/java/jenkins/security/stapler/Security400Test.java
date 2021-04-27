@@ -150,14 +150,7 @@ public class Security400Test {
     @Test
     @Issue("SECURITY-404")
     public void avoidDangerousAccessToSession() throws Exception {
-        j.jenkins.setCrumbIssuer(null);
-    
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(
-                new MockAuthorizationStrategy()
-                        .grant(Jenkins.ADMINISTER).everywhere().to("admin")
-                        .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod11606(); // CAP AL
     
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -540,14 +533,7 @@ public class Security400Test {
     @Test
     @Issue("SECURITY-471")
     public void ensureLogRecordManagerAccessibleOnlyByAdmin() throws Exception {
-        j.jenkins.setCrumbIssuer(null);
-        
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(
-                new MockAuthorizationStrategy()
-                        .grant(Jenkins.ADMINISTER).everywhere().to("admin")
-                        .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod11606(); // CAP AL
         
         String logNameForAdmin = "testLoggerAdmin";
         String logNameForUser = "testLoggerUser";
@@ -608,6 +594,17 @@ public class Security400Test {
             assertRequestWasNotBlocked();
         }
     }
+ // CAP AL
+    private void extractedMethod11606() { // CAP AL
+        j.jenkins.setCrumbIssuer(null); // CAP AL
+         // CAP AL
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm()); // CAP AL
+        j.jenkins.setAuthorizationStrategy( // CAP AL
+                new MockAuthorizationStrategy() // CAP AL
+                        .grant(Jenkins.ADMINISTER).everywhere().to("admin") // CAP AL
+                        .grant(Jenkins.READ).everywhere().to("user") // CAP AL
+        ); // CAP AL
+    } // CAP AL
     
     @Test
     public void anonCannotHaveTheListOfUsers() throws Exception {
