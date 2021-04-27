@@ -341,10 +341,7 @@ public class JobTest {
         String oldDirContent = dirContent(oldBuildsDir);
         p.renameTo("different-name");
         final File newBuildDir = p.getBuildDir();
-        assertNotNull(newBuildDir);
-        assertNotEquals(oldBuildsDir.getAbsolutePath(), newBuildDir.getAbsolutePath());
-        String newDirContent = dirContent(newBuildDir);
-        assertEquals(oldDirContent, newDirContent);
+        String newDirContent = getNewP1DirContent23892(newBuildDir, oldBuildsDir, oldDirContent); // CAP AL
     }
 
     @Issue("JENKINS-44657")
@@ -359,10 +356,7 @@ public class JobTest {
         f.renameTo("different-name");
 
         File newP1BuildDir = p1.getBuildDir();
-        assertNotNull(newP1BuildDir);
-        assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath());
-        String newP1DirContent = dirContent(newP1BuildDir);
-        assertEquals(oldP1DirContent, newP1DirContent);
+        String newP1DirContent = getNewP1DirContent23892(newP1BuildDir, oldP1BuildsDir, oldP1DirContent); // CAP AL
 
         final FreeStyleProject p2 = f.createProject(FreeStyleProject.class, "P2");
         if (Functions.isWindows()) {
@@ -405,6 +399,14 @@ public class JobTest {
         String newP2DirContent = dirContent(newP2BuildDir);
         assertEquals(oldP2DirContent, newP2DirContent);
     }
+ // CAP AL
+    private String getNewP1DirContent23892(final File newP1BuildDir, final File oldP1BuildsDir, final String oldP1DirContent) throws IOException, InterruptedException { // CAP AL
+        assertNotNull(newP1BuildDir); // CAP AL
+        assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath()); // CAP AL
+        String newP1DirContent = dirContent(newP1BuildDir); // CAP AL
+        assertEquals(oldP1DirContent, newP1DirContent); // CAP AL
+        return newP1DirContent; // CAP AL
+    } // CAP AL
 
     private String dirContent(File dir) throws IOException, InterruptedException {
         if (dir == null || !dir.isDirectory()) {
