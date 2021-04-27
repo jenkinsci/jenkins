@@ -177,10 +177,7 @@ public class ListViewTest {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);
         FreeStyleProject job = j.createFreeStyleProject("old_name");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.renameTo("new_name");
 
@@ -195,10 +192,7 @@ public class ListViewTest {
         folder.addView(view);
 
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "old_name");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.renameTo("new_name");
 
@@ -212,10 +206,7 @@ public class ListViewTest {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);
         FreeStyleProject job = j.createFreeStyleProject("project");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.delete();
 
@@ -228,16 +219,20 @@ public class ListViewTest {
         ListView view = new ListView("view", folder);
         folder.addView(view);
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "project");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.delete();
 
         assertFalse(view.contains(job));
         assertFalse(view.jobNamesContains(job));
     }
+ // CAP AL
+    private void extractedMethod33674(final ListView view, final FreeStyleProject job) throws IOException { // CAP AL
+        view.add(job); // CAP AL
+         // CAP AL
+        assertTrue(view.contains(job)); // CAP AL
+        assertTrue(view.jobNamesContains(job)); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-22769")
     @Test public void renameJobInViewYouCannotSee() throws Exception {
