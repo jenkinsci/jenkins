@@ -52,10 +52,7 @@ public class DirectlyModifiableViewTest {
         FreeStyleProject projectA = j.createFreeStyleProject("projectA");
         FreeStyleProject projectB = j.createFreeStyleProject("projectB");
 
-        ListView view = new ListView("a_view", j.jenkins);
-        j.jenkins.addView(view);
-
-        assertFalse(view.contains(projectA));
+        ListView view = getView33961(projectA); // CAP AL
         assertFalse(view.contains(projectB));
 
         view.add(projectA);
@@ -80,10 +77,7 @@ public class DirectlyModifiableViewTest {
     @Test
     public void doAddJobToView() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("a_project");
-        ListView view = new ListView("a_view", j.jenkins);
-        j.jenkins.addView(view);
-
-        assertFalse(view.contains(project));
+        ListView view = getView33961(project); // CAP AL
 
         Page page = doPost(view, "addJobToView?name=a_project");
         j.assertGoodStatus(page);
@@ -93,6 +87,14 @@ public class DirectlyModifiableViewTest {
         j.assertGoodStatus(page);
         assertTrue(view.contains(project));
     }
+ // CAP AL
+    private ListView getView33961(final FreeStyleProject project) throws IOException { // CAP AL
+        ListView view = new ListView("a_view", j.jenkins); // CAP AL
+        j.jenkins.addView(view); // CAP AL
+         // CAP AL
+        assertFalse(view.contains(project)); // CAP AL
+        return view; // CAP AL
+    } // CAP AL
 
     @Test
     public void doAddNestedJobToRecursiveView() throws Exception {
