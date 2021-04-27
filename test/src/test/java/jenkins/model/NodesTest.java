@@ -24,6 +24,8 @@
 
 package jenkins.model;
 
+import java.net.URISyntaxException; // CAP AL
+import hudson.model.Descriptor.FormException; // CAP AL
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import hudson.model.Node;
@@ -53,15 +55,7 @@ public class NodesTest {
     @Test
     @Issue("JENKINS-50599")
     public void addNodeShouldFailAtomically() throws Exception {
-        InvalidNode node = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(node);
-            fail("Adding the node should have thrown an exception during serialization");
-        } catch (IOException e) {
-            String className = InvalidNode.class.getName();
-            assertThat("The exception should be from failing to serialize the node",
-                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
-        }
+        extractedMethod14418(); // CAP AL
         assertThat("The node should not exist since #addNode threw an exception",
                 r.jenkins.getNode("foo"), nullValue());
     }
@@ -71,18 +65,22 @@ public class NodesTest {
     public void addNodeShouldFailAtomicallyWhenReplacingNode() throws Exception {
         Node oldNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
-        InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(newNode);
-            fail("Adding the node should have thrown an exception during serialization");
-        } catch (IOException e) {
-            String className = InvalidNode.class.getName();
-            assertThat("The exception should be from failing to serialize the node",
-                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
-        }
+        extractedMethod14418(); // CAP AL
         assertThat("The old node should still exist since #addNode threw an exception",
                 r.jenkins.getNode("foo"), sameInstance(oldNode));
     }
+ // CAP AL
+    private void extractedMethod14418() throws FormException, IOException, URISyntaxException { // CAP AL
+        InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null)); // CAP AL
+        try { // CAP AL
+            r.jenkins.addNode(newNode); // CAP AL
+            fail("Adding the node should have thrown an exception during serialization"); // CAP AL
+        } catch (IOException e) { // CAP AL
+            String className = InvalidNode.class.getName(); // CAP AL
+            assertThat("The exception should be from failing to serialize the node", // CAP AL
+                    e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className)); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test
     public void addNodeShouldReplaceExistingNode() throws Exception {
