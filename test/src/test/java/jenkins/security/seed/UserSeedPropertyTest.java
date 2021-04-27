@@ -85,9 +85,7 @@ public class UserSeedPropertyTest {
             seeds.add(userSeed.getSeed());
         }
 
-        assertThat(seeds.size(), equalTo(times));
-        assertFalse(seeds.contains(""));
-        assertFalse(seeds.contains(null));
+        extractedMethod82378(seeds, times); // CAP AL
     }
 
     @Test
@@ -103,10 +101,14 @@ public class UserSeedPropertyTest {
             alice.delete();
         }
 
-        assertThat(seeds.size(), equalTo(times));
-        assertFalse(seeds.contains(""));
-        assertFalse(seeds.contains(null));
+        extractedMethod82378(seeds, times); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod82378(final Set<String> seeds, final int times) { // CAP AL
+        assertThat(seeds.size(), equalTo(times)); // CAP AL
+        assertFalse(seeds.contains("")); // CAP AL
+        assertFalse(seeds.contains(null)); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-901")
