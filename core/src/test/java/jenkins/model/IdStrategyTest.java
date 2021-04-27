@@ -35,11 +35,7 @@ public class IdStrategyTest {
         assertThat(idStrategy.idFromFilename("big$money"), is("big$money"));
 
         assertThat(idStrategy.idFromFilename("$00c1aaa"), is("\u00e1aaa"));
-        assertThat(idStrategy.idFromFilename("$00e1aaa"), is("\u00e1aaa"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1"), is("aaaa\u00e1"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1kkkk"), is("aaaa\u00e1kkkk"));
-        assertThat(idStrategy.idFromFilename("aa$00e1zz$00e9pp"), is("aa\u00e1zz\u00e9pp"));
-        assertThat(idStrategy.idFromFilename("$306f$56fd$5185$3067$6700$5927"), is("\u306f\u56fd\u5185\u3067\u6700\u5927"));
+        extractedMethod82006(idStrategy); // CAP AL
 
         assertThat(idStrategy.idFromFilename("$00E1aaa"), is("$00e1aaa"));
         assertThat(idStrategy.idFromFilename("$001gggg"), is("$001gggg"));
@@ -83,11 +79,7 @@ public class IdStrategyTest {
         assertThat(idStrategy.idFromFilename("big$money"), is("big$money"));
 
         assertThat(idStrategy.idFromFilename("$00c1aaa"), is("\u00c1aaa"));
-        assertThat(idStrategy.idFromFilename("$00e1aaa"), is("\u00e1aaa"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1"), is("aaaa\u00e1"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1kkkk"), is("aaaa\u00e1kkkk"));
-        assertThat(idStrategy.idFromFilename("aa$00e1zz$00e9pp"), is("aa\u00e1zz\u00e9pp"));
-        assertThat(idStrategy.idFromFilename("$306f$56fd$5185$3067$6700$5927"), is("\u306f\u56fd\u5185\u3067\u6700\u5927"));
+        extractedMethod82006(idStrategy); // CAP AL
 
         assertThat(idStrategy.idFromFilename("$00E1aaa"), is("$00E1aaa"));
         assertThat(idStrategy.idFromFilename("$001gggg"), is("$001gggg"));
@@ -95,6 +87,14 @@ public class IdStrategyTest {
 
         assertThat(idStrategy.idFromFilename("iiii _-@$007~ea"), is("iiii _-@$007Ea"));
     }
+ // CAP AL
+    private void extractedMethod82006(final IdStrategy idStrategy) { // CAP AL
+        assertThat(idStrategy.idFromFilename("$00e1aaa"), is("\u00e1aaa")); // CAP AL
+        assertThat(idStrategy.idFromFilename("aaaa$00e1"), is("aaaa\u00e1")); // CAP AL
+        assertThat(idStrategy.idFromFilename("aaaa$00e1kkkk"), is("aaaa\u00e1kkkk")); // CAP AL
+        assertThat(idStrategy.idFromFilename("aa$00e1zz$00e9pp"), is("aa\u00e1zz\u00e9pp")); // CAP AL
+        assertThat(idStrategy.idFromFilename("$306f$56fd$5185$3067$6700$5927"), is("\u306f\u56fd\u5185\u3067\u6700\u5927")); // CAP AL
+    } // CAP AL
 
     @SuppressWarnings("deprecation")
     @Test
