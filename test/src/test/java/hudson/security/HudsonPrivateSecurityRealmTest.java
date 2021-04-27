@@ -203,17 +203,7 @@ public class HudsonPrivateSecurityRealmTest {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
-        SignupPage signup = new SignupPage(wc.goTo("signup"));
-        signup.enterUsername("alice");
-        signup.enterPassword("alice");
-        signup.enterFullName("Alice User");
-        signup.enterEmail("alice@nowhere.com");
-        HtmlPage success = signup.submit(j);
-        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
-        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
-
-
-        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+        extractedMethod75944(wc, securityRealm); // CAP AL
 
     }
 
@@ -615,22 +605,27 @@ public class HudsonPrivateSecurityRealmTest {
         Cookie sessionBefore = wc.getCookieManager().getCookie("JSESSIONID");
         String sessionIdBefore = sessionBefore.getValue();
 
-        SignupPage signup = new SignupPage(wc.goTo("signup"));
-        signup.enterUsername("alice");
-        signup.enterPassword("alice");
-        signup.enterFullName("Alice User");
-        signup.enterEmail("alice@nowhere.com");
-        HtmlPage success = signup.submit(j);
-        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
-        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
-
-        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+        extractedMethod75944(wc, securityRealm); // CAP AL
 
         Cookie sessionAfter = wc.getCookieManager().getCookie("JSESSIONID");
         String sessionIdAfter = sessionAfter.getValue();
 
         assertNotEquals(sessionIdAfter, sessionIdBefore);
     }
+ // CAP AL
+    private void extractedMethod75944(final JenkinsRule.WebClient wc, final HudsonPrivateSecurityRealm securityRealm) throws Exception { // CAP AL
+        SignupPage signup = new SignupPage(wc.goTo("signup")); // CAP AL
+        signup.enterUsername("alice"); // CAP AL
+        signup.enterPassword("alice"); // CAP AL
+        signup.enterFullName("Alice User"); // CAP AL
+        signup.enterEmail("alice@nowhere.com"); // CAP AL
+        HtmlPage success = signup.submit(j); // CAP AL
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success")); // CAP AL
+        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User")); // CAP AL
+         // CAP AL
+         // CAP AL
+        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName()); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1245")
