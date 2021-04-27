@@ -715,15 +715,7 @@ public class ProjectTest {
          * Setup a project with an SCM. Jenkins should have no executors in itself. 
          */
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-spawn");        
-        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
-        proj.setScm(requiresWorkspaceScm);        
-        j.jenkins.setNumExecutors(0);        
-        /*
-         * We have a cloud
-         */
-        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
-        c2.label = new LabelAtom("test-cloud-label");        
-        j.jenkins.clouds.add(c2);
+        DummyCloudImpl2 c2 = getC270053(proj); // CAP AL
         
         SCMTrigger t = new SCMTrigger("@daily", true);
         t.start(proj, true);
@@ -787,16 +779,7 @@ public class ProjectTest {
     @Test
     public void testRestrictedLabelOnSlaveYesQueue() throws Exception {        
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yesqueue");
-        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
-        proj.setScm(requiresWorkspaceScm);        
-        j.jenkins.setNumExecutors(0);
-        
-        /*
-         * We have a cloud
-         */
-        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
-        c2.label = new LabelAtom("test-cloud-label");        
-        j.jenkins.clouds.add(c2);
+        DummyCloudImpl2 c2 = getC270053(proj); // CAP AL
         proj.setAssignedLabel(c2.label);
         
         SCMTrigger t = new SCMTrigger("@daily", true);
@@ -808,6 +791,20 @@ public class ProjectTest {
         //The job should be in queue
         assertEquals(1, j.jenkins.getQueue().getItems().length);    
     }
+ // CAP AL
+    private DummyCloudImpl2 getC270053(final FreeStyleProject proj) throws IOException { // CAP AL
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true); // CAP AL
+        proj.setScm(requiresWorkspaceScm);         // CAP AL
+        j.jenkins.setNumExecutors(0); // CAP AL
+         // CAP AL
+        /* // CAP AL
+         * We have a cloud // CAP AL
+         */ // CAP AL
+        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0); // CAP AL
+        c2.label = new LabelAtom("test-cloud-label");         // CAP AL
+        j.jenkins.clouds.add(c2); // CAP AL
+        return c2; // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-22750")
     @Test
