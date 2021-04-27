@@ -159,9 +159,7 @@ public class ArtifactArchiverTest {
         assertEquals(1, artifacts.size());
         FreeStyleBuild.Artifact artifact = artifacts.get(0);
         assertEquals("dir/lodge", artifact.relativePath);
-        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
-        assertEquals(1, kids.length);
-        assertEquals("lodge", kids[0].getName());
+        VirtualFile[] kids = getKids85410(b); // CAP AL
         // do not check that it .exists() since its target has not been archived
     }
 
@@ -205,13 +203,18 @@ public class ArtifactArchiverTest {
         assertNotNull(ws);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(2, artifacts.size());
-        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
-        assertEquals(1, kids.length);
-        assertEquals("lodge", kids[0].getName());
+        VirtualFile[] kids = getKids85410(b); // CAP AL
         VirtualFile[] linkkids = b.getArtifactManager().root().child("linkdir").list();
         assertEquals(1, kids.length);
         assertEquals("fizz", linkkids[0].getName());
     }
+ // CAP AL
+    private VirtualFile[] getKids85410(final FreeStyleBuild b) throws IOException { // CAP AL
+        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list(); // CAP AL
+        assertEquals(1, kids.length); // CAP AL
+        assertEquals("lodge", kids[0].getName()); // CAP AL
+        return kids; // CAP AL
+    } // CAP AL
 
     @Issue("SECURITY-162")
     @Test public void outsideSymlinks() throws Exception {
