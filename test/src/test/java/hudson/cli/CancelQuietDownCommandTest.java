@@ -114,26 +114,7 @@ public class CancelQuietDownCommandTest {
         Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                .invoke();
-        assertThat(result, succeededSilently());
-        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
-        finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
-        j.assertBuildStatusSuccess(build);
-        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
-        build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
-        assertThat(project.isBuilding(), equalTo(true));
-        finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
-        assertThat(project.isBuilding(), equalTo(false));
-        j.assertBuildStatusSuccess(build);
-        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+        extractedMethod44414(finish, build, project); // CAP AL
     }
 
     //
@@ -150,25 +131,29 @@ public class CancelQuietDownCommandTest {
         j.jenkins.doQuietDown();
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
 
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
-                .invoke();
-        assertThat(result, succeededSilently());
-        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
-        finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
-        j.assertBuildStatusSuccess(build);
-        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
-        build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
-        assertThat(project.isBuilding(), equalTo(true));
-        finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
-        assertThat(project.isBuilding(), equalTo(false));
-        j.assertBuildStatusSuccess(build);
-        QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+        extractedMethod44414(finish, build, project); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod44414(final OneShotEvent finish, Future<FreeStyleBuild> build, final FreeStyleProject project) throws Exception { // CAP AL
+        final CLICommandInvoker.Result result = command // CAP AL
+                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER) // CAP AL
+                .invoke(); // CAP AL
+        assertThat(result, succeededSilently()); // CAP AL
+        QuietDownCommandTest.assertJenkinsNotInQuietMode(j); // CAP AL
+        finish.signal(); // CAP AL
+        build.get(); // CAP AL
+        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1)); // CAP AL
+        assertThat(project.isBuilding(), equalTo(false)); // CAP AL
+        j.assertBuildStatusSuccess(build); // CAP AL
+        QuietDownCommandTest.assertJenkinsNotInQuietMode(j); // CAP AL
+        build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish); // CAP AL
+        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2)); // CAP AL
+        assertThat(project.isBuilding(), equalTo(true)); // CAP AL
+        finish.signal(); // CAP AL
+        build.get(); // CAP AL
+        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2)); // CAP AL
+        assertThat(project.isBuilding(), equalTo(false)); // CAP AL
+        j.assertBuildStatusSuccess(build); // CAP AL
+        QuietDownCommandTest.assertJenkinsNotInQuietMode(j); // CAP AL
+    } // CAP AL
 }
