@@ -173,10 +173,7 @@ public class PathRemoverTest {
         touchWithFileName(test);
         Path path = folder.resolve("../test");
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(path);
-
-        assertTrue("Unable to delete file: " + path, Files.notExists(path));
+        extractedMethod92907(path); // CAP AL
         assertFalse(test.exists());
         assertTrue("Should not have deleted directory: " + folder, Files.exists(folder));
     }
@@ -190,13 +187,17 @@ public class PathRemoverTest {
         Path symParent = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("sym-parent"), realParent);
         Path toDelete = symParent.resolve("test-file");
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(toDelete);
-
-        assertTrue("Unable to delete file: " + toDelete, Files.notExists(toDelete));
+        extractedMethod92907(toDelete); // CAP AL
         assertTrue("Should not have deleted directory: " + realParent, Files.exists(realParent));
         assertTrue("Should not have deleted symlink: " + symParent, Files.exists(symParent, LinkOption.NOFOLLOW_LINKS));
     }
+ // CAP AL
+    private void extractedMethod92907(final Path toDelete) throws IOException { // CAP AL
+        PathRemover remover = PathRemover.newSimpleRemover(); // CAP AL
+        remover.forceRemoveFile(toDelete); // CAP AL
+         // CAP AL
+        assertTrue("Unable to delete file: " + toDelete, Files.notExists(toDelete)); // CAP AL
+    } // CAP AL
 
     @Test
     public void testForceRemoveDirectoryContents() throws IOException {
