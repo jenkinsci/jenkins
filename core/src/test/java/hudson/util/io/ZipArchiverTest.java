@@ -69,13 +69,7 @@ public class ZipArchiverTest {
         } catch (Exception e) {
             fail("exception driving ZipArchiver", e);
         } finally {
-            if (archiver != null) {
-                try {
-                    archiver.close();
-                } catch (IOException e) {
-                    // ignored
-                }
-            }
+            extractedMethod10509(archiver); // CAP AL
         }
 
         // examine zip contents and assert that none of the entry names (paths) have
@@ -122,13 +116,7 @@ public class ZipArchiverTest {
         } catch (Exception e) {
             fail("exception driving ZipArchiver", e);
         } finally {
-            if (archiver != null) {
-                try {
-                    archiver.close();
-                } catch (IOException e) {
-                    // ignored
-                }
-            }
+            extractedMethod10509(archiver); // CAP AL
         }
 
         // examine zip contents and assert that there's an item there...
@@ -143,6 +131,16 @@ public class ZipArchiverTest {
 
         assertEquals("huge64bitFileTest.txt", zipEntryName);
     }
+ // CAP AL
+    private void extractedMethod10509(final ZipArchiver archiver) { // CAP AL
+        if (archiver != null) { // CAP AL
+            try { // CAP AL
+                archiver.close(); // CAP AL
+            } catch (IOException e) { // CAP AL
+                // ignored // CAP AL
+            } // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     /**
      * Convenience method for failing with a cause.
