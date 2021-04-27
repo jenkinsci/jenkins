@@ -661,15 +661,7 @@ public class QueueTest {
      * Make sure that the running build actually carries an credential.
      */
     @Test public void accessControl() throws Exception {
-        FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
-        p.getBuildersList().add(new TestBuilder() {
-            @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice2, Jenkins.getAuthentication2());
-                return true;
-            }
-        });
+        FreeStyleProject p = getP19109(); // CAP AL
         r.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
@@ -688,15 +680,7 @@ public class QueueTest {
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
-        FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
-        p.getBuildersList().add(new TestBuilder() {
-            @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice2, Jenkins.getAuthentication2());
-                return true;
-            }
-        });
+        FreeStyleProject p = getP19109(); // CAP AL
 
         final FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
         final FreeStyleBuild b2 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
@@ -712,6 +696,19 @@ public class QueueTest {
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
         }
     }
+ // CAP AL
+    private FreeStyleProject getP19109() throws IOException { // CAP AL
+        FreeStyleProject p = r.createFreeStyleProject(); // CAP AL
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice))); // CAP AL
+        p.getBuildersList().add(new TestBuilder() { // CAP AL
+            @Override // CAP AL
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException { // CAP AL
+                assertEquals(alice2, Jenkins.getAuthentication2()); // CAP AL
+                return true; // CAP AL
+            } // CAP AL
+        }); // CAP AL
+        return p; // CAP AL
+    } // CAP AL
     private static class AliceCannotBuild extends GlobalMatrixAuthorizationStrategy {
         private final String blocked;
         AliceCannotBuild(String blocked) {
