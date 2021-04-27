@@ -249,23 +249,7 @@ public class VirtualFileTest {
         prepareFileStructureForIsDescendant(source);
 
         VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
-        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, "");
-        }
-        FilePath zipPath = new FilePath(zipFile);
-        assertTrue(zipPath.exists());
-        assertFalse(zipPath.isDirectory());
-        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip"));
-        zipPath.unzip(unzipPath);
-        assertTrue(unzipPath.exists());
-        assertTrue(unzipPath.isDirectory());
-        assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
-        assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
-        assertFalse(unzipPath.child("a").child("_b").exists());
-        assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
-        assertFalse(unzipPath.child("b").child("_a").exists());
-        assertFalse(unzipPath.child("b").child("_aatxt").exists());
+        extractedMethod80277(zipFile, sourcePath); // CAP AL
     }
 
     @Test
@@ -307,24 +291,28 @@ public class VirtualFileTest {
         prepareFileStructureForIsDescendant(source);
 
         VirtualFile sourcePath = VirtualFile.forFile(source);
-        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, "");
-        }
-        FilePath zipPath = new FilePath(zipFile);
-        assertTrue(zipPath.exists());
-        assertFalse(zipPath.isDirectory());
-        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip"));
-        zipPath.unzip(unzipPath);
-        assertTrue(unzipPath.exists());
-        assertTrue(unzipPath.isDirectory());
-        assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
-        assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
-        assertFalse(unzipPath.child("a").child("_b").exists());
-        assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
-        assertFalse(unzipPath.child("b").child("_a").exists());
-        assertFalse(unzipPath.child("b").child("_aatxt").exists());
+        extractedMethod80277(zipFile, sourcePath); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod80277(final File zipFile, final VirtualFile sourcePath) throws IOException, InterruptedException { // CAP AL
+        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) { // CAP AL
+            sourcePath.zip( outputStream,"**", null, true, true, ""); // CAP AL
+        } // CAP AL
+        FilePath zipPath = new FilePath(zipFile); // CAP AL
+        assertTrue(zipPath.exists()); // CAP AL
+        assertFalse(zipPath.isDirectory()); // CAP AL
+        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip")); // CAP AL
+        zipPath.unzip(unzipPath); // CAP AL
+        assertTrue(unzipPath.exists()); // CAP AL
+        assertTrue(unzipPath.isDirectory()); // CAP AL
+        assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists()); // CAP AL
+        assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists()); // CAP AL
+        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists()); // CAP AL
+        assertFalse(unzipPath.child("a").child("_b").exists()); // CAP AL
+        assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists()); // CAP AL
+        assertFalse(unzipPath.child("b").child("_a").exists()); // CAP AL
+        assertFalse(unzipPath.child("b").child("_aatxt").exists()); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue({"JENKINS-19947", "JENKINS-61473"})
