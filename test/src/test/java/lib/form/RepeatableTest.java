@@ -508,10 +508,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        submit(f);
-        assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
-                + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
-                formData.get("items"));
+        extractedMethod96204(f); // CAP AL
     }
 
     public void testNestedRadioEnabledTopButton() throws Exception {
@@ -535,11 +532,15 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        submit(f);
-        assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
-                + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
-                formData.get("items"));
+        extractedMethod96204(f); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod96204(final HtmlForm f) throws Exception { // CAP AL
+        submit(f); // CAP AL
+        assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"}," // CAP AL
+                + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]", // CAP AL
+                formData.get("items")); // CAP AL
+    } // CAP AL
 
     private void assertEqualsJsonArray(String golden, Object jsonArray) {
         assertEquals(JSONArray.fromObject(golden),jsonArray);
