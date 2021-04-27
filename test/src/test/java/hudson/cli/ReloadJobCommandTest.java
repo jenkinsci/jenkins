@@ -60,11 +60,7 @@ public class ReloadJobCommandTest {
 
     @Test public void reloadJobShouldFailWithoutJobConfigurePermission() throws Exception {
 
-        FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-
-        changeProjectOnTheDisc(project, "echo 1", "echo 2");
+        FreeStyleProject project = getProject62870(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Job.READ, Jenkins.READ)
@@ -79,11 +75,7 @@ public class ReloadJobCommandTest {
 
     @Test public void reloadJobShouldFailWithoutJobReadPermission() throws Exception {
 
-        FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(createScriptBuilder("echo 1"));
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-
-        changeProjectOnTheDisc(project, "echo 1", "echo 2");
+        FreeStyleProject project = getProject62870(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Job.CONFIGURE, Jenkins.READ)
@@ -98,12 +90,7 @@ public class ReloadJobCommandTest {
 
     @Test public void reloadJobShouldSucceed() throws Exception {
 
-        FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(createScriptBuilder("echo 1"));
-
-        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
-
-        changeProjectOnTheDisc(project, "echo 1", "echo 2");
+        FreeStyleProject project = getProject62870(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
@@ -113,6 +100,16 @@ public class ReloadJobCommandTest {
 
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
     }
+ // CAP AL
+    private FreeStyleProject getProject62870() throws Exception { // CAP AL
+        FreeStyleProject project = j.createFreeStyleProject("aProject"); // CAP AL
+        project.getBuildersList().add(createScriptBuilder("echo 1")); // CAP AL
+         // CAP AL
+        assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1")); // CAP AL
+         // CAP AL
+        changeProjectOnTheDisc(project, "echo 1", "echo 2"); // CAP AL
+        return project; // CAP AL
+    } // CAP AL
 
     @Test public void reloadJobShouldFailIfJobDoesNotExist() throws Exception {
 
