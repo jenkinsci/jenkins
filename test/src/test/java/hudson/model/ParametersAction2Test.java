@@ -100,10 +100,7 @@ public class ParametersAction2Test {
     @Test
     @Issue("SECURITY-170")
     public void parametersDefinitionChange() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
-                new StringParameterDefinition("foo", "foo"),
-                new StringParameterDefinition("bar", "bar"))));
+        FreeStyleProject p = getP93633(); // CAP AL
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new StringParameterValue("foo", "baz"),
@@ -138,10 +135,7 @@ public class ParametersAction2Test {
     @Test
     @Issue("SECURITY-170")
     public void whitelistedParameter() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
-                new StringParameterDefinition("foo", "foo"),
-                new StringParameterDefinition("bar", "bar"))));
+        FreeStyleProject p = getP93633(); // CAP AL
 
         try {
             System.setProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME, "whitelisted1,whitelisted2");
@@ -160,6 +154,14 @@ public class ParametersAction2Test {
             System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         }
     }
+ // CAP AL
+    private FreeStyleProject getP93633() throws IOException { // CAP AL
+        FreeStyleProject p = j.createFreeStyleProject(); // CAP AL
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList( // CAP AL
+                new StringParameterDefinition("foo", "foo"), // CAP AL
+                new StringParameterDefinition("bar", "bar")))); // CAP AL
+        return p; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-170")
