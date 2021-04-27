@@ -280,22 +280,23 @@ public class FingerprinterTest {
         assertNotNull(action);
         fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
-            List<String> jobs = f.getJobs();
-            
-            assertTrue(jobs.contains(renamedProject2));
-            assertFalse(jobs.contains(oldDownstreamName));
+            extractedMethod12318(f, oldDownstreamName); // CAP AL
         }
 
         action = downstreamBuild.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
-            List<String> jobs = f.getJobs();
-            
-            assertTrue(jobs.contains(renamedProject2));
-            assertFalse(jobs.contains(oldDownstreamName));
+            extractedMethod12318(f, oldDownstreamName); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod12318(final Fingerprint f, final String oldDownstreamName) { // CAP AL
+        List<String> jobs = f.getJobs(); // CAP AL
+         // CAP AL
+        assertTrue(jobs.contains(renamedProject2)); // CAP AL
+        assertFalse(jobs.contains(oldDownstreamName)); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-17125")
     @LocalData
