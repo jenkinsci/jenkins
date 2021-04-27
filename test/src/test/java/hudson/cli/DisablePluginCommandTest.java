@@ -194,9 +194,7 @@ public class DisablePluginCommandTest {
         assertThat(disablePluginsCLiCommand("-restart", "variant", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
         assertPluginDisabled("variant");
         assertPluginEnabled("dependee");
-        assertPluginDisabled("depender");
-        assertPluginDisabled("plugin-first");
-        assertPluginDisabled("mandatory-depender");
+        extractedMethod80843(); // CAP AL
         assertJenkinsInQuietMode(); // some plugins were disabled, so it should be restarting
     }
 
@@ -207,16 +205,18 @@ public class DisablePluginCommandTest {
     @Issue("JENKINS-27177")
     @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi", })
     public void disablePluginsStrategyAll() {
-        assertPluginEnabled("dependee");
-        assertPluginEnabled("depender");
-        assertPluginEnabled("mandatory-depender");
+        extractedMethod77558(); // CAP AL
         assertThat(disablePluginsCLiCommand("-strategy", "all", "variant", "dependee", "plugin-first"), succeeded());
         assertPluginDisabled("variant");
         assertPluginDisabled("dependee");
-        assertPluginDisabled("depender");
-        assertPluginDisabled("plugin-first");
-        assertPluginDisabled("mandatory-depender");
+        extractedMethod80843(); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod80843() { // CAP AL
+        assertPluginDisabled("depender"); // CAP AL
+        assertPluginDisabled("plugin-first"); // CAP AL
+        assertPluginDisabled("mandatory-depender"); // CAP AL
+    } // CAP AL
 
     /**
      * Only the mandatory dependent plugins are disabled using <i>-strategy mandatory</i>.
@@ -322,12 +322,16 @@ public class DisablePluginCommandTest {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-quiet", "-strategy", "none", "dependee");
         assertThat(result, failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
 
-        assertPluginEnabled("dependee");
-        assertPluginEnabled("depender");
-        assertPluginEnabled("mandatory-depender");
+        extractedMethod77558(); // CAP AL
 
         assertTrue("Only error NOT_DISABLED_DEPENDANTS in quiet mode", checkResultWith(result, StringUtils::startsWith, "dependee", PluginWrapper.PluginDisableStatus.NOT_DISABLED_DEPENDANTS));
     }
+ // CAP AL
+    private void extractedMethod77558() { // CAP AL
+        assertPluginEnabled("dependee"); // CAP AL
+        assertPluginEnabled("depender"); // CAP AL
+        assertPluginEnabled("mandatory-depender"); // CAP AL
+    } // CAP AL
 
     /**
      * Helper method to check the output of a result with a specific method allowing two arguments (

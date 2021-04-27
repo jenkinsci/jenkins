@@ -24,6 +24,7 @@
 
 package hudson.diagnosis;
 
+import hudson.model.Actionable; // CAP AL
 import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -75,9 +76,7 @@ public class OldDataMonitorTest {
             System.err.println(entry.getValue().extra);
         }
         */
-        assertEquals(Collections.singleton(p), odm.getData().keySet());
-        odm.doDiscard(null, null);
-        assertEquals(Collections.emptySet(), odm.getData().keySet());
+        extractedMethod33537(p, odm); // CAP AL
         // did not manage to save p, but at least we are not holding onto a reference to it anymore
     }
 
@@ -152,11 +151,15 @@ public class OldDataMonitorTest {
         p.delete();
         OldDataMonitor.report(build, (String) null);
 
-        assertEquals(Collections.singleton(build), odm.getData().keySet());
-        odm.doDiscard(null, null);
-        assertEquals(Collections.emptySet(), odm.getData().keySet());
+        extractedMethod33537(build, odm); // CAP AL
 
     }
+ // CAP AL
+    private void extractedMethod33537(final Actionable build, final OldDataMonitor odm) { // CAP AL
+        assertEquals(Collections.singleton(build), odm.getData().keySet()); // CAP AL
+        odm.doDiscard(null, null); // CAP AL
+        assertEquals(Collections.emptySet(), odm.getData().keySet()); // CAP AL
+    } // CAP AL
 
     public static final class BadAction extends InvisibleAction {
         private Object writeReplace() {

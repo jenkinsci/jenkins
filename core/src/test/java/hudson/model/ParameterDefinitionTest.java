@@ -56,10 +56,7 @@ public class ParameterDefinitionTest {
             public void newMethod() {
             }
         };
-        assertEquals(bpd, bpdSame);
-        assertNotEquals(bpd, bpdOther);
-        assertNotEquals(bpd, spd);
-        assertNotEquals(bpd, pd);
+        extractedMethod30868(bpd, bpdSame, bpdOther, spd, pd); // CAP AL
     }
 
     @Test
@@ -73,10 +70,7 @@ public class ParameterDefinitionTest {
             }
         };
 
-        assertEquals(cpd, cpdSame);
-        assertNotEquals(cpd, cpdOther);
-        assertNotEquals(cpd, pd);
-        assertNotEquals(cpd, epd);
+        extractedMethod30868(cpd, cpdSame, cpdOther, pd, epd); // CAP AL
     }
 
     @Test
@@ -90,10 +84,7 @@ public class ParameterDefinitionTest {
             }
         };
 
-        assertEquals(ppd, ppdSame);
-        assertNotEquals(ppd, ppdOther);
-        assertNotEquals(ppd, pd);
-        assertNotEquals(ppd, epd);
+        extractedMethod30868(ppd, ppdSame, ppdOther, pd, epd); // CAP AL
     }
 
     @Test
@@ -107,10 +98,7 @@ public class ParameterDefinitionTest {
             }
         };
 
-        assertEquals(fpd, fpdSame);
-        assertNotEquals(fpd, fpdOther);
-        assertNotEquals(fpd, epd);
-        assertNotEquals(fpd, pd);
+        extractedMethod30868(fpd, fpdSame, fpdOther, epd, pd); // CAP AL
     }
 
     @Test
@@ -125,11 +113,15 @@ public class ParameterDefinitionTest {
             }
         };
 
-        assertEquals(rpd, rpdSame);
-        assertNotEquals(rpd, rpdOther);
-        assertNotEquals(rpd, epd);
-        assertNotEquals(rpd, pd);
+        extractedMethod30868(rpd, rpdSame, rpdOther, epd, pd); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod30868(final ParameterDefinition rpd, final ParameterDefinition rpdSame, final ParameterDefinition rpdOther, final SimpleParameterDefinition epd, final ParameterDefinition pd) { // CAP AL
+        assertEquals(rpd, rpdSame); // CAP AL
+        assertNotEquals(rpd, rpdOther); // CAP AL
+        assertNotEquals(rpd, epd); // CAP AL
+        assertNotEquals(rpd, pd); // CAP AL
+    } // CAP AL
 
     @Test
     public void compareChildsWithoutEqualsAndHashCode() {

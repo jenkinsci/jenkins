@@ -35,11 +35,7 @@ public class IdStrategyTest {
         assertThat(idStrategy.idFromFilename("big$money"), is("big$money"));
 
         assertThat(idStrategy.idFromFilename("$00c1aaa"), is("\u00e1aaa"));
-        assertThat(idStrategy.idFromFilename("$00e1aaa"), is("\u00e1aaa"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1"), is("aaaa\u00e1"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1kkkk"), is("aaaa\u00e1kkkk"));
-        assertThat(idStrategy.idFromFilename("aa$00e1zz$00e9pp"), is("aa\u00e1zz\u00e9pp"));
-        assertThat(idStrategy.idFromFilename("$306f$56fd$5185$3067$6700$5927"), is("\u306f\u56fd\u5185\u3067\u6700\u5927"));
+        extractedMethod82006(idStrategy); // CAP AL
 
         assertThat(idStrategy.idFromFilename("$00E1aaa"), is("$00e1aaa"));
         assertThat(idStrategy.idFromFilename("$001gggg"), is("$001gggg"));
@@ -83,11 +79,7 @@ public class IdStrategyTest {
         assertThat(idStrategy.idFromFilename("big$money"), is("big$money"));
 
         assertThat(idStrategy.idFromFilename("$00c1aaa"), is("\u00c1aaa"));
-        assertThat(idStrategy.idFromFilename("$00e1aaa"), is("\u00e1aaa"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1"), is("aaaa\u00e1"));
-        assertThat(idStrategy.idFromFilename("aaaa$00e1kkkk"), is("aaaa\u00e1kkkk"));
-        assertThat(idStrategy.idFromFilename("aa$00e1zz$00e9pp"), is("aa\u00e1zz\u00e9pp"));
-        assertThat(idStrategy.idFromFilename("$306f$56fd$5185$3067$6700$5927"), is("\u306f\u56fd\u5185\u3067\u6700\u5927"));
+        extractedMethod82006(idStrategy); // CAP AL
 
         assertThat(idStrategy.idFromFilename("$00E1aaa"), is("$00E1aaa"));
         assertThat(idStrategy.idFromFilename("$001gggg"), is("$001gggg"));
@@ -95,6 +87,14 @@ public class IdStrategyTest {
 
         assertThat(idStrategy.idFromFilename("iiii _-@$007~ea"), is("iiii _-@$007Ea"));
     }
+ // CAP AL
+    private void extractedMethod82006(final IdStrategy idStrategy) { // CAP AL
+        assertThat(idStrategy.idFromFilename("$00e1aaa"), is("\u00e1aaa")); // CAP AL
+        assertThat(idStrategy.idFromFilename("aaaa$00e1"), is("aaaa\u00e1")); // CAP AL
+        assertThat(idStrategy.idFromFilename("aaaa$00e1kkkk"), is("aaaa\u00e1kkkk")); // CAP AL
+        assertThat(idStrategy.idFromFilename("aa$00e1zz$00e9pp"), is("aa\u00e1zz\u00e9pp")); // CAP AL
+        assertThat(idStrategy.idFromFilename("$306f$56fd$5185$3067$6700$5927"), is("\u306f\u56fd\u5185\u3067\u6700\u5927")); // CAP AL
+    } // CAP AL
 
     @SuppressWarnings("deprecation")
     @Test
@@ -111,9 +111,7 @@ public class IdStrategyTest {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         assertTrue(idStrategy.equals("user1", "User1"));
         assertTrue(idStrategy.equals("User1", "user1"));
-        assertFalse(idStrategy.equals("User1", "user2"));
-        String sameUser = "sameUser";
-        assertTrue(idStrategy.equals(sameUser, sameUser));
+        extractedMethod35835(idStrategy); // CAP AL
     }
 
     @Test
@@ -121,10 +119,14 @@ public class IdStrategyTest {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         assertFalse(idStrategy.equals("user1", "User1"));
         assertFalse(idStrategy.equals("User1", "user1"));
-        assertFalse(idStrategy.equals("User1", "user2"));
-        String sameUser = "sameUser";
-        assertTrue(idStrategy.equals(sameUser, sameUser));
+        extractedMethod35835(idStrategy); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod35835(final IdStrategy idStrategy) { // CAP AL
+        assertFalse(idStrategy.equals("User1", "user2")); // CAP AL
+        String sameUser = "sameUser"; // CAP AL
+        assertTrue(idStrategy.equals(sameUser, sameUser)); // CAP AL
+    } // CAP AL
 
     @Test
     public void testEqualsCaseSensitiveEmailAddress() {
@@ -173,10 +175,7 @@ public class IdStrategyTest {
     @Test
     public void testCompareCaseInsensitive() {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
-        assertTrue(idStrategy.compare("user1", "user2") < 0);
-        assertTrue(idStrategy.compare("user2", "user1") > 0);
-        assertEquals(0, idStrategy.compare("user1", "user1"));
-        assertTrue(idStrategy.compare("USER1", "user2") < 0);
+        extractedMethod91407(idStrategy); // CAP AL
         assertTrue(idStrategy.compare("USER2", "user1") > 0);
         assertEquals(0, idStrategy.compare("User1", "user1"));
     }
@@ -184,13 +183,17 @@ public class IdStrategyTest {
     @Test
     public void testCompareCaseSensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
-        assertTrue(idStrategy.compare("user1", "user2") < 0);
-        assertTrue(idStrategy.compare("user2", "user1") > 0);
-        assertEquals(0, idStrategy.compare("user1", "user1"));
-        assertTrue(idStrategy.compare("USER1", "user2") < 0);
+        extractedMethod91407(idStrategy); // CAP AL
         assertTrue(idStrategy.compare("USER2", "user1") < 0);
         assertTrue(idStrategy.compare("User1", "user1") < 0);
     }
+ // CAP AL
+    private void extractedMethod91407(final IdStrategy idStrategy) { // CAP AL
+        assertTrue(idStrategy.compare("user1", "user2") < 0); // CAP AL
+        assertTrue(idStrategy.compare("user2", "user1") > 0); // CAP AL
+        assertEquals(0, idStrategy.compare("user1", "user1")); // CAP AL
+        assertTrue(idStrategy.compare("USER1", "user2") < 0); // CAP AL
+    } // CAP AL
 
     @Test
     public void testCompareCaseSensitiveEmail() {

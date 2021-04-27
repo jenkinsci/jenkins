@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import java.util.concurrent.ExecutionException; // CAP AL
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -76,11 +77,7 @@ public class RunTest {
                 }).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override public String call() throws Exception {
-                        return r.getId();
-                    }
-                }).get());
+                extractedMethod54699(id, svc, r); // CAP AL
             } finally {
                 svc.shutdown();
             }
@@ -88,12 +85,7 @@ public class RunTest {
             svc = Executors.newSingleThreadExecutor();
             try {
                 assertEquals(id, r.getId());
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        return r.getId();
-                    }
-                }).get());
+                extractedMethod54699(id, svc, r); // CAP AL
             } finally {
                 svc.shutdown();
             }
@@ -101,6 +93,15 @@ public class RunTest {
             TimeZone.setDefault(origTZ);
         }
     }
+ // CAP AL
+    private void extractedMethod54699(final String id, final ExecutorService svc, final Run r) throws ExecutionException, InterruptedException { // CAP AL
+        assertEquals(id, svc.submit(new Callable<String>() { // CAP AL
+            @Override // CAP AL
+            public String call() throws Exception { // CAP AL
+                return r.getId(); // CAP AL
+            } // CAP AL
+        }).get()); // CAP AL
+    } // CAP AL
 
 
     private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {

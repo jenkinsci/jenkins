@@ -151,18 +151,19 @@ public class PluginWrapperTest {
         }
 
         public PluginWrapperBuilder deps(String... deps) {
-            for (String dep: deps) {
-                this.deps.add(new PluginWrapper.Dependency(dep));
-            }
-            return this;
+            return getThis15479(deps); // CAP AL
         }
 
         public PluginWrapperBuilder optDeps(String... optDeps) {
-            for (String dep: optDeps) {
-                this.optDeps.add(new PluginWrapper.Dependency(dep));
-            }
-            return this;
+            return getThis15479(optDeps); // CAP AL
         }
+ // CAP AL
+        private PluginWrapperBuilder getThis15479(final String[] optDeps) { // CAP AL
+            for (String dep: optDeps) { // CAP AL
+                this.optDeps.add(new PluginWrapper.Dependency(dep)); // CAP AL
+            } // CAP AL
+            return this; // CAP AL
+        } // CAP AL
 
         private PluginWrapper buildLoaded() {
             PluginWrapper pw = build();

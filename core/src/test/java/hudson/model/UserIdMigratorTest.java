@@ -127,15 +127,7 @@ public class UserIdMigratorTest {
 
     @Test
     public void migrateSimpleUser() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
-        IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
-        UserIdMigrator migrator = new UserIdMigrator(usersDirectory, idStrategy);
-        TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
-        mapper.init();
-        assertThat(migrator.needsMigration(), is(false));
-        mapper = new TestUserIdMapper(usersDirectory, idStrategy);
-        mapper.init();
-        assertThat(mapper.getConvertedUserIds().size(), is(1));
+        TestUserIdMapper mapper = getMapper81439(); // CAP AL
         assertThat(mapper.isMapped("fred"), is(true));
     }
 
@@ -157,17 +149,22 @@ public class UserIdMigratorTest {
 
     @Test
     public void migrateUsersXml() throws IOException {
-        File usersDirectory = createTestDirectory(getClass(), name);
-        IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
-        UserIdMigrator migrator = new UserIdMigrator(usersDirectory, idStrategy);
-        TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy);
-        mapper.init();
-        assertThat(migrator.needsMigration(), is(false));
-        mapper = new TestUserIdMapper(usersDirectory, idStrategy);
-        mapper.init();
-        assertThat(mapper.getConvertedUserIds().size(), is(1));
+        TestUserIdMapper mapper = getMapper81439(); // CAP AL
         assertThat(mapper.isMapped("users.xml"), is(true));
     }
+ // CAP AL
+    private TestUserIdMapper getMapper81439() throws IOException { // CAP AL
+        File usersDirectory = createTestDirectory(getClass(), name); // CAP AL
+        IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE; // CAP AL
+        UserIdMigrator migrator = new UserIdMigrator(usersDirectory, idStrategy); // CAP AL
+        TestUserIdMapper mapper = new TestUserIdMapper(usersDirectory, idStrategy); // CAP AL
+        mapper.init(); // CAP AL
+        assertThat(migrator.needsMigration(), is(false)); // CAP AL
+        mapper = new TestUserIdMapper(usersDirectory, idStrategy); // CAP AL
+        mapper.init(); // CAP AL
+        assertThat(mapper.getConvertedUserIds().size(), is(1)); // CAP AL
+        return mapper; // CAP AL
+    } // CAP AL
 
     @Test
     public void migrateEntireDirectory() throws IOException {

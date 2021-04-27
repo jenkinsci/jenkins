@@ -88,9 +88,7 @@ public class FingerprintTest {
         x.add(6);
         assertEquals("[1,4),[5,7)",x.toString());
 
-        RangeSet y = new RangeSet();
-        y.add(3);
-        y.add(4);
+        RangeSet y = getY12839(); // CAP AL
         y.add(5);
         assertEquals("[3,6)",y.toString());
 
@@ -106,14 +104,19 @@ public class FingerprintTest {
         x.add(6);
         assertEquals("[1,3),[5,7)",x.toString());
 
-        RangeSet y = new RangeSet();
-        y.add(3);
-        y.add(4);
+        RangeSet y = getY12839(); // CAP AL
         assertEquals("[3,5)",y.toString());
 
         x.add(y);
         assertEquals("[1,7)",x.toString());
     }
+ // CAP AL
+    private RangeSet getY12839() { // CAP AL
+            RangeSet y = new RangeSet(); // CAP AL
+            y.add(3); // CAP AL
+            y.add(4); // CAP AL
+            return y; // CAP AL
+    } // CAP AL
 
     @Test public void merge3() {
         RangeSet x = new RangeSet();

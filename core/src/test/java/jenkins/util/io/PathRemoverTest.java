@@ -77,10 +77,7 @@ public class PathRemoverTest {
         File file = tmp.newFile();
         touchWithFileName(file);
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(file.toPath());
-
-        assertFalse("Unable to delete file: " + file, file.exists());
+        extractedMethod66676(file); // CAP AL
     }
 
     @Test
@@ -134,10 +131,7 @@ public class PathRemoverTest {
         touchWithFileName(file);
         assertTrue("Unable to make file read-only: " + file, file.setWritable(false));
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(file.toPath());
-
-        assertFalse("Unable to delete file: " + file, file.exists());
+        extractedMethod66676(file); // CAP AL
     }
 
     @Test
@@ -146,11 +140,15 @@ public class PathRemoverTest {
         File file = new File(dir, "invalid.file");
         assertFalse(file.exists());
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(file.toPath());
-
-        assertFalse("Unable to delete file: " + file, file.exists());
+        extractedMethod66676(file); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod66676(final File file) throws IOException { // CAP AL
+        PathRemover remover = PathRemover.newSimpleRemover(); // CAP AL
+        remover.forceRemoveFile(file.toPath()); // CAP AL
+         // CAP AL
+        assertFalse("Unable to delete file: " + file, file.exists()); // CAP AL
+    } // CAP AL
 
     @Test
     public void testForceRemoveFile_SymbolicLink() throws IOException {
@@ -173,10 +171,7 @@ public class PathRemoverTest {
         touchWithFileName(test);
         Path path = folder.resolve("../test");
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(path);
-
-        assertTrue("Unable to delete file: " + path, Files.notExists(path));
+        extractedMethod92907(path); // CAP AL
         assertFalse(test.exists());
         assertTrue("Should not have deleted directory: " + folder, Files.exists(folder));
     }
@@ -190,13 +185,17 @@ public class PathRemoverTest {
         Path symParent = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("sym-parent"), realParent);
         Path toDelete = symParent.resolve("test-file");
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(toDelete);
-
-        assertTrue("Unable to delete file: " + toDelete, Files.notExists(toDelete));
+        extractedMethod92907(toDelete); // CAP AL
         assertTrue("Should not have deleted directory: " + realParent, Files.exists(realParent));
         assertTrue("Should not have deleted symlink: " + symParent, Files.exists(symParent, LinkOption.NOFOLLOW_LINKS));
     }
+ // CAP AL
+    private void extractedMethod92907(final Path toDelete) throws IOException { // CAP AL
+        PathRemover remover = PathRemover.newSimpleRemover(); // CAP AL
+        remover.forceRemoveFile(toDelete); // CAP AL
+         // CAP AL
+        assertTrue("Unable to delete file: " + toDelete, Files.notExists(toDelete)); // CAP AL
+    } // CAP AL
 
     @Test
     public void testForceRemoveDirectoryContents() throws IOException {
@@ -213,9 +212,7 @@ public class PathRemoverTest {
         remover.forceRemoveDirectoryContents(dir.toPath());
 
         assertTrue(dir.exists());
-        assertFalse(d1.exists());
-        assertFalse(d2.exists());
-        assertFalse(f1.exists());
+        extractedMethod27567(d1, d2, f1); // CAP AL
     }
 
     @Test
@@ -233,9 +230,7 @@ public class PathRemoverTest {
         PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> retriesAttempted < 1);
         Exception e = assertThrows(IOException.class, () -> remover.forceRemoveDirectoryContents(dir.toPath()));
         assertThat(e.getMessage(), allOf(containsString(dir.getPath()), containsString("Tried 1 time.")));
-        assertFalse(d2.exists());
-        assertFalse(f1.exists());
-        assertFalse(d2f2.exists());
+        extractedMethod27567(d2, f1, d2f2); // CAP AL
     }
 
     @Test
@@ -274,10 +269,14 @@ public class PathRemoverTest {
         assertTrue(dir.exists());
         assertTrue(d1.exists());
         assertTrue(d1f1.exists());
-        assertFalse(d2.exists());
-        assertFalse(d2f2.exists());
-        assertFalse(f1.exists());
+        extractedMethod27567(d2, d2f2, f1); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod27567(final File d2, final File f1, final File d2f2) { // CAP AL
+        assertFalse(d2.exists()); // CAP AL
+        assertFalse(f1.exists()); // CAP AL
+        assertFalse(d2f2.exists()); // CAP AL
+    } // CAP AL
 
     @Test
     public void testForceRemoveRecursive_RetryOnFailure() throws Exception {
@@ -376,10 +375,7 @@ public class PathRemoverTest {
         Files.createSymbolicLink(path.resolve("sym-dir"), d1.toPath());
         Files.createSymbolicLink(path.resolve("sym-file"), f2.toPath());
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveRecursive(path);
-
-        assertTrue("Unable to delete directory: " + path, Files.notExists(path));
+        extractedMethod24236(path); // CAP AL
         for (File file : Arrays.asList(d1, d1f1, f2)) {
             assertTrue("Should not have deleted target: " + file, file.exists());
         }
@@ -414,12 +410,16 @@ public class PathRemoverTest {
         Path symlink = Files.createSymbolicLink(tmp.getRoot().toPath().resolve("linked"), folder.toPath());
         Path d1p = symlink.resolve("d1");
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveRecursive(d1p);
-
-        assertTrue("Unable to delete directory: " + d1p, Files.notExists(d1p));
+        extractedMethod24236(d1p); // CAP AL
         assertFalse(d1.exists());
     }
+ // CAP AL
+    private void extractedMethod24236(final Path d1p) throws IOException { // CAP AL
+        PathRemover remover = PathRemover.newSimpleRemover(); // CAP AL
+        remover.forceRemoveRecursive(d1p); // CAP AL
+         // CAP AL
+        assertTrue("Unable to delete directory: " + d1p, Files.notExists(d1p)); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-55448")

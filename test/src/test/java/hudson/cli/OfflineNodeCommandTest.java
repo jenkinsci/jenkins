@@ -90,16 +90,7 @@ public class OfflineNodeCommandTest {
     @Test
     public void offlineNodeShouldSucceed() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("aNode");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        extractedMethod6246(slave); // CAP AL
     }
 
     @Test
@@ -108,16 +99,7 @@ public class OfflineNodeCommandTest {
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("aNode");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        extractedMethod6246(slave); // CAP AL
     }
 
     @Test
@@ -126,29 +108,25 @@ public class OfflineNodeCommandTest {
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("aNode");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        extractedMethod6246(slave); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod6246(final DumbSlave slave) { // CAP AL
+        assertThat(slave.toComputer().getOfflineCause(), equalTo(null)); // CAP AL
+         // CAP AL
+        final CLICommandInvoker.Result result = command // CAP AL
+                .authorizedTo(Computer.DISCONNECT, Jenkins.READ) // CAP AL
+                .invokeWithArgs("aNode"); // CAP AL
+        assertThat(result, succeededSilently()); // CAP AL
+        assertThat(slave.toComputer().isOffline(), equalTo(true)); // CAP AL
+        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true)); // CAP AL
+        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class)); // CAP AL
+        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null)); // CAP AL
+    } // CAP AL
 
     @Test
     public void offlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-        slave.toComputer().disconnect();
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
+        DumbSlave slave = getSlave35665(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -214,15 +192,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnDisconnectedNodeWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-        slave.toComputer().disconnect();
-        slave.toComputer().waitUntilOffline();
-        assertThat(slave.toComputer().isOnline(), equalTo(false));
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
+        DumbSlave slave = getSlave35665(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -234,6 +204,19 @@ public class OfflineNodeCommandTest {
         assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
     }
+ // CAP AL
+    private DumbSlave getSlave35665() throws Exception { // CAP AL
+        DumbSlave slave = j.createSlave("aNode", "", null); // CAP AL
+        slave.toComputer().waitUntilOnline(); // CAP AL
+        assertThat(slave.toComputer().isOnline(), equalTo(true)); // CAP AL
+        assertThat(slave.toComputer().getOfflineCause(), equalTo(null)); // CAP AL
+        slave.toComputer().disconnect(); // CAP AL
+        slave.toComputer().waitUntilOffline(); // CAP AL
+        assertThat(slave.toComputer().isOnline(), equalTo(false)); // CAP AL
+        assertThat(slave.toComputer().isOffline(), equalTo(true)); // CAP AL
+        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false)); // CAP AL
+        return slave; // CAP AL
+    } // CAP AL
 
     @Test
     public void offlineNodeShouldSucceedOnBuildingNode() throws Exception {

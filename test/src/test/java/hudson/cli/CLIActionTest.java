@@ -71,9 +71,7 @@ public class CLIActionTest {
         ApiTokenTestHelper.enableLegacyBehavior();
         
         logging.record(PlainCLIProtocol.class, Level.FINE);
-        File jar = tmp.newFile("jenkins-cli.jar");
-        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        File jar = getJar36258(); // CAP AL
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
         j.createFreeStyleProject("p");
         // CLICommand with @Argument:
@@ -172,9 +170,7 @@ public class CLIActionTest {
     @Issue("SECURITY-754")
     @Test
     public void noPreAuthOptionHandlerInfoLeak() throws Exception {
-        File jar = tmp.newFile("jenkins-cli.jar");
-        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        File jar = getJar36258(); // CAP AL
         j.jenkins.addView(new AllView("v1"));
         j.jenkins.addNode(j.createSlave("n1", null, null));
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
@@ -193,6 +189,13 @@ public class CLIActionTest {
         assertExitCode(6, false, jar, "get-view", "v1");
         assertExitCode(6, false, jar, "get-view", "v2"); // Error code 3 before SECURITY-754
     }
+ // CAP AL
+    private File getJar36258() throws IOException { // CAP AL
+        File jar = tmp.newFile("jenkins-cli.jar"); // CAP AL
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar); // CAP AL
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm()); // CAP AL
+        return jar; // CAP AL
+    } // CAP AL
 
     @TestExtension("encodingAndLocale")
     public static class TestDiagnosticCommand extends CLICommand {

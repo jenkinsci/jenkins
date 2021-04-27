@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import java.io.IOException; // CAP AL
 import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
@@ -48,12 +49,7 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
 
     @Test public void removeJobShouldSucceed() throws Exception {
 
-        j.jenkins.addView(new ListView("aView"));
-        FreeStyleProject project = j.createFreeStyleProject("aProject");
-        ((DirectlyModifiableView) j.jenkins.getView("aView")).add(project);
-
-        assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(1));
-        assertThat(j.jenkins.getView("aView").contains(project), equalTo(true));
+        FreeStyleProject project = getProject61300(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
@@ -88,12 +84,7 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
 
     @Test public void removeJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {
 
-        j.jenkins.addView(new ListView("aView"));
-        FreeStyleProject project = j.createFreeStyleProject("aProject");
-        ((DirectlyModifiableView) j.jenkins.getView("aView")).add(project);
-
-        assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(1));
-        assertThat(j.jenkins.getView("aView").contains(project), equalTo(true));
+        FreeStyleProject project = getProject61300(); // CAP AL
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
@@ -103,5 +94,15 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(false));
     }
+ // CAP AL
+    private FreeStyleProject getProject61300() throws IOException { // CAP AL
+        j.jenkins.addView(new ListView("aView")); // CAP AL
+        FreeStyleProject project = j.createFreeStyleProject("aProject"); // CAP AL
+        ((DirectlyModifiableView) j.jenkins.getView("aView")).add(project); // CAP AL
+         // CAP AL
+        assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(1)); // CAP AL
+        assertThat(j.jenkins.getView("aView").contains(project), equalTo(true)); // CAP AL
+        return project; // CAP AL
+    } // CAP AL
 
 }

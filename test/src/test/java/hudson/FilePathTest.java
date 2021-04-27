@@ -24,6 +24,7 @@
 
 package hudson;
 
+import java.lang.reflect.InvocationTargetException; // CAP AL
 import hudson.model.Node;
 import org.apache.tools.ant.DirectoryScanner;
 import static org.hamcrest.Matchers.*;
@@ -91,19 +92,7 @@ public class FilePathTest {
         // this special zip contains a ..\..\ [..] \..\Temp\evil.txt
         FilePath zipFile = r.jenkins.getRootPath().child("zip-slip-win.zip");
 
-        FilePath targetLocation = r.jenkins.getRootPath().child("unzip-target");
- 
-        FilePath good = targetLocation.child("good.txt");
-
-        assertThat(good.exists(), is(false));
-        
-        try {
-            zipFile.unzip(targetLocation);
-            fail("The evil.txt should have triggered an exception");
-        }
-        catch(IOException e){
-            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
-        }
+        extractedMethod68541(zipFile); // CAP AL
 
         // as the unzip operation failed, the good.txt was potentially unzipped
         // but we need to make sure that the evil.txt is not there
@@ -120,25 +109,29 @@ public class FilePathTest {
         // this special zip contains a ../../../ [..] /../tmp/evil.txt
         FilePath zipFile = r.jenkins.getRootPath().child("zip-slip.zip");
 
-        FilePath targetLocation = r.jenkins.getRootPath().child("unzip-target");
-
-        FilePath good = targetLocation.child("good.txt");
-
-        assertThat(good.exists(), is(false));
-
-        try {
-            zipFile.unzip(targetLocation);
-            fail("The evil.txt should have triggered an exception");
-        }
-        catch(IOException e){
-            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
-        }
+        extractedMethod68541(zipFile); // CAP AL
 
         // as the unzip operation failed, the good.txt was potentially unzipped
         // but we need to make sure that the evil.txt is not there
         File evil = new File(r.jenkins.getRootDir(), "../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../tmp/evil.txt");
         assertThat(evil.exists(), is(false));
     }
+ // CAP AL
+    private void extractedMethod68541(final FilePath zipFile) throws IOException, InterruptedException { // CAP AL
+        FilePath targetLocation = r.jenkins.getRootPath().child("unzip-target"); // CAP AL
+         // CAP AL
+        FilePath good = targetLocation.child("good.txt"); // CAP AL
+         // CAP AL
+        assertThat(good.exists(), is(false)); // CAP AL
+         // CAP AL
+        try { // CAP AL
+            zipFile.unzip(targetLocation); // CAP AL
+            fail("The evil.txt should have triggered an exception"); // CAP AL
+        } // CAP AL
+        catch(IOException e){ // CAP AL
+            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory")); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-32778")
@@ -173,23 +166,7 @@ public class FilePathTest {
         assumeTrue(Functions.isWindows());
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         File targetLocation = new File(r.jenkins.getRootDir(), "unzip-target");
-        FilePath targetLocationFP = r.jenkins.getRootPath().child("unzip-target");
-
-        FilePath simple1 = targetLocationFP.child("simple1.txt");
-        FilePath simple2 = targetLocationFP.child("child").child("simple2.txt");
-
-        assertThat(simple1.exists(), is(false));
-        assertThat(simple2.exists(), is(false));
-
-        Method unzipPrivateMethod;
-        unzipPrivateMethod = FilePath.class.getDeclaredMethod("unzip", File.class, File.class);
-        unzipPrivateMethod.setAccessible(true);
-
-        FilePath fp = new FilePath(new File("."));
-        unzipPrivateMethod.invoke(fp, targetLocation, zipFile);
-
-        assertThat(simple1.exists(), is(true));
-        assertThat(simple2.exists(), is(true));
+        extractedMethod78623(targetLocation, zipFile); // CAP AL
     }
 
     @Test
@@ -200,22 +177,26 @@ public class FilePathTest {
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         // the main difference is here, the ./
         File targetLocation = new File(r.jenkins.getRootDir(), "./unzip-target");
-        FilePath targetLocationFP = r.jenkins.getRootPath().child("unzip-target");
-
-        FilePath simple1 = targetLocationFP.child("simple1.txt");
-        FilePath simple2 = targetLocationFP.child("child").child("simple2.txt");
-
-        assertThat(simple1.exists(), is(false));
-        assertThat(simple2.exists(), is(false));
-
-        Method unzipPrivateMethod;
-        unzipPrivateMethod = FilePath.class.getDeclaredMethod("unzip", File.class, File.class);
-        unzipPrivateMethod.setAccessible(true);
-
-        FilePath fp = new FilePath(new File("."));
-        unzipPrivateMethod.invoke(fp, targetLocation, zipFile);
-
-        assertThat(simple1.exists(), is(true));
-        assertThat(simple2.exists(), is(true));
+        extractedMethod78623(targetLocation, zipFile); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod78623(final File targetLocation, final File zipFile) throws IOException, IllegalAccessException, InterruptedException, InvocationTargetException, NoSuchMethodException { // CAP AL
+        FilePath targetLocationFP = r.jenkins.getRootPath().child("unzip-target"); // CAP AL
+         // CAP AL
+        FilePath simple1 = targetLocationFP.child("simple1.txt"); // CAP AL
+        FilePath simple2 = targetLocationFP.child("child").child("simple2.txt"); // CAP AL
+         // CAP AL
+        assertThat(simple1.exists(), is(false)); // CAP AL
+        assertThat(simple2.exists(), is(false)); // CAP AL
+         // CAP AL
+        Method unzipPrivateMethod; // CAP AL
+        unzipPrivateMethod = FilePath.class.getDeclaredMethod("unzip", File.class, File.class); // CAP AL
+        unzipPrivateMethod.setAccessible(true); // CAP AL
+         // CAP AL
+        FilePath fp = new FilePath(new File(".")); // CAP AL
+        unzipPrivateMethod.invoke(fp, targetLocation, zipFile); // CAP AL
+         // CAP AL
+        assertThat(simple1.exists(), is(true)); // CAP AL
+        assertThat(simple2.exists(), is(true)); // CAP AL
+    } // CAP AL
 }

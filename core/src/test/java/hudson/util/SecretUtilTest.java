@@ -11,12 +11,7 @@ public class SecretUtilTest {
     public void decrypt() throws Exception {
         String data = "{}";
 
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
+        extractedMethod68395(data); // CAP AL
 
     }
 
@@ -26,12 +21,7 @@ public class SecretUtilTest {
     public void decryptJustSpace() throws Exception {
         String data = " ";
 
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
+        extractedMethod68395(data); // CAP AL
 
     }
 
@@ -40,12 +30,7 @@ public class SecretUtilTest {
     public void decryptWithSpace() throws Exception {
         String data = "{ }";
 
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
+        extractedMethod68395(data); // CAP AL
 
     }
 
@@ -54,12 +39,16 @@ public class SecretUtilTest {
     public void decryptWithSpaces() throws Exception {
         String data = "{     }";
 
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
+        extractedMethod68395(data); // CAP AL
 
     }
+ // CAP AL
+    private void extractedMethod68395(final String data) { // CAP AL
+        try { // CAP AL
+            Secret secret = Secret.decrypt(data); // CAP AL
+            Assert.assertNull(secret); // CAP AL
+        } catch (ArrayIndexOutOfBoundsException e) { // CAP AL
+            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null"); // CAP AL
+        } // CAP AL
+    } // CAP AL
 }

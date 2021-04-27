@@ -218,12 +218,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFile(root);
-        Collection<String> children = virtualRoot.list("**", null, true, true);
-        assertThat(children, containsInAnyOrder(
-                "a/aa/aa.txt",
-                "a/ab/ab.txt",
-                "b/ba/ba.txt"
-        ));
+        extractedMethod78807(virtualRoot); // CAP AL
     }
 
     @Test
@@ -233,13 +228,17 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
-        Collection<String> children = virtualRoot.list("**", null, true, true);
-        assertThat(children, containsInAnyOrder(
-                "a/aa/aa.txt",
-                "a/ab/ab.txt",
-                "b/ba/ba.txt"
-        ));
+        extractedMethod78807(virtualRoot); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod78807(final VirtualFile virtualRoot) throws IOException { // CAP AL
+        Collection<String> children = virtualRoot.list("**", null, true, true); // CAP AL
+        assertThat(children, containsInAnyOrder( // CAP AL
+                "a/aa/aa.txt", // CAP AL
+                "a/ab/ab.txt", // CAP AL
+                "b/ba/ba.txt" // CAP AL
+        )); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1452")
@@ -250,23 +249,7 @@ public class VirtualFileTest {
         prepareFileStructureForIsDescendant(source);
 
         VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
-        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, "");
-        }
-        FilePath zipPath = new FilePath(zipFile);
-        assertTrue(zipPath.exists());
-        assertFalse(zipPath.isDirectory());
-        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip"));
-        zipPath.unzip(unzipPath);
-        assertTrue(unzipPath.exists());
-        assertTrue(unzipPath.isDirectory());
-        assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
-        assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
-        assertFalse(unzipPath.child("a").child("_b").exists());
-        assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
-        assertFalse(unzipPath.child("b").child("_a").exists());
-        assertFalse(unzipPath.child("b").child("_aatxt").exists());
+        extractedMethod80277(zipFile, sourcePath); // CAP AL
     }
 
     @Test
@@ -308,24 +291,28 @@ public class VirtualFileTest {
         prepareFileStructureForIsDescendant(source);
 
         VirtualFile sourcePath = VirtualFile.forFile(source);
-        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip( outputStream,"**", null, true, true, "");
-        }
-        FilePath zipPath = new FilePath(zipFile);
-        assertTrue(zipPath.exists());
-        assertFalse(zipPath.isDirectory());
-        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip"));
-        zipPath.unzip(unzipPath);
-        assertTrue(unzipPath.exists());
-        assertTrue(unzipPath.isDirectory());
-        assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists());
-        assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists());
-        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists());
-        assertFalse(unzipPath.child("a").child("_b").exists());
-        assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists());
-        assertFalse(unzipPath.child("b").child("_a").exists());
-        assertFalse(unzipPath.child("b").child("_aatxt").exists());
+        extractedMethod80277(zipFile, sourcePath); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod80277(final File zipFile, final VirtualFile sourcePath) throws IOException, InterruptedException { // CAP AL
+        try (FileOutputStream outputStream = new FileOutputStream(zipFile)) { // CAP AL
+            sourcePath.zip( outputStream,"**", null, true, true, ""); // CAP AL
+        } // CAP AL
+        FilePath zipPath = new FilePath(zipFile); // CAP AL
+        assertTrue(zipPath.exists()); // CAP AL
+        assertFalse(zipPath.isDirectory()); // CAP AL
+        FilePath unzipPath = new FilePath(new File(tmp.getRoot(), "unzip")); // CAP AL
+        zipPath.unzip(unzipPath); // CAP AL
+        assertTrue(unzipPath.exists()); // CAP AL
+        assertTrue(unzipPath.isDirectory()); // CAP AL
+        assertTrue(unzipPath.child("a").child("aa").child("aa.txt").exists()); // CAP AL
+        assertTrue(unzipPath.child("a").child("ab").child("ab.txt").exists()); // CAP AL
+        assertFalse(unzipPath.child("a").child("aa").child("aaa").exists()); // CAP AL
+        assertFalse(unzipPath.child("a").child("_b").exists()); // CAP AL
+        assertTrue(unzipPath.child("b").child("ba").child("ba.txt").exists()); // CAP AL
+        assertFalse(unzipPath.child("b").child("_a").exists()); // CAP AL
+        assertFalse(unzipPath.child("b").child("_aatxt").exists()); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue({"JENKINS-19947", "JENKINS-61473"})
@@ -426,14 +413,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFile(root);
-        VirtualFile virtualRootChildA = virtualRoot.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list());
-        assertThat(children, hasSize(3));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab"),
-                VFMatcher.hasName("_b")
-        ));
+        extractedMethod48183(virtualRoot); // CAP AL
     }
 
     @Test
@@ -445,11 +425,7 @@ public class VirtualFileTest {
         Util.createSymlink(root, "a", symlinkName, null);
         File symlinkFile = new File(root, symlinkName);
         VirtualFile virtualRootSymlink = VirtualFile.forFile(symlinkFile);
-        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootSymlink); // CAP AL
     }
 
     @Test
@@ -461,11 +437,7 @@ public class VirtualFileTest {
         Util.createSymlink(root, "a", symlinkName, null);
         File symlinkFile = new File(root, symlinkName);
         VirtualFile virtualRootSymlink = VirtualFile.forFilePath(new FilePath(symlinkFile));
-        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootSymlink); // CAP AL
     }
 
     @Test
@@ -506,11 +478,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile rootVirtualFile = VirtualFile.forFile(root);
         VirtualFile virtualRootChildA = rootVirtualFile.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootChildA); // CAP AL
     }
 
     @Test
@@ -522,12 +490,16 @@ public class VirtualFileTest {
         FilePath rootPath = new FilePath(root);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(rootPath);
         VirtualFile virtualRootChildA = rootVirtualPath.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootChildA); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod5528(final VirtualFile virtualRootChildA) throws IOException { // CAP AL
+        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true)); // CAP AL
+        assertThat(children, containsInAnyOrder( // CAP AL
+                VFMatcher.hasName("aa"), // CAP AL
+                VFMatcher.hasName("ab") // CAP AL
+        )); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1452")
@@ -612,14 +584,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
-        VirtualFile virtualRootChildA = virtualRoot.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list());
-        assertThat(children, hasSize(3));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab"),
-                VFMatcher.hasName("_b")
-        ));
+        extractedMethod48183(virtualRoot); // CAP AL
     }
 
     @Test
@@ -673,15 +638,19 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = new VirtualFileMinimalImplementation(root);
-        VirtualFile virtualRootChildA = virtualRoot.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list());
-        assertThat(children, hasSize(3));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab"),
-                VFMatcher.hasName("_b")
-        ));
+        extractedMethod48183(virtualRoot); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod48183(final VirtualFile virtualRoot) throws IOException { // CAP AL
+        VirtualFile virtualRootChildA = virtualRoot.child("a"); // CAP AL
+        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list()); // CAP AL
+        assertThat(children, hasSize(3)); // CAP AL
+        assertThat(children, containsInAnyOrder( // CAP AL
+                VFMatcher.hasName("aa"), // CAP AL
+                VFMatcher.hasName("ab"), // CAP AL
+                VFMatcher.hasName("_b") // CAP AL
+        )); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1452")
@@ -923,9 +892,7 @@ public class VirtualFileTest {
 
     @Test
     public void forAbstractBase_listOnlyDescendants_withoutIllegal() throws Exception {
-        File root = tmp.getRoot();
-        FileUtils.touch(new File(root, "a"));
-        FileUtils.touch(new File(root, "b"));
+        File root = getRoot89176(); // CAP AL
         VirtualFile virtualRoot = new VirtualFileMinimalImplementation(root);
 
         assertThat(virtualRoot.listOnlyDescendants(), empty());
@@ -933,9 +900,7 @@ public class VirtualFileTest {
 
     @Test
     public void forAbstractBase_WithAllDescendants_listOnlyDescendants_withoutIllegal() throws Exception {
-        File root = tmp.getRoot();
-        FileUtils.touch(new File(root, "a"));
-        FileUtils.touch(new File(root, "b"));
+        File root = getRoot89176(); // CAP AL
         VirtualFile virtualRoot = new VirtualFileMinimalImplementationWithDescendants(root);
 
         List<VirtualFile> descendants = virtualRoot.listOnlyDescendants();
@@ -945,6 +910,13 @@ public class VirtualFileTest {
                 VFMatcher.hasName("b")
         ));
     }
+ // CAP AL
+    private File getRoot89176() throws IOException { // CAP AL
+        File root = tmp.getRoot(); // CAP AL
+        FileUtils.touch(new File(root, "a")); // CAP AL
+        FileUtils.touch(new File(root, "b")); // CAP AL
+        return root; // CAP AL
+    } // CAP AL
 
     private abstract static class VFMatcher extends TypeSafeMatcher<VirtualFile> {
         private final String description;
@@ -983,9 +955,7 @@ public class VirtualFileTest {
         String child = "child";
         File childFile = new File(parentFile, child);
         VirtualFile vf = VirtualFile.forFile(childFile);
-        URI uri = vf.toURI();
-        assertThat(uri.getScheme(), is("file"));
-        assertThat(uri.getPath(), endsWith(parentFolder + "/" + child));
+        extractedMethod12235(vf, parentFolder, child); // CAP AL
     }
 
     @Test
@@ -1123,12 +1093,7 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFile(ws).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(link); // CAP AL
     }
 
     @Test
@@ -1142,12 +1107,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         File childThroughSymlink = new File(tmp.getRoot(), "/" + symlinkName + "/" + childString);
         VirtualFile child = rootVirtualFile.child(symlinkName).child(childString);
-        try {
-        child.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(child); // CAP AL
     }
 
     @Test
@@ -1160,12 +1120,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(new FilePath(tmp.getRoot()));
         VirtualFile childVirtualPath = rootVirtualPath.child(symlinkName).child(childString);
-        try {
-            childVirtualPath.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(childVirtualPath); // CAP AL
     }
 
     @Test
@@ -1178,13 +1133,17 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFilePath(new FilePath(ws)).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(link); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod70308(final VirtualFile childVirtualPath) { // CAP AL
+        try { // CAP AL
+            childVirtualPath.open(true); // CAP AL
+            fail("Should have not followed links."); // CAP AL
+        } catch (IOException ioe) { // CAP AL
+            // expected // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test
     public void testSupportIsDescendant_FileVF() throws Exception {
@@ -1217,10 +1176,14 @@ public class VirtualFileTest {
         String child = "child";
         File childFile = new File(parentFile, child);
         VirtualFile vf = VirtualFile.forFilePath(new FilePath(childFile));
-        URI uri = vf.toURI();
-        assertThat(uri.getScheme(), is("file"));
-        assertThat(uri.getPath(), endsWith(parentFolder + "/" + child));
+        extractedMethod12235(vf, parentFolder, child); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod12235(final VirtualFile vf, final String parentFolder, final String child) { // CAP AL
+        URI uri = vf.toURI(); // CAP AL
+        assertThat(uri.getScheme(), is("file")); // CAP AL
+        assertThat(uri.getPath(), endsWith(parentFolder + "/" + child)); // CAP AL
+    } // CAP AL
 
     @Test
     public void testLength_FilePathVF() throws IOException {

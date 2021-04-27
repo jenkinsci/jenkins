@@ -232,24 +232,7 @@ public class QuietDownCommandTest {
                 return null;
             }
         });
-        try {
-            threadPool.submit(exec_task);
-            beforeCli.block();
-            assertJenkinsInQuietMode();
-            exec_task.get(10, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            timeoutOccurred = true;
-        }
-        if(!timeoutOccurred)
-            fail("Missing timeout for CLI call");
-
-        finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
-        j.assertBuildStatusSuccess(build);
-        exec_task.cancel(true);
-        assertJenkinsInQuietMode();
+        extractedMethod19291(threadPool, exec_task, beforeCli, timeoutOccurred, finish, build, project); // CAP AL
     }
 
     //
@@ -277,25 +260,29 @@ public class QuietDownCommandTest {
                 return null;
             }
         });
-        try {
-            threadPool.submit(exec_task);
-            beforeCli.block();
-            assertJenkinsInQuietMode();
-            exec_task.get(10, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            timeoutOccurred = true;
-        }
-        if(!timeoutOccurred)
-            fail("Missing timeout for CLI call");
-
-        finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
-        j.assertBuildStatusSuccess(build);
-        exec_task.cancel(true);
-        assertJenkinsInQuietMode();
+        extractedMethod19291(threadPool, exec_task, beforeCli, timeoutOccurred, finish, build, project); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod19291(final ExecutorService threadPool, final FutureTask exec_task, final OneShotEvent beforeCli, boolean timeoutOccurred, final OneShotEvent finish, final Future<FreeStyleBuild> build, final FreeStyleProject project) throws Exception { // CAP AL
+        try { // CAP AL
+            threadPool.submit(exec_task); // CAP AL
+            beforeCli.block(); // CAP AL
+            assertJenkinsInQuietMode(); // CAP AL
+            exec_task.get(10, TimeUnit.SECONDS); // CAP AL
+        } catch (TimeoutException e) { // CAP AL
+            timeoutOccurred = true; // CAP AL
+        } // CAP AL
+        if(!timeoutOccurred) // CAP AL
+            fail("Missing timeout for CLI call"); // CAP AL
+         // CAP AL
+        finish.signal(); // CAP AL
+        build.get(); // CAP AL
+        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1)); // CAP AL
+        assertThat(project.isBuilding(), equalTo(false)); // CAP AL
+        j.assertBuildStatusSuccess(build); // CAP AL
+        exec_task.cancel(true); // CAP AL
+        assertJenkinsInQuietMode(); // CAP AL
+    } // CAP AL
 
     //
     // Scenario - quiet-down is called with block and a timeout when executor is running
