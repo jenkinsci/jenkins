@@ -922,9 +922,7 @@ public class VirtualFileTest {
 
     @Test
     public void forAbstractBase_listOnlyDescendants_withoutIllegal() throws Exception {
-        File root = tmp.getRoot();
-        FileUtils.touch(new File(root, "a"));
-        FileUtils.touch(new File(root, "b"));
+        File root = getRoot89176(); // CAP AL
         VirtualFile virtualRoot = new VirtualFileMinimalImplementation(root);
 
         assertThat(virtualRoot.listOnlyDescendants(), empty());
@@ -932,9 +930,7 @@ public class VirtualFileTest {
 
     @Test
     public void forAbstractBase_WithAllDescendants_listOnlyDescendants_withoutIllegal() throws Exception {
-        File root = tmp.getRoot();
-        FileUtils.touch(new File(root, "a"));
-        FileUtils.touch(new File(root, "b"));
+        File root = getRoot89176(); // CAP AL
         VirtualFile virtualRoot = new VirtualFileMinimalImplementationWithDescendants(root);
 
         List<VirtualFile> descendants = virtualRoot.listOnlyDescendants();
@@ -944,6 +940,13 @@ public class VirtualFileTest {
                 VFMatcher.hasName("b")
         ));
     }
+ // CAP AL
+    private File getRoot89176() throws IOException { // CAP AL
+        File root = tmp.getRoot(); // CAP AL
+        FileUtils.touch(new File(root, "a")); // CAP AL
+        FileUtils.touch(new File(root, "b")); // CAP AL
+        return root; // CAP AL
+    } // CAP AL
 
     private abstract static class VFMatcher extends TypeSafeMatcher<VirtualFile> {
         private final String description;
