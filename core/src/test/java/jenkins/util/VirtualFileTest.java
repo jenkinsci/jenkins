@@ -425,11 +425,7 @@ public class VirtualFileTest {
         Util.createSymlink(root, "a", symlinkName, null);
         File symlinkFile = new File(root, symlinkName);
         VirtualFile virtualRootSymlink = VirtualFile.forFile(symlinkFile);
-        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootSymlink); // CAP AL
     }
 
     @Test
@@ -441,11 +437,7 @@ public class VirtualFileTest {
         Util.createSymlink(root, "a", symlinkName, null);
         File symlinkFile = new File(root, symlinkName);
         VirtualFile virtualRootSymlink = VirtualFile.forFilePath(new FilePath(symlinkFile));
-        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootSymlink); // CAP AL
     }
 
     @Test
@@ -486,11 +478,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile rootVirtualFile = VirtualFile.forFile(root);
         VirtualFile virtualRootChildA = rootVirtualFile.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootChildA); // CAP AL
     }
 
     @Test
@@ -502,12 +490,16 @@ public class VirtualFileTest {
         FilePath rootPath = new FilePath(root);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(rootPath);
         VirtualFile virtualRootChildA = rootVirtualPath.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true));
-        assertThat(children, containsInAnyOrder(
-                VFMatcher.hasName("aa"),
-                VFMatcher.hasName("ab")
-        ));
+        extractedMethod5528(virtualRootChildA); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod5528(final VirtualFile virtualRootChildA) throws IOException { // CAP AL
+        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true)); // CAP AL
+        assertThat(children, containsInAnyOrder( // CAP AL
+                VFMatcher.hasName("aa"), // CAP AL
+                VFMatcher.hasName("ab") // CAP AL
+        )); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1452")
