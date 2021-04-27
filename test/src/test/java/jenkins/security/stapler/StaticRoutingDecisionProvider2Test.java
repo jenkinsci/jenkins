@@ -69,11 +69,7 @@ public class StaticRoutingDecisionProvider2Test {
     @Test
     @LocalData("whitelist_monoline")
     public void userControlledWhitelist_monoline_Loading() throws Exception {
-        StaticRoutingDecisionProvider wl = new StaticRoutingDecisionProvider();
-        assertThat(
-                wl.decide("method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ContentProvider getObjectCustom"),
-                is(RoutingDecisionProvider.Decision.ACCEPTED)
-        );
+        StaticRoutingDecisionProvider wl = getWl87908(); // CAP AL
         assertThat(
                 wl.decide("blabla"),
                 is(RoutingDecisionProvider.Decision.UNKNOWN)
@@ -83,11 +79,7 @@ public class StaticRoutingDecisionProvider2Test {
     @Test
     @LocalData("whitelist_multiline")
     public void userControlledWhitelist_multiline_Loading() throws Exception {
-        StaticRoutingDecisionProvider wl = new StaticRoutingDecisionProvider();
-        assertThat(
-                wl.decide("method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ContentProvider getObjectCustom"),
-                is(RoutingDecisionProvider.Decision.ACCEPTED)
-        );
+        StaticRoutingDecisionProvider wl = getWl87908(); // CAP AL
         assertThat(
                 wl.decide("method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ContentProvider getObjectCustom2"),
                 is(RoutingDecisionProvider.Decision.ACCEPTED)
@@ -97,6 +89,15 @@ public class StaticRoutingDecisionProvider2Test {
                 is(RoutingDecisionProvider.Decision.UNKNOWN)
         );
     }
+ // CAP AL
+    private StaticRoutingDecisionProvider getWl87908() { // CAP AL
+        StaticRoutingDecisionProvider wl = new StaticRoutingDecisionProvider(); // CAP AL
+        assertThat( // CAP AL
+                wl.decide("method jenkins.security.stapler.StaticRoutingDecisionProviderTest$ContentProvider getObjectCustom"), // CAP AL
+                is(RoutingDecisionProvider.Decision.ACCEPTED) // CAP AL
+        ); // CAP AL
+        return wl; // CAP AL
+    } // CAP AL
     
     @Test
     @LocalData("comment_ignored")
