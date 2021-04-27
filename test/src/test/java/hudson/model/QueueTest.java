@@ -467,10 +467,7 @@ public class QueueTest {
         r.jenkins.getQueue().maintain();
         r.jenkins.doCancelQuietDown();
         assertFalse(Queue.isBlockedByShutdown(task));
-        r.waitUntilNoActivity();
-        assertEquals(1, cnt.get());
-        assertNotNull(task.exec);
-        assertThat(task.exec, instanceOf(OneOffExecutor.class));
+        extractedMethod50202(cnt, task); // CAP AL
     }
 
     @Issue("JENKINS-24519")
@@ -481,11 +478,15 @@ public class QueueTest {
         r.jenkins.getQueue().schedule2(task, 0);
         r.jenkins.getQueue().maintain();
         r.createSlave(label);
-        r.waitUntilNoActivity();
-        assertEquals(1, cnt.get());
-        assertNotNull(task.exec);
-        assertThat(task.exec, instanceOf(OneOffExecutor.class));
+        extractedMethod50202(cnt, task); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod50202(final AtomicInteger cnt, final TestFlyweightTask task) throws Exception { // CAP AL
+        r.waitUntilNoActivity(); // CAP AL
+        assertEquals(1, cnt.get()); // CAP AL
+        assertNotNull(task.exec); // CAP AL
+        assertThat(task.exec, instanceOf(OneOffExecutor.class)); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-41127")
     @Test public void flyweightTasksUnwantedConcurrency() throws Exception {
