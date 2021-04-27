@@ -23,6 +23,7 @@
  */
 package jenkins.security.stapler;
 
+import java.io.IOException; // CAP AL
 import hudson.ExtensionList;
 import hudson.model.FreeStyleProject;
 import jenkins.model.Jenkins;
@@ -147,14 +148,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
             
             ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class).add(ContentProvider.OBJECT_CUSTOM_SIGNATURE);
             
-            assertNotReachable("contentProvider/objectString/");
-            assertFalse(ContentProvider.called);
-            assertFalse(ContentProvider.called2);
-            assertGetMethodRequestWasBlockedAndResetFlag();
-            
-            assertReachable("contentProvider/objectCustom/");
-            assertTrue(ContentProvider.called);
-            assertTrue(ContentProvider.called2);
+            extractedMethod45898(); // CAP AL
             
             ContentProvider.called = false;
             ContentProvider.called2 = false;
@@ -195,13 +189,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
             resetMetaClassCache.invoke(whitelist);
         }
         
-        assertNotReachable("contentProvider/objectString/");
-        assertFalse(ContentProvider.called);
-        assertFalse(ContentProvider.called2);
-        assertGetMethodRequestWasBlockedAndResetFlag();
-        assertReachable("contentProvider/objectCustom/");
-        assertTrue(ContentProvider.called);
-        assertTrue(ContentProvider.called2);
+        extractedMethod45898(); // CAP AL
         
         {// reset to previous state
             ContentProvider.called = false;
@@ -215,6 +203,17 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
         assertNotReachable("contentProvider/objectCustom/");
         assertFalse(ContentProvider.called);
     }
+ // CAP AL
+    private void extractedMethod45898() throws IOException { // CAP AL
+        assertNotReachable("contentProvider/objectString/"); // CAP AL
+        assertFalse(ContentProvider.called); // CAP AL
+        assertFalse(ContentProvider.called2); // CAP AL
+        assertGetMethodRequestWasBlockedAndResetFlag(); // CAP AL
+         // CAP AL
+        assertReachable("contentProvider/objectCustom/"); // CAP AL
+        assertTrue(ContentProvider.called); // CAP AL
+        assertTrue(ContentProvider.called2); // CAP AL
+    } // CAP AL
     
     @TestExtension
     public static class ActionWithWhitelist extends AbstractUnprotectedRootAction {
