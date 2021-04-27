@@ -57,9 +57,7 @@ public class LabelAtomSecurity1986Test {
     public void normal() throws Exception {
         j.submit(j.createWebClient().goTo("labelAtom/foo/configure").getFormByName("config"));
         LabelAtom foo = j.jenkins.getLabelAtom("foo");
-        XmlFile configFile = foo.getConfigFile();
-        assertTrue(configFile.getFile().exists());
-        assertThat(configFile.getFile().getParentFile().getName(), equalTo("labels"));
+        extractedMethod32603(foo); // CAP AL
     }
 
     @Test
@@ -81,18 +79,14 @@ public class LabelAtomSecurity1986Test {
         // Not a great result, but it works and doesn't cause problems.
         j.submit(j.createWebClient().goTo("labelAtom/%2ffoo/configure").getFormByName("config"));
         LabelAtom foo = j.jenkins.getLabelAtom("/foo");
-        XmlFile configFile = foo.getConfigFile();
-        assertTrue(configFile.getFile().exists());
-        assertThat(configFile.getFile().getParentFile().getName(), equalTo("labels"));
+        extractedMethod32603(foo); // CAP AL
     }
 
     @Test
     public void startsWithDoubleDot() throws Exception {
         j.submit(j.createWebClient().goTo("labelAtom/..foo/configure").getFormByName("config"));
         LabelAtom foo = j.jenkins.getLabelAtom("..foo");
-        XmlFile configFile = foo.getConfigFile();
-        assertTrue(configFile.getFile().exists());
-        assertThat(configFile.getFile().getParentFile().getName(), equalTo("labels"));
+        extractedMethod32603(foo); // CAP AL
     }
 
     @Test
@@ -113,9 +107,7 @@ public class LabelAtomSecurity1986Test {
     public void endsWithDoubleDot() throws Exception {
         j.submit(j.createWebClient().goTo("labelAtom/foo../configure").getFormByName("config"));
         LabelAtom foo = j.jenkins.getLabelAtom("foo..");
-        XmlFile configFile = foo.getConfigFile();
-        assertTrue(configFile.getFile().exists());
-        assertThat(configFile.getFile().getParentFile().getName(), equalTo("labels"));
+        extractedMethod32603(foo); // CAP AL
     }
 
     @Test
@@ -186,10 +178,14 @@ public class LabelAtomSecurity1986Test {
         LabelAtom label = new LabelAtom("foo");
         label.save();
         LabelAtom foo = j.jenkins.getLabelAtom("foo");
-        XmlFile configFile = foo.getConfigFile();
-        assertTrue(configFile.getFile().exists());
-        assertThat(configFile.getFile().getParentFile().getName(), equalTo("labels"));
+        extractedMethod32603(foo); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod32603(final LabelAtom foo) { // CAP AL
+        XmlFile configFile = foo.getConfigFile(); // CAP AL
+        assertTrue(configFile.getFile().exists()); // CAP AL
+        assertThat(configFile.getFile().getParentFile().getName(), equalTo("labels")); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1986")
