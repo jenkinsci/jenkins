@@ -353,10 +353,7 @@ public class HudsonPrivateSecurityRealmTest {
         ));
 
         HtmlPage p = wc.getPage(request);
-        assertEquals(200, p.getWebResponse().getStatusCode());
-        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty());
-
-        assertNotNull(User.getById(login, false));
+        extractedMethod10534(p, login); // CAP AL
     }
 
     private void createAccountByAdmin(String login) throws Exception {
@@ -381,10 +378,7 @@ public class HudsonPrivateSecurityRealmTest {
         form.getInputByName("email").setValueAttribute(login + "@" + login + ".com");
 
         HtmlPage p = j.submit(form);
-        assertEquals(200, p.getWebResponse().getStatusCode());
-        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty());
-
-        assertNotNull(User.getById(login, false));
+        extractedMethod10534(p, login); // CAP AL
     }
 
     private void selfRegistration(String login) throws Exception {
@@ -399,11 +393,15 @@ public class HudsonPrivateSecurityRealmTest {
         signup.enterEmail(login + "@" + login + ".com");
 
         HtmlPage p = signup.submit(j);
-        assertEquals(200, p.getWebResponse().getStatusCode());
-        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty());
-
-        assertNotNull(User.getById(login, false));
+        extractedMethod10534(p, login); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod10534(final HtmlPage p, final String login) { // CAP AL
+        assertEquals(200, p.getWebResponse().getStatusCode()); // CAP AL
+        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty()); // CAP AL
+         // CAP AL
+        assertNotNull(User.getById(login, false)); // CAP AL
+    } // CAP AL
 
     @TestExtension
     public static class SpySecurityListenerImpl extends SecurityListener {
