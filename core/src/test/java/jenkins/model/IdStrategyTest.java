@@ -175,10 +175,7 @@ public class IdStrategyTest {
     @Test
     public void testCompareCaseInsensitive() {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
-        assertTrue(idStrategy.compare("user1", "user2") < 0);
-        assertTrue(idStrategy.compare("user2", "user1") > 0);
-        assertEquals(0, idStrategy.compare("user1", "user1"));
-        assertTrue(idStrategy.compare("USER1", "user2") < 0);
+        extractedMethod91407(idStrategy); // CAP AL
         assertTrue(idStrategy.compare("USER2", "user1") > 0);
         assertEquals(0, idStrategy.compare("User1", "user1"));
     }
@@ -186,13 +183,17 @@ public class IdStrategyTest {
     @Test
     public void testCompareCaseSensitive() {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
-        assertTrue(idStrategy.compare("user1", "user2") < 0);
-        assertTrue(idStrategy.compare("user2", "user1") > 0);
-        assertEquals(0, idStrategy.compare("user1", "user1"));
-        assertTrue(idStrategy.compare("USER1", "user2") < 0);
+        extractedMethod91407(idStrategy); // CAP AL
         assertTrue(idStrategy.compare("USER2", "user1") < 0);
         assertTrue(idStrategy.compare("User1", "user1") < 0);
     }
+ // CAP AL
+    private void extractedMethod91407(final IdStrategy idStrategy) { // CAP AL
+        assertTrue(idStrategy.compare("user1", "user2") < 0); // CAP AL
+        assertTrue(idStrategy.compare("user2", "user1") > 0); // CAP AL
+        assertEquals(0, idStrategy.compare("user1", "user1")); // CAP AL
+        assertTrue(idStrategy.compare("USER1", "user2") < 0); // CAP AL
+    } // CAP AL
 
     @Test
     public void testCompareCaseSensitiveEmail() {
