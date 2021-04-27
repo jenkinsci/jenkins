@@ -717,10 +717,7 @@ public class ProjectTest {
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-spawn");        
         DummyCloudImpl2 c2 = getC270053(proj); // CAP AL
         
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
         
         Thread.sleep(1000);
         //Assert that the job IS submitted to Queue.
@@ -757,11 +754,7 @@ public class ProjectTest {
         PollingResult pr = proj.poll(j.createTaskListener());
         assertFalse(pr.hasChanges());
         
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
         
         /*
          * Assert that the log contains the correct message.
@@ -782,10 +775,7 @@ public class ProjectTest {
         DummyCloudImpl2 c2 = getC270053(proj); // CAP AL
         proj.setAssignedLabel(c2.label);
         
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
         
         Thread.sleep(1000);
         //The job should be in queue
@@ -819,14 +809,19 @@ public class ProjectTest {
         //First build is not important
         j.buildAndAssertSuccess(proj);
 
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
 
 
         assertFalse(j.jenkins.getQueue().isEmpty());
     }
+ // CAP AL
+    private void extractedMethod41336(final FreeStyleProject proj) throws ANTLRException, IOException { // CAP AL
+        SCMTrigger t = new SCMTrigger("@daily", true); // CAP AL
+        t.start(proj, true); // CAP AL
+        proj.addTrigger(t); // CAP AL
+         // CAP AL
+        t.new Runner().run(); // CAP AL
+    } // CAP AL
 
     public static class TransientAction extends InvisibleAction{
         
