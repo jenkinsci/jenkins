@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import java.util.concurrent.ExecutionException; // CAP AL
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
@@ -207,10 +208,7 @@ public class PluginManagerTest {
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/htmlpublisher-update-center.json");
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
-        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
-        assertNotNull(site.getData());
+        UpdateSite site = getSite45396(url, sites); // CAP AL
         assertEquals(Collections.emptyList(), r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><runant plugin=\"ant@1.1\"/></whatever>")));
         assertNull(r.jenkins.getPluginManager().getPlugin("htmlpublisher"));
         List<Future<UpdateCenterJob>> jobs = r.jenkins.getPluginManager().prevalidateConfig(new StringInputStream("<whatever><htmlpublisher plugin=\"htmlpublisher@0.7\"/></whatever>"));
@@ -514,11 +512,7 @@ public class PluginManagerTest {
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/upload-test-update-center.json");
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
-
-        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
-        assertNotNull(site.getData());
+        UpdateSite site = getSite45396(url, sites); // CAP AL
 
         // neither of the following plugins should be installed
         assertNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
@@ -668,10 +662,7 @@ public class PluginManagerTest {
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/search-test-update-center1.json");
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
-        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
-        assertNotNull(site.getData());
+        UpdateSite site = getSite45396(url, sites); // CAP AL
         url = PluginManagerTest.class.getResource("/plugins/search-test-update-center2.json");
         site = new UpdateSite("secondary", url.toString());
         sites.add(site);
@@ -702,4 +693,13 @@ public class PluginManagerTest {
         data = json.getJSONArray("data");
         assertEquals("Should be two search hits for hello", 2, data.size());
     }
+ // CAP AL
+    private UpdateSite getSite45396(final URL url, final PersistedList<UpdateSite> sites) throws ExecutionException, InterruptedException { // CAP AL
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString()); // CAP AL
+        sites.add(site); // CAP AL
+         // CAP AL
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get()); // CAP AL
+        assertNotNull(site.getData()); // CAP AL
+        return site; // CAP AL
+    } // CAP AL
 }
