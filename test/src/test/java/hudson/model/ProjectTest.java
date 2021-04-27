@@ -196,9 +196,7 @@ public class ProjectTest {
         getFilePath = true;
         assertNotNull("Project should have any workspace because WorkspaceBrowser find some.", p.getSomeWorkspace());
         getFilePath = false;
-        String cmd = "echo ahoj > some.log";
-        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
-        j.buildAndAssertSuccess(p);
+        extractedMethod23755(p); // CAP AL
         assertNotNull("Project should has any workspace.", p.getSomeWorkspace());
     }
     
@@ -217,15 +215,19 @@ public class ProjectTest {
     @Issue("JENKINS-10450")
     @Test public void workspaceBrowsing() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
-        String cmd = "echo ahoj > some.log";
-        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
-        j.buildAndAssertSuccess(p);
+        extractedMethod23755(p); // CAP AL
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.goTo("job/project/ws/some.log", "text/plain");
         wc.assertFails("job/project/ws/other.log", 404);
         p.doDoWipeOutWorkspace();
         wc.assertFails("job/project/ws/some.log", 404);
     }
+ // CAP AL
+    private void extractedMethod23755(final FreeStyleProject p) throws Exception { // CAP AL
+        String cmd = "echo ahoj > some.log"; // CAP AL
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd)); // CAP AL
+        j.buildAndAssertSuccess(p); // CAP AL
+    } // CAP AL
     
     @Test
     public void testGetQuietPeriod() throws IOException{
