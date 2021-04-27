@@ -231,13 +231,7 @@ public class Security400Test {
         }
         
         { // first try, we let the build finishes normally
-            QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
-            futureBuild.waitForStart();
-            
-            // let the build finishes
-            semaphore.release(1);
-            j.assertBuildStatus(Result.SUCCESS, futureBuild);
-            assertEquals(1, atomicResult.get());
+            extractedMethod69687(p, semaphore, atomicResult); // CAP AL
         }
         
         { // second try, we need to reach the stop method in executor to interrupt the build
@@ -291,14 +285,7 @@ public class Security400Test {
             semaphore.drainPermits();
             atomicResult.set(0);
 
-            QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
-            futureBuild.waitForStart();
-
-            // let the build finishes
-            semaphore.release(1);
-
-            j.assertBuildStatus(Result.SUCCESS, futureBuild);
-            assertEquals(1, atomicResult.get());
+            extractedMethod69687(p, semaphore, atomicResult); // CAP AL
         }
 
         { // second try, calling stopBuild without parameter interrupts the build (same as calling stop)
@@ -362,6 +349,17 @@ public class Security400Test {
             assertEquals(1, atomicResult.get());
         }
     }
+ // CAP AL
+    private void extractedMethod69687(final FreeStyleProject p, final Semaphore semaphore, final AtomicInteger atomicResult) throws Exception { // CAP AL
+        QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0); // CAP AL
+        futureBuild.waitForStart(); // CAP AL
+         // CAP AL
+        // let the build finishes // CAP AL
+        semaphore.release(1); // CAP AL
+         // CAP AL
+        j.assertBuildStatus(Result.SUCCESS, futureBuild); // CAP AL
+        assertEquals(1, atomicResult.get()); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-404")
