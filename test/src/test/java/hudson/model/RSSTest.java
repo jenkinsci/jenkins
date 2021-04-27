@@ -375,9 +375,7 @@ public class RSSTest {
         if (expectedNodes >= 0) {
             assertThat(feedNode.getChildNodes().getLength(), is(expectedNodes));
         }
-        Node linkNode = getSingleNode(feedNode, "link");
-        assertThat(linkNode.getAttributes().getNamedItem("rel").getTextContent(), is("alternate"));
-        assertThat(linkNode.getAttributes().getNamedItem("type").getTextContent(), is("text/html"));
+        Node linkNode = getLinkNode13170(feedNode); // CAP AL
         assertThat(linkNode.getAttributes().getNamedItem("href").getTextContent(), is(j.getURL().toString()));
         assertNotNull(getSingleNode(feedNode, "updated"));
         assertThat(getSingleNode(feedNode, "title").getTextContent(), is(expectedTitle));
@@ -528,11 +526,16 @@ public class RSSTest {
         checkAtomTimeNode(firstBuild, "published");
         checkAtomTimeNode(firstBuild, "updated");
         assertNotNull(getSingleNode(firstBuild, "id").getTextContent());
-        Node linkNode = getSingleNode(firstBuild, "link");
-        assertThat(linkNode.getAttributes().getNamedItem("rel").getTextContent(), is("alternate"));
-        assertThat(linkNode.getAttributes().getNamedItem("type").getTextContent(), is("text/html"));
+        Node linkNode = getLinkNode13170(firstBuild); // CAP AL
         assertThat(linkNode.getAttributes().getNamedItem("href").getTextContent(), containsString(j.getURL().toString()));
     }
+ // CAP AL
+    private Node getLinkNode13170(final Node firstBuild) { // CAP AL
+        Node linkNode = getSingleNode(firstBuild, "link"); // CAP AL
+        assertThat(linkNode.getAttributes().getNamedItem("rel").getTextContent(), is("alternate")); // CAP AL
+        assertThat(linkNode.getAttributes().getNamedItem("type").getTextContent(), is("text/html")); // CAP AL
+        return linkNode; // CAP AL
+    } // CAP AL
 
     private void checkLatestBuilds(JenkinsRule.WebClient webClient, String pathPrefix, String displayName, String buildType, String userId,
                                    int expectedLatesLinks, int expectedAllLinks) throws Exception {
