@@ -24,6 +24,7 @@
 
 package hudson.util;
 
+import java.io.IOException; // CAP AL
 import com.gargoylesoftware.htmlunit.Page;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
@@ -211,9 +212,7 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.withBasicApiToken(test);
-            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
-            req.setEncodingType(null);
+            WebRequest req = getReq15322(wc, test, p); // CAP AL
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
             
@@ -242,9 +241,7 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient()
                     .withThrowExceptionOnFailingStatusCode(false);
-            wc.withBasicApiToken(test);
-            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
-            req.setEncodingType(null);
+            WebRequest req = getReq15322(wc, test, p); // CAP AL
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
             
             Page page = wc.getPage(req);
@@ -262,6 +259,13 @@ public class RobustReflectionConverterTest {
             assertNotEquals("badvalue", p.getProperty(KeywordProperty.class).getCriticalField().getKeyword());
         }
     }
+ // CAP AL
+    private WebRequest getReq15322(final WebClient wc, final User test, final FreeStyleProject p) throws IOException { // CAP AL
+        wc.withBasicApiToken(test); // CAP AL
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST); // CAP AL
+        req.setEncodingType(null); // CAP AL
+        return req; // CAP AL
+    } // CAP AL
     
     @Test
     public void testCliFailure() throws Exception {
