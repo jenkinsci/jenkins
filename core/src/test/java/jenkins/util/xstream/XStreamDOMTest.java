@@ -67,10 +67,7 @@ public class XStreamDOMTest {
     @Test
     public void testMarshal() throws IOException {
         Foo foo = createSomeFoo();
-        String xml = xs.toXML(foo);
-        System.out.println(xml);
-        assertThat(getTestData1().trim(), isSimilarTo(xml.trim()).ignoreWhitespace()
-                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
+        extractedMethod31021(foo); // CAP AL
     }
 
     private String getTestData1() throws IOException {
@@ -106,11 +103,15 @@ public class XStreamDOMTest {
         XStreamDOM dom = XStreamDOM.from(xs, createSomeFoo());
         Foo foo = dom.unmarshal(xs);
 
-        String xml = xs.toXML(foo);
-        System.out.println(xml);
-        assertThat(getTestData1().trim(), isSimilarTo(xml.trim()).ignoreWhitespace()
-                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
+        extractedMethod31021(foo); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod31021(final Foo foo) throws IOException { // CAP AL
+        String xml = xs.toXML(foo); // CAP AL
+        System.out.println(xml); // CAP AL
+        assertThat(getTestData1().trim(), isSimilarTo(xml.trim()).ignoreWhitespace() // CAP AL
+                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))); // CAP AL
+    } // CAP AL
 
     @Test
     public void testNoChild() {
