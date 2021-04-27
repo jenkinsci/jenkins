@@ -166,28 +166,26 @@ public class CLIEnvVarTest {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Map<String, String> envars = new HashMap<>();
             envars.put("JENKINS_USER_ID", "admin");
-            assertNotEquals(0, launch(envars,
-                                      "java",
-                                      "-Duser.home=" + home,
-                                      "-jar", jar.getAbsolutePath(),
-                                      "-s", r.getURL().toString(),
-                                      "who-am-i")
-            );
+            extractedMethod76184(envars); // CAP AL
         }
 
         // only JENKINS_API_TOKEN
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Map<String, String> envars = new HashMap<>();
             envars.put("JENKINS_API_TOKEN", token);
-            assertNotEquals(0, launch(envars,
-                                      "java",
-                                      "-Duser.home=" + home,
-                                      "-jar", jar.getAbsolutePath(),
-                                      "-s", r.getURL().toString(),
-                                      "who-am-i")
-            );
+            extractedMethod76184(envars); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod76184(final Map<String, String> envars) throws Exception { // CAP AL
+        assertNotEquals(0, launch(envars, // CAP AL
+                                  "java", // CAP AL
+                                  "-Duser.home=" + home, // CAP AL
+                                  "-jar", jar.getAbsolutePath(), // CAP AL
+                                  "-s", r.getURL().toString(), // CAP AL
+                                  "who-am-i") // CAP AL
+        ); // CAP AL
+    } // CAP AL
 
     @Test
     public void testAuthOptionOverridesEnvVars() throws Exception {
