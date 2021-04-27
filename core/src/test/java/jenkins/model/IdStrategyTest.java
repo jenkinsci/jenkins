@@ -111,9 +111,7 @@ public class IdStrategyTest {
         IdStrategy idStrategy = IdStrategy.CASE_INSENSITIVE;
         assertTrue(idStrategy.equals("user1", "User1"));
         assertTrue(idStrategy.equals("User1", "user1"));
-        assertFalse(idStrategy.equals("User1", "user2"));
-        String sameUser = "sameUser";
-        assertTrue(idStrategy.equals(sameUser, sameUser));
+        extractedMethod35835(idStrategy); // CAP AL
     }
 
     @Test
@@ -121,10 +119,14 @@ public class IdStrategyTest {
         IdStrategy idStrategy = new IdStrategy.CaseSensitive();
         assertFalse(idStrategy.equals("user1", "User1"));
         assertFalse(idStrategy.equals("User1", "user1"));
-        assertFalse(idStrategy.equals("User1", "user2"));
-        String sameUser = "sameUser";
-        assertTrue(idStrategy.equals(sameUser, sameUser));
+        extractedMethod35835(idStrategy); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod35835(final IdStrategy idStrategy) { // CAP AL
+        assertFalse(idStrategy.equals("User1", "user2")); // CAP AL
+        String sameUser = "sameUser"; // CAP AL
+        assertTrue(idStrategy.equals(sameUser, sameUser)); // CAP AL
+    } // CAP AL
 
     @Test
     public void testEqualsCaseSensitiveEmailAddress() {
