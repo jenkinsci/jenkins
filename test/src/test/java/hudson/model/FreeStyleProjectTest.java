@@ -76,21 +76,7 @@ public class FreeStyleProjectTest {
     @Test
     public void configSubmission() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        Shell shell = new Shell("echo hello");
-        project.getBuildersList().add(shell);
-
-        // emulate the user behavior
-        WebClient webClient = j.createWebClient();
-        HtmlPage page = webClient.getPage(project,"configure");
-
-        HtmlForm form = page.getFormByName("config");
-        j.submit(form);
-
-        List<Builder> builders = project.getBuilders();
-        assertEquals(1,builders.size());
-        assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
-        assertNotSame(builders.get(0), shell);
+        extractedMethod88392(project); // CAP AL
     }
 
     /**
@@ -129,19 +115,27 @@ public class FreeStyleProjectTest {
         FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));
         System.out.println(project.getConfigFile().asString());
         // and round-tripped:
-        Shell shell = new Shell("echo hello");
-        project.getBuildersList().add(shell);
-        WebClient webClient = j.createWebClient();
-        HtmlPage page = webClient.getPage(project,"configure");
-        HtmlForm form = page.getFormByName("config");
-        j.submit(form);
-        List<Builder> builders = project.getBuilders();
-        assertEquals(1,builders.size());
-        assertEquals(Shell.class,builders.get(0).getClass());
-        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim());
-        assertNotSame(builders.get(0), shell);
+        extractedMethod88392(project); // CAP AL
         System.out.println(project.getConfigFile().asString());
     }
+ // CAP AL
+    private void extractedMethod88392(final FreeStyleProject project) throws Exception { // CAP AL
+        Shell shell = new Shell("echo hello"); // CAP AL
+        project.getBuildersList().add(shell); // CAP AL
+         // CAP AL
+        // emulate the user behavior // CAP AL
+        WebClient webClient = j.createWebClient(); // CAP AL
+        HtmlPage page = webClient.getPage(project,"configure"); // CAP AL
+         // CAP AL
+        HtmlForm form = page.getFormByName("config"); // CAP AL
+        j.submit(form); // CAP AL
+         // CAP AL
+        List<Builder> builders = project.getBuilders(); // CAP AL
+        assertEquals(1,builders.size()); // CAP AL
+        assertEquals(Shell.class,builders.get(0).getClass()); // CAP AL
+        assertEquals("echo hello",((Shell)builders.get(0)).getCommand().trim()); // CAP AL
+        assertNotSame(builders.get(0), shell); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-36629")
