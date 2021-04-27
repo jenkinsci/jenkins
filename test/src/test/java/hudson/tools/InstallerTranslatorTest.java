@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import java.io.IOException; // CAP AL
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -53,9 +54,7 @@ public class InstallerTranslatorTest {
         Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(true), RetentionStrategy.NOOP, Collections.emptyList());
         String globalDefaultLocation = "/usr/lib/jdk";
         JDK jdk = new JDK("my-jdk", globalDefaultLocation, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(new CommandInstaller(null, "irrelevant", "/opt/jdk")))));
-        r.jenkins.getJDKs().add(jdk);
-        FreeStyleProject p = r.createFreeStyleProject();
-        p.setJDK(jdk);
+        FreeStyleProject p = getP85140(jdk); // CAP AL
         StreamTaskListener listener = new StreamTaskListener(System.out, Charset.defaultCharset());
         String javaHomeProp = "JAVA_HOME"; // cf. JDK.buildEnvVars
         assertEquals(globalDefaultLocation, p.getEnvironment(slave, listener).get(javaHomeProp));
@@ -110,11 +109,7 @@ public class InstallerTranslatorTest {
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, bci));
 
         JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
-        r.jenkins.getJDKs().add(jdk);
-
-
-        FreeStyleProject p = r.createFreeStyleProject();
-        p.setJDK(jdk);
+        FreeStyleProject p = getP85140(jdk); // CAP AL
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo %JAVA_HOME%") : new Shell("echo $JAVA_HOME"));
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         r.assertLogContains(hudson.tools.Messages.CannotBeInstalled(ci.getDescriptor().getDisplayName(), jdk.getName(), r.jenkins.getDisplayName()), b1);
@@ -133,14 +128,19 @@ public class InstallerTranslatorTest {
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, ci2));
 
         JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
-        r.jenkins.getJDKs().add(jdk);
-
-
-        FreeStyleProject p = r.createFreeStyleProject();
-        p.setJDK(jdk);
+        FreeStyleProject p = getP85140(jdk); // CAP AL
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo %JAVA_HOME%") : new Shell("echo $JAVA_HOME"));
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         r.assertLogNotContains(ci.getDescriptor().getDisplayName(), b1);
     }
+ // CAP AL
+    private FreeStyleProject getP85140(final JDK jdk) throws IOException { // CAP AL
+        r.jenkins.getJDKs().add(jdk); // CAP AL
+         // CAP AL
+         // CAP AL
+        FreeStyleProject p = r.createFreeStyleProject(); // CAP AL
+        p.setJDK(jdk); // CAP AL
+        return p; // CAP AL
+    } // CAP AL
 
 }
