@@ -225,11 +225,7 @@ public class HudsonPrivateSecurityRealmTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
         signup.enterUsername("anonymous");
-        signup.enterFullName("Bob");
-        signup.enterPassword("nothing");
-        signup.enterEmail("noone@nowhere.com");
-        signup = new SignupPage(signup.submit(j));
-        signup.assertErrorContains("prohibited as a username");
+        extractedMethod62664(signup); // CAP AL
         assertNull(User.get("anonymous", false, Collections.emptyMap()));
     }
 
@@ -241,13 +237,17 @@ public class HudsonPrivateSecurityRealmTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
         signup.enterUsername("system");
-        signup.enterFullName("Bob");
-        signup.enterPassword("nothing");
-        signup.enterEmail("noone@nowhere.com");
-        signup = new SignupPage(signup.submit(j));
-        signup.assertErrorContains("prohibited as a username");
+        extractedMethod62664(signup); // CAP AL
         assertNull(User.get("system",false, Collections.emptyMap()));
     }
+ // CAP AL
+    private void extractedMethod62664(SignupPage signup) throws Exception { // CAP AL
+        signup.enterFullName("Bob"); // CAP AL
+        signup.enterPassword("nothing"); // CAP AL
+        signup.enterEmail("noone@nowhere.com"); // CAP AL
+        signup = new SignupPage(signup.submit(j)); // CAP AL
+        signup.assertErrorContains("prohibited as a username"); // CAP AL
+    } // CAP AL
 
     /**
      * We don't allow prohibited fullnames since this may encumber auditing.
