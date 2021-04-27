@@ -177,13 +177,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
                 not(containsString(secret))
         ));
         
-        StringWriter buffer = new StringWriter();
-        thrown.printStackTrace(new PrintWriter(buffer));
-        String fullStack = buffer.getBuffer().toString();
-        assertThat(fullStack, allOf(
-                containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
-                not(containsString(secret))
-        ));
+        extractedMethod41914(thrown, secret); // CAP AL
     }
     
     @Test
@@ -214,14 +208,18 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
                 not(containsString(secret))
         ));
         
-        StringWriter buffer = new StringWriter();
-        thrown.printStackTrace(new PrintWriter(buffer));
-        String fullStack = buffer.getBuffer().toString();
-        assertThat(fullStack, allOf(
-                containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE),
-                not(containsString(secret))
-        ));
+        extractedMethod41914(thrown, secret); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod41914(final Throwable thrown, final String secret) { // CAP AL
+        StringWriter buffer = new StringWriter(); // CAP AL
+        thrown.printStackTrace(new PrintWriter(buffer)); // CAP AL
+        String fullStack = buffer.getBuffer().toString(); // CAP AL
+        assertThat(fullStack, allOf( // CAP AL
+                containsString(RedactSecretJsonInErrorMessageSanitizer.REDACT_VALUE), // CAP AL
+                not(containsString(secret)) // CAP AL
+        )); // CAP AL
+    } // CAP AL
     
     public static class TestDescribable implements Describable<TestDescribable> {
         
