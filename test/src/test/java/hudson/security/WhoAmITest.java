@@ -62,11 +62,7 @@ public class WhoAmITest {
     @Test
     @Issue("SECURITY-1695")
     public void whoAmI_regular_doesNotProvideSensitiveInformation() throws Exception {
-        j.jenkins.setSecurityRealm(new SecurityRealmImpl());
-
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod43999(); // CAP AL
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("user");
@@ -103,11 +99,7 @@ public class WhoAmITest {
     @Test
     @Issue("SECURITY-1695")
     public void whoAmI_regularApi_doesNotProvideSensitiveInformation() throws Exception {
-        j.jenkins.setSecurityRealm(new SecurityRealmImpl());
-
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod43999(); // CAP AL
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("user");
@@ -144,11 +136,7 @@ public class WhoAmITest {
     @Test
     @Issue("SECURITY-1697")
     public void whoAmI_basic_doesNotProvideSensitiveInformation() throws Exception {
-        j.jenkins.setSecurityRealm(new SecurityRealmImpl());
-
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod43999(); // CAP AL
 
         JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("user", "user");
 
@@ -174,11 +162,7 @@ public class WhoAmITest {
     @Test
     @Issue("SECURITY-1697")
     public void whoAmI_apiToken_doesNotProvideSensitiveInformation() throws Exception {
-        j.jenkins.setSecurityRealm(new SecurityRealmImpl());
-
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod43999(); // CAP AL
 
         User user = User.getById("user", true);
         ApiTokenProperty prop = user.getProperty(ApiTokenProperty.class);
@@ -201,6 +185,14 @@ public class WhoAmITest {
                 containsString(base64ApiToken)
         )));
     }
+ // CAP AL
+    private void extractedMethod43999() { // CAP AL
+        j.jenkins.setSecurityRealm(new SecurityRealmImpl()); // CAP AL
+         // CAP AL
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy() // CAP AL
+                .grant(Jenkins.READ).everywhere().to("user") // CAP AL
+        ); // CAP AL
+    } // CAP AL
 
     private static class SecurityRealmImpl extends AbstractPasswordBasedSecurityRealm {
 
