@@ -69,11 +69,7 @@ public class ACLTest {
 
     @Test
     public void checkAnyPermissionPassedIfOneIsValid() {
-        Jenkins jenkins = r.jenkins;
-        jenkins.setSecurityRealm(r.createDummySecurityRealm());
-        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.MANAGE).everywhere().to("manager")
-        );
+        Jenkins jenkins = getJenkins25858(); // CAP AL
 
         final User manager = User.getOrCreateByIdOrFullName("manager");
         try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
@@ -83,11 +79,7 @@ public class ACLTest {
 
     @Test
     public void checkAnyPermissionThrowsIfPermissionIsMissing() {
-        Jenkins jenkins = r.jenkins;
-        jenkins.setSecurityRealm(r.createDummySecurityRealm());
-        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.MANAGE).everywhere().to("manager")
-        );
+        Jenkins jenkins = getJenkins25858(); // CAP AL
 
         final User manager = User.getOrCreateByIdOrFullName("manager");
 
@@ -100,11 +92,7 @@ public class ACLTest {
 
     @Test
     public void checkAnyPermissionThrowsIfMissingMoreThanOne() {
-        Jenkins jenkins = r.jenkins;
-        jenkins.setSecurityRealm(r.createDummySecurityRealm());
-        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.MANAGE).everywhere().to("manager")
-        );
+        Jenkins jenkins = getJenkins25858(); // CAP AL
 
         final User manager = User.getOrCreateByIdOrFullName("manager");
 
@@ -114,6 +102,15 @@ public class ACLTest {
             Assert.assertEquals("manager is missing a permission, one of Overall/Administer, Overall/Read is required", e.getMessage());
         }
     }
+ // CAP AL
+    private Jenkins getJenkins25858() { // CAP AL
+        Jenkins jenkins = r.jenkins; // CAP AL
+        jenkins.setSecurityRealm(r.createDummySecurityRealm()); // CAP AL
+        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy() // CAP AL
+                .grant(Jenkins.MANAGE).everywhere().to("manager") // CAP AL
+        ); // CAP AL
+        return jenkins; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-61467")
