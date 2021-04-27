@@ -100,12 +100,7 @@ public class SearchTest {
         j.createFreeStyleProject(projectName);
         
         Page result = j.search(projectName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-        
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+        String contents = getContents45221(result, projectName); // CAP AL
     }
 
     @Issue("JENKINS-24433")
@@ -139,12 +134,7 @@ public class SearchTest {
         project.setDisplayName(displayName);
         
         Page result = j.search(displayName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-        
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        String contents = getContents45221(result, displayName); // CAP AL
     }
     
     @Test
@@ -199,17 +189,22 @@ public class SearchTest {
         
         // search for foo
         Page result = j.search(project1Name);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-        
-        // make sure we get the project with the name foo
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
+        String contents = getContents45221(result, project1DisplayName); // CAP AL
         // make sure projects 2 and 3 were not picked up
         assertFalse(contents.contains(project2Name));
         assertFalse(contents.contains(project3Name));
         assertFalse(contents.contains(project3DisplayName));
     }
+ // CAP AL
+    private String getContents45221(final Page result, final String project1DisplayName) { // CAP AL
+        assertNotNull(result); // CAP AL
+        j.assertGoodStatus(result); // CAP AL
+         // CAP AL
+        // make sure we get the project with the name foo // CAP AL
+        String contents = result.getWebResponse().getContentAsString(); // CAP AL
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName))); // CAP AL
+        return contents; // CAP AL
+    } // CAP AL
     
     @Test
     public void testGetSuggestionsHasBothNamesAndDisplayNames() throws Exception {
