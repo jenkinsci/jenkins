@@ -32,9 +32,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	 * Agent properties are available
 	 */
 	public void testSlavePropertyOnSlave() throws Exception {
-		setVariables(slave, new Entry("KEY", "slaveValue"));
-		Map<String, String> envVars = executeBuild(slave);
-		assertEquals("slaveValue", envVars.get("KEY"));
+		extractedMethod27706(); // CAP AL
 	}
 	
 	/**
@@ -57,12 +55,16 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
         jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("KEY", "masterValue"))));
-		setVariables(slave, new Entry("KEY", "slaveValue"));
-
-		Map<String, String> envVars = executeBuild(slave);
-
-		assertEquals("slaveValue", envVars.get("KEY"));
+		extractedMethod27706(); // CAP AL
 	}
+ // CAP AL
+	private void extractedMethod27706() throws Exception { // CAP AL
+	    setVariables(slave, new Entry("KEY", "slaveValue")); // CAP AL
+	     // CAP AL
+	    Map<String, String> envVars = executeBuild(slave); // CAP AL
+	     // CAP AL
+	    assertEquals("slaveValue", envVars.get("KEY")); // CAP AL
+	} // CAP AL
 
 	/**
 	 * Agent and master properties and parameters are available.

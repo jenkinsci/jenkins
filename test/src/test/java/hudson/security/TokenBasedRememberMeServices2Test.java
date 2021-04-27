@@ -226,18 +226,7 @@ public class TokenBasedRememberMeServices2Test {
             assertUserNotConnected(wc, username);
         }
 
-        { // a hand crafted cookie with regular expiration duration works
-            JenkinsRule.WebClient wc = j.createWebClient();
-
-            // by default we have 14 days of validity,
-            // here we reduce a bit the expiration date to simulate an "old" cookie (regular usage)
-            long minusFiveMinutes = TimeUnit.MINUTES.toMillis(-5);
-            Cookie cookie = createRememberMeCookie(tokenService, minusFiveMinutes, alice);
-            wc.getCookieManager().addCookie(cookie);
-
-            // if we reactivate the remember me feature, it's ok
-            assertUserConnected(wc, username);
-        }
+        extractedMethod35647(username, tokenService, alice); // CAP AL
     }
 
     @Test
@@ -269,22 +258,26 @@ public class TokenBasedRememberMeServices2Test {
                 assertUserConnected(wc, username);
             }
 
-            { // a hand crafted cookie with regular expiration duration works
-                JenkinsRule.WebClient wc = j.createWebClient();
-
-                // by default we have 14 days of validity,
-                // here we reduce a bit the expiration date to simulate an "old" cookie (regular usage)
-                long minusFiveMinutes = TimeUnit.MINUTES.toMillis(-5);
-                Cookie cookie = createRememberMeCookie(tokenService, minusFiveMinutes, alice);
-                wc.getCookieManager().addCookie(cookie);
-
-                // if we reactivate the remember me feature, it's ok
-                assertUserConnected(wc, username);
-            }
+            extractedMethod35647(username, tokenService, alice); // CAP AL
         } finally {
             TokenBasedRememberMeServices2.SKIP_TOO_FAR_EXPIRATION_DATE_CHECK = previousConfig;
         }
     }
+ // CAP AL
+    private void extractedMethod35647(final String username, final TokenBasedRememberMeServices2 tokenService, final User alice) throws Exception { // CAP AL
+        { // a hand crafted cookie with regular expiration duration works // CAP AL
+            JenkinsRule.WebClient wc = j.createWebClient(); // CAP AL
+         // CAP AL
+            // by default we have 14 days of validity, // CAP AL
+            // here we reduce a bit the expiration date to simulate an "old" cookie (regular usage) // CAP AL
+            long minusFiveMinutes = TimeUnit.MINUTES.toMillis(-5); // CAP AL
+            Cookie cookie = createRememberMeCookie(tokenService, minusFiveMinutes, alice); // CAP AL
+            wc.getCookieManager().addCookie(cookie); // CAP AL
+         // CAP AL
+            // if we reactivate the remember me feature, it's ok // CAP AL
+            assertUserConnected(wc, username); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-56243")

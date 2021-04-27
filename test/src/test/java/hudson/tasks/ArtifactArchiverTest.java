@@ -159,9 +159,7 @@ public class ArtifactArchiverTest {
         assertEquals(1, artifacts.size());
         FreeStyleBuild.Artifact artifact = artifacts.get(0);
         assertEquals("dir/lodge", artifact.relativePath);
-        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
-        assertEquals(1, kids.length);
-        assertEquals("lodge", kids[0].getName());
+        VirtualFile[] kids = getKids85410(b); // CAP AL
         // do not check that it .exists() since its target has not been archived
     }
 
@@ -205,13 +203,18 @@ public class ArtifactArchiverTest {
         assertNotNull(ws);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(2, artifacts.size());
-        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list();
-        assertEquals(1, kids.length);
-        assertEquals("lodge", kids[0].getName());
+        VirtualFile[] kids = getKids85410(b); // CAP AL
         VirtualFile[] linkkids = b.getArtifactManager().root().child("linkdir").list();
         assertEquals(1, kids.length);
         assertEquals("fizz", linkkids[0].getName());
     }
+ // CAP AL
+    private VirtualFile[] getKids85410(final FreeStyleBuild b) throws IOException { // CAP AL
+        VirtualFile[] kids = b.getArtifactManager().root().child("dir").list(); // CAP AL
+        assertEquals(1, kids.length); // CAP AL
+        assertEquals("lodge", kids[0].getName()); // CAP AL
+        return kids; // CAP AL
+    } // CAP AL
 
     @Issue("SECURITY-162")
     @Test public void outsideSymlinks() throws Exception {
@@ -309,10 +312,7 @@ public class ArtifactArchiverTest {
         FreeStyleProject project = j.createFreeStyleProject();
 
         Publisher artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
-        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
-        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
-
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        extractedMethod69993(project, artifactArchiver); // CAP AL // #1
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertFalse(artifacts.child(".svn").child("file").exists());
         assertFalse(artifacts.child("dir").child(".svn").child("file").exists());
@@ -326,14 +326,18 @@ public class ArtifactArchiverTest {
 
         ArtifactArchiver artifactArchiver = new ArtifactArchiver("**");
         artifactArchiver.setDefaultExcludes(false);
-        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
-        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
-
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        extractedMethod69993(project, artifactArchiver); // CAP AL // #1
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertTrue(artifacts.child(".svn").child("file").exists());
         assertTrue(artifacts.child("dir").child(".svn").child("file").exists());
     }
+ // CAP AL
+    private void extractedMethod69993(final FreeStyleProject project, final Publisher artifactArchiver) throws Exception { // CAP AL
+        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver)); // CAP AL
+        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact())); // CAP AL
+         // CAP AL
+        assertEquals(Result.SUCCESS, build(project)); // CAP AL
+    } // CAP AL
 
     @LocalData
     @Test public void latestOnlyMigration() throws Exception {

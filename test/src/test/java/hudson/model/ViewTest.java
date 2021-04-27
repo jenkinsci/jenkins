@@ -285,10 +285,7 @@ public class ViewTest {
         String xml = wc.goToXml("view/v/config.xml").getWebResponse().getContentAsString();
         assertTrue(xml, xml.contains("<description>one</description>"));
         xml = xml.replace("<description>one</description>", "<description>two</description>");
-        WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
-        req.setRequestBody(xml);
-        req.setEncodingType(null);
-        wc.getPage(req);
+        extractedMethod71674(wc, xml); // CAP AL
         assertEquals("two", view.getDescription());
         xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertTrue(xml, xml.contains("<description>two</description>"));
@@ -302,15 +299,19 @@ public class ViewTest {
         String xml = wc.goToXml("view/v/config.xml").getWebResponse().getContentAsString();
         assertThat(xml, containsString("<description>one</description>"));
         xml = xml.replace("<description>one</description>", "");
-        WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
-        req.setRequestBody(xml);
-        req.setEncodingType(null);
-        wc.getPage(req);
+        extractedMethod71674(wc, xml); // CAP AL
         assertNull(view.getDescription()); // did not work
         xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertThat(xml, not(containsString("<description>"))); // did not work
         assertEquals(j.jenkins, view.getOwner());
     }
+ // CAP AL
+    private void extractedMethod71674(final WebClient wc, final String xml) throws IOException { // CAP AL
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST); // CAP AL
+        req.setRequestBody(xml); // CAP AL
+        req.setEncodingType(null); // CAP AL
+        wc.getPage(req); // CAP AL
+    } // CAP AL
 
     @Test
     public void testGetQueueItems() throws IOException, Exception{

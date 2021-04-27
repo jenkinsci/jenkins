@@ -33,11 +33,7 @@ public class ParametersAction2Test {
     @Test
     @Issue("SECURITY-170")
     public void undefinedParameters() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[]{
-                new StringParameterDefinition("foo", "foo"),
-                new StringParameterDefinition("bar", "bar")
-        })));
+        FreeStyleProject p = getP63870(); // CAP AL
         ParametersCheckBuilder b = new ParametersCheckBuilder(false);
         p.getBuildersList().add(b);
         p.save();
@@ -51,11 +47,7 @@ public class ParametersAction2Test {
     @Test
     @Issue("SECURITY-170")
     public void undefinedParametersOverride() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[]{
-                new StringParameterDefinition("foo", "foo"),
-                new StringParameterDefinition("bar", "bar")
-        })));
+        FreeStyleProject p = getP63870(); // CAP AL
         ParametersCheckBuilder b = new ParametersCheckBuilder(true);
         p.getBuildersList().add(b);
         p.save();
@@ -70,6 +62,15 @@ public class ParametersAction2Test {
             System.clearProperty(ParametersAction.KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME);
         }
     }
+ // CAP AL
+    private FreeStyleProject getP63870() throws IOException { // CAP AL
+        FreeStyleProject p = j.createFreeStyleProject(); // CAP AL
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[]{ // CAP AL
+                new StringParameterDefinition("foo", "foo"), // CAP AL
+                new StringParameterDefinition("bar", "bar") // CAP AL
+        }))); // CAP AL
+        return p; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-170")
@@ -100,10 +101,7 @@ public class ParametersAction2Test {
     @Test
     @Issue("SECURITY-170")
     public void parametersDefinitionChange() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
-                new StringParameterDefinition("foo", "foo"),
-                new StringParameterDefinition("bar", "bar"))));
+        FreeStyleProject p = getP93633(); // CAP AL
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new StringParameterValue("foo", "baz"),
@@ -138,10 +136,7 @@ public class ParametersAction2Test {
     @Test
     @Issue("SECURITY-170")
     public void whitelistedParameter() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
-                new StringParameterDefinition("foo", "foo"),
-                new StringParameterDefinition("bar", "bar"))));
+        FreeStyleProject p = getP93633(); // CAP AL
 
         try {
             System.setProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME, "whitelisted1,whitelisted2");
@@ -160,6 +155,14 @@ public class ParametersAction2Test {
             System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         }
     }
+ // CAP AL
+    private FreeStyleProject getP93633() throws IOException { // CAP AL
+        FreeStyleProject p = j.createFreeStyleProject(); // CAP AL
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList( // CAP AL
+                new StringParameterDefinition("foo", "foo"), // CAP AL
+                new StringParameterDefinition("bar", "bar")))); // CAP AL
+        return p; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-170")
@@ -182,12 +185,7 @@ public class ParametersAction2Test {
                     Arrays.asList("whitelisted1", "whitelisted2"));
             FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), action));
 
-            assertTrue("whitelisted1 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
-            assertTrue("whitelisted2 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
-            assertFalse("whitelisted3 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+            extractedMethod43832(build); // CAP AL
             j.jenkins.reload();
             //Test again after reload
             p = j.jenkins.getItemByFullName(name, FreeStyleProject.class);
@@ -222,12 +220,7 @@ public class ParametersAction2Test {
                     new StringParameterValue("whitelisted3", "z"),
                     new StringParameterValue("whitelisted4", "w")
             )));
-            assertTrue("whitelisted1 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
-            assertTrue("whitelisted2 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
-            assertFalse("whitelisted3 parameter is listed in getParameters",
-                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+            extractedMethod43832(build); // CAP AL
             assertFalse("whitelisted4 parameter is listed in getParameters",
                        hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted4"));
 
@@ -248,6 +241,15 @@ public class ParametersAction2Test {
             System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         }
     }
+ // CAP AL
+    private void extractedMethod43832(final FreeStyleBuild build) { // CAP AL
+        assertTrue("whitelisted1 parameter is listed in getParameters", // CAP AL
+                   hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1")); // CAP AL
+        assertTrue("whitelisted2 parameter is listed in getParameters", // CAP AL
+                   hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2")); // CAP AL
+        assertFalse("whitelisted3 parameter is listed in getParameters", // CAP AL
+                   hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3")); // CAP AL
+    } // CAP AL
 
 
 

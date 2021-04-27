@@ -177,10 +177,7 @@ public class ListViewTest {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);
         FreeStyleProject job = j.createFreeStyleProject("old_name");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.renameTo("new_name");
 
@@ -195,10 +192,7 @@ public class ListViewTest {
         folder.addView(view);
 
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "old_name");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.renameTo("new_name");
 
@@ -212,10 +206,7 @@ public class ListViewTest {
         ListView view = new ListView("view", j.jenkins);
         j.jenkins.addView(view);
         FreeStyleProject job = j.createFreeStyleProject("project");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.delete();
 
@@ -228,16 +219,20 @@ public class ListViewTest {
         ListView view = new ListView("view", folder);
         folder.addView(view);
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "project");
-        view.add(job);
-
-        assertTrue(view.contains(job));
-        assertTrue(view.jobNamesContains(job));
+        extractedMethod33674(view, job); // CAP AL
 
         job.delete();
 
         assertFalse(view.contains(job));
         assertFalse(view.jobNamesContains(job));
     }
+ // CAP AL
+    private void extractedMethod33674(final ListView view, final FreeStyleProject job) throws IOException { // CAP AL
+        view.add(job); // CAP AL
+         // CAP AL
+        assertTrue(view.contains(job)); // CAP AL
+        assertTrue(view.jobNamesContains(job)); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-22769")
     @Test public void renameJobInViewYouCannotSee() throws Exception {
@@ -267,9 +262,7 @@ public class ListViewTest {
         when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(configXml)));
         when(req.getContentType()).thenReturn("application/xml");
         v.doCreateItem(req, rsp);
-        List<TopLevelItem> items = v.getItems();
-        assertEquals(1, items.size());
-        assertEquals("job1", items.get(0).getName());
+        extractedMethod14864(v); // CAP AL
     }
 
     @Issue("JENKINS-23411")
@@ -280,9 +273,7 @@ public class ListViewTest {
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job1");
         view.add(job);
 
-        List<TopLevelItem> items = view.getItems();
-        assertEquals(1, items.size());
-        assertEquals("job1", items.get(0).getName());
+        extractedMethod14864(view); // CAP AL
 
         // remove a contained job
         view.doRemoveJobFromView("job1");
@@ -297,6 +288,12 @@ public class ListViewTest {
             assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
         }
     }
+ // CAP AL
+    private void extractedMethod14864(final ListView view) { // CAP AL
+        List<TopLevelItem> items = view.getItems(); // CAP AL
+        assertEquals(1, items.size()); // CAP AL
+        assertEquals("job1", items.get(0).getName()); // CAP AL
+    } // CAP AL
 
     @Test public void getItemsNames() throws Exception {
         MockFolder f1 = j.createFolder("f1");

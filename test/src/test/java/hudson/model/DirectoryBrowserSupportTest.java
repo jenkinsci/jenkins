@@ -822,33 +822,28 @@ public class DirectoryBrowserSupportTest {
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         {
             Page zipPage = wc.goTo(p.getUrl() + "ws/*zip*/ws.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
+            extractedMethod46868(zipPage); // CAP AL
         }
         {
             Page zipPage = wc.goTo(p.getUrl() + "ws/a1/*zip*/a1.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
+            extractedMethod46868(zipPage); // CAP AL
         }
         {
             Page zipPage = wc.goTo(p.getUrl() + "ws/b1/b2/*zip*/b2.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
+            extractedMethod46868(zipPage); // CAP AL
         }
         {
             Page zipPage = wc.goTo(p.getUrl() + "ws/c1/c2/c3/*zip*/c3.zip", null);
-            assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
-
-            List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
-            assertThat(entryNames, hasSize(0));
+            extractedMethod46868(zipPage); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod46868(final Page zipPage) throws Exception { // CAP AL
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK)); // CAP AL
+         // CAP AL
+        List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage); // CAP AL
+        assertThat(entryNames, hasSize(0)); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue({"SECURITY-904", "SECURITY-1452"})

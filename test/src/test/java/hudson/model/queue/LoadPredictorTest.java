@@ -75,9 +75,7 @@ public class LoadPredictorTest {
      */
     @Test
     public void test1() throws Exception {
-        Task t = mock(Task.class);
-        when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
+        Task t = getT36954(); // CAP AL
 
         Computer c = createMockComputer(1);
 
@@ -103,9 +101,7 @@ public class LoadPredictorTest {
      */
     @Test
     public void test2() throws Exception {
-        Task t = mock(Task.class);
-        when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
+        Task t = getT36954(); // CAP AL
 
         Computer c = createMockComputer(2);
         Executor e = c.getExecutors().get(0);
@@ -122,6 +118,13 @@ public class LoadPredictorTest {
         assertEquals(1,mw.executors.size());
         assertEquals(1,mw.works.size());
     }
+ // CAP AL
+    private Task getT36954() { // CAP AL
+        Task t = mock(Task.class); // CAP AL
+        when(t.getEstimatedDuration()).thenReturn(10000L); // CAP AL
+        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t)); // CAP AL
+        return t; // CAP AL
+    } // CAP AL
 
     private JobOffer createMockOffer(Executor e) throws NoSuchFieldException, IllegalAccessException {
         JobOffer o = mock(JobOffer.class);

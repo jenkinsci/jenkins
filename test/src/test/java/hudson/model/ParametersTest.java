@@ -1,5 +1,6 @@
 package hudson.model;
 
+import java.util.concurrent.ExecutionException; // CAP AL
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -80,19 +81,14 @@ public class ParametersTest {
         assertEquals("boolean", element.getTextContent());
 
         element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
-        assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        extractedMethod28619(element); // CAP AL
 
         element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='run']")).getParentNode();
         assertNotNull(element);
         assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
         assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
 
-        j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        extractedMethod62467(form, project); // CAP AL
 
         assertEquals("newValue", builder.getEnvVars().get("STRING"));
         assertEquals("true", builder.getEnvVars().get("BOOLEAN"));
@@ -115,22 +111,23 @@ public class ParametersTest {
         HtmlForm form = page.getFormByName("parameters");
 
         HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
-        assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        extractedMethod28619(element); // CAP AL
         HtmlOption opt = DomNodeUtil.selectSingleNode(element.getParentNode(), "div/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);
         assertEquals("Choice <2>", opt.asText());
         opt.setSelected(true);
 
-        j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        extractedMethod62467(form, project); // CAP AL
 
         assertNotNull(builder.getEnvVars());
         assertEquals("Choice <2>", builder.getEnvVars().get("CHOICE"));
     }
+ // CAP AL
+    private void extractedMethod28619(final HtmlElement element) { // CAP AL
+        assertNotNull(element); // CAP AL
+        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent()); // CAP AL
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent()); // CAP AL
+    } // CAP AL
 
     @Test
     public void sensitiveParameters() throws Exception {
@@ -154,16 +151,7 @@ public class ParametersTest {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"));
-        project.addProperty(pdb);
-
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
-
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
-
-        assertNotNull(sensitiveVars);
-        assertFalse(sensitiveVars.contains("string"));
+        Set<String> sensitiveVars = getSensitiveVars40931(project, pdb); // CAP AL
     }
 
     @Test
@@ -174,19 +162,24 @@ public class ParametersTest {
                 new PasswordParameterDefinition("password", "12345", "password description"),
                 new StringParameterDefinition("string2", "Value2", "string description")
         );
-        project.addProperty(pdb);
-
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
-
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
-
-        assertNotNull(sensitiveVars);
-        assertFalse(sensitiveVars.contains("string"));
+        Set<String> sensitiveVars = getSensitiveVars40931(project, pdb); // CAP AL
         assertTrue(sensitiveVars.contains("password"));
         assertFalse(sensitiveVars.contains("string2"));
     }
+ // CAP AL
+    private Set<String> getSensitiveVars40931(final FreeStyleProject project, final ParametersDefinitionProperty pdb) throws ExecutionException, IOException, InterruptedException { // CAP AL
+        project.addProperty(pdb); // CAP AL
+         // CAP AL
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder(); // CAP AL
+        project.getBuildersList().add(builder); // CAP AL
+         // CAP AL
+        FreeStyleBuild build = project.scheduleBuild2(0).get(); // CAP AL
+        Set<String> sensitiveVars = build.getSensitiveBuildVariables(); // CAP AL
+         // CAP AL
+        assertNotNull(sensitiveVars); // CAP AL
+        assertFalse(sensitiveVars.contains("string")); // CAP AL
+        return sensitiveVars; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-3539")
@@ -201,13 +194,17 @@ public class ParametersTest {
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        j.submit(form);
-        Queue.Item q = j.jenkins.getQueue().getItem(project);
-        if (q != null) q.getFuture().get();
-        else Thread.sleep(1000);
+        extractedMethod62467(form, project); // CAP AL
 
         assertFalse("file must not exist", project.getSomeWorkspace().child("filename").exists());
     }
+ // CAP AL
+    private void extractedMethod62467(final HtmlForm form, final FreeStyleProject project) throws Exception { // CAP AL
+        j.submit(form); // CAP AL
+        Queue.Item q = j.jenkins.getQueue().getItem(project); // CAP AL
+        if (q != null) q.getFuture().get(); // CAP AL
+        else Thread.sleep(1000); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-11543")

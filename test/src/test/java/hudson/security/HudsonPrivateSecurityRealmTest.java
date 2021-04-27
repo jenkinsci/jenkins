@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import java.io.IOException; // CAP AL
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.Cookie;
@@ -106,9 +107,7 @@ public class HudsonPrivateSecurityRealmTest {
         u1.setFullName("User One");
         u1.save();
 
-        User u2 = securityRealm.createAccount("user2", "password2");
-        u2.setFullName("User Two");
-        u2.save();
+        User u2 = getU275715(securityRealm); // CAP AL
 
         WebClient wc1 = j.createWebClient();
         wc1.login("user1", "password1");
@@ -156,9 +155,7 @@ public class HudsonPrivateSecurityRealmTest {
         u1.save();
         String u1Token = u1.getProperty(ApiTokenProperty.class).getApiToken();
 
-        User u2 = securityRealm.createAccount("user2", "password2");
-        u2.setFullName("User Two");
-        u2.save();
+        User u2 = getU275715(securityRealm); // CAP AL
         String u2Token = u2.getProperty(ApiTokenProperty.class).getApiToken();
 
         WebClient wc1 = j.createWebClient();
@@ -186,6 +183,13 @@ public class HudsonPrivateSecurityRealmTest {
         w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user2")));
     }
+ // CAP AL
+    private User getU275715(final HudsonPrivateSecurityRealm securityRealm) throws IOException { // CAP AL
+        User u2 = securityRealm.createAccount("user2", "password2"); // CAP AL
+        u2.setFullName("User Two"); // CAP AL
+        u2.save(); // CAP AL
+        return u2; // CAP AL
+    } // CAP AL
 
 
     private static String basicHeader(String user, String pass) {
@@ -199,17 +203,7 @@ public class HudsonPrivateSecurityRealmTest {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
-        SignupPage signup = new SignupPage(wc.goTo("signup"));
-        signup.enterUsername("alice");
-        signup.enterPassword("alice");
-        signup.enterFullName("Alice User");
-        signup.enterEmail("alice@nowhere.com");
-        HtmlPage success = signup.submit(j);
-        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
-        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
-
-
-        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+        extractedMethod75944(wc, securityRealm); // CAP AL
 
     }
 
@@ -221,11 +215,7 @@ public class HudsonPrivateSecurityRealmTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
         signup.enterUsername("anonymous");
-        signup.enterFullName("Bob");
-        signup.enterPassword("nothing");
-        signup.enterEmail("noone@nowhere.com");
-        signup = new SignupPage(signup.submit(j));
-        signup.assertErrorContains("prohibited as a username");
+        extractedMethod62664(signup); // CAP AL
         assertNull(User.get("anonymous", false, Collections.emptyMap()));
     }
 
@@ -237,13 +227,17 @@ public class HudsonPrivateSecurityRealmTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
         signup.enterUsername("system");
-        signup.enterFullName("Bob");
-        signup.enterPassword("nothing");
-        signup.enterEmail("noone@nowhere.com");
-        signup = new SignupPage(signup.submit(j));
-        signup.assertErrorContains("prohibited as a username");
+        extractedMethod62664(signup); // CAP AL
         assertNull(User.get("system",false, Collections.emptyMap()));
     }
+ // CAP AL
+    private void extractedMethod62664(SignupPage signup) throws Exception { // CAP AL
+        signup.enterFullName("Bob"); // CAP AL
+        signup.enterPassword("nothing"); // CAP AL
+        signup.enterEmail("noone@nowhere.com"); // CAP AL
+        signup = new SignupPage(signup.submit(j)); // CAP AL
+        signup.assertErrorContains("prohibited as a username"); // CAP AL
+    } // CAP AL
 
     /**
      * We don't allow prohibited fullnames since this may encumber auditing.
@@ -267,9 +261,7 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("JENKINS-48383")
     @Test
     public void selfRegistrationTriggerLoggedIn() throws Exception {
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-        j.jenkins.setCrumbIssuer(null);
+        extractedMethod98033(); // CAP AL
 
         assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
 
@@ -287,9 +279,7 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("JENKINS-55307")
     @Test
     public void selfRegistrationTriggerUserCreation() throws Exception {
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-        j.jenkins.setCrumbIssuer(null);
+        extractedMethod98033(); // CAP AL
 
         spySecurityListener.createdUsers.clear();
         assertTrue(spySecurityListener.createdUsers.isEmpty());
@@ -299,15 +289,17 @@ public class HudsonPrivateSecurityRealmTest {
         assertEquals("bob", spySecurityListener.createdUsers.get(0));
         assertEquals("charlie", spySecurityListener.createdUsers.get(1));
     }
+ // CAP AL
+    private void extractedMethod98033() { // CAP AL
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null); // CAP AL
+        j.jenkins.setSecurityRealm(securityRealm); // CAP AL
+        j.jenkins.setCrumbIssuer(null); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-55307")
     @Test
     public void userCreationFromRealm() throws Exception {
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-
-        spySecurityListener.createdUsers.clear();
-        assertTrue(spySecurityListener.createdUsers.isEmpty());
+        HudsonPrivateSecurityRealm securityRealm = getSecurityRealm55114(); // CAP AL
 
         User u1 = securityRealm.createAccount("alice", "alicePassword");
         u1.setFullName("Alice User");
@@ -324,16 +316,21 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("JENKINS-55307")
     @Test
     public void userCreationWithHashedPasswords() throws Exception {
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-
-        spySecurityListener.createdUsers.clear();
-        assertTrue(spySecurityListener.createdUsers.isEmpty());
+        HudsonPrivateSecurityRealm securityRealm = getSecurityRealm55114(); // CAP AL
 
         securityRealm.createAccountWithHashedPassword("charlie_hashed", "#jbcrypt:" + BCrypt.hashpw("charliePassword", BCrypt.gensalt()));
 
         assertEquals("charlie_hashed", spySecurityListener.createdUsers.get(0));
     }
+ // CAP AL
+    private HudsonPrivateSecurityRealm getSecurityRealm55114() { // CAP AL
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null); // CAP AL
+        j.jenkins.setSecurityRealm(securityRealm); // CAP AL
+         // CAP AL
+        spySecurityListener.createdUsers.clear(); // CAP AL
+        assertTrue(spySecurityListener.createdUsers.isEmpty()); // CAP AL
+        return securityRealm; // CAP AL
+    } // CAP AL
 
     private void createFirstAccount(String login) throws Exception {
         assertNull(User.getById(login, false));
@@ -356,10 +353,7 @@ public class HudsonPrivateSecurityRealmTest {
         ));
 
         HtmlPage p = wc.getPage(request);
-        assertEquals(200, p.getWebResponse().getStatusCode());
-        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty());
-
-        assertNotNull(User.getById(login, false));
+        extractedMethod10534(p, login); // CAP AL
     }
 
     private void createAccountByAdmin(String login) throws Exception {
@@ -384,10 +378,7 @@ public class HudsonPrivateSecurityRealmTest {
         form.getInputByName("email").setValueAttribute(login + "@" + login + ".com");
 
         HtmlPage p = j.submit(form);
-        assertEquals(200, p.getWebResponse().getStatusCode());
-        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty());
-
-        assertNotNull(User.getById(login, false));
+        extractedMethod10534(p, login); // CAP AL
     }
 
     private void selfRegistration(String login) throws Exception {
@@ -402,11 +393,15 @@ public class HudsonPrivateSecurityRealmTest {
         signup.enterEmail(login + "@" + login + ".com");
 
         HtmlPage p = signup.submit(j);
-        assertEquals(200, p.getWebResponse().getStatusCode());
-        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty());
-
-        assertNotNull(User.getById(login, false));
+        extractedMethod10534(p, login); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod10534(final HtmlPage p, final String login) { // CAP AL
+        assertEquals(200, p.getWebResponse().getStatusCode()); // CAP AL
+        assertTrue(p.getDocumentElement().getElementsByAttribute("div", "class", "error").isEmpty()); // CAP AL
+         // CAP AL
+        assertNotNull(User.getById(login, false)); // CAP AL
+    } // CAP AL
 
     @TestExtension
     public static class SpySecurityListenerImpl extends SecurityListener {
@@ -608,22 +603,27 @@ public class HudsonPrivateSecurityRealmTest {
         Cookie sessionBefore = wc.getCookieManager().getCookie("JSESSIONID");
         String sessionIdBefore = sessionBefore.getValue();
 
-        SignupPage signup = new SignupPage(wc.goTo("signup"));
-        signup.enterUsername("alice");
-        signup.enterPassword("alice");
-        signup.enterFullName("Alice User");
-        signup.enterEmail("alice@nowhere.com");
-        HtmlPage success = signup.submit(j);
-        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
-        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
-
-        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+        extractedMethod75944(wc, securityRealm); // CAP AL
 
         Cookie sessionAfter = wc.getCookieManager().getCookie("JSESSIONID");
         String sessionIdAfter = sessionAfter.getValue();
 
         assertNotEquals(sessionIdAfter, sessionIdBefore);
     }
+ // CAP AL
+    private void extractedMethod75944(final JenkinsRule.WebClient wc, final HudsonPrivateSecurityRealm securityRealm) throws Exception { // CAP AL
+        SignupPage signup = new SignupPage(wc.goTo("signup")); // CAP AL
+        signup.enterUsername("alice"); // CAP AL
+        signup.enterPassword("alice"); // CAP AL
+        signup.enterFullName("Alice User"); // CAP AL
+        signup.enterEmail("alice@nowhere.com"); // CAP AL
+        HtmlPage success = signup.submit(j); // CAP AL
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success")); // CAP AL
+        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User")); // CAP AL
+         // CAP AL
+         // CAP AL
+        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName()); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1245")
@@ -632,23 +632,7 @@ public class HudsonPrivateSecurityRealmTest {
         String initialSeed = alice.getProperty(UserSeedProperty.class).getSeed();
 
         WebClient wc = j.createWebClient();
-        WebClient wc_anotherTab = j.createWebClient();
-
-        wc.login(alice.getId());
-        assertUserConnected(wc, alice.getId());
-
-        wc_anotherTab.login(alice.getId());
-        assertUserConnected(wc_anotherTab, alice.getId());
-
-        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
-        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
-        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
-
-        password1.setText("alice2");
-        password2.setText("alice2");
-
-        HtmlForm form = configurePage.getFormByName("config");
-        j.submit(form);
+        WebClient wc_anotherTab = getWc_anotherTab57642(wc, alice); // CAP AL
 
         assertUserNotConnected(wc, alice.getId());
         assertUserNotConnected(wc_anotherTab, alice.getId());
@@ -694,23 +678,7 @@ public class HudsonPrivateSecurityRealmTest {
             User alice = prepareRealmAndAlice();
 
             WebClient wc = j.createWebClient();
-            WebClient wc_anotherTab = j.createWebClient();
-
-            wc.login(alice.getId());
-            assertUserConnected(wc, alice.getId());
-
-            wc_anotherTab.login(alice.getId());
-            assertUserConnected(wc_anotherTab, alice.getId());
-
-            HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
-            HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
-            HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
-
-            password1.setText("alice2");
-            password2.setText("alice2");
-
-            HtmlForm form = configurePage.getFormByName("config");
-            j.submit(form);
+            WebClient wc_anotherTab = getWc_anotherTab57642(wc, alice); // CAP AL
 
             assertUserConnected(wc, alice.getId());
             assertUserConnected(wc_anotherTab, alice.getId());
@@ -718,6 +686,27 @@ public class HudsonPrivateSecurityRealmTest {
             UserSeedProperty.DISABLE_USER_SEED = previousConfig;
         }
     }
+ // CAP AL
+    private WebClient getWc_anotherTab57642(final WebClient wc, final User alice) throws Exception { // CAP AL
+        WebClient wc_anotherTab = j.createWebClient(); // CAP AL
+         // CAP AL
+        wc.login(alice.getId()); // CAP AL
+        assertUserConnected(wc, alice.getId()); // CAP AL
+         // CAP AL
+        wc_anotherTab.login(alice.getId()); // CAP AL
+        assertUserConnected(wc_anotherTab, alice.getId()); // CAP AL
+         // CAP AL
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure"); // CAP AL
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password"); // CAP AL
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2"); // CAP AL
+         // CAP AL
+        password1.setText("alice2"); // CAP AL
+        password2.setText("alice2"); // CAP AL
+         // CAP AL
+        HtmlForm form = configurePage.getFormByName("config"); // CAP AL
+        j.submit(form); // CAP AL
+        return wc_anotherTab; // CAP AL
+    } // CAP AL
 
     private User prepareRealmAndAlice() throws Exception {
         j.jenkins.setDisableRememberMe(false);

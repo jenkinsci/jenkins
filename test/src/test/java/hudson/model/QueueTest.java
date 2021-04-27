@@ -172,17 +172,7 @@ public class QueueTest {
         Queue q = r.jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        r.jenkins.setNumExecutors(0);
-
-        FreeStyleProject testProject = r.createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserIdCause());
-        q.save();
-
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
-
-        assertEquals(1, q.getItems().length);
-        q.clear();
-        assertEquals(0,q.getItems().length);
+        FreeStyleProject testProject = getTestProject18140(q); // CAP AL
 
         // load the contents back
         q.load();
@@ -220,17 +210,7 @@ public class QueueTest {
         assertEquals(0, Queue.WaitingItem.getCurrentCounterValue());
 
         // prevent execution to push stuff into the queue
-        r.jenkins.setNumExecutors(0);
-
-        FreeStyleProject testProject = r.createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserIdCause());
-        q.save();
-
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
-
-        assertEquals(1, q.getItems().length);
-        q.clear();
-        assertEquals(0,q.getItems().length);
+        FreeStyleProject testProject = getTestProject18140(q); // CAP AL
 
         // delete the project before loading the queue back
         testProject.delete();
@@ -240,6 +220,21 @@ public class QueueTest {
         // The counter state should be maintained.
         assertEquals(1, Queue.WaitingItem.getCurrentCounterValue());
     }
+ // CAP AL
+    private FreeStyleProject getTestProject18140(final Queue q) throws IOException { // CAP AL
+        r.jenkins.setNumExecutors(0); // CAP AL
+         // CAP AL
+        FreeStyleProject testProject = r.createFreeStyleProject("test"); // CAP AL
+        testProject.scheduleBuild(new UserIdCause()); // CAP AL
+        q.save(); // CAP AL
+         // CAP AL
+        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml"))); // CAP AL
+         // CAP AL
+        assertEquals(1, q.getItems().length); // CAP AL
+        q.clear(); // CAP AL
+        assertEquals(0,q.getItems().length); // CAP AL
+        return testProject; // CAP AL
+    } // CAP AL
 
     /**
      * Forces a reset of the private queue COUNTER.
@@ -467,10 +462,7 @@ public class QueueTest {
         r.jenkins.getQueue().maintain();
         r.jenkins.doCancelQuietDown();
         assertFalse(Queue.isBlockedByShutdown(task));
-        r.waitUntilNoActivity();
-        assertEquals(1, cnt.get());
-        assertNotNull(task.exec);
-        assertThat(task.exec, instanceOf(OneOffExecutor.class));
+        extractedMethod50202(cnt, task); // CAP AL
     }
 
     @Issue("JENKINS-24519")
@@ -481,11 +473,15 @@ public class QueueTest {
         r.jenkins.getQueue().schedule2(task, 0);
         r.jenkins.getQueue().maintain();
         r.createSlave(label);
-        r.waitUntilNoActivity();
-        assertEquals(1, cnt.get());
-        assertNotNull(task.exec);
-        assertThat(task.exec, instanceOf(OneOffExecutor.class));
+        extractedMethod50202(cnt, task); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod50202(final AtomicInteger cnt, final TestFlyweightTask task) throws Exception { // CAP AL
+        r.waitUntilNoActivity(); // CAP AL
+        assertEquals(1, cnt.get()); // CAP AL
+        assertNotNull(task.exec); // CAP AL
+        assertThat(task.exec, instanceOf(OneOffExecutor.class)); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-41127")
     @Test public void flyweightTasksUnwantedConcurrency() throws Exception {
@@ -661,15 +657,7 @@ public class QueueTest {
      * Make sure that the running build actually carries an credential.
      */
     @Test public void accessControl() throws Exception {
-        FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
-        p.getBuildersList().add(new TestBuilder() {
-            @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice2, Jenkins.getAuthentication2());
-                return true;
-            }
-        });
+        FreeStyleProject p = getP19109(); // CAP AL
         r.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
@@ -688,15 +676,7 @@ public class QueueTest {
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
-        FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
-        p.getBuildersList().add(new TestBuilder() {
-            @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice2, Jenkins.getAuthentication2());
-                return true;
-            }
-        });
+        FreeStyleProject p = getP19109(); // CAP AL
 
         final FreeStyleBuild b1 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
         final FreeStyleBuild b2 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
@@ -712,6 +692,19 @@ public class QueueTest {
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
         }
     }
+ // CAP AL
+    private FreeStyleProject getP19109() throws IOException { // CAP AL
+        FreeStyleProject p = r.createFreeStyleProject(); // CAP AL
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice))); // CAP AL
+        p.getBuildersList().add(new TestBuilder() { // CAP AL
+            @Override // CAP AL
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException { // CAP AL
+                assertEquals(alice2, Jenkins.getAuthentication2()); // CAP AL
+                return true; // CAP AL
+            } // CAP AL
+        }); // CAP AL
+        return p; // CAP AL
+    } // CAP AL
     private static class AliceCannotBuild extends GlobalMatrixAuthorizationStrategy {
         private final String blocked;
         AliceCannotBuild(String blocked) {
@@ -878,10 +871,7 @@ public class QueueTest {
      */
     public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Exception {
         MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "p");
-        matrixProject.setAxes(new AxisList(
-                new Axis("axis", "a", "b")
-        ));
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = getLabel74657(matrixProject); // CAP AL
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         r.jenkins.clouds.add(dummyCloud);
@@ -896,11 +886,7 @@ public class QueueTest {
     public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
         MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "downstream");
         matrixProject.setDisplayName("downstream");
-        matrixProject.setAxes(new AxisList(
-                new Axis("axis", "a", "b")
-        ));
-
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = getLabel74657(matrixProject); // CAP AL
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();
@@ -963,6 +949,15 @@ public class QueueTest {
         assertTrue(Queue.getInstance().getBlockedItems().isEmpty());
         assertEquals(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName(), matrixProject.displayName);
     }
+ // CAP AL
+    private Label getLabel74657(final MatrixProject matrixProject) throws IOException { // CAP AL
+        matrixProject.setAxes(new AxisList( // CAP AL
+                new Axis("axis", "a", "b") // CAP AL
+        )); // CAP AL
+         // CAP AL
+        Label label = LabelExpression.get("aws-linux-dummy"); // CAP AL
+        return label; // CAP AL
+    } // CAP AL
 
     //let's make sure that the downstream project is not started before the upstream --> we want to simulate
     // the case: buildable-->blocked-->buildable
@@ -1176,9 +1171,7 @@ public class QueueTest {
         Queue q = r.jenkins.getQueue();
 
         for (int i = 0; i < 100; i++) {
-            TestFlyweightTask task = new TestFlyweightTask(new AtomicInteger(i), null);
-            tasks.add(task);
-            q.schedule2(task, 0);
+            extractedMethod49724(i, tasks, q); // CAP AL
         }
 
         q.maintain();
@@ -1195,15 +1188,19 @@ public class QueueTest {
         Queue q = r.jenkins.getQueue();
 
         for (int i = 0; i < 10; i++) {
-            TestFlyweightTask task = new TestFlyweightTask(new AtomicInteger(i), null);
-            tasks.add(task);
-            q.schedule2(task, 0);
+            extractedMethod49724(i, tasks, q); // CAP AL
         }
 
         q.maintain();
         r.waitUntilNoActivityUpTo(10000);
         assertThat(tasks, everyItem(hasProperty("owner", not(equalTo(Jenkins.get().toComputer())))));
     }
+ // CAP AL
+    private void extractedMethod49724(final int i, final List<TestFlyweightTask> tasks, final Queue q) { // CAP AL
+        TestFlyweightTask task = new TestFlyweightTask(new AtomicInteger(i), null); // CAP AL
+        tasks.add(task); // CAP AL
+        q.schedule2(task, 0); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-57805")

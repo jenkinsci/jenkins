@@ -105,24 +105,23 @@ public class UpdateCenterConnectionStatusTest {
     @Test
     public void test_states_uc_failed_timeout() {
         UpdateCenter updateCenter = new UpdateCenter(new TestConfig().failUCConnect());
-        UpdateCenter.ConnectionCheckJob job = updateCenter.newConnectionCheckJob(updateSite);
-
-        job.run();
-
-        Assert.assertEquals(ConnectionStatus.OK, job.connectionStates.get(ConnectionStatus.INTERNET));
-        Assert.assertEquals(ConnectionStatus.FAILED, job.connectionStates.get(ConnectionStatus.UPDATE_SITE));
+        extractedMethod64690(updateCenter); // CAP AL
     }
 
     @Test
     public void test_states_uc_failed_UnknownHost() {
         UpdateCenter updateCenter = new UpdateCenter(new TestConfig().failUCResolve());
-        UpdateCenter.ConnectionCheckJob job = updateCenter.newConnectionCheckJob(updateSite);
-
-        job.run();
-
-        Assert.assertEquals(ConnectionStatus.OK, job.connectionStates.get(ConnectionStatus.INTERNET));
-        Assert.assertEquals(ConnectionStatus.FAILED, job.connectionStates.get(ConnectionStatus.UPDATE_SITE));
+        extractedMethod64690(updateCenter); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod64690(final UpdateCenter updateCenter) { // CAP AL
+        UpdateCenter.ConnectionCheckJob job = updateCenter.newConnectionCheckJob(updateSite); // CAP AL
+         // CAP AL
+        job.run(); // CAP AL
+         // CAP AL
+        Assert.assertEquals(ConnectionStatus.OK, job.connectionStates.get(ConnectionStatus.INTERNET)); // CAP AL
+        Assert.assertEquals(ConnectionStatus.FAILED, job.connectionStates.get(ConnectionStatus.UPDATE_SITE)); // CAP AL
+    } // CAP AL
 
     private static class TestConfig extends UpdateCenter.UpdateCenterConfiguration {
 

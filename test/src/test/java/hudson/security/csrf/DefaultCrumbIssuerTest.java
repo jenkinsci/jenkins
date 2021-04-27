@@ -228,15 +228,7 @@ public class DefaultCrumbIssuerTest {
         boolean previousValue = DefaultCrumbIssuer.EXCLUDE_SESSION_ID;
 
         try {
-            r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-
-            // let anonymous user have read access
-            MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
-            authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
-            r.jenkins.setAuthorizationStrategy(authorizationStrategy);
-
-            DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(true);
-            r.jenkins.setCrumbIssuer(issuer);
+            extractedMethod29910(); // CAP AL
 
             DefaultCrumbIssuer.EXCLUDE_SESSION_ID = true;
             sameCrumbUsedOnDifferentAnonymousRequest_tokenAreEqual(true, "job_noSession");
@@ -311,18 +303,23 @@ public class DefaultCrumbIssuerTest {
 
     @Test
     public void anonCanStillPostRequestUsingBrowsers() throws Exception {
-        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-
-        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
-        authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone();
-        r.jenkins.setAuthorizationStrategy(authorizationStrategy);
-
-        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(true);
-        r.jenkins.setCrumbIssuer(issuer);
+        extractedMethod29910(); // CAP AL
 
         HtmlPage p = r.createWebClient().goTo("configure");
         r.submit(p.getFormByName("config"));
     }
+ // CAP AL
+    private void extractedMethod29910() { // CAP AL
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm()); // CAP AL
+         // CAP AL
+        // let anonymous user have read access // CAP AL
+        MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy(); // CAP AL
+        authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().toEveryone(); // CAP AL
+        r.jenkins.setAuthorizationStrategy(authorizationStrategy); // CAP AL
+         // CAP AL
+        DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(true); // CAP AL
+        r.jenkins.setCrumbIssuer(issuer); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1704")

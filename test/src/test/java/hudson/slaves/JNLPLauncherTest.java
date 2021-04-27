@@ -167,9 +167,7 @@ public class JNLPLauncherTest {
 
         ComputerLauncher launcher = new JNLPLauncher("", "", new RemotingWorkDirSettings(false, workDir.getAbsolutePath(), "internalDir", false));
         launcher = new DelegatingComputerLauncherImpl(launcher);
-        Computer c = addTestAgent(launcher);
-        launchJnlpAndVerify(c, buildJnlpArgs(c));
-        assertTrue("Remoting work dir should have been created", new File(workDir, "internalDir").exists());
+        extractedMethod40647(launcher, workDir); // CAP AL
     }
 
     @Test
@@ -180,10 +178,14 @@ public class JNLPLauncherTest {
 
         ComputerLauncher launcher = new JNLPLauncher("", "", new RemotingWorkDirSettings(false, workDir.getAbsolutePath(), "internalDir", false));
         launcher = new ComputerLauncherFilterImpl(launcher);
-        Computer c = addTestAgent(launcher);
-        launchJnlpAndVerify(c, buildJnlpArgs(c));
-        assertTrue("Remoting work dir should have been created", new File(workDir, "internalDir").exists());
+        extractedMethod40647(launcher, workDir); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod40647(final ComputerLauncher launcher, final File workDir) throws Exception { // CAP AL
+        Computer c = addTestAgent(launcher); // CAP AL
+        launchJnlpAndVerify(c, buildJnlpArgs(c)); // CAP AL
+        assertTrue("Remoting work dir should have been created", new File(workDir, "internalDir").exists()); // CAP AL
+    } // CAP AL
 
     @TestExtension("testHeadlessLaunch")
     public static class ListenerImpl extends ComputerListener {

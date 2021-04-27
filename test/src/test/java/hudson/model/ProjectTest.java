@@ -124,10 +124,7 @@ public class ProjectTest {
     
     @Test
     public void testOnCreateFromScratch() throws Exception{
-        FreeStyleProject p = j.createFreeStyleProject("project");
-        j.buildAndAssertSuccess(p);
-        p.removeRun(p.getLastBuild());
-        createAction = true;
+        FreeStyleProject p = getP17541(); // CAP AL
         p.onCreatedFromScratch();
         assertNotNull("Project should have last build.", p.getLastBuild());
         assertNotNull("Project should have transient action TransientAction.", p.getAction(TransientAction.class));
@@ -136,16 +133,21 @@ public class ProjectTest {
     
     @Test
     public void testOnLoad() throws Exception{
-        FreeStyleProject p = j.createFreeStyleProject("project");
-        j.buildAndAssertSuccess(p);
-        p.removeRun(p.getLastBuild());
-        createAction = true;
+        FreeStyleProject p = getP17541(); // CAP AL
         p.onLoad(j.jenkins, "project");
         assertNotNull("Project should have a build.", p.getLastBuild());
         assertNotNull("Project should have a scm.", p.getScm());
         assertNotNull("Project should have Transient Action TransientAction.", p.getAction(TransientAction.class));
         createAction = false;
     }
+ // CAP AL
+    private FreeStyleProject getP17541() throws Exception { // CAP AL
+        FreeStyleProject p = j.createFreeStyleProject("project"); // CAP AL
+        j.buildAndAssertSuccess(p); // CAP AL
+        p.removeRun(p.getLastBuild()); // CAP AL
+        createAction = true; // CAP AL
+        return p; // CAP AL
+    } // CAP AL
     
     @Test
     public void testGetEnvironment() throws Exception{
@@ -196,9 +198,7 @@ public class ProjectTest {
         getFilePath = true;
         assertNotNull("Project should have any workspace because WorkspaceBrowser find some.", p.getSomeWorkspace());
         getFilePath = false;
-        String cmd = "echo ahoj > some.log";
-        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
-        j.buildAndAssertSuccess(p);
+        extractedMethod23755(p); // CAP AL
         assertNotNull("Project should has any workspace.", p.getSomeWorkspace());
     }
     
@@ -217,15 +217,19 @@ public class ProjectTest {
     @Issue("JENKINS-10450")
     @Test public void workspaceBrowsing() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
-        String cmd = "echo ahoj > some.log";
-        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
-        j.buildAndAssertSuccess(p);
+        extractedMethod23755(p); // CAP AL
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.goTo("job/project/ws/some.log", "text/plain");
         wc.assertFails("job/project/ws/other.log", 404);
         p.doDoWipeOutWorkspace();
         wc.assertFails("job/project/ws/some.log", 404);
     }
+ // CAP AL
+    private void extractedMethod23755(final FreeStyleProject p) throws Exception { // CAP AL
+        String cmd = "echo ahoj > some.log"; // CAP AL
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd)); // CAP AL
+        j.buildAndAssertSuccess(p); // CAP AL
+    } // CAP AL
     
     @Test
     public void testGetQuietPeriod() throws IOException{
@@ -711,20 +715,9 @@ public class ProjectTest {
          * Setup a project with an SCM. Jenkins should have no executors in itself. 
          */
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-spawn");        
-        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
-        proj.setScm(requiresWorkspaceScm);        
-        j.jenkins.setNumExecutors(0);        
-        /*
-         * We have a cloud
-         */
-        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
-        c2.label = new LabelAtom("test-cloud-label");        
-        j.jenkins.clouds.add(c2);
+        DummyCloudImpl2 c2 = getC270053(proj); // CAP AL
         
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
         
         Thread.sleep(1000);
         //Assert that the job IS submitted to Queue.
@@ -761,11 +754,7 @@ public class ProjectTest {
         PollingResult pr = proj.poll(j.createTaskListener());
         assertFalse(pr.hasChanges());
         
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
         
         /*
          * Assert that the log contains the correct message.
@@ -783,27 +772,29 @@ public class ProjectTest {
     @Test
     public void testRestrictedLabelOnSlaveYesQueue() throws Exception {        
         FreeStyleProject proj = j.createFreeStyleProject("JENKINS-21394-yesqueue");
-        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true);
-        proj.setScm(requiresWorkspaceScm);        
-        j.jenkins.setNumExecutors(0);
-        
-        /*
-         * We have a cloud
-         */
-        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
-        c2.label = new LabelAtom("test-cloud-label");        
-        j.jenkins.clouds.add(c2);
+        DummyCloudImpl2 c2 = getC270053(proj); // CAP AL
         proj.setAssignedLabel(c2.label);
         
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
         
         Thread.sleep(1000);
         //The job should be in queue
         assertEquals(1, j.jenkins.getQueue().getItems().length);    
     }
+ // CAP AL
+    private DummyCloudImpl2 getC270053(final FreeStyleProject proj) throws IOException { // CAP AL
+        RequiresWorkspaceSCM requiresWorkspaceScm = new RequiresWorkspaceSCM(true); // CAP AL
+        proj.setScm(requiresWorkspaceScm);         // CAP AL
+        j.jenkins.setNumExecutors(0); // CAP AL
+         // CAP AL
+        /* // CAP AL
+         * We have a cloud // CAP AL
+         */ // CAP AL
+        DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0); // CAP AL
+        c2.label = new LabelAtom("test-cloud-label");         // CAP AL
+        j.jenkins.clouds.add(c2); // CAP AL
+        return c2; // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-22750")
     @Test
@@ -818,14 +809,19 @@ public class ProjectTest {
         //First build is not important
         j.buildAndAssertSuccess(proj);
 
-        SCMTrigger t = new SCMTrigger("@daily", true);
-        t.start(proj, true);
-        proj.addTrigger(t);
-        t.new Runner().run();
+        extractedMethod41336(proj); // CAP AL
 
 
         assertFalse(j.jenkins.getQueue().isEmpty());
     }
+ // CAP AL
+    private void extractedMethod41336(final FreeStyleProject proj) throws ANTLRException, IOException { // CAP AL
+        SCMTrigger t = new SCMTrigger("@daily", true); // CAP AL
+        t.start(proj, true); // CAP AL
+        proj.addTrigger(t); // CAP AL
+         // CAP AL
+        t.new Runner().run(); // CAP AL
+    } // CAP AL
 
     public static class TransientAction extends InvisibleAction{
         

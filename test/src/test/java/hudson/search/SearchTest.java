@@ -100,12 +100,7 @@ public class SearchTest {
         j.createFreeStyleProject(projectName);
         
         Page result = j.search(projectName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-        
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
+        String contents = getContents45221(result, projectName); // CAP AL
     }
 
     @Issue("JENKINS-24433")
@@ -116,11 +111,7 @@ public class SearchTest {
 
         Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q="+ myFreeStyleProject.getName());
 
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        URL resultUrl = result.getUrl();
-        assertEquals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl(), resultUrl.toString());
+        extractedMethod96842(result, myFreeStyleProject); // CAP AL
     }
 
     @Issue("JENKINS-24433")
@@ -132,11 +123,7 @@ public class SearchTest {
 
         Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getFullName());
 
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        URL resultUrl = result.getUrl();
-        assertEquals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl(), resultUrl.toString());
+        extractedMethod96842(result, myFreeStyleProject); // CAP AL
     }
 
     @Test
@@ -147,12 +134,7 @@ public class SearchTest {
         project.setDisplayName(displayName);
         
         Page result = j.search(displayName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-        
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+        String contents = getContents45221(result, displayName); // CAP AL
     }
     
     @Test
@@ -207,17 +189,22 @@ public class SearchTest {
         
         // search for foo
         Page result = j.search(project1Name);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-        
-        // make sure we get the project with the name foo
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
+        String contents = getContents45221(result, project1DisplayName); // CAP AL
         // make sure projects 2 and 3 were not picked up
         assertFalse(contents.contains(project2Name));
         assertFalse(contents.contains(project3Name));
         assertFalse(contents.contains(project3DisplayName));
     }
+ // CAP AL
+    private String getContents45221(final Page result, final String project1DisplayName) { // CAP AL
+        assertNotNull(result); // CAP AL
+        j.assertGoodStatus(result); // CAP AL
+         // CAP AL
+        // make sure we get the project with the name foo // CAP AL
+        String contents = result.getWebResponse().getContentAsString(); // CAP AL
+        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName))); // CAP AL
+        return contents; // CAP AL
+    } // CAP AL
     
     @Test
     public void testGetSuggestionsHasBothNamesAndDisplayNames() throws Exception {
@@ -289,17 +276,7 @@ public class SearchTest {
 
         assertEquals(2, jsonArray.size());
 
-        boolean foundDisplayName = false;
-        for(Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject)suggestion;
-
-            String name = (String)jsonSuggestion.get("name");
-            if(projectName1.equals(name)) {
-                foundDisplayName = true;
-            }
-        }
-
-        assertTrue(foundDisplayName);
+        extractedMethod78408(jsonArray, projectName1); // CAP AL
     }
 
     @Issue("JENKINS-24433")
@@ -332,19 +309,23 @@ public class SearchTest {
 
         assertEquals(1, jsonArray.size());
 
-        boolean foundDisplayName = false;
-        for(Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject)suggestion;
-
-            String name = (String)jsonSuggestion.get("name");
-
-            if(displayName2.equals(name)) {
-                foundDisplayName = true;
-            }
-        }
-
-        assertTrue(foundDisplayName);
+        extractedMethod78408(jsonArray, displayName2); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod78408(final JSONArray jsonArray, final String displayName2) { // CAP AL
+        boolean foundDisplayName = false; // CAP AL
+        for(Object suggestion : jsonArray) { // CAP AL
+            JSONObject jsonSuggestion = (JSONObject)suggestion; // CAP AL
+         // CAP AL
+            String name = (String)jsonSuggestion.get("name"); // CAP AL
+         // CAP AL
+            if(displayName2.equals(name)) { // CAP AL
+                foundDisplayName = true; // CAP AL
+            } // CAP AL
+        } // CAP AL
+         // CAP AL
+        assertTrue(foundDisplayName); // CAP AL
+    } // CAP AL
 
     /**
      * Disable/enable status shouldn't affect the search
@@ -478,10 +459,14 @@ public class SearchTest {
 
         Page searchResult = wc.goTo("search?q=" + myMockFolder.getName() + "%2F" + freeStyleProject.getName());
 
-        assertNotNull(searchResult);
-        j.assertGoodStatus(searchResult);
-
-        URL resultUrl = searchResult.getUrl();
-        assertEquals(j.getInstance().getRootUrl() + freeStyleProject.getUrl(), resultUrl.toString());
+        extractedMethod96842(searchResult, freeStyleProject); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod96842(final Page result, final FreeStyleProject myFreeStyleProject) { // CAP AL
+        assertNotNull(result); // CAP AL
+        j.assertGoodStatus(result); // CAP AL
+         // CAP AL
+        URL resultUrl = result.getUrl(); // CAP AL
+        assertEquals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl(), resultUrl.toString()); // CAP AL
+    } // CAP AL
 }
