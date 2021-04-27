@@ -196,14 +196,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     
     @Test
     public void monitorManagePageFilterAreWorking() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setCreationOfLegacyTokenEnabled(true);
-        config.setTokenGenerationOnCreationEnabled(false);
-        
-        // create 1 user with legacy, 2 with fresh, 3 with recent and 4 with fresh+recent
-        prepareUsersForFilters();
+        extractedMethod99782(); // CAP AL
         
         LegacyApiTokenAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(LegacyApiTokenAdministrativeMonitor.class);
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -283,14 +276,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     
     @Test
     public void monitorManagePageCanRevokeToken() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setCreationOfLegacyTokenEnabled(true);
-        config.setTokenGenerationOnCreationEnabled(false);
-        
-        // create 1 user with legacy, 2 with fresh, 3 with recent and 4 with fresh+recent
-        prepareUsersForFilters();
+        extractedMethod99782(); // CAP AL
         
         LegacyApiTokenAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(LegacyApiTokenAdministrativeMonitor.class);
         assertTrue(monitor.isActivated());
@@ -321,6 +307,17 @@ public class LegacyApiTokenAdministrativeMonitorTest {
         checkUserWithLegacyTokenListHasSizeOf(wc, monitor, 0, 0, 0);
         assertFalse(monitor.isActivated());
     }
+ // CAP AL
+    private void extractedMethod99782() throws Exception { // CAP AL
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm()); // CAP AL
+         // CAP AL
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get(); // CAP AL
+        config.setCreationOfLegacyTokenEnabled(true); // CAP AL
+        config.setTokenGenerationOnCreationEnabled(false); // CAP AL
+         // CAP AL
+        // create 1 user with legacy, 2 with fresh, 3 with recent and 4 with fresh+recent // CAP AL
+        prepareUsersForFilters(); // CAP AL
+    } // CAP AL
     
     private HtmlAnchor getFilterByIndex(HtmlPage page, SelectFilter selectFilter) {
         HtmlElement document = page.getDocumentElement();

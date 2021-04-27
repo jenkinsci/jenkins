@@ -1,5 +1,6 @@
 package lib.form;
 
+import com.gargoylesoftware.htmlunit.html.HtmlElement; // CAP AL
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -40,9 +41,7 @@ public class FormTest {
     public void autocompleteOnWhenTrue() throws IOException, SAXException {
         HtmlPage page = j.createWebClient().goTo("autocompleteOnWhenTrue");
         HtmlForm form = page.getFormByName("config");
-        String autocomplete = form.getAttribute("autocomplete");
-        assertNotNull(autocomplete);
-        assertEquals("on", autocomplete);
+        extractedMethod29799(form); // CAP AL
     }
 
     @Test
@@ -51,10 +50,14 @@ public class FormTest {
         HtmlPage page = j.createWebClient().goTo("inputsCanSetAutocomplete");
         HtmlForm form = page.getFormByName("config");
         HtmlInput a = form.getInputByName("a");
-        String autocomplete = a.getAttribute("autocomplete");
-        assertNotNull(autocomplete);
-        assertEquals("on", autocomplete);
+        extractedMethod29799(a); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod29799(final HtmlElement a) { // CAP AL
+        String autocomplete = a.getAttribute("autocomplete"); // CAP AL
+        assertNotNull(autocomplete); // CAP AL
+        assertEquals("on", autocomplete); // CAP AL
+    } // CAP AL
 
     @TestExtension("autocompleteOffByDefault")
     public static class AutocompleteOffByDefault extends InvisibleAction implements RootAction {

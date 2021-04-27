@@ -103,10 +103,7 @@ public class FingerprinterTest {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
-        j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
-
-        j.jenkins.rebuildDependencyGraph();
+        extractedMethod48597(upstream, downstream); // CAP AL
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -166,10 +163,7 @@ public class FingerprinterTest {
         FreeStyleProject downstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
 
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
-
-        j.jenkins.rebuildDependencyGraph();
+        extractedMethod48597(downstream, downstream2); // CAP AL
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -183,6 +177,13 @@ public class FingerprinterTest {
         assertTrue(downstreamProjects.contains(downstream));
         assertTrue(downstreamProjects.contains(downstream2));
     }
+ // CAP AL
+    private void extractedMethod48597(final FreeStyleProject downstream, final FreeStyleProject downstream2) throws Exception { // CAP AL
+        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get()); // CAP AL
+        j.assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get()); // CAP AL
+         // CAP AL
+        j.jenkins.rebuildDependencyGraph(); // CAP AL
+    } // CAP AL
 
     @Test public void dependencyExclusion() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
@@ -196,10 +197,7 @@ public class FingerprinterTest {
         Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
-        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
-
-        assertEquals(0, upstreamProjects.size());
-        assertEquals(0, downstreamProjects.size());
+        extractedMethod7047(upstream, upstreamProjects); // CAP AL
     }
 
     @Test public void circularDependency() throws Exception {
@@ -211,11 +209,15 @@ public class FingerprinterTest {
         Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
-        List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
-        
-        assertEquals(0, upstreamProjects.size());
-        assertEquals(0, downstreamProjects.size());
+        extractedMethod7047(p, upstreamProjects); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod7047(final FreeStyleProject p, final List<AbstractProject> upstreamProjects) { // CAP AL
+        List<AbstractProject> downstreamProjects = p.getDownstreamProjects(); // CAP AL
+         // CAP AL
+        assertEquals(0, upstreamProjects.size()); // CAP AL
+        assertEquals(0, downstreamProjects.size()); // CAP AL
+    } // CAP AL
     
     @Test public void matrixDependency() throws Exception {
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "p");
@@ -280,22 +282,23 @@ public class FingerprinterTest {
         assertNotNull(action);
         fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
-            List<String> jobs = f.getJobs();
-            
-            assertTrue(jobs.contains(renamedProject2));
-            assertFalse(jobs.contains(oldDownstreamName));
+            extractedMethod12318(f, oldDownstreamName); // CAP AL
         }
 
         action = downstreamBuild.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         fingerprints = action.getFingerprints().values();
         for (Fingerprint f: fingerprints) {
-            List<String> jobs = f.getJobs();
-            
-            assertTrue(jobs.contains(renamedProject2));
-            assertFalse(jobs.contains(oldDownstreamName));
+            extractedMethod12318(f, oldDownstreamName); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod12318(final Fingerprint f, final String oldDownstreamName) { // CAP AL
+        List<String> jobs = f.getJobs(); // CAP AL
+         // CAP AL
+        assertTrue(jobs.contains(renamedProject2)); // CAP AL
+        assertFalse(jobs.contains(oldDownstreamName)); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-17125")
     @LocalData

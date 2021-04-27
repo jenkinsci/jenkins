@@ -68,11 +68,7 @@ public class JenkinsLocationConfigurationTest {
     @Issue("SECURITY-1471")
     public void doNotAcceptNonHttpBasedRootURL_fromUI() throws Exception {
         // in JenkinsRule, the URL is set to the current URL
-        JenkinsLocationConfiguration.getOrDie().setUrl(null);
-
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        assertNull(JenkinsLocationConfiguration.getOrDie().getUrl());
+        extractedMethod26874(); // CAP AL
 
         settingRootURL("javascript:alert(123);//");
 
@@ -93,11 +89,7 @@ public class JenkinsLocationConfigurationTest {
 
         try {
             // in JenkinsRule, the URL is set to the current URL
-            JenkinsLocationConfiguration.getOrDie().setUrl(null);
-
-            JenkinsRule.WebClient wc = j.createWebClient();
-
-            assertNull(JenkinsLocationConfiguration.getOrDie().getUrl());
+            extractedMethod26874(); // CAP AL
 
             String expectedUrl = "weirdSchema:somethingAlsoWeird";
             settingRootURL(expectedUrl);
@@ -114,6 +106,14 @@ public class JenkinsLocationConfigurationTest {
             JenkinsLocationConfiguration.DISABLE_URL_VALIDATION = previousValue;
         }
     }
+ // CAP AL
+    private void extractedMethod26874() { // CAP AL
+        JenkinsLocationConfiguration.getOrDie().setUrl(null); // CAP AL
+         // CAP AL
+        JenkinsRule.WebClient wc = j.createWebClient(); // CAP AL
+         // CAP AL
+        assertNull(JenkinsLocationConfiguration.getOrDie().getUrl()); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1471")
@@ -145,11 +145,7 @@ public class JenkinsLocationConfigurationTest {
                 .findFirst().orElseThrow(AssertionFailedError::new);
 
         // last verification
-        assertFalse(alertAppeared.get());
-
-        HtmlElementUtil.click(newViewLink);
-
-        assertFalse(alertAppeared.get());
+        extractedMethod9554(alertAppeared, newViewLink); // CAP AL
     }
 
     @Test
@@ -176,9 +172,7 @@ public class JenkinsLocationConfigurationTest {
                 .filter(a -> a.getHrefAttribute().contains("/label/"))
                 .findFirst().orElseThrow(AssertionFailedError::new);
 
-        assertFalse(alertAppeared.get());
-        HtmlElementUtil.click(labelAnchor);
-        assertFalse(alertAppeared.get());
+        extractedMethod9554(alertAppeared, labelAnchor); // CAP AL
 
         String labelHref = labelAnchor.getHrefAttribute();
         assertThat(labelHref, not(containsString("javascript:alert(123)")));
@@ -186,6 +180,14 @@ public class JenkinsLocationConfigurationTest {
         String responseContent = projectConfigurePage.getWebResponse().getContentAsString();
         assertThat(responseContent, not(containsString("javascript:alert(123)")));
     }
+ // CAP AL
+    private void extractedMethod9554(final AtomicReference<Boolean> alertAppeared, final HtmlAnchor newViewLink) throws IOException { // CAP AL
+        assertFalse(alertAppeared.get()); // CAP AL
+         // CAP AL
+        HtmlElementUtil.click(newViewLink); // CAP AL
+         // CAP AL
+        assertFalse(alertAppeared.get()); // CAP AL
+    } // CAP AL
 
     private void settingRootURL(String desiredRootUrl) throws Exception {
         HtmlPage configurePage = j.createWebClient().goTo("configure");

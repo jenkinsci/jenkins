@@ -302,11 +302,7 @@ public class ApiTokenPropertyTest {
     @Issue("JENKINS-32776")
     public void legacyTokenChange() throws Exception {
         j.jenkins.setCrumbIssuer(null);
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
         
         User user = User.getById("user", true);
         WebClient wc = j.createWebClient();
@@ -320,15 +316,7 @@ public class ApiTokenPropertyTest {
             config.setCreationOfLegacyTokenEnabled(true);
             {
                 // change using web UI
-                changeLegacyToken(wc, "user", true);
-                String newLegacyToken = apiTokenProperty.getApiToken();
-                assertNotEquals(newLegacyToken, currentLegacyToken);
-                
-                // change using internal call
-                apiTokenProperty.changeApiToken();
-                String newLegacyToken2 = apiTokenProperty.getApiToken();
-                assertNotEquals(newLegacyToken2, newLegacyToken);
-                assertNotEquals(newLegacyToken2, currentLegacyToken);
+                String newLegacyToken2 = getNewLegacyToken240471(wc, apiTokenProperty, currentLegacyToken); // CAP AL
                 
                 currentLegacyToken = newLegacyToken2;
             }
@@ -336,15 +324,7 @@ public class ApiTokenPropertyTest {
             config.setCreationOfLegacyTokenEnabled(false);
             {
                 // change using web UI
-                changeLegacyToken(wc, "user", true);
-                String newLegacyToken = apiTokenProperty.getApiToken();
-                assertNotEquals(newLegacyToken, currentLegacyToken);
-                
-                // change using internal call
-                apiTokenProperty.changeApiToken();
-                String newLegacyToken2 = apiTokenProperty.getApiToken();
-                assertNotEquals(newLegacyToken2, newLegacyToken);
-                assertNotEquals(newLegacyToken2, currentLegacyToken);
+                String newLegacyToken2 = getNewLegacyToken240471(wc, apiTokenProperty, currentLegacyToken); // CAP AL
             }
         }
         { // but without any legacy token, the direct internal call remains but web UI depends on config
@@ -358,6 +338,19 @@ public class ApiTokenPropertyTest {
             checkCombinationWithConfigAndMethodForLegacyTokenCreation(config, wc, user);
         }
     }
+ // CAP AL
+    private String getNewLegacyToken240471(final WebClient wc, final ApiTokenProperty apiTokenProperty, final String currentLegacyToken) throws Exception { // CAP AL
+        changeLegacyToken(wc, "user", true); // CAP AL
+        String newLegacyToken = apiTokenProperty.getApiToken(); // CAP AL
+        assertNotEquals(newLegacyToken, currentLegacyToken); // CAP AL
+         // CAP AL
+        // change using internal call // CAP AL
+        apiTokenProperty.changeApiToken(); // CAP AL
+        String newLegacyToken2 = apiTokenProperty.getApiToken(); // CAP AL
+        assertNotEquals(newLegacyToken2, newLegacyToken); // CAP AL
+        assertNotEquals(newLegacyToken2, currentLegacyToken); // CAP AL
+        return newLegacyToken2; // CAP AL
+    } // CAP AL
     
     private void checkCombinationWithConfigAndMethodForLegacyTokenCreation(
             ApiTokenPropertyConfiguration config, WebClient wc, User user
@@ -371,11 +364,7 @@ public class ApiTokenPropertyTest {
                 String newLegacyToken = apiTokenProperty.getApiToken();
                 assertNotEquals(newLegacyToken, Messages.ApiTokenProperty_ChangeToken_CapabilityNotAllowed());
             }
-            revokeLegacyToken(wc, user);
-        
-            // always possible
-            changeTokenByDirectCall(apiTokenProperty);
-            revokeLegacyToken(wc, user);
+            extractedMethod49014(wc, user, apiTokenProperty); // CAP AL
         }
     
         revokeAllToken(wc, user);
@@ -387,13 +376,17 @@ public class ApiTokenPropertyTest {
                 String newLegacyToken = apiTokenProperty.getApiToken();
                 assertEquals(newLegacyToken, Messages.ApiTokenProperty_NoLegacyToken());
             }
-            revokeLegacyToken(wc, user);
-        
-            // always possible
-            changeTokenByDirectCall(apiTokenProperty);
-            revokeLegacyToken(wc, user);
+            extractedMethod49014(wc, user, apiTokenProperty); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod49014(final WebClient wc, final User user, final ApiTokenProperty apiTokenProperty) throws Exception { // CAP AL
+        revokeLegacyToken(wc, user); // CAP AL
+                 // CAP AL
+        // always possible // CAP AL
+        changeTokenByDirectCall(apiTokenProperty); // CAP AL
+        revokeLegacyToken(wc, user); // CAP AL
+    } // CAP AL
     
     private void changeTokenByDirectCall(ApiTokenProperty apiTokenProperty) throws Exception {
         apiTokenProperty.changeApiToken();
@@ -531,10 +524,7 @@ public class ApiTokenPropertyTest {
     @Test
     @Issue("JENKINS-57484")
     public void script_revokeAllTokens() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
 
         User user = User.getById("user", true);
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
@@ -562,10 +552,7 @@ public class ApiTokenPropertyTest {
     @Test
     @Issue("JENKINS-57484")
     public void script_revokeAllTokensExceptOne() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
 
         User user = User.getById("user", true);
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
@@ -602,10 +589,7 @@ public class ApiTokenPropertyTest {
     @Test
     @Issue("JENKINS-57484")
     public void script_revokeToken() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
 
         User user = User.getById("user", true);
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
@@ -639,6 +623,15 @@ public class ApiTokenPropertyTest {
         checkTokenIsWorking(user.getId(), token2.plainValue);
         checkTokenIsNotWorking(user.getId(), token3.plainValue);
     }
+ // CAP AL
+    private ApiTokenPropertyConfiguration getConfig34623() { // CAP AL
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm()); // CAP AL
+         // CAP AL
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get(); // CAP AL
+         // CAP AL
+        config.setTokenGenerationOnCreationEnabled(true); // CAP AL
+        return config; // CAP AL
+    } // CAP AL
 
     private void checkTokenIsWorking(String login, String token) throws Exception {
         WebClient wc = j.createWebClient()

@@ -177,11 +177,7 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void maxEventsLimitedSameStackTrace() {
-        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
-
-        // Backup to restore at the end of the test
-        int maxEventsBefore = MissingClassEvents.MAX_EVENTS_PER_SEND;
-        MissingClassEvents.MAX_EVENTS_PER_SEND = 1;
+        int maxEventsBefore = getMaxEventsBefore24290(); // CAP AL
         try {
             for (int i = 0; i < 2; i++) {
                 try {
@@ -210,11 +206,7 @@ public class MissingClassTelemetryFasterTest {
      */
     @Test
     public void maxEventsLimitedDifferentStackTrace() {
-        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
-
-        // Backup to restore at the end of the test
-        int maxEventsBefore = MissingClassEvents.MAX_EVENTS_PER_SEND;
-        MissingClassEvents.MAX_EVENTS_PER_SEND = 1;
+        int maxEventsBefore = getMaxEventsBefore24290(); // CAP AL
 
         try {
             try {
@@ -244,6 +236,15 @@ public class MissingClassTelemetryFasterTest {
             MissingClassEvents.MAX_EVENTS_PER_SEND = maxEventsBefore;
         }
     }
+ // CAP AL
+    private int getMaxEventsBefore24290() { // CAP AL
+        Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled()); // CAP AL
+         // CAP AL
+        // Backup to restore at the end of the test // CAP AL
+        int maxEventsBefore = MissingClassEvents.MAX_EVENTS_PER_SEND; // CAP AL
+        MissingClassEvents.MAX_EVENTS_PER_SEND = 1; // CAP AL
+        return maxEventsBefore; // CAP AL
+    } // CAP AL
 
     /**
      * Test the cycles in the exceptions. This specific tests shows that we first look for reportable exceptions in the
@@ -312,17 +313,7 @@ public class MissingClassTelemetryFasterTest {
 
         } catch (Exception e) {
             // Look for anything to report
-            MissingClassTelemetry.reportExceptionInside(e);
-
-            // Get the events gathered
-            MissingClassEvents events = MissingClassTelemetry.getEvents();
-            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean();
-
-            // One event gathered
-            assertEquals(1, eventsGathered.size());
-
-            // the circular reference has been recorded in the log
-            assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE)));
+            extractedMethod99967(e); // CAP AL
         }
     }
 
@@ -355,19 +346,23 @@ public class MissingClassTelemetryFasterTest {
 
         } catch (Exception e) {
             // Look for anything to report
-            MissingClassTelemetry.reportExceptionInside(e);
-
-            // Get the events gathered
-            MissingClassEvents events = MissingClassTelemetry.getEvents();
-            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean();
-
-            // One event gathered
-            assertEquals(1, eventsGathered.size());
-
-            // the circular reference has been recorded in the log
-            assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE)));
+            extractedMethod99967(e); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod99967(final Exception e) { // CAP AL
+        MissingClassTelemetry.reportExceptionInside(e); // CAP AL
+         // CAP AL
+        // Get the events gathered // CAP AL
+        MissingClassEvents events = MissingClassTelemetry.getEvents(); // CAP AL
+        ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean(); // CAP AL
+         // CAP AL
+        // One event gathered // CAP AL
+        assertEquals(1, eventsGathered.size()); // CAP AL
+         // CAP AL
+        // the circular reference has been recorded in the log // CAP AL
+        assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE))); // CAP AL
+    } // CAP AL
 
     @Test
     public void nothingGatheredWhenTelemetryDisabled() {

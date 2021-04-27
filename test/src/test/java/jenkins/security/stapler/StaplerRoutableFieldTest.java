@@ -1,5 +1,6 @@
 package jenkins.security.stapler;
 
+import java.io.IOException; // CAP AL
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
@@ -57,10 +58,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
     
     @Test
     public void testFieldNotAnnotated() throws Exception {
-        assertReachable("test/renderableNotAnnotated/");
-        assertReachable("test/renderableNotAnnotated/valid/");
-        
-        assertNotReachable("test/parentRenderableNotAnnotated/");
+        extractedMethod8250(); // CAP AL
         assertNotReachable("test/parentRenderableNotAnnotated/renderable/");
         assertNotReachable("test/parentRenderableNotAnnotated/renderable/valid/");
         
@@ -76,10 +74,7 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
             // to apply the new configuration
             webApp.clearMetaClassCache();
             
-            assertReachable("test/renderableNotAnnotated/");
-            assertReachable("test/renderableNotAnnotated/valid/");
-    
-            assertNotReachable("test/parentRenderableNotAnnotated/");
+            extractedMethod8250(); // CAP AL
             assertReachable("test/parentRenderableNotAnnotated/renderable/");
             assertReachable("test/parentRenderableNotAnnotated/renderable/valid/");
         } finally {
@@ -88,6 +83,13 @@ public class StaplerRoutableFieldTest extends StaplerAbstractTest {
             webApp.clearMetaClassCache();
         }
     }
+ // CAP AL
+    private void extractedMethod8250() throws IOException { // CAP AL
+        assertReachable("test/renderableNotAnnotated/"); // CAP AL
+        assertReachable("test/renderableNotAnnotated/valid/"); // CAP AL
+             // CAP AL
+        assertNotReachable("test/parentRenderableNotAnnotated/"); // CAP AL
+    } // CAP AL
     
     @Test
     public void testFieldAnnotatedOk() throws Exception {

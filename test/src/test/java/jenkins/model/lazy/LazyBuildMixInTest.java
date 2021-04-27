@@ -57,10 +57,7 @@ public class LazyBuildMixInTest {
         assertEquals(b2, b3.getPreviousBuild());
         b1.getRunMixIn().createReference().clear();
         b2.delete();
-        FreeStyleBuild b1a = b2.getPreviousBuild();
-        assertNotSame(b1, b1a);
-        assertEquals(1, b1a.getNumber());
-        assertEquals(b3, b1a.getNextBuild());
+        extractedMethod85440(b2, b1, b3); // CAP AL
     }
 
     @Issue("JENKINS-22395")
@@ -79,11 +76,15 @@ public class LazyBuildMixInTest {
         assertEquals(b2, b3.getPreviousBuild());
         b2.delete();
         b1.getRunMixIn().createReference().clear();
-        FreeStyleBuild b1a = b2.getPreviousBuild();
-        assertNotSame(b1, b1a);
-        assertEquals(1, b1a.getNumber());
-        assertEquals(b3, b1a.getNextBuild());
+        extractedMethod85440(b2, b1, b3); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod85440(final FreeStyleBuild b2, final FreeStyleBuild b1, final FreeStyleBuild b3) { // CAP AL
+        FreeStyleBuild b1a = b2.getPreviousBuild(); // CAP AL
+        assertNotSame(b1, b1a); // CAP AL
+        assertEquals(1, b1a.getNumber()); // CAP AL
+        assertEquals(b3, b1a.getNextBuild()); // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-20662")
     @Test public void newRunningBuildRelationFromPrevious() throws Exception {

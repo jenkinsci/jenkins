@@ -123,9 +123,7 @@ public class BootFailureTest {
 
         // creates a script
         FileUtils.write(new File(home, "boot-failure.groovy"), "hudson.util.BootFailureTest.problem = exception", StandardCharsets.UTF_8);
-        File d = new File(home, "boot-failure.groovy.d");
-        d.mkdirs();
-        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
+        File d = getD39399(home); // CAP AL
         FileUtils.write(new File(d, "2.groovy"), "hudson.util.BootFailureTest.runRecord << '2'", StandardCharsets.UTF_8);
 
         // first failed boot
@@ -158,12 +156,17 @@ public class BootFailureTest {
     public void interruptedStartup() throws Exception {
         final File home = tmpDir.newFolder();
         j.with(() -> home);
-        File d = new File(home, "boot-failure.groovy.d");
-        d.mkdirs();
-        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
+        File d = getD39399(home); // CAP AL
         j.newHudson();
         assertEquals(Collections.singletonList("1"), runRecord);
     }
+ // CAP AL
+    private File getD39399(final File home) throws IOException { // CAP AL
+        File d = new File(home, "boot-failure.groovy.d"); // CAP AL
+        d.mkdirs(); // CAP AL
+        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8); // CAP AL
+        return d; // CAP AL
+    } // CAP AL
     @TestExtension("interruptedStartup")
     public static class PauseBoot extends ItemListener {
         @Override

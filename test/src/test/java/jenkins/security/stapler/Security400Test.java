@@ -150,14 +150,7 @@ public class Security400Test {
     @Test
     @Issue("SECURITY-404")
     public void avoidDangerousAccessToSession() throws Exception {
-        j.jenkins.setCrumbIssuer(null);
-    
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(
-                new MockAuthorizationStrategy()
-                        .grant(Jenkins.ADMINISTER).everywhere().to("admin")
-                        .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod11606(); // CAP AL
     
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -238,13 +231,7 @@ public class Security400Test {
         }
         
         { // first try, we let the build finishes normally
-            QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
-            futureBuild.waitForStart();
-            
-            // let the build finishes
-            semaphore.release(1);
-            j.assertBuildStatus(Result.SUCCESS, futureBuild);
-            assertEquals(1, atomicResult.get());
+            extractedMethod69687(p, semaphore, atomicResult); // CAP AL
         }
         
         { // second try, we need to reach the stop method in executor to interrupt the build
@@ -298,14 +285,7 @@ public class Security400Test {
             semaphore.drainPermits();
             atomicResult.set(0);
 
-            QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
-            futureBuild.waitForStart();
-
-            // let the build finishes
-            semaphore.release(1);
-
-            j.assertBuildStatus(Result.SUCCESS, futureBuild);
-            assertEquals(1, atomicResult.get());
+            extractedMethod69687(p, semaphore, atomicResult); // CAP AL
         }
 
         { // second try, calling stopBuild without parameter interrupts the build (same as calling stop)
@@ -369,6 +349,17 @@ public class Security400Test {
             assertEquals(1, atomicResult.get());
         }
     }
+ // CAP AL
+    private void extractedMethod69687(final FreeStyleProject p, final Semaphore semaphore, final AtomicInteger atomicResult) throws Exception { // CAP AL
+        QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0); // CAP AL
+        futureBuild.waitForStart(); // CAP AL
+         // CAP AL
+        // let the build finishes // CAP AL
+        semaphore.release(1); // CAP AL
+         // CAP AL
+        j.assertBuildStatus(Result.SUCCESS, futureBuild); // CAP AL
+        assertEquals(1, atomicResult.get()); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-404")
@@ -540,14 +531,7 @@ public class Security400Test {
     @Test
     @Issue("SECURITY-471")
     public void ensureLogRecordManagerAccessibleOnlyByAdmin() throws Exception {
-        j.jenkins.setCrumbIssuer(null);
-        
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(
-                new MockAuthorizationStrategy()
-                        .grant(Jenkins.ADMINISTER).everywhere().to("admin")
-                        .grant(Jenkins.READ).everywhere().to("user")
-        );
+        extractedMethod11606(); // CAP AL
         
         String logNameForAdmin = "testLoggerAdmin";
         String logNameForUser = "testLoggerUser";
@@ -608,6 +592,17 @@ public class Security400Test {
             assertRequestWasNotBlocked();
         }
     }
+ // CAP AL
+    private void extractedMethod11606() { // CAP AL
+        j.jenkins.setCrumbIssuer(null); // CAP AL
+         // CAP AL
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm()); // CAP AL
+        j.jenkins.setAuthorizationStrategy( // CAP AL
+                new MockAuthorizationStrategy() // CAP AL
+                        .grant(Jenkins.ADMINISTER).everywhere().to("admin") // CAP AL
+                        .grant(Jenkins.READ).everywhere().to("user") // CAP AL
+        ); // CAP AL
+    } // CAP AL
     
     @Test
     public void anonCannotHaveTheListOfUsers() throws Exception {
@@ -616,9 +611,7 @@ public class Security400Test {
         FullControlOnceLoggedInAuthorizationStrategy authorizationStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(authorizationStrategy);
         
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-        securityRealm.createAccount("admin", "admin");
+        HudsonPrivateSecurityRealm securityRealm = getSecurityRealm4809(); // CAP AL
         securityRealm.createAccount("secretUser", "secretUser");
         
         { // admin should have access to the user list
@@ -675,9 +668,7 @@ public class Security400Test {
     @Issue("SECURITY-722")
     public void noAccessToAllUsers() throws Exception {
         j.jenkins.setCrumbIssuer(null);
-        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-        j.jenkins.setSecurityRealm(securityRealm);
-        securityRealm.createAccount("admin", "admin");
+        HudsonPrivateSecurityRealm securityRealm = getSecurityRealm4809(); // CAP AL
         
         j.jenkins.setAuthorizationStrategy(
                 new MockAuthorizationStrategy()
@@ -704,6 +695,13 @@ public class Security400Test {
             assertRequestWasBlockedAndResetFlag();
         }
     }
+ // CAP AL
+    private HudsonPrivateSecurityRealm getSecurityRealm4809() throws IOException { // CAP AL
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null); // CAP AL
+        j.jenkins.setSecurityRealm(securityRealm); // CAP AL
+        securityRealm.createAccount("admin", "admin"); // CAP AL
+        return securityRealm; // CAP AL
+    } // CAP AL
     
     // // does not work in 2.60 since the method was added in 2.91+
     // String newLogin = "newUser";

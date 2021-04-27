@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import java.io.IOException; // CAP AL
 import hudson.FilePath;
 import hudson.slaves.DumbSlave;
 import hudson.util.DirScanner;
@@ -60,12 +61,7 @@ public class FilePathSecureTest {
 
     @Test public void untar() throws Exception {
         FilePath dir = root.child("dir");
-        dir.mkdirs();
-        dir.child("stuff").write("hello", null);
-        FilePath tar = root.child("dir.tar");
-        try (OutputStream os = tar.write()) {
-            dir.tar(os, new DirScanner.Full());
-        }
+        FilePath tar = getTar91322(dir); // CAP AL
         tar.untar(remote, FilePath.TarCompression.NONE);
         assertEquals("hello", remote.child("dir/stuff").readToString());
     }
@@ -82,14 +78,19 @@ public class FilePathSecureTest {
 
     @Test public void tar() throws Exception {
         FilePath dir = remote.child("dir");
-        dir.mkdirs();
-        dir.child("stuff").write("hello", null);
-        FilePath tar = root.child("dir.tar");
-        try (OutputStream os = tar.write()) {
-            dir.tar(os, new DirScanner.Full());
-        }
+        FilePath tar = getTar91322(dir); // CAP AL
         tar.untar(root, FilePath.TarCompression.NONE);
         assertEquals("hello", remote.child("dir/stuff").readToString());
     }
+ // CAP AL
+    private FilePath getTar91322(final FilePath dir) throws IOException, InterruptedException { // CAP AL
+        dir.mkdirs(); // CAP AL
+        dir.child("stuff").write("hello", null); // CAP AL
+        FilePath tar = root.child("dir.tar"); // CAP AL
+        try (OutputStream os = tar.write()) { // CAP AL
+            dir.tar(os, new DirScanner.Full()); // CAP AL
+        } // CAP AL
+        return tar; // CAP AL
+    } // CAP AL
 
 }

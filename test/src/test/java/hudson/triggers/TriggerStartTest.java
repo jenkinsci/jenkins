@@ -24,6 +24,7 @@
 
 package hudson.triggers;
 
+import java.io.IOException; // CAP AL
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -51,9 +52,7 @@ public class TriggerStartTest {
 
     @Test public void loadCallsStartFalse() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        MockTrigger t = new MockTrigger();
-        p.addTrigger(t);
-        p.save();
+        MockTrigger t = getT29000(p); // CAP AL
         p = (FreeStyleProject) Items.load(p.getParent(), p.getRootDir());
         t = p.getTrigger(MockTrigger.class);
         assertNotNull(t);
@@ -62,9 +61,7 @@ public class TriggerStartTest {
 
     @Test public void submitCallsStartTrue() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        MockTrigger t = new MockTrigger();
-        p.addTrigger(t);
-        p.save();
+        MockTrigger t = getT29000(p); // CAP AL
         p = (FreeStyleProject)j.configRoundtrip((Item)p);
         t = p.getTrigger(MockTrigger.class);
         assertNotNull(t);
@@ -77,28 +74,35 @@ public class TriggerStartTest {
         xml = xml.replace("  <triggers/>\n", triggersSection());
         Source newXML = new StreamSource(new StringReader(xml));
         p.updateByXml(newXML);
-        MockTrigger t = p.getTrigger(MockTrigger.class);
-        assertNotNull(t);
-        assertEquals("[true]", t.calls.toString());
+        extractedMethod58320(p); // CAP AL
     }
 
     @Test public void createProjectFromXmlCallsStartTrue() throws Exception {
         FreeStyleProject p = (FreeStyleProject) j.jenkins.createProjectFromXML("whatever", new ByteArrayInputStream(("<project>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n" + triggersSection() + "</project>").getBytes()));
-        MockTrigger t = p.getTrigger(MockTrigger.class);
-        assertNotNull(t);
-        assertEquals("[true]", t.calls.toString());
+        extractedMethod58320(p); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod58320(final FreeStyleProject p) { // CAP AL
+        MockTrigger t = p.getTrigger(MockTrigger.class); // CAP AL
+        assertNotNull(t); // CAP AL
+        assertEquals("[true]", t.calls.toString()); // CAP AL
+    } // CAP AL
 
     @Test public void copyCallsStartTrue() throws Exception {
         AbstractProject<?,?> p = j.createFreeStyleProject();
-        MockTrigger t = new MockTrigger();
-        p.addTrigger(t);
-        p.save();
+        MockTrigger t = getT29000(p); // CAP AL
         p = j.jenkins.copy(p, "nue");
         t = p.getTrigger(MockTrigger.class);
         assertNotNull(t);
         assertEquals("[true]", t.calls.toString());
     }
+ // CAP AL
+    private MockTrigger getT29000(final AbstractProject p) throws IOException { // CAP AL
+        MockTrigger t = new MockTrigger(); // CAP AL
+        p.addTrigger(t); // CAP AL
+        p.save(); // CAP AL
+        return t; // CAP AL
+    } // CAP AL
 
     private String triggersSection() {
         String tagname = MockTrigger.class.getName().replace("$", "_-");

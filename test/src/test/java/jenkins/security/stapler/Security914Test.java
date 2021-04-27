@@ -47,12 +47,7 @@ public class Security914Test {
     
     @Test
     public void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
-        
-        if (j.jenkins.pluginManager.getPlugin("credentials") == null) {
-            ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
-        }
-        j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
+        extractedMethod20653(); // CAP AL
         
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
@@ -69,12 +64,7 @@ public class Security914Test {
     
     @Test
     public void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
-        
-        if (j.jenkins.pluginManager.getPlugin("credentials") == null) {
-            ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
-        }
-        j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
+        extractedMethod20653(); // CAP AL
         
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
@@ -86,4 +76,13 @@ public class Security914Test {
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, p.getWebResponse().getStatusCode());
         assertEquals("text/html", p.getWebResponse().getContentType());
     }
+ // CAP AL
+    private void extractedMethod20653() throws Exception { // CAP AL
+        Assume.assumeTrue(Functions.isWindows()); // CAP AL
+         // CAP AL
+        if (j.jenkins.pluginManager.getPlugin("credentials") == null) { // CAP AL
+            ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials"); // CAP AL
+        } // CAP AL
+        j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png"); // CAP AL
+    } // CAP AL
 }

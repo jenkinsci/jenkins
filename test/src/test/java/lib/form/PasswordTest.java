@@ -267,14 +267,7 @@ public class PasswordTest {
 
 
         final HtmlPage configPage = wc.goTo("configure");
-        for (DomElement element : configPage.getElementsByTagName("input")) {
-            if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
-                final HtmlHiddenInput input = (HtmlHiddenInput) element;
-                // assert that all password fields contain encrypted values after we set plain values
-                assertTrue(input.getValueAttribute().startsWith("{"));
-                assertTrue(input.getValueAttribute().endsWith("}"));
-            }
-        }
+        extractedMethod86986(configPage); // CAP AL
 
         j.configRoundtrip();
 
@@ -338,9 +331,7 @@ public class PasswordTest {
     public void testBuildStep() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(new PasswordHolderBuildStep());
-        project.save();
-        assertEquals(1, project.getBuilders().size());
-        j.configRoundtrip(project);
+        extractedMethod52416(project); // CAP AL
 
         // empty default values after initial form submission
         PasswordHolderBuildStep buildStep = (PasswordHolderBuildStep) project.getBuildersList().get(0);
@@ -542,9 +533,7 @@ public class PasswordTest {
     public void testStringlyTypedSecrets() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(new StringlyTypedSecretsBuilder(""));
-        project.save();
-        assertEquals(1, project.getBuilders().size());
-        j.configRoundtrip(project);
+        extractedMethod52416(project); // CAP AL
 
         // empty default values after initial form submission
         StringlyTypedSecretsBuilder buildStep = (StringlyTypedSecretsBuilder) project.getBuildersList().get(0);
@@ -561,14 +550,7 @@ public class PasswordTest {
         project.save();
 
         final HtmlPage configPage = j.createWebClient().goTo(project.getUrl() + "/configure");
-        for (DomElement element : configPage.getElementsByTagName("input")) {
-            if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
-                final HtmlHiddenInput input = (HtmlHiddenInput) element;
-                // assert that all password fields contain encrypted values after we set plain values
-                assertTrue(input.getValueAttribute().startsWith("{"));
-                assertTrue(input.getValueAttribute().endsWith("}"));
-            }
-        }
+        extractedMethod86986(configPage); // CAP AL
 
         j.configRoundtrip(project);
         buildStep = (StringlyTypedSecretsBuilder) project.getBuildersList().get(0);
@@ -580,6 +562,12 @@ public class PasswordTest {
         // Note that it's not enough to just undo the related changes to core/src/main to try this; as Functions#getPasswordValue will throw a SecurityException during tests only and break the previous assertion.
         assertNotEquals(stringlyTypedSecret.getEncryptedValue(), buildStep.mySecret);
     }
+ // CAP AL
+    private void extractedMethod52416(final FreeStyleProject project) throws Exception { // CAP AL
+        project.save(); // CAP AL
+        assertEquals(1, project.getBuilders().size()); // CAP AL
+        j.configRoundtrip(project); // CAP AL
+    } // CAP AL
 
     public static class StringlyTypedSecretsBuilder extends Builder implements SimpleBuildStep {
 
@@ -614,14 +602,7 @@ public class PasswordTest {
         FreeStyleProject p = j.createFreeStyleProject();
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage htmlPage = wc.goTo(p.getUrl() + "/passwordFields");
-        for (DomElement element : htmlPage.getElementsByTagName("input")) {
-            if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
-                final HtmlHiddenInput input = (HtmlHiddenInput) element;
-                // assert that all password fields contain encrypted values after we set plain values
-                assertTrue(input.getValueAttribute().startsWith("{"));
-                assertTrue(input.getValueAttribute().endsWith("}"));
-            }
-        }
+        extractedMethod86986(htmlPage); // CAP AL
 
         final MockAuthorizationStrategy a = new MockAuthorizationStrategy();
         a.grant(Jenkins.READ, Job.READ, Job.EXTENDED_READ).everywhere().toEveryone();
@@ -636,6 +617,17 @@ public class PasswordTest {
             }
         }
     }
+ // CAP AL
+    private void extractedMethod86986(final HtmlPage configPage) { // CAP AL
+        for (DomElement element : configPage.getElementsByTagName("input")) { // CAP AL
+            if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) { // CAP AL
+                final HtmlHiddenInput input = (HtmlHiddenInput) element; // CAP AL
+                // assert that all password fields contain encrypted values after we set plain values // CAP AL
+                assertTrue(input.getValueAttribute().startsWith("{")); // CAP AL
+                assertTrue(input.getValueAttribute().endsWith("}")); // CAP AL
+            } // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @TestExtension
     public static class FactoryImpl extends TransientActionFactory<Job> {

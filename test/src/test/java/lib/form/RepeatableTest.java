@@ -100,9 +100,7 @@ public class RepeatableTest extends HudsonTestCase {
         getHtmlButton(f, buttonCaption, true).click(); // click Add button
         waitForJavaScript(p);
         assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that second Add button is not present
-        getHtmlButton(f, "Delete", true).click(); // click Delete button
-        waitForJavaScript(p);
-        assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
+        extractedMethod6424(f, p, buttonCaption); // CAP AL // check that only one Add button is in form
     }
     
     /**
@@ -118,10 +116,14 @@ public class RepeatableTest extends HudsonTestCase {
         getHtmlButton(f, buttonCaption, true).click(); // click Add button
         waitForJavaScript(p);
         assertEquals(2, getButtonsList(f, buttonCaption).size()); // check that second Add button was added into form
-        getHtmlButton(f, "Delete", true).click(); // click Delete button
-        waitForJavaScript(p);
-        assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
+        extractedMethod6424(f, p, buttonCaption); // CAP AL // check that only one Add button is in form
     }
+ // CAP AL
+    private void extractedMethod6424(final HtmlForm f, final HtmlPage p, final String buttonCaption) throws IOException { // CAP AL
+        getHtmlButton(f, "Delete", true).click(); // click Delete button // CAP AL
+        waitForJavaScript(p); // CAP AL
+        assertEquals(1, getButtonsList(f, buttonCaption).size()); // CAP AL
+    } // CAP AL
 
     // ========================================================================
 
@@ -213,21 +215,23 @@ public class RepeatableTest extends HudsonTestCase {
     
     private void assertWithDefaults(final String viewName) throws Exception {
         list = null;
-        addDefaults();
-        gotoAndSubmitConfig(viewName);
-        assertNotNull(formData.get("list"));
+        extractedMethod72901(viewName); // CAP AL
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"default one\"},{\"bool\":false,\"txt\":\"default two\"}]",
                 formData.get("list"));
     }    
 
     private void assertDefaultsIgnoredIfHaveData(final String viewName) throws Exception {
         addData();
-        addDefaults();
-        gotoAndSubmitConfig(viewName);
-        assertNotNull(formData.get("list"));
+        extractedMethod72901(viewName); // CAP AL
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},{\"bool\":false,\"txt\":\"existing two\"}]",
                 formData.get("list"));
     }
+ // CAP AL
+    private void extractedMethod72901(final String viewName) throws Exception { // CAP AL
+        addDefaults(); // CAP AL
+        gotoAndSubmitConfig(viewName); // CAP AL
+        assertNotNull(formData.get("list")); // CAP AL
+    } // CAP AL
     
     private void gotoAndSubmitConfig(final String viewName) throws Exception {
         HtmlPage p = createWebClient().goTo("self/" + viewName);
@@ -398,10 +402,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
@@ -424,10 +425,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
@@ -450,10 +448,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
@@ -476,11 +471,15 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod77297(final HtmlForm f) throws Exception { // CAP AL
+        bindClass = FooList.class; // CAP AL
+        submit(f); // CAP AL
+        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], " // CAP AL
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString()); // CAP AL
+    } // CAP AL
 
     private void clickButton(HtmlPage p, HtmlForm f, String caption, boolean isTopButton) throws IOException {
         getHtmlButton(f, caption, isTopButton).click();
@@ -508,10 +507,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        submit(f);
-        assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
-                + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
-                formData.get("items"));
+        extractedMethod96204(f); // CAP AL
     }
 
     public void testNestedRadioEnabledTopButton() throws Exception {
@@ -535,11 +531,15 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        submit(f);
-        assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
-                + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
-                formData.get("items"));
+        extractedMethod96204(f); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod96204(final HtmlForm f) throws Exception { // CAP AL
+        submit(f); // CAP AL
+        assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"}," // CAP AL
+                + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]", // CAP AL
+                formData.get("items")); // CAP AL
+    } // CAP AL
 
     private void assertEqualsJsonArray(String golden, Object jsonArray) {
         assertEquals(JSONArray.fromObject(golden),jsonArray);

@@ -74,33 +74,29 @@ public class TextAreaTest {
     public void text() throws Exception {
         {
             String TEXT_TO_TEST = "some\nvalue\n";
-            FreeStyleProject p = j.createFreeStyleProject();
-            TextareaTestBuilder target = new TextareaTestBuilder(TEXT_TO_TEST);
-            p.getBuildersList().add(target);
-            j.configRoundtrip(p);
-            j.assertEqualDataBoundBeans(target, p.getBuildersList().get(TextareaTestBuilder.class));
+            extractedMethod73212(TEXT_TO_TEST); // CAP AL
         }
 
         // test for a textarea beginning with a empty line.
         {
             String TEXT_TO_TEST = "\nbegin\n\nwith\nempty\nline\n\n";
-            FreeStyleProject p = j.createFreeStyleProject();
-            TextareaTestBuilder target = new TextareaTestBuilder(TEXT_TO_TEST);
-            p.getBuildersList().add(target);
-            j.configRoundtrip(p);
-            j.assertEqualDataBoundBeans(target, p.getBuildersList().get(TextareaTestBuilder.class));
+            extractedMethod73212(TEXT_TO_TEST); // CAP AL
         }
 
         // test for a textarea beginning with two empty lines.
         {
             String TEXT_TO_TEST = "\n\nbegin\n\nwith\ntwo\nempty\nline\n\n";
-            FreeStyleProject p = j.createFreeStyleProject();
-            TextareaTestBuilder target = new TextareaTestBuilder(TEXT_TO_TEST);
-            p.getBuildersList().add(target);
-            j.configRoundtrip(p);
-            j.assertEqualDataBoundBeans(target, p.getBuildersList().get(TextareaTestBuilder.class));
+            extractedMethod73212(TEXT_TO_TEST); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod73212(final String TEXT_TO_TEST) throws Exception { // CAP AL
+        FreeStyleProject p = j.createFreeStyleProject(); // CAP AL
+        TextareaTestBuilder target = new TextareaTestBuilder(TEXT_TO_TEST); // CAP AL
+        p.getBuildersList().add(target); // CAP AL
+        j.configRoundtrip(p); // CAP AL
+        j.assertEqualDataBoundBeans(target, p.getBuildersList().get(TextareaTestBuilder.class)); // CAP AL
+    } // CAP AL
 
     public static class TextareaTestBuilder extends Builder {
 

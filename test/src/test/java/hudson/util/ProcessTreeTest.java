@@ -145,12 +145,7 @@ public class ProcessTreeTest {
 
         ProcessTree processTree = ProcessTree.get();
         processTree.killAll(ImmutableMap.of("cookie", "testKeepDaemonsAlive"));
-        try {
-            process.exitValue();
-            fail("Process should have been excluded from the killing");
-        } catch (IllegalThreadStateException e) {
-            // Means the process is still running
-        }
+        extractedMethod9401(); // CAP AL
     }
 
     @Test
@@ -181,13 +176,17 @@ public class ProcessTreeTest {
         StringWriter out = new StringWriter();
         s.createLauncher(new StreamTaskListener(out)).kill(ImmutableMap.of("cookie", "testKeepDaemonsAlive"));
 
-        try {
-            process.exitValue();
-            fail("Process should have been excluded from the killing");
-        } catch (IllegalThreadStateException e) {
-            // Means the process is still running
-        }
+        extractedMethod9401(); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod9401() { // CAP AL
+        try { // CAP AL
+            process.exitValue(); // CAP AL
+            fail("Process should have been excluded from the killing"); // CAP AL
+        } catch (IllegalThreadStateException e) { // CAP AL
+            // Means the process is still running // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @TestExtension({"considersKillingVetos", "considersKillingVetosOnSlave"})
     public static class VetoAllKilling extends ProcessKillingVeto {

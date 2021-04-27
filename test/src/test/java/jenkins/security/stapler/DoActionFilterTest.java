@@ -305,9 +305,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     @Test
     public void testAnnotatedMethodOk_annotatedPost() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedPost/"));
-        settings.setHttpMethod(HttpMethod.POST);
-        settings.setRequestBody("");
-        assertReachableWithSettings(settings);
+        extractedMethod36120(settings); // CAP AL
     }
     
     @Test
@@ -326,10 +324,14 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     @Test
     public void testAnnotatedMethodOk_annotatedRequirePost() throws Exception {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedRequirePost/"));
-        settings.setHttpMethod(HttpMethod.POST);
-        settings.setRequestBody("");
-        assertReachableWithSettings(settings);
+        extractedMethod36120(settings); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod36120(final WebRequest settings) throws IOException { // CAP AL
+        settings.setHttpMethod(HttpMethod.POST); // CAP AL
+        settings.setRequestBody(""); // CAP AL
+        assertReachableWithSettings(settings); // CAP AL
+    } // CAP AL
     
     @Test
     public void testAnnotatedMethodOk_annotatedJavaScriptScriptMethod() throws Exception {
