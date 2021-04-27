@@ -56,9 +56,7 @@ public class ArgumentListBuilderTest {
     public void assertLastArgumentIsMasked() {
         ArgumentListBuilder builder = getBuilder56881(); // CAP AL
 
-        assertTrue("There should be masked arguments", builder.hasMaskedArguments());
-        boolean[] array = builder.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
+        boolean[] array = getArray55916(builder); // CAP AL
         assertThat("The mask array was incorrect", array, is(new boolean[] { false, true }));
     }
 
@@ -68,9 +66,7 @@ public class ArgumentListBuilderTest {
         builder.add("non masked arg");
         builder.addMasked("ismasked2");
 
-        assertTrue("There should be masked arguments", builder.hasMaskedArguments());
-        boolean[] array = builder.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
+        boolean[] array = getArray55916(builder); // CAP AL
         assertThat("The mask array was incorrect", array, is(new boolean[] { false, true, false, true }));
     }
  // CAP AL
@@ -88,9 +84,7 @@ public class ArgumentListBuilderTest {
         builder.add("arg");
         builder.prepend("first", "second");
 
-        assertTrue("There should be masked arguments", builder.hasMaskedArguments());
-        boolean[] array = builder.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
+        boolean[] array = getArray55916(builder); // CAP AL
         assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, true, false }));
     }
 
@@ -101,9 +95,7 @@ public class ArgumentListBuilderTest {
         builder.addMasked("ismasked");
         builder.add("arg");
 
-        assertTrue("There should be masked arguments", builder.hasMaskedArguments());
-        boolean[] array = builder.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
+        boolean[] array = getArray55916(builder); // CAP AL
         assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, true, false }));
     }
 
@@ -164,9 +156,7 @@ public class ArgumentListBuilderTest {
         builder.add("arg2");
 
         ArgumentListBuilder clone = builder.clone();
-        assertTrue("There should be masked arguments", clone.hasMaskedArguments());
-        boolean[] array = clone.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
+        boolean[] array = getArray55916(clone); // CAP AL
         assertThat("The mask array was incorrect", array, is(builder.toMaskArray()));
     }
     
@@ -185,12 +175,17 @@ public class ArgumentListBuilderTest {
         ArgumentListBuilder builder = new ArgumentListBuilder();
         builder.addKeyValuePairs(null, KEY_VALUES, MASKS);
 
-        assertTrue("There should be masked arguments", builder.hasMaskedArguments());
-        boolean[] array = builder.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
+        boolean[] array = getArray55916(builder); // CAP AL
         assertThat("The mask array was incorrect", array, is(new boolean[] { false, true, false }));
 
     }
+ // CAP AL
+    private boolean[] getArray55916(final ArgumentListBuilder builder) { // CAP AL
+        assertTrue("There should be masked arguments", builder.hasMaskedArguments()); // CAP AL
+        boolean[] array = builder.toMaskArray(); // CAP AL
+        assertNotNull("The mask array should not be null", array); // CAP AL
+        return array; // CAP AL
+    } // CAP AL
 
     @Test
     public void assertKeyValuePairs() {
