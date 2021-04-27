@@ -313,17 +313,7 @@ public class MissingClassTelemetryFasterTest {
 
         } catch (Exception e) {
             // Look for anything to report
-            MissingClassTelemetry.reportExceptionInside(e);
-
-            // Get the events gathered
-            MissingClassEvents events = MissingClassTelemetry.getEvents();
-            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean();
-
-            // One event gathered
-            assertEquals(1, eventsGathered.size());
-
-            // the circular reference has been recorded in the log
-            assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE)));
+            extractedMethod99967(e); // CAP AL
         }
     }
 
@@ -356,19 +346,23 @@ public class MissingClassTelemetryFasterTest {
 
         } catch (Exception e) {
             // Look for anything to report
-            MissingClassTelemetry.reportExceptionInside(e);
-
-            // Get the events gathered
-            MissingClassEvents events = MissingClassTelemetry.getEvents();
-            ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean();
-
-            // One event gathered
-            assertEquals(1, eventsGathered.size());
-
-            // the circular reference has been recorded in the log
-            assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE)));
+            extractedMethod99967(e); // CAP AL
         }
     }
+ // CAP AL
+    private void extractedMethod99967(final Exception e) { // CAP AL
+        MissingClassTelemetry.reportExceptionInside(e); // CAP AL
+         // CAP AL
+        // Get the events gathered // CAP AL
+        MissingClassEvents events = MissingClassTelemetry.getEvents(); // CAP AL
+        ConcurrentHashMap<List<StackTraceElement>, MissingClassEvent> eventsGathered = events.getEventsAndClean(); // CAP AL
+         // CAP AL
+        // One event gathered // CAP AL
+        assertEquals(1, eventsGathered.size()); // CAP AL
+         // CAP AL
+        // the circular reference has been recorded in the log // CAP AL
+        assertThat(logging, LoggerRule.recorded(containsString(MissingClassTelemetry.CIRCULAR_REFERENCE))); // CAP AL
+    } // CAP AL
 
     @Test
     public void nothingGatheredWhenTelemetryDisabled() {
