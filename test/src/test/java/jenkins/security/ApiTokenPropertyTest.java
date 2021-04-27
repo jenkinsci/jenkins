@@ -302,11 +302,7 @@ public class ApiTokenPropertyTest {
     @Issue("JENKINS-32776")
     public void legacyTokenChange() throws Exception {
         j.jenkins.setCrumbIssuer(null);
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
         
         User user = User.getById("user", true);
         WebClient wc = j.createWebClient();
@@ -528,10 +524,7 @@ public class ApiTokenPropertyTest {
     @Test
     @Issue("JENKINS-57484")
     public void script_revokeAllTokens() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
 
         User user = User.getById("user", true);
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
@@ -559,10 +552,7 @@ public class ApiTokenPropertyTest {
     @Test
     @Issue("JENKINS-57484")
     public void script_revokeAllTokensExceptOne() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
 
         User user = User.getById("user", true);
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
@@ -599,10 +589,7 @@ public class ApiTokenPropertyTest {
     @Test
     @Issue("JENKINS-57484")
     public void script_revokeToken() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setTokenGenerationOnCreationEnabled(true);
+        ApiTokenPropertyConfiguration config = getConfig34623(); // CAP AL
 
         User user = User.getById("user", true);
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
@@ -636,6 +623,15 @@ public class ApiTokenPropertyTest {
         checkTokenIsWorking(user.getId(), token2.plainValue);
         checkTokenIsNotWorking(user.getId(), token3.plainValue);
     }
+ // CAP AL
+    private ApiTokenPropertyConfiguration getConfig34623() { // CAP AL
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm()); // CAP AL
+         // CAP AL
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get(); // CAP AL
+         // CAP AL
+        config.setTokenGenerationOnCreationEnabled(true); // CAP AL
+        return config; // CAP AL
+    } // CAP AL
 
     private void checkTokenIsWorking(String login, String token) throws Exception {
         WebClient wc = j.createWebClient()
