@@ -124,10 +124,7 @@ public class ProjectTest {
     
     @Test
     public void testOnCreateFromScratch() throws Exception{
-        FreeStyleProject p = j.createFreeStyleProject("project");
-        j.buildAndAssertSuccess(p);
-        p.removeRun(p.getLastBuild());
-        createAction = true;
+        FreeStyleProject p = getP17541(); // CAP AL
         p.onCreatedFromScratch();
         assertNotNull("Project should have last build.", p.getLastBuild());
         assertNotNull("Project should have transient action TransientAction.", p.getAction(TransientAction.class));
@@ -136,16 +133,21 @@ public class ProjectTest {
     
     @Test
     public void testOnLoad() throws Exception{
-        FreeStyleProject p = j.createFreeStyleProject("project");
-        j.buildAndAssertSuccess(p);
-        p.removeRun(p.getLastBuild());
-        createAction = true;
+        FreeStyleProject p = getP17541(); // CAP AL
         p.onLoad(j.jenkins, "project");
         assertNotNull("Project should have a build.", p.getLastBuild());
         assertNotNull("Project should have a scm.", p.getScm());
         assertNotNull("Project should have Transient Action TransientAction.", p.getAction(TransientAction.class));
         createAction = false;
     }
+ // CAP AL
+    private FreeStyleProject getP17541() throws Exception { // CAP AL
+        FreeStyleProject p = j.createFreeStyleProject("project"); // CAP AL
+        j.buildAndAssertSuccess(p); // CAP AL
+        p.removeRun(p.getLastBuild()); // CAP AL
+        createAction = true; // CAP AL
+        return p; // CAP AL
+    } // CAP AL
     
     @Test
     public void testGetEnvironment() throws Exception{
