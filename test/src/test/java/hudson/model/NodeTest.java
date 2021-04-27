@@ -307,9 +307,7 @@ public class NodeTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(new LabelExpression.Or(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
 
-        TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        assertThatCloudLabelContains(cloud, "label1", 0);
-        assertThatCloudLabelContains(cloud, "label2", 0);
+        TagCloud<LabelAtom> cloud = getN1LabelCloud73621(node); // CAP AL
     }
 
     @Issue("JENKINS-26391")
@@ -321,9 +319,7 @@ public class NodeTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(new LabelExpression.And(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
 
-        TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        assertThatCloudLabelContains(cloud, "label1", 0);
-        assertThatCloudLabelContains(cloud, "label2", 0);
+        TagCloud<LabelAtom> cloud = getN1LabelCloud73621(node); // CAP AL
     }
 
     @Issue("JENKINS-26391")
@@ -343,9 +339,7 @@ public class NodeTest {
         p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
 
         // Node 1 should not be tied to any labels
-        TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();
-        assertThatCloudLabelContains(n1LabelCloud, "label1", 0);
-        assertThatCloudLabelContains(n1LabelCloud, "label2", 0);
+        TagCloud<LabelAtom> n1LabelCloud = getN1LabelCloud73621(n1); // CAP AL
         assertThatCloudLabelContains(n1LabelCloud, "label3", 0);
 
         // Node 2 should not be tied to any labels
@@ -361,6 +355,13 @@ public class NodeTest {
         TagCloud<LabelAtom> n4LabelCloud = n1.getLabelCloud();
         assertThatCloudLabelContains(n4LabelCloud, "label1", 0);
     }
+ // CAP AL
+    private TagCloud<LabelAtom> getN1LabelCloud73621(final Node node) { // CAP AL
+        TagCloud<LabelAtom> cloud = node.getLabelCloud(); // CAP AL
+        assertThatCloudLabelContains(cloud, "label1", 0); // CAP AL
+        assertThatCloudLabelContains(cloud, "label2", 0); // CAP AL
+        return cloud; // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-26391")
     @Test
