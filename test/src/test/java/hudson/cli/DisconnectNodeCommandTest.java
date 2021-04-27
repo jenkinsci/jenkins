@@ -96,10 +96,7 @@ public class DisconnectNodeCommandTest {
         assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
 
-        slave.toComputer().connect(true);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        extractedMethod45191(slave); // CAP AL
 
         result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -133,10 +130,7 @@ public class DisconnectNodeCommandTest {
         assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
 
-        slave.toComputer().connect(true);
-        slave.toComputer().waitUntilOnline();
-        assertThat(slave.toComputer().isOnline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
+        extractedMethod45191(slave); // CAP AL
 
         result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -154,6 +148,13 @@ public class DisconnectNodeCommandTest {
         assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("yetAnotherCause"));
     }
+ // CAP AL
+    private void extractedMethod45191(final DumbSlave slave) throws InterruptedException { // CAP AL
+        slave.toComputer().connect(true); // CAP AL
+        slave.toComputer().waitUntilOnline(); // CAP AL
+        assertThat(slave.toComputer().isOnline(), equalTo(true)); // CAP AL
+        assertThat(slave.toComputer().getOfflineCause(), equalTo(null)); // CAP AL
+    } // CAP AL
 
     @Test
     public void disconnectNodeManyShouldSucceed() throws Exception {
