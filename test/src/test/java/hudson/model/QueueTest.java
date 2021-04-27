@@ -172,17 +172,7 @@ public class QueueTest {
         Queue q = r.jenkins.getQueue();
 
         // prevent execution to push stuff into the queue
-        r.jenkins.setNumExecutors(0);
-
-        FreeStyleProject testProject = r.createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserIdCause());
-        q.save();
-
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
-
-        assertEquals(1, q.getItems().length);
-        q.clear();
-        assertEquals(0,q.getItems().length);
+        FreeStyleProject testProject = getTestProject18140(q); // CAP AL
 
         // load the contents back
         q.load();
@@ -220,17 +210,7 @@ public class QueueTest {
         assertEquals(0, Queue.WaitingItem.getCurrentCounterValue());
 
         // prevent execution to push stuff into the queue
-        r.jenkins.setNumExecutors(0);
-
-        FreeStyleProject testProject = r.createFreeStyleProject("test");
-        testProject.scheduleBuild(new UserIdCause());
-        q.save();
-
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
-
-        assertEquals(1, q.getItems().length);
-        q.clear();
-        assertEquals(0,q.getItems().length);
+        FreeStyleProject testProject = getTestProject18140(q); // CAP AL
 
         // delete the project before loading the queue back
         testProject.delete();
@@ -240,6 +220,21 @@ public class QueueTest {
         // The counter state should be maintained.
         assertEquals(1, Queue.WaitingItem.getCurrentCounterValue());
     }
+ // CAP AL
+    private FreeStyleProject getTestProject18140(final Queue q) throws IOException { // CAP AL
+        r.jenkins.setNumExecutors(0); // CAP AL
+         // CAP AL
+        FreeStyleProject testProject = r.createFreeStyleProject("test"); // CAP AL
+        testProject.scheduleBuild(new UserIdCause()); // CAP AL
+        q.save(); // CAP AL
+         // CAP AL
+        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml"))); // CAP AL
+         // CAP AL
+        assertEquals(1, q.getItems().length); // CAP AL
+        q.clear(); // CAP AL
+        assertEquals(0,q.getItems().length); // CAP AL
+        return testProject; // CAP AL
+    } // CAP AL
 
     /**
      * Forces a reset of the private queue COUNTER.
