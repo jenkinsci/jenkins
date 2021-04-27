@@ -155,9 +155,7 @@ public class SimpleBuildWrapperTest {
     @Test public void disposer() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new WrapperWithDisposer());
-        FreeStyleBuild b = r.buildAndAssertSuccess(p);
-        r.assertLogContains("ran DisposerImpl #1", b);
-        r.assertLogNotContains("ran DisposerImpl #2", b);
+        extractedMethod69918(p); // CAP AL
     }
     public static class WrapperWithDisposer extends SimpleBuildWrapper {
         @Override public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -180,10 +178,14 @@ public class SimpleBuildWrapperTest {
     @Test public void disposerForPreCheckoutWrapper() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildWrappersList().add(new PreCheckoutWrapperWithDisposer());
-        FreeStyleBuild b = r.buildAndAssertSuccess(p);
-        r.assertLogContains("ran DisposerImpl #1", b);
-        r.assertLogNotContains("ran DisposerImpl #2", b);
+        extractedMethod69918(p); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod69918(final FreeStyleProject p) throws Exception { // CAP AL
+        FreeStyleBuild b = r.buildAndAssertSuccess(p); // CAP AL
+        r.assertLogContains("ran DisposerImpl #1", b); // CAP AL
+        r.assertLogNotContains("ran DisposerImpl #2", b); // CAP AL
+    } // CAP AL
     @Issue("JENKINS-43889")
     @Test public void disposerForPreCheckoutWrapperWithScmError() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
