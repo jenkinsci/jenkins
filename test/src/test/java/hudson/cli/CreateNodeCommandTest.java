@@ -96,9 +96,7 @@ public class CreateNodeCommandTest {
 
         assertThat("A slave with original name should not exist", j.jenkins.getNode("SlaveFromXml"), nullValue());
 
-        final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
-        assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
-        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        extractedMethod99695(); // CAP AL
     }
 
     @Test public void createNodeSpecifyingDifferentNameExplicitly() throws Exception {
@@ -115,10 +113,14 @@ public class CreateNodeCommandTest {
 
         assertThat("A slave with original name should be left untouched", j.jenkins.getNode("SlaveFromXml"), equalTo(originalSlave));
 
-        final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName");
-        assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName"));
-        assertThat(updatedSlave.getNumExecutors(), equalTo(42));
+        extractedMethod99695(); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod99695() { // CAP AL
+        final Slave updatedSlave = (Slave) j.jenkins.getNode("CustomSlaveName"); // CAP AL
+        assertThat(updatedSlave.getNodeName(), equalTo("CustomSlaveName")); // CAP AL
+        assertThat(updatedSlave.getNumExecutors(), equalTo(42)); // CAP AL
+    } // CAP AL
 
     @Test public void createNodeShouldFailIfNodeAlreadyExist() throws Exception {
 
