@@ -1,5 +1,6 @@
 package hudson.model;
 
+import java.util.concurrent.ExecutionException; // CAP AL
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -156,16 +157,7 @@ public class ParametersTest {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"));
-        project.addProperty(pdb);
-
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
-
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
-
-        assertNotNull(sensitiveVars);
-        assertFalse(sensitiveVars.contains("string"));
+        Set<String> sensitiveVars = getSensitiveVars40931(project, pdb); // CAP AL
     }
 
     @Test
@@ -176,19 +168,24 @@ public class ParametersTest {
                 new PasswordParameterDefinition("password", "12345", "password description"),
                 new StringParameterDefinition("string2", "Value2", "string description")
         );
-        project.addProperty(pdb);
-
-        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder();
-        project.getBuildersList().add(builder);
-
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Set<String> sensitiveVars = build.getSensitiveBuildVariables();
-
-        assertNotNull(sensitiveVars);
-        assertFalse(sensitiveVars.contains("string"));
+        Set<String> sensitiveVars = getSensitiveVars40931(project, pdb); // CAP AL
         assertTrue(sensitiveVars.contains("password"));
         assertFalse(sensitiveVars.contains("string2"));
     }
+ // CAP AL
+    private Set<String> getSensitiveVars40931(final FreeStyleProject project, final ParametersDefinitionProperty pdb) throws ExecutionException, IOException, InterruptedException { // CAP AL
+        project.addProperty(pdb); // CAP AL
+         // CAP AL
+        CaptureEnvironmentBuilder builder = new CaptureEnvironmentBuilder(); // CAP AL
+        project.getBuildersList().add(builder); // CAP AL
+         // CAP AL
+        FreeStyleBuild build = project.scheduleBuild2(0).get(); // CAP AL
+        Set<String> sensitiveVars = build.getSensitiveBuildVariables(); // CAP AL
+         // CAP AL
+        assertNotNull(sensitiveVars); // CAP AL
+        assertFalse(sensitiveVars.contains("string")); // CAP AL
+        return sensitiveVars; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-3539")
