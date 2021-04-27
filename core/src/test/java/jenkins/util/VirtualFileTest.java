@@ -218,12 +218,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFile(root);
-        Collection<String> children = virtualRoot.list("**", null, true, true);
-        assertThat(children, containsInAnyOrder(
-                "a/aa/aa.txt",
-                "a/ab/ab.txt",
-                "b/ba/ba.txt"
-        ));
+        extractedMethod78807(virtualRoot); // CAP AL
     }
 
     @Test
@@ -233,13 +228,17 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
-        Collection<String> children = virtualRoot.list("**", null, true, true);
-        assertThat(children, containsInAnyOrder(
-                "a/aa/aa.txt",
-                "a/ab/ab.txt",
-                "b/ba/ba.txt"
-        ));
+        extractedMethod78807(virtualRoot); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod78807(final VirtualFile virtualRoot) throws IOException { // CAP AL
+        Collection<String> children = virtualRoot.list("**", null, true, true); // CAP AL
+        assertThat(children, containsInAnyOrder( // CAP AL
+                "a/aa/aa.txt", // CAP AL
+                "a/ab/ab.txt", // CAP AL
+                "b/ba/ba.txt" // CAP AL
+        )); // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1452")
