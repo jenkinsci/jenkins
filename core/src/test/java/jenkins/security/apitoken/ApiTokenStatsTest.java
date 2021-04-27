@@ -92,10 +92,7 @@ public class ApiTokenStatsTest {
             ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             assertNotNull(tokenStats);
             
-            ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(ID_1);
-            assertEquals(0, stats.getUseCounter());
-            assertNull(stats.getLastUseDate());
-            assertEquals(0L, stats.getNumDaysUse());
+            extractedMethod12978(tokenStats, ID_1); // CAP AL
         }
         
         Date lastUsage;
@@ -130,10 +127,7 @@ public class ApiTokenStatsTest {
             ApiTokenStats tokenStats = createFromFile(tmp.getRoot());
             
             {
-                ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(ID_2);
-                assertEquals(0, stats.getUseCounter());
-                assertNull(stats.getLastUseDate());
-                assertEquals(0L, stats.getNumDaysUse());
+                extractedMethod12978(tokenStats, ID_2); // CAP AL
             }
             {
                 ApiTokenStats.SingleTokenStats stats = tokenStats.updateUsageForId(ID_2);
@@ -163,6 +157,13 @@ public class ApiTokenStatsTest {
             assertEquals(1, stats_2.getUseCounter());
         }
     }
+ // CAP AL
+    private void extractedMethod12978(final ApiTokenStats tokenStats, final String ID_2) { // CAP AL
+        ApiTokenStats.SingleTokenStats stats = tokenStats.findTokenStatsById(ID_2); // CAP AL
+        assertEquals(0, stats.getUseCounter()); // CAP AL
+        assertNull(stats.getLastUseDate()); // CAP AL
+        assertEquals(0L, stats.getNumDaysUse()); // CAP AL
+    } // CAP AL
     
     @Test
     public void testResilientIfFileDoesNotExist() {
