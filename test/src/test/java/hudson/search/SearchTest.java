@@ -289,17 +289,7 @@ public class SearchTest {
 
         assertEquals(2, jsonArray.size());
 
-        boolean foundDisplayName = false;
-        for(Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject)suggestion;
-
-            String name = (String)jsonSuggestion.get("name");
-            if(projectName1.equals(name)) {
-                foundDisplayName = true;
-            }
-        }
-
-        assertTrue(foundDisplayName);
+        extractedMethod78408(jsonArray, projectName1); // CAP AL
     }
 
     @Issue("JENKINS-24433")
@@ -332,19 +322,23 @@ public class SearchTest {
 
         assertEquals(1, jsonArray.size());
 
-        boolean foundDisplayName = false;
-        for(Object suggestion : jsonArray) {
-            JSONObject jsonSuggestion = (JSONObject)suggestion;
-
-            String name = (String)jsonSuggestion.get("name");
-
-            if(displayName2.equals(name)) {
-                foundDisplayName = true;
-            }
-        }
-
-        assertTrue(foundDisplayName);
+        extractedMethod78408(jsonArray, displayName2); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod78408(final JSONArray jsonArray, final String displayName2) { // CAP AL
+        boolean foundDisplayName = false; // CAP AL
+        for(Object suggestion : jsonArray) { // CAP AL
+            JSONObject jsonSuggestion = (JSONObject)suggestion; // CAP AL
+         // CAP AL
+            String name = (String)jsonSuggestion.get("name"); // CAP AL
+         // CAP AL
+            if(displayName2.equals(name)) { // CAP AL
+                foundDisplayName = true; // CAP AL
+            } // CAP AL
+        } // CAP AL
+         // CAP AL
+        assertTrue(foundDisplayName); // CAP AL
+    } // CAP AL
 
     /**
      * Disable/enable status shouldn't affect the search
