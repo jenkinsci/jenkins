@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import java.io.IOException; // CAP AL
+import javax.servlet.ServletException; // CAP AL
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -123,10 +125,7 @@ public class NodeTest {
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
-        assertEquals(root, cause.getUser());
-
-        computer.doToggleOffline(null);
-        assertNull(computer.getOfflineCause());
+        extractedMethod76930(root, cause, computer); // CAP AL
     }
 
     @Test
@@ -149,11 +148,15 @@ public class NodeTest {
         }
         cause = (UserCause) computer.getOfflineCause();
         assertThat(cause.toString(), endsWith("Disconnected by root@localhost : new message"));
-        assertEquals(root, cause.getUser());
-
-        computer.doToggleOffline(null);
-        assertNull(computer.getOfflineCause());
+        extractedMethod76930(root, cause, computer); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod76930(final User root, final OfflineCause.UserCause cause, final Computer computer) throws IOException, ServletException { // CAP AL
+        assertEquals(root, cause.getUser()); // CAP AL
+         // CAP AL
+        computer.doToggleOffline(null); // CAP AL
+        assertNull(computer.getOfflineCause()); // CAP AL
+    } // CAP AL
 
     @Test
     public void testGetLabelCloud() throws Exception {
