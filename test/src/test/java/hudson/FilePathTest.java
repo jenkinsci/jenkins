@@ -24,6 +24,7 @@
 
 package hudson;
 
+import java.lang.reflect.InvocationTargetException; // CAP AL
 import hudson.model.Node;
 import org.apache.tools.ant.DirectoryScanner;
 import static org.hamcrest.Matchers.*;
@@ -165,23 +166,7 @@ public class FilePathTest {
         assumeTrue(Functions.isWindows());
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         File targetLocation = new File(r.jenkins.getRootDir(), "unzip-target");
-        FilePath targetLocationFP = r.jenkins.getRootPath().child("unzip-target");
-
-        FilePath simple1 = targetLocationFP.child("simple1.txt");
-        FilePath simple2 = targetLocationFP.child("child").child("simple2.txt");
-
-        assertThat(simple1.exists(), is(false));
-        assertThat(simple2.exists(), is(false));
-
-        Method unzipPrivateMethod;
-        unzipPrivateMethod = FilePath.class.getDeclaredMethod("unzip", File.class, File.class);
-        unzipPrivateMethod.setAccessible(true);
-
-        FilePath fp = new FilePath(new File("."));
-        unzipPrivateMethod.invoke(fp, targetLocation, zipFile);
-
-        assertThat(simple1.exists(), is(true));
-        assertThat(simple2.exists(), is(true));
+        extractedMethod78623(targetLocation, zipFile); // CAP AL
     }
 
     @Test
@@ -192,22 +177,26 @@ public class FilePathTest {
         File zipFile = new File(r.jenkins.getRootDir(), "zip-with-folder.zip");
         // the main difference is here, the ./
         File targetLocation = new File(r.jenkins.getRootDir(), "./unzip-target");
-        FilePath targetLocationFP = r.jenkins.getRootPath().child("unzip-target");
-
-        FilePath simple1 = targetLocationFP.child("simple1.txt");
-        FilePath simple2 = targetLocationFP.child("child").child("simple2.txt");
-
-        assertThat(simple1.exists(), is(false));
-        assertThat(simple2.exists(), is(false));
-
-        Method unzipPrivateMethod;
-        unzipPrivateMethod = FilePath.class.getDeclaredMethod("unzip", File.class, File.class);
-        unzipPrivateMethod.setAccessible(true);
-
-        FilePath fp = new FilePath(new File("."));
-        unzipPrivateMethod.invoke(fp, targetLocation, zipFile);
-
-        assertThat(simple1.exists(), is(true));
-        assertThat(simple2.exists(), is(true));
+        extractedMethod78623(targetLocation, zipFile); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod78623(final File targetLocation, final File zipFile) throws IOException, IllegalAccessException, InterruptedException, InvocationTargetException, NoSuchMethodException { // CAP AL
+        FilePath targetLocationFP = r.jenkins.getRootPath().child("unzip-target"); // CAP AL
+         // CAP AL
+        FilePath simple1 = targetLocationFP.child("simple1.txt"); // CAP AL
+        FilePath simple2 = targetLocationFP.child("child").child("simple2.txt"); // CAP AL
+         // CAP AL
+        assertThat(simple1.exists(), is(false)); // CAP AL
+        assertThat(simple2.exists(), is(false)); // CAP AL
+         // CAP AL
+        Method unzipPrivateMethod; // CAP AL
+        unzipPrivateMethod = FilePath.class.getDeclaredMethod("unzip", File.class, File.class); // CAP AL
+        unzipPrivateMethod.setAccessible(true); // CAP AL
+         // CAP AL
+        FilePath fp = new FilePath(new File(".")); // CAP AL
+        unzipPrivateMethod.invoke(fp, targetLocation, zipFile); // CAP AL
+         // CAP AL
+        assertThat(simple1.exists(), is(true)); // CAP AL
+        assertThat(simple2.exists(), is(true)); // CAP AL
+    } // CAP AL
 }
