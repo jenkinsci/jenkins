@@ -315,11 +315,7 @@ public class PluginManagerTest {
         assertEquals("depender", callDependerValue());
         
         // before load dependee, of course failed to list extensions for dependee.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        extractedMethod82732(); // CAP AL
         // Extension extending a dependee class can't be loaded either
         try {
             r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.depender.DependerExtension");
@@ -387,12 +383,16 @@ public class PluginManagerTest {
         }
 
         // dependee is not loaded so we cannot list any extension for it.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException ex ){
-        }
+        extractedMethod82732(); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod82732() { // CAP AL
+        try { // CAP AL
+            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint"); // CAP AL
+            fail(); // CAP AL
+        } catch( ClassNotFoundException ex ){ // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Issue("JENKINS-21486")
     @Test public void installPluginWithDisabledDependencyFails() throws Exception {
