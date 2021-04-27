@@ -204,15 +204,7 @@ public class ConsoleCommandTest {
             project.getBuildersList().add(new Shell("echo start - ${BUILD_NUMBER}\nsleep 10s\n"
                     + "echo after sleep - ${BUILD_NUMBER}"));
         }
-        if (!project.scheduleBuild(0)) {
-            fail("Job wasn't scheduled properly");
-        }
-
-        // Wait until project is started (at least 1s)
-        while(!project.isBuilding()) {
-            System.out.println("Waiting for build to start and sleep 1s...");
-            Thread.sleep(1000);
-        }
+        extractedMethod39359(project); // CAP AL
 
         // Wait for the first message
         if(!project.getBuildByNumber(1).getLog().contains("start - 1")) {
@@ -277,15 +269,7 @@ public class ConsoleCommandTest {
                     + "echo 6\necho 7\necho 8\necho 9"));
         }
 
-        if (!project.scheduleBuild(0)) {
-            fail("Job wasn't scheduled properly");
-        }
-
-        // Wait until project is started (at least 1s)
-        while(!project.isBuilding()) {
-            System.out.println("Waiting for build to start and sleep 1s...");
-            Thread.sleep(1000);
-        }
+        extractedMethod39359(project); // CAP AL
 
         // Wait for the first sleep
         if(!project.getBuildByNumber(1).getLog().contains("echo 5")) {
@@ -309,6 +293,18 @@ public class ConsoleCommandTest {
         assertThat(project.getBuildByNumber(1).getResult(), equalTo(Result.SUCCESS));
         assertThat(project.getBuildByNumber(1).getLog(), containsString("echo 9"));
     }
+ // CAP AL
+    private void extractedMethod39359(final FreeStyleProject project) throws InterruptedException { // CAP AL
+        if (!project.scheduleBuild(0)) { // CAP AL
+            fail("Job wasn't scheduled properly"); // CAP AL
+        } // CAP AL
+         // CAP AL
+        // Wait until project is started (at least 1s) // CAP AL
+        while(!project.isBuilding()) { // CAP AL
+            System.out.println("Waiting for build to start and sleep 1s..."); // CAP AL
+            Thread.sleep(1000); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test public void consoleShouldFailIfTheBuildIsStuckInTheQueue() throws Exception {
 
