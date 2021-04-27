@@ -1101,12 +1101,7 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFile(ws).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(link); // CAP AL
     }
 
     @Test
@@ -1120,12 +1115,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         File childThroughSymlink = new File(tmp.getRoot(), "/" + symlinkName + "/" + childString);
         VirtualFile child = rootVirtualFile.child(symlinkName).child(childString);
-        try {
-        child.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(child); // CAP AL
     }
 
     @Test
@@ -1138,12 +1128,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(new FilePath(tmp.getRoot()));
         VirtualFile childVirtualPath = rootVirtualPath.child(symlinkName).child(childString);
-        try {
-            childVirtualPath.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(childVirtualPath); // CAP AL
     }
 
     @Test
@@ -1156,13 +1141,17 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFilePath(new FilePath(ws)).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        extractedMethod70308(link); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod70308(final VirtualFile childVirtualPath) { // CAP AL
+        try { // CAP AL
+            childVirtualPath.open(true); // CAP AL
+            fail("Should have not followed links."); // CAP AL
+        } catch (IOException ioe) { // CAP AL
+            // expected // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test
     public void testSupportIsDescendant_FileVF() throws Exception {
