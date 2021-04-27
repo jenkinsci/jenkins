@@ -24,6 +24,8 @@
 
 package jenkins.security.stapler;
 
+import java.io.IOException; // CAP AL
+import org.xml.sax.SAXException; // CAP AL
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.UnprotectedRootAction;
 import org.junit.Before;
@@ -86,38 +88,33 @@ public class StaplerDispatchValidatorTest {
     @Test
     public void canViewIndex() throws Exception {
         String[] urls = {"annotated", "groovy", "jelly"};
-        for (String url : urls) {
-            HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
-        }
+        extractedMethod18841(urls); // CAP AL
     }
 
     @Test
     public void canViewPagesThatIncludeViews() throws Exception {
         String[] urls = {"groovy/include", "jelly/include"};
-        for (String url : urls) {
-            HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
-        }
+        extractedMethod18841(urls); // CAP AL
     }
 
     @Test
     public void canViewPagesThatRedirectToViews() throws Exception {
         String[] urls = {"groovy/redirect", "jelly/redirect"};
-        for (String url : urls) {
-            HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
-        }
+        extractedMethod18841(urls); // CAP AL
     }
 
     @Test
     public void canViewCompressedViews() throws Exception {
         String[] urls = {"groovy/compress", "jelly/compress"};
-        for (String url : urls) {
-            HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
-        }
+        extractedMethod18841(urls); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod18841(final String[] urls) throws IOException, SAXException { // CAP AL
+        for (String url : urls) { // CAP AL
+            HtmlPage root = j.createWebClient().goTo(url); // CAP AL
+            assertEquals("Fragment", root.getElementById("frag").asText()); // CAP AL
+        } // CAP AL
+    } // CAP AL
 
     @Test
     public void cannotViewFragment() throws Exception {
