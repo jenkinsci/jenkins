@@ -196,10 +196,7 @@ public class FingerprinterTest {
         Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
-        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
-
-        assertEquals(0, upstreamProjects.size());
-        assertEquals(0, downstreamProjects.size());
+        extractedMethod7047(upstream, upstreamProjects); // CAP AL
     }
 
     @Test public void circularDependency() throws Exception {
@@ -211,11 +208,15 @@ public class FingerprinterTest {
         Jenkins.get().rebuildDependencyGraph();
 
         List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
-        List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
-        
-        assertEquals(0, upstreamProjects.size());
-        assertEquals(0, downstreamProjects.size());
+        extractedMethod7047(p, upstreamProjects); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod7047(final FreeStyleProject p, final List<AbstractProject> upstreamProjects) { // CAP AL
+        List<AbstractProject> downstreamProjects = p.getDownstreamProjects(); // CAP AL
+         // CAP AL
+        assertEquals(0, upstreamProjects.size()); // CAP AL
+        assertEquals(0, downstreamProjects.size()); // CAP AL
+    } // CAP AL
     
     @Test public void matrixDependency() throws Exception {
         MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "p");
