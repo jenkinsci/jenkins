@@ -214,9 +214,7 @@ public class PathRemoverTest {
         remover.forceRemoveDirectoryContents(dir.toPath());
 
         assertTrue(dir.exists());
-        assertFalse(d1.exists());
-        assertFalse(d2.exists());
-        assertFalse(f1.exists());
+        extractedMethod27567(d1, d2, f1); // CAP AL
     }
 
     @Test
@@ -234,9 +232,7 @@ public class PathRemoverTest {
         PathRemover remover = PathRemover.newRemoverWithStrategy(retriesAttempted -> retriesAttempted < 1);
         Exception e = assertThrows(IOException.class, () -> remover.forceRemoveDirectoryContents(dir.toPath()));
         assertThat(e.getMessage(), allOf(containsString(dir.getPath()), containsString("Tried 1 time.")));
-        assertFalse(d2.exists());
-        assertFalse(f1.exists());
-        assertFalse(d2f2.exists());
+        extractedMethod27567(d2, f1, d2f2); // CAP AL
     }
 
     @Test
@@ -275,10 +271,14 @@ public class PathRemoverTest {
         assertTrue(dir.exists());
         assertTrue(d1.exists());
         assertTrue(d1f1.exists());
-        assertFalse(d2.exists());
-        assertFalse(d2f2.exists());
-        assertFalse(f1.exists());
+        extractedMethod27567(d2, d2f2, f1); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod27567(final File d2, final File f1, final File d2f2) { // CAP AL
+        assertFalse(d2.exists()); // CAP AL
+        assertFalse(f1.exists()); // CAP AL
+        assertFalse(d2f2.exists()); // CAP AL
+    } // CAP AL
 
     @Test
     public void testForceRemoveRecursive_RetryOnFailure() throws Exception {
