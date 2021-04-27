@@ -634,23 +634,7 @@ public class HudsonPrivateSecurityRealmTest {
         String initialSeed = alice.getProperty(UserSeedProperty.class).getSeed();
 
         WebClient wc = j.createWebClient();
-        WebClient wc_anotherTab = j.createWebClient();
-
-        wc.login(alice.getId());
-        assertUserConnected(wc, alice.getId());
-
-        wc_anotherTab.login(alice.getId());
-        assertUserConnected(wc_anotherTab, alice.getId());
-
-        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
-        HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
-        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
-
-        password1.setText("alice2");
-        password2.setText("alice2");
-
-        HtmlForm form = configurePage.getFormByName("config");
-        j.submit(form);
+        WebClient wc_anotherTab = getWc_anotherTab57642(wc, alice); // CAP AL
 
         assertUserNotConnected(wc, alice.getId());
         assertUserNotConnected(wc_anotherTab, alice.getId());
@@ -696,23 +680,7 @@ public class HudsonPrivateSecurityRealmTest {
             User alice = prepareRealmAndAlice();
 
             WebClient wc = j.createWebClient();
-            WebClient wc_anotherTab = j.createWebClient();
-
-            wc.login(alice.getId());
-            assertUserConnected(wc, alice.getId());
-
-            wc_anotherTab.login(alice.getId());
-            assertUserConnected(wc_anotherTab, alice.getId());
-
-            HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure");
-            HtmlPasswordInput password1 = configurePage.getElementByName("user.password");
-            HtmlPasswordInput password2 = configurePage.getElementByName("user.password2");
-
-            password1.setText("alice2");
-            password2.setText("alice2");
-
-            HtmlForm form = configurePage.getFormByName("config");
-            j.submit(form);
+            WebClient wc_anotherTab = getWc_anotherTab57642(wc, alice); // CAP AL
 
             assertUserConnected(wc, alice.getId());
             assertUserConnected(wc_anotherTab, alice.getId());
@@ -720,6 +688,27 @@ public class HudsonPrivateSecurityRealmTest {
             UserSeedProperty.DISABLE_USER_SEED = previousConfig;
         }
     }
+ // CAP AL
+    private WebClient getWc_anotherTab57642(final WebClient wc, final User alice) throws Exception { // CAP AL
+        WebClient wc_anotherTab = j.createWebClient(); // CAP AL
+         // CAP AL
+        wc.login(alice.getId()); // CAP AL
+        assertUserConnected(wc, alice.getId()); // CAP AL
+         // CAP AL
+        wc_anotherTab.login(alice.getId()); // CAP AL
+        assertUserConnected(wc_anotherTab, alice.getId()); // CAP AL
+         // CAP AL
+        HtmlPage configurePage = wc.goTo(alice.getUrl() + "/configure"); // CAP AL
+        HtmlPasswordInput password1 = configurePage.getElementByName("user.password"); // CAP AL
+        HtmlPasswordInput password2 = configurePage.getElementByName("user.password2"); // CAP AL
+         // CAP AL
+        password1.setText("alice2"); // CAP AL
+        password2.setText("alice2"); // CAP AL
+         // CAP AL
+        HtmlForm form = configurePage.getFormByName("config"); // CAP AL
+        j.submit(form); // CAP AL
+        return wc_anotherTab; // CAP AL
+    } // CAP AL
 
     private User prepareRealmAndAlice() throws Exception {
         j.jenkins.setDisableRememberMe(false);
