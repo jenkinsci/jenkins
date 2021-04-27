@@ -78,11 +78,7 @@ public class BuildStatusSummaryTest {
     @Test
     public void testFixed() {
         when(this.build.getResult()).thenReturn(Result.SUCCESS);
-        when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
-        
-        Summary summary = this.build.getBuildStatusSummary();
-        
-        assertFalse(summary.isWorse);
+        Summary summary = getSummary44525(); // CAP AL
         assertEquals(Messages.Run_Summary_BackToNormal(), summary.message);
         
         // same from unstable:
@@ -97,11 +93,7 @@ public class BuildStatusSummaryTest {
     @Test
     public void testFailure() {
         when(this.build.getResult()).thenReturn(Result.FAILURE);
-        when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
-        
-        Summary summary = this.build.getBuildStatusSummary();
-        
-        assertFalse(summary.isWorse);
+        Summary summary = getSummary44525(); // CAP AL
         assertEquals(Messages.Run_Summary_BrokenForALongTime(), summary.message);
     }
     
@@ -142,13 +134,18 @@ public class BuildStatusSummaryTest {
     @Test
     public void testUnstableAfterFailure() {
         when(this.build.getResult()).thenReturn(Result.UNSTABLE);
-        when(this.prevBuild.getResult()).thenReturn(Result.FAILURE);
-        
-        Summary summary = this.build.getBuildStatusSummary();
-        
-        assertFalse(summary.isWorse);
+        Summary summary = getSummary44525(); // CAP AL
         assertEquals(Messages.Run_Summary_Unstable(), summary.message);
     }
+ // CAP AL
+    private Summary getSummary44525() { // CAP AL
+        when(this.prevBuild.getResult()).thenReturn(Result.FAILURE); // CAP AL
+         // CAP AL
+        Summary summary = this.build.getBuildStatusSummary(); // CAP AL
+         // CAP AL
+        assertFalse(summary.isWorse); // CAP AL
+        return summary; // CAP AL
+    } // CAP AL
 
     @Test
     public void testNonTestRelatedUnstable() {
