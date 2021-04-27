@@ -49,10 +49,7 @@ public class ArgumentListBuilderTest {
         builder.add("arg");
         builder.add("other", "arguments");
 
-        assertFalse("There should not be any masked arguments", builder.hasMaskedArguments());
-        boolean[] array = builder.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
-        assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, false }));
+        extractedMethod71129(builder); // CAP AL
     }
 
     @Test
@@ -200,11 +197,15 @@ public class ArgumentListBuilderTest {
         ArgumentListBuilder builder = new ArgumentListBuilder();
         builder.addKeyValuePairs(null, KEY_VALUES);
 
-        assertFalse("There should not be any masked arguments", builder.hasMaskedArguments());
-        boolean[] array = builder.toMaskArray();
-        assertNotNull("The mask array should not be null", array);
-        assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, false }));
+        extractedMethod71129(builder); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod71129(final ArgumentListBuilder builder) { // CAP AL
+        assertFalse("There should not be any masked arguments", builder.hasMaskedArguments()); // CAP AL
+        boolean[] array = builder.toMaskArray(); // CAP AL
+        assertNotNull("The mask array should not be null", array); // CAP AL
+        assertThat("The mask array was incorrect", array, is(new boolean[] { false, false, false })); // CAP AL
+    } // CAP AL
 
     @Test
     public void addKeyValuePairsFromPropertyString() throws IOException {
