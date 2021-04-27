@@ -982,9 +982,7 @@ public class VirtualFileTest {
         String child = "child";
         File childFile = new File(parentFile, child);
         VirtualFile vf = VirtualFile.forFile(childFile);
-        URI uri = vf.toURI();
-        assertThat(uri.getScheme(), is("file"));
-        assertThat(uri.getPath(), endsWith(parentFolder + "/" + child));
+        extractedMethod12235(vf, parentFolder, child); // CAP AL
     }
 
     @Test
@@ -1216,10 +1214,14 @@ public class VirtualFileTest {
         String child = "child";
         File childFile = new File(parentFile, child);
         VirtualFile vf = VirtualFile.forFilePath(new FilePath(childFile));
-        URI uri = vf.toURI();
-        assertThat(uri.getScheme(), is("file"));
-        assertThat(uri.getPath(), endsWith(parentFolder + "/" + child));
+        extractedMethod12235(vf, parentFolder, child); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod12235(final VirtualFile vf, final String parentFolder, final String child) { // CAP AL
+        URI uri = vf.toURI(); // CAP AL
+        assertThat(uri.getScheme(), is("file")); // CAP AL
+        assertThat(uri.getPath(), endsWith(parentFolder + "/" + child)); // CAP AL
+    } // CAP AL
 
     @Test
     public void testLength_FilePathVF() throws IOException {
