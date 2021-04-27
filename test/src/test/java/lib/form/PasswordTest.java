@@ -338,9 +338,7 @@ public class PasswordTest {
     public void testBuildStep() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(new PasswordHolderBuildStep());
-        project.save();
-        assertEquals(1, project.getBuilders().size());
-        j.configRoundtrip(project);
+        extractedMethod52416(project); // CAP AL
 
         // empty default values after initial form submission
         PasswordHolderBuildStep buildStep = (PasswordHolderBuildStep) project.getBuildersList().get(0);
@@ -542,9 +540,7 @@ public class PasswordTest {
     public void testStringlyTypedSecrets() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(new StringlyTypedSecretsBuilder(""));
-        project.save();
-        assertEquals(1, project.getBuilders().size());
-        j.configRoundtrip(project);
+        extractedMethod52416(project); // CAP AL
 
         // empty default values after initial form submission
         StringlyTypedSecretsBuilder buildStep = (StringlyTypedSecretsBuilder) project.getBuildersList().get(0);
@@ -580,6 +576,12 @@ public class PasswordTest {
         // Note that it's not enough to just undo the related changes to core/src/main to try this; as Functions#getPasswordValue will throw a SecurityException during tests only and break the previous assertion.
         assertNotEquals(stringlyTypedSecret.getEncryptedValue(), buildStep.mySecret);
     }
+ // CAP AL
+    private void extractedMethod52416(final FreeStyleProject project) throws Exception { // CAP AL
+        project.save(); // CAP AL
+        assertEquals(1, project.getBuilders().size()); // CAP AL
+        j.configRoundtrip(project); // CAP AL
+    } // CAP AL
 
     public static class StringlyTypedSecretsBuilder extends Builder implements SimpleBuildStep {
 
