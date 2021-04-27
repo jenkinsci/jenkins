@@ -371,12 +371,7 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        extractedMethod50731(); // CAP AL
     }
 
     @Issue("JENKINS-21486")
@@ -407,13 +402,17 @@ public class PluginManagerTest {
         }
 
         // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
+        extractedMethod50731(); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod50731() throws InterruptedException, RestartRequiredException { // CAP AL
+        try { // CAP AL
+            dynamicLoad("mandatory-depender-0.0.2.hpi"); // CAP AL
+            fail("Should not have worked"); // CAP AL
+        } catch (IOException e) { // CAP AL
+            // Expected // CAP AL
+        } // CAP AL
+    } // CAP AL
 
 
     @Issue("JENKINS-21486")
