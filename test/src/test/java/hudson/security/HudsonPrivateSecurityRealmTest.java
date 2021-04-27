@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import java.io.IOException; // CAP AL
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.Cookie;
@@ -106,9 +107,7 @@ public class HudsonPrivateSecurityRealmTest {
         u1.setFullName("User One");
         u1.save();
 
-        User u2 = securityRealm.createAccount("user2", "password2");
-        u2.setFullName("User Two");
-        u2.save();
+        User u2 = getU275715(securityRealm); // CAP AL
 
         WebClient wc1 = j.createWebClient();
         wc1.login("user1", "password1");
@@ -156,9 +155,7 @@ public class HudsonPrivateSecurityRealmTest {
         u1.save();
         String u1Token = u1.getProperty(ApiTokenProperty.class).getApiToken();
 
-        User u2 = securityRealm.createAccount("user2", "password2");
-        u2.setFullName("User Two");
-        u2.save();
+        User u2 = getU275715(securityRealm); // CAP AL
         String u2Token = u2.getProperty(ApiTokenProperty.class).getApiToken();
 
         WebClient wc1 = j.createWebClient();
@@ -186,6 +183,13 @@ public class HudsonPrivateSecurityRealmTest {
         w2 = (XmlPage) wc2.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user2")));
     }
+ // CAP AL
+    private User getU275715(final HudsonPrivateSecurityRealm securityRealm) throws IOException { // CAP AL
+        User u2 = securityRealm.createAccount("user2", "password2"); // CAP AL
+        u2.setFullName("User Two"); // CAP AL
+        u2.save(); // CAP AL
+        return u2; // CAP AL
+    } // CAP AL
 
 
     private static String basicHeader(String user, String pass) {
