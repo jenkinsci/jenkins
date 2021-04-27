@@ -402,10 +402,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
@@ -428,10 +425,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
@@ -454,10 +448,7 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
@@ -480,11 +471,15 @@ public class RepeatableTest extends HudsonTestCase {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        bindClass = FooList.class;
-        submit(f);
-        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+        extractedMethod77297(f); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod77297(final HtmlForm f) throws Exception { // CAP AL
+        bindClass = FooList.class; // CAP AL
+        submit(f); // CAP AL
+        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], " // CAP AL
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString()); // CAP AL
+    } // CAP AL
 
     private void clickButton(HtmlPage p, HtmlForm f, String caption, boolean isTopButton) throws IOException {
         getHtmlButton(f, caption, isTopButton).click();
