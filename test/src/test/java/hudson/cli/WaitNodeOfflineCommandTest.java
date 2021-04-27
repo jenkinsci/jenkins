@@ -73,15 +73,7 @@ public class WaitNodeOfflineCommandTest {
     public void waitNodeOfflineShouldSucceedOnOfflineNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().setTemporarilyOffline(true);
-        while (!slave.toComputer().isOffline()) {
-            Thread.sleep(100);
-        }
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ)
-                .invokeWithArgs("aNode");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        extractedMethod128(slave); // CAP AL
     }
 
     @Test
@@ -100,16 +92,20 @@ public class WaitNodeOfflineCommandTest {
     public void waitNodeOfflineShouldSucceedOnDisconnectedNode() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().disconnect();
-        while (!slave.toComputer().isOffline()) {
-            Thread.sleep(100);
-        }
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ)
-                .invokeWithArgs("aNode");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
+        extractedMethod128(slave); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod128(final DumbSlave slave) throws InterruptedException { // CAP AL
+        while (!slave.toComputer().isOffline()) { // CAP AL
+            Thread.sleep(100); // CAP AL
+        } // CAP AL
+         // CAP AL
+        final CLICommandInvoker.Result result = command // CAP AL
+                .authorizedTo(Jenkins.READ) // CAP AL
+                .invokeWithArgs("aNode"); // CAP AL
+        assertThat(result, succeededSilently()); // CAP AL
+        assertThat(slave.toComputer().isOffline(), equalTo(true)); // CAP AL
+    } // CAP AL
 
     @Test
     public void waitNodeOfflineShouldSucceedOnDisconnectingNode() throws Exception {
