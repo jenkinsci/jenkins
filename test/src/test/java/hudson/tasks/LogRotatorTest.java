@@ -67,9 +67,7 @@ public class LogRotatorTest {
 
     @Test
     public void successVsFailure() throws Exception {
-        FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 2, -1, -1));
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        FreeStyleProject project = getProject23887(); // CAP AL // #1
         project.getBuildersList().replaceBy(Collections.singleton(new FailureBuilder()));
         assertEquals(Result.FAILURE, build(project)); // #2
         assertEquals(Result.FAILURE, build(project)); // #3
@@ -85,9 +83,7 @@ public class LogRotatorTest {
     @Test
     @Issue("JENKINS-2417")
     public void stableVsUnstable() throws Exception {
-        FreeStyleProject project = j.createFreeStyleProject();
-        project.setLogRotator(new LogRotator(-1, 2, -1, -1));
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        FreeStyleProject project = getProject23887(); // CAP AL // #1
         project.getPublishersList().replaceBy(Collections.singleton(new TestsFail()));
         assertEquals(Result.UNSTABLE, build(project)); // #2
         assertEquals(Result.UNSTABLE, build(project)); // #3
@@ -97,6 +93,13 @@ public class LogRotatorTest {
         assertNull(project.getBuildByNumber(1));
         assertNull(project.getBuildByNumber(2));
     }
+ // CAP AL
+    private FreeStyleProject getProject23887() throws Exception { // CAP AL
+        FreeStyleProject project = j.createFreeStyleProject(); // CAP AL
+        project.setLogRotator(new LogRotator(-1, 2, -1, -1)); // CAP AL
+        assertEquals(Result.SUCCESS, build(project)); // CAP AL
+        return project; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("JENKINS-834")
