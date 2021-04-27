@@ -151,13 +151,7 @@ public class CauseTest {
     public void preventXssInUpstreamDisplayName() throws Exception {
         j.jenkins.setQuietPeriod(0);
         FreeStyleProject up = j.createFreeStyleProject("up");
-        up.setDisplayName("Up<script>alert(123)</script>Project");
-
-        FreeStyleProject down = j.createFreeStyleProject("down");
-
-        up.getPublishersList().add(new BuildTrigger(down.getFullName(), false));
-
-        j.jenkins.rebuildDependencyGraph();
+        FreeStyleProject down = getDown40403(up); // CAP AL
 
         j.buildAndAssertSuccess(up);
 
@@ -171,13 +165,7 @@ public class CauseTest {
     public void preventXssInUpstreamDisplayName_deleted() throws Exception {
         j.jenkins.setQuietPeriod(0);
         FreeStyleProject up = j.createFreeStyleProject("up");
-        up.setDisplayName("Up<script>alert(123)</script>Project");
-
-        FreeStyleProject down = j.createFreeStyleProject("down");
-
-        up.getPublishersList().add(new BuildTrigger(down.getFullName(), false));
-
-        j.jenkins.rebuildDependencyGraph();
+        FreeStyleProject down = getDown40403(up); // CAP AL
 
         FreeStyleBuild upBuild = j.buildAndAssertSuccess(up);
 
@@ -188,6 +176,17 @@ public class CauseTest {
 
         ensureXssIsPrevented(downBuild);
     }
+ // CAP AL
+    private FreeStyleProject getDown40403(final FreeStyleProject up) throws IOException { // CAP AL
+        up.setDisplayName("Up<script>alert(123)</script>Project"); // CAP AL
+         // CAP AL
+        FreeStyleProject down = j.createFreeStyleProject("down"); // CAP AL
+         // CAP AL
+        up.getPublishersList().add(new BuildTrigger(down.getFullName(), false)); // CAP AL
+         // CAP AL
+        j.jenkins.rebuildDependencyGraph(); // CAP AL
+        return down; // CAP AL
+    } // CAP AL
 
     @Test
     @Issue("SECURITY-1901")
