@@ -103,10 +103,7 @@ public class FingerprinterTest {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         FreeStyleProject downstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
 
-        j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
-
-        j.jenkins.rebuildDependencyGraph();
+        extractedMethod48597(upstream, downstream); // CAP AL
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -166,10 +163,7 @@ public class FingerprinterTest {
         FreeStyleProject downstream2 = createFreeStyleProjectWithFingerprints(singleContents2, singleFiles2);
 
         j.assertBuildStatusSuccess(upstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get());
-        j.assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get());
-
-        j.jenkins.rebuildDependencyGraph();
+        extractedMethod48597(downstream, downstream2); // CAP AL
 
         List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
         List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
@@ -183,6 +177,13 @@ public class FingerprinterTest {
         assertTrue(downstreamProjects.contains(downstream));
         assertTrue(downstreamProjects.contains(downstream2));
     }
+ // CAP AL
+    private void extractedMethod48597(final FreeStyleProject downstream, final FreeStyleProject downstream2) throws Exception { // CAP AL
+        j.assertBuildStatusSuccess(downstream.scheduleBuild2(0).get()); // CAP AL
+        j.assertBuildStatusSuccess(downstream2.scheduleBuild2(0).get()); // CAP AL
+         // CAP AL
+        j.jenkins.rebuildDependencyGraph(); // CAP AL
+    } // CAP AL
 
     @Test public void dependencyExclusion() throws Exception {
         FreeStyleProject upstream = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
