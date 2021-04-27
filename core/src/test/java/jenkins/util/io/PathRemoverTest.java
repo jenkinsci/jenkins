@@ -77,10 +77,7 @@ public class PathRemoverTest {
         File file = tmp.newFile();
         touchWithFileName(file);
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(file.toPath());
-
-        assertFalse("Unable to delete file: " + file, file.exists());
+        extractedMethod66676(file); // CAP AL
     }
 
     @Test
@@ -134,10 +131,7 @@ public class PathRemoverTest {
         touchWithFileName(file);
         assertTrue("Unable to make file read-only: " + file, file.setWritable(false));
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(file.toPath());
-
-        assertFalse("Unable to delete file: " + file, file.exists());
+        extractedMethod66676(file); // CAP AL
     }
 
     @Test
@@ -146,11 +140,15 @@ public class PathRemoverTest {
         File file = new File(dir, "invalid.file");
         assertFalse(file.exists());
 
-        PathRemover remover = PathRemover.newSimpleRemover();
-        remover.forceRemoveFile(file.toPath());
-
-        assertFalse("Unable to delete file: " + file, file.exists());
+        extractedMethod66676(file); // CAP AL
     }
+ // CAP AL
+    private void extractedMethod66676(final File file) throws IOException { // CAP AL
+        PathRemover remover = PathRemover.newSimpleRemover(); // CAP AL
+        remover.forceRemoveFile(file.toPath()); // CAP AL
+         // CAP AL
+        assertFalse("Unable to delete file: " + file, file.exists()); // CAP AL
+    } // CAP AL
 
     @Test
     public void testForceRemoveFile_SymbolicLink() throws IOException {
