@@ -117,9 +117,7 @@ public class NodesTest {
     public void replaceNodeShouldRemoveOldNode() throws Exception {
         Node oldNode = r.createSlave("foo", "", null);
         Node newNode = r.createSlave("foo-new", "", null);
-        r.jenkins.addNode(oldNode);
-        r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
-        r.jenkins.getNodesObject().load();
+        extractedMethod858(oldNode, newNode); // CAP AL
         assertNull(r.jenkins.getNode("foo"));
     }
 
@@ -128,11 +126,15 @@ public class NodesTest {
     public void replaceNodeShouldNotRemoveIdenticalOldNode() throws Exception {
         Node oldNode = r.createSlave("foo", "", null);
         Node newNode = r.createSlave("foo", "", null);
-        r.jenkins.addNode(oldNode);
-        r.jenkins.getNodesObject().replaceNode(oldNode, newNode);
-        r.jenkins.getNodesObject().load();
+        extractedMethod858(oldNode, newNode); // CAP AL
         assertNotNull(r.jenkins.getNode("foo"));
     }
+ // CAP AL
+    private void extractedMethod858(final Node oldNode, final Node newNode) throws IOException { // CAP AL
+        r.jenkins.addNode(oldNode); // CAP AL
+        r.jenkins.getNodesObject().replaceNode(oldNode, newNode); // CAP AL
+        r.jenkins.getNodesObject().load(); // CAP AL
+    } // CAP AL
 
     private static class InvalidNode extends Slave {
         // JEP-200 whitelist changes prevent this field (and thus instances of this class) from being serialized.
