@@ -309,10 +309,7 @@ public class ArtifactArchiverTest {
         FreeStyleProject project = j.createFreeStyleProject();
 
         Publisher artifactArchiver = new ArtifactArchiver("**", "", false, false, true, true);
-        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
-        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
-
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        extractedMethod69993(project, artifactArchiver); // CAP AL // #1
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertFalse(artifacts.child(".svn").child("file").exists());
         assertFalse(artifacts.child("dir").child(".svn").child("file").exists());
@@ -326,14 +323,18 @@ public class ArtifactArchiverTest {
 
         ArtifactArchiver artifactArchiver = new ArtifactArchiver("**");
         artifactArchiver.setDefaultExcludes(false);
-        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
-        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
-
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        extractedMethod69993(project, artifactArchiver); // CAP AL // #1
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertTrue(artifacts.child(".svn").child("file").exists());
         assertTrue(artifacts.child("dir").child(".svn").child("file").exists());
     }
+ // CAP AL
+    private void extractedMethod69993(final FreeStyleProject project, final Publisher artifactArchiver) throws Exception { // CAP AL
+        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver)); // CAP AL
+        project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact())); // CAP AL
+         // CAP AL
+        assertEquals(Result.SUCCESS, build(project)); // CAP AL
+    } // CAP AL
 
     @LocalData
     @Test public void latestOnlyMigration() throws Exception {
