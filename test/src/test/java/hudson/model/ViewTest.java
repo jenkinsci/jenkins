@@ -1013,8 +1013,11 @@ public class ViewTest {
         private String primaryView;
 
         private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+            @Override
             protected List<View> views() { return views; }
+            @Override
             protected String primaryView() { return primaryView; }
+            @Override
             protected void primaryView(String name) { primaryView = name; }
         };
 

@@ -256,6 +256,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
         public ToolConverter(XStream2 xstream) { super(xstream); }
+        @Override
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;
             if (obj.home == null && (s = oldHomeField(obj)) != null) {

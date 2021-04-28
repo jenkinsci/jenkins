@@ -953,12 +953,14 @@ public class VirtualFileTest {
             this.description = description;
         }
 
+        @Override
         public void describeTo(Description description) {
             description.appendText(this.description);
         }
 
         public static VFMatcher hasName(String expectedName) {
             return new VFMatcher("Has name: " + expectedName) {
+                @Override
                 protected boolean matchesSafely(VirtualFile vf) {
                     return expectedName.equals(vf.getName());
                 }

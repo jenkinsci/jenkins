@@ -161,6 +161,7 @@ public class WebAppMain implements ServletContextListener {
 
             // use the current request to determine the language
             LocaleProvider.setProvider(new LocaleProvider() {
+                @Override
                 public Locale get() {
                     return Functions.getCurrentLocale();
                 }
@@ -433,6 +434,7 @@ public class WebAppMain implements ServletContextListener {
         return new FileAndDescription(newHome,"$user.home/.jenkins");
     }
 
+    @Override
     public void contextDestroyed(ServletContextEvent event) {
         try (ACLContext old = ACL.as2(ACL.SYSTEM2)) {
             Jenkins instance = Jenkins.getInstanceOrNull();

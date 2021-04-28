@@ -139,6 +139,7 @@ public class LogRotator extends BuildDiscarder {
         
     }
     
+    @Override
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
         //Exceptions thrown by the deletion submethods are collated and reported

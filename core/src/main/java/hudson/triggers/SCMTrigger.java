@@ -255,6 +255,7 @@ public class SCMTrigger extends Trigger<Item> {
             return this;
         }
 
+        @Override
         public boolean isApplicable(Item item) {
             return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(item) != null;
         }
@@ -403,6 +404,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         private boolean on;
 
+        @Override
         public boolean isActivated() {
             return on;
         }
@@ -446,14 +448,17 @@ public class SCMTrigger extends Trigger<Item> {
             return new File(run.getRootDir(),"polling.log");
         }
 
+        @Override
         public String getIconFileName() {
             return "clipboard.png";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "pollingLog";
         }
@@ -508,10 +513,12 @@ public class SCMTrigger extends Trigger<Item> {
             return job().asItem();
         }
 
+        @Override
         public String getIconFileName() {
             return "clipboard.png";
         }
 
+        @Override
         public String getDisplayName() {
             Set<SCMDescriptor<?>> descriptors = new HashSet<>();
             for (SCM scm : job().getSCMs()) {
@@ -520,6 +527,7 @@ public class SCMTrigger extends Trigger<Item> {
             return descriptors.size() == 1 ? Messages.SCMTrigger_getDisplayName(descriptors.iterator().next().getDisplayName()) : Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "scmPollLog";
         }
@@ -627,6 +635,7 @@ public class SCMTrigger extends Trigger<Item> {
             }
         }
 
+        @Override
         public void run() {
             if (job == null) {
                 return;

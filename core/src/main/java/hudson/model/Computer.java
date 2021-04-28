@@ -337,6 +337,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -1130,6 +1131,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         });
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrl();
     }
@@ -1318,6 +1320,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
          */
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
 
+        @Override
         public List<String> call() throws IOException {
             List<String> names = new ArrayList<>();
 
@@ -1348,6 +1351,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             return SystemProperties.getString("host.name");
         }
@@ -1449,6 +1453,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             final Channel ch = getChannelOrFail();
             StringWriter sw = new StringWriter();

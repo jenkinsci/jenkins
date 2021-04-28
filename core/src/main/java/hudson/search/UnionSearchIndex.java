@@ -53,11 +53,13 @@ public class UnionSearchIndex implements SearchIndex {
         this.rhs = rhs;
     }
 
+    @Override
     public void find(String token, List<SearchItem> result) {
         lhs.find(token,result);
         rhs.find(token,result);
     }
 
+    @Override
     public void suggest(String token, List<SearchItem> result) {
         lhs.suggest(token,result);
         rhs.suggest(token,result);

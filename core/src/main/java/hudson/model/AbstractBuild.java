@@ -452,6 +452,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return wsl.allocate(ws, getBuild());
         }
 
+        @Override
         public Result run(@NonNull BuildListener listener) throws Exception {
             final Node node = getCurrentNode();
             
@@ -692,6 +693,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          */
         protected abstract void post2(BuildListener listener) throws Exception;
 
+        @Override
         public final void post(BuildListener listener) throws Exception {
             try {
                 post2(listener);
@@ -705,6 +707,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             }
         }
 
+        @Override
         public void cleanUp(BuildListener listener) throws Exception {
             if (lease!=null) {
                 lease.release();
@@ -1103,6 +1106,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Invoked by {@link Executor} to performs a build.
      */
+    @Override
     public abstract void run();
 
 //
@@ -1179,9 +1183,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
 
         return new Iterable<AbstractBuild<?, ?>>() {
+            @Override
             public Iterator<AbstractBuild<?, ?>> iterator() {
                 return Iterators.removeNull(
                     new AdaptedIterator<Integer,AbstractBuild<?,?>>(nums) {
+                        @Override
                         protected AbstractBuild<?, ?> adapt(Integer item) {
                             return that.getBuildByNumber(item);
                         }

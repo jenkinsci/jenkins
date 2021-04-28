@@ -665,12 +665,15 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     private static class None extends SecurityRealm {
+        @Override
         public SecurityComponents createSecurityComponents() {
             return new SecurityComponents(new AuthenticationManager() {
+                @Override
                 public Authentication authenticate(Authentication authentication) {
                     return authentication;
                 }
             }, new UserDetailsService() {
+                @Override
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                     throw new UsernameNotFoundException(username);
                 }

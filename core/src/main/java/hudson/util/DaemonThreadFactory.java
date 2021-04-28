@@ -42,6 +42,7 @@ public class DaemonThreadFactory implements ThreadFactory {
         this.core = core;
     }
 
+    @Override
     public Thread newThread(Runnable r) {
         Thread t = core.newThread(r);
         t.setDaemon(true);

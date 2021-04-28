@@ -145,6 +145,7 @@ public class DefaultConfidentialStore extends ConfidentialStore {
         return sr;
     }
 
+    @Override
     public byte[] randomBytes(int size) {
         byte[] random = new byte[size];
         sr.nextBytes(random);

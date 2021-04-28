@@ -57,6 +57,7 @@ public class WriterOutputStream extends OutputStream {
         decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
     }
 
+    @Override
     public void write(int b) throws IOException {
         if(buf.remaining()==0)
             decode(false);

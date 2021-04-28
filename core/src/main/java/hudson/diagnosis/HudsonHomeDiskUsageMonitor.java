@@ -53,6 +53,7 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
         super("hudsonHomeIsFull");
     }
 
+    @Override
     public boolean isActivated() {
         return activated;
     }

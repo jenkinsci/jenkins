@@ -143,6 +143,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Returns a human-readable text that represents this label.
      */
+    @Override
     @NonNull
     public String getDisplayName() {
         return name;
@@ -160,6 +161,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return "label/" + Util.rawEncode(name) + '/';
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrl();
     }
@@ -183,6 +185,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      */
     public final boolean matches(final Collection<LabelAtom> labels) {
         return matches(new VariableResolver<Boolean>() {
+            @Override
             public Boolean resolve(String name) {
                 for (LabelAtom a : labels)
                     if (a.getName().equals(name))
@@ -523,6 +526,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return name.hashCode();
     }
 
+    @Override
     public final int compareTo(Label that) {
         return this.name.compareTo(that.name);
     }
@@ -541,6 +545,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         return name;
     }
 
+    @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (Node node : getNodes()) {
@@ -553,15 +558,18 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         public ConverterImpl() {
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return Label.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Label src = (Label) source;
             writer.setValue(src.getExpression());
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return Jenkins.get().getLabel(reader.getValue());
         }

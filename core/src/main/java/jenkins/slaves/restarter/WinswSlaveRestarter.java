@@ -43,6 +43,7 @@ public class WinswSlaveRestarter extends SlaveRestarter {
         return r;
     }
 
+    @Override
     public void restart() throws Exception {
         // winsw 1.16 supports this operation. this file gets updated via windows-slaves-plugin,
         // so it's possible that we end up in the situation where jenkins-slave.exe doesn't support

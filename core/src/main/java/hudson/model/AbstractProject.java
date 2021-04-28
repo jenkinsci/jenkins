@@ -892,6 +892,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    @Override
     public BuildAuthorizationToken getAuthToken() {
         return authToken;
     }
@@ -1145,10 +1146,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return newBuild();
     }
 
+    @Override
     public void checkAbortPermission() {
         checkPermission(CANCEL);
     }
 
+    @Override
     public boolean hasAbortPermission() {
         return hasPermission(CANCEL);
     }
@@ -1981,6 +1984,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
+        @Override
         public int compare(Integer o1, Integer o2) {
             return o2-o1;
         }

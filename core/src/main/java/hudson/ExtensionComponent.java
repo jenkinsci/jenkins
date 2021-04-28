@@ -85,6 +85,7 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
     /**
      * Sort {@link ExtensionComponent}s in the descending order of {@link #ordinal()}.
      */
+    @Override
     public int compareTo(ExtensionComponent<T> that) {
         double a = this.ordinal();
         double b = that.ordinal();

@@ -30,6 +30,7 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
     @Argument(metaVar="DESCRIPTION",required=true,usage="Description to be set. '=' to read from stdin.", index=2)
     public String description;
 
+    @Override
     protected int run() throws Exception {
     	Run run = job.getBuildByNumber(number);
         if (run == null)

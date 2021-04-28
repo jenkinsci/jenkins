@@ -108,14 +108,17 @@ public class UserTest {
             return descriptorImpl;
         }
 
+        @Override
         public String getIconFileName() {
           return "/images/24x24/gear.png";
         }
 
+        @Override
         public String getDisplayName() {
           return "UserPropertyImpl";
         }
 
+        @Override
         public String getUrlName() {
           return "userpropertyimpl";
         }

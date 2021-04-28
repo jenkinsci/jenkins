@@ -130,6 +130,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
         return s != null ? s.replaceAll("[^A-Za-z0-9_.-]+", "_") : null;
     }
 
+    @Override
     public ToolInstallerDescriptor<?> getDescriptor() {
         return (ToolInstallerDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

@@ -74,6 +74,7 @@ public class PersistedList<T> extends AbstractList<T> {
         this.owner = owner;
     }
 
+    @Override
     @WithBridgeMethods(void.class)
     public boolean add(T item) {
         data.add(item);
@@ -81,6 +82,7 @@ public class PersistedList<T> extends AbstractList<T> {
         return true;
     }
 
+    @Override
     @WithBridgeMethods(void.class)
     public boolean addAll(Collection<? extends T> items) {
         data.addAll(items);
@@ -93,6 +95,7 @@ public class PersistedList<T> extends AbstractList<T> {
         onModified();
     }
 
+    @Override
     public T get(int index) {
         return data.get(index);
     }
@@ -115,6 +118,7 @@ public class PersistedList<T> extends AbstractList<T> {
         return r;
     }
 
+    @Override
     public int size() {
         return data.size();
     }
@@ -147,6 +151,7 @@ public class PersistedList<T> extends AbstractList<T> {
         data.replaceBy(copy);
     }
 
+    @Override
     public boolean remove(Object o) {
         boolean b = data.remove((T)o);
         if (b)  _onModified();
@@ -227,6 +232,7 @@ public class PersistedList<T> extends AbstractList<T> {
     /**
      * Gets all the {@link Describable}s in an array.
      */
+    @Override
     public <T> T[] toArray(T[] array) {
         return data.toArray(array);
     }
@@ -235,10 +241,12 @@ public class PersistedList<T> extends AbstractList<T> {
         data.addAllTo(dst);
     }
 
+    @Override
     public boolean isEmpty() {
         return data.isEmpty();
     }
 
+    @Override
     public boolean contains(Object item) {
         return data.contains(item);
     }
@@ -260,16 +268,19 @@ public class PersistedList<T> extends AbstractList<T> {
             copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper());
         }
 
+        @Override
         public boolean canConvert(Class type) {
             // handle subtypes in case the onModified method is overridden.
             return PersistedList.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             for (Object o : (PersistedList) source)
                 writeItem(o, context, writer);
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
 

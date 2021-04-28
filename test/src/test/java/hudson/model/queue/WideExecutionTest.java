@@ -51,15 +51,19 @@ public class WideExecutionTest {
 
     @TestExtension
     public static class Contributor extends SubTaskContributor {
+        @Override
         public Collection<? extends SubTask> forProject(final AbstractProject<?, ?> p) {
             return Collections.singleton(new SubTask() {
                 private final SubTask outer = this;
+                @Override
                 public Executable createExecutable() throws IOException {
                     return new Executable() {
+                        @Override
                         public SubTask getParent() {
                             return outer;
                         }
 
+                        @Override
                         public void run() {
                             WorkUnitContext wuc = Executor.currentExecutor().getCurrentWorkUnit().context;
                             AbstractBuild b = (AbstractBuild)wuc.getPrimaryWorkUnit().getExecutable();
@@ -70,16 +74,19 @@ public class WideExecutionTest {
                             }
                         }
 
+                        @Override
                         public long getEstimatedDuration() {
                             return 0;
                         }
                     };
                 }
 
+                @Override
                 public Task getOwnerTask() {
                     return p;
                 }
 
+                @Override
                 public String getDisplayName() {
                     return "Company of "+p.getDisplayName();
                 }

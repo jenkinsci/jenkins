@@ -148,6 +148,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     /**
      * Access global configuration for the crumb issuer.
      */
+    @Override
     public CrumbIssuerDescriptor<CrumbIssuer> getDescriptor() {
         return (CrumbIssuerDescriptor<CrumbIssuer>) Jenkins.get().getDescriptorOrDie(getClass());
     }

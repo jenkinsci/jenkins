@@ -67,6 +67,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
     /**
      * Override this method to specify the hyperlink target of the given data point.
      */
+    @Override
     public String generateURL(CategoryDataset dataset, int row, int column) {
         return null;
     }
@@ -74,6 +75,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
     /**
      * Override this method to specify the tool tip text of the given data point.
      */
+    @Override
     public String generateToolTip(CategoryDataset dataset, int row, int column) {
         return null;
     }

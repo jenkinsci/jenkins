@@ -46,6 +46,7 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
     /**
      * Called after we read the whole line of plain text.
      */
+    @Override
     protected void eol(byte[] in, int sz) throws IOException {
 
         int next = ConsoleNote.findPreamble(in,0,sz);

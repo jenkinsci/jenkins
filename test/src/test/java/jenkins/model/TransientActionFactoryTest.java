@@ -199,6 +199,7 @@ public class TransientActionFactoryTest {
             allocation = sw.toString();
         }
 
+        @Override
         public String toString() {
             return allocation;
         }

@@ -107,6 +107,7 @@ public interface Action extends ModelObject {
      *
      * @return Can be null in case the action is hidden.
      */
+    @Override
     @CheckForNull String getDisplayName();
 
     /**

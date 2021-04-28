@@ -56,6 +56,7 @@ public final class Permission {
 
         // break eclipse compilation 
         //Override
+        @Override
         public int compare(@NonNull Permission one, @NonNull Permission two) {
             return one.getId().compareTo(two.getId());
         }

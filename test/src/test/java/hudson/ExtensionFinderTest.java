@@ -106,6 +106,7 @@ public class ExtensionFinderTest {
 
     @Extension
     public static class ModuleImpl extends AbstractModule {
+        @Override
         protected void configure() {
             TestEnvironment environment = TestEnvironment.get();
             // JMH benchmarks do not initialize TestEnvironment, so check for null

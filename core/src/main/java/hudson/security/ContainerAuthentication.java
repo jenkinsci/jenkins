@@ -73,30 +73,37 @@ public final class ContainerAuthentication implements Authentication {
         authorities = l;
     }
 
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
 
+    @Override
     public Object getCredentials() {
         return null;
     }
 
+    @Override
     public Object getDetails() {
         return null;
     }
 
+    @Override
     public String getPrincipal() {
         return principal.getName();
     }
 
+    @Override
     public boolean isAuthenticated() {
         return true;
     }
 
+    @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
         // noop
     }
 
+    @Override
     public String getName() {
         return getPrincipal();
     }

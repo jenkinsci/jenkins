@@ -297,6 +297,7 @@ public class MultiStageTimeSeries implements Serializable {
         /**
          * Renders this object as an image.
          */
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             ChartUtil.generateGraph(req, rsp, createChart(), 500, 400);
         }

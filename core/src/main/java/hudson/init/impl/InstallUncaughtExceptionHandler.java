@@ -82,6 +82,7 @@ public class InstallUncaughtExceptionHandler {
                 return null;
             }
             return new HttpResponses.HttpResponseException(cause) {
+                @Override
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                     handleException(Jenkins.get(), cause, req, rsp, code);
                 }

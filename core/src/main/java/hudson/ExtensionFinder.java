@@ -291,6 +291,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             // expose Injector via lookup mechanism for interop with non-Guice clients
             Jenkins.get().lookup.set(Injector.class,new ProxyInjector() {
+                @Override
                 protected Injector resolve() {
                     return getContainer();
                 }
@@ -384,6 +385,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return gea.isActive(e);
         }
 
+        @Override
         public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson jenkins) {
             // the find method contract requires us to traverse all known components
             List<ExtensionComponent<U>> result = new ArrayList<>();
@@ -430,9 +432,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             FaultTolerantScope(boolean verbose) {
                 this.verbose = verbose;
             }
+            @Override
             public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
                 final Provider<T> base = Scopes.SINGLETON.scope(key,unscoped);
                 return new Provider<T>() {
+                    @Override
                     public T get() {
                         try {
                             return base.get();
@@ -540,6 +544,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             Key key = Key.get(extType, Names.named(item.className() + "." + item.memberName()));
                             annotations.put(key,a);
                             bind(key).toProvider(new Provider() {
+                                    @Override
                                     public Object get() {
                                         return instantiate(item);
                                     }
@@ -683,6 +688,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return delta;
         }
 
+        @Override
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
             return _find(type,getIndices());
         }

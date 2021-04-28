@@ -279,6 +279,7 @@ public class JNLPLauncherTest {
     }
 
     private static class NoopTask extends SlaveToMasterCallable<String,RuntimeException> {
+        @Override
         public String call() {
             return "done";
         }

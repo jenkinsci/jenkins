@@ -156,6 +156,7 @@ public class DoubleLaunchChecker {
 
         Timer.get()
             .schedule(new SafeTimerTask() {
+                @Override
                 protected void doRun() {
                     execute();
                 }

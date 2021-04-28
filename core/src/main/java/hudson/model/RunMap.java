@@ -95,15 +95,18 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     /**
      * Walks through builds, newer ones first.
      */
+    @Override
     public Iterator<R> iterator() {
         return new Iterator<R>() {
             R last = null;
             R next = newestBuild();
 
+            @Override
             public boolean hasNext() {
                 return next!=null;
             }
 
+            @Override
             public R next() {
                 last = next;
                 if (last!=null)
@@ -156,6 +159,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      */
     @Deprecated
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
+        @Override
         public int compare(Comparable o1, Comparable o2) {
             return o2.compareTo(o1);
         }

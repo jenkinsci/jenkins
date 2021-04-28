@@ -386,10 +386,12 @@ public abstract class LoadStatistics {
      */
     @Extension @Symbol("loadStatistics")
     public static class LoadStatisticsUpdater extends PeriodicWork {
+        @Override
         public long getRecurrencePeriod() {
             return CLOCK;
         }
 
+        @Override
         protected void doRun() {
             Jenkins j = Jenkins.get();
             List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();

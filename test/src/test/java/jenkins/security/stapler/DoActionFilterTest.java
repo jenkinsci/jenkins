@@ -603,13 +603,16 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         @Override
         public void doNotAnnotatedAtAll() { replyOk(); }
         
+        @Override
         public void doOnlyAnnotatedInA() { replyOk(); }
         
+        @Override
         @WebMethod(name = "onlyAnnotatedInB")
         public void doOnlyAnnotatedInB() { replyOk(); }
         
         // doOnlyAnnotatedInANotOverrided: not overrided
         
+        @Override
         @WebMethod(name = "annotatedButDifferent2")
         public void doAnnotatedButDifferent() { replyOk(); }
     }

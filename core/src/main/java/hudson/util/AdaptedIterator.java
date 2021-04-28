@@ -46,10 +46,12 @@ public abstract class AdaptedIterator<T,U> implements Iterator<U> {
         this(core.iterator());
     }
 
+    @Override
     public boolean hasNext() {
         return core.hasNext();
     }
 
+    @Override
     public U next() {
         return adapt(core.next());
     }

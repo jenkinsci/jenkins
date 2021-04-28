@@ -76,6 +76,7 @@ public class LabelExpressionTest {
 
         FreeStyleProject p1 = j.createFreeStyleProject();
         p1.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 seq.phase(0); // first, make sure the w32 agent is occupied
                 seq.phase(2);
@@ -253,6 +254,7 @@ public class LabelExpressionTest {
     @Test
     public void formValidation() throws Exception {
         j.executeOnServer(new Callable<Object>() {
+            @Override
             public Object call() throws Exception {
                 Label l = j.jenkins.getLabel("foo");
                 DumbSlave s = j.createSlave(l);
