@@ -39,7 +39,9 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.util.Calendar;
 import java.awt.image.BufferedImage;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.HeadlessException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 

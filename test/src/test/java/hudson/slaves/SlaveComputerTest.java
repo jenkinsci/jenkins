@@ -24,7 +24,10 @@
 package hudson.slaves;
 
 import com.gargoylesoftware.htmlunit.WebResponse;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;

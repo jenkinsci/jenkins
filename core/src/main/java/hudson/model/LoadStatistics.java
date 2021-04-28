@@ -47,7 +47,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;

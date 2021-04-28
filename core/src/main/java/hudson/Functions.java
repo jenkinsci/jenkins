@@ -28,7 +28,12 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Computer;
 import hudson.model.Slave;
-import hudson.security.*;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
+import hudson.security.Permission;
+import hudson.security.SecurityRealm;
 
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;

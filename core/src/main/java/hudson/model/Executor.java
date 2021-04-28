@@ -61,11 +61,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.model.queue.Executables.*;
+import static hudson.model.queue.Executables.getParentOf;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import java.util.Collection;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.queue.AsynchronousExecution;

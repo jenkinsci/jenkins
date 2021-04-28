@@ -62,7 +62,8 @@ import java.util.List;
 import java.util.Locale;
 
 import static hudson.Functions.jsStringEscape;
-import static hudson.Util.*;
+import static hudson.Util.join;
+import static hudson.Util.singleQuote;
 
 /**
  * Represents the result of the form field validation.

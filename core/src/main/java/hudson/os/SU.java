@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
 
-import static hudson.util.jna.GNUCLibrary.*;
+import static hudson.util.jna.GNUCLibrary.LIBC;
 
 /**
  * Executes {@link Callable} as the super user, by forking a new process and executing the closure in there

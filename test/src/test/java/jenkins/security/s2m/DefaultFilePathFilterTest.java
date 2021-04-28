@@ -31,7 +31,7 @@ import hudson.remoting.Callable;
 import java.io.File;
 
 import org.jenkinsci.remoting.RoleChecker;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;

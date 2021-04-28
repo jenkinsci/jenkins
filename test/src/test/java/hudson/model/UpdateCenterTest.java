@@ -38,7 +38,7 @@ import static java.util.Objects.requireNonNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeNoException;
 import org.junit.Test;
 
 /**

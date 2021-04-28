@@ -31,7 +31,10 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.util.jna.GNUCLibrary.*;
+import static hudson.util.jna.GNUCLibrary.FD_CLOEXEC;
+import static hudson.util.jna.GNUCLibrary.F_GETFD;
+import static hudson.util.jna.GNUCLibrary.F_SETFD;
+import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import hudson.Platform;
 import jenkins.model.Jenkins;

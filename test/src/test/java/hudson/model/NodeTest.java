@@ -30,7 +30,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.*;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -46,7 +47,11 @@ import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;

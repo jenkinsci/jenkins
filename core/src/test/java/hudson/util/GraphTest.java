@@ -26,7 +26,7 @@ package hudson.util;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.awt.*;
+import java.awt.Dimension;
 
 public class GraphTest {
 
