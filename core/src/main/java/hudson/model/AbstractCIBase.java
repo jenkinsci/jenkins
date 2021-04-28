@@ -136,9 +136,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * ============================================================================================================== */
 
     private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used, boolean automaticSlaveLaunch) {
-        Map<Node,Computer> computers = getComputerMap();
-        Computer c;
-        c = byNameMap.get(n.getNodeName());
+        Computer c = byNameMap.get(n.getNodeName());
         if (c!=null) {
             try {
                 c.setNode(n); // reuse
@@ -147,35 +145,45 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 LOGGER.log(Level.WARNING, "Error updating node " + n.getNodeName() + ", continuing", e);
             }
         } else {
-            // we always need Computer for the master as a fallback in case there's no other Computer.
-            if(n.getNumExecutors()>0 || n==Jenkins.get()) {
-                try {
-                    c = n.createComputer();
-                } catch(RuntimeException ex) { // Just in case there is a bogus extension
-                    LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
-                }
-                if (c == null) {
-                    LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node", 
-                            new Object[]{n.getNodeName(), n.getClass().getName()});
-                    return;
-                }
-                
-                computers.put(n, c);
-                if (!n.isHoldOffLaunchUntilSave() && automaticSlaveLaunch) {
-                    RetentionStrategy retentionStrategy = c.getRetentionStrategy();
-                    if (retentionStrategy != null) {
-                        // if there is a retention strategy, it is responsible for deciding to start the computer
-                        retentionStrategy.start(c);
-                    } else {
-                        // we should never get here, but just in case, we'll fall back to the legacy behaviour
-                        c.connect(true);
-                    }
-                }
+            c = updateNewComputer(n, automaticSlaveLaunch);
+            if (c != null) {
                 used.add(c);
-            } else {
-                // TODO: Maybe it should be allowed, but we would just get NPE in the original logic before JENKINS-43496
-                LOGGER.log(Level.WARNING, "Node {0} has no executors. Cannot update the Computer instance of it", n.getNodeName());
             }
+        }
+    }
+
+    private Computer updateNewComputer(Node n, boolean automaticSlaveLaunch) {
+        Computer c = null;
+        Map<Node,Computer> computers = getComputerMap();
+        // we always need Computer for the master as a fallback in case there's no other Computer.
+        if(n.getNumExecutors()>0 || n==Jenkins.get()) {
+            try {
+                c = n.createComputer();
+            } catch(RuntimeException ex) { // Just in case there is a bogus extension
+                LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
+            }
+            if (c == null) {
+                LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node",
+                        new Object[]{n.getNodeName(), n.getClass().getName()});
+                return null;
+            }
+
+            computers.put(n, c);
+            if (!n.isHoldOffLaunchUntilSave() && automaticSlaveLaunch) {
+                RetentionStrategy retentionStrategy = c.getRetentionStrategy();
+                if (retentionStrategy != null) {
+                    // if there is a retention strategy, it is responsible for deciding to start the computer
+                    retentionStrategy.start(c);
+                } else {
+                    // we should never get here, but just in case, we'll fall back to the legacy behaviour
+                    c.connect(true);
+                }
+            }
+            return c;
+        } else {
+            // TODO: Maybe it should be allowed, but we would just get NPE in the original logic before JENKINS-43496
+            LOGGER.log(Level.WARNING, "Node {0} has no executors. Cannot update the Computer instance of it", n.getNodeName());
+            return null;
         }
     }
 
@@ -198,6 +206,27 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     /*package*/ @CheckForNull Computer getComputer(Node n) {
         Map<Node,Computer> computers = getComputerMap();
         return computers.get(n);
+    }
+
+    protected void addNewComputerForNode(final Node n, boolean automaticSlaveLaunch) {
+        final String nodeName = n.getNodeName();
+        final Map<Node, Computer> computers = getComputerMap();
+        for (Computer c : computers.values()) {
+            Node computerNode = c.getNode();
+            if (computerNode != null && computerNode.getNodeName().equals(nodeName)) {
+                LOGGER.warning("Node " + nodeName + " is not a new node skipping");
+                return;
+            }
+        }
+        updateNewComputer(n, automaticSlaveLaunch);
+        getQueue().scheduleMaintenance();
+        for (ComputerListener cl : ComputerListener.all()) {
+            try {
+                cl.onConfigurationChange();
+            } catch (Throwable t) {
+                LOGGER.log(Level.WARNING, null, t);
+            }
+        }
     }
 
     /**
