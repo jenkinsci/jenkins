@@ -371,7 +371,7 @@ public class LegacyApiTokenAdministrativeMonitorTest {
     
     private void simulateUseOfLegacyToken(User user) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.withBasicApiToken(user);
+        wc.withBasicCredentials(user.getId(), user.getProperty(ApiTokenProperty.class).getApiToken());
         
         wc.goTo("whoAmI/api/xml", null);
     }

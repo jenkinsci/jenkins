@@ -143,6 +143,7 @@ public class SCMTriggerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();

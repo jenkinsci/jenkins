@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
@@ -104,7 +105,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.16</version>
+      <version>5.17</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -248,7 +249,7 @@ THE SOFTWARE.
             <configuration>
               <artifactItems>
                 <!--
-                    Detached plugins and their dependencies - detached plugins that used to be bundled plugins
+                  Detached plugins and their dependencies - detached plugins that used to be bundled plugins
                 -->
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
@@ -433,7 +434,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.39.v20210325</version>
+        <version>9.4.40.v20210413</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
@@ -541,8 +542,8 @@ THE SOFTWARE.
 
 
     <!--
-        The following profiles are required to integration the node/yarn build into this maven build.
-        Hopefully we can push these profiles down into a parent pom.
+      The following profiles are required to integration the node/yarn build into this maven build.
+      Hopefully we can push these profiles down into a parent pom.
     -->
     <profile>
       <id>yarn-execution</id>

@@ -34,7 +34,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.google.common.collect.Iterables;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -58,13 +57,21 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.Vector;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -143,7 +150,7 @@ public class AbstractProjectTest {
     @Test
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void wipeWorkspaceProtected2() throws Exception {
-        ((GlobalMatrixAuthorizationStrategy) j.jenkins.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE, "anonymous");
+        ((GlobalMatrixAuthorizationStrategy) j.jenkins.getAuthorizationStrategy()).add(Item.WORKSPACE, "anonymous");
 
         // make sure that the deletion is protected in the same way
         wipeWorkspaceProtected();
@@ -282,19 +289,19 @@ public class AbstractProjectTest {
     public void renameJobLostBuilds() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("initial");
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         p.renameTo("edited");
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         MockFolder d = j.jenkins.createProject(MockFolder.class, "d");
         Items.move(p, d);
         assertEquals(p, j.jenkins.getItemByFullName("d/edited"));
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
         d.renameTo("d2");
         p = j.jenkins.getItemByFullName("d2/edited", FreeStyleProject.class);
         p._getRuns().purgeCache();
-        assertEquals(1, Iterables.size(p.getBuilds()));
+        assertEquals(1, p.getBuilds().stream().count());
     }
 
     @Test

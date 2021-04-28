@@ -131,6 +131,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
         return form;
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return jenkins.getDescriptorByType(DescriptorImpl.class);
     }
@@ -147,6 +148,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
         public String getGreatProperty() {
             return greatProperty;
         }
+        @Override
         public Descriptor<ExcitingObject> getDescriptor() {
             return Jenkins.get().getDescriptor(ExcitingObject.class);
         }

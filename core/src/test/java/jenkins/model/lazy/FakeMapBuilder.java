@@ -69,6 +69,7 @@ public class FakeMapBuilder implements TestRule {
         return new FakeMap(dir);
     }
 
+    @Override
     public Statement apply(final Statement base, Description description) {
         return new Statement() {
             @Override

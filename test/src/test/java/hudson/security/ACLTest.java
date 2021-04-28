@@ -25,10 +25,10 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Build;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.Run;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import java.util.Collection;
@@ -146,7 +146,7 @@ public class ACLTest {
 
         try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             Exception e = Assert.assertThrows(AccessDeniedException.class,
-                    () -> jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Build.ARTIFACTS));
+                    () -> jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Run.ARTIFACTS));
             Assert.assertEquals("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required", e.getMessage());
         }
     }

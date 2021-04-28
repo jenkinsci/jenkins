@@ -67,7 +67,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.9</version>
+        <version>1.10.10</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -279,7 +279,7 @@ THE SOFTWARE.
         <artifactId>memory-monitor</artifactId>
         <version>1.9</version>
       </dependency>
-      <dependency><!-- StAX implementation. See HUDSON-2547. -->
+      <dependency><!-- StAX implementation. See JENKINS-2547. -->
         <groupId>org.codehaus.woodstox</groupId>
         <artifactId>wstx-asl</artifactId>
         <version>3.2.9</version>

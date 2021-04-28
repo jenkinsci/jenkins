@@ -54,6 +54,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
         super("Connection Activity monitoring to agents");
     }
 
+    @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
         if (!enabled)   return;
 
@@ -83,6 +84,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
         }
     }
 
+    @Override
     public long getRecurrencePeriod() {
         return enabled ? FREQUENCY : TimeUnit.DAYS.toMillis(30);
     }
@@ -105,6 +107,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
 
     private static final PingCommand PING_COMMAND = new PingCommand();
     private static final class PingCommand extends SlaveToMasterCallable<Void,RuntimeException> {
+        @Override
         public Void call() throws RuntimeException {
             return null;
         }

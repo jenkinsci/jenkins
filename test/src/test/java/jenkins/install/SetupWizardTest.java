@@ -46,7 +46,8 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
 import org.apache.commons.io.FileUtils;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 import org.apache.tools.ant.filters.StringInputStream;
 import org.eclipse.jetty.server.Request;

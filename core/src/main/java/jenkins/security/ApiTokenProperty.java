@@ -409,6 +409,7 @@ public class ApiTokenProperty extends UserProperty {
     @Extension
     @Symbol("apiToken")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
+        @Override
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();
         }
@@ -432,6 +433,7 @@ public class ApiTokenProperty extends UserProperty {
          * But we also need to make sure that an attacker won't be able to guess
          * the initial API token value. So we take the seed by hashing the secret + user ID.
          */
+        @Override
         public ApiTokenProperty newInstance(User user) {
             if (!ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationEnabled()) {
                 return forceNewInstance(user, false);

@@ -130,6 +130,7 @@ public class WaitNodeOfflineCommandTest {
         boolean timeoutOccurred = false;
 
         FutureTask task = new FutureTask(new Callable() {
+            @Override
             public Object call() {
                 final CLICommandInvoker.Result result = command
                         .authorizedTo(Jenkins.READ)

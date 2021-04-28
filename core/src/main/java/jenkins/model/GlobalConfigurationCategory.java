@@ -66,6 +66,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
             return jenkins.management.Messages.ConfigureLink_Description();
         }
 
+        @Override
         public String getDisplayName() {
             return jenkins.management.Messages.ConfigureLink_DisplayName();
         }
@@ -81,6 +82,7 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
             return hudson.security.Messages.GlobalSecurityConfiguration_Description();
         }
 
+        @Override
         public String getDisplayName() {
             return hudson.security.Messages.GlobalSecurityConfiguration_DisplayName();
         }

@@ -406,7 +406,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public final PollingResult poll(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState baseline) throws IOException, InterruptedException {
         if (is1_346OrLater()) {
-            // This is to work around HUDSON-5827 in a general way.
+            // This is to work around JENKINS-5827 in a general way.
             // don't let the SCM.compareRemoteRevisionWith(...) see SCMRevisionState that it didn't produce.
             SCMRevisionState baseline2;
             if (baseline!=SCMRevisionState.NONE) {
@@ -683,6 +683,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public abstract ChangeLogParser createChangeLogParser();
 
+    @Override
     public SCMDescriptor<?> getDescriptor() {
         return (SCMDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

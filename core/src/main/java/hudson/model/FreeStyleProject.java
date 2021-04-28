@@ -56,6 +56,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         return FreeStyleBuild.class;
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -82,6 +83,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
             return Messages.FreeStyleProject_DisplayName();
         }
 
+        @Override
         public FreeStyleProject newInstance(ItemGroup parent, String name) {
             return new FreeStyleProject(parent,name);
         }

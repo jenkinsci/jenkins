@@ -734,6 +734,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
     private static class Absolutize extends SecureFileCallable<String> {
         private static final long serialVersionUID = 1L;
+        @Override
         public String invoke(File f, VirtualChannel channel) throws IOException {
             return f.getAbsolutePath();
         }
@@ -753,6 +754,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.noFollowLinks = noFollowLinks;
         }
 
+        @Override
         public Boolean invoke(File f, VirtualChannel channel) throws IOException {
             return isSymlink(f, verificationRoot, noFollowLinks);
         }
@@ -773,6 +775,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.noFollowLinks = noFollowLinks;
         }
 
+        @Override
         public boolean accept(File file) {
             return isSymlink(file, verificationRoot, noFollowLinks);
         }
@@ -847,14 +850,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public enum TarCompression {
         NONE {
+            @Override
             public InputStream extract(InputStream in) {
                 return new BufferedInputStream(in);
             }
+            @Override
             public OutputStream compress(OutputStream out) {
                 return new BufferedOutputStream(out);
             }
         },
         GZIP {
+            @Override
             public InputStream extract(InputStream _in) throws IOException {
                 HeadBufferingStream in = new HeadBufferingStream(_in,SIDE_BUFFER_SIZE);
                 try {
@@ -865,6 +871,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     throw new IOException(e.getMessage()+"\nstream="+Util.toHexString(in.getSideBuffer()),e);
                 }
             }
+            @Override
             public OutputStream compress(OutputStream out) throws IOException {
                 return new GZIPOutputStream(new BufferedOutputStream(out));
             }
@@ -1200,6 +1207,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return callable.getClassLoader();
         }
 
+        @Override
         public final T call() throws IOException {
             before();
             try {
@@ -1954,6 +1962,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private static final class DirectoryFilter implements FileFilter, Serializable {
+        @Override
         public boolean accept(File f) {
             return f.isDirectory();
         }
@@ -2871,6 +2880,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private static final class IsUnix extends MasterToSlaveCallable<Boolean,IOException> {
+        @Override
         @NonNull
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
@@ -3312,6 +3322,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.classLoader = classLoader;
         }
 
+        @Override
         public T call() throws IOException {
             try {
                 return callable.invoke(new File(remote), Channel.current());
@@ -3328,6 +3339,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             callable.checkRoles(checker);
         }
 
+        @Override
         public ClassLoader getClassLoader() {
             return classLoader;
         }
@@ -3351,6 +3363,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     private static final Comparator<String> SHORTER_STRING_FIRST = new Comparator<String>() {
+        @Override
         public int compare(String o1, String o2) {
             return o1.length()-o2.length();
         }
@@ -3677,6 +3690,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             this.noFollowLinks = noFollowLinks;
         }
 
+        @Override
         public boolean accept(File file) {
             return !isSymlink(file, verificationRoot, noFollowLinks);
         }

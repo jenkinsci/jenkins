@@ -910,10 +910,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.UpdateCenter_DisplayName();
     }
 
+    @Override
     public String getSearchUrl() {
         return "updateCenter";
     }
@@ -921,6 +923,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Saves the configuration info to the disk.
      */
+    @Override
     public synchronized void save() {
         if(BulkChange.contains(this))   return;
         try {
@@ -1539,6 +1542,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             this.authentication = Jenkins.getAuthentication2().getName();
         }
 
+        @Override
         public synchronized void run() {
             if (!(status instanceof Pending)) {
                 return;
@@ -1597,6 +1601,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.PRECHECK);
         }
 
+        @Override
         public void run() {
             connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.UNCHECKED);
             connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.UNCHECKED);
@@ -1793,6 +1798,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *
          * @since 1.641
          */
+        @Override
         @CheckForNull
         public String getComputedSHA1() {
             return computedSHA1;
@@ -1805,6 +1811,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *
          * @since 2.130
          */
+        @Override
         @CheckForNull
         public String getComputedSHA256() {
             return computedSHA256;
@@ -1817,6 +1824,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *
          * @since 2.130
          */
+        @Override
         @CheckForNull
         public String getComputedSHA512() {
             return computedSHA512;
@@ -1838,6 +1846,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             this.authentication = authentication;
         }
 
+        @Override
         public void run() {
             try {
                 LOGGER.info("Starting the installation of "+getName()+" on behalf of "+getUser().getName());
@@ -2128,10 +2137,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             this.dynamicLoad = dynamicLoad;
         }
 
+        @Override
         protected URL getURL() throws MalformedURLException {
             return new URL(plugin.url);
         }
 
+        @Override
         protected File getDestination() {
             File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".jpi");
@@ -2231,6 +2242,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
 
+        @Override
         protected void onSuccess() {
             pm.pluginUploaded = true;
         }
@@ -2351,10 +2363,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             this.plugin = plugin;
         }
 
+        @Override
         protected URL getURL() throws MalformedURLException {
             return new URL(plugin.url);
         }
 
+        @Override
         protected File getDestination() {
             File baseDir = pm.rootDir;
             final File legacy = new File(baseDir, plugin.name + ".hpi");
@@ -2416,6 +2430,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
         }
 
+        @Override
         protected void onSuccess() {
             pm.pluginUploaded = true;
         }
@@ -2443,6 +2458,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             super(site, auth);
         }
 
+        @Override
         protected URL getURL() throws MalformedURLException {
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
@@ -2450,14 +2466,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return new URL(site.getData().core.url);
         }
 
+        @Override
         protected File getDestination() {
             return Lifecycle.get().getHudsonWar();
         }
 
+        @Override
         public String getName() {
             return "jenkins.war";
         }
 
+        @Override
         protected void onSuccess() {
             status = new Success();
         }
@@ -2486,6 +2505,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             super(site, auth);
         }
 
+        @Override
         protected URL getURL() throws MalformedURLException {
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
@@ -2493,13 +2513,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return new URL(site.getData().core.url);
         }
 
+        @Override
         protected File getDestination() {
             return Lifecycle.get().getHudsonWar();
         }
 
+        @Override
         public String getName() {
             return "jenkins.war";
         }
+        @Override
         protected void onSuccess() {
             status = new Success();
         }
@@ -2544,6 +2567,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             category = c;
         }
 
+        @Override
         public int compareTo(PluginEntry o) {
             int r = category.compareTo(o.category);
             if (r==0) r = plugin.name.compareToIgnoreCase(o.plugin.name);

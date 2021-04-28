@@ -42,6 +42,7 @@ public class SystemInfoLink extends ManagementLink {
         return "computer.png";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.SystemInfoLink_DisplayName();
     }

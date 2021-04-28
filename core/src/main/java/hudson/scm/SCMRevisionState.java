@@ -16,7 +16,7 @@ import hudson.model.TaskListener;
  * <p>
  * This object is used so that the successive polling can compare the tip of the repository now vs
  * what it was when it was last polled. (Before 1.345, Hudson was only able to compare the tip
- * of the repository vs the state of the workspace, which resulted in a problem like HUDSON-2180.
+ * of the repository vs the state of the workspace, which resulted in a problem like JENKINS-2180.
  *
  * <p>
  * {@link SCMRevisionState} is persisted as an action to {@link AbstractBuild}.
@@ -25,14 +25,17 @@ import hudson.model.TaskListener;
  * @since 1.345
  */
 public abstract class SCMRevisionState implements Action {
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return null;
     }
 
+    @Override
     public String getUrlName() {
         return null;
     }

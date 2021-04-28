@@ -38,7 +38,7 @@ import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.WebMethod;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.awt.*;
+import java.awt.Point;
 import java.io.IOException;
 import java.net.URL;
 

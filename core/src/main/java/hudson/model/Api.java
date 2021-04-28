@@ -39,7 +39,13 @@ import org.dom4j.io.XMLWriter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.*;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.Flavor;
+import org.kohsuke.stapler.export.Model;
+import org.kohsuke.stapler.export.ModelBuilder;
+import org.kohsuke.stapler.export.NamedPathPruner;
+import org.kohsuke.stapler.export.SchemaGenerator;
+import org.kohsuke.stapler.export.TreePruner;
 import org.kohsuke.stapler.export.TreePruner.ByDepth;
 
 import javax.servlet.ServletException;
@@ -78,10 +84,12 @@ public class Api extends AbstractModelObject {
         this.bean = bean;
     }
 
+    @Override
     public String getDisplayName() {
         return "API";
     }
 
+    @Override
     public String getSearchUrl() {
         return "api";
     }
@@ -121,7 +129,7 @@ public class Api extends AbstractModelObject {
                 for (String exclude : excludes) {
                     XPath xExclude = dom.createXPath(exclude);
                     xExclude.setFunctionContext(functionContext);
-                    List<org.dom4j.Node> list = (List<org.dom4j.Node>)xExclude.selectNodes(dom);
+                    List<org.dom4j.Node> list = xExclude.selectNodes(dom);
                     for (org.dom4j.Node n : list) {
                         Element parent = n.getParent();
                         if(parent!=null)

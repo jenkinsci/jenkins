@@ -152,8 +152,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static hudson.init.InitMilestone.*;
-import static java.util.logging.Level.*;
+import static hudson.init.InitMilestone.COMPLETED;
+import static hudson.init.InitMilestone.PLUGINS_LISTED;
+import static hudson.init.InitMilestone.PLUGINS_PREPARED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 
 import org.springframework.security.core.Authentication;
@@ -412,18 +417,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                 {
                     Handle loadBundledPlugins = add("Loading bundled plugins", new Executable() {
+                        @Override
                         public void run(Reactor session) throws Exception {
                             bundledPlugins = loadBundledPlugins();
                         }
                     });
 
                     Handle listUpPlugins = requires(loadBundledPlugins).add("Listing up plugins", new Executable() {
+                        @Override
                         public void run(Reactor session) throws Exception {
                             archives = initStrategy.listPluginArchives(PluginManager.this);
                         }
                     });
 
                     requires(listUpPlugins).attains(PLUGINS_LISTED).add("Preparing plugins",new Executable() {
+                        @Override
                         public void run(Reactor session) throws Exception {
                             // once we've listed plugins, we can fill in the reactor with plugin-specific initialization tasks
                             TaskGraphBuilder g = new TaskGraphBuilder();
@@ -432,6 +440,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                             for( final File arc : archives ) {
                                 g.followedBy().notFatal().attains(PLUGINS_LISTED).add("Inspecting plugin " + arc, new Executable() {
+                                    @Override
                                     public void run(Reactor session1) throws Exception {
                                         try {
                                             PluginWrapper p = strategy.createPluginWrapper(arc);
@@ -466,6 +475,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 /**
                                  * Makes sure there's no cycle in dependencies.
                                  */
+                                @Override
                                 public void run(Reactor reactor) throws Exception {
                                     try {
                                         CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
@@ -538,6 +548,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 /**
                  * Once the plugins are listed, schedule their initialization.
                  */
+                @Override
                 public void run(Reactor session) throws Exception {
                     Jenkins.get().lookup.set(PluginInstanceStore.class, new PluginInstanceStore());
                     TaskGraphBuilder g = new TaskGraphBuilder();
@@ -545,6 +556,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
                         g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
+                            @Override
                             public void run(Reactor session) throws Exception {
                                 try {
                                     p.resolvePluginDependencies();
@@ -567,6 +579,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // schedule execution of initializing plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[0])) {
                         g.followedBy().notFatal().attains(PLUGINS_STARTED).add("Initializing plugin " + p.getShortName(), new Executable() {
+                            @Override
                             public void run(Reactor session) throws Exception {
                                 if (!activePlugins.contains(p)) {
                                     return;
@@ -584,6 +597,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
 
                     g.followedBy().attains(PLUGINS_STARTED).add("Discovering plugin initialization tasks", new Executable() {
+                        @Override
                         public void run(Reactor reactor) throws Exception {
                             // rescan to find plugin-contributed @Initializer
                             reactor.addAll(initializerFinder.discoverTasks(reactor));
@@ -1288,10 +1302,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return Collections.unmodifiableList(result);
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.PluginManager_DisplayName();
     }
 
+    @Override
     public String getSearchUrl() {
         return "pluginManager";
     }
@@ -2276,6 +2292,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         private transient volatile List<PluginWrapper> pluginsWithCycle;
 
+        @Override
         public boolean isActivated() {
             if(pluginsWithCycle == null){
                 pluginsWithCycle = new ArrayList<>();
@@ -2327,6 +2344,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
+        @Override
         public boolean isActivated() {
             return !pluginsToBeUpdated.isEmpty();
         }
@@ -2375,6 +2393,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return Messages.PluginManager_PluginDeprecationMonitor_DisplayName();
         }
 
+        @Override
         public boolean isActivated() {
             return !getDeprecatedPlugins().isEmpty();
         }

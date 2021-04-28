@@ -40,7 +40,7 @@ import org.jvnet.libpam.impl.CLibrary.passwd;
  *
  * <p>
  * Not available on all platforms (such as Linux/PPC, IBM mainframe, etc.), so the caller should recover gracefully
- * in case of {@link LinkageError}. See HUDSON-4820.
+ * in case of {@link LinkageError}. See JENKINS-4820.
  * <p>Consider deprecating all methods present also in {@link POSIX} (as obtained by {@link PosixAPI#jnr}).
  * @author Kohsuke Kawaguchi
  */

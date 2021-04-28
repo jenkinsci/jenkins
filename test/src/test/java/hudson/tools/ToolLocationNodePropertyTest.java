@@ -26,7 +26,10 @@ package hudson.tools;
 import static org.junit.Assert.assertEquals;
 
 import hudson.Functions;
-import hudson.model.*;
+import hudson.model.Build;
+import hudson.model.FreeStyleProject;
+import hudson.model.JDK;
+import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BatchFile;

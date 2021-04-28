@@ -85,7 +85,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -547,7 +547,7 @@ public class ViewTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").
             grant(Jenkins.READ).everywhere().toEveryone().
-            grant(Job.READ).everywhere().toEveryone().
+            grant(Item.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
         ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
@@ -1013,8 +1013,11 @@ public class ViewTest {
         private String primaryView;
 
         private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+            @Override
             protected List<View> views() { return views; }
+            @Override
             protected String primaryView() { return primaryView; }
+            @Override
             protected void primaryView(String name) { primaryView = name; }
         };
 

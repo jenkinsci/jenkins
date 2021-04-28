@@ -74,8 +74,8 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
-import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
@@ -329,7 +329,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
-        Cookie cookie = new Cookie(TokenBasedRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, "");
+        Cookie cookie = new Cookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
@@ -665,12 +665,15 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     }
 
     private static class None extends SecurityRealm {
+        @Override
         public SecurityComponents createSecurityComponents() {
             return new SecurityComponents(new AuthenticationManager() {
+                @Override
                 public Authentication authenticate(Authentication authentication) {
                     return authentication;
                 }
             }, new UserDetailsService() {
+                @Override
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                     throw new UsernameNotFoundException(username);
                 }

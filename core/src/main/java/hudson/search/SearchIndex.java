@@ -45,9 +45,11 @@ public interface SearchIndex {
      * Empty set.
      */
     SearchIndex EMPTY = new SearchIndex() {
+        @Override
         public void find(String token, List<SearchItem> result) {
             // no item to contribute
         }
+        @Override
         public void suggest(String token, List<SearchItem> result) {
             // nothing to suggest
         }

@@ -101,7 +101,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -121,7 +129,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
-import static javax.servlet.http.HttpServletResponse.*;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -337,6 +345,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -1130,6 +1139,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         });
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrl();
     }
@@ -1287,7 +1297,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             }
         }
 
-        // allow the administrator to manually specify the host name as a fallback. HUDSON-5373
+        // allow the administrator to manually specify the host name as a fallback. JENKINS-5373
         cachedHostName = channel.call(new GetFallbackName());
         hostNameCached = true;
         return cachedHostName;
@@ -1318,6 +1328,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
          */
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
 
+        @Override
         public List<String> call() throws IOException {
             List<String> names = new ArrayList<>();
 
@@ -1348,6 +1359,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             return SystemProperties.getString("host.name");
         }
@@ -1449,6 +1461,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             final Channel ch = getChannelOrFail();
             StringWriter sw = new StringWriter();

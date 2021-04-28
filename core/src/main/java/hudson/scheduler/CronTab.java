@@ -33,7 +33,10 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.Calendar.*;
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.HOUR_OF_DAY;
+import static java.util.Calendar.MINUTE;
+import static java.util.Calendar.MONTH;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
@@ -258,23 +261,33 @@ public final class CronTab {
         abstract void rollUp(Calendar cal, int i);
 
         private static final CalendarField MINUTE       = new CalendarField("minute", Calendar.MINUTE,        0, 0, false, null) {
+            @Override
             long bits(CronTab c) { return c.bits[0]; }
+            @Override
             void rollUp(Calendar cal, int i) { cal.add(Calendar.HOUR_OF_DAY,i); }
         };
         private static final CalendarField HOUR         = new CalendarField("hour", Calendar.HOUR_OF_DAY,   0, 0, false, MINUTE) {
+            @Override
             long bits(CronTab c) { return c.bits[1]; }
+            @Override
             void rollUp(Calendar cal, int i) { cal.add(Calendar.DAY_OF_MONTH,i); }
         };
         private static final CalendarField DAY_OF_MONTH = new CalendarField("day", Calendar.DAY_OF_MONTH,  1, 0, true,  HOUR) {
+            @Override
             long bits(CronTab c) { return c.bits[2]; }
+            @Override
             void rollUp(Calendar cal, int i) { cal.add(Calendar.MONTH,i); }
         };
         private static final CalendarField MONTH        = new CalendarField("month", Calendar.MONTH,         1, 1, false, DAY_OF_MONTH) {
+            @Override
             long bits(CronTab c) { return c.bits[3]; }
+            @Override
             void rollUp(Calendar cal, int i) { cal.add(Calendar.YEAR,i); }
         };
         private static final CalendarField DAY_OF_WEEK  = new CalendarField("dow", Calendar.DAY_OF_WEEK,   1,-1, true,  HOUR) {
+            @Override
             long bits(CronTab c) { return c.dayOfWeek; }
+            @Override
             void rollUp(Calendar cal, int i) {
                 cal.add(Calendar.DAY_OF_WEEK, 7 * i);
             }
@@ -454,6 +467,7 @@ public final class CronTab {
         return (bitMask|(1L<<n))==bitMask;
     }
 
+    @Override
     public String toString() {
         return super.toString()+"["+
             toString("minute",bits[0])+','+

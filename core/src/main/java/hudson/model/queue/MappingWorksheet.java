@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
 
 /**
  * Defines a mapping problem for answering "where do we execute this task?"
@@ -100,10 +100,12 @@ public class MappingWorksheet {
             this.base = base;
         }
 
+        @Override
         public E get(int index) {
             return base.get(index);
         }
 
+        @Override
         public int size() {
             return base.size();
         }

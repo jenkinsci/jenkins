@@ -30,7 +30,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.*;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -46,7 +47,11 @@ import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
@@ -337,7 +342,7 @@ public class NodeTest {
         n4.setLabelString("label1 label");
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
+        p.setAssignedLabel(Label.parseExpression("label1 && (label2 || label3)"));
 
         // Node 1 should not be tied to any labels
         TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();

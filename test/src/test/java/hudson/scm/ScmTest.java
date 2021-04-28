@@ -62,6 +62,7 @@ public class ScmTest {
         FreeStyleProject p = j.createFreeStyleProject();
         final boolean[] callback = new boolean[1];
         p.setScm(new NullSCM() {
+            @Override
             public boolean processWorkspaceBeforeDeletion(AbstractProject<?, ?> project, FilePath workspace, Node node) {
                 callback[0] = true;
                 return true;

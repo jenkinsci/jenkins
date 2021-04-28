@@ -36,7 +36,11 @@ import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -64,6 +68,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      *      Why are you calling a method that always returns ""?
     *       You probably want to call {@link Jenkins#getRootUrl()}
      */
+    @Override
     @Deprecated
     public String getUrl() {
         return "";

@@ -99,6 +99,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             this.cur = cur;
         }
 
+        @Override
         public Data call() {
             // this method must be being invoked locally, which means the roundtrip time is zero and zero forever
             return new Data(cur,0);
@@ -119,6 +120,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             this.cur = cur;
         }
 
+        @Override
         public Step3 call() {
             // this method must be being invoked locally, which means the roundtrip time is zero and zero forever
             return new Step3(cur,start);

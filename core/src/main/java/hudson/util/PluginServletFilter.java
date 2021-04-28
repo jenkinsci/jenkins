@@ -83,6 +83,7 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         return (PluginServletFilter)c.getAttribute(KEY);
     }
 
+    @Override
     public void init(FilterConfig config) throws ServletException {
         this.config = config;
         synchronized (LEGACY) {
@@ -141,10 +142,12 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         }
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) throws IOException, ServletException {
         new FilterChain() {
             private final Iterator<Filter> itr = list.iterator();
 
+            @Override
             public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
                 if(itr.hasNext()) {
                     // call next
@@ -157,6 +160,7 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         }.doFilter(request,response);
     }
 
+    @Override
     public void destroy() {
         for (Filter f : list) {
             f.destroy();

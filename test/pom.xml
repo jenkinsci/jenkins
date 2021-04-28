@@ -75,7 +75,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.69</version>
+      <version>1534.v6a685e457e95</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -90,7 +90,7 @@ THE SOFTWARE.
       <version>2.2</version>
       <scope>test</scope>
     </dependency>
-     <dependency>
+    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
       <version>6.15</version>
@@ -207,10 +207,10 @@ THE SOFTWARE.
         <configuration>
           <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
           <systemPropertyVariables>
-              <!-- use AntClassLoader that supports predictable file handle release -->
-              <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
-              <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
-              <buildDirectory>${project.build.directory}</buildDirectory>
+            <!-- use AntClassLoader that supports predictable file handle release -->
+            <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
+            <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
+            <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>

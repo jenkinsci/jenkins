@@ -266,9 +266,11 @@ public class ViewOptionHandlerTest {
 
     private void parse(final String... params) throws CmdLineException {
         handler.parseArguments(new Parameters() {
+            @Override
             public String getParameter(int idx) {
                 return params[idx];
             }
+            @Override
             public int size() {
                 return params.length;
             }

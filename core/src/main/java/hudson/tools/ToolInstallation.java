@@ -29,7 +29,12 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.EnvironmentSpecific;
+import hudson.model.Node;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
@@ -256,6 +261,7 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      */
     protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
         public ToolConverter(XStream2 xstream) { super(xstream); }
+        @Override
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;
             if (obj.home == null && (s = oldHomeField(obj)) != null) {

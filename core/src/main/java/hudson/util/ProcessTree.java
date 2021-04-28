@@ -131,6 +131,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Lists all the processes in the system.
      */
+    @Override
     @NonNull
     public final Iterator<OSProcess> iterator() {
         return processes.values().iterator();
@@ -156,6 +157,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * them all. This is suitable for locating daemon processes
      * that cannot be tracked by the regular ancestor/descendant relationship.
      */
+    @Override
     public abstract void killAll(@NonNull Map<String, String> modelEnvVars) throws InterruptedException;
 
     /**
@@ -224,6 +226,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             this.pid = pid;
         }
 
+        @Override
         public final int getPid() {
             return pid;
         }
@@ -232,6 +235,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * there's no guarantee that we are getting a consistent snapshot
          * of the whole system state.
          */
+        @Override
         @CheckForNull
         public abstract OSProcess getParent();
 
@@ -254,6 +258,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Kills this process.
          */
+        @Override
         public abstract void kill() throws InterruptedException;
 
         void killByKiller() throws InterruptedException {
@@ -275,6 +280,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * where the recursive operation is not supported, this just kills
          * the current process.
          */
+        @Override
         public abstract void killRecursively() throws InterruptedException;
 
         /**
@@ -312,6 +318,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * On Windows, where the OS models command-line arguments as a single string, this method
          * computes the approximated tokenization.
          */
+        @Override
         @NonNull
         public abstract List<String> getArguments();
 
@@ -322,6 +329,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          *      empty map if failed (for example because the process is already dead,
          *      or the permission was denied.)
          */
+        @Override
         @NonNull
         public abstract EnvVars getEnvironmentVariables();
 
@@ -348,6 +356,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Executes a chunk of code at the same machine where this process resides.
          */
+        @Override
         public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
             return callable.invoke(this, FilePath.localChannel);
         }
@@ -486,18 +495,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Empty process list as a default value if the platform doesn't support it.
      */
     /*package*/ static final ProcessTree DEFAULT = new Local() {
+        @Override
         public OSProcess get(@NonNull final Process proc) {
             return new OSProcess(-1) {
+                @Override
                 @CheckForNull
                 public OSProcess getParent() {
                     return null;
                 }
 
+                @Override
                 public void killRecursively() {
                     // fall back to a single process killer
                     proc.destroy();
                 }
 
+                @Override
                 public void kill() throws InterruptedException {
                     if (getVeto() != null) 
                         return;
@@ -505,11 +518,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     killByKiller();
                 }
 
+                @Override
                 @NonNull
                 public List<String> getArguments() {
                     return Collections.emptyList();
                 }
 
+                @Override
                 @NonNull
                 public EnvVars getEnvironmentVariables() {
                     return new EnvVars();
@@ -517,6 +532,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             };
         }
 
+        @Override
         public void killAll(@NonNull Map<String, String> modelEnvVars) {
             // no-op
         }
@@ -734,6 +750,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return get(UnixReflection.pid(proc));
         }
 
+        @Override
         public void killAll(@NonNull Map<String, String> modelEnvVars) throws InterruptedException {
             for (OSProcess p : this)
                 if(p.hasMatchingEnvVars(modelEnvVars))
@@ -787,6 +804,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Tries to kill this process.
          */
+        @Override
         public void kill() throws InterruptedException {
             // after sending SIGTERM, wait for the process to cease to exist
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
@@ -826,6 +844,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             killByKiller();
         }
 
+        @Override
         public void killRecursively() throws InterruptedException {
             // after sending SIGTERM, wait for the processes to cease to exist until the deadline
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
@@ -852,6 +871,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          *      empty list if failed (for example because the process is already dead,
          *      or the permission was denied.)
          */
+        @Override
         @NonNull
         public abstract List<String> getArguments();
     }
@@ -946,6 +966,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             super(vetoersExist);
         }
         
+        @Override
         protected LinuxProcess createProcess(int pid) throws IOException {
             return new LinuxProcess(pid);
         }
@@ -972,11 +993,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized List<String> getArguments() {
                 if(arguments!=null)
@@ -1000,6 +1023,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return arguments;
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars !=null)
@@ -1056,6 +1080,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             super(vetoersExist);
         }
         
+        @Override
         protected OSProcess createProcess(final int pid) throws IOException {
             return new AIXProcess(pid);
         }
@@ -1194,11 +1219,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized List<String> getArguments() {
                 if (arguments != null)
@@ -1246,6 +1273,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return arguments;
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars != null)
@@ -1378,6 +1406,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             super(vetoersExist);
         }
         
+        @Override
         protected OSProcess createProcess(final int pid) throws IOException {
             return new SolarisProcess(pid);
         }
@@ -1481,11 +1510,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized List<String> getArguments() {
                 if(arguments!=null)
@@ -1522,6 +1553,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return arguments;
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars !=null)
@@ -1678,11 +1710,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 this.ppid = ppid;
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars !=null)
@@ -1691,6 +1725,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return envVars;
             }
 
+            @Override
             @NonNull
             public List<String> getArguments() {
                 if(arguments !=null)
@@ -1883,6 +1918,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             proxy.killAll(modelEnvVars);
         }
 
+        @Override
         Object writeReplace() {
             return this; // cancel out super.writeReplace()
         }
@@ -1897,6 +1933,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 this.proxy = ch.export(IOSProcess.class,proxy);
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 IOSProcess p = proxy.getParent();
@@ -1904,24 +1941,29 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return get(p.getPid());
             }
 
+            @Override
             public void kill() throws InterruptedException {
                 proxy.kill();
             }
 
+            @Override
             public void killRecursively() throws InterruptedException {
                 proxy.killRecursively();
             }
 
+            @Override
             @NonNull
             public List<String> getArguments() {
                 return proxy.getArguments();
             }
 
+            @Override
             @NonNull
             public EnvVars getEnvironmentVariables() {
                 return proxy.getEnvironmentVariables();
             }
 
+            @Override
             Object writeReplace() {
                 return this; // cancel out super.writeReplace()
             }

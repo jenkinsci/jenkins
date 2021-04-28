@@ -258,6 +258,7 @@ public class Maven extends Builder {
             this.arguments = arguments;
         }
 
+        @Override
         public String invoke(File ws, VirtualChannel channel) throws IOException {
             String seed=null;
 
@@ -433,6 +434,7 @@ public class Maven extends Builder {
             DESCRIPTOR = this;
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -663,10 +665,12 @@ public class Maven extends Builder {
 
         private static final long serialVersionUID = 1L;
 
+        @Override
         public MavenInstallation forEnvironment(EnvVars environment) {
             return new MavenInstallation(getName(), environment.expand(getHome()), getProperties().toList());
         }
 
+        @Override
         public MavenInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
             return new MavenInstallation(getName(), translateFor(node, log), getProperties().toList());
         }

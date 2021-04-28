@@ -110,6 +110,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         beer = (Beer)req.bindJSON(Drink.class,json.getJSONObject("drink"));
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return jenkins.getDescriptorByType(DescriptorImpl.class);
     }

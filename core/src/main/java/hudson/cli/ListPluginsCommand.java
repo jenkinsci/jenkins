@@ -46,6 +46,7 @@ public class ListPluginsCommand extends CLICommand {
     @Argument(metaVar = "NAME", usage = "Name of a specific plugin", required = false)
     public String name;
 
+    @Override
     protected int run() {
         Jenkins h = Jenkins.get();
         h.checkPermission(Jenkins.ADMINISTER);

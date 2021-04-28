@@ -24,7 +24,6 @@
 
 package jenkins.triggers;
 
-import com.google.common.collect.ImmutableMap;
 import hudson.model.Cause;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
@@ -117,21 +116,27 @@ public class ReverseBuildTriggerTest {
         assertNotNull(JenkinsRule.getLog(b), downstream.getLastBuild());
         assertEquals(1, downstream.getLastBuild().number);
         // A QIA is configured but does not specify any authentication for downstream, so upstream should not trigger it:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(ImmutableMap.of(upstreamName, User.get("admin").impersonate(), downstreamName, Jenkins.ANONYMOUS)));
+        Map<String, org.acegisecurity.Authentication> qiaConfig = new HashMap<>();
+        qiaConfig.put(upstreamName, User.get("admin").impersonate());
+        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(qiaConfig));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogContains(downstreamName, b);
         r.assertLogContains(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f("anonymous", upstreamName, downstreamName), b);
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Auth for upstream is defined but cannot see downstream, so no message is printed about it:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(ImmutableMap.of(upstreamName, User.get("bob").impersonate(), downstreamName, Jenkins.ANONYMOUS)));
+        qiaConfig = new HashMap<>();
+        qiaConfig.put(upstreamName, User.get("bob").impersonate());
+        qiaConfig.put(downstreamName, Jenkins.ANONYMOUS);
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
         b = r.buildAndAssertSuccess(upstream);
         r.assertLogNotContains(downstreamName, b);
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Alice can see upstream, so downstream gets built, but the upstream build cannot see downstream:
         auth.grant(Item.READ).onItems(upstream).to("alice", "bob");
-        Map<String, org.acegisecurity.Authentication> qiaConfig = new HashMap<>();
+        qiaConfig = new HashMap<>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));

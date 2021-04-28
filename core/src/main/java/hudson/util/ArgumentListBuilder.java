@@ -251,6 +251,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
 
         return new VariableResolver<String>() {
 
+            @Override
             public String resolve(String name) {
                 final String value = original.resolve(name);
                 if (value == null) return null;
@@ -425,6 +426,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     /**
      * Debug/error message friendly output.
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         for (int i=0; i<args.size(); i++) {

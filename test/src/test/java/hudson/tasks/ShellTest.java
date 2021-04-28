@@ -57,6 +57,7 @@ public class ShellTest {
 
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = rule.createPretendSlave(new FakeLauncher() {
+            @Override
             public Proc onLaunch(ProcStarter p) throws IOException {
                 // test the command line argument.
                 List<String> cmds = p.cmds();

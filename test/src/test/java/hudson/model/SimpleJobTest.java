@@ -181,6 +181,7 @@ public class SimpleJobTest {
         protected void removeRun(Run run) {
         }
 
+        @Override
         public TopLevelItemDescriptor getDescriptor() {
             throw new AssertionError();
         }

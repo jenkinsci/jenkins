@@ -42,7 +42,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 public class CrumbFilter implements Filter {
     /**
      * Because servlet containers generally don't specify the ordering of the initialization
-     * (and different implementations indeed do this differently --- See HUDSON-3878),
+     * (and different implementations indeed do this differently --- See JENKINS-3878),
      * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
      */
     public CrumbIssuer getCrumbIssuer() {
@@ -60,6 +60,7 @@ public class CrumbFilter implements Filter {
         }
     }
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
@@ -111,6 +112,7 @@ public class CrumbFilter implements Filter {
         }
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         CrumbIssuer crumbIssuer = getCrumbIssuer();
         if (crumbIssuer == null || !(request instanceof HttpServletRequest)) {

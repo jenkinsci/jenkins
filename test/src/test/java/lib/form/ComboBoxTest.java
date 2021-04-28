@@ -40,7 +40,6 @@ import hudson.util.ComboBoxModel;
 import jenkins.model.OptionalJobProperty;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.HudsonTestCase.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -65,6 +64,7 @@ public class ComboBoxTest extends HudsonTestCase {
         
         @Extension
         public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -84,6 +84,7 @@ public class ComboBoxTest extends HudsonTestCase {
         }
 
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }

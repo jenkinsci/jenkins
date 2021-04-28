@@ -3,10 +3,11 @@ package hudson.util;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collections;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
@@ -30,7 +31,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
-import com.google.common.collect.ImmutableMap;
 
 
 public class ProcessTreeTest {
@@ -144,7 +144,7 @@ public class ProcessTreeTest {
         process = pb.start();
 
         ProcessTree processTree = ProcessTree.get();
-        processTree.killAll(ImmutableMap.of("cookie", "testKeepDaemonsAlive"));
+        processTree.killAll(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
         try {
             process.exitValue();
             fail("Process should have been excluded from the killing");
@@ -179,7 +179,7 @@ public class ProcessTreeTest {
 
         // Call killall (somewhat roundabout though) to (not) kill it
         StringWriter out = new StringWriter();
-        s.createLauncher(new StreamTaskListener(out)).kill(ImmutableMap.of("cookie", "testKeepDaemonsAlive"));
+        s.createLauncher(new StreamTaskListener(out)).kill(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
 
         try {
             process.exitValue();

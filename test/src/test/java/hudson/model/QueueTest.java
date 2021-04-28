@@ -52,7 +52,6 @@ import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
@@ -353,6 +352,7 @@ public class QueueTest {
         FreeStyleProject project = r.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();
@@ -737,7 +737,7 @@ public class QueueTest {
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
-                return (FreeStyleProject) new FreeStyleProject(parent,name){
+                return new FreeStyleProject(parent,name){
                      @Override
                     public Label getAssignedLabel(){
                         throw new IllegalArgumentException("Test exception"); //cause dead of executor
@@ -881,7 +881,7 @@ public class QueueTest {
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         r.jenkins.clouds.add(dummyCloud);
@@ -900,7 +900,7 @@ public class QueueTest {
                 new Axis("axis", "a", "b")
         ));
 
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();

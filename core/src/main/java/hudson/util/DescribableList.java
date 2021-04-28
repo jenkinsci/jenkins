@@ -230,6 +230,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     get(Ljava/lang/Class;)Ljava/lang/Object; from PersistedList where we need
     get(Ljava/lang/Class;)Lhudson/model/Describable;
  */
+    @Override
     public <U extends T> U get(Class<U> type) {
         return super.get(type);
     }
@@ -259,16 +260,19 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
             copyOnWriteListConverter = new CopyOnWriteList.ConverterImpl(mapper());
         }
 
+        @Override
         public boolean canConvert(Class type) {
             // handle subtypes in case the onModified method is overridden.
             return DescribableList.class.isAssignableFrom(type);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             for (Object o : (DescribableList) source)
                 writeItem(o, context, writer);
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             try {
                 DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).newInstance();
