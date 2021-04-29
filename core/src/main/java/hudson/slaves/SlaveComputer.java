@@ -1061,7 +1061,7 @@ public class SlaveComputer extends Computer {
             }
 
             try {
-                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the agent side.
+                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the agent side. -- TODO adapt to use 'agent'
             } catch (ChannelClosedException e) {
                 throw new IllegalStateException(e);
             }

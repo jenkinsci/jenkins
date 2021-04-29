@@ -41,7 +41,7 @@ THE SOFTWARE.
           <j:if test="${!it.building}">
             ${%Took} <a href="${rootURL}/${it.parent.url}buildTimeTrend">${it.durationString}</a>
           </j:if>
-          <j:if test="${!empty(app.slaves) or (it.builtOnStr != null and it.builtOnStr != '')}">
+          <j:if test="${!empty(app.nodes) or (it.builtOnStr != null and it.builtOnStr != '')}">
             ${%on} <t:node value="${it.builtOn}" valueStr="${it.builtOnStr}"/>
           </j:if>
         </div>

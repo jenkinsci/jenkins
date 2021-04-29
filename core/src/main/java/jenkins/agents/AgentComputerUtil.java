@@ -51,7 +51,7 @@ public final class AgentComputerUtil {
 
         // if this method is called from within the agent computation thread, this should work
         Channel c = Channel.current();
-        if (c != null && Boolean.TRUE.equals(c.getProperty("slave"))) {
+        if (c != null && Boolean.TRUE.equals(c.getProperty("agent"))) { // TODO adapt to use 'agent'
             return c;
         }
 
