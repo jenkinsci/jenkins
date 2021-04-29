@@ -145,14 +145,15 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 LOGGER.log(Level.WARNING, "Error updating node " + n.getNodeName() + ", continuing", e);
             }
         } else {
-            c = updateNewComputer(n, automaticSlaveLaunch);
+            c = createNewComputerForNode(n, automaticSlaveLaunch);
             if (c != null) {
                 used.add(c);
             }
         }
     }
 
-    private Computer updateNewComputer(Node n, boolean automaticSlaveLaunch) {
+    @CheckForNull
+    private Computer createNewComputerForNode(Node n, boolean automaticSlaveLaunch) {
         Computer c = null;
         Map<Node,Computer> computers = getComputerMap();
         // we always need Computer for the master as a fallback in case there's no other Computer.
@@ -208,7 +209,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         return computers.get(n);
     }
 
-    protected void addNewComputerForNode(final Node n, boolean automaticSlaveLaunch) {
+    protected void updateNewComputer(final Node n, boolean automaticSlaveLaunch) {
         final String nodeName = n.getNodeName();
         final Map<Node, Computer> computers = getComputerMap();
         for (Computer c : computers.values()) {
@@ -218,7 +219,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 return;
             }
         }
-        updateNewComputer(n, automaticSlaveLaunch);
+        createNewComputerForNode(n, automaticSlaveLaunch);
         getQueue().scheduleMaintenance();
         for (ComputerListener cl : ComputerListener.all()) {
             try {

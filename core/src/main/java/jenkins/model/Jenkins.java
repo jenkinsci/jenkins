@@ -1665,8 +1665,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
-    protected void addNewComputerForNode(Node n) {
-        addNewComputerForNode(n, AUTOMATIC_SLAVE_LAUNCH);
+    protected void updateNewComputer(Node n) {
+        updateNewComputer(n, AUTOMATIC_SLAVE_LAUNCH);
     }
 
     protected void updateComputerList() {
