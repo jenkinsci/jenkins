@@ -62,7 +62,7 @@ public class BuildTimeTrendTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void withAbstractJob_OnMaster() throws Exception {
+    public void withAbstractJob_OnBlubNode() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
@@ -76,7 +76,7 @@ public class BuildTimeTrendTest {
     }
 
     @Test
-    public void withAbstractJob_OnNode() throws Exception {
+    public void withAbstractJob_OnAgentNode() throws Exception {
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -117,12 +117,12 @@ public class BuildTimeTrendTest {
         // for the build on agent
         assertTrue(anchor.isPresent());
 
-        String masterName = hudson.model.Messages.Hudson_Computer_DisplayName();
+        String blubName = hudson.model.Messages.Hudson_Computer_DisplayName();
         DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
         Optional<DomNode> td = tds.stream()
-                .filter(t -> t.getTextContent().equals(masterName))
+                .filter(t -> t.getTextContent().equals(blubName))
                 .findFirst();
-        // for the build on master
+        // for the build on blub node
         assertTrue(td.isPresent());
     }
 
@@ -148,7 +148,7 @@ public class BuildTimeTrendTest {
     @LocalData("localDataNonAbstractJob")
     @Issue("JENKINS-63232")
     public void withNonAbstractJob_withAgents() throws Exception {
-        // just to trigger data-is-master-slave-enabled = true
+        // just to trigger data-is-distributed-build-enabled = true
         j.createSlave();
         
         // Before the correction, if there was an agent and the build was not inheriting from AbstractBuild, we got

@@ -62,9 +62,9 @@ public class Security218Test implements Serializable {
      */
     @Test
     public void jnlpSlave() throws Exception {
-        DumbSlave s = createJnlpSlave("test");
-        launchJnlpSlave(s);
-        check(s);
+        DumbSlave a = createJnlpSlave("test");
+        launchJnlpSlave(a);
+        check(a);
     }
 
     /**
@@ -107,7 +107,7 @@ public class Security218Test implements Serializable {
         j.createWebClient().goTo("computer/"+slave.getNodeName()+"/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
         String secret = slave.getComputer().getJnlpMac();
         File slaveJar = tmp.newFile();
-        FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
+        FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
         // To watch it fail: secret = secret.replace('1', '2');
         ProcessBuilder pb = new ProcessBuilder(JavaEnvUtils.getJreExecutable("java"),
                 "-jar", slaveJar.getAbsolutePath(),
