@@ -212,12 +212,9 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     protected void updateNewComputer(final Node n, boolean automaticSlaveLaunch) {
         final String nodeName = n.getNodeName();
         final Map<Node, Computer> computers = getComputerMap();
-        for (Computer c : computers.values()) {
-            Node computerNode = c.getNode();
-            if (computerNode != null && computerNode.getNodeName().equals(nodeName)) {
-                LOGGER.warning("Node " + nodeName + " is not a new node skipping");
-                return;
-            }
+        if (computers.containsKey(n)) {
+            LOGGER.warning("Node " + nodeName + " is not a new node skipping");
+            return;
         }
         createNewComputerForNode(n, automaticSlaveLaunch);
         getQueue().scheduleMaintenance();
