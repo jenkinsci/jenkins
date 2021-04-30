@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
@@ -115,6 +116,7 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
         return ExtensionList.lookup(AperiodicWork.class);
     }
 
+    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
     private static final Random RANDOM = new Random();
 
     /**

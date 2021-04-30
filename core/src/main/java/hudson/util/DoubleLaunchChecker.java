@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.init.Initializer;
 import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
@@ -81,6 +82,7 @@ public class DoubleLaunchChecker {
      */
     private boolean ignore = false;
 
+    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
     private final Random random = new Random();
 
     public final File home;

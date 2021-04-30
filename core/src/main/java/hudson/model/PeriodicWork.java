@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionListListener;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
@@ -118,6 +119,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
     protected static final long HOUR =60*MIN;
     protected static final long DAY = 24*HOUR;
 
+    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
     private static final Random RANDOM = new Random();
 
     /**

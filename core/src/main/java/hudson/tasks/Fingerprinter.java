@@ -70,7 +70,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -362,8 +361,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public static final class FingerprintAction implements RunAction2 {
 
         private transient Run build;
-        
-        private static final Random rand = new Random();
 
         /**
          * From file name to the digest.
