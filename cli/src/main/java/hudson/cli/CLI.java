@@ -420,10 +420,14 @@ public class CLI {
                 public void run() {
                     try {
                         final OutputStream stdin = streamStdin();
-                        int c;
-                        // TODO check available to avoid sending lots of one-byte frames
-                        while (!complete && (c = System.in.read()) != -1) {
-                           stdin.write(c);
+                        byte[] buf = new byte[60_000]; // less than 64Kb frame size for WS
+                        while (!complete) {
+                            int len = System.in.read(buf);
+                            if (len == -1) {
+                                break;
+                            } else {
+                                stdin.write(buf, 0, len);
+                            }
                         }
                         sendEndStdin();
                     } catch (IOException x) {
