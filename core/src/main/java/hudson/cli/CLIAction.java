@@ -124,10 +124,13 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         Authentication authentication = Jenkins.getAuthentication2();
         return WebSockets.upgrade(new WebSocketSession() {
             ServerSideImpl connection;
+            long sentBytes, sentCount, receivedBytes, receivedCount;
             class OutputImpl implements PlainCLIProtocol.Output {
                 @Override
                 public void send(byte[] data) throws IOException {
                     sendBinary(ByteBuffer.wrap(data));
+                    sentBytes += data.length;
+                    sentCount++;
                 }
                 @Override
                 public void close() throws IOException {
@@ -161,6 +164,8 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             protected void binary(byte[] payload, int offset, int len) {
                 try {
                     connection.handle(new DataInputStream(new ByteArrayInputStream(payload, offset, len)));
+                    receivedBytes += len;
+                    receivedCount++;
                 } catch (IOException x) {
                     error(x);
                 }
@@ -172,6 +177,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             @Override
             protected void closed(int statusCode, String reason) {
                 LOGGER.fine(() -> "closed: " + statusCode + ": " + reason);
+                LOGGER.fine(() -> "received " + receivedCount + " packets of " + receivedBytes + " bytes; sent " + sentCount + " packets of " + sentBytes + " bytes");
                 connection.handleClose();
             }
         });
