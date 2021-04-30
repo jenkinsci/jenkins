@@ -82,9 +82,6 @@ public class DoubleLaunchChecker {
      */
     private boolean ignore = false;
 
-    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
-    private final Random random = new Random();
-
     public final File home;
 
     /**
@@ -152,6 +149,7 @@ public class DoubleLaunchChecker {
     /**
      * Schedules the next execution.
      */
+    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
         long MINUTE = 1000*60;
@@ -162,7 +160,7 @@ public class DoubleLaunchChecker {
                 protected void doRun() {
                     execute();
                 }
-            }, (random.nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
+            }, (new Random().nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
     }
 
     @Initializer(after= JOB_CONFIG_ADAPTED)

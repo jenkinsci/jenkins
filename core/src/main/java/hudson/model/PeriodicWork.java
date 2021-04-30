@@ -85,8 +85,9 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
      * <p>
      * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
      */
+    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
     public long getInitialDelay() {
-        long l = RANDOM.nextLong();
+        long l = new Random().nextLong();
         // Math.abs(Long.MIN_VALUE)==Long.MIN_VALUE!
         if (l==Long.MIN_VALUE)
             l++;
@@ -118,9 +119,6 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
     protected static final long MIN = 1000*60;
     protected static final long HOUR =60*MIN;
     protected static final long DAY = 24*HOUR;
-
-    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
-    private static final Random RANDOM = new Random();
 
     /**
      * ExtensionListener that will kick off any new AperiodWork extensions from plugins that are dynamically
