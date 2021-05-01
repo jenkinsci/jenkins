@@ -10,7 +10,7 @@ class TestUserIdMapper extends UserIdMapper {
     private File usersDirectory;
     private IdStrategy idStrategy;
 
-    TestUserIdMapper(File usersDirectory, IdStrategy idStrategy) throws IOException {
+    TestUserIdMapper(File usersDirectory, IdStrategy idStrategy) {
         this.usersDirectory = usersDirectory;
         this.idStrategy = idStrategy;
     }

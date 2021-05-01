@@ -244,7 +244,7 @@ public class AbstractLazyLoadRunMapTest {
     }
 
     @Test
-    public void eagerLoading() throws IOException {
+    public void eagerLoading() {
         Map.Entry[] b = a.entrySet().toArray(new Map.Entry[3]);
         ((Build)b[0].getValue()).asserts(5);
         ((Build)b[1].getValue()).asserts(3);
