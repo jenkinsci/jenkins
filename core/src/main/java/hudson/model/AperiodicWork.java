@@ -51,6 +51,7 @@ import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
  * @author vjuranek
  * @since 1.410
  */
+@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
 public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPoint {
 	
 	protected final Logger logger = Logger.getLogger(getClass().getName());
@@ -79,9 +80,8 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
      * <p>
      * By default it chooses the value randomly between 0 and {@link #getRecurrencePeriod()}
      */
-    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
     public long getInitialDelay() {
-        long l = new Random().nextLong();
+        long l = RANDOM.nextLong();
         // Math.abs(Long.MIN_VALUE)==Long.MIN_VALUE!
         if (l==Long.MIN_VALUE)
             l++;
@@ -116,6 +116,8 @@ public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPo
     public static ExtensionList<AperiodicWork> all() {
         return ExtensionList.lookup(AperiodicWork.class);
     }
+
+    private static final Random RANDOM = new Random();
 
     /**
      * ExtensionListener that will kick off any new AperiodWork extensions from plugins that are dynamically

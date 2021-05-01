@@ -69,6 +69,7 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  * @since 1.178
  */
+@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
 public class DoubleLaunchChecker {
     /**
      * The timestamp of the owner file when we updated it for the last time.
@@ -81,6 +82,8 @@ public class DoubleLaunchChecker {
      * in which case the flag is set to true.
      */
     private boolean ignore = false;
+
+    private final Random random = new Random();
 
     public final File home;
 
@@ -149,7 +152,6 @@ public class DoubleLaunchChecker {
     /**
      * Schedules the next execution.
      */
-    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
         long MINUTE = 1000*60;
@@ -160,7 +162,7 @@ public class DoubleLaunchChecker {
                 protected void doRun() {
                     execute();
                 }
-            }, (new Random().nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
+            }, (random.nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
     }
 
     @Initializer(after= JOB_CONFIG_ADAPTED)
