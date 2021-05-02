@@ -5,8 +5,35 @@ function updateListBox(listBox,url,config) {
     config = object(config);
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
-    var status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
-    if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
+
+    // Hacky function to retrofit compatibility with tables-to-divs
+    // If the <select> tag parent is a <td> element we can consider it's following a
+    // form entry using tables-to-divs markup.
+    function getStatusElement() {
+        function getStatusForTabularForms() {
+            return findFollowingTR(listBox, "validation-error-area").firstElementChild.nextSibling;
+        }
+        function getStatusForDivBasedForms() {
+            var settingMain = listBox.closest('.setting-main')
+            if (!settingMain) {
+                console.warn("Couldn't find the expected parent element (.setting-main) for element", listBox)
+                return;
+            }
+
+            return settingMain.nextElementSibling;
+        }
+
+        return listBox.parentNode.tagName === 'TD'
+            ? getStatusForTabularForms()
+            : getStatusForDivBasedForms();
+    }
+
+    var status = getStatusElement();
+    if (!status) {
+        console.warn("Couldn't find the expected status element")
+        return;
+    }
+    if (status.firstElementChild && status.firstElementChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }
     config.onSuccess = function (rsp) {
@@ -39,8 +66,8 @@ function updateListBox(listBox,url,config) {
     config.onFailure = function (rsp) {
         l.removeClassName("select-ajax-pending");
         status.innerHTML = rsp.responseText;
-        if (status.firstChild) {
-            status.firstChild.setAttribute('data-select-ajax-error', 'true')
+        if (status.firstElementChild) {
+            status.firstElementChild.setAttribute('data-select-ajax-error', 'true')
         }
         Behaviour.applySubtree(status);
         // deleting values can result in the data loss, so let's not do that unless instructed

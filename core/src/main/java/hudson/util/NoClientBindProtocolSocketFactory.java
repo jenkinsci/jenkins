@@ -43,6 +43,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
     public NoClientBindProtocolSocketFactory() {
     }
  
+    @Override
     public Socket createSocket(String host, 
                                int port,
                                InetAddress localAddress,
@@ -78,6 +79,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
      * 
      * @since 3.0
      */
+    @Override
     public Socket createSocket(String host, int port, InetAddress localAddress,
             int localPort, HttpConnectionParams params) throws IOException,
             UnknownHostException, ConnectTimeoutException {
@@ -98,21 +100,16 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
     /**
      * @see ProtocolSocketFactory#createSocket(java.lang.String,int)
      */
+    @Override
     public Socket createSocket(String host, int port) throws IOException,
             UnknownHostException,IOException {
-        Socket socket;
-        try {
-            socket = new Socket(host, port);
-        }        
-        catch (IOException e) {
-            throw e;
-        }
-        return socket;
+        return new Socket(host, port);
     }
     
     /**
      * All instances are the same.
      */
+    @Override
     public boolean equals(Object obj) {
         return ((obj != null) && obj.getClass().equals(NoClientBindProtocolSocketFactory.class));
     }
@@ -120,6 +117,7 @@ public class NoClientBindProtocolSocketFactory implements ProtocolSocketFactory 
     /**
      * All instances have the same hash code.
      */
+    @Override
     public int hashCode() {
         return NoClientBindProtocolSocketFactory.class.hashCode();
     }

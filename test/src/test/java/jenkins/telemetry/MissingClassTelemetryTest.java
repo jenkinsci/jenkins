@@ -23,6 +23,7 @@
  */
 package jenkins.telemetry;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
@@ -40,7 +41,6 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 
 import static org.junit.Assert.assertEquals;
 
@@ -79,7 +80,7 @@ public class MissingClassTelemetryTest {
     @Test
     public void telemetrySentWorks() throws InterruptedException {
         Assume.assumeTrue("The telemetry should be enabled", MissingClassTelemetry.enabled());
-
+        Assume.assumeTrue("The telemetry shouldn't be ended", Telemetry.all().get(MissingClassTelemetry.class).getEnd().isAfter(LocalDate.now()));
         // Generate 5 events
         for(int i = 0; i < 5; i++) {
             try {

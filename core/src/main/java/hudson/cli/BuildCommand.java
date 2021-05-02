@@ -99,6 +99,7 @@ public class BuildCommand extends CLICommand {
 
     protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue.";
 
+    @Override
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
 
@@ -165,7 +166,7 @@ public class BuildCommand extends CLICommand {
             throw new IllegalStateException(msg);
         }
 
-        Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication().getName())), a);
+        Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication2().getName())), a);
         QueueTaskFuture<? extends Run<?,?>> f = item != null ? (QueueTaskFuture)item.getFuture() : null;
         
         if (wait || sync || follow) {
@@ -252,7 +253,7 @@ public class BuildCommand extends CLICommand {
 
         @Override
         public String getShortDescription() {
-            User user = User.get(startedBy, false);
+            User user = User.getById(startedBy, false);
             String userName = user != null ? user.getDisplayName() : startedBy;
             return Messages.BuildCommand_CLICause_ShortDescription(userName);
         }
@@ -274,4 +275,3 @@ public class BuildCommand extends CLICommand {
         }
     }
 }
-

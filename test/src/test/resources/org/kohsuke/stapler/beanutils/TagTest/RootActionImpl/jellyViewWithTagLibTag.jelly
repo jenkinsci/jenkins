@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:lib="/org/kohsuke/stapler/beanutils/TagTest/lib">
+    <st:contentType value="text/html"/>
+    <lib:thisTagHasClass class="thisIsFromJelly"/>
+</j:jelly>

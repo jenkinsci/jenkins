@@ -1,5 +1,6 @@
 package jenkins.security.s2m;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import jenkins.util.SystemProperties;
 import hudson.remoting.Callable;
@@ -39,6 +40,7 @@ public class CallableDirectionChecker extends RoleChecker {
      * This is an escape hatch in case the fix breaks something critical, to allow the user
      * to keep operation.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean BYPASS = SystemProperties.getBoolean(BYPASS_PROP);
 
     private CallableDirectionChecker(Object context) {

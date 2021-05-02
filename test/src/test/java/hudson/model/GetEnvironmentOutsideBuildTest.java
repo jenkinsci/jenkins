@@ -5,17 +5,12 @@ import java.io.IOException;
 import hudson.EnvVars;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.StreamTaskListener;
 
 import jenkins.model.Jenkins;
 
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.ToolInstallations;
 
 /**
  * Tests that getEnvironment() calls outside of builds are safe.
@@ -34,12 +29,14 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
         // It's unfortunately not working, yet, as whenJenkinsMasterHasNoExecutors is not working as expected
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
 
         this.oldExecNum = Jenkins.get().getNumExecutors();
     }
 
+    @Override
     public void tearDown() throws Exception {
         restoreOldNumExecutors();
         super.tearDown();
@@ -50,27 +47,9 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
         assertNotNull(Jenkins.get().toComputer());
     }
 
-    private MavenModuleSet createSimpleMavenProject() throws Exception {
-        MavenModuleSet project = jenkins.createProject(MavenModuleSet.class, "mms");
-        MavenInstallation mi = ToolInstallations.configureMaven3();
-        project.setScm(new ExtractResourceSCM(getClass().getResource(
-                "/simple-projects.zip")));
-        project.setMaven(mi.getName());
-        project.setGoals("validate");
-        return project;
-    }
-
     private void whenJenkinsMasterHasNoExecutors() throws IOException {
         Jenkins.get().setNumExecutors(0);
         assertNull(Jenkins.get().toComputer());
-    }
-
-    public void testMaven() throws Exception {
-        MavenModuleSet m = createSimpleMavenProject();
-
-        final MavenModuleSetBuild build = buildAndAssertSuccess(m);
-
-        assertGetEnvironmentWorks(build);
     }
 
     public void testFreestyle() throws Exception {

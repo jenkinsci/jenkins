@@ -52,11 +52,12 @@ import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.logging.Level.*;
-import javax.websocket.ClientEndpointConfig;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.Session;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.parse;
+import jakarta.websocket.ClientEndpointConfig;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.Session;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.tyrus.client.ClientManager;
@@ -82,11 +83,11 @@ public class CLI {
             throw new NotTalkingToJenkinsException(c);
     }
     /*package*/ static final class NotTalkingToJenkinsException extends IOException {
-        public NotTalkingToJenkinsException(String s) {
+        NotTalkingToJenkinsException(String s) {
             super(s);
         }
 
-        public NotTalkingToJenkinsException(URLConnection c) {
+        NotTalkingToJenkinsException(URLConnection c) {
             super("There's no Jenkins running at " + c.getURL().toString());
         }
     }
@@ -177,6 +178,7 @@ public class CLI {
                 HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
                 // bypass host name check, too.
                 HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    @Override
                     @SuppressFBWarnings(value = "WEAK_HOSTNAME_VERIFIER", justification = "User set parameter to skip verifier.")
                     public boolean verify(String s, SSLSession sslSession) {
                         return true;
@@ -261,7 +263,7 @@ public class CLI {
         }
 
         if(args.isEmpty())
-            args = Arrays.asList("help"); // default to help
+            args = Collections.singletonList("help"); // default to help
 
         if (mode == null) {
             mode = Mode.HTTP;
@@ -372,7 +374,7 @@ public class CLI {
     private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException {
         LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
         FullDuplexHttpStream streams = new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
-        try (final ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
+        try (ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
             connection.start(args);
             InputStream is = streams.getInputStream();
             if (is.read() != 0) { // cf. FullDuplexHttpService

@@ -34,9 +34,13 @@ import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
-import static jenkins.util.MemoryReductionUtil.*;
+import static jenkins.util.MemoryReductionUtil.EMPTY_STRING_ARRAY;
+import static jenkins.util.MemoryReductionUtil.getPresizedMutableMap;
+import static jenkins.util.MemoryReductionUtil.internInPlace;
 import hudson.util.TextFile;
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
@@ -45,13 +49,16 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -62,6 +69,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -229,14 +238,14 @@ public class UpdateSite {
         }
 
         if (signatureCheck) {
-            FormValidation e = verifySignature(o);
+            FormValidation e = verifySignatureInternal(o);
             if (e.kind!=Kind.OK) {
                 LOGGER.severe(e.toString());
                 return e;
             }
         }
 
-        LOGGER.finest("Obtained the latest update center data file for UpdateSource " + id);
+        LOGGER.fine(() -> "Obtained the latest update center data file for UpdateSource " + id);
         retryWindow = 0;
         getDataFile().write(json);
         data = new Data(o);
@@ -244,7 +253,7 @@ public class UpdateSite {
     }
 
     public FormValidation doVerifySignature() throws IOException {
-        return verifySignature(getJSONObject());
+        return verifySignatureInternal(getJSONObject());
     }
 
     /**
@@ -258,13 +267,14 @@ public class UpdateSite {
      * @since 2.9
      */
     protected UpdateCenter.InstallationJob createInstallationJob(Plugin plugin, UpdateCenter uc, boolean dynamicLoad) {
-        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication(), dynamicLoad);
+        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication2(), dynamicLoad);
     }
 
     /**
      * Verifies the signature in the update center data file.
      */
-    private FormValidation verifySignature(JSONObject o) throws IOException {
+    @Restricted(NoExternalUse.class)
+    public final FormValidation verifySignatureInternal(JSONObject o) throws IOException {
         return getJsonSignatureValidator().verifySignature(o);
     }
 
@@ -332,6 +342,7 @@ public class UpdateSite {
      *
      * @return  null if no data is available.
      */
+    @CheckForNull
     public Data getData() {
         if (data == null) {
             JSONObject o = getJSONObject();
@@ -384,15 +395,12 @@ public class UpdateSite {
             if(p.getInstalled()==null)
                 r.add(p);
         }
-        r.sort(new Comparator<Plugin>() {
-            @Override
-            public int compare(Plugin plugin, Plugin t1) {
-                final int pop = plugin.popularity.compareTo(t1.popularity);
-                if (pop != 0) {
-                    return -pop; // highest popularity first
-                }
-                return plugin.getDisplayName().compareTo(plugin.getDisplayName());
+        r.sort((plugin, t1) -> {
+            final int pop = t1.popularity.compareTo(plugin.popularity);
+            if (pop != 0) {
+                return pop; // highest popularity first
             }
+            return plugin.getDisplayName().compareTo(t1.getDisplayName());
         });
         return r;
     }
@@ -404,8 +412,9 @@ public class UpdateSite {
      *      The short name of the plugin. Corresponds to {@link PluginWrapper#getShortName()}.
      *
      * @return
-     *      null if no such information is found.
+     *      {@code null} if no such information is found.
      */
+    @CheckForNull
     public Plugin getPlugin(String artifactId) {
         Data dt = getData();
         if(dt==null)    return null;
@@ -476,7 +485,7 @@ public class UpdateSite {
     
     /**
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
-     * in Javascript.
+     * in JavaScript.
      */
     @Exported
     public String getUrl() {
@@ -556,6 +565,13 @@ public class UpdateSite {
         private final Set<Warning> warnings = new HashSet<>();
 
         /**
+         * Mapping of plugin IDs to deprecation notices
+         *
+         * @since 2.246
+         */
+        private final Map<String, Deprecation> deprecations = new HashMap<>();
+
+        /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
          * the network connection is up. Null to skip the check.
          */
@@ -581,6 +597,24 @@ public class UpdateSite {
                 }
             }
 
+            JSONObject deprecations = o.optJSONObject("deprecations");
+            if (deprecations != null) {
+                for (Iterator it = deprecations.keys(); it.hasNext(); ) {
+                    try {
+                        String pluginId = it.next().toString();
+                        JSONObject entry = deprecations.getJSONObject(pluginId); // additional level of indirection to support future extensibility
+                        if (entry != null) {
+                            String referenceUrl = entry.getString("url");
+                            if (referenceUrl != null) {
+                                this.deprecations.put(pluginId, new Deprecation(referenceUrl));
+                            }
+                        }
+                    } catch (RuntimeException ex) {
+                        LOGGER.log(Level.WARNING, "Failed to parse JSON for deprecation", ex);
+                    }
+                }
+            }
+
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
@@ -593,6 +627,14 @@ public class UpdateSite {
                     }
                 }
                 plugins.put(Util.intern(e.getKey()), p);
+
+                // compatibility with update sites that have no separate 'deprecated' top-level entry.
+                // Also do this even if there are deprecations to potentially allow limiting the top-level entry to overridden URLs.
+                if (p.hasCategory("deprecated")) {
+                    if (!this.deprecations.containsKey(p.name)) {
+                        this.deprecations.put(p.name, new Deprecation(p.wiki));
+                    }
+                }
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -606,6 +648,16 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
             return this.warnings;
+        }
+
+        /**
+         * Returns the deprecations provided by the update site
+         * @return the deprecations provided by the update site
+         * @since 2.246
+         */
+        @Restricted(NoExternalUse.class)
+        public Map<String, Deprecation> getDeprecations() {
+            return this.deprecations;
         }
 
         /**
@@ -787,6 +839,37 @@ public class UpdateSite {
 
         public boolean includes(VersionNumber number) {
             return pattern.matcher(number.toString()).matches();
+        }
+    }
+
+    /**
+     * Represents a deprecation of a certain component. Jenkins project policy determines exactly what it means.
+     *
+     * @since 2.246
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class Deprecation {
+        /**
+         * URL for this deprecation.
+         *
+         * Jenkins will show a link to this URL when displaying the deprecation message.
+         */
+        public final String url;
+        public Deprecation(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Deprecation that = (Deprecation) o;
+            return Objects.equals(url, that.url);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url);
         }
     }
 
@@ -1010,9 +1093,10 @@ public class UpdateSite {
         public final String minimumJavaVersion;
         /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
-         * Can be null.
+         * Can be {@code null} if the update center does not return categories.
          */
         @Exported
+        @CheckForNull
         public final String[] categories;
 
         /**
@@ -1047,6 +1131,13 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public final Double popularity;
 
+        /**
+         * The latest existing version of this plugin. May be different from the version being offered by the
+         * update site, which will result in a notice on the UI.
+         */
+        @Restricted(NoExternalUse.class)
+        public String latest;
+
         @DataBoundConstructor
         public Plugin(String sourceId, JSONObject o) {
             super(sourceId, o, UpdateSite.this.url);
@@ -1055,6 +1146,7 @@ public class UpdateSite {
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = Util.intern(get(o,"compatibleSinceVersion"));
             this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
+            this.latest = get(o, "latest");
             this.requiredCore = Util.intern(get(o,"requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
             Date date = null;
@@ -1098,7 +1190,15 @@ public class UpdateSite {
 
         }
 
+        @Restricted(NoExternalUse.class)
+        public boolean isDeprecated() {
+            return getDeprecation() != null;
+        }
 
+        @Restricted(NoExternalUse.class)
+        public UpdateSite.Deprecation getDeprecation() {
+            return Jenkins.get().getUpdateCenter().getSite(sourceId).getData().getDeprecations().get(this.name);
+        }
 
         public String getDisplayName() {
             String displayName;
@@ -1414,6 +1514,26 @@ public class UpdateSite {
         }
 
         /**
+         * Checks whether a plugin has a desired category
+         * @since 2.272
+         */
+        public boolean hasCategory(String category) {
+            if (categories == null) {
+                return false;
+            }
+            // TODO: cache it in a hashset for performance improvements
+            return Arrays.asList(categories).contains(category);
+        }
+
+        /**
+         * Get categories stream for further search.
+         * @since 2.272
+         */
+        public Stream<String> getCategoriesStream() {
+            return categories != null ? Arrays.stream(categories) : Stream.empty();
+        }
+
+        /**
          * @since 2.40
          */
         @Restricted(DoNotUse.class)
@@ -1501,7 +1621,7 @@ public class UpdateSite {
         public Future<UpdateCenterJob> deployBackup() {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
-            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication()));
+            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication2()));
         }
         /**
          * Making the installation web bound.

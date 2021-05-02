@@ -27,7 +27,7 @@ package hudson.cli;
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.model.Run;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
@@ -77,7 +77,7 @@ public class SetBuildDescriptionCommandTest {
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Jenkins.READ)
+                .authorizedTo(Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject", "1", "test");
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
@@ -92,19 +92,19 @@ public class SetBuildDescriptionCommandTest {
         assertThat(build.getDescription(), equalTo(null));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Run.UPDATE, Job.READ, Jenkins.READ)
+                .authorizedTo(Run.UPDATE, Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject", "1", "test");
         assertThat(result, succeededSilently());
         assertThat(build.getDescription(), equalTo("test"));
 
         result = command
-                .authorizedTo(Run.UPDATE, Job.READ, Jenkins.READ)
+                .authorizedTo(Run.UPDATE, Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject", "1", "");
         assertThat(result, succeededSilently());
         assertThat(build.getDescription(), equalTo(""));
 
         result = command
-                .authorizedTo(Run.UPDATE, Job.READ, Jenkins.READ)
+                .authorizedTo(Run.UPDATE, Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject", "1", " ");
         assertThat(result, succeededSilently());
         assertThat(build.getDescription(), equalTo(" "));
@@ -112,7 +112,7 @@ public class SetBuildDescriptionCommandTest {
 
     @Test public void setBuildDescriptionShouldFailIfJobDoesNotExist() throws Exception {
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Run.UPDATE, Job.READ, Jenkins.READ)
+                .authorizedTo(Run.UPDATE, Item.READ, Jenkins.READ)
                 .invokeWithArgs("never_created");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -123,7 +123,7 @@ public class SetBuildDescriptionCommandTest {
         j.createFreeStyleProject("never_created");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Run.UPDATE, Job.READ, Jenkins.READ)
+                .authorizedTo(Run.UPDATE, Item.READ, Jenkins.READ)
                 .invokeWithArgs("never_created1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -136,7 +136,7 @@ public class SetBuildDescriptionCommandTest {
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Jenkins.READ)
+                .authorizedTo(Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject", "2", "test");
 
         assertThat(result, failedWith(3));

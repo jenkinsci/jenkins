@@ -1,6 +1,6 @@
 package jenkins.model;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
@@ -73,6 +73,11 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
      * This is the "G(B)" as described in the class javadoc.
      */
     public abstract boolean apply(Run<?,?> run);
+
+    @Override
+    public boolean test(Run<?, ?> run) {
+        return apply(run);
+    }
 
     /** @deprecated No longer used. */
     @Deprecated

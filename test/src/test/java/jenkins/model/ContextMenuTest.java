@@ -33,7 +33,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import static jenkins.model.ModelObjectWithContextMenu.*;
+import static jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import static jenkins.model.ModelObjectWithContextMenu.ContextMenuVisibility;
+import static jenkins.model.ModelObjectWithContextMenu.MenuItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -94,7 +96,7 @@ public class ContextMenuTest {
     }
 
     private static Map<String,String> parse(ContextMenu menu) {
-        Map<String,String> r = new TreeMap<String,String>();
+        Map<String,String> r = new TreeMap<>();
         for (MenuItem mi : menu.items) {
             r.put(mi.url.replaceFirst("^.*/(.)", "$1"), mi.displayName);
         }

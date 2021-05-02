@@ -84,10 +84,11 @@ public abstract class SafeTimerTask extends TimerTask {
      */
     private static boolean ALREADY_LOGGED = false;
 
+    @Override
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             doRun();
         } catch(Throwable t) {
             LOGGER.log(Level.SEVERE, "Timer task "+this+" failed",t);

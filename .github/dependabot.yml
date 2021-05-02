@@ -1,0 +1,43 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    ignore:
+      # see https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487 and https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638
+      # it would be good to update it at some point, but requires significant testing
+      - dependency-name: "org.codehaus.groovy:groovy-all"
+      # see https://github.com/jenkinsci/jenkins/pull/5184 should be updated with groovy-all
+      - dependency-name: "org.fusesource.jansi:jansi"
+      # see https://github.com/jenkinsci/jenkins/pull/5144#pullrequestreview-559661934
+      # will require source code changes to replace javax.mail with jakarta.mail 
+      # and some handling for plugins that depend on javax.mail being provided by Jenkins core.
+      - dependency-name: "com.sun.mail:jakarta.mail"
+      # needs updates in a number of plugins, see https://github.com/jenkinsci/jenkins/pull/5059 and https://github.com/jenkinsci/bom/pull/392
+      - dependency-name: "com.google.guava:*"
+      # this is a banned dependency, we have a hack in our pom to prevent anyone else pulling it in
+      - dependency-name: "javax.servlet.servlet-api"
+      # needs a jakarta upgrade project, imports changed
+      - dependency-name: "jakarta.servlet.jsp.jstl.jakarta.servlet.jsp.jstl-api"
+      # see https://github.com/jenkinsci/jenkins/pull/4224 can't be updated without breaking api
+      - dependency-name: "org.jfree:jfreechart"
+      # needs guava upgrades first https://github.com/jenkinsci/jenkins/pull/5200#pullrequestreview-579741619
+      - dependency-name: "com.google.inject:guice"
+      # the dependency is actually provided by the Web container, hence it is aligned with Jetty. See https://github.com/jenkinsci/jenkins/pull/5211
+      - dependency-name: "javax.servlet:javax.servlet-api"
+      # log4j 1.2.17 is the final 1.x release
+      - dependency-name: "log4j:log4j"
+      # using a newer version clashes in RequireUpperBoundDeps with plugins using a valid script-security dependency
+      - dependency-name: "org.jenkins-ci:symbol-annotation"
+      # Must remain within jetty 9.x until Java 8 support is removed, ignore jetty 10.x and jetty 11.x updates
+      - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
+        versions: ["10.x", "11.x"]
+      # Pending https://github.com/siom79/japicmp/pull/266
+      - dependency-name: "com.github.siom79.japicmp:japicmp-maven-plugin"
+      # Winstone upgrades require multiple changes in pom.xml.  See https://github.com/jenkinsci/jenkins/pull/5439#discussion_r616418468
+      - dependency-name: "org.jenkins-ci:winstone"

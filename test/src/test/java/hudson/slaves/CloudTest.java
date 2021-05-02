@@ -43,8 +43,8 @@ public class CloudTest {
             }
         };
 
-        assertTrue(acl.hasPermission(Jenkins.ANONYMOUS, Cloud.PROVISION));
-        assertFalse(acl.hasPermission(Jenkins.ANONYMOUS, Jenkins.ADMINISTER));
+        assertTrue(acl.hasPermission2(Jenkins.ANONYMOUS2, Cloud.PROVISION));
+        assertFalse(acl.hasPermission2(Jenkins.ANONYMOUS2, Jenkins.ADMINISTER));
         assertEquals(Cloud.PROVISION, Computer.PERMISSIONS.find("Provision"));
     }
 

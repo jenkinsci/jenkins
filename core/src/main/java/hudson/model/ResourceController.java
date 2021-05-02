@@ -48,14 +48,17 @@ public class ResourceController {
      * View of {@link #inProgress} that exposes its {@link ResourceList}.
      */
     private final Collection<ResourceList> resourceView = new AbstractCollection<ResourceList>() {
+        @Override
         public Iterator<ResourceList> iterator() {
             return new AdaptedIterator<ResourceActivity,ResourceList>(inProgress.iterator()) {
+                @Override
                 protected ResourceList adapt(ResourceActivity item) {
                     return item.getResourceList();
                 }
             };
         }
 
+        @Override
         public int size() {
             return inProgress.size();
         }

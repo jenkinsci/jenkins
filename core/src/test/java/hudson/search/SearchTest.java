@@ -50,7 +50,7 @@ public class SearchTest {
 
         SuggestedItem x = Search.find(si, "abc def ghi");
         assertNotNull(x);
-        assertEquals(x.getUrl(),"/abc-def-ghi");
+        assertEquals("/abc-def-ghi", x.getUrl());
 
         List<SuggestedItem> l = Search.suggest(si, "abc def ghi");
         assertEquals(2,l.size());
@@ -68,24 +68,30 @@ public class SearchTest {
         final String searchName = "sameDisplayName";
 
         SearchItem searchItemHit = new SearchItem() {
+            @Override
             public SearchIndex getSearchIndex() {
                     return null;
             }
+            @Override
             public String getSearchName() {
                 return searchName;
             }
+            @Override
             public String getSearchUrl() {
                 return "/job/"+Util.rawEncode(query) + "/";
             }
         };
 
         SearchItem searchItemNoHit = new SearchItem() {
+            @Override
             public SearchIndex getSearchIndex() {
                     return null;
             }
+            @Override
             public String getSearchName() {
                 return searchName;
             }
+            @Override
             public String getSearchUrl() {
                 return "/job/someotherJob/";
             }

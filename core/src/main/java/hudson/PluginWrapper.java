@@ -61,7 +61,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -221,7 +220,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
      * depends on the plugin e.g. UI support library bundle plugin.
      */
-    private static Set<String> CORE_ONLY_DEPENDANT = ImmutableSet.copyOf(Arrays.asList("jenkins-core"));
+    private static Set<String> CORE_ONLY_DEPENDANT = ImmutableSet.copyOf(Collections.singletonList("jenkins-core"));
 
     /**
      * Set the list of components that depend on this plugin.
@@ -364,6 +363,21 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         return dependencies.stream().anyMatch(d -> !d.optional);
     }
 
+    /**
+     * Is this plugin deprecated?
+     *
+     * @return {@code true} if and only if an update site reports deprecations for this plugin.
+     * @since 2.246
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isDeprecated() {
+        /*
+        While better handled in UpdateSite.Plugin that only exists for plugins actively being published.
+        We have no good model for plugin metadata from update sites for plugins not being published.
+         */
+        return !getDeprecations().isEmpty();
+    }
+
     @ExportedBean
     public static final class Dependency {
         @Exported
@@ -435,6 +449,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         this.archive = archive;
     }
 
+    @Override
     public String getDisplayName() {
         return StringUtils.removeStart(getLongName(), "Jenkins ");
     }
@@ -509,10 +524,23 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Gets the instance of {@link Plugin} contributed by this plugin.
+     * @return Plugin instace or {@code null} if it is not present in the plugin instance store.
      */
     public @CheckForNull Plugin getPlugin() {
         PluginInstanceStore pis = Jenkins.lookup(PluginInstanceStore.class);
         return pis != null ? pis.store.get(this) : null;
+    }
+
+    /**
+     * Gets the instance of {@link Plugin} contributed by this plugin.
+     * @throws Exception no plugin in the {@link PluginInstanceStore}
+     */
+    public @NonNull Plugin getPluginOrFail() throws Exception {
+        Plugin plugin = getPlugin();
+        if (plugin == null) {
+            throw new Exception("Cannot find the plugin instance: " + shortName);
+        }
+        return plugin;
     }
 
     /**
@@ -553,8 +581,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Returns a one-line descriptive name of this plugin.
+     *
+     * @deprecated For most purposes, use {@link #getDisplayName()}.
      */
     @Exported
+    @Deprecated
     public String getLongName() {
         String name = manifest.getMainAttributes().getValue("Long-Name");
         if(name!=null)      return name;
@@ -694,9 +725,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * @throws IOException
      */
     private void disableWithoutCheck() throws IOException {
-        // creates an empty file
         try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
-            os.close();
+            // creates an empty file
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
@@ -1044,6 +1074,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Sort by short name.
      */
+    @Override
     public int compareTo(PluginWrapper pw) {
         return shortName.compareToIgnoreCase(pw.shortName);
     }
@@ -1093,7 +1124,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     @Extension
-    public final static PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
+    public static final PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
 
     /**
      * Administrative Monitor for failed plugins
@@ -1105,6 +1136,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             plugins.put(plugin.shortName, plugin);
         }
 
+        @Override
         public boolean isActivated() {
             return !plugins.isEmpty();
         }
@@ -1282,6 +1314,26 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @Restricted(DoNotUse.class) // Jelly
     public List<UpdateSite.Warning> getActiveWarnings() {
         return ExtensionList.lookupSingleton(UpdateSiteWarningsMonitor.class).getActivePluginWarningsByPlugin().getOrDefault(this, Collections.emptyList());
+    }
+
+    @Restricted(NoExternalUse.class)
+    public List<UpdateSite.Deprecation> getDeprecations() {
+        /* Would be much nicer to go through getInfoFromAllSites but that only works for currently published plugins */
+        List<UpdateSite.Deprecation> deprecations = new ArrayList<>();
+        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
+        if (updateCenter.isSiteDataReady()) {
+            for (UpdateSite site : updateCenter.getSites()) {
+                final UpdateSite.Data data = site.getData();
+                if (data != null) {
+                    for (Map.Entry<String, UpdateSite.Deprecation> entry : data.getDeprecations().entrySet()) {
+                        if (entry.getKey().equals(this.shortName)) {
+                            deprecations.add(entry.getValue());
+                        }
+                    }
+                }
+            }
+        }
+        return deprecations;
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginWrapper.class.getName());

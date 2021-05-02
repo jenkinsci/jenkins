@@ -6,6 +6,10 @@ import hudson.util.ListBoxModel.Option;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Util;
+import hudson.util.FormValidation;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -13,6 +17,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
 
 
 /**
@@ -85,6 +90,18 @@ public class TimeZoneProperty extends UserProperty {
             }
             return items;
         }
+
+        public FormValidation doCheckTimeZoneName(@QueryParameter String timeZoneName) {
+            Date now = new Date();
+            if (Util.fixEmpty(timeZoneName) == null) {
+                return FormValidation.ok(Messages.TimeZoneProperty_current_time_in_(TimeZone.getDefault().getDisplayName(), DateFormat.getDateTimeInstance().format(now)));
+            } else {
+                DateFormat localTime = DateFormat.getDateTimeInstance();
+                localTime.setTimeZone(TimeZone.getTimeZone(timeZoneName));
+                return FormValidation.ok(Messages.TimeZoneProperty_current_time_on_server_in_in_proposed_di(TimeZone.getDefault().getDisplayName(), DateFormat.getDateTimeInstance().format(now), localTime.format(now)));
+            }
+        }
+
     }
 
     @Nullable

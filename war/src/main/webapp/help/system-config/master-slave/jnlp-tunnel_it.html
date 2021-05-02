@@ -1,5 +1,5 @@
 <div>
-    Quando si lancia uno slave tramite JNLP, l'agente slave tenta di collegarsi a una specifica porta TCP di
+    Quando si lancia un agente tramite JNLP, l'agente tenta di collegarsi a una specifica porta TCP di
     Jenkins per stabilire un canale di comunicazione.
     Alcune reti configurate in modo sicuro, tuttavia, possono impedire l'instaurazione di questa connessione.
     Ciò può succedere anche quando Jenkins è in esecuzione mascherato da un bilanciatore di carico,
@@ -9,8 +9,8 @@
     <p>
     Quest'opzione di tunneling consente di instradare questa connessione a un altro host/porta ed è utile in
     queste situazioni. Il campo può accettare i formati "<tt>HOST:PORTA</tt>", "<tt>:PORTA</tt>" o "<tt>HOST:</tt>".
-    Con il primo formato, l'agente slave JNLP si collegherà alla porta TCP data sull'host specificato e assumerà
-    che si sia configurata la rete in modo che questa porta inoltri la connessione alla porta TCP dello slave JNLP
+    Con il primo formato, l'agente JNLP si collegherà alla porta TCP data sull'host specificato e assumerà
+    che si sia configurata la rete in modo che questa porta inoltri la connessione alla porta TCP dell'agente JNLP
     Jenkins.
 
     <p>

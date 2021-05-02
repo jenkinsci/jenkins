@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import jenkins.security.NotReallyRoleSensitiveCallable;
-import org.acegisecurity.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 import org.xml.sax.SAXException;
 
 /**
@@ -102,6 +102,7 @@ public abstract class ItemGroupMixIn {
         modulesDir.mkdirs(); // make sure it exists
 
         File[] subdirs = modulesDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File child) {
                 return child.isDirectory();
             }
@@ -135,6 +136,7 @@ public abstract class ItemGroupMixIn {
      * {@link Item} → name function.
      */
     public static final Function1<String,Item> KEYED_BY_NAME = new Function1<String, Item>() {
+        @Override
         public String call(Item item) {
             return item.getName();
         }
@@ -229,7 +231,7 @@ public abstract class ItemGroupMixIn {
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
-                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
+                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication2().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
                 }
             }
         }
@@ -282,7 +284,7 @@ public abstract class ItemGroupMixIn {
                 }
             });
 
-            success = acl.getACL().hasCreatePermission(Jenkins.getAuthentication(), parent, result.getDescriptor())
+            success = acl.getACL().hasCreatePermission2(Jenkins.getAuthentication2(), parent, result.getDescriptor())
                 && result.getDescriptor().isApplicableIn(parent);
 
             add(result);

@@ -2,10 +2,10 @@ package hudson.node_monitors;
 
 import hudson.Extension;
 import hudson.model.Computer;
+import hudson.model.ComputerSet;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.Futures;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -24,7 +24,7 @@ public class NodeMonitorUpdater extends ComputerListener {
     private static final Runnable MONITOR_UPDATER = new Runnable() {
         @Override
         public void run() {
-            for (NodeMonitor nm : Jenkins.get().getComputer().getMonitors()) {
+            for (NodeMonitor nm : ComputerSet.getMonitors()) {
                 nm.triggerUpdate();
             }
         }

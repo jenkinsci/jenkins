@@ -49,6 +49,7 @@ public final class FutureLoad {
         this.duration = duration;
     }
 
+    @Override
     public String toString() {
         return "startTime="+startTime+",#executors="+numExecutors+",duration="+duration;
     }

@@ -7,10 +7,10 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.IllegalArgumentException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -81,13 +81,44 @@ public class PrivateKeyProviderTest {
     }
     
     /**
-    key command: ssh-keygen -f openssh-unsupported -t rsa -b 1024 -p password
-    */
+     key command: ssh-keygen -f openssh-unsupported -t rsa -b 1024 -m PKCS8 -p password
+     */
     @Test
-    public void loadKeyUnsupportedCipher() throws IOException, GeneralSecurityException {
-        File file = new File(this.getClass().getResource("openssh-unsuported").getFile());
+    public void loadKeyOpenSSHPKCS8() throws IOException, GeneralSecurityException {
+        File file = new File(this.getClass().getResource("openssh-pkcs8").getFile());
         String password = "password";
-        assertThrows(NoSuchAlgorithmException.class, () -> PrivateKeyProvider.loadKey(file, password));
+        assertKeyPairNotNull(file, password);
+    }
+
+    /**
+     key command: ssh-keygen -f openssh-unsupported -t rsa -b 1024 -m RFC4716 -p password
+     */
+    @Test
+    public void loadKeyOpenSSHRFC4716() throws IOException, GeneralSecurityException {
+        File file = new File(this.getClass().getResource("openssh-rfc4716").getFile());
+        String password = "password";
+        assertKeyPairNotNull(file, password);
+    }
+
+    /**
+     key command: ssh-keygen -f openssh-unsupported -t rsa -b 1024 -m RFC4716 -p password
+     Copy pasted the same key twice
+     */
+    @Test
+    public void loadKeyOpenSSHMultipleKeys() throws IOException, GeneralSecurityException {
+        File file = new File(this.getClass().getResource("openssh-multiple-keys").getFile());
+        String password = "password";
+        assertThrows(InvalidKeySpecException.class, () -> PrivateKeyProvider.loadKey(file, password));
+    }
+
+    /**
+     * Uses a blank file
+     */
+    @Test
+    public void loadBlankKey() throws IOException, GeneralSecurityException {
+        File file = new File(this.getClass().getResource("blank").getFile());
+        String password = "password";
+        assertThrows(InvalidKeyException.class, () -> PrivateKeyProvider.loadKey(file, password));
     }
 
     /**

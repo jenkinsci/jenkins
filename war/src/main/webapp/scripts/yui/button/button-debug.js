@@ -2695,7 +2695,15 @@ version: 2.9.0
                     m_oSubmitTrigger = this;
                     
                 }
-        
+
+                if (oForm.requestSubmit) {
+                    /*
+                        If 'requestSubmit' is defined, use that instead of manually firing the event and then calling 'submit'.
+                        See https://caniuse.com/mdn-api_htmlformelement_requestsubmit
+                        Passing 'oSrcElement' as parameter doesn't work for some reason, so don't?
+                        */
+                    return oForm.requestSubmit();
+                }
         
                 if (UA.ie && (UA.ie < 9)) {
         

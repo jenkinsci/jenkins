@@ -61,7 +61,7 @@ public class ViewDescriptorTest {
         assertContains(r.jenkins.getDescriptorByType(AllView.DescriptorImpl.class).doAutoCompleteCopyNewItemFrom("../d1/", d2), "../d1/prj");
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"}) // the usual API mistakes
+    @SuppressWarnings({"rawtypes"}) // the usual API mistakes
     public static class RestrictiveFolder extends MockFolder {
 
         public RestrictiveFolder(ItemGroup parent, String name) {
@@ -104,8 +104,13 @@ public class ViewDescriptorTest {
 
         r.jenkins.addView(myListView);
 
-        assertEquals(r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
-                     "You cannot see me.");
+        assertEquals(
+                "You cannot see me.",
+                r.jenkins
+                        .getView("Rock")
+                        .getProperties()
+                        .get(CustomInvisibleProperty.class)
+                        .getSomeProperty());
 
         //WHEN the users goes with "Edit View" on the configure page
         JenkinsRule.WebClient webClient = r.createWebClient();
@@ -129,8 +134,13 @@ public class ViewDescriptorTest {
         //AND THEN after View save, the invisible property is still persisted with the View.
         assertNotNull("The CustomInvisibleProperty should be persisted on the View.",
                       r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class));
-        assertEquals(r.jenkins.getView("Rock").getProperties().get(CustomInvisibleProperty.class).getSomeProperty(),
-                     "You cannot see me.");
+        assertEquals(
+                "You cannot see me.",
+                r.jenkins
+                        .getView("Rock")
+                        .getProperties()
+                        .get(CustomInvisibleProperty.class)
+                        .getSomeProperty());
 
     }
 

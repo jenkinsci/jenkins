@@ -42,6 +42,7 @@ public class DCOMSandbox {
                 defaults.put("rpc.connectionContext","rpc.security.ntlm.NtlmConnectionContext");
         }
 
+        @Override
         protected String getSyntax() {
             return "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
         }
@@ -64,14 +65,17 @@ public class DCOMSandbox {
     static class ServerAlive extends NdrObject {
         // see http://www.hsc.fr/ressources/articles/win_net_srv/rpcss_dcom_interfaces.html
 
+        @Override
         public int getOpnum() {
             return 3;
         }
 
+        @Override
         public void write(NetworkDataRepresentation ndr) {
             // no parameter
         }
 
+        @Override
         public void read(NetworkDataRepresentation ndr) {
             System.out.println("Got " + ndr.readUnsignedLong());
         }

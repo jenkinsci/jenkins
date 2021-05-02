@@ -29,7 +29,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.Util;
-import hudson.slaves.WorkspaceList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,11 +88,8 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 if (check) {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
+                        ws.deleteSuffixesRecursive();
                         ws.deleteRecursive();
-                        FilePath tempDir = WorkspaceList.tempDir(ws);
-                        if (tempDir != null) {
-                            tempDir.deleteRecursive();
-                        }
                     } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }

@@ -29,6 +29,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.util.SystemProperties;
 import java.util.Arrays;
 import hudson.Util;
@@ -267,15 +268,18 @@ public final class Secret implements Serializable {
         public ConverterImpl() {
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return type==Secret.class;
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Secret src = (Secret) source;
             writer.setValue(src.getEncryptedValue());
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return fromString(reader.getValue());
         }
@@ -305,10 +309,12 @@ public final class Secret implements Serializable {
     public static final boolean AUTO_ENCRYPT_PASSWORD_CONTROL = SystemProperties.getBoolean(Secret.class.getName() + ".AUTO_ENCRYPT_PASSWORD_CONTROL", true);
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final */ boolean BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE = SystemProperties.getBoolean(Secret.class.getName() + ".BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE", true);
 
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+            @Override
             public Secret convert(Class type, Object value) {
                 if (value == null) {
                     return null;
@@ -321,6 +327,7 @@ public final class Secret implements Serializable {
         }, Secret.class);
         if (AUTO_ENCRYPT_PASSWORD_CONTROL) {
             Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+                @Override
                 public String convert(Class type, Object value) {
                     if (value == null) {
                         return null;

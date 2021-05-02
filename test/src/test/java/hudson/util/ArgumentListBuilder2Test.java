@@ -27,11 +27,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Proc;
+import hudson.Util;
 import hudson.model.Slave;
 
 import org.apache.tools.ant.util.JavaEnvUtils;
@@ -41,11 +43,10 @@ import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
-import com.google.common.base.Joiner;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.logging.Level;
 import jenkins.util.SystemProperties;
 
@@ -92,7 +93,7 @@ public class ArgumentListBuilder2Test {
 
         String out = echoArgs(specials);
 
-        String expected = String.format("%n%s", Joiner.on(" ").join(specials));
+        String expected = String.format("%n%s", Util.join(Arrays.asList(specials), " "));
         assertThat(out, containsString(expected));
     }
 

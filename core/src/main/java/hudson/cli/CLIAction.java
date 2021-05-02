@@ -61,9 +61,9 @@ import java.util.logging.Logger;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
-import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.springframework.security.core.Authentication;
 
 /**
  * Shows usage of CLI and commands.
@@ -76,16 +76,19 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(CLIAction.class.getName());
 
-    private transient final Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+    private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
 
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return "Jenkins CLI";
     }
 
+    @Override
     public String getUrlName() {
         return "cli";
     }
@@ -118,7 +121,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         if (!WebSockets.isSupported()) {
             return HttpResponses.notFound();
         }
-        Authentication authentication = Jenkins.getAuthentication();
+        Authentication authentication = Jenkins.getAuthentication2();
         return WebSockets.upgrade(new WebSocketSession() {
             ServerSideImpl connection;
             class OutputImpl implements PlainCLIProtocol.Output {
@@ -269,7 +272,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 sendExit(2);
                 return;
             }
-            command.setTransportAuth(authentication);
+            command.setTransportAuth2(authentication);
             command.setClientCharset(encoding);
             CLICommand orig = CLICommand.setCurrent(command);
             try {
@@ -303,7 +306,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             return new FullDuplexHttpService(uuid) {
                 @Override
                 protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {
-                    try (ServerSideImpl connection = new ServerSideImpl(new PlainCLIProtocol.FramedOutput(download), Jenkins.getAuthentication())) {
+                    try (ServerSideImpl connection = new ServerSideImpl(new PlainCLIProtocol.FramedOutput(download), Jenkins.getAuthentication2())) {
                         new PlainCLIProtocol.FramedReader(connection, upload).start();
                         connection.run();
                     }

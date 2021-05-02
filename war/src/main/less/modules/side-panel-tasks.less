@@ -1,14 +1,9 @@
-@import '../abstracts/colors.less';
-@import '../abstracts/font.less';
+@import '../abstracts/theme.less';
 
 #tasks {
   margin-bottom: 20px;
   display: inline-block;
-
-  // The task list is touching the side of the screen. This should be removed
-  // once .side-panel loses it's padding.
-  width: calc(100% + 30px);
-  margin-left: -15px;
+  width: 100%;
 }
 
 #tasks .task {
@@ -19,9 +14,10 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   position: relative;
-  font-size: @font-size-sm;
+  font-size: var(--font-size-sm);
   font-weight: 500;
 }
+
 .task.disabled {
   opacity: 0.5;
   background-color: transparent;
@@ -42,44 +38,50 @@
   padding: 0.5rem 1rem 0.5rem 1.25rem;
   max-width: 100%;
 }
+
 .task-link:link,
 .task-link:visited {
-  color: @text-color;
+  color: var(--link-dark-color);
   text-decoration: none;
+  font-weight: 500;
 
   &:hover,
   &:focus {
-    background-color: #F8F8F8;
+    text-decoration: none;
+    background-color: var(--task-link-bg-color--hover);
   }
 
   &:active {
-    background-color: #EAEFF2;
+    text-decoration: none;
+    background-color: var(--task-link-bg-color--active);
   }
 
   &:focus {
     outline: 0;
     // Use a box-shadow instead of an outline or a border because the alternatives
     // are hidden behind the parent container
-    box-shadow: inset 0 0 0 3px @focus;
+    box-shadow: inset 0 0 0 3px var(--focus);
   }
 }
+
 .task-link--active {
-  background-color: #EAEFF2;
+  background-color: var(--task-link-bg-color--active);
   position: relative;
 
-  &:before {
+  &::before {
     position: absolute;
     left: 0;
     height: 100%;
     content: '';
-    border-left: 4px solid @primary;
+    border-left: 4px solid var(--primary-hover);
   }
 }
+
 .task-link--active:link,
 .task-link--active:visited {
   &:hover,
   &:focus {
-    background-color: #EAEFF2;
+    background-color: var(--task-link-bg-color--active);
   }
 }
 
@@ -109,12 +111,14 @@
   padding-left: 1.25rem;
   width: 100%;
 }
+
 .subtasks .task {
   &:first-of-type {
-    border-top: 2px solid #EAEFF2;
+    border-top: 2px solid #eaeff2;
   }
+
   &:last-of-type {
-    border-bottom: 2px solid #EAEFF2;
+    border-bottom: 2px solid #eaeff2;
   }
 }
 // Some styles should not be applied to tasks or subtasks in nested levels,

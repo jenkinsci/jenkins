@@ -113,10 +113,12 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
         return "administrativeMonitor/"+id;
     }
 
+    @Override
     public String getDisplayName() {
         return id;
     }
 
+    @Override
     public final String getSearchUrl() {
         return getUrl();
     }
@@ -158,6 +160,17 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     public abstract boolean isActivated();
 
     /**
+     * Returns true if this monitor is security related.
+     *
+     * This will be used to determine which icon will be used in the navigation bar.
+     *
+     * @since 2.267
+     */
+    public boolean isSecurity() {
+        return false;
+    }
+
+    /**
      * URL binding to disable this monitor.
      */
     @RequirePOST
@@ -190,6 +203,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * Ensure that URLs in this administrative monitor are only accessible to users with {@link #getRequiredPermission()}.
      */
+    @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         Jenkins.get().checkPermission(getRequiredPermission());

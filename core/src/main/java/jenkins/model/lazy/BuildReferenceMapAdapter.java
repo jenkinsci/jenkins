@@ -51,75 +51,93 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
 
 
+    @Override
     public Comparator<? super Integer> comparator() {
         return core.comparator();
     }
 
+    @Override
     public SortedMap<Integer, R> subMap(Integer fromKey, Integer toKey) {
         return new BuildReferenceMapAdapter<>(loader, core.subMap(fromKey, toKey));
     }
 
+    @Override
     public SortedMap<Integer, R> headMap(Integer toKey) {
         return new BuildReferenceMapAdapter<>(loader, core.headMap(toKey));
     }
 
+    @Override
     public SortedMap<Integer, R> tailMap(Integer fromKey) {
         return new BuildReferenceMapAdapter<>(loader, core.tailMap(fromKey));
     }
 
+    @Override
     public Integer firstKey() {
         return core.firstKey();
     }
 
+    @Override
     public Integer lastKey() {
         return core.lastKey();
     }
 
+    @Override
     public Set<Integer> keySet() {
         return core.keySet();
     }
 
+    @Override
     public Collection<R> values() {
         return new CollectionAdapter(core.values());
     }
 
+    @Override
     public Set<Entry<Integer,R>> entrySet() {
         return new SetAdapter(core.entrySet());
     }
 
+    @Override
     public int size() {
         return core.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return core.isEmpty();
     }
 
+    @Override
     public boolean containsKey(Object key) {
         return core.containsKey(key);
     }
 
+    @Override
     public boolean containsValue(Object value) {
         return core.containsValue(value); // TODO should this be core.containsValue(wrap(value))?
     }
 
+    @Override
     public R get(Object key) {
         return unwrap(core.get(key));
     }
 
+    @Override
     public R put(Integer key, R value) {
         return unwrap(core.put(key, wrap(value)));
     }
 
+    @Override
     public R remove(Object key) {
         return unwrap(core.remove(key));
     }
 
+    @Override
     public void putAll(Map<? extends Integer, ? extends R> m) {
         for (Entry<? extends Integer, ? extends R> e : m.entrySet())
             put(e.getKey(), e.getValue());
     }
 
+    @Override
     public void clear() {
         core.clear();
     }
@@ -145,34 +163,41 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             this.core = core;
         }
 
+        @Override
         public int size() {
             return core.size();
         }
 
+        @Override
         public boolean isEmpty() {
             return core.isEmpty();
         }
 
+        @Override
         public boolean contains(Object o) {
             // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Iterator<R> iterator() {
             // silently drop null, as if we didn't have them in this collection in the first place
             // this shouldn't be indistinguishable from concurrent modifications to the collection
             return Iterators.removeNull(new AdaptedIterator<BuildReference<R>,R>(core.iterator()) {
+                @Override
                 protected R adapt(BuildReference<R> ref) {
                     return unwrap(ref);
                 }
             });
         }
 
+        @Override
         public Object[] toArray() {
             List<Object> list = new ArrayList<>(this);
             return list.toArray();
         }
 
+        @Override
         public <T> T[] toArray(T[] a) {
             int size = size();
             T[] r = a;
@@ -189,16 +214,19 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return r;
         }
 
+        @Override
         public boolean add(R value) {
             return core.add(wrap(value));
         }
 
+        @Override
         public boolean remove(Object o) {
 //            return core.remove(o);
             // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public boolean containsAll(Collection<?> c) {
             for (Object o : c) {
                 if (!contains(o))
@@ -207,6 +235,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return true;
         }
 
+        @Override
         public boolean addAll(Collection<? extends R> c) {
             boolean b=false;
             for (R r : c) {
@@ -215,6 +244,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return b;
         }
 
+        @Override
         public boolean removeAll(Collection<?> c) {
             boolean b=false;
             for (Object o : c) {
@@ -223,11 +253,13 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return b;
         }
 
+        @Override
         public boolean retainAll(Collection<?> c) {
             // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public void clear() {
             core.clear();
         }
@@ -250,32 +282,39 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             this.core = core;
         }
 
+        @Override
         public int size() {
             return core.size();
         }
 
+        @Override
         public boolean isEmpty() {
             return core.isEmpty();
         }
 
+        @Override
         public boolean contains(Object o) {
             // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Iterator<Entry<Integer, R>> iterator() {
             return Iterators.removeNull(new AdaptedIterator<Entry<Integer,BuildReference<R>>,Entry<Integer, R>>(core.iterator()) {
+                @Override
                 protected Entry<Integer, R> adapt(Entry<Integer, BuildReference<R>> e) {
                     return _unwrap(e);
                 }
             });
         }
 
+        @Override
         public Object[] toArray() {
             List<Object> list = new ArrayList<>(this);
             return list.toArray();
         }
 
+        @Override
         public <T> T[] toArray(T[] a) {
             int size = size();
             T[] r = a;
@@ -292,16 +331,19 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return r;
         }
 
+        @Override
         public boolean add(Entry<Integer, R> value) {
             return core.add(_wrap(value));
         }
 
+        @Override
         public boolean remove(Object o) {
 //            return core.remove(o);
             // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public boolean containsAll(Collection<?> c) {
             for (Object o : c) {
                 if (!contains(o))
@@ -310,6 +352,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return true;
         }
 
+        @Override
         public boolean addAll(Collection<? extends Entry<Integer,R>> c) {
             boolean b=false;
             for (Entry<Integer,R> r : c) {
@@ -318,6 +361,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return b;
         }
 
+        @Override
         public boolean removeAll(Collection<?> c) {
             boolean b=false;
             for (Object o : c) {
@@ -326,11 +370,13 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return b;
         }
 
+        @Override
         public boolean retainAll(Collection<?> c) {
             // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public void clear() {
             core.clear();
         }

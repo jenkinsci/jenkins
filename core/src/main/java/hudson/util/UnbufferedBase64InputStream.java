@@ -15,7 +15,9 @@ import java.util.Base64;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.349
+ * @deprecated Use {@link java.util.Base64.Decoder#wrap}.
  */
+@Deprecated
 public class UnbufferedBase64InputStream extends FilterInputStream {
     private byte[] encoded = new byte[4];
     private byte[] decoded;
@@ -63,7 +65,8 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
         while (n>0) {
             int ch = read();
             if (ch<0)   break;
-            n--; r++;
+            n--;
+            r++;
         }
         return r;
     }

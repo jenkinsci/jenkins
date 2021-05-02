@@ -27,7 +27,7 @@ package hudson.cli;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.FreeStyleProject;
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
@@ -67,7 +67,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Jenkins.READ)
+                .authorizedTo(Item.READ, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, failedWith(6));
@@ -86,7 +86,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, failedWith(3));
@@ -106,7 +106,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
         assertThat(result, succeededSilently());
@@ -117,7 +117,7 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobShouldFailIfJobDoesNotExist() throws Exception {
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -129,7 +129,7 @@ public class ReloadJobCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("never_created");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -153,7 +153,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project3, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "aProject3");
 
         assertThat(result, succeededSilently());
@@ -177,7 +177,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created", "aProject1", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -203,7 +203,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "never_created", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -229,7 +229,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "never_created");
 
         assertThat(result, failedWith(5));
@@ -255,7 +255,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "never_created1", "never_created2", "aProject2");
 
         assertThat(result, failedWith(5));
@@ -281,7 +281,7 @@ public class ReloadJobCommandTest {
         changeProjectOnTheDisc(project2, "echo 1", "echo 2");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .authorizedTo(Item.READ, Item.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "aProject1");
 
         assertThat(result, succeededSilently());

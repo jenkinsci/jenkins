@@ -37,7 +37,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     private final Class<T> type;
     private final Class<? extends Enum> milestoneType;
 
-    public TaskMethodFinder(Class<T> type, Class<? extends Enum> milestoneType, ClassLoader cl) {
+    TaskMethodFinder(Class<T> type, Class<? extends Enum> milestoneType, ClassLoader cl) {
         this.type = type;
         this.milestoneType = milestoneType;
         this.cl = cl;
@@ -51,6 +51,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     protected abstract Milestone beforeOf(T i);
     protected abstract boolean fatalOf(T i);
 
+    @Override
     public Collection<Task> discoverTasks(Reactor session) throws IOException {
         List<Task> result = new ArrayList<>();
         for (Method e : Index.list(type, cl, Method.class)) {
@@ -155,26 +156,32 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
             return e;
         }
 
+        @Override
         public Collection<Milestone> requires() {
             return requires;
         }
 
+        @Override
         public Collection<Milestone> attains() {
             return attains;
         }
 
+        @Override
         public String getDisplayName() {
             return getDisplayNameOf(e, i);
         }
 
+        @Override
         public boolean failureIsFatal() {
             return fatalOf(i);
         }
 
+        @Override
         public void run(Reactor session) {
             invoke(e);
         }
 
+        @Override
         public String toString() {
             return e.toString();
         }

@@ -29,9 +29,9 @@ import net.jcip.annotations.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import java.util.logging.Level;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.WARNING;
 
 /**
  * {@link RetentionStrategy} implementation for {@link AbstractCloudComputer} that terminates

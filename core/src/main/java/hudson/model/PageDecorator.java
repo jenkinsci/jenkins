@@ -87,6 +87,7 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
 //    protected PageDecorator() {
 //    }
 
+    @Override
     public final Descriptor<PageDecorator> getDescriptor() {
         return this;
     }

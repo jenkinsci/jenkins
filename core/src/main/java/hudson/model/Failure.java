@@ -62,6 +62,7 @@ public class Failure extends RuntimeException implements HttpResponse {
         generateResponse(req, rsp, node);
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         req.setAttribute("message",getMessage());
         if(pre)

@@ -57,6 +57,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
 //
 // new definitions >= 1.150
 //
+    @Override
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener) {
         if (build instanceof Build)
             return prebuild((Build)build,listener);
@@ -71,11 +72,16 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (this instanceof SimpleBuildStep) {
             // delegate to the overloaded version defined in SimpleBuildStep
-            FilePath workspace = build.getWorkspace();
-            if (workspace == null) {
+            final SimpleBuildStep step = (SimpleBuildStep) this;
+            final FilePath workspace = build.getWorkspace();
+            if (step.requiresWorkspace() && workspace == null) {
                 throw new AbortException("no workspace for " + build);
             }
-            ((SimpleBuildStep) this).perform(build, workspace, launcher, listener);
+            if (workspace != null) { // if we have one, provide it regardless of whether it's _required_
+                step.perform(build, workspace, build.getEnvironment(listener), launcher, listener);
+            } else {
+                step.perform(build, build.getEnvironment(listener), listener);
+            }
             return true;
         } else if (build instanceof Build) {
             // delegate to the legacy signature deprecated in 1.312
@@ -85,6 +91,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
         }
     }
 
+    @Override
     public Action getProjectAction(AbstractProject<?, ?> project) {
         if (project instanceof Project)
             return getProjectAction((Project) project);
@@ -92,6 +99,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return null;
     }
 
+    @Override
     @NonNull
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior

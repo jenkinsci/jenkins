@@ -23,9 +23,16 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.ExtensionPoint;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Label;
+import hudson.model.LoadStatistics;
+import hudson.model.MultiStageTimeSeries;
+import hudson.model.Node;
+import hudson.model.PeriodicWork;
+import hudson.model.Queue;
 import jenkins.model.Jenkins;
 
 import static hudson.model.LoadStatistics.DECAY;
@@ -372,7 +379,7 @@ public class NodeProvisioner {
      * Extension point for node provisioning strategies.
      * @since 1.588
      */
-    public static abstract class Strategy implements ExtensionPoint {
+    public abstract static class Strategy implements ExtensionPoint {
 
         /**
          * Called by {@link NodeProvisioner#update()} to apply this strategy against the specified state.
@@ -705,9 +712,10 @@ public class NodeProvisioner {
                         if (excessWorkload < 0) {
                             break;  // enough agents allocated
                         }
+                        Cloud.CloudState cloudState = new Cloud.CloudState(state.getLabel(), state.getAdditionalPlannedCapacity());
 
                         // Make sure this cloud actually can provision for this label.
-                        if (c.canProvision(state.getLabel())) {
+                        if (c.canProvision(cloudState)) {
                             // provisioning a new node should be conservative --- for example if excessWorkload is 1.4,
                             // we don't want to allocate two nodes but just one.
                             // OTOH, because of the exponential decay, even when we need one agent,
@@ -719,14 +727,13 @@ public class NodeProvisioner {
                             int workloadToProvision = (int) Math.round(Math.floor(excessWorkload + m));
 
                             for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                if (cl.canProvision(c, state.getLabel(), workloadToProvision) != null) {
+                                if (cl.canProvision(c, cloudState, workloadToProvision) != null) {
                                     // consider displaying reasons in a future cloud ux
                                     continue CLOUD;
                                 }
                             }
 
-                            Collection<PlannedNode> additionalCapacities =
-                                    c.provision(state.getLabel(), workloadToProvision);
+                            Collection<PlannedNode> additionalCapacities = c.provision(cloudState, workloadToProvision);
 
                             fireOnStarted(c, state.getLabel(), additionalCapacities);
 
@@ -803,7 +810,9 @@ public class NodeProvisioner {
          * Give some initial warm up time so that statically connected agents
          * can be brought online before we start allocating more.
          */
+        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
         public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
+        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
         public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
 
         @Override
@@ -811,6 +820,7 @@ public class NodeProvisioner {
             return INITIALDELAY;
         }
 
+        @Override
         public long getRecurrencePeriod() {
             return RECURRENCEPERIOD;
         }

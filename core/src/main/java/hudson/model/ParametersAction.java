@@ -50,8 +50,6 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.common.collect.Lists;
-import static com.google.common.collect.Sets.newHashSet;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.util.SystemProperties;
@@ -174,6 +172,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return new VariableResolver.Union<String>(resolvers);
     }
     
+    @Override
     public Iterator<ParameterValue> iterator() {
         return getParameters().iterator();
     }
@@ -192,6 +191,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return null;
     }
 
+    @Override
     public Label getAssignedLabel(SubTask task) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
@@ -201,14 +201,17 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ParameterAction_DisplayName();
     }
 
+    @Override
     public String getIconFileName() {
         return "document-properties.png";
     }
 
+    @Override
     public String getUrlName() {
         return "parameters";
     }
@@ -216,6 +219,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     /**
      * Allow an other build of the same project to be scheduled, if it has other parameters.
      */
+    @Override
     public boolean shouldSchedule(List<Action> actions) {
         List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
         if (others.isEmpty()) {
@@ -242,8 +246,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             parametersAction.safeParameters = this.safeParameters;
             return parametersAction;
         }
-        List<ParameterValue> combinedParameters = Lists.newArrayList(overrides);
-        Set<String> names = newHashSet();
+        List<ParameterValue> combinedParameters = new ArrayList<>(overrides);
+        Set<String> names = new HashSet<>();
 
         for(ParameterValue v : overrides) {
             if (v == null) continue;

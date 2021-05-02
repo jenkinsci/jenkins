@@ -38,6 +38,7 @@ import hudson.security.Permission;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,12 +48,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -75,6 +79,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
 public class ListViewTest {
@@ -85,7 +90,7 @@ public class ListViewTest {
 
     @Issue("JENKINS-15309")
     @LocalData
-    @Test public void nullJobNames() throws Exception {
+    @Test public void nullJobNames() {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
     }
     
@@ -159,15 +164,15 @@ public class ListViewTest {
         v.add(p1);
         v.add(p2);
         v.add(p3);
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2, p3)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2, p3)), new HashSet<>(v.getItems()));
         sub.renameTo("lower");
         MockFolder stuff = top.createProject(MockFolder.class, "stuff");
         Items.move(p1, stuff);
         p3.delete();
         top.createProject(FreeStyleProject.class, "p3");
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
         top.renameTo("upper");
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
     }
 
     @Issue("JENKINS-23893")
@@ -245,7 +250,7 @@ public class ListViewTest {
         ListView v = new ListView("v", j.jenkins);
         v.add(p);
         j.jenkins.addView(v);
-        try (ACLContext acl = ACL.as(User.get("alice"))) {
+        try (ACLContext acl = ACL.as(User.getOrCreateByIdOrFullName("alice"))) {
             p.renameTo("p2");
         }
         assertEquals(Collections.singletonList(p), v.getItems());
@@ -258,7 +263,7 @@ public class ListViewTest {
         StaplerRequest req = mock(StaplerRequest.class);
         StaplerResponse rsp = mock(StaplerResponse.class);
 
-        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), "UTF-8");
+        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), StandardCharsets.UTF_8);
 
         when(req.getMethod()).thenReturn("POST");
         when(req.getParameter("name")).thenReturn("job1");
@@ -292,7 +297,7 @@ public class ListViewTest {
             view.doRemoveJobFromView("job2");
             fail("Remove job2");
         } catch(Failure e) {
-            assertEquals(e.getMessage(), "Query parameter 'name' does not correspond to a known and readable item");
+            assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
         }
     }
 
@@ -350,6 +355,16 @@ public class ListViewTest {
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2, p3, p4));
     }
 
+    @Issue("JENKINS-62661")
+    @Test @LocalData public void migrateStatusFilter() {
+        View v = j.jenkins.getView("testview");
+        assertThat(v, notNullValue());
+        assertThat(v, instanceOf(ListView.class));
+        ListView lv = (ListView) v;
+        StatusFilter sf = lv.getJobFilters().get(StatusFilter.class);
+        assertThat(sf.getStatusFilter(), is(true));
+    }
+
     private static final class AllFilter extends ViewJobFilter {
         @Override
         public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
@@ -366,8 +381,8 @@ public class ListViewTest {
         }
         @Override public ACL getACL(View item) {
             return new ACL() {
-                @Override public boolean hasPermission(Authentication a, Permission permission) {
-                    return a.equals(SYSTEM);
+                @Override public boolean hasPermission2(Authentication a, Permission permission) {
+                    return a.equals(SYSTEM2);
                 }
             };
         }

@@ -296,7 +296,7 @@ public final class XmlFile {
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {
             final String encoding;
-            public Eureka(String encoding) {
+            Eureka(String encoding) {
                 this.encoding = encoding;
             }
         }

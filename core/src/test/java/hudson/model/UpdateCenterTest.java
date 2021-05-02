@@ -114,7 +114,7 @@ public class UpdateCenterTest {
                     buildEntryWithExpectedChecksums(null, null, EMPTY_SHA512), new File("example"));
             fail();
         } catch (Exception e) {
-            assertTrue(e.getMessage().equals("Unable to confirm integrity of downloaded file, refusing installation"));
+            assertEquals("Unable to confirm integrity of downloaded file, refusing installation", e.getMessage());
         }
     }
 
@@ -126,7 +126,7 @@ public class UpdateCenterTest {
                     buildEntryWithExpectedChecksums(null, EMPTY_SHA256, EMPTY_SHA512), new File("example"));
             fail();
         } catch (Exception e) {
-            assertTrue(e.getMessage().equals("Unable to confirm integrity of downloaded file, refusing installation"));
+            assertEquals("Unable to confirm integrity of downloaded file, refusing installation", e.getMessage());
         }
     }
 
@@ -172,14 +172,17 @@ public class UpdateCenterTest {
             this.computedSHA512 = computedSHA512;
         }
 
+        @Override
         public String getComputedSHA1() {
             return this.computedSHA1;
         }
 
+        @Override
         public String getComputedSHA256() {
             return computedSHA256;
         }
 
+        @Override
         public String getComputedSHA512() {
             return computedSHA512;
         }

@@ -24,7 +24,10 @@
 package hudson.slaves;
 
 import com.gargoylesoftware.htmlunit.WebResponse;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;
@@ -52,8 +55,8 @@ public class SlaveComputerTest {
     @Test
     public void testGetAbsoluteRemotePath() throws Exception {
         //default auth
-        Node nodeA = j.createOnlineSlave();
-        String path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
+        DumbSlave nodeA = j.createOnlineSlave();
+        String path = nodeA.getComputer().getAbsoluteRemotePath();
         Assert.assertNotNull(path);
         Assert.assertEquals(getRemoteFS(nodeA, null), path);
 
@@ -65,7 +68,7 @@ public class SlaveComputerTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(authStrategy);
         try(ACLContext context = ACL.as(User.getById(userAlice, true))) {
-            path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
+            path = nodeA.getComputer().getAbsoluteRemotePath();
             Assert.assertNull(path);
             Assert.assertNull(getRemoteFS(nodeA, userAlice));
         }
@@ -74,7 +77,7 @@ public class SlaveComputerTest {
         String userBob = "bob";
         authStrategy.grant(Computer.CONNECT, Jenkins.READ).everywhere().to(userBob);
         try(ACLContext context = ACL.as(User.getById(userBob, true))) {
-            path = ((DumbSlave) nodeA).getComputer().getAbsoluteRemotePath();
+            path = nodeA.getComputer().getAbsoluteRemotePath();
             Assert.assertNotNull(path);
             Assert.assertNotNull(getRemoteFS(nodeA, userBob));
         }

@@ -1,16 +1,22 @@
 Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
         makeButton(e,function(e) {
             var link = $(e.target).up(".advancedLink");
+            var tr;
             link.style.display = "none"; // hide the button
 
-            var container = link.next("table.advancedBody").down(); // TABLE -> TBODY
-
-            var tr = link.up("TR");
+            var container = link.next("table.advancedBody");
+            if (container) {
+                container = container.down(); // TABLE -> TBODY
+                tr = link.up("TR");
+            } else {
+                container = link.next("div.advancedBody");
+                tr = link.up(".tr");
+            }
 
             // move the contents of the advanced portion into the main table
             var nameRef = tr.getAttribute("nameref");
-            while (container.lastChild != null) {
-                var row = container.lastChild;
+            while (container.lastElementChild != null) {
+                var row = container.lastElementChild;
                 if(nameRef!=null && row.getAttribute("nameref")==null)
                     row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
                 $(row).setOpacity(0);

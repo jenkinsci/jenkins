@@ -49,8 +49,8 @@ public class RobustReflectionConverterTest {
     @Test
     public void robustUnmarshalling() {
         Point p = read(new XStream2());
-        assertEquals(p.x,1);
-        assertEquals(p.y,2);
+        assertEquals(1, p.x);
+        assertEquals(2, p.y);
     }
 
     private Point read(XStream xs) {
@@ -113,7 +113,7 @@ public class RobustReflectionConverterTest {
     public static class Bild {
         Steppe[] steppes;
     }
-    public static abstract class Steppe {
+    public abstract static class Steppe {
         int number;
     }
     @Owner("p1")
@@ -130,7 +130,7 @@ public class RobustReflectionConverterTest {
     public static class Boot {}
     public static class Jacket {}
     @Owner("p2")
-    public static abstract class Lover {}
+    public abstract static class Lover {}
     @Owner("p3")
     public static class Billy extends Lover {}
     @Owner("p4")

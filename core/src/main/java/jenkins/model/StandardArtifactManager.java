@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -50,6 +51,7 @@ public class StandardArtifactManager extends ArtifactManager {
 
     @Restricted(NoExternalUse.class)
     @VisibleForTesting
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static FilePath.TarCompression TAR_COMPRESSION = Boolean.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
             ? FilePath.TarCompression.NONE
             : FilePath.TarCompression.GZIP;

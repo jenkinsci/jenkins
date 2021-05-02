@@ -39,11 +39,6 @@ THE SOFTWARE.
       This is required as in some browsers, button doesn't properly provide feedback to user actions
       due to the nature of the hack needed to make copy work.
     </st:attribute>
-    <st:attribute name="container">
-      Specify the CSS selector (like ".foo") that points to the ancestor block element that has "positive:relative".
-      According to ZeroClipboard documentation, having such container would improve the accuracy of invisible flash
-      overlay.
-    </st:attribute>
     <st:attribute name="style">
       Additional CSS styles to apply.
     </st:attribute>
@@ -53,7 +48,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <span class="copy-button ${attrs.clazz}" title="${attrs.tooltip}" text="${attrs.text}"
-    message="${attrs.message}" container="${attrs.container}" style="${attrs.style}">
+    message="${attrs.message}" style="${attrs.style}">
     <input type="button"/>
   </span>
   <st:adjunct includes="lib.layout.copyButton.copyButton"/>

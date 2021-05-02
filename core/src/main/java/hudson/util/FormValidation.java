@@ -36,6 +36,7 @@ import hudson.tasks.Builder;
 import hudson.util.ReflectionUtils.Parameter;
 import jenkins.model.Jenkins;
 
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -61,7 +62,8 @@ import java.util.List;
 import java.util.Locale;
 
 import static hudson.Functions.jsStringEscape;
-import static hudson.Util.*;
+import static hudson.Util.join;
+import static hudson.Util.singleQuote;
 
 /**
  * Represents the result of the form field validation.
@@ -114,6 +116,7 @@ import static hudson.Util.*;
  * @since 1.294
  */
 public abstract class FormValidation extends IOException implements HttpResponse {
+    /* package */ static /* non-final for Groovy */ boolean APPLY_CONTENT_SECURITY_POLICY_HEADERS = SystemProperties.getBoolean(FormValidation.class.getName() + ".applyContentSecurityPolicyHeaders", true);
     /**
      * Indicates the kind of result.
      */
@@ -265,6 +268,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if(message==null)
             return ok();
         return new FormValidation(kind, message) {
+            @Override
             public String renderHtml() {
                 StaplerRequest req = Stapler.getCurrentRequest();
                 if (req == null) { // being called from some other context
@@ -286,6 +290,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation respond(Kind kind, final String html) {
         return new FormValidation(kind) {
+            @Override
             public String renderHtml() {
                 return html;
             }
@@ -301,13 +306,14 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * <p>
      * This is used as a piece in a bigger validation effort.
      */
-    public static abstract class FileValidator {
+    public abstract static class FileValidator {
         public abstract FormValidation validate(File f);
 
         /**
          * Singleton instance that does no check.
          */
         public static final FileValidator NOOP = new FileValidator() {
+            @Override
             public FormValidation validate(File f) {
                 return ok();
             }
@@ -456,7 +462,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * <p>
      * This allows the check method to call various utility methods in a concise syntax.
      */
-    public static abstract class URLCheck {
+    public abstract static class URLCheck {
         /**
          * Opens the given URL and reads text content from it.
          * This method honors Content-type header.
@@ -540,6 +546,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         this.kind = kind;
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         respond(rsp, renderHtml());
     }
@@ -551,6 +558,11 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     protected void respond(StaplerResponse rsp, String html) throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
+        if (APPLY_CONTENT_SECURITY_POLICY_HEADERS) {
+            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                rsp.setHeader(header, "sandbox; default-src 'none';");
+            }
+        }
         rsp.getWriter().print(html);
     }
 

@@ -29,11 +29,10 @@ def l = namespace(lib.LayoutTagLib)
 dl {
     div(class: "alert alert-info") {
         a(name: "resource-root-url")
-
         l.isAdmin() {
-            form(method: "post", action: "${rootURL}/${my.url}/act") {
-                f.submit(name: 'redirect', value: _("Go to resource root URL configuration"))
-                f.submit(name: 'dismiss', value: _("Dismiss"))
+          form(method: "post", action: "${rootURL}/${my.url}/act") {
+              f.submit(name: 'redirect', value: _("Configure resource root URL"))
+              f.submit(name: 'dismiss', value: _("Dismiss"))
             }
         }
 

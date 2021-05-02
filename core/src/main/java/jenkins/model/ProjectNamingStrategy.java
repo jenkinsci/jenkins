@@ -30,7 +30,6 @@ import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
-import jenkins.model.Messages;
 import hudson.util.FormValidation;
 import java.io.IOException;
 
@@ -51,6 +50,7 @@ import org.kohsuke.stapler.QueryParameter;
  */
 public abstract class ProjectNamingStrategy implements Describable<ProjectNamingStrategy>, ExtensionPoint {
 
+    @Override
     public ProjectNamingStrategyDescriptor getDescriptor() {
         return (ProjectNamingStrategyDescriptor) Jenkins.get().getDescriptor(getClass());
     }
@@ -171,6 +171,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             return description;
         }
 
+        @Override
         public boolean isForceExistingJobs() {
             return forceExistingJobs;
         }
@@ -206,7 +207,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
         }
     }
 
-    public static abstract class ProjectNamingStrategyDescriptor extends Descriptor<ProjectNamingStrategy> {
+    public abstract static class ProjectNamingStrategyDescriptor extends Descriptor<ProjectNamingStrategy> {
     }
 
 }

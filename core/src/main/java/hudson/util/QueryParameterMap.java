@@ -38,7 +38,7 @@ import java.util.Map;
  * <p>
  * This class is even useful on the server side, as {@link HttpServletRequest#getParameter(String)}
  * can try to parse into the payload (and that can cause an exception if the payload is already consumed.
- * See HUDSON-8056.)
+ * See JENKINS-8056.)
  *
  * <p>
  * So if you are handling the payload yourself and only want to access the query parameters,

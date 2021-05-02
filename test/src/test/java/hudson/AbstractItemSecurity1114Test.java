@@ -70,7 +70,7 @@ public class AbstractItemSecurity1114Test {
     public static class BypassAccess implements RootAction {
         public Item getDynamic(String name) {
             Item item;
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                  item = Jenkins.get().getItemByFullName(name);
             }
             return item;

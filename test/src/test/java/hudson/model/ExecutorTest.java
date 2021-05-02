@@ -1,6 +1,8 @@
 package hudson.model;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -83,7 +85,7 @@ public class ExecutorTest {
 
         Future<FreeStyleBuild> r = startBlockingBuild(p);
 
-        User johnny = User.get("Johnny");
+        User johnny = User.getOrCreateByIdOrFullName("Johnny");
         p.getLastBuild().getExecutor().interrupt(Result.FAILURE,
                 new UserInterruption(johnny),   // test the merge semantics
                 new UserInterruption(johnny));
@@ -91,7 +93,7 @@ public class ExecutorTest {
         FreeStyleBuild b = r.get();
 
         // make sure this information is recorded
-        assertEquals(b.getResult(), Result.FAILURE);
+        assertEquals(Result.FAILURE, b.getResult());
         InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
         assertEquals(1,iba.getCauses().size());
         assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
@@ -107,7 +109,7 @@ public class ExecutorTest {
         p.setAssignedNode(slave);
 
         Future<FreeStyleBuild> r = startBlockingBuild(p);
-        User johnny = User.get("Johnny");
+        User johnny = User.getOrCreateByIdOrFullName("Johnny");
 
         p.getLastBuild().getBuiltOn().toComputer().disconnect(
                 new OfflineCause.UserCause(johnny, "Taking offline to break your build")
@@ -116,7 +118,7 @@ public class ExecutorTest {
         FreeStyleBuild b = r.get();
 
         String log = b.getLog();
-        assertEquals(b.getResult(), Result.FAILURE);
+        assertEquals(Result.FAILURE, b.getResult());
         assertThat(log, containsString("Finished: FAILURE"));
         assertThat(log, containsString("Build step 'BlockingBuilder' marked build as failure"));
         assertThat(log, containsString("Agent went offline during the build"));

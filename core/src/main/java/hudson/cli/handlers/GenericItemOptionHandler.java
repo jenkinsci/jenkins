@@ -31,13 +31,13 @@ import hudson.security.ACLContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
+import org.springframework.security.core.Authentication;
 
 /**
  * Refers to an {@link Item} by its name.
@@ -61,8 +61,8 @@ public abstract class GenericItemOptionHandler<T extends Item> extends OptionHan
         final String src = params.getParameter(0);
         T s = j.getItemByFullName(src, type());
         if (s == null) {
-            final Authentication who = Jenkins.getAuthentication();
-            try (ACLContext acl = ACL.as(ACL.SYSTEM)) {
+            final Authentication who = Jenkins.getAuthentication2();
+            try (ACLContext acl = ACL.as2(ACL.SYSTEM2)) {
                 Item actual = j.getItemByFullName(src);
                 if (actual == null) {
                     LOGGER.log(Level.FINE, "really no item exists named {0}", src);

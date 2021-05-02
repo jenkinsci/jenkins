@@ -66,6 +66,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
         return new File(Jenkins.get().getRootDir(),getClass().getName());
     }
 
+    @Override
     public abstract String getDisplayName();
 
     /**
@@ -99,7 +100,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
         @Override
         public void run() {
             StreamTaskListener listener = null;
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                 listener = new StreamTaskListener(getLogFile());
                 try {
                     doRun(listener);

@@ -25,7 +25,7 @@
 package hudson.triggers;
 
 import antlr.ANTLRException;
-import com.google.common.base.Preconditions;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -41,6 +41,7 @@ import hudson.model.PersistentDescriptor;
 import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
 import hudson.util.NamingThreadFactory;
@@ -219,7 +220,7 @@ public class SCMTrigger extends Trigger<Item> {
     public static class DescriptorImpl extends TriggerDescriptor implements PersistentDescriptor {
 
         private static ThreadFactory threadFactory() {
-            return new NamingThreadFactory(Executors.defaultThreadFactory(), "SCMTrigger");
+            return new NamingThreadFactory(new DaemonThreadFactory(), "SCMTrigger");
         }
 
         /**
@@ -230,7 +231,7 @@ public class SCMTrigger extends Trigger<Item> {
          * of a potential workspace lock between a build and a polling, we may end up using executor threads unwisely --- they
          * may block.
          */
-        private transient final SequentialExecutionQueue queue = new SequentialExecutionQueue(Executors.newSingleThreadExecutor(threadFactory()));
+        private final transient SequentialExecutionQueue queue = new SequentialExecutionQueue(Executors.newSingleThreadExecutor(threadFactory()));
 
         /**
          * Whether the projects should be polled all in one go in the order of dependencies. The default behavior is
@@ -254,6 +255,7 @@ public class SCMTrigger extends Trigger<Item> {
             return this;
         }
 
+        @Override
         public boolean isApplicable(Item item) {
             return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(item) != null;
         }
@@ -293,6 +295,7 @@ public class SCMTrigger extends Trigger<Item> {
             return r;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.SCMTrigger_DisplayName();
         }
@@ -401,6 +404,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         private boolean on;
 
+        @Override
         public boolean isActivated() {
             return on;
         }
@@ -444,14 +448,17 @@ public class SCMTrigger extends Trigger<Item> {
             return new File(run.getRootDir(),"polling.log");
         }
 
+        @Override
         public String getIconFileName() {
             return "clipboard.png";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "pollingLog";
         }
@@ -506,10 +513,12 @@ public class SCMTrigger extends Trigger<Item> {
             return job().asItem();
         }
 
+        @Override
         public String getIconFileName() {
             return "clipboard.png";
         }
 
+        @Override
         public String getDisplayName() {
             Set<SCMDescriptor<?>> descriptors = new HashSet<>();
             for (SCM scm : job().getSCMs()) {
@@ -518,6 +527,7 @@ public class SCMTrigger extends Trigger<Item> {
             return descriptors.size() == 1 ? Messages.SCMTrigger_getDisplayName(descriptors.iterator().next().getDisplayName()) : Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "scmPollLog";
         }
@@ -553,8 +563,11 @@ public class SCMTrigger extends Trigger<Item> {
             this(null);
         }
         
+        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "False positive")
         public Runner(Action[] actions) {
-            Preconditions.checkNotNull(job, "Runner can't be instantiated when job is null");
+            if (job == null) {
+                throw new NullPointerException("Runner can't be instantiated when job is null");
+            }
 
             if (actions == null) {
                 additionalActions = new Action[0];
@@ -622,6 +635,7 @@ public class SCMTrigger extends Trigger<Item> {
             }
         }
 
+        @Override
         public void run() {
             if (job == null) {
                 return;
@@ -685,7 +699,6 @@ public class SCMTrigger extends Trigger<Item> {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private SCMTriggerItem job() {
         return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
     }
@@ -759,5 +772,6 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * How long is too long for a polling activity to be in the queue?
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit.HOURS.toMillis(1));
 }

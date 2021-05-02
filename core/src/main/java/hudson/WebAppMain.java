@@ -73,9 +73,14 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.Security;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -83,9 +88,6 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class WebAppMain implements ServletContextListener {
-
-    // use RingBufferLogHandler class name to configure for backward compatibility
-    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
 
     /**
      * System property name to force the session tracking by cookie.
@@ -109,13 +111,26 @@ public class WebAppMain implements ServletContextListener {
     @Restricted(NoExternalUse.class)
     public static final String FORCE_SESSION_TRACKING_BY_COOKIE_PROP = WebAppMain.class.getName() + ".forceSessionTrackingByCookie";
 
-    private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
+    private final RingBufferLogHandler handler = new RingBufferLogHandler(WebAppMain.getDefaultRingBufferSize()) {
+      
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
                 super.publish(record);
             }
         }
     };
+
+    /**This getter returns the int DEFAULT_RING_BUFFER_SIZE from the class RingBufferLogHandler from a static context.
+     * Exposes access from RingBufferLogHandler.DEFAULT_RING_BUFFER_SIZE to WebAppMain.
+     * Written for the requirements of JENKINS-50669
+     * @return int This returns DEFAULT_RING_BUFFER_SIZE
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @since 2.259
+     */
+    public static int getDefaultRingBufferSize() {
+        return RingBufferLogHandler.getDefaultRingBufferSize();
+    }
+
     private static final String APP = "app";
     private boolean terminated;
     private Thread initThread;
@@ -123,7 +138,24 @@ public class WebAppMain implements ServletContextListener {
     /**
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
+    @Override
     public void contextInitialized(ServletContextEvent event) {
+        // Nicer console log formatting when using mvn jetty:run.
+        if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {
+            try {
+                Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").newInstance();
+                for (Handler h : java.util.logging.Logger.getLogger("").getHandlers()) {
+                    if (h instanceof ConsoleHandler) {
+                        ((ConsoleHandler) h).setFormatter(formatter);
+                    }
+                }
+            } catch (ClassNotFoundException x) {
+                // ignore
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, null, x);
+            }
+        }
+
         JenkinsJVMAccess._setJenkinsJVM(true);
         final ServletContext context = event.getServletContext();
         File home=null;
@@ -131,6 +163,7 @@ public class WebAppMain implements ServletContextListener {
 
             // use the current request to determine the language
             LocaleProvider.setProvider(new LocaleProvider() {
+                @Override
                 public Locale get() {
                     return Functions.getCurrentLocale();
                 }
@@ -169,7 +202,7 @@ public class WebAppMain implements ServletContextListener {
                 throw new IncompatibleVMDetected(); // nope
             }
 
-//  JNA is no longer a hard requirement. It's just nice to have. See HUDSON-4820 for more context.
+//  JNA is no longer a hard requirement. It's just nice to have. See JENKINS-4820 for more context.
 //            // make sure JNA works. this can fail if
 //            //    - platform is unsupported
 //            //    - JNA is already loaded in another classloader
@@ -224,7 +257,10 @@ public class WebAppMain implements ServletContextListener {
             // check that and report an error
             try {
                 File f = File.createTempFile("test", "test");
-                f.delete();
+                boolean result = f.delete();
+                if (!result) {
+                    LOGGER.log(FINE, "Temp file test.test could not be deleted.");
+                }
             } catch (IOException e) {
                 throw new NoTempDir(e);
             }
@@ -400,8 +436,9 @@ public class WebAppMain implements ServletContextListener {
         return new FileAndDescription(newHome,"$user.home/.jenkins");
     }
 
+    @Override
     public void contextDestroyed(ServletContextEvent event) {
-        try (ACLContext old = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext old = ACL.as2(ACL.SYSTEM2)) {
             Jenkins instance = Jenkins.getInstanceOrNull();
             try {
                 if (instance != null) {

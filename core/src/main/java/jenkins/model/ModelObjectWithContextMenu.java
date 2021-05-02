@@ -70,6 +70,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported(inline=true)
         public final List<MenuItem> items = new ArrayList<>();
         
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
             rsp.serveExposedBean(req,this,Flavor.JSON);
         }
@@ -216,10 +217,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 request.setAttribute("mode","side-panel");
                 // run sidepanel but ignore generated HTML
                 facet.scriptInvoker.invokeScript(request,response,new Script() {
+                    @Override
                     public Script compile() throws JellyException {
                         return this;
                     }
 
+                    @Override
                     public void run(JellyContext context, XMLOutput output) throws JellyTagException {
                         Functions.initPageVariables(context);
                         s.run(context,output);

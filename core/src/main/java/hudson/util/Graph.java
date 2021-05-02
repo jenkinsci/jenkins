@@ -23,10 +23,14 @@
  */
 package hudson.util;
 
+import com.google.common.annotations.VisibleForTesting;
+import jenkins.util.SystemProperties;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.plot.Plot;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -35,7 +39,9 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.util.Calendar;
 import java.awt.image.BufferedImage;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.HeadlessException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
@@ -56,6 +62,9 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
  * @since 1.320
  */
 public abstract class Graph {
+    @Restricted(NoExternalUse.class)
+    /* package for test */ static /* non-final for script console */ int MAX_AREA = SystemProperties.getInteger(Graph.class.getName() + ".maxArea", 10_000_000); // 4k*2.5k
+
     private final long timestamp;
     private final int defaultW;
     private final int defaultH;
@@ -95,7 +104,20 @@ public abstract class Graph {
         Plot p = graph.getPlot();
         p.setBackgroundPaint(plotBg);
 
-        return graph.createBufferedImage(Integer.parseInt(w),Integer.parseInt(h),info);
+        int width = Integer.parseInt(w);
+        int height = Integer.parseInt(h);
+        Dimension safeDimension = safeDimension(width, height, defaultW, defaultH);
+        return graph.createBufferedImage(safeDimension.width, safeDimension.height, info);
+    }
+
+    @Restricted(NoExternalUse.class)
+    @VisibleForTesting
+    public static Dimension safeDimension(int width, int height, int defaultWidth, int defaultHeight) {
+        if (width <= 0 || height <= 0 || width > MAX_AREA/height) {
+            width = defaultWidth;
+            height = defaultHeight;
+        }
+        return new Dimension(width, height);
     }
 
     @NonNull private static Color stringToColor(@CheckForNull String s) {

@@ -13,7 +13,6 @@ import org.junit.Test;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
 
 import java.util.List;
 
@@ -82,11 +81,6 @@ public class HelpLinkTest {
     }
 
     @Test
-    public void mavenConfig() throws Exception {
-        clickAllHelpLinks(j.jenkins.createProject(MavenModuleSet.class, "mms"));
-    }
-
-    @Test
     public void matrixConfig() throws Exception {
         clickAllHelpLinks(j.jenkins.createProject(MatrixProject.class, "mp"));
     }
@@ -113,6 +107,7 @@ public class HelpLinkTest {
 
     public static class HelpNotFoundBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -123,6 +118,7 @@ public class HelpLinkTest {
             }
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }

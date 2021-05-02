@@ -82,7 +82,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         List<HtmlInput> textboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='_.textbox2']");
         assertEquals(2,textboxes.size());
         for (HtmlInput e : textboxes)
-            assertTrue(!e.isDisplayed());
+            assertFalse(e.isDisplayed());
 
         // reveal the text box
         List<HtmlInput> checkboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='inner']");
@@ -110,6 +110,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         beer = (Beer)req.bindJSON(Drink.class,json.getJSONObject("drink"));
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return jenkins.getDescriptorByType(DescriptorImpl.class);
     }
@@ -126,7 +127,7 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         }
     }
 
-    public static abstract class Drink extends AbstractDescribableImpl<Drink> {
+    public abstract static class Drink extends AbstractDescribableImpl<Drink> {
         public String textbox1;
         public Nested inner;
 

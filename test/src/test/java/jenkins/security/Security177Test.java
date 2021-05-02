@@ -31,6 +31,6 @@ public class Security177Test {
 
     private void verifyNoSniff(Page p) {
         String v = p.getWebResponse().getResponseHeaderValue("X-Content-Type-Options");
-        assertEquals(v,"nosniff");
+        assertEquals("nosniff", v);
     }
 }

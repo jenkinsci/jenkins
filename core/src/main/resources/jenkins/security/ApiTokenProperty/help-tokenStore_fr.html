@@ -1,0 +1,17 @@
+<div>
+  Les jetons d'API permettent l'authentification de l'utilisateur lors de l'utilisation du CLI ou des API REST.
+  Merci de <a href="https://jenkins.io/redirect/api-token">consulter le wiki</a> pour plus de détails.<br/>
+  L'identifiant (username) associé au jeton est l'identifiant Jenkins.<br/>
+  <br/>
+  Les bonnes pratiques pour garder vos jetons sécurisés sont:
+  <ul>
+    <li>Utiliser un jeton différent par application, de telle sorte que si l'application est compromise ce jeton peut
+      être révoqué individuellement.</li>
+    <li>Regénérer le jeton tous les 6 mois (en fonction du contexte). L'ancienneté du jeton est affichée.</li>
+    <li>Protéger le jeton autant qu'un mot de passe, il permet d'utiliser Jenkins en votre nom.</li>
+  </ul>
+  <div class="warning">
+    A chaque redémarrage de Jenkins la date de création pour les jetons obsolètes est remise à zéro, c'est à dire que
+    la date peut ne pas être exacte.
+  </div>
+</div>

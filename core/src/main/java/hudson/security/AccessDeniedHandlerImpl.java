@@ -23,17 +23,16 @@
  */
 package hudson.security;
 
-import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.ui.AccessDeniedHandler;
-import org.kohsuke.stapler.WebApp;
-
+import java.io.IOException;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.WebApp;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 /**
  * Handles {@link AccessDeniedException} happened during request processing.
@@ -41,16 +40,16 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
-    public void handle(ServletRequest request, ServletResponse response, AccessDeniedException cause) throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse rsp = (HttpServletResponse) response;
 
+    @Override
+    public void handle(HttpServletRequest req, HttpServletResponse rsp, AccessDeniedException cause) throws IOException, ServletException {
         rsp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         req.setAttribute("exception",cause);
 
-        if (cause instanceof AccessDeniedException2) {
-            ((AccessDeniedException2)cause).reportAsHeaders(rsp);
+        if (cause instanceof AccessDeniedException3) {
+            ((AccessDeniedException3)cause).reportAsHeaders(rsp);
         }
 
         WebApp.get(Jenkins.get().servletContext).getSomeStapler()

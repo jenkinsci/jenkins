@@ -23,6 +23,7 @@
  */
 package hudson.triggers;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -142,6 +143,7 @@ public class SCMTriggerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();
@@ -170,7 +172,7 @@ public class SCMTriggerTest {
 
         List<BuildAction> ba = build.getActions(BuildAction.class);
 
-        assertFalse("There should only be one BuildAction.", ba.size()!=1);
+        assertEquals("There should only be one BuildAction.", 1, ba.size());
     }
 
     @TestExtension

@@ -157,6 +157,7 @@ public abstract class Proc {
         final CountDownLatch latch = new CountDownLatch(1);
         try {
             executor.submit(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (!latch.await(timeout, unit)) {
@@ -297,14 +298,17 @@ public abstract class Proc {
             }
         }
 
+        @Override
         public InputStream getStdout() {
             return stdout;
         }
 
+        @Override
         public InputStream getStderr() {
             return stderr;
         }
 
+        @Override
         public OutputStream getStdin() {
             return stdin;
         }
@@ -395,7 +399,7 @@ public abstract class Proc {
             private final InputStream in;
             private final OutputStream out;
 
-            public StdinCopyThread(String threadName, InputStream in, OutputStream out) {
+            StdinCopyThread(String threadName, InputStream in, OutputStream out) {
                 super(threadName);
                 this.in = in;
                 this.out = out;
@@ -505,6 +509,7 @@ public abstract class Proc {
     /**
      * Debug switch to have the thread display the process it's waiting for.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean SHOW_PID = false;
     
     /**

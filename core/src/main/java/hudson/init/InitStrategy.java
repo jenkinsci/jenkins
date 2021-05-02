@@ -128,10 +128,11 @@ public class InitStrategy {
     private static class FilterByExtension implements FilenameFilter {
         private final List<String> extensions;
 
-        public FilterByExtension(String... extensions) {
+        FilterByExtension(String... extensions) {
             this.extensions = Arrays.asList(extensions);
         }
 
+        @Override
         public boolean accept(File dir, String name) {
             for (String extension : extensions) {
                 if (name.endsWith(extension))

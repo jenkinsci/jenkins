@@ -1,41 +1,42 @@
 <div>
-  I parametri consentono di chiedere agli utenti uno o più input che saranno
-  forniti durante il processo di compilazione. Ad esempio, si potrebbe avere
-  un progetto che esegue dei test a richiesta consentendo agli utenti di
-  caricare un file ZIP contenente i binari da testare. Ciò potrebbe essere
-  implementato aggiungendo qui un <i>Parametro file</i>.
+  I parametri consentono di richiedere agli utenti uno o più input che saranno
+  forniti a una compilazione. Ad esempio, si potrebbe avere un progetto che
+  esegue test su richiesta consentendo agli utenti di caricare un file ZIP
+  contenente i binari da testare. Si potrebbe ottenere tale risultato
+  aggiungendo qui un <i>Parametro file</i>.
   <br>
-  Oppure si potrebbe avere un progetto che rilascia del software e si vorrebbe
+  Oppure si potrebbe avere un progetto che rilascia del software e si desidera
   che gli utenti immettano delle note di rilascio che saranno caricate insieme
-  al software. Ciò potrebbe essere implementato aggiungendo qui un <i>Parametro
-  stringa multiriga</i>.
+  al software. Si potrebbe ottenere tale risultato aggiungendo qui un
+  <i>Parametro stringa multiriga</i>.
   <p>
-  Ogni parametro ha un <i>Nome</i> e qualche <i>Valore</i>, a seconda del tipo
-  di parametro. Queste coppie nome-valore saranno esportate come variabili
-  d'ambiente all'avvio della compilazione, consentendo alle parti successive
-  della configurazione della compilazione (come ai passi di compilazione) di
-  accedere a tali valori, ad esempio utilizzando la sintassi
-  <tt>${NOME_PARAMETRO}</tt> (o <tt>%NOME_PARAMETRO%</tt> su Windows).
+  Ogni parametro ha un <i>Nome</i> e qualche tipo di <i>Valore</i> che
+  dipende dal tipo del parametro. Queste coppie nome-valore saranno esportate
+  come variabili d'ambiente all'avvio della compilazione, consentendo ai
+  passaggi successivi della configurazione della compilazione (come le
+  istruzioni di compilazione) di accedere a tali valori, ad esempio utilizzando
+  la sintassi <tt>${NOME_PARAMETRO}</tt> (o <tt>%NOME_PARAMETRO%</tt> su
+  Windows).
   <br>
-  Ciò implica anche che ogni parametro definito qui debba avere un <i>Nome</i>
-  unico.
+  Ciò implica anche che ogni parametro definito qui debba avere un
+  <i>Nome</i> univoco.
   <p>
-  Quando un progetto è parametrizzato, il collegamento usuale <i>Compila ora</i>
-  sarà sostituito da un collegamento <i>Compila con parametri</i>, con cui
-  sarà richiesto agli utenti di specificare i valori per ognuno dei parametri
-  definiti. Se questi scelgono di non immettere nulla, la compilazione sarà
-  avviata con i valori predefiniti per ogni parametro.
+  Quando un progetto è parametrizzato, il collegamento <i>Compila ora</i>
+  usuale sarà sostituito da un collegamento <i>Compila con parametri</i> dove
+  agli utenti verrà chiesto di specificare i valori per ognuno dei parametri
+  definiti. Se questi scelgono di non immettere nulla, la compilazione verrà
+  avviata con il valore predefinito per ogni parametro.
   <p>
-  Se una compilazione è avviata automaticamente, ad esempio se avviata da un
-  trigger del sistema di controllo del codice sorgente, saranno utilizzati i valori
-  predefiniti per ogni parametro.
+  Se una compilazione è avviata automaticamente, ad esempio se è avviata da
+  un trigger del sistema di gestione del codice sorgente, saranno utilizzati i
+  valori predefiniti per ogni parametro.
   <p>
-  Quando una compilazione parametrizzata è nella coda, i tentativi di avvio
-  di un'altra compilazione dello stesso progetto riusciranno solo se i valori
-  dei parametri sono differenti, o se l'opzione <i>Esegui compilazioni
-  concorrenti se necessario</i> è abilitata.
+  Quando una compilazione parametrizzata è in coda, i tentativi di avvio di
+  un'altra compilazione dello stesso progetto avranno successo solo se i valori
+  dei parametri sono diversi, o se l'opzione <i>Esegui compilazioni concorrenti
+  se necessario</i> è abilitata.
   <p>
   Si veda la <a href="https://jenkins.io/redirect/parameterized-builds"
-  target="_blank">documentazione sulle compilazioni parametrizzate</a> per
+  rel="noopener noreferrer" target="_blank">documentazione sulle compilazioni parametrizzate</a> per
   ulteriori informazioni su questa funzionalità.
 </div>

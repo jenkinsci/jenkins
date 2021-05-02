@@ -23,6 +23,7 @@
  */
 package hudson.logging;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.init.Initializer;
@@ -68,12 +69,14 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
     /**
      * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#name name}.
      */
-    public transient final Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
+    public final transient Map<String,LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
 
+    @Override
     public String getDisplayName() {
         return Messages.LogRecorderManager_DisplayName();
     }
 
+    @Override
     public String getSearchUrl() {
         return "/log";
     }
@@ -122,6 +125,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         return new HttpRedirect(name+"/configure");
     }
 
+    @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         menu.add("all","All Jenkins Logs");
@@ -173,28 +177,34 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         }
 
         RSS.forwardToRss("Jenkins:log (" + entryType + " entries)","", logs, new FeedAdapter<LogRecord>() {
+            @Override
             public String getEntryTitle(LogRecord entry) {
                 return entry.getMessage();
             }
 
+            @Override
             public String getEntryUrl(LogRecord entry) {
                 return "log";   // TODO: one URL for one log entry?
             }
 
+            @Override
             public String getEntryID(LogRecord entry) {
                 return String.valueOf(entry.getSequenceNumber());
             }
 
+            @Override
             public String getEntryDescription(LogRecord entry) {
                 return Functions.printLogRecord(entry);
             }
 
+            @Override
             public Calendar getEntryTimestamp(LogRecord entry) {
                 GregorianCalendar cal = new GregorianCalendar();
                 cal.setTimeInMillis(entry.getMillis());
                 return cal;
             }
 
+            @Override
             public String getEntryAuthor(LogRecord entry) {
                 return JenkinsLocationConfiguration.get().getAdminAddress();
             }
@@ -219,5 +229,6 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(LogRecorderManager.class.getName() + ".skipPermissionCheck");
 }

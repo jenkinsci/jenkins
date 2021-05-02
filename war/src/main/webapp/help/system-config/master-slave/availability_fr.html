@@ -1,50 +1,52 @@
 <div>
-    Contrôle le moment où Jenkins démarrage et arrête l'esclave.
+    Contrôle le moment où Jenkins démarrage et arrête l'agent.
 
     <dl>
         <dt><b>
-            Maintenir l'esclave activé le plus longtemps possible
+            Maintenir l'agent activé le plus longtemps possible
         </b></dt>
         <dd>
             C'est la configuration par défaut et la plus classique.
-            Dans ce mode, Jenkins fait des tests réguliers pour conserver l'esclave
+            Dans ce mode, Jenkins fait des tests réguliers pour conserver l'agent
             actif.
-            Si Jenkins peut démarrer l'esclave sans l'aide de l'utilisateur et
-            que l'esclave n'est pas disponible,
+            <p>
+            Si Jenkins peut démarrer l'agent sans l'aide de l'utilisateur et
+            que l'agent n'est pas disponible,
             il tentera régulièrement de le relancer.
             Jenkins ne cherchera pas à le désactiver.
         </dd>
 
-        <!--dt><b>
-            Arrêter et démarrer l'esclave à des moment spécifiques
+        <dt><b>
+            Activer l'agent à des moments spécifiques
         </b></dt>
         <dd>
-            Dans ce mode, Jenkins conservera l'esclave activé selon les horaires configurés.
-            Si Jenkins peut démarrer l'esclave sans l'aide de l'utilisateur et
-            que l'esclave n'est pas disponible dans la fenêtre où cet
-            il est censé être activé,
-            il tentera régulièrement de le relancer.
-
-            Pendant la fenêtre où l'esclave est censé être désactivé, il ne le sera
-            réellement que s'il n'a pas de job en cours.
-        </dd-->
+            Dans ce mode, Jenkins conservera l'agent activé selon les horaires configurés.
+            <p>
+            Si l'agent n'est pas disponible au moment où il est censé être activé,
+            Jenkins tentera régulièrement de le relancer.
+            <p>
+            Après que l'agent a été activé selon la <i>Durée du mode actif</i>, il sera désactivé.
+            <p>
+            Si <i>Garder actif tant que des builds sont en cours</i> est coché et que l'agent est programmé
+            pour être désactivé, Jenkins attendra que les builds en cours se terminent.
+        </dd>
 
         <dt><b>
-            Activer l'esclave en cas nécessité et le désactiver lorsqu'il n'est plus nécessaire
+            Activer l'agent en cas nécessité et le désactiver lorsqu'il n'est plus nécessaire
         </b></dt>
         <dd>
-            Dans ce mode, si Jenkins peut démarrer l'esclave sans l'aide de l'utilisateur, il
+            Dans ce mode, si Jenkins peut démarrer l'agent sans l'aide de l'utilisateur, il
             cherchera régulièrement à l'activer tant qu'il y aura des jobs en attente
             respectant les critères suivants&nbsp;:
             <ul>
-                <li>Ils sont dans la file d'attente depuis au moins aussi longue que la période d'attente spécifiée</li>
+                <li>Ils sont dans la file d'attente depuis au moins aussi longtemps que le <i>Délai d'attente lors d'une demande</i> spécifié</li>
                 <li>Ils peuvent s'exécuter sur cette machine</li>
             </ul>
 
-            L'esclace sera désactivé si&nbsp;:
+            L'agent sera désactivé si&nbsp;:
             <ul>
-                <li>Il n'y a plus de job en cours sur cet esclave</li>
-                <li>L'esclave a été inactif depuis au moins la période d'inactivité spécifiée</li>
+                <li>Il n'y a plus de jobs en cours sur cet agent</li>
+                <li>L'agent a été inactif depuis au moins le <i>Délai d'inactivité</i> spécifié</li>
             </ul>
         </dd>
     </dl>

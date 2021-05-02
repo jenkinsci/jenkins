@@ -26,6 +26,7 @@ package hudson;
 import hudson.Proc.LocalProc;
 import hudson.model.Computer;
 import jenkins.util.MemoryReductionUtil;
+import hudson.model.Run;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
@@ -39,8 +40,12 @@ import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.tasks.filters.EnvVarsFilterRuleWrapper;
+import jenkins.tasks.filters.EnvVarsFilterLocalRule;
+import jenkins.tasks.filters.EnvVarsFilterableBuilder;
 import org.apache.commons.io.input.NullInputStream;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -90,6 +95,9 @@ public abstract class Launcher {
     @CheckForNull
     protected final VirtualChannel channel;
 
+    @Restricted(Beta.class)
+    protected EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper;
+
     public Launcher(@NonNull TaskListener listener, @CheckForNull VirtualChannel channel) {
         this.listener = listener;
         this.channel = channel;
@@ -101,6 +109,25 @@ public abstract class Launcher {
      */
     protected Launcher(@NonNull Launcher launcher) {
         this(launcher.listener, launcher.channel);
+    }
+
+    /**
+     * Build the environment filter rules that will be applied on the environment variables
+     * @param run The run that requested the command interpretation, could be <code>null</code> if outside of a run context.
+     * @param builder The builder that asked to run this command
+     *
+     * @since 2.246
+     */
+    @Restricted(Beta.class)
+    public void prepareFilterRules(@CheckForNull Run<?,?> run, @NonNull EnvVarsFilterableBuilder builder){
+        List<EnvVarsFilterLocalRule> specificRuleList = builder.buildEnvVarsFilterRules();
+        EnvVarsFilterRuleWrapper ruleWrapper = EnvVarsFilterRuleWrapper.createRuleWrapper(run, builder, this, specificRuleList);
+        this.setEnvVarsFilterRuleWrapper(ruleWrapper);
+    }
+
+    @Restricted(Beta.class)
+    protected void setEnvVarsFilterRuleWrapper(EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper) {
+        this.envVarsFilterRuleWrapper = envVarsFilterRuleWrapper;
     }
 
     /**
@@ -171,6 +198,13 @@ public abstract class Launcher {
         protected InputStream stdin = NULL_INPUT_STREAM;
         @CheckForNull
         protected String[] envs = null;
+        /**
+         * Represent the build step, either from legacy build process or from pipeline one
+         */
+        @CheckForNull
+        @Restricted(Beta.class)
+        protected EnvVarsFilterableBuilder envVarsFilterableBuilder = null;
+
         /**
          * True to reverse the I/O direction.
          *
@@ -446,6 +480,26 @@ public abstract class Launcher {
             return this;
         }
 
+        /**
+         * Specify the build step that want to run the command to enable the environment filters
+         * @return {@code this}
+         * @since 2.246
+         */
+        @Restricted(Beta.class)
+        public ProcStarter buildStep(EnvVarsFilterableBuilder envVarsFilterableBuilder){
+            this.envVarsFilterableBuilder = envVarsFilterableBuilder;
+            return this;
+        }
+
+        /**
+         * @return if set, returns the build step that wants to run the command
+         * @since 2.246
+         */
+        @Restricted(Beta.class)
+        public @CheckForNull
+        EnvVarsFilterableBuilder buildStep() {
+            return envVarsFilterableBuilder;
+        }
 
         /**
          * Starts the new process as configured.
@@ -494,7 +548,7 @@ public abstract class Launcher {
          */
         @NonNull
         public ProcStarter copy() {
-            ProcStarter rhs = new ProcStarter().cmds(commands).pwd(pwd).masks(masks).stdin(stdin).stdout(stdout).stderr(stderr).envs(envs).quiet(quiet);
+            ProcStarter rhs = new ProcStarter().cmds(commands).pwd(pwd).masks(masks).stdin(stdin).stdout(stdout).stderr(stderr).envs(envs).quiet(quiet).buildStep(envVarsFilterableBuilder);
             rhs.stdoutListener = stdoutListener;
             rhs.reverseStdin  = this.reverseStdin;
             rhs.reverseStderr = this.reverseStderr;
@@ -924,6 +978,12 @@ public abstract class Launcher {
 
             EnvVars jobEnv = inherit(ps.envs);
 
+            if (envVarsFilterRuleWrapper != null) {
+                envVarsFilterRuleWrapper.filter(jobEnv, this, listener);
+                // reset the rules to prevent build step without rules configuration to re-use those
+                envVarsFilterRuleWrapper = null;
+            }
+
             // replace variables in command line
             String[] jobCmd = new String[ps.commands.size()];
             for ( int idx = 0 ; idx < jobCmd.length; idx++ )
@@ -940,6 +1000,7 @@ public abstract class Launcher {
             return f==null ? null : new File(f.getRemote());
         }
 
+        @Override
         public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException {
             printCommandLine(cmd, workDir);
 
@@ -1045,6 +1106,7 @@ public abstract class Launcher {
             return super.getChannel();
         }
 
+        @Override
         public Proc launch(ProcStarter ps) throws IOException {
             final OutputStream out = ps.stdout == null || ps.stdoutListener != null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
@@ -1054,7 +1116,11 @@ public abstract class Launcher {
             final String workDir = psPwd==null ? null : psPwd.getRemote();
 
             try {
-                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener)));
+                RemoteLaunchCallable remote = new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.stdoutListener);
+                remote.setEnvVarsFilterRuleWrapper(envVarsFilterRuleWrapper);
+                // reset the rules to prevent build step without rules configuration to re-use those
+                envVarsFilterRuleWrapper = null;
+                return new ProcImpl(getChannel().call(remote));
             } catch (InterruptedException e) {
                 throw (IOException)new InterruptedIOException().initCause(e);
             }
@@ -1091,10 +1157,11 @@ public abstract class Launcher {
         private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {
             private final Map<String, String> modelEnvVars;
 
-            public KillTask(Map<String, String> modelEnvVars) {
+            KillTask(Map<String, String> modelEnvVars) {
                 this.modelEnvVars = modelEnvVars;
             }
 
+            @Override
             public Void call() throws RuntimeException {
                 try {
                     ProcessTree.get().killAll(modelEnvVars);
@@ -1279,8 +1346,10 @@ public abstract class Launcher {
         private final boolean reverseStdin, reverseStdout, reverseStderr;
         private final boolean quiet;
 
-        RemoteLaunchCallable(@NonNull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env, 
-                @CheckForNull InputStream in, boolean reverseStdin, 
+        private EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper;
+
+        RemoteLaunchCallable(@NonNull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env,
+                @CheckForNull InputStream in, boolean reverseStdin,
                 @CheckForNull OutputStream out, boolean reverseStdout, 
                 @CheckForNull OutputStream err, boolean reverseStderr, 
                 boolean quiet, @CheckForNull String workDir, @NonNull TaskListener listener, @CheckForNull TaskListener stdoutListener) {
@@ -1299,9 +1368,18 @@ public abstract class Launcher {
             this.quiet = quiet;
         }
 
+        @Restricted(NoExternalUse.class)
+        public void setEnvVarsFilterRuleWrapper(EnvVarsFilterRuleWrapper envVarsFilterRuleWrapper) {
+            this.envVarsFilterRuleWrapper = envVarsFilterRuleWrapper;
+        }
+
+        @Override
         public RemoteProcess call() throws IOException {
             final Channel channel = getOpenChannelOrFail();
-            Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
+            LocalLauncher localLauncher = new LocalLauncher(listener);
+            localLauncher.setEnvVarsFilterRuleWrapper(envVarsFilterRuleWrapper);
+
+            Launcher.ProcStarter ps = localLauncher.launch();
             ps.cmds(cmd).masks(masks).envs(env).stdin(in).stderr(err).quiet(quiet);
             if (stdoutListener != null) {
                 ps.stdout(stdoutListener.getLogger());
@@ -1316,6 +1394,7 @@ public abstract class Launcher {
             final Proc p = ps.start();
 
             return channel.export(RemoteProcess.class,new RemoteProcess() {
+                @Override
                 public int join() throws InterruptedException, IOException {
                     try {
                         return p.join();
@@ -1333,14 +1412,17 @@ public abstract class Launcher {
                     }
                 }
 
+                @Override
                 public void kill() throws IOException, InterruptedException {
                     p.kill();
                 }
 
+                @Override
                 public boolean isAlive() throws IOException, InterruptedException {
                     return p.isAlive();
                 }
 
+                @Override
                 public IOTriplet getIOtriplet() {
                     IOTriplet r = new IOTriplet();
                     if (reverseStdout)  r.stdout = new RemoteInputStream(p.getStdout());
@@ -1366,7 +1448,7 @@ public abstract class Launcher {
         @NonNull
         private final Map<String,String> envOverrides;
 
-        public RemoteChannelLaunchCallable(@NonNull String[] cmd, @NonNull Pipe out, @NonNull OutputStream err, 
+        RemoteChannelLaunchCallable(@NonNull String[] cmd, @NonNull Pipe out, @NonNull OutputStream err, 
                 @CheckForNull String workDir, @NonNull Map<String,String> envOverrides) {
             this.cmd = cmd;
             this.out = out;
@@ -1375,6 +1457,7 @@ public abstract class Launcher {
             this.envOverrides = envOverrides;
         }
 
+        @Override
         public OutputStream call() throws IOException {
             Process p = Runtime.getRuntime().exec(cmd,
                 Util.mapToEnv(inherit(envOverrides)),

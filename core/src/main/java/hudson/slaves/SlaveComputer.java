@@ -93,13 +93,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
-import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.util.stream.Stream;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
@@ -112,7 +109,7 @@ import org.jenkinsci.remoting.util.LoggingChannelListener;
  */
 public class SlaveComputer extends Computer {
     private volatile Channel channel;
-    private volatile transient boolean acceptingTasks = true;
+    private transient volatile boolean acceptingTasks = true;
     private Charset defaultCharset;
     private Boolean isUnix;
     /**
@@ -275,6 +272,7 @@ public class SlaveComputer extends Computer {
         return l;
     }
 
+    @Override
     protected Future<?> _connect(boolean forceReconnect) {
         if(channel!=null)   return Futures.precomputed(null);
         if(!forceReconnect && isConnecting())
@@ -283,11 +281,12 @@ public class SlaveComputer extends Computer {
             logger.fine("Forcing a reconnect on "+getName());
 
         closeChannel();
+        Throwable threadInfo = new Throwable("launched here");
         return lastConnectActivity = Computer.threadPoolForRemoting.submit(() -> {
             // do this on another thread so that the lengthy launch operation
             // (which is typical) won't block UI thread.
 
-            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {// background activity should run like a super user
+            try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {// background activity should run like a super user
                 log.rewind();
                 try {
                     for (ComputerListener cl : ComputerListener.all())
@@ -295,16 +294,20 @@ public class SlaveComputer extends Computer {
                     offlineCause = null;
                     launcher.launch(SlaveComputer.this, taskListener);
                 } catch (AbortException e) {
+                    e.addSuppressed(threadInfo);
                     taskListener.error(e.getMessage());
                     throw e;
                 } catch (IOException e) {
+                    e.addSuppressed(threadInfo);
                     Util.displayIOException(e,taskListener);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                     throw e;
                 } catch (InterruptedException e) {
+                    e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                     throw e;
                 } catch (Exception e) {
+                    e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                     throw e;
                 }
@@ -643,9 +646,9 @@ public class SlaveComputer extends Computer {
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
-                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
-                    RemotingVersionInfo.getMinimumSupportedVersion()));
+            log.printf("WARNING: Remoting version is older than a minimum required one (%s). " +
+                            "Connection will not be rejected, but the compatibility is NOT guaranteed%n",
+                    RemotingVersionInfo.getMinimumSupportedVersion());
         }
 
         boolean _isUnix = channel.call(new DetectOS());
@@ -674,7 +677,7 @@ public class SlaveComputer extends Computer {
         channel.pinClassLoader(getClass().getClassLoader());
 
         channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 cl.preOnline(this,channel,root,taskListener);
             }
@@ -690,7 +693,7 @@ public class SlaveComputer extends Computer {
                 // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
                 // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,
                 // we'll end up queuing the lot of threads in a pseudo deadlock.
-                // This implementation prevents that by avoiding a lock. HUDSON-1705 is likely a manifestation of this.
+                // This implementation prevents that by avoiding a lock. JENKINS-1705 is likely a manifestation of this.
                 channel.close();
                 throw new IllegalStateException("Already connected");
             }
@@ -704,7 +707,7 @@ public class SlaveComputer extends Computer {
                 statusChangeLock.notifyAll();
             }
         }
-        try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+        try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             for (ComputerListener cl : ComputerListener.all()) {
                 try {
                     cl.onOnline(this,taskListener);
@@ -730,10 +733,12 @@ public class SlaveComputer extends Computer {
         return channel;
     }
 
+    @Override
     public Charset getDefaultCharset() {
         return defaultCharset;
     }
 
+    @Override
     public List<LogRecord> getLogRecords() throws IOException, InterruptedException {
         if(channel==null)
             return Collections.emptyList();
@@ -756,6 +761,7 @@ public class SlaveComputer extends Computer {
     public Future<?> disconnect(OfflineCause cause) {
         super.disconnect(cause);
         return Computer.threadPoolForRemoting.submit(new Runnable() {
+            @Override
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation
                 // (which could be typical) won't block UI thread.
@@ -812,13 +818,23 @@ public class SlaveComputer extends Computer {
 
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
-        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
+        return doJenkinsAgentJnlp(req, res);
+    }
+
+    @WebMethod(name="jenkins-agent.jnlp")
+    public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+        return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
     }
 
     class LowPermissionResponse {
+        @WebMethod(name="jenkins-agent.jnlp")
+        public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+            return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
+        }
+
         @WebMethod(name="slave-agent.jnlp")
         public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
-            return SlaveComputer.this.doSlaveAgentJnlp(req, res);
+            return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
     }
 
@@ -850,6 +866,7 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    @Override
     public RetentionStrategy getRetentionStrategy() {
         Slave n = getNode();
         return n==null ? RetentionStrategy.NOOP : n.getRetentionStrategy();
@@ -953,6 +970,7 @@ public class SlaveComputer extends Computer {
     }
 
     private static class ListFullEnvironment extends MasterToSlaveCallable<Map<String,String>,IOException> {
+        @Override
         public Map<String,String> call() throws IOException {
             Map<String, String> env = new TreeMap<>(System.getenv());
             if(Main.isUnitTest || Main.isDevelopmentMode) {
@@ -968,12 +986,14 @@ public class SlaveComputer extends Computer {
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
     private static final class SlaveVersion extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             try { return Launcher.VERSION; }
-            catch (Throwable ex) { return "< 1.335"; } // Older slave.jar won't have VERSION
+            catch (Throwable ex) { return "< 1.335"; } // Older agent.jar won't have VERSION
         }
     }
     private static final class DetectOS extends MasterToSlaveCallable<Boolean,IOException> {
+        @Override
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
         }
@@ -989,12 +1009,14 @@ public class SlaveComputer extends Computer {
             this.relativePath = relativePath;
         }
 
+        @Override
         public String call() throws IOException {
             return new File(relativePath).getAbsolutePath();
         }
     }
 
     private static final class DetectDefaultCharset extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             return Charset.defaultCharset().name();
         }
@@ -1014,23 +1036,13 @@ public class SlaveComputer extends Computer {
     private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
         final int ringBufferSize;
 
-        public SlaveInitializer(int ringBufferSize) {
+        SlaveInitializer(int ringBufferSize) {
             this.ringBufferSize = ringBufferSize;
         }
 
+        @Override
         public Void call() {
-            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize) {
-                ThreadLocal<Formatter> dummy = ThreadLocal.withInitial(() -> new SimpleFormatter());
-                @Override
-                public /* not synchronized */ void publish(LogRecord record) {
-                    // see LogRecord.writeObject for dangers of serializing non-String/null parameters
-                    if (record.getMessage() != null && record.getParameters() != null && Stream.of(record.getParameters()).anyMatch(p -> p != null && !(p instanceof String))) {
-                        record.setMessage(dummy.get().formatMessage(record));
-                        record.setParameters(null);
-                    }
-                    super.publish(record);
-                }
-            };
+            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 
             // avoid double installation of the handler. Inbound agents can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
@@ -1079,12 +1091,13 @@ public class SlaveComputer extends Computer {
      * Helper method for Jelly.
      */
     @Restricted(DoNotUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.163")
     public static List<SlaveSystemInfo> getSystemInfoExtensions() {
         return SlaveSystemInfo.all();
     }
 
     private static class SlaveLogFetcher extends MasterToSlaveCallable<List<LogRecord>,RuntimeException> {
+        @Override
         public List<LogRecord> call() {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
         }

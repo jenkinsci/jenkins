@@ -1,0 +1,28 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<build>
+    <actions>
+        <hudson.model.CauseAction>
+            <causeBag class="linked-hash-map">
+                <entry>
+                    <hudson.model.Cause_-RemoteCause>
+                        <addr>&lt;img src=x onerror=alert(1)&gt;</addr>
+                        <note>note</note>
+                    </hudson.model.Cause_-RemoteCause>
+                    <int>1</int>
+                </entry>
+            </causeBag>
+        </hudson.model.CauseAction>
+    </actions>
+    <queueId>4</queueId>
+    <timestamp>1595937941553</timestamp>
+    <startTime>1595937941557</startTime>
+    <result>SUCCESS</result>
+    <duration>2</duration>
+    <charset>UTF-8</charset>
+    <keepLog>false</keepLog>
+    <builtOn></builtOn>
+    <workspace>/var/jenkins_home/workspace/fs</workspace>
+    <hudsonVersion>2.249</hudsonVersion>
+    <scm class="hudson.scm.NullChangeLogParser"/>
+    <culprits class="com.google.common.collect.EmptyImmutableSortedSet"/>
+</build>
