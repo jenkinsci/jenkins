@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -91,50 +92,48 @@ public class SystemProperties {
         String getString(String key);
     }
 
+    @Restricted(NoExternalUse.class)
     public static class Access {
-        public final Instant lastAccessTime;
-        public final long accessCount;
-        public final String lastAccessValue;
-        public final Set<StackTraceElement> accessingCode = new HashSet<>();
+        public Instant lastAccessTime;
+        public long accessCount;
+        public String lastAccessValue;
+        public final Set<StackTraceElement> accessingCode = new CopyOnWriteArraySet<>();
 
-        private Access(Instant lastAccessTime, String lastAccessValue, long accessCount) {
+        private Access(Instant lastAccessTime, String lastAccessValue) {
             this.lastAccessTime = lastAccessTime;
             this.lastAccessValue = lastAccessValue;
             this.accessCount = accessCount;
         }
 
-        private Access accessedBy(StackTraceElement ste) {
+        private synchronized Access accessedBy(StackTraceElement ste, Instant now) {
             if (ste != null) {
                 accessingCode.add(ste);
             }
+            accessCount += 1;
+            lastAccessTime = now;
             return this;
         }
 
-        private static Access replacing(Access access, String value) {
+        private static Access updating(Access access, String value) {
             final Instant now = Instant.now();
             final StackTraceElement caller = findAccessingCall();
             if (access == null) {
-                return new Access(now, value, 1).accessedBy(caller);
+                return new Access(now, value).accessedBy(caller, now);
             }
-            return new Access(now, value, access.accessCount + 1).accessedBy(caller);
-        }
-
-        @Override
-        public String toString() {
-            return "Access[lastAccessTime=" + lastAccessTime.toString() +
-                    ";lastAccessValue=" + lastAccessValue +
-                    ";accessCount=" + accessCount +
-                    ";accessingCode=" + accessingCode.stream().map(Objects::toString).collect(Collectors.joining(",")) + "]";
+            return access.accessedBy(caller, now);
         }
     }
 
     private static final Map<String, Access> accesses = new ConcurrentHashMap<>();
 
     private static String recordingAccess(String property, String value) {
-        accesses.compute(property, (k, v) -> Access.replacing(v, value));
+        if (JenkinsJVM.isJenkinsJVM()) {
+            accesses.compute(property, (k, v) -> Access.updating(v, value));
+        }
         return value;
     }
 
+    @Restricted(NoExternalUse.class)
     public static Map<String, Access> getAccesses() {
         return new HashMap<>(accesses);
     }
