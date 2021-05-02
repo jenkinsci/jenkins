@@ -358,7 +358,7 @@ var Class = (function() {
         case 'boolean': return object.toString();
       }
       if (object === null) return 'null';
-      // "|| object.toJSON" below is workaround for Opera 10.52/53 bug, see HUDSON-6424
+      // "|| object.toJSON" below is workaround for Opera 10.52/53 bug, see JENKINS-6424
       if (object.toJSON || object.toJSON) return object.toJSON();
       if (object.ownerDocument === document) return;
       var results = [];

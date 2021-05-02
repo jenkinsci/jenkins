@@ -33,7 +33,12 @@ import hudson.XmlFile;
 import hudson.model.Action;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Failure;
-import hudson.util.*;
+import hudson.util.DescribableList;
+import hudson.util.EditDistance;
+import hudson.util.FormApply;
+import hudson.util.QuotedStringTokenizer;
+import hudson.util.VariableResolver;
+import hudson.util.XStream2;
 import jenkins.model.Jenkins;
 import hudson.model.Label;
 import hudson.model.Saveable;
@@ -176,6 +181,7 @@ public class LabelAtom extends Label implements Saveable {
         return new XmlFile(XSTREAM, new File(Jenkins.get().root, "labels/"+name+".xml"));
     }
 
+    @Override
     public void save() throws IOException {
         if (isInvalidName()) {
             throw new IOException("Invalid label");

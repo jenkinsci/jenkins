@@ -31,7 +31,10 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.util.jna.GNUCLibrary.*;
+import static hudson.util.jna.GNUCLibrary.FD_CLOEXEC;
+import static hudson.util.jna.GNUCLibrary.F_GETFD;
+import static hudson.util.jna.GNUCLibrary.F_SETFD;
+import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import hudson.Platform;
 import jenkins.model.Jenkins;
@@ -57,7 +60,7 @@ public class UnixLifecycle extends Lifecycle {
             // if we are running as daemon, don't fork into background one more time during restart
             args.remove("--daemon");
         } catch (UnsupportedOperationException | LinkageError e) {
-            // can't restart / see HUDSON-3875
+            // can't restart / see JENKINS-3875
             failedToObtainArgs = e;
         }
     }

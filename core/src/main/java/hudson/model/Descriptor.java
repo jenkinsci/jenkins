@@ -44,14 +44,22 @@ import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.BindInterceptor;
+import org.kohsuke.stapler.Facet;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.kohsuke.stapler.lang.Klass;
 import org.springframework.util.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.apache.commons.io.IOUtils;
 
-import static hudson.util.QuotedStringTokenizer.*;
+import static hudson.util.QuotedStringTokenizer.quote;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import javax.servlet.ServletException;
@@ -886,6 +894,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Saves the configuration info to the disk.
      */
+    @Override
     public synchronized void save() {
         if(BulkChange.contains(this))   return;
         try {
@@ -1166,6 +1175,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             return formField;
         }
 
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
                 FormApply.applyResponse("notificationBar.show(" + quote(getMessage())+ ",notificationBar.ERROR)")

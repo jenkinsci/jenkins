@@ -50,6 +50,7 @@ public class TooManyJobsButNoView extends AdministrativeMonitor {
         return Messages.TooManyJobsButNoView_DisplayName();
     }
 
+    @Override
     public boolean isActivated() {
         Jenkins j = Jenkins.get();
         if (j.hasPermission(Jenkins.ADMINISTER)) {

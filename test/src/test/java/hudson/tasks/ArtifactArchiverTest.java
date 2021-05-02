@@ -59,7 +59,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import org.junit.ClassRule;
 
 import org.junit.Rule;
@@ -98,6 +99,7 @@ public class ArtifactArchiverTest {
         Publisher artifactArchiver = new ArtifactArchiver("dir/");
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath dir = build.getWorkspace().child("dir");
                 dir.child("subdir1").mkdirs();
@@ -242,6 +244,7 @@ public class ArtifactArchiverTest {
     }
 
     static class CreateArtifact extends TestBuilder {
+        @Override
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
             return true;
@@ -249,6 +252,7 @@ public class ArtifactArchiverTest {
     }
 
     static class CreateArtifactAndFail extends TestBuilder {
+        @Override
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
             throw new AbortException("failing the build");
@@ -288,6 +292,7 @@ public class ArtifactArchiverTest {
     }
 
     static class CreateDefaultExcludesArtifact extends TestBuilder {
+        @Override
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             FilePath dir = build.getWorkspace().child("dir");
             FilePath subSvnDir = dir.child(".svn");

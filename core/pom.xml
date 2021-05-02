@@ -239,8 +239,8 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <!--
-    still including the xpp3 driver to ensure backwards compatibilty
-    for other plugins that may be depending on it. Not included into BOM
+      still including the xpp3 driver to ensure backwards compatibilty
+      for other plugins that may be depending on it. Not included into BOM
     -->
     <dependency>
       <groupId>xpp3</groupId>
@@ -288,8 +288,8 @@ THE SOFTWARE.
       <artifactId>commons-beanutils</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-compress</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
     </dependency>
     <dependency>
       <groupId>com.sun.mail</groupId>
@@ -477,7 +477,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
     </dependency>
-    <dependency><!-- StAX implementation. See HUDSON-2547. -->
+    <dependency><!-- StAX implementation. See JENKINS-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
     </dependency>
@@ -592,26 +592,26 @@ THE SOFTWARE.
 
   <build>
     <plugins>
-        <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>build-helper-maven-plugin</artifactId>
-         <!-- Version specified in grandparent POM -->
-         <executions>
-             <execution>
-                 <id>add-source</id>
-                 <phase>generate-sources</phase>
-                 <goals>
-                     <goal>add-source</goal>
-                 </goals>
-                 <configuration>
-                     <sources>
-                         <source>${project.build.directory}/generated-sources/antlr</source>
-                         <source>${project.build.directory}/generated-sources/localizer</source>
-                         <source>${project.build.directory}/generated-sources/taglib-interface</source>
-                     </sources>
-                 </configuration>
-             </execution>
-         </executions>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/antlr</source>
+                <source>${project.build.directory}/generated-sources/localizer</source>
+                <source>${project.build.directory}/generated-sources/taglib-interface</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>

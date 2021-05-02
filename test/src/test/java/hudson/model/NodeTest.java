@@ -30,7 +30,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.*;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -46,7 +47,11 @@ import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
@@ -109,7 +114,7 @@ public class NodeTest {
         Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
 
-        final User someone = User.get("someone@somewhere.com");
+        final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
         ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
@@ -117,7 +122,7 @@ public class NodeTest {
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
-        final User root = User.get("root@localhost");
+        final User root = User.getOrCreateByIdOrFullName("root@localhost");
         ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
@@ -257,7 +262,7 @@ public class NodeTest {
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
         SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
 
-        user = User.get("anonymous");
+        user = User.getOrCreateByIdOrFullName("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));
     }
 
@@ -337,7 +342,7 @@ public class NodeTest {
         n4.setLabelString("label1 label");
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
+        p.setAssignedLabel(Label.parseExpression("label1 && (label2 || label3)"));
 
         // Node 1 should not be tied to any labels
         TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();

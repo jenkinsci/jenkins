@@ -165,6 +165,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         }
     }
 
+    @Override
     public StringParameterValue createValue(String value) {
         StringParameterValue parameterValue = new StringParameterValue(getName(), value, getDescription());
         checkValue(parameterValue, value);

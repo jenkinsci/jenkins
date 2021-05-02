@@ -85,6 +85,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Filter for jar files.
      */
     private static final FilenameFilter JAR_FILTER = new FilenameFilter() {
+        @Override
         public boolean accept(File dir,String name) {
             return name.endsWith(".jar");
         }
@@ -320,9 +321,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return base;
     }
 
+    @Override
     public void initializeComponents(PluginWrapper plugin) {
     }
 
+    @Override
     public <T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson) {
 
         List<ExtensionFinder> finders;
@@ -362,6 +365,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return filtered;
     }
 
+    @Override
     public void load(PluginWrapper wrapper) throws IOException {
         // override the context classloader. This no longer makes sense,
         // but it is left for the backward compatibility

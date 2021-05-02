@@ -110,10 +110,12 @@ public class UserSeedProperty extends UserProperty {
     @Extension
     @Symbol("userSeed")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
+        @Override
         public @NonNull String getDisplayName() {
             return Messages.UserSeedProperty_DisplayName();
         }
 
+        @Override
         public UserSeedProperty newInstance(User user) {
             return new UserSeedProperty();
         }

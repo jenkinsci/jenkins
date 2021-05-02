@@ -68,6 +68,7 @@ public abstract class DirScanner implements Serializable {
             }
         }
 
+        @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
             scan(dir,"",visitor);
         }
@@ -126,6 +127,7 @@ public abstract class DirScanner implements Serializable {
             this.followSymlinks = followSymlinks;
         }
 
+        @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
             if(fixEmpty(includes)==null && excludes==null) {
                 // optimization

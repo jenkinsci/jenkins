@@ -32,7 +32,7 @@ import java.nio.charset.CoderResult;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
-import java.nio.*;
+import java.nio.CharBuffer;
 
 /**
  * {@link OutputStream} that writes to {@link Writer}
@@ -57,6 +57,7 @@ public class WriterOutputStream extends OutputStream {
         decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
     }
 
+    @Override
     public void write(int b) throws IOException {
         if(buf.remaining()==0)
             decode(false);

@@ -163,14 +163,17 @@ public class AtomicFileWriter extends Writer {
         core.write(str,off,len);
     }
 
+    @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
         core.write(cbuf,off,len);
     }
 
+    @Override
     public void flush() throws IOException {
         core.flush();
     }
 
+    @Override
     public void close() throws IOException {
         core.close();
     }

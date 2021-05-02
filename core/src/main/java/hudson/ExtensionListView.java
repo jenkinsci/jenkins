@@ -66,10 +66,12 @@ public class ExtensionListView {
                 return storage().iterator();
             }
 
+            @Override
             public T get(int index) {
                 return storage().get(index);
             }
 
+            @Override
             public int size() {
                 return storage().size();
             }

@@ -61,11 +61,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.model.queue.Executables.*;
+import static hudson.model.queue.Executables.getParentOf;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import java.util.Collection;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.queue.AsynchronousExecution;
@@ -580,6 +583,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Human readable name of the Jenkins executor. For the Java thread name use {@link #getName()}.
      */
+    @Override
     public String getDisplayName() {
         return "Executor #"+getNumber();
     }
@@ -932,6 +936,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public <T> T newImpersonatingProxy(Class<T> type, T core) {
         return new InterceptingProxy() {
+            @Override
             protected Object call(Object o, Method m, Object[] args) throws Throwable {
                 final Executor old = IMPERSONATION.get();
                 IMPERSONATION.set(Executor.this);

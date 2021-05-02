@@ -34,6 +34,7 @@ import hudson.model.ReconfigurableDescribable;
 import hudson.model.TaskListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.scm.SCM;
+import hudson.tools.PropertyDescriptor;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
@@ -82,6 +83,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
 
     protected void setNode(N node) { this.node = node; }
 
+    @Override
     public NodePropertyDescriptor getDescriptor() {
         return (NodePropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
@@ -170,6 +172,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
         // default is no-op
     }
 
+    @Override
     public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
         return form==null ? null : getDescriptor().newInstance(req, form);
     }
@@ -186,6 +189,6 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * given project.
      */
     public static List<NodePropertyDescriptor> for_(Node node) {
-        return NodePropertyDescriptor.for_(all(),node);
+        return PropertyDescriptor.for_(all(),node);
     }
 }

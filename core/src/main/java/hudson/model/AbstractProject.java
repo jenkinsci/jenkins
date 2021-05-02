@@ -54,7 +54,8 @@ import hudson.model.queue.SubTaskContributor;
 import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
 
-import static hudson.scm.PollingResult.*;
+import static hudson.scm.PollingResult.BUILD_NOW;
+import static hudson.scm.PollingResult.NO_CHANGES;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
@@ -410,7 +411,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public String getAssignedLabelString() {
         if (canRoam || assignedNode==null)    return null;
         try {
-            LabelExpression.parseExpression(assignedNode);
+            Label.parseExpression(assignedNode);
             return assignedNode;
         } catch (ANTLRException e) {
             // must be old label or host name that includes whitespace or other unsafe chars
@@ -892,6 +893,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    @Override
     public BuildAuthorizationToken getAuthToken() {
         return authToken;
     }
@@ -1145,10 +1147,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return newBuild();
     }
 
+    @Override
     public void checkAbortPermission() {
         checkPermission(CANCEL);
     }
 
+    @Override
     public boolean hasAbortPermission() {
         return hasPermission(CANCEL);
     }
@@ -1981,6 +1985,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
+        @Override
         public int compare(Integer o1, Integer o2) {
             return o2-o1;
         }

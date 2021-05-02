@@ -57,6 +57,19 @@ public class LabelAtomTest {
         assertThat(l2.getClouds(), is(empty()));
     }
 
+    @Test
+    public void isEmpty() throws Exception {
+        Label l = new LabelAtom("label");
+        assertThat(l.isEmpty(), is(true));
+        l = new LabelAtom("label");
+        j.createSlave("node", "label", null);
+        assertThat(l.isEmpty(), is(false));
+        Label l2 = new LabelAtom("label2");
+        Cloud test = new TestCloud("test", "label2");
+        j.jenkins.clouds.add(test);
+        assertThat(l2.isEmpty(), is(false));
+    }
+
     private static class TestCloud extends Cloud {
 
         private final List<Label> labels;

@@ -75,7 +75,11 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -531,10 +535,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
      */
+    @Override
     public String getDisplayName() {
         return Messages.HudsonPrivateSecurityRealm_DisplayName();
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getACL();
     }
@@ -823,6 +829,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
+            @Override
             public UserProperty newInstance(User user) {
                 return null;
             }
@@ -835,6 +842,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @Extension @Symbol("localUsers")
     public static final class ManageUserLinks extends ManagementLink {
+        @Override
         public String getIconFileName() {
             if(Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
                 return "user.png";
@@ -842,10 +850,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return null;    // not applicable now
         }
 
+        @Override
         public String getUrlName() {
             return "securityRealm/";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_DisplayName();
         }
@@ -967,9 +977,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     private static final Filter CREATE_FIRST_USER_FILTER = new Filter() {
+        @Override
         public void init(FilterConfig config) throws ServletException {
         }
 
+        @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             HttpServletRequest req = (HttpServletRequest) request;
 
@@ -990,6 +1002,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
+        @Override
         public void destroy() {
         }
     };

@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.FormEncodingType;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
@@ -65,6 +66,7 @@ import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.net.HttpURLConnection;
@@ -83,7 +85,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -545,7 +547,7 @@ public class ViewTest {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").
             grant(Jenkins.READ).everywhere().toEveryone().
-            grant(Job.READ).everywhere().toEveryone().
+            grant(Item.READ).everywhere().toEveryone().
             grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
         ACL.impersonate2(Jenkins.ANONYMOUS2, new NotReallyRoleSensitiveCallable<Void,Exception>() {
             @Override
@@ -903,6 +905,19 @@ public class ViewTest {
     }
 
     @Test
+    @Issue("SECURITY-1871")
+    public void shouldNotAllowInconsistentViewName() throws IOException {
+        assertNull(j.jenkins.getView("ViewName"));
+        JenkinsRule.WebClient wc = j.createWebClient();
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("createView"), HttpMethod.POST);
+        req.setEncodingType(FormEncodingType.URL_ENCODED);
+        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", "UTF-8"));
+        wc.getPage(req);
+        assertNull(j.jenkins.getView("DifferentViewName"));
+        assertNotNull(j.jenkins.getView("ViewName"));
+    }
+
+    @Test
     public void newJob_iconClassName() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
 
@@ -998,8 +1013,11 @@ public class ViewTest {
         private String primaryView;
 
         private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+            @Override
             protected List<View> views() { return views; }
+            @Override
             protected String primaryView() { return primaryView; }
+            @Override
             protected void primaryView(String name) { primaryView = name; }
         };
 

@@ -157,6 +157,7 @@ public abstract class Proc {
         final CountDownLatch latch = new CountDownLatch(1);
         try {
             executor.submit(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (!latch.await(timeout, unit)) {
@@ -297,14 +298,17 @@ public abstract class Proc {
             }
         }
 
+        @Override
         public InputStream getStdout() {
             return stdout;
         }
 
+        @Override
         public InputStream getStderr() {
             return stderr;
         }
 
+        @Override
         public OutputStream getStdin() {
             return stdin;
         }

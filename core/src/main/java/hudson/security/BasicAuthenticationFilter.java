@@ -92,10 +92,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class BasicAuthenticationFilter implements Filter {
     private ServletContext servletContext;
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         servletContext = filterConfig.getServletContext();
     }
 
+    @Override
     @SuppressWarnings("ACL.impersonate")
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
@@ -190,6 +192,7 @@ public class BasicAuthenticationFilter implements Filter {
     //    }
     //}
 
+    @Override
     public void destroy() {
     }
 }

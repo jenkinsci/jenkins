@@ -43,14 +43,11 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -331,44 +328,44 @@ public class HistoryPageFilterTest {
     @Test
     @Issue("JENKINS-42645")
     public void should_be_case_insensitive_by_default() throws IOException {
-        List<ModelObject> runs = Lists.newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
     }
 
     @Test
     public void should_lower_case_search_string_in_case_insensitive_search() throws IOException {
-        List<ModelObject> runs = Lists.newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
     }
 
     @Test
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_variables() throws IOException {
-        List<ModelObject> runs = ImmutableList.of(
-                new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")),
-                new MockBuild(1).withBuildVariables(ImmutableMap.of("env", "otherEnv")));
+        Iterable<ModelObject> runs = Arrays.asList(
+                new MockBuild(2).withBuildVariables(Collections.singletonMap("env", "dummyEnv")),
+                new MockBuild(1).withBuildVariables(Collections.singletonMap("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
     @Test
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_params() throws IOException {
-        List<ModelObject> runs = ImmutableList.of(
-                new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")),
-                new MockBuild(1).withBuildParameters(ImmutableMap.of("env", "otherEnv")));
+        Iterable<ModelObject> runs = Arrays.asList(
+                new MockBuild(2).withBuildParameters(Collections.singletonMap("env", "dummyEnv")),
+                new MockBuild(1).withBuildParameters(Collections.singletonMap("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
     @Test
     @Issue("JENKINS-40718")
     public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
-        List<ModelObject> runs = ImmutableList.of(
-                new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")),
+        Iterable<ModelObject> runs = Arrays.asList(
+                new MockBuild(2).withBuildParameters(Collections.singletonMap("plainPassword", "pass1plain")),
                 new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("pass1", runs);
     }
 
-    private void assertOneMatchingBuildForGivenSearchStringAndRunItems(String searchString, List<ModelObject> runs) {
+    private void assertOneMatchingBuildForGivenSearchStringAndRunItems(String searchString, Iterable<ModelObject> runs) {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
         //and
@@ -511,8 +508,8 @@ public class HistoryPageFilterTest {
         }
 
         MockBuild withSensitiveBuildParameters(String paramName, String paramValue) throws IOException {
-            addAction(new ParametersAction(ImmutableList.of(createSensitiveStringParameterValue(paramName, paramValue)),
-                    ImmutableList.of(paramName)));
+            addAction(new ParametersAction(Collections.singletonList(createSensitiveStringParameterValue(paramName, paramValue)),
+                    Collections.singletonList(paramName)));
             return this;
         }
 

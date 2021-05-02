@@ -91,6 +91,7 @@ public class DownloadServiceTest extends HudsonTestCase {
         }
 
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<Maven.MavenInstaller> {
+            @Override
             public String getDisplayName() {
                 return "";
             }

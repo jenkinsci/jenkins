@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
 
-import static hudson.util.jna.GNUCLibrary.*;
+import static hudson.util.jna.GNUCLibrary.LIBC;
 
 /**
  * Executes {@link Callable} as the super user, by forking a new process and executing the closure in there
@@ -77,10 +77,12 @@ public abstract class SU {
         String os = Util.fixNull(System.getProperty("os.name"));
         if(os.equals("Linux"))
             return new UnixSu() {
+                @Override
                 protected String sudoExe() {
                     return "sudo";
                 }
 
+                @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     args.prepend(sudoExe(),"-S");
                     listener.getLogger().println("$ "+Util.join(args.toList()," "));
@@ -98,10 +100,12 @@ public abstract class SU {
 
         if(os.equals("SunOS"))
             return new UnixSu() {
+                @Override
                 protected String sudoExe() {
                     return "/usr/bin/pfexec";
                 }
 
+                @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     listener.getLogger().println("Running with embedded_su");
                     ProcessBuilder pb = new ProcessBuilder(args.prepend(sudoExe()).toCommandArray());

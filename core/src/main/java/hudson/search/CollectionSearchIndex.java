@@ -52,12 +52,14 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
         return all == null ? Collections.emptySet() : all;
     }
 
+    @Override
     public void find(String token, List<SearchItem> result) {
         SearchItem p = get(token);
         if(p!=null)
             result.add(p);
     }
 
+    @Override
     public void suggest(String token, List<SearchItem> result) {
         boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
         if(isCaseSensitive){

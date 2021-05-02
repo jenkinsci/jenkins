@@ -51,7 +51,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testReadResolve() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.setUser(user);
         user.addProperty(property);
@@ -85,7 +85,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testGetViews() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -97,7 +97,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testGetView() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -110,7 +110,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testGetPrimaryView() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -124,7 +124,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testCanDelete() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -140,7 +140,7 @@ public class MyViewsPropertyTest {
 
     @Test
     public void testDeleteView() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -173,7 +173,7 @@ public class MyViewsPropertyTest {
 
     @Test
     public void testOnViewRenamed() throws IOException, Failure, FormException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -188,7 +188,7 @@ public class MyViewsPropertyTest {
     @Test
     public void testAddView() throws Exception {
         {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -199,7 +199,7 @@ public class MyViewsPropertyTest {
         }
         rule.jenkins.reload();
         {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = user.getProperty(MyViewsProperty.class);
         assertTrue("Property should save changes.", property.getViews().contains(property.getView("foo")));
         }
@@ -208,7 +208,7 @@ public class MyViewsPropertyTest {
     @Test
     public void testDoCreateView() throws Exception {
         {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -221,14 +221,14 @@ public class MyViewsPropertyTest {
         }
         rule.jenkins.reload();
         {
-        MyViewsProperty property = User.get("User").getProperty(MyViewsProperty.class);
+        MyViewsProperty property = User.getOrCreateByIdOrFullName("User").getProperty(MyViewsProperty.class);
         assertNotNull("Property should save changes", property.getView("foo"));
         }
     }
 
     @Test
     public void testGetACL() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -241,8 +241,8 @@ public class MyViewsPropertyTest {
     @Test
     public void testCheckPermission() throws IOException {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        User user = User.get("User");
-        User user2 = User.get("User2");
+        User user = User.getOrCreateByIdOrFullName("User");
+        User user2 = User.getOrCreateByIdOrFullName("User2");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -278,8 +278,8 @@ public class MyViewsPropertyTest {
     @Test
     public void testHasPermission() throws IOException {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        User user = User.get("User");
-        User user2 = User.get("User2");
+        User user = User.getOrCreateByIdOrFullName("User");
+        User user2 = User.getOrCreateByIdOrFullName("User2");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -298,7 +298,7 @@ public class MyViewsPropertyTest {
     @Issue("JENKINS-48157")
     public void shouldNotFailWhenMigratingLegacyViewsWithoutPrimaryOne() throws IOException {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
 
         // Emulates creation of a new object with Reflection in User#load() does.
         MyViewsProperty property = new MyViewsProperty(null);

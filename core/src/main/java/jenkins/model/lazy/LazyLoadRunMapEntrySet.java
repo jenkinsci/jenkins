@@ -64,10 +64,12 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Entry<Integer,R>> {
             R last = null;
             R next = owner.newestBuild();
 
+            @Override
             public boolean hasNext() {
                 return next!=null;
             }
 
+            @Override
             public Entry<Integer,R> next() {
                 last = next;
                 if (last!=null) {

@@ -41,7 +41,7 @@ THE SOFTWARE.
   <properties>
     <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
-    <stapler.version>1.262</stapler.version>
+    <stapler.version>1.263</stapler.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
@@ -50,7 +50,7 @@ THE SOFTWARE.
       <dependency> <!-- https://docs.spring.io/spring-security/site/docs/5.4.0-M1/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.4.5</version>
+        <version>5.4.6</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -67,7 +67,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.9</version>
+        <version>1.10.10</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -247,7 +247,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
-        <version>1.9.3</version>
+        <version>1.9.4</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -279,7 +279,7 @@ THE SOFTWARE.
         <artifactId>memory-monitor</artifactId>
         <version>1.9</version>
       </dependency>
-      <dependency><!-- StAX implementation. See HUDSON-2547. -->
+      <dependency><!-- StAX implementation. See JENKINS-2547. -->
         <groupId>org.codehaus.woodstox</groupId>
         <artifactId>wstx-asl</artifactId>
         <version>3.2.9</version>
@@ -287,7 +287,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.7.0</version>
+        <version>5.8.0</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -329,7 +329,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.15</version>
+        <version>1.4.16</version>
       </dependency>
       <dependency>
         <groupId>net.sf.kxml</groupId>

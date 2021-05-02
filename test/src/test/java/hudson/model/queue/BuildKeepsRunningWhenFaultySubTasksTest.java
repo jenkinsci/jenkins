@@ -47,16 +47,20 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
             return Collections.singleton(new SubTask() {
                 private final SubTask outer = this;
 
+                @Override
                 public Queue.Executable createExecutable() throws IOException {
                     return new Queue.Executable() {
+                        @Override
                         public SubTask getParent() {
                             return outer;
                         }
 
+                        @Override
                         public void run() {
                             throw new ArrayIndexOutOfBoundsException(ERROR_MESSAGE);
                         }
 
+                        @Override
                         public long getEstimatedDuration() {
                             return 0;
                         }

@@ -277,6 +277,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *
      * @since 1.245
      */
+    @Override
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         XmlFile config = getConfigXml();

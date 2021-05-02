@@ -54,6 +54,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
         super("Fingerprint cleanup");
     }
 
+    @Override
     public long getRecurrencePeriod() {
         return DAY;
     }
@@ -70,6 +71,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
      * Initiates the cleanup of fingerprints IF enabled.
      * In case of configured external storage, the file system based storage cleanup is also performed.
      */
+    @Override
     public void execute(TaskListener listener) {
         if (GlobalFingerprintConfiguration.get().isFingerprintCleanupDisabled()) {
             LOGGER.fine("Fingerprint cleanup is disabled. Skipping execution");
@@ -79,7 +81,7 @@ public class FingerprintCleanupThread extends AsyncPeriodicWork {
 
         if (!(FingerprintStorage.get() instanceof FileFingerprintStorage) &&
                 FingerprintStorage.getFileFingerprintStorage().isReady()) {
-            FileFingerprintStorage.getFileFingerprintStorage().iterateAndCleanupFingerprints(listener);
+            FingerprintStorage.getFileFingerprintStorage().iterateAndCleanupFingerprints(listener);
         }
     }
 

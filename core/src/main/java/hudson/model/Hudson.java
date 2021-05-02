@@ -44,6 +44,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -281,7 +282,7 @@ public class Hudson extends Jenkins {
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
         if (isAdmin(req)) return true;
 
-        rsp.sendError(StaplerResponse.SC_FORBIDDEN);
+        rsp.sendError(HttpServletResponse.SC_FORBIDDEN);
         return false;
     }
 

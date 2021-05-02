@@ -172,14 +172,17 @@ public class UpdateCenterTest {
             this.computedSHA512 = computedSHA512;
         }
 
+        @Override
         public String getComputedSHA1() {
             return this.computedSHA1;
         }
 
+        @Override
         public String getComputedSHA256() {
             return computedSHA256;
         }
 
+        @Override
         public String getComputedSHA512() {
             return computedSHA512;
         }

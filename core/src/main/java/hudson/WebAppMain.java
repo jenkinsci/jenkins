@@ -78,7 +78,9 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 /**
  * Entry point when Hudson is used as a webapp.
@@ -161,6 +163,7 @@ public class WebAppMain implements ServletContextListener {
 
             // use the current request to determine the language
             LocaleProvider.setProvider(new LocaleProvider() {
+                @Override
                 public Locale get() {
                     return Functions.getCurrentLocale();
                 }
@@ -199,7 +202,7 @@ public class WebAppMain implements ServletContextListener {
                 throw new IncompatibleVMDetected(); // nope
             }
 
-//  JNA is no longer a hard requirement. It's just nice to have. See HUDSON-4820 for more context.
+//  JNA is no longer a hard requirement. It's just nice to have. See JENKINS-4820 for more context.
 //            // make sure JNA works. this can fail if
 //            //    - platform is unsupported
 //            //    - JNA is already loaded in another classloader
@@ -433,6 +436,7 @@ public class WebAppMain implements ServletContextListener {
         return new FileAndDescription(newHome,"$user.home/.jenkins");
     }
 
+    @Override
     public void contextDestroyed(ServletContextEvent event) {
         try (ACLContext old = ACL.as2(ACL.SYSTEM2)) {
             Jenkins instance = Jenkins.getInstanceOrNull();

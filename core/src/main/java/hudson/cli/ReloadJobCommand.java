@@ -83,7 +83,7 @@ public class ReloadJobCommand extends CLICommand {
                                 job_s, project.getFullName()));
                 }
 
-                job.checkPermission(AbstractItem.CONFIGURE);
+                job.checkPermission(Item.CONFIGURE);
                 job.doReload();
             } catch (Exception e) {
                 if(hs.size() == 1) {

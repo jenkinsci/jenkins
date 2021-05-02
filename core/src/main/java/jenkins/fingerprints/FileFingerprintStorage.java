@@ -75,6 +75,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Load the Fingerprint with the given unique id.
      */
+    @Override
     public @CheckForNull Fingerprint load(@NonNull String id) throws IOException {
         if (!isAllowed(id)) {
             return null;
@@ -198,6 +199,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Deletes the Fingerprint with the given unique ID.
      */
+    @Override
     public void delete(String id) throws IOException {
         File file = getFingerprintFile(id);
         if (!file.exists()) {
@@ -228,6 +230,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     /**
      * Returns true if there's some data in the local fingerprint database.
      */
+    @Override
     public boolean isReady() {
         return new File(Jenkins.get().getRootDir(),"fingerprints").exists();
     }
@@ -331,6 +334,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
         return FileFingerprintStorage.load(fingerprintFile);
     }
 
+    @Override
     protected Fingerprint getFingerprint(Fingerprint fp) throws IOException {
         return Jenkins.get()._getFingerprint(fp.getHashString());
     }

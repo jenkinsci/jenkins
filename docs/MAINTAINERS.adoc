@@ -60,7 +60,7 @@ GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
 Led by the link:https://jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:https://jenkins.io/download/lts/[Stable release line].
-Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines.
+Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines. LTS release steps are documented in link:https://github.com/jenkins-infra/release/blob/master/.github/ISSUE_TEMPLATE/1-lts-release-checklist.md[jenkins-infra/release]
 
 === Ladder
 

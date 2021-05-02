@@ -99,6 +99,7 @@ public class TableNestChecker extends XMLFilterImpl {
     }
 
     private static final Checker ALL_ALLOWED = new Checker() {
+        @Override
         public boolean isAllowed(String childTag) {
             return true;
         }
@@ -111,6 +112,7 @@ public class TableNestChecker extends XMLFilterImpl {
             this.tags = new HashSet<>(Arrays.asList(tags));
         }
 
+        @Override
         public boolean isAllowed(String childTag) {
             return tags.contains(childTag);
         }

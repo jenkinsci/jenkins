@@ -97,6 +97,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     private void schedule(long interval) {
         Timer.get()
             .scheduleAtFixedRate(new SafeTimerTask() {
+                @Override
                 public void doRun() {
                     triggerUpdate();
                 }

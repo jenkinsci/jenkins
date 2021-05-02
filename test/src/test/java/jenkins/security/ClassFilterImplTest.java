@@ -39,17 +39,21 @@ import hudson.model.Saveable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeThat;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -141,7 +145,7 @@ public class ClassFilterImplTest {
         config.save();
         assertThat(config.getConfigFile().asString(), not(containsString("LinkedListMultimap")));
         config.unrelated = "modified";
-        FileUtils.write(config.getConfigFile().getFile(), new XStream().toXML(config));
+        FileUtils.write(config.getConfigFile().getFile(), new XStream().toXML(config), StandardCharsets.UTF_8);
         assertThat(config.getConfigFile().asString(), allOf(containsString("LinkedListMultimap"), containsString("modified")));
         config.obj = null;
         config.unrelated = null;
@@ -155,7 +159,7 @@ public class ClassFilterImplTest {
 
     @Test
     @Issue("JENKINS-49543")
-    public void moduleClassesShouldBeWhitelisted() throws Exception {
+    public void moduleClassesShouldBeWhitelisted() {
         ClassFilterImpl filter = new ClassFilterImpl();
         filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
         filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");

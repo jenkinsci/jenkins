@@ -14,9 +14,6 @@ updates:
       - dependency-name: "org.codehaus.groovy:groovy-all"
       # see https://github.com/jenkinsci/jenkins/pull/5184 should be updated with groovy-all
       - dependency-name: "org.fusesource.jansi:jansi"
-      # see https://github.com/jenkinsci/jenkins/pull/4328 and https://github.com/jenkinsci/jenkins/pull/4928#issuecomment-730224123
-      # fix requires investigation, for now we don't want dependabot updating it
-      - dependency-name: "commons-beanutils:commons-beanutils"
       # see https://github.com/jenkinsci/jenkins/pull/5144#pullrequestreview-559661934
       # will require source code changes to replace javax.mail with jakarta.mail 
       # and some handling for plugins that depend on javax.mail being provided by Jenkins core.
@@ -37,3 +34,10 @@ updates:
       - dependency-name: "log4j:log4j"
       # using a newer version clashes in RequireUpperBoundDeps with plugins using a valid script-security dependency
       - dependency-name: "org.jenkins-ci:symbol-annotation"
+      # Must remain within jetty 9.x until Java 8 support is removed, ignore jetty 10.x and jetty 11.x updates
+      - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
+        versions: ["10.x", "11.x"]
+      # Pending https://github.com/siom79/japicmp/pull/266
+      - dependency-name: "com.github.siom79.japicmp:japicmp-maven-plugin"
+      # Winstone upgrades require multiple changes in pom.xml.  See https://github.com/jenkinsci/jenkins/pull/5439#discussion_r616418468
+      - dependency-name: "org.jenkins-ci:winstone"

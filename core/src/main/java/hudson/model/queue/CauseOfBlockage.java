@@ -80,6 +80,7 @@ public abstract class CauseOfBlockage {
             this.l = l;
         }
 
+        @Override
         public String getShortDescription() {
             return l.toString();
         }
@@ -95,6 +96,7 @@ public abstract class CauseOfBlockage {
             this.node = node;
         }
 
+        @Override
         public String getShortDescription() {
             String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_NodeOffline(name);
@@ -144,6 +146,7 @@ public abstract class CauseOfBlockage {
             this.label = l;
         }
 
+        @Override
         public String getShortDescription() {
             if (label.isEmpty()) {
                 return Messages.Queue_LabelHasNoNodes(label.getName());
@@ -173,6 +176,7 @@ public abstract class CauseOfBlockage {
             this.node = node;
         }
 
+        @Override
         public String getShortDescription() {
             String name = (node.toComputer() != null) ? node.toComputer().getDisplayName() : node.getDisplayName();
             return Messages.Queue_WaitingForNextAvailableExecutorOn(name);
@@ -194,6 +198,7 @@ public abstract class CauseOfBlockage {
             this.label = label;
         }
 
+        @Override
         public String getShortDescription() {
             return Messages.Queue_WaitingForNextAvailableExecutorOn(label.getName());
         }

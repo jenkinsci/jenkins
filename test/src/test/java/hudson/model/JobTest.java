@@ -129,6 +129,7 @@ public class JobTest {
             this.passed = false;
         }
 
+        @Override
         public void run() {
             try {
                 start.await();
@@ -201,6 +202,7 @@ public class JobTest {
         }
 
         private static final class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
             public String getDisplayName() {
                 return "";
             }

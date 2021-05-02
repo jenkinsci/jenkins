@@ -26,6 +26,7 @@ public class EnvVarsInConfigTasksTest extends HudsonTestCase {
 	private DumbSlave slaveRegular = null;
     private TemporaryFolder tmp = new TemporaryFolder();
 
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
         tmp.create(); // until we can switch to JenkinsRule and tmp becomes a @Rule itself

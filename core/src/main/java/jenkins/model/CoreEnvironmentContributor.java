@@ -41,6 +41,8 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
 
     @Override
     public void buildEnvironmentFor(Job j, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
+        env.put("CI", "true");
+
         Jenkins jenkins = Jenkins.get();
         String rootUrl = jenkins.getRootUrl();
         if(rootUrl!=null) {

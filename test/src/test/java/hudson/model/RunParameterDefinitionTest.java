@@ -285,10 +285,12 @@ public class RunParameterDefinitionTest {
             return true;
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }
 
+        @Override
         public Descriptor<Publisher> getDescriptor() {
             return new Descriptor<Publisher>(ResultPublisher.class) {};
         }

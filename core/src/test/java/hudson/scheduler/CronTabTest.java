@@ -36,7 +36,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
 import java.util.List;
@@ -96,7 +95,7 @@ public class CronTabTest {
     /**
      * Verifies that HUDSON-8656 never crops up again.
      */
-    @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
     public void testCeil4() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
@@ -118,7 +117,7 @@ public class CronTabTest {
     /**
      * Verifies that HUDSON-8656 never crops up again.
      */
-    @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
     public void testCeil5() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
@@ -212,6 +211,7 @@ public class CronTabTest {
     @Test
     public void testHash1() throws Exception {
         CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+            @Override
             public int next(int n) {
                 return n-1;
             }
@@ -236,6 +236,7 @@ public class CronTabTest {
     @Test
     public void testHash2() throws Exception {
         CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+            @Override
             public int next(int n) {
                 return 1;
             }

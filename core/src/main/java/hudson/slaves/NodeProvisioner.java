@@ -26,7 +26,13 @@ package hudson.slaves;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.ExtensionPoint;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Label;
+import hudson.model.LoadStatistics;
+import hudson.model.MultiStageTimeSeries;
+import hudson.model.Node;
+import hudson.model.PeriodicWork;
+import hudson.model.Queue;
 import jenkins.model.Jenkins;
 
 import static hudson.model.LoadStatistics.DECAY;
@@ -814,6 +820,7 @@ public class NodeProvisioner {
             return INITIALDELAY;
         }
 
+        @Override
         public long getRecurrencePeriod() {
             return RECURRENCEPERIOD;
         }

@@ -47,6 +47,7 @@ public abstract class ViewJobFilter implements ExtensionPoint, Describable<ViewJ
         return Jenkins.get().getDescriptorList(ViewJobFilter.class);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
 	public Descriptor<ViewJobFilter> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());

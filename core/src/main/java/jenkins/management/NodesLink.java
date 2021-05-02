@@ -43,6 +43,7 @@ public class NodesLink extends ManagementLink {
         return "network.png";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.NodesLink_DisplayName();
     }

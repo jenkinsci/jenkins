@@ -44,6 +44,7 @@ import org.springframework.security.core.AuthenticationException;
 public class AuthenticationManagerProxy implements AuthenticationManager {
     private volatile AuthenticationManager delegate;
 
+    @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         AuthenticationManager m = delegate; // fix the reference we are working with
 

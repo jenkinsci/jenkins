@@ -38,6 +38,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public class UserDetailsServiceProxy implements UserDetailsService {
     private volatile UserDetailsService delegate;
 
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserDetailsService uds = delegate;  // fix the reference for concurrency support
 

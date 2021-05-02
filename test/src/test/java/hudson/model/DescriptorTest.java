@@ -41,6 +41,7 @@ import net.sf.json.JSONObject;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -64,13 +65,9 @@ public class DescriptorTest {
         Describable<?> instance = new Shell("echo hello");
         Descriptor<?> descriptor = instance.getDescriptor();
         PropertyType propertyType = descriptor.getPropertyType(instance, "command");
-        try {
-            propertyType.getItemTypeDescriptorOrDie();
-            fail("not supposed to succeed");
-        } catch (AssertionError x) {
-            for (String text : new String[] {"hudson.tasks.CommandInterpreter", "getCommand", "java.lang.String", "collection"}) {
-                assertTrue(text + " mentioned in " + x, x.toString().contains(text));
-            }
+        AssertionError x = assertThrows(AssertionError.class, () -> propertyType.getItemTypeDescriptorOrDie());
+        for (String text : new String[]{"hudson.tasks.CommandInterpreter", "getCommand", "java.lang.String", "collection"}) {
+            assertTrue(text + " mentioned in " + x, x.toString().contains(text));
         }
     }
 
