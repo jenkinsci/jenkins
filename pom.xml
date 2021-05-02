@@ -528,7 +528,7 @@ THE SOFTWARE.
             <execution>
               <!-- Runs in verify phase by default -->
               <goals>
-                <!-- Can be disabled using -Dspotless.check.skip=true -->
+                <!-- Can be disabled using -Dspotless.check.skip -->
                 <goal>check</goal>
               </goals>
             </execution>
