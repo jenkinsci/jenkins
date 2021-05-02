@@ -3,7 +3,6 @@ package hudson.model;
 import jenkins.model.IdStrategy;
 
 import java.io.File;
-import java.io.IOException;
 
 class TestUserIdMapper extends UserIdMapper {
 
