@@ -24,6 +24,7 @@
 
 package hudson.util.io;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath.TarCompression;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -47,17 +48,20 @@ public abstract class ArchiverFactory implements Serializable {
     /**
      * Uncompressed tar format.
      */
-    public static final ArchiverFactory TAR = new TarArchiverFactory(TarCompression.NONE);
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in plugin")
+    public static ArchiverFactory TAR = new TarArchiverFactory(TarCompression.NONE);
 
     /**
      * tar+gz
      */
-    public static final ArchiverFactory TARGZ = new TarArchiverFactory(TarCompression.GZIP);
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in plugin")
+    public static ArchiverFactory TARGZ = new TarArchiverFactory(TarCompression.GZIP);
 
     /**
      * Zip format.
      */
-    public static final ArchiverFactory ZIP = new ZipArchiverFactory();
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in plugin")
+    public static ArchiverFactory ZIP = new ZipArchiverFactory();
 
     /**
      * Zip format, without following symlinks.

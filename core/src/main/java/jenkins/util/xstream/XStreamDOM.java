@@ -35,10 +35,14 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.util.VariableResolver;
 
 import hudson.util.XStream2;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -539,5 +543,7 @@ public class XStreamDOM {
         }
     }
 
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.TODO")
     public static final XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
 }

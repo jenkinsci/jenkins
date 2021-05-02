@@ -25,6 +25,7 @@ package jenkins.tools;
 
 import hudson.Extension;
 import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
@@ -107,6 +108,8 @@ public class GlobalToolConfiguration extends ManagementLink {
         return d.configure(req, js);
     }
 
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.TODO")
     public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
 
     private static final Logger LOGGER = Logger.getLogger(GlobalToolConfiguration.class.getName());
