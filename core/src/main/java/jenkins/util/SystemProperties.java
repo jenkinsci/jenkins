@@ -100,7 +100,6 @@ public class SystemProperties {
         private Access(Instant lastAccessTime, String lastAccessValue) {
             this.lastAccessTime = lastAccessTime;
             this.lastAccessValue = lastAccessValue;
-            this.accessCount = accessCount;
         }
 
         private synchronized Access accessedBy(StackTraceElement ste, Instant now) {
