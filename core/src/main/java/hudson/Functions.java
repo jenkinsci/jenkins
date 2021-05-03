@@ -2284,15 +2284,6 @@ public class Functions {
             rsp.setHeader("X-Hudson","1.395");
             rsp.setHeader("X-Jenkins", Jenkins.VERSION);
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
-
-            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal != null) { // headers used only by deprecated Remoting-based CLI
-                int p = tal.getAdvertisedPort();
-                rsp.setIntHeader("X-Hudson-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
-                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
-            }
         }
     }
 
