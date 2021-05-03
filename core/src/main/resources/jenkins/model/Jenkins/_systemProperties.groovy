@@ -31,6 +31,9 @@ table(class:'pane sortable bigtable') {
             text(_('Most Recent Value'))
         }
         th(class:'pane-header') {
+            text(_('Value'))
+        }
+        th(class:'pane-header') {
             text(_('Accessed By'))
         }
     }
@@ -49,6 +52,9 @@ table(class:'pane sortable bigtable') {
             }
             td(class:'pane') {
                 text(entry.value.lastAccessValue)
+            }
+            td(class:'pane') {
+                text(entry.value.nonDefaultValue ? 'Custom' : 'Default')
             }
             td(class:'pane') {
                 ul(style:'margin:0;padding:0;') {

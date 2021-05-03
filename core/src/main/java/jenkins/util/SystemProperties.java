@@ -95,11 +95,13 @@ public class SystemProperties {
         public Instant lastAccessTime;
         public long accessCount;
         public String lastAccessValue;
+        public boolean nonDefaultValue;
         public final Set<StackTraceElement> accessingCode = new CopyOnWriteArraySet<>();
 
-        private Access(Instant lastAccessTime, String lastAccessValue) {
+        private Access(Instant lastAccessTime, String lastAccessValue, boolean set) {
             this.lastAccessTime = lastAccessTime;
             this.lastAccessValue = lastAccessValue;
+            this.nonDefaultValue = set;
         }
 
         private synchronized Access accessedBy(StackTraceElement ste, Instant now) {
@@ -111,21 +113,32 @@ public class SystemProperties {
             return this;
         }
 
-        private static Access updating(Access access, String value) {
+        private synchronized Access accessedBy(StackTraceElement ste, Instant now, String value, boolean set) {
+            if (ste != null) {
+                accessingCode.add(ste);
+            }
+            accessCount += 1;
+            lastAccessTime = now;
+            lastAccessValue = value;
+            nonDefaultValue = set;
+            return this;
+        }
+
+        private static Access updating(Access access, String value, boolean set) {
             final Instant now = Instant.now();
             final StackTraceElement caller = findAccessingCall();
             if (access == null) {
-                return new Access(now, value).accessedBy(caller, now);
+                return new Access(now, value, set).accessedBy(caller, now);
             }
-            return access.accessedBy(caller, now);
+            return access.accessedBy(caller, now, value, set);
         }
     }
 
     private static final Map<String, Access> accesses = new ConcurrentHashMap<>();
 
-    private static String recordingAccess(String property, String value) {
+    private static String recordingAccess(String property, String value, boolean set) {
         if (JenkinsJVM.isJenkinsJVM()) {
-            accesses.compute(property, (k, v) -> Access.updating(v, value));
+            accesses.compute(property, (k, v) -> Access.updating(v, value, set));
         }
         return value;
     }
@@ -290,7 +303,7 @@ public class SystemProperties {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (system): {0} => {1}", new Object[] {key, value});
             }
-            return recordingAccess(key, value);
+            return recordingAccess(key, value, true);
         } 
         
         value = handler.getString(key);
@@ -298,14 +311,14 @@ public class SystemProperties {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (context): {0} => {1}", new Object[]{key, value});
             }
-            return recordingAccess(key, value);
+            return recordingAccess(key, value, true);
         }
         
         value = def;
         if (LOGGER.isLoggable(logLevel)) {
             LOGGER.log(logLevel, "Property (default): {0} => {1}", new Object[] {key, value});
         }
-        return recordingAccess(key, value);
+        return recordingAccess(key, value, false);
     }
 
     /**
