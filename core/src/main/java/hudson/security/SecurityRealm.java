@@ -73,6 +73,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
@@ -593,8 +594,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
             apf.setRememberMeServices(sc.rememberMe2);
+            final SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+            successHandler.setTargetUrlParameter("from");
+            apf.setAuthenticationSuccessHandler(successHandler);
             apf.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/loginError"));
-            // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
             filters.add(apf);
         }
         filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
@@ -634,7 +637,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         // or from the QueryParameter in this order
         if (request != null
                 && request.getSession(false) != null) {
-            from = (String) request.getSession().getAttribute("from");
+            from = (String) request.getSession().getAttribute("from"); // TODO everyone setting this is commented out
         } else if (request != null) {
             from = request.getParameter("from");
         }
@@ -646,8 +649,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                 && request.getRequestURI() != null
                 && !request.getRequestURI().equals("/loginError")
                 && !request.getRequestURI().equals("/login")) {
-
-                from = request.getRequestURI();
+            from = request.getRequestURI().substring(request.getContextPath().length());
         }
 
         // If deduced entry point isn't deduced yet or the content is a blank value
