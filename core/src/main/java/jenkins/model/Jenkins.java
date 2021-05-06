@@ -868,7 +868,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Otherwise, {@link BuiltInNodeMigration} will show up.
      */
     @Restricted(NoExternalUse.class)
-    /* package-private */ Boolean builtInNodeMigrationNeeded = false;
+    /* package-private */ Boolean builtInNodeMigrationNeeded;
 
     /**
      * HTTP proxy configuration.
@@ -1094,7 +1094,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         installStateName = null;
 
         if (builtInNodeMigrationNeeded == null) {
-            builtInNodeMigrationNeeded = true;
+            final VersionNumber stored = getStoredVersion();
+            builtInNodeMigrationNeeded = stored != null && stored.isOlderThan(new VersionNumber("2.292"));
         }
         return this;
     }
