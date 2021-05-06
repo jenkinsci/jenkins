@@ -59,6 +59,7 @@ public class BuiltInNodeMigration extends AdministrativeMonitor {
             final Jenkins j = Jenkins.get();
             j.builtInNodeMigrationNeeded = false;
             j.save();
+            j.trimLabels();
         } else if (no != null) {
             disable(true);
         }
