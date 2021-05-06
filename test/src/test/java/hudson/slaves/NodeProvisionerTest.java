@@ -179,7 +179,7 @@ public class NodeProvisionerTest {
 
     private FreeStyleProject createJob(Builder builder) throws IOException {
         FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedLabel(null);   // let it roam free, or else it ties itself to the blub node since we have no agents
+        p.setAssignedLabel(null);   // let it roam free, or else it ties itself to the built-in node since we have no agents
         p.getBuildersList().add(builder);
         return p;
     }
@@ -189,7 +189,7 @@ public class NodeProvisionerTest {
         DummyCloudImpl cloud = new DummyCloudImpl(r, delay);
         r.jenkins.clouds.add(cloud);
 
-        // no build on the blub node, to make sure we get everything from the cloud
+        // no build on the built-in node, to make sure we get everything from the cloud
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.emptyList());
         return cloud;

@@ -27,7 +27,7 @@ public class JenkinsReloadConfigurationTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void reloadBlubConfig() throws Exception {
+    public void reloadBuiltinNodeConfig() throws Exception {
         Node node = j.jenkins;
         node.setLabelString("oldLabel");
 

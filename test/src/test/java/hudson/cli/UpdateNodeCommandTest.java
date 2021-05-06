@@ -117,8 +117,8 @@ public class UpdateNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
 
         // new name
-        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("(blub)");
-        assertThat(result.stderr(), containsString("No such node '(blub)'"));
+        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("(built-in)");
+        assertThat(result.stderr(), containsString("No such node '(built-in)'"));
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }

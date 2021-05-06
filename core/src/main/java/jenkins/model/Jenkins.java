@@ -382,7 +382,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient SetupWizard setupWizard;
 
     /**
-     * Number of executors of the blub node.
+     * Number of executors of the built-in node.
      */
     private int numExecutors = 2;
 
@@ -676,7 +676,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient Set<String> agentProtocols;
 
     /**
-     * Whitespace-separated labels assigned to the blub node as a {@link Node}.
+     * Whitespace-separated labels assigned to the built-in node as a {@link Node}.
      */
     private String label="";
 
@@ -736,7 +736,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient List<Action> actions = new CopyOnWriteArrayList<>();
 
     /**
-     * List of blub-specific node properties
+     * List of built-in node-specific node properties
      */
     private DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<>(this);
 
@@ -824,7 +824,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #get} is what you normally want.
      * <p>In certain rare cases you may have code that is intended to run before Jenkins starts or while Jenkins is being shut down.
      * For those rare cases use this method.
-     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins controller or blub node.
+     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins controller or built-in node.
      * For those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting channel
      * it can do whatever it needs without ever referring to {@link Jenkins};
      * for example, gather any information you need on the controller side before constructing the callable.
@@ -864,11 +864,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private Boolean noUsageStatistics;
 
     /**
-     * If this is false, no migration is needed to reconfigure the built-in node (formerly 'master', now 'blub').
-     * Otherwise, {@link BlubMigration} will show up.
+     * If this is false, no migration is needed to reconfigure the built-in node (formerly 'master', now 'built-in').
+     * Otherwise, {@link BuiltInNodeMigration} will show up.
      */
     @Restricted(NoExternalUse.class)
-    /* package-private */ Boolean blubMigrationNeeded = false;
+    /* package-private */ Boolean builtInNodeMigrationNeeded = false;
 
     /**
      * HTTP proxy configuration.
@@ -1032,7 +1032,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             updateComputerList();
 
-            {// blub is online now, it's instance must always exist
+            {// built-in node is online now, its instance must always exist
                 final Computer c = toComputer();
                 if(c != null) {
                     for (ComputerListener cl : ComputerListener.all()) {
@@ -1041,7 +1041,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         } catch (Exception e) {
                             // Per Javadoc log exceptions but still go online.
                             // NOTE: this does not include Errors, which indicate a fatal problem
-                            LOGGER.log(WARNING, String.format("Exception in onOnline() for the computer listener %s on the blub node",
+                            LOGGER.log(WARNING, String.format("Exception in onOnline() for the computer listener %s on the built-in node",
                                     cl.getClass()), e);
                         }
                     }
@@ -1093,8 +1093,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // no longer persisted
         installStateName = null;
 
-        if (blubMigrationNeeded == null) {
-            blubMigrationNeeded = true;
+        if (builtInNodeMigrationNeeded == null) {
+            builtInNodeMigrationNeeded = true;
         }
         return this;
     }
@@ -2047,7 +2047,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @CLIResolver
     public @CheckForNull Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") @NonNull String name) {
-        if(name.equals("(blub)")
+        if(name.equals("(built-in)")
                 || name.equals("(master)")) // backwards compatibility for URLs
             name = "";
 
@@ -2191,7 +2191,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
-     * represents the blub.
+     * represents the built-in node.
      */
     @Override
     @NonNull
@@ -3212,7 +3212,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public String getLabelString() {
-        // TODO blubmigrationneeded?
         return fixNull(label).trim();
     }
 
@@ -3224,10 +3223,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public LabelAtom getSelfLabel() {
-        if (blubMigrationNeeded) {
+        if (builtInNodeMigrationNeeded) {
             return getLabelAtom("master");
         }
-        return getLabelAtom("blub");
+        return getLabelAtom("built-in");
     }
 
     @Override
@@ -4061,7 +4060,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Obtains the thread dump of all agents (including the controller/blub node.)
+     * Obtains the thread dump of all agents (including the controller/built-in node.)
      *
      * <p>
      * Since this is for diagnostics, it has a built-in precautionary measure against hang agents.
@@ -5105,7 +5104,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public String getUrl() {
-            return "computer/(blub)/";
+            return "computer/(built-in)/";
         }
 
         @Override

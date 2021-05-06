@@ -155,8 +155,8 @@ public class JenkinsLocationConfigurationTest {
     @Test
     @Issue("SECURITY-1471")
     public void cannotInjectJavaScriptUsingRootUrl_inLabelAbsoluteLink() throws Exception {
-        String blubLabel = "blub-node";
-        j.jenkins.setLabelString(blubLabel);
+        String builtInLabel = "builtin-node";
+        j.jenkins.setLabelString(builtInLabel);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 
@@ -167,7 +167,7 @@ public class JenkinsLocationConfigurationTest {
         wc.setAlertHandler((page, s) -> alertAppeared.set(true));
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(Label.get(blubLabel));
+        p.setAssignedLabel(Label.get(builtInLabel));
 
         HtmlPage projectConfigurePage = wc.getPage(p, "/configure");
 

@@ -41,15 +41,15 @@ import java.io.IOException;
  * that cannot be done compatibly: The self-label (although we could probably
  * improvise something), and the node name as injected into build environments.
  *
- * TODO what else could break and needs to be based off blubMigrationNeeded?
+ * TODO what else could break and needs to be based off builtInNodeMigrationNeeded?
  */
 @Extension
 @Restricted(NoExternalUse.class)
-@Symbol("blubMigration")
-public class BlubMigration extends AdministrativeMonitor {
+@Symbol("builtinNodeMigration")
+public class BuiltInNodeMigration extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
-        final Boolean v = Jenkins.get().blubMigrationNeeded;
+        final Boolean v = Jenkins.get().builtInNodeMigrationNeeded;
         return v == null || v;
     }
 
@@ -57,7 +57,7 @@ public class BlubMigration extends AdministrativeMonitor {
     public void doAct(StaplerRequest req, StaplerResponse rsp, @QueryParameter String yes, @QueryParameter String no) throws IOException, ServletException {
         if (yes != null) {
             final Jenkins j = Jenkins.get();
-            j.blubMigrationNeeded = false;
+            j.builtInNodeMigrationNeeded = false;
             j.save();
         } else if (no != null) {
             disable(true);
@@ -67,6 +67,6 @@ public class BlubMigration extends AdministrativeMonitor {
 
     @Override
     public String getDisplayName() {
-        return "Blub Migration"; // TODO i18n
+        return "Built-In Node Label Migration"; // TODO i18n
     }
 }

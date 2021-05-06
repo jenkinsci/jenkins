@@ -29,7 +29,7 @@ public class MasterBuildConfigurationTest {
         j.configRoundtrip();
         
         // make sure settings were not lost
-        assertEquals("Blub's label is lost", myTestLabel, jenkins.getLabelString());
-        assertEquals("Blub's mode is lost", Mode.EXCLUSIVE, jenkins.getMode());
+        assertEquals("Built in node's label is lost", myTestLabel, jenkins.getLabelString());
+        assertEquals("Built in node's mode is lost", Mode.EXCLUSIVE, jenkins.getMode());
     }
 }

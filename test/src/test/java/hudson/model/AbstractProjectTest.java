@@ -566,8 +566,8 @@ public class AbstractProjectTest {
          */
         assertThat(responseContent, allOf(
                 containsString("warning"),
-                // as there is only blub that is currently used, it's de facto the nearest to whatever
-                containsString("blub"),
+                // as there is only the built-in node that is currently used, it's de facto the nearest to whatever
+                containsString("built-in"),
                 containsString("whatever")
         ));
     }

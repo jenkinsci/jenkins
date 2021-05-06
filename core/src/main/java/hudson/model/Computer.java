@@ -142,7 +142,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
  * This object is related to {@link Node} but they have some significant differences.
  * {@link Computer} primarily works as a holder of {@link Executor}s, so
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
- * you won't have a {@link Computer} object for it (except for the blub node,
+ * you won't have a {@link Computer} object for it (except for the built-in node,
  * which always gets its {@link Computer} in case we have no static executors and
  * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
@@ -489,7 +489,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Disconnect this computer.
      *
-     * If this is the blub node, no-op. This method may return immediately
+     * If this is the built-in node, no-op. This method may return immediately
      * while the launch operation happens asynchronously.
      *
      * @param cause
@@ -1656,7 +1656,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIResolver
     public static Computer resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for blub node") String name) throws CmdLineException {
+            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for built-in node") String name) throws CmdLineException {
         Jenkins h = Jenkins.get();
         Computer item = h.getComputer(name);
         if (item==null) {

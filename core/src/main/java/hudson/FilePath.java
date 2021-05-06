@@ -229,7 +229,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * this field becomes non-null, representing the {@link Channel}
      * back to the controller.
      *
-     * This is used to determine whether we are running on the controller / the blub node, or an agent.
+     * This is used to determine whether we are running on the controller / the built-in node, or an agent.
      */
     private transient VirtualChannel channel;
     

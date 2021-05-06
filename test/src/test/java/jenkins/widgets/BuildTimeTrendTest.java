@@ -62,7 +62,7 @@ public class BuildTimeTrendTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void withAbstractJob_OnBlubNode() throws Exception {
+    public void withAbstractJob_OnBuiltInNode() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
@@ -117,12 +117,12 @@ public class BuildTimeTrendTest {
         // for the build on agent
         assertTrue(anchor.isPresent());
 
-        String blubName = hudson.model.Messages.Hudson_Computer_DisplayName();
+        String builtInNode = hudson.model.Messages.Hudson_Computer_DisplayName();
         DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
         Optional<DomNode> td = tds.stream()
-                .filter(t -> t.getTextContent().equals(blubName))
+                .filter(t -> t.getTextContent().equals(builtInNode))
                 .findFirst();
-        // for the build on blub node
+        // for the build on built-in node
         assertTrue(td.isPresent());
     }
 

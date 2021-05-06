@@ -715,7 +715,7 @@ public class PasswordTest {
 
         {
             wc.login(READONLY);
-            HtmlPage page = wc.goTo("computer/(blub)/secured/");
+            HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
             String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
             assertThat(value, is("********"));
@@ -723,7 +723,7 @@ public class PasswordTest {
 
         {
             wc.login(ADMIN);
-            HtmlPage page = wc.goTo("computer/(blub)/secured/");
+            HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
             String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
             assertThat(Secret.fromString(value).getPlainText(), is("abcdefgh"));

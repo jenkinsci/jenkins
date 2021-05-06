@@ -94,7 +94,7 @@ public class GetNodeCommandTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void getNodeShouldFailForBlubNode() throws Exception {
+    public void getNodeShouldFailForBuiltInNode() throws Exception {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
         assertThat(result, failedWith(3));
@@ -107,8 +107,8 @@ public class GetNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
 
         // new name
-        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("(blub)");
-        assertThat(result.stderr(), containsString("No such node '(blub)'"));
+        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("(built-in)");
+        assertThat(result.stderr(), containsString("No such node '(built-in)'"));
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }

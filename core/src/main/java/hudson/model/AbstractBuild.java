@@ -113,7 +113,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * Name of the agent this project was built on.
-     * Null or "" if built by the blub node. (null happens when we read old record that didn't have this information.)
+     * Null or "" if built by the built-in node. (null happens when we read old record that didn't have this information.)
      */
     private String builtOn;
 
@@ -217,7 +217,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Returns the name of the agent it was built on; null or "" if built by the blub node.
+     * Returns the name of the agent it was built on; null or "" if built by the built-in node.
      * (null happens when we read old record that didn't have this information.)
      */
     @Exported(name="builtOn")

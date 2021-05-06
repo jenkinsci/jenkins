@@ -22,7 +22,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * This class tests that environment variables from node properties are applied,
  * and that the priority is maintained: parameters > agent node properties >
  * global (controller) node properties
- * TODO confirm that the blub node has node properties separate from global (controller) node properties
+ * TODO confirm that the built-in node has node properties separate from global (controller) node properties
  */
 public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 
@@ -39,9 +39,9 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	}
 	
 	/**
-	 * Blub properties are available
+	 * Built-in node properties are available
 	 */
-	public void testGlobalPropertyOnBlub() throws Exception {
+	public void testGlobalPropertyOnBuiltInNode() throws Exception {
         jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("KEY", "globalValue"))));
@@ -70,14 +70,14 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 	 * Priority: parameters > agent > controller
 	 * @throws Exception
 	 */
-	// TODO is this correct? This sets a blub node property, not a global property
-	public void testAgentAndBlubPropertyAndParameterOnAgent()
+	// TODO is this correct? This sets a built-in node property, not a global property
+	public void testAgentAndBuiltInNodePropertyAndParameterOnAgent()
 			throws Exception {
 		ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
 				new StringParameterDefinition("KEY", "parameterValue"));
 		project.addProperty(pdp);
 
-		setVariables(jenkins, new Entry("KEY", "blubValue"));
+		setVariables(jenkins, new Entry("KEY", "builtInValue"));
 		setVariables(agent, new Entry("KEY", "agentValue"));
 
 		Map<String, String> envVars = executeBuild(agent);
@@ -94,7 +94,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		assertEquals("value", envVars.get("KEY2"));
 	}
 	
-	public void testFormRoundTripForBlub() throws Exception {
+	public void testFormRoundTripForBuiltInNode() throws Exception {
         jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
                         new Entry("KEY", "value"))));

@@ -144,8 +144,8 @@ public class UsageStatisticsTest {
         int count = 1;
         while (value == null && count++ <= 5)  // If for some reason the cache doesn't get populated, don't loop forever
         {
-            final Computer blub = j.jenkins.getComputers()[0];
-            value = descriptor.get(blub);
+            final Computer builtIn = j.jenkins.getComputers()[0];
+            value = descriptor.get(builtIn);
             Thread.sleep(200);
         }
     }
