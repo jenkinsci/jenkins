@@ -202,7 +202,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     protected final Object statusChangeLock = new Object();
 
-    private final Object logDirLock = new String("logDirLock");
+    private final Object logDirLock = new Object();
 
     /**
      * Keeps track of stack traces to track the termination requests for this computer.
