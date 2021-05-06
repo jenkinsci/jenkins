@@ -702,8 +702,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Gets the list of {@link Build}s that include changes by this user,
-     * by the timestamp order.
+     * Searches for builds which include changes by this user or which were triggered by this user.
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
