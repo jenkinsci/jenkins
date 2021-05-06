@@ -1,16 +1,27 @@
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
+import hudson.ExtensionList;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
+import java.util.Objects;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -33,15 +44,16 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-public class RowVisibilityGroupTest extends HudsonTestCase implements Describable<RowVisibilityGroupTest> {
-    public Drink drink;
-    private Beer beer;
+public class RowVisibilityGroupTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     /**
      * Nested optional blocks
      */
+    @Test
     public void test1() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/test1");
+        HtmlPage p = j.createWebClient().goTo("self/test1");
 
         HtmlElement outer = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
         HtmlElement inner = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
@@ -65,8 +77,9 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
     /**
      * optional block inside the dropdownDescriptorSelector
      */
+    @Test
     public void test2() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/test2");
+        HtmlPage p = j.createWebClient().goTo("self/test2");
 
         HtmlSelect s = (HtmlSelect)DomNodeUtil.selectSingleNode(p, "//SELECT");
         List<HtmlOption> opts = s.getOptions();
@@ -100,23 +113,10 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
         assertTrue(textboxes.get(0).isDisplayed());
 
         // make sure we get what we expect
-        submit(p.getFormByName("config"));
-        assertEqualDataBoundBeans(beer,new Beer("",new Nested("Budweiser")));
+        j.submit(p.getFormByName("config"));
+        RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+        j.assertEqualDataBoundBeans(rootAction.beer, new Beer("", new Nested("Budweiser")));
     }
-
-    public void doSubmitTest2(StaplerRequest req) throws Exception {
-        JSONObject json = req.getSubmittedForm();
-        System.out.println(json);
-        beer = (Beer)req.bindJSON(Drink.class,json.getJSONObject("drink"));
-    }
-
-    @Override
-    public DescriptorImpl getDescriptor() {
-        return jenkins.getDescriptorByType(DescriptorImpl.class);
-    }
-
-    @TestExtension
-    public static final class DescriptorImpl extends Descriptor<RowVisibilityGroupTest> {}
 
     public static class Nested {
         public String textbox2;
@@ -155,5 +155,31 @@ public class RowVisibilityGroupTest extends HudsonTestCase implements Describabl
 
         @TestExtension
         public static class DescriptorImpl extends Descriptor<Drink> {}
+    }
+
+    @TestExtension
+    public static final class RootActionImpl extends InvisibleAction implements Describable<RootActionImpl>, RootAction {
+
+        public Drink drink;
+        private Beer beer;
+
+        public void doSubmitTest2(StaplerRequest req) throws Exception {
+            JSONObject json = req.getSubmittedForm();
+            System.out.println(json);
+            beer = (Beer) req.bindJSON(Drink.class, json.getJSONObject("drink"));
+        }
+
+        @Override
+        public Descriptor<RootActionImpl> getDescriptor() {
+            return Objects.requireNonNull(Jenkins.get().getDescriptorByType(DescriptorImpl.class));
+        }
+
+        @TestExtension
+        public static final class DescriptorImpl extends Descriptor<RootActionImpl> {}
+
+        @Override
+        public String getUrlName() {
+            return "self";
+        }
     }
 }

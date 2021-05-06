@@ -1,42 +1,37 @@
 package hudson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
 import hudson.util.ListBoxModel;
-import org.jvnet.hudson.test.HudsonTestCase;
+import java.util.Objects;
+import jenkins.model.Jenkins;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.QueryParameter;
 
-public class RelativePathTest extends HudsonTestCase implements Describable<RelativePathTest> {
+public class RelativePathTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @Issue("JENKINS-18776")
+    @Test
     public void testRelativePath() throws Exception {
         // I was having trouble causing annotation processing on test stubs
 //        jenkins.getDescriptorOrDie(RelativePathTest.class);
 //        jenkins.getDescriptorOrDie(Model.class);
 
-        createWebClient().goTo("/self/");
-        assertTrue(((Model.DescriptorImpl) jenkins.getDescriptorOrDie(Model.class)).touched);
+        j.createWebClient().goTo("self/");
+        assertTrue(j.jenkins.getDescriptorByType(Model.DescriptorImpl.class).touched);
     }
-
-    @Override // TODO this is horrible, should change the property here and in @QueryParameter and in RelativePathTest/index.groovy to, say, personName
-    public String getName() {
-        return "Alice";
-    }
-
-    public Model getModel() {
-        return new Model();
-    }
-
-    @Override // TODO would suffice to extend AbstractDescribableImpl
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl) jenkins.getDescriptorOrDie(getClass());
-    }
-
-    @TestExtension
-    public static class DescriptorImpl extends Descriptor<RelativePathTest> {}
 
     public static class Model extends AbstractDescribableImpl<Model> {
 
@@ -45,14 +40,35 @@ public class RelativePathTest extends HudsonTestCase implements Describable<Rela
 
             boolean touched;
 
-            public ListBoxModel doFillAbcItems(@RelativePath("..") @QueryParameter String name) {
-                assertEquals("Alice", name);
+            public ListBoxModel doFillAbcItems(@RelativePath("..") @QueryParameter String personName) {
+                assertEquals("Alice", personName);
                 touched = true;
                 return new ListBoxModel().add("foo").add("bar");
             }
-
         }
-
     }
 
+    @TestExtension
+    public static final class RootActionImpl extends InvisibleAction implements Describable<RootActionImpl>, RootAction {
+        public String getPersonName() {
+            return "Alice";
+        }
+
+        public Model getModel() {
+            return new Model();
+        }
+
+        @Override
+        public Descriptor<RootActionImpl> getDescriptor() {
+            return Objects.requireNonNull(Jenkins.get().getDescriptorByType(DescriptorImpl.class));
+        }
+
+        @TestExtension
+        public static final class DescriptorImpl extends Descriptor<RootActionImpl> {}
+
+        @Override
+        public String getUrlName() {
+            return "self";
+        }
+    }
 }
