@@ -23,7 +23,6 @@
  */
 package hudson.tasks;
 
-import com.google.common.collect.ImmutableMap;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -65,6 +64,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -461,7 +461,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 }
             }
 
-            m = ImmutableMap.copyOf(m);
+            m = Collections.unmodifiableMap(m);
             ref = new WeakReference<>(m);
             return m;
         }
