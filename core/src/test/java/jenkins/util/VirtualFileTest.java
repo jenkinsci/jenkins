@@ -1617,7 +1617,7 @@ public class VirtualFileTest {
         }
 
         @Override
-        public boolean isDescendant(String childRelativePath) throws IOException {
+        public boolean isDescendant(String childRelativePath) {
             return true;
         }
 

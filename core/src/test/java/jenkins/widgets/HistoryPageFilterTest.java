@@ -340,7 +340,7 @@ public class HistoryPageFilterTest {
 
     @Test
     @Issue("JENKINS-40718")
-    public void should_search_builds_by_build_variables() throws IOException {
+    public void should_search_builds_by_build_variables() {
         Iterable<ModelObject> runs = Arrays.asList(
                 new MockBuild(2).withBuildVariables(Collections.singletonMap("env", "dummyEnv")),
                 new MockBuild(1).withBuildVariables(Collections.singletonMap("env", "otherEnv")));
@@ -507,7 +507,7 @@ public class HistoryPageFilterTest {
             return parameterValues;
         }
 
-        MockBuild withSensitiveBuildParameters(String paramName, String paramValue) throws IOException {
+        MockBuild withSensitiveBuildParameters(String paramName, String paramValue) {
             addAction(new ParametersAction(Collections.singletonList(createSensitiveStringParameterValue(paramName, paramValue)),
                     Collections.singletonList(paramName)));
             return this;

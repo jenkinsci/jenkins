@@ -288,7 +288,7 @@ public class CronTabTest {
         new CronTab("H(0-59) H(0-23) H(1-31) H(1-12) H(0-7)");
     }
 
-    @Test public void rangeBoundsCheckFailHour() throws Exception {
+    @Test public void rangeBoundsCheckFailHour() {
         try {
             new CronTab("H H(12-24) * * *");
             fail();
@@ -297,7 +297,7 @@ public class CronTabTest {
         }
     }
 
-    @Test public void rangeBoundsCheckFailMinute() throws Exception {
+    @Test public void rangeBoundsCheckFailMinute() {
         try {
             new CronTab("H(33-66) * * * *");
             fail();
