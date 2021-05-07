@@ -1,7 +1,7 @@
 # This is a Dockerfile definition for Experimental Docker builds.
 # DockerHub: https://hub.docker.com/r/jenkins/jenkins-experimental/
 # If you are looking for official images, see https://github.com/jenkinsci/docker
-FROM maven:3.5.4-jdk-8 as builder
+FROM openjdk:8-jdk as builder
 
 COPY .mvn/ /jenkins/src/.mvn/
 COPY cli/ /jenkins/src/cli/
@@ -17,7 +17,7 @@ COPY licenseCompleter.groovy /jenkins/src/licenseCompleter.groovy
 COPY show-pom-version.rb /jenkins/src/show-pom-version.rb
 
 WORKDIR /jenkins/src/
-RUN mvn clean install --batch-mode -Plight-test
+RUN ./mvnw clean install --batch-mode -Plight-test
 
 # The image is based on the previous weekly, new changes in jenkinci/docker are not applied
 FROM jenkins/jenkins:latest

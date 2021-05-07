@@ -14,7 +14,6 @@ This page provides information about contributing code to the Jenkins core codeb
     * For JDK 11 there might be some compatibility issues in developer tools,
       please see [this page](https://wiki.jenkins.io/display/JENKINS/Java+11+Developer+Guidelines#Java11DeveloperGuidelines-Knowndevelopertoolsissues) for more info.
       If you find a new issue, please report it with a `java11-devtools-compatibility` label in our issue tracker.
-  * Maven 3.5.4 or above. You can [download Maven here].
   * Any IDE which supports importing Maven projects.
   * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
     * Frontend tasks are run using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
@@ -33,7 +32,7 @@ You can read a description of the [building and debugging process here].
 If you want simply to build the `jenkins.war` file as fast as possible without tests, run:
 
 ```sh
-mvn -am -pl war,bom -DskipTests -Dspotbugs.skip clean install
+./mvnw -am -pl war,bom -DskipTests -Dspotbugs.skip clean install
 ```
 
 The WAR file will be created in `war/target/jenkins.war`.
@@ -45,7 +44,7 @@ and then attach IDE Debugger to it.
 To launch a development instance, after the above command, run:
 
 ```sh
-mvn -pl war jetty:run
+./mvnw -pl war jetty:run
 ```
 
 (Beware that `maven-plugin` builds will not work in this mode, due to class loading conflicts.)
@@ -56,7 +55,7 @@ To work on the `war` module frontend assets, two processes are needed at the sam
 
 On one terminal, start a development server that will not process frontend assets:
 ```sh
-mvn -pl war jetty:run -Dskip.yarn
+./mvnw -pl war jetty:run -Dskip.yarn
 ```
 
 On another terminal, move to the war folder and start a [webpack](https://webpack.js.org/) dev server:
