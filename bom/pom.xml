@@ -41,7 +41,7 @@ THE SOFTWARE.
   <properties>
     <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
-    <stapler.version>1.264-rc1517.e1191cc1f5ea</stapler.version> <!-- TODO https://github.com/stapler/stapler/pull/213 -->
+    <stapler.version>1531.v3338be17c99b</stapler.version> <!-- TODO https://github.com/stapler/stapler/pull/220 -->
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
@@ -354,13 +354,6 @@ THE SOFTWARE.
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler</artifactId>
         <version>${stapler.version}</version>
-        <exclusions>
-          <!-- This artifact is shaded and we do not want to expose it to plugins. -->
-          <exclusion>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
