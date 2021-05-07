@@ -345,7 +345,7 @@ public class FunctionsTest {
 
     private void assertBrokenAs(String plain, String... chunks) {
         assertEquals(
-                Util.join(Arrays.asList(chunks), "<wbr>"),
+                String.join("<wbr>", chunks),
                 Functions.breakableString(plain)
         );
     }

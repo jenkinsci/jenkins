@@ -1106,7 +1106,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             for (SCM s : scmItem.getSCMs()) {
                 scmNames.add(s.getDescriptor().getDisplayName());
             }
-            scmDisplayName = " " + Util.join(scmNames, ", ");
+            scmDisplayName = " " + String.join(", ", scmNames);
         }
 
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
