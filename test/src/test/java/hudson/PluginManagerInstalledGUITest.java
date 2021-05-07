@@ -179,7 +179,7 @@ public class PluginManagerInstalledGUITest {
 
         private final HtmlTableRow pluginRow;
 
-        public InstalledPlugin(HtmlTableRow pluginRow) {
+        InstalledPlugin(HtmlTableRow pluginRow) {
             this.pluginRow = pluginRow;
         }
         

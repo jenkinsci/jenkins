@@ -156,7 +156,7 @@ public class ViewDescriptorTest {
             return this.someProperty;
         }
 
-        public CustomInvisibleProperty() {
+        CustomInvisibleProperty() {
             this.someProperty = "undefined";
         }
 

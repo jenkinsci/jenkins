@@ -454,6 +454,7 @@ THE SOFTWARE.
           <configuration>
             <consoleOutput>true</consoleOutput>
             <failsOnError>true</failsOnError>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
             <!-- define here because checkstyle and multi module is a PITA -->
             <checkstyleRules>
               <module name="Checker">
@@ -474,7 +475,6 @@ THE SOFTWARE.
                   <module name="CovariantEquals" />
                   <module name="EqualsHashCode" />
                   <module name="OneStatementPerLine" />
-                  <module name="PackageDeclaration" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />
                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />

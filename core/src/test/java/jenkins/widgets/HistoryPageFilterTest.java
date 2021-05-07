@@ -412,12 +412,12 @@ public class HistoryPageFilterTest {
     private static class MockRun extends Run {
         private final long queueId;
 
-        public MockRun(long queueId) throws IOException {
+        MockRun(long queueId) throws IOException {
             super(Mockito.mock(Job.class));
             this.queueId = queueId;
         }
 
-        public MockRun(long queueId, Result result) throws IOException {
+        MockRun(long queueId, Result result) throws IOException {
             this(queueId);
             this.result = result;
         }
@@ -450,7 +450,7 @@ public class HistoryPageFilterTest {
 
     // A version of MockRun that will throw an exception if getQueueId or getNumber is called
     private static class ExplodingMockRun extends MockRun {
-        public ExplodingMockRun(long queueId) throws IOException {
+        ExplodingMockRun(long queueId) throws IOException {
             super(queueId);
         }
 

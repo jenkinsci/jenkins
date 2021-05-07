@@ -36,7 +36,7 @@ class StubJob extends Job {
 
     public static final String DEFAULT_STUB_JOB_NAME = "StubJob";
     
-    public StubJob() {
+    StubJob() {
         super(null, DEFAULT_STUB_JOB_NAME);
     }
     
