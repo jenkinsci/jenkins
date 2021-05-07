@@ -146,7 +146,7 @@ public class RekeySecretAdminMonitorTest {
     private void submit(JenkinsRule.WebClient wc, HtmlForm form, String name) throws IOException {
         WebRequest request = form.getWebRequest(null);
         /*
-         * TODO There is a long-undiagnosed issue with the test harness not being simpatico with
+         * TODO There is a long-undiagnosed issue with the test harness not being compatible with
          * message.groovy's f.submit. Work around this by matching the behavior of a real browser
          * (adding the desired button to the request as a parameter).
          */
