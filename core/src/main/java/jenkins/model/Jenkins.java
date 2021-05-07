@@ -3229,7 +3229,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             views.clear();
 
             // load from disk
-            cfg.unmarshal(Jenkins.this);
+            cfg.unmarshalNullingOut(Jenkins.this);
         }
         configLoaded = true;
         try {
