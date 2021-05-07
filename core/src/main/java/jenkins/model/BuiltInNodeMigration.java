@@ -40,8 +40,6 @@ import java.io.IOException;
  * Inform the admin about the migration. This affects the parts of the rename
  * that cannot be done compatibly: The self-label (although we could probably
  * improvise something), and the node name as injected into build environments.
- *
- * TODO what else could break and needs to be based off builtInNodeMigrationNeeded?
  */
 @Extension
 @Restricted(NoExternalUse.class)
@@ -49,17 +47,13 @@ import java.io.IOException;
 public class BuiltInNodeMigration extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
-        final Boolean v = Jenkins.get().builtInNodeMigrationNeeded;
-        return v == null || v;
+        return !Jenkins.get().getRenameMigrationDone();
     }
 
     @RequirePOST
     public void doAct(StaplerRequest req, StaplerResponse rsp, @QueryParameter String yes, @QueryParameter String no) throws IOException, ServletException {
         if (yes != null) {
-            final Jenkins j = Jenkins.get();
-            j.builtInNodeMigrationNeeded = false;
-            j.save();
-            j.trimLabels();
+            Jenkins.get().performRenameMigration();
         } else if (no != null) {
             disable(true);
         }

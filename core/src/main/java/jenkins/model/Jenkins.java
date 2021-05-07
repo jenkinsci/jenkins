@@ -868,7 +868,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Otherwise, {@link BuiltInNodeMigration} will show up.
      */
     @Restricted(NoExternalUse.class)
-    /* package-private */ Boolean builtInNodeMigrationNeeded;
+    /* package-private */ Boolean nodeRenameMigrationNeeded;
 
     /**
      * HTTP proxy configuration.
@@ -1093,10 +1093,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // no longer persisted
         installStateName = null;
 
-        if (builtInNodeMigrationNeeded == null) {
-            final VersionNumber stored = getStoredVersion();
-            builtInNodeMigrationNeeded = stored != null && stored.isOlderThan(new VersionNumber("2.292"));
+        if (nodeRenameMigrationNeeded == null) {
+            /* deserializing without a value set means we need to migrate */
+            nodeRenameMigrationNeeded = true;
         }
+
         return this;
     }
 
@@ -3224,10 +3225,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public LabelAtom getSelfLabel() {
-        if (builtInNodeMigrationNeeded) {
-            return getLabelAtom("master");
+        if (getRenameMigrationDone()) {
+            return getLabelAtom("built-in");
         }
-        return getLabelAtom("built-in");
+        return getLabelAtom("master");
+    }
+
+    /* package */ boolean getRenameMigrationDone() {
+        if (nodeRenameMigrationNeeded == null) {
+            return false;
+        }
+        return !nodeRenameMigrationNeeded;
+    }
+
+    /* package */ void performRenameMigration() throws IOException {
+        this.nodeRenameMigrationNeeded = false;
+        this.save();
+        this.trimLabels();
     }
 
     @Override

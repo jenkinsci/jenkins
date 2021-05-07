@@ -60,10 +60,10 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
             if (e.getOwner() instanceof MasterComputer) {
-                if (Jenkins.get().builtInNodeMigrationNeeded) {
-                    env.put("NODE_NAME", "master");
-                } else {
+                if (Jenkins.get().getRenameMigrationDone()) {
                     env.put("NODE_NAME", "built-in");
+                } else {
+                    env.put("NODE_NAME", "master");
                 }
             } else {
                 env.put("NODE_NAME", e.getOwner().getName());
