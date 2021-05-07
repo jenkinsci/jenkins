@@ -33,7 +33,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
 
     @Override
     protected List<FilePathRule> readOnly(List<FilePathRule> base) {
-        return Collections.unmodifiableList(base);
+        return Collections.unmodifiableList(new ArrayList<>(base));
     }
 
     @Override

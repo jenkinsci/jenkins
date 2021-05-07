@@ -96,7 +96,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
         }
 
         return new AbstractSet<User>() {
-            private Set<String> culpritIds = Collections.unmodifiableSet(getCulpritIds());
+            private Set<String> culpritIds = Collections.unmodifiableSet(new HashSet<>(getCulpritIds()));
 
             @Override
             public Iterator<User> iterator() {

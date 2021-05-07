@@ -563,7 +563,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
 
             public List<IndexItem<?, Object>> getLoadedIndex() {
-                return Collections.unmodifiableList(loadedIndex);
+                return Collections.unmodifiableList(new ArrayList<>(loadedIndex));
             }
 
             @Override

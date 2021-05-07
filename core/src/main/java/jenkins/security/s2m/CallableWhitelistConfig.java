@@ -25,7 +25,7 @@ class CallableWhitelistConfig extends ConfigDirectory<String,Set<String>> {
 
     @Override
     protected Set<String> readOnly(Set<String> base) {
-        return Collections.unmodifiableSet(base);
+        return Collections.unmodifiableSet(new HashSet<>(base));
     }
 
     @Override

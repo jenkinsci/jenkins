@@ -32,7 +32,7 @@ public class CallableRejectionConfig extends ConfigFile<Class,Set<Class>> {
 
     @Override
     protected Set<Class> readOnly(Set<Class> base) {
-        return Collections.unmodifiableSet(base);
+        return Collections.unmodifiableSet(new HashSet<>(base));
     }
 
     @Override

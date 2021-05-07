@@ -986,7 +986,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return new EnvironmentList(buildEnvironments); 
         }
         
-        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : Collections.unmodifiableList(buildEnvironments));
+        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(buildEnvironments)));
     }
 
     public Calendar due() {
