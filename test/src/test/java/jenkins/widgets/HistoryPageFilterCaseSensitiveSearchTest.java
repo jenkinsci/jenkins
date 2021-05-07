@@ -3,7 +3,6 @@ package jenkins.widgets;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -92,12 +91,12 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
     private static class MockRun extends Run {
         private final long queueId;
 
-        public MockRun(long queueId) throws IOException {
+        MockRun(long queueId) throws IOException {
             super(Mockito.mock(Job.class));
             this.queueId = queueId;
         }
 
-        public MockRun(long queueId, Result result) throws IOException {
+        MockRun(long queueId, Result result) throws IOException {
             this(queueId);
             this.result = result;
         }

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
@@ -50,6 +51,7 @@ import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
  * @author vjuranek
  * @since 1.410
  */
+@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
 public abstract class AperiodicWork extends SafeTimerTask implements ExtensionPoint {
 	
 	protected final Logger logger = Logger.getLogger(getClass().getName());

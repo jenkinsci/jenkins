@@ -275,7 +275,7 @@ public class RunParameterDefinitionTest {
 
         private final Result result;
 
-        public ResultPublisher(Result result) {
+        ResultPublisher(Result result) {
             this.result = result;
         }
 

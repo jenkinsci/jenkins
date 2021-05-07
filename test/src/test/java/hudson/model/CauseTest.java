@@ -235,7 +235,7 @@ public class CauseTest {
     static class FullNameChangingProject extends Project<FullNameChangingProject, CustomBuild> implements TopLevelItem {
         private volatile String virtualName;
 
-        public FullNameChangingProject(ItemGroup parent, String name) {
+        FullNameChangingProject(ItemGroup parent, String name) {
             super(parent, name);
         }
 

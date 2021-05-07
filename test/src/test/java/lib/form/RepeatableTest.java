@@ -26,7 +26,7 @@ package lib.form;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
@@ -141,7 +141,10 @@ public class RepeatableTest {
         public String txt;
         public boolean bool;
         @DataBoundConstructor
-        public Foo(String txt, boolean bool) { this.txt = txt; this.bool = bool; }
+        public Foo(String txt, boolean bool) {
+            this.txt = txt;
+            this.bool = bool;
+        }
         @Override public String toString() { return "foo:" + txt + ':' + bool; }
     }
 
@@ -171,7 +174,7 @@ public class RepeatableTest {
         f.getInputByValue("").setValueAttribute("value one");
         f.getInputByValue("").setValueAttribute("value two");
         f.getInputByValue("").setValueAttribute("value three");
-        try { f.getInputByValue(""); fail("?"); } catch (ElementNotFoundException expected) { }
+        assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
         f.getInputsByName("bool").get(2).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"bool\":false,\"txt\":\"value one\"},"
@@ -186,7 +189,7 @@ public class RepeatableTest {
         HtmlPage p = j.createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
         f.getInputByValue("").setValueAttribute("new one");
-        try { f.getInputByValue(""); fail("?"); } catch (ElementNotFoundException expected) { }
+        assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
         f.getInputsByName("bool").get(1).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},"
@@ -277,7 +280,10 @@ public class RepeatableTest {
 
     public static class FooRadio {
         public String txt, radio;
-        public FooRadio(String txt, String radio) { this.txt = txt; this.radio = radio; }
+        public FooRadio(String txt, String radio) {
+            this.txt = txt;
+            this.radio = radio;
+        }
     }
 
     @Test
@@ -337,13 +343,19 @@ public class RepeatableTest {
 
     public static class Apple extends Fruit {
         private int seeds;
-        @DataBoundConstructor public Apple(int seeds) { super("Apple"); this.seeds = seeds; }
+        @DataBoundConstructor public Apple(int seeds) {
+            super("Apple");
+            this.seeds = seeds;
+        }
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Apple.class);
         @Override public String toString() { return name + " with " + seeds + " seeds"; }
     }
     public static class Banana extends Fruit {
         private boolean yellow;
-        @DataBoundConstructor public Banana(boolean yellow) { super("Banana"); this.yellow = yellow; }
+        @DataBoundConstructor public Banana(boolean yellow) {
+            super("Banana");
+            this.yellow = yellow;
+        }
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Banana.class);
         @Override public String toString() { return (yellow ? "Yellow" : "Green") + " " + name; }
     }
