@@ -3233,7 +3233,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /* package */ boolean getRenameMigrationDone() {
         if (nodeRenameMigrationNeeded == null) {
-            return false;
+            /* Jenkins instance created without having loaded from disk */
+            return true;
         }
         return !nodeRenameMigrationNeeded;
     }
