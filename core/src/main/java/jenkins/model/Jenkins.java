@@ -680,6 +680,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private String label="";
 
+    //@SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    private static /* non-final for Groovy */ String nodeNameAndSelfLabelOverride = SystemProperties.getString(Jenkins.class.getName() + ".nodeNameAndSelfLabelOverride");
+
     /**
      * {@link hudson.security.csrf.CrumbIssuer}
      */
@@ -3225,6 +3228,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public LabelAtom getSelfLabel() {
+        if (nodeNameAndSelfLabelOverride != null) {
+            return getLabelAtom(nodeNameAndSelfLabelOverride);
+        }
         if (getRenameMigrationDone()) {
             return getLabelAtom("built-in");
         }
