@@ -49,4 +49,3 @@ public class UpdateJobCommand extends CLICommand {
         return 0;
     }
 }
-
