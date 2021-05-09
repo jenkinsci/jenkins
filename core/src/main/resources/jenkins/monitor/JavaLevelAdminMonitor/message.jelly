@@ -1,0 +1,12 @@
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+    <div class="alert alert-info">
+        <h5>${%Jenkins Java version}</h5>
+        ${%Recommended_Java_Version}
+        <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+            <f:submit name="yes" value="${%More Info}"/>
+            <l:isAdmin>
+                <f:submit name="no" value="${%Dismiss}"/>
+            </l:isAdmin>
+        </form>
+    </div>
+</j:jelly>
