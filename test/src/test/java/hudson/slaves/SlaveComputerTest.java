@@ -28,10 +28,15 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.User;
+import hudson.remoting.Launcher;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.io.IOError;
 import java.io.IOException;
+import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -41,6 +46,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.TestExtension;
 import org.xml.sax.SAXException;
 
@@ -51,6 +57,21 @@ import org.xml.sax.SAXException;
 public class SlaveComputerTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void testAgentLogs() throws Exception {
+        DumbSlave node = j.createOnlineSlave();
+        File logFile = node.getComputer().getLogFile();
+        InputStream is = Files.newInputStream(logFile.toPath());
+        DataInputStream dis = new DataInputStream(is);
+        byte[] bytes = new byte[(int) logFile.length()];
+        dis.readFully(bytes);
+        String log = new String(bytes);
+        Assert.assertTrue(log.contains("Remoting version: " + Launcher.VERSION));
+        Assert.assertTrue(log.contains("Launcher: " + SimpleCommandLauncher.class.getSimpleName()));
+        Assert.assertTrue(log.contains("Communication Protocol: Standard in/out"));
+        Assert.assertTrue(log.contains("This is a Unix agent"));
+    }
 
     @Test
     public void testGetAbsoluteRemotePath() throws Exception {
