@@ -61,7 +61,7 @@ public class JavaLevelAdminMonitor extends AdministrativeMonitor {
             disable(true);
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect("https://www.jenkins.io/redirect/upgrading-jenkins-java-version");
+            return new HttpRedirect("https://www.jenkins.io/redirect/upgrading-jenkins-java-version-8-to-11");
         }
     }
 
