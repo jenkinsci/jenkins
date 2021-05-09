@@ -499,7 +499,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                             protected void reactOnCycle(PluginWrapper q, List<PluginWrapper> cycle)
                                                     throws hudson.util.CyclicGraphDetector.CycleDetectedException {
 
-                                                LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root="+q+", deactivating all involved) "+Util.join(cycle," -> "));
+                                                LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root=" + q + ", deactivating all involved) " + cycle.stream().map(Object::toString).collect(Collectors.joining(" -> ")));
                                                 for (PluginWrapper pluginWrapper : cycle) {
                                                     pluginWrapper.setHasCycleDependency(true);
                                                     failedPlugins.add(new FailedPlugin(pluginWrapper.getShortName(), new CycleDetectedException(cycle)));

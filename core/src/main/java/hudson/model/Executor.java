@@ -32,6 +32,7 @@ import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.util.InterceptingProxy;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -218,7 +219,7 @@ public class Executor extends Thread implements ModelObject {
 
     private void interrupt(Result result, boolean forShutdown, CauseOfInterruption... causes) {
         if (LOGGER.isLoggable(FINE))
-            LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
+            LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Arrays.stream(causes).map(Object::toString).collect(Collectors.joining(","))), new InterruptedException());
 
         lock.writeLock().lock();
         try {
