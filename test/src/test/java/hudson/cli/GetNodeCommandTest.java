@@ -51,7 +51,10 @@ public class GetNodeCommandTest {
         command = new CLICommandInvoker(j, new GetNodeCommand());
     }
 
-    @Test public void getNodeShouldFailWithoutComputerReadPermission() throws Exception {
+    @Test public void getNodeShouldFailWithoutComputerExtendedReadPermission() throws Exception {
+
+        // JENKINS-65578 workaround
+        Computer.EXTENDED_READ.enabled = false;
 
         j.createSlave("MyAgent", null, null);
 
