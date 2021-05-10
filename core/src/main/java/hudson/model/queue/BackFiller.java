@@ -1,6 +1,5 @@
 package hudson.model.queue;
 
-import com.google.common.collect.Iterables;
 import hudson.Extension;
 import jenkins.util.SystemProperties;
 import hudson.model.Computer;
@@ -20,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.StreamSupport;
 
 /**
  * Experimental.
@@ -134,9 +134,8 @@ public class BackFiller extends LoadPredictor {
                 Computer computer = e.getKey();
                 Timeline timeline = new Timeline();
                 for (LoadPredictor lp : LoadPredictor.all()) {
-                    for (FutureLoad fl : Iterables.limit(lp.predict(worksheet, computer, slot.start, slot.end),100)) {
-                        timeline.insert(fl.startTime, fl.startTime+fl.duration, fl.numExecutors);
-                    }
+                    StreamSupport.stream(lp.predict(worksheet, computer, slot.start, slot.end).spliterator(), false).limit(100).forEach(fl ->
+                            timeline.insert(fl.startTime, fl.startTime + fl.duration, fl.numExecutors));
                 }
 
                 Long x = timeline.fit(slot.start, slot.duration, computer.countExecutors()-e.getValue());

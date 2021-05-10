@@ -28,8 +28,6 @@ package jenkins.model;
 
 import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -2571,11 +2569,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Restricted(NoExternalUse.class)
     public static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
-        return Util.replaceMacro(base, ImmutableMap.of(
-                "JENKINS_HOME", Jenkins.get().getRootDir().getPath(),
-                "ITEM_ROOTDIR", itemRootDir,
-                "ITEM_FULLNAME", itemFullName,   // legacy, deprecated
-                "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
+        Map<String, String> properties = new HashMap<>();
+        properties.put("JENKINS_HOME", Jenkins.get().getRootDir().getPath());
+        properties.put("ITEM_ROOTDIR", itemRootDir);
+        properties.put("ITEM_FULLNAME", itemFullName); // legacy, deprecated
+        properties.put("ITEM_FULL_NAME", itemFullName.replace(':','$')); // safe, see JENKINS-12251
+        return Util.replaceMacro(base, Collections.unmodifiableMap(properties));
 
     }
 
@@ -5480,7 +5479,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
-    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(ImmutableSet.of(
+    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
         "login", // .jelly
         "loginError", // .jelly
         "logout", // #doLogout
