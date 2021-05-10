@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ChannelPinger.class })
+@PrepareForTest(ChannelPinger.class)
 @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ChannelPingerTest {
 

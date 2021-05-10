@@ -62,7 +62,6 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
      * Constructor for SSLProtocolSocketFactory.
      */
     public NoClientBindSSLProtocolSocketFactory() {
-        super();
     }
 
     /**

@@ -464,6 +464,7 @@ THE SOFTWARE.
                     Annotations: https://checkstyle.sourceforge.io/config_annotation.html
                   -->
                   <module name="MissingOverride" />
+                  <module name="AnnotationUseStyle" />
                   <!--
                     Class Design: https://checkstyle.sourceforge.io/config_design.html
                   -->
@@ -471,8 +472,10 @@ THE SOFTWARE.
                   <!--
                     Coding: https://checkstyle.sourceforge.io/config_coding.html
                   -->
+                  <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
                   <module name="EqualsHashCode" />
+                  <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />

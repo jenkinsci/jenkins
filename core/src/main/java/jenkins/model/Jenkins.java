@@ -1062,7 +1062,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Maintains backwards compatibility. Invoked by XStream when this object is de-serialized.
      */
-    @SuppressWarnings({"unused"})
+    @SuppressWarnings("unused")
     protected Object readResolve() {
         if (jdks == null) {
             jdks = new ArrayList<>();
@@ -1573,7 +1573,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Either {@link Descriptor#getId()} (recommended) or the short name of a {@link Describable} subtype (for compatibility)
      * @throws IllegalArgumentException if a short name was passed which matches multiple IDs (fail fast)
      */
-    @SuppressWarnings({"rawtypes"}) // too late to fix
+    @SuppressWarnings("rawtypes") // too late to fix
     public Descriptor getDescriptor(String id) {
         // legacy descriptors that are registered manually doesn't show up in getExtensionList, so check them explicitly.
         Iterable<Descriptor> descriptors = Iterators.sequence(getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances());
@@ -2762,7 +2762,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Can be an empty list but never null.
      * @see ExtensionList#lookup
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
         ExtensionList<T> extensionList = extensionLists.get(extensionType);
         return extensionList != null ? extensionList : extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
@@ -2785,7 +2785,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return
      *      Can be an empty list but never null.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public @NonNull <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
