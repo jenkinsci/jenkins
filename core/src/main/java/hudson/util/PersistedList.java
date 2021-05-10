@@ -302,4 +302,3 @@ public class PersistedList<T> extends AbstractList<T> {
         }
     }
 }
-

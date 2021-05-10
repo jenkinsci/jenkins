@@ -458,7 +458,6 @@ THE SOFTWARE.
             <!-- define here because checkstyle and multi module is a PITA -->
             <checkstyleRules>
               <module name="Checker">
-                <module name="NewlineAtEndOfFile" />
                 <module name="UniqueProperties" />
                 <module name="TreeWalker">
                   <!--
@@ -521,6 +520,7 @@ THE SOFTWARE.
           <version>${spotless.version}</version>
           <configuration>
             <java>
+              <endWithNewline />
               <removeUnusedImports />
             </java>
           </configuration>
