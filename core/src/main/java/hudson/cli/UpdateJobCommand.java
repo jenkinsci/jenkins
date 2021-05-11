@@ -43,9 +43,9 @@ public class UpdateJobCommand extends CLICommand {
         return Messages.UpdateJobCommand_ShortDescription();
     }
 
+    @Override
     protected int run() throws Exception {
         job.updateByXml((Source)new StreamSource(stdin));
         return 0;
     }
 }
-

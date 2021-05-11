@@ -24,7 +24,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableSet;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -57,7 +56,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -258,6 +260,7 @@ public abstract class Slave extends Node implements Serializable {
         return remoteFS;
     }
 
+    @Override
     public String getNodeName() {
         return name;
     }
@@ -266,6 +269,7 @@ public abstract class Slave extends Node implements Serializable {
         return getClass().getName() + "[" + name + "]";
     }
 
+    @Override
     public void setNodeName(String name) {
         this.name = name;
     }
@@ -275,10 +279,12 @@ public abstract class Slave extends Node implements Serializable {
         this.description = value;
     }
 
+    @Override
     public String getNodeDescription() {
         return description;
     }
 
+    @Override
     public int getNumExecutors() {
         return numExecutors;
     }
@@ -288,6 +294,7 @@ public abstract class Slave extends Node implements Serializable {
         this.numExecutors = n;
     }
 
+    @Override
     public Mode getMode() {
         return mode;
     }
@@ -297,6 +304,7 @@ public abstract class Slave extends Node implements Serializable {
         this.mode = mode;
     }
 
+    @Override
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
         assert nodeProperties != null;
     	return nodeProperties;
@@ -316,6 +324,7 @@ public abstract class Slave extends Node implements Serializable {
         this.retentionStrategy = availabilityStrategy;
     }
 
+    @Override
     public String getLabelString() {
         return Util.fixNull(label).trim();
     }
@@ -333,10 +342,12 @@ public abstract class Slave extends Node implements Serializable {
         return new GetClockDifference1();
     }
 
+    @Override
     public Computer createComputer() {
         return new SlaveComputer(this);
     }
 
+    @Override
     public FilePath getWorkspaceFor(TopLevelItem item) {
         for (WorkspaceLocator l : WorkspaceLocator.all()) {
             FilePath workspace = l.locate(item, this);
@@ -350,6 +361,7 @@ public abstract class Slave extends Node implements Serializable {
         return r.child(item.getFullName());
     }
 
+    @Override
     @CheckForNull
     public FilePath getRootPath() {
         final SlaveComputer computer = getComputer();
@@ -393,6 +405,7 @@ public abstract class Slave extends Node implements Serializable {
             }
         }
 
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             doIndex(req,rsp);
         }
@@ -473,6 +486,7 @@ public abstract class Slave extends Node implements Serializable {
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
      *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
      */
+    @Override
     @NonNull
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
@@ -567,6 +581,7 @@ public abstract class Slave extends Node implements Serializable {
         return this;
     }
 
+    @Override
     public SlaveDescriptor getDescriptor() {
         Descriptor d = Jenkins.get().getDescriptorOrDie(getClass());
         if (d instanceof SlaveDescriptor)
@@ -679,6 +694,7 @@ public abstract class Slave extends Node implements Serializable {
      * </ol>
      */
     private static final class GetClockDifference1 extends MasterToSlaveCallable<ClockDifference,IOException> {
+        @Override
         public ClockDifference call() {
             // this method must be being invoked locally, which means the clock is in sync
             return new ClockDifference(0);
@@ -698,6 +714,7 @@ public abstract class Slave extends Node implements Serializable {
          */
         private final long startTime = System.currentTimeMillis();
 
+        @Override
         public GetClockDifference3 call() {
             return new GetClockDifference3(startTime);
         }
@@ -727,5 +744,5 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.
      */
-    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar")));
 }

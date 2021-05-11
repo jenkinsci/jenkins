@@ -44,7 +44,8 @@ import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
@@ -175,7 +176,6 @@ public class CLITest {
         WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
         assertEquals(rsp.getContentAsString(), HttpURLConnection.HTTP_MOVED_TEMP, rsp.getStatusCode());
         assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins"));
-        assertNull(rsp.getContentAsString(), rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
 
         for (String transport: Arrays.asList("-http", "-webSocket")) {
 

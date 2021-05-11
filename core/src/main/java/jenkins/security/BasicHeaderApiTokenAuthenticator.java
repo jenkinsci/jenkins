@@ -2,7 +2,7 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.model.User;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

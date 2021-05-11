@@ -26,7 +26,6 @@ package hudson.model;
 
 import hudson.security.ACLContext;
 import jenkins.model.DependencyDeclarer;
-import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import jenkins.util.DirectedGraph;
@@ -213,13 +212,13 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
         List<DependencyGroup> v = map.get(src);
         if(v==null) {
-            return ImmutableList.of();
+            return Collections.emptyList();
         } else {
-            ImmutableList.Builder<Dependency> builder = ImmutableList.builder();
+            List<Dependency> builder = new ArrayList<>();
             for (DependencyGroup dependencyGroup : v) {
                 builder.addAll(dependencyGroup.getGroup());
             }
-            return builder.build();
+            return Collections.unmodifiableList(builder);
         }
 
     }
@@ -350,6 +349,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     }
 
     private static final Comparator<DependencyGroup> NAME_COMPARATOR = new Comparator<DependencyGroup>() {
+        @Override
         public int compare(DependencyGroup lhs, DependencyGroup rhs) {
             int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());
             return cmp != 0 ? cmp : lhs.getDownstreamProject().getName().compareTo(rhs.getDownstreamProject().getName());
@@ -361,6 +361,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      * Compare two Projects based on the topological order defined by this Dependency Graph
      */
+    @Override
     public int compare(AbstractProject o1, AbstractProject o2) {
         return topologicalOrder.compare(o1,o2);
     }

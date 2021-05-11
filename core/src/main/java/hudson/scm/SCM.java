@@ -683,6 +683,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      */
     public abstract ChangeLogParser createChangeLogParser();
 
+    @Override
     public SCMDescriptor<?> getDescriptor() {
         return (SCMDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

@@ -102,6 +102,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
         return l.get();
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrlName();
     }
@@ -146,4 +147,3 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
         rsp.sendRedirect(".");
     }
 }
-

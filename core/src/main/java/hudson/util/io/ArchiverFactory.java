@@ -79,6 +79,7 @@ public abstract class ArchiverFactory implements Serializable {
             this.method = method;
         }
 
+        @Override
         public Archiver create(OutputStream out) throws IOException {
             return new TarArchiver(method.compress(out));
         }
@@ -87,6 +88,7 @@ public abstract class ArchiverFactory implements Serializable {
     }
 
     private static final class ZipArchiverFactory extends ArchiverFactory {
+        @Override
         public Archiver create(OutputStream out) {
             return new ZipArchiver(out);
         }
@@ -101,6 +103,7 @@ public abstract class ArchiverFactory implements Serializable {
             this.prefix = prefix;
         }
 
+        @Override
         public Archiver create(OutputStream out) {
             return new ZipArchiver(out, true, prefix);
         }

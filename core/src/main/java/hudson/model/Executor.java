@@ -32,6 +32,7 @@ import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.util.InterceptingProxy;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -61,11 +62,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static hudson.model.queue.Executables.*;
+import static hudson.model.queue.Executables.getParentOf;
 import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import java.util.Collection;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.queue.AsynchronousExecution;
@@ -215,7 +219,7 @@ public class Executor extends Thread implements ModelObject {
 
     private void interrupt(Result result, boolean forShutdown, CauseOfInterruption... causes) {
         if (LOGGER.isLoggable(FINE))
-            LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Util.join(Arrays.asList(causes),",")), new InterruptedException());
+            LOGGER.log(FINE, String.format("%s is interrupted(%s): %s", getDisplayName(), result, Arrays.stream(causes).map(Object::toString).collect(Collectors.joining(","))), new InterruptedException());
 
         lock.writeLock().lock();
         try {
@@ -580,6 +584,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Human readable name of the Jenkins executor. For the Java thread name use {@link #getName()}.
      */
+    @Override
     public String getDisplayName() {
         return "Executor #"+getNumber();
     }
@@ -932,6 +937,7 @@ public class Executor extends Thread implements ModelObject {
      */
     public <T> T newImpersonatingProxy(Class<T> type, T core) {
         return new InterceptingProxy() {
+            @Override
             protected Object call(Object o, Method m, Object[] args) throws Throwable {
                 final Executor old = IMPERSONATION.get();
                 IMPERSONATION.set(Executor.this);

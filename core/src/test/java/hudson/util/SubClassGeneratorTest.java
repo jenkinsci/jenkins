@@ -38,7 +38,10 @@ public class SubClassGeneratorTest {
         int y;
         public Foo() {}
         public Foo(String s) {this.s=s;}
-        public Foo(double x, int y) {this.x=x;this.y=y;}
+        public Foo(double x, int y) {
+            this.x = x;
+            this.y = y;
+        }
     }
 
     @Test

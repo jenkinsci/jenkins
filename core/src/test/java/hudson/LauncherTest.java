@@ -82,6 +82,7 @@ public class LauncherTest {
     }
 
     private static class NoopCallable extends MasterToSlaveCallable<Object,RuntimeException> {
+        @Override
         public Object call() throws RuntimeException {
             return null;
         }
@@ -101,7 +102,7 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByEnvMaintainsIsUnix() throws Exception {
+    @Test public void decoratedByEnvMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
@@ -113,7 +114,7 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByPrefixMaintainsIsUnix() throws Exception {
+    @Test public void decoratedByPrefixMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);

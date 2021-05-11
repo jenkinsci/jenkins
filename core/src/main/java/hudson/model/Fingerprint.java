@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -68,6 +67,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.springframework.security.access.AccessDeniedException;
@@ -363,8 +364,10 @@ public class Fingerprint implements ModelObject, Saveable {
         public Iterable<Integer> listNumbers() {
             final List<Range> ranges = getRanges();
             return new Iterable<Integer>() {
+                @Override
                 public Iterator<Integer> iterator() {
                     return new Iterators.FlattenIterator<Integer,Range>(ranges) {
+                        @Override
                         protected Iterator<Integer> expand(Range range) {
                             return Iterators.sequence(range.start,range.end).iterator();
                         }
@@ -398,8 +401,10 @@ public class Fingerprint implements ModelObject, Saveable {
         public Iterable<Integer> listNumbersReverse() {
             final List<Range> ranges = getRanges();
             return new Iterable<Integer>() {
+                @Override
                 public Iterator<Integer> iterator() {
                     return new Iterators.FlattenIterator<Integer,Range>(Iterators.reverse(ranges)) {
+                        @Override
                         protected Iterator<Integer> expand(Range range) {
                             return Iterators.reverseSequence(range.start,range.end).iterator();
                         }
@@ -785,10 +790,12 @@ public class Fingerprint implements ModelObject, Saveable {
             /**
              * Check if the given class can be converted (i.e. check if it is of type RangeSet).
              */
+            @Override
             public boolean canConvert(Class type) {
                 return type==RangeSet.class;
             }
 
+            @Override
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
                 RangeSet src = (RangeSet) source;
                 writer.setValue(serialize(src));
@@ -810,6 +817,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 return buf.toString();
             }
 
+            @Override
             public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
                 if(reader.hasMoreChildren()) {
                     /* old format where <range> elements are nested like
@@ -915,6 +923,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return null;
     }
 
+    @Override
     public @NonNull String getDisplayName() {
         return fileName;
     }
@@ -1169,13 +1178,13 @@ public class Fingerprint implements ModelObject, Saveable {
             for (TransientFingerprintFacetFactory fff : TransientFingerprintFacetFactory.all()) {
                 fff.createFor(this,transientFacets);
             }
-            this.transientFacets = ImmutableList.copyOf(transientFacets);
+            this.transientFacets = Collections.unmodifiableList(transientFacets);
         }
 
         return new AbstractCollection<FingerprintFacet>() {
             @Override
             public Iterator<FingerprintFacet> iterator() {
-                return Iterators.sequence(facets.iterator(), transientFacets.iterator());
+                return Stream.concat(StreamSupport.stream(facets.spliterator(), false), transientFacets.stream()).iterator();
             }
 
             @Override
@@ -1217,6 +1226,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public @NonNull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
         r.sort(new Comparator<FingerprintFacet>() {
+            @Override
             public int compare(FingerprintFacet o1, FingerprintFacet o2) {
                 long a = o1.getTimestamp();
                 long b = o2.getTimestamp();
@@ -1254,6 +1264,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Save the Fingerprint in the Fingerprint Storage
      * @throws IOException Save error
      */
+    @Override
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this)) {
             return;

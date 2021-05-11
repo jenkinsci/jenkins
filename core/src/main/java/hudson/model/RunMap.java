@@ -33,11 +33,12 @@ import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.logging.Level;
 
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINEST;
 import java.util.logging.Logger;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import org.apache.commons.collections.comparators.ReverseComparator;
@@ -95,15 +96,18 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
     /**
      * Walks through builds, newer ones first.
      */
+    @Override
     public Iterator<R> iterator() {
         return new Iterator<R>() {
             R last = null;
             R next = newestBuild();
 
+            @Override
             public boolean hasNext() {
                 return next!=null;
             }
 
+            @Override
             public R next() {
                 last = next;
                 if (last!=null)
@@ -156,6 +160,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
      */
     @Deprecated
     public static final Comparator<Comparable> COMPARATOR = new Comparator<Comparable>() {
+        @Override
         public int compare(Comparable o1, Comparable o2) {
             return o2.compareTo(o1);
         }

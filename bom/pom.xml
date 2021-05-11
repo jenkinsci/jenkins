@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.289</version>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>jenkins-bom</artifactId>
@@ -67,7 +67,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.9</version>
+        <version>1.10.10</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>

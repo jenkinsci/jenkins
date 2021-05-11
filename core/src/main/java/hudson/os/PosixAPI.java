@@ -69,26 +69,32 @@ public class PosixAPI {
     public static synchronized org.jruby.ext.posix.POSIX get() {
         if (jnaPosix == null) {
             jnaPosix = org.jruby.ext.posix.POSIXFactory.getPOSIX(new org.jruby.ext.posix.POSIXHandler() {
+        @Override
         public void error(org.jruby.ext.posix.POSIX.ERRORS errors, String s) {
             throw new PosixException(s,errors);
         }
 
+        @Override
         public void unimplementedError(String s) {
             throw new UnsupportedOperationException(s);
         }
 
+        @Override
         public void warn(WARNING_ID warning_id, String s, Object... objects) {
             LOGGER.fine(s);
         }
 
+        @Override
         public boolean isVerbose() {
             return true;
         }
 
+        @Override
         public File getCurrentWorkingDirectory() {
             return new File(".").getAbsoluteFile();
         }
 
+        @Override
         public String[] getEnv() {
             Map<String,String> envs = System.getenv();
             String[] envp = new String[envs.size()];
@@ -100,19 +106,23 @@ public class PosixAPI {
             return envp;
         }
 
+        @Override
         public InputStream getInputStream() {
             return System.in;
         }
 
+        @Override
         public PrintStream getOutputStream() {
             return System.out;
         }
 
+        @Override
         public int getPID() {
             // TODO
             return 0;
         }
 
+        @Override
         public PrintStream getErrorStream() {
             return System.err;
         }

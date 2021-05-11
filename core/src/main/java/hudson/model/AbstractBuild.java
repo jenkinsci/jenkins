@@ -23,8 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -58,7 +56,10 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
-import hudson.util.*;
+import hudson.util.AdaptedIterator;
+import hudson.util.HttpResponses;
+import hudson.util.Iterators;
+import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
@@ -82,6 +83,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -452,6 +455,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return wsl.allocate(ws, getBuild());
         }
 
+        @Override
         public Result run(@NonNull BuildListener listener) throws Exception {
             final Node node = getCurrentNode();
             
@@ -692,19 +696,21 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          */
         protected abstract void post2(BuildListener listener) throws Exception;
 
+        @Override
         public final void post(BuildListener listener) throws Exception {
             try {
                 post2(listener);
             } finally {
                 // update the culprit list
-                HashSet<String> r = new HashSet<>();
+                SortedSet<String> r = new TreeSet<>();
                 for (User u : getCulprits())
                     r.add(u.getId());
-                culprits = ImmutableSortedSet.copyOf(r);
+                culprits = Collections.unmodifiableSet(r);
                 CheckPoint.CULPRITS_DETERMINED.report();
             }
         }
 
+        @Override
         public void cleanUp(BuildListener listener) throws Exception {
             if (lease!=null) {
                 lease.release();
@@ -980,7 +986,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return new EnvironmentList(buildEnvironments); 
         }
         
-        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : ImmutableList.copyOf(buildEnvironments));
+        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(buildEnvironments)));
     }
 
     public Calendar due() {
@@ -1103,6 +1109,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Invoked by {@link Executor} to performs a build.
      */
+    @Override
     public abstract void run();
 
 //
@@ -1179,9 +1186,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
 
         return new Iterable<AbstractBuild<?, ?>>() {
+            @Override
             public Iterator<AbstractBuild<?, ?>> iterator() {
                 return Iterators.removeNull(
                     new AdaptedIterator<Integer,AbstractBuild<?,?>>(nums) {
+                        @Override
                         protected AbstractBuild<?, ?> adapt(Integer item) {
                             return that.getBuildByNumber(item);
                         }
@@ -1398,4 +1407,3 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     private static final Logger LOGGER = Logger.getLogger(AbstractBuild.class.getName());
 }
-

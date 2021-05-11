@@ -26,10 +26,12 @@ public final class StockStatusIcon extends AbstractStatusIcon {
         this.description = description;
     }
 
+    @Override
     public String getImageOf(String size) {
         return Stapler.getCurrentRequest().getContextPath()+ Jenkins.RESOURCE_PATH+"/images/"+size+'/'+image;
     }
 
+    @Override
     public String getDescription() {
         return description.toString(LocaleProvider.getLocale());
     }

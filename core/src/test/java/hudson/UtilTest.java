@@ -46,7 +46,11 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -339,11 +343,12 @@ public class UtilTest {
 
 		private String error;
 
-		public DigesterThread(String string, String expectedDigest) {
+		DigesterThread(String string, String expectedDigest) {
     		this.string = string;
     		this.expectedDigest = expectedDigest;
     	}
 
+		@Override
 		public void run() {
 			for (int i=0; i < 1000; i++) {
 				String digest = Util.getDigestOf(this.string);

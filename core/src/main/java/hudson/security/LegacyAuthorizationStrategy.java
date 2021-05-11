@@ -47,10 +47,12 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
     public LegacyAuthorizationStrategy() {
     }
 
+    @Override
     public ACL getRootACL() {
         return LEGACY_ACL;
     }
 
+    @Override
     public Collection<String> getGroups() {
         return Collections.singleton("admin");
     }

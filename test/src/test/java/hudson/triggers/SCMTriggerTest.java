@@ -114,12 +114,12 @@ public class SCMTriggerTest {
         private volatile int myRev = 1;
         private final OneShotEvent checkoutStarted;
 
-        public TestSCM(OneShotEvent checkoutStarted) {
+        TestSCM(OneShotEvent checkoutStarted) {
             this.checkoutStarted = checkoutStarted;
         }
 
-        @Override synchronized
-        public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
+        @Override
+        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
             return myRev < 2;
         }
 
@@ -143,6 +143,7 @@ public class SCMTriggerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();

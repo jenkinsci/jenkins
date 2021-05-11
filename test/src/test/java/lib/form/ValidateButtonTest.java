@@ -99,6 +99,7 @@ public class ValidateButtonTest {
             return "test";
         }
     
+        @Override
         public DescriptorImpl getDescriptor() {
             return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         }
@@ -199,6 +200,7 @@ public class ValidateButtonTest {
             return "test";
         }
         
+        @Override
         public DescriptorImpl getDescriptor() {
             return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         }

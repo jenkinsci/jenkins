@@ -85,7 +85,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1013,8 +1013,11 @@ public class ViewTest {
         private String primaryView;
 
         private final transient ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+            @Override
             protected List<View> views() { return views; }
+            @Override
             protected String primaryView() { return primaryView; }
+            @Override
             protected void primaryView(String name) { primaryView = name; }
         };
 

@@ -97,7 +97,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
 
     // work around JENKINS-4514. The repositoryBrowser field was marked as non-transient until 1.325,
     // causing the field to be persisted and overwritten on the load method.
-    @SuppressWarnings({"ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void load() {
         Class<? extends RepositoryBrowser> rb = repositoryBrowser;

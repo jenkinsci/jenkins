@@ -76,10 +76,12 @@ public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
         }
     }
 
+    @Override
     public Entry get(int index) {
         return entries.get(index);
     }
 
+    @Override
     public int size() {
         return entries.size();
     }

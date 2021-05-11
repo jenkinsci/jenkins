@@ -23,8 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -69,6 +67,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Discovers the implementations of an extension point.
@@ -291,6 +291,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             // expose Injector via lookup mechanism for interop with non-Guice clients
             Jenkins.get().lookup.set(Injector.class,new ProxyInjector() {
+                @Override
                 protected Injector resolve() {
                     return getContainer();
                 }
@@ -304,12 +305,14 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
         }
 
-        private ImmutableList<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
+        private List<IndexItem<?, Object>> loadSezpozIndices(ClassLoader classLoader) {
             List<IndexItem<?,Object>> indices = new ArrayList<>();
             for (GuiceExtensionAnnotation<?> gea : extensionAnnotations.values()) {
-                Iterables.addAll(indices, Index.load(gea.annotationType, Object.class, classLoader));
+                for (IndexItem<?, Object> indexItem : Index.load(gea.annotationType, Object.class, classLoader)) {
+                    indices.add(indexItem);
+                }
             }
-            return ImmutableList.copyOf(indices);
+            return Collections.unmodifiableList(indices);
         }
 
         public Injector getContainer() {
@@ -384,6 +387,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return gea.isActive(e);
         }
 
+        @Override
         public <U> Collection<ExtensionComponent<U>> find(Class<U> type, Hudson jenkins) {
             // the find method contract requires us to traverse all known components
             List<ExtensionComponent<U>> result = new ArrayList<>();
@@ -430,9 +434,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             FaultTolerantScope(boolean verbose) {
                 this.verbose = verbose;
             }
+            @Override
             public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
                 final Provider<T> base = Scopes.SINGLETON.scope(key,unscoped);
                 return new Provider<T>() {
+                    @Override
                     public T get() {
                         try {
                             return base.get();
@@ -540,6 +546,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             Key key = Key.get(extType, Names.named(item.className() + "." + item.memberName()));
                             annotations.put(key,a);
                             bind(key).toProvider(new Provider() {
+                                    @Override
                                     public Object get() {
                                         return instantiate(item);
                                     }
@@ -556,7 +563,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             }
 
             public List<IndexItem<?, Object>> getLoadedIndex() {
-                return Collections.unmodifiableList(loadedIndex);
+                return Collections.unmodifiableList(new ArrayList<>(loadedIndex));
             }
 
             @Override
@@ -641,7 +648,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             // 5. dead lock
             if (indices==null) {
                 ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                indices = ImmutableList.copyOf(Index.load(Extension.class, Object.class, cl));
+                indices = Collections.unmodifiableList(StreamSupport.stream(Index.load(Extension.class, Object.class, cl).spliterator(), false).collect(Collectors.toList()));
             }
             return indices;
         }
@@ -661,7 +668,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
             List<IndexItem<Extension,Object>> r = new ArrayList<>(old);
             r.addAll(delta);
-            indices = ImmutableList.copyOf(r);
+            indices = Collections.unmodifiableList(r);
 
             return new ExtensionComponentSet() {
                 @Override
@@ -683,6 +690,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             return delta;
         }
 
+        @Override
         public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
             return _find(type,getIndices());
         }

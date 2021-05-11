@@ -343,6 +343,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return DescriptorVisibilityFilter.apply(this, getApplicablePropertyDescriptors());
     }
 
+    @Override
     public void save() throws IOException {
         // persistence is a part of the owner
         // due to initialization timing issue, it can be null when this method is called
@@ -360,10 +361,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getProperties().toList();
     }
 
+    @Override
     public ViewDescriptor getDescriptor() {
         return (ViewDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
+    @Override
     public String getDisplayName() {
         return getViewName();
     }
@@ -555,6 +558,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return super.toString() + "[" + getViewUrl() + "]";
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrl();
     }
@@ -618,6 +622,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the {@link ACL} for this object.
      */
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -681,6 +686,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return Util.XS_DATETIME_FORMATTER.format(lastChange.getTime());
         }
 
+        @Override
         public int compareTo(UserInfo that) {
             long rhs = that.ordinal();
             long lhs = this.ordinal();
@@ -969,7 +975,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     protected void makeSearchIndex(SearchIndexBuilder sib) {
         sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
+            @Override
             protected TopLevelItem get(String key) { return getItem(key); }
+            @Override
             protected Collection<TopLevelItem> all() { return getItems(); }
             @Override
             protected String getName(TopLevelItem o) {
@@ -1182,6 +1190,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // read
             checkPermission(READ);
             return new HttpResponse() {
+                @Override
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
                     View.this.writeXml(rsp.getOutputStream());
@@ -1249,6 +1258,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         save();
     }
 
+    @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
         for (TopLevelItem i : getItems())
@@ -1299,6 +1309,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {
+        @Override
         public int compare(View lhs, View rhs) {
             return lhs.getViewName().compareTo(rhs.getViewName());
         }

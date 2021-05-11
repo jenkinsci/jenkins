@@ -217,10 +217,12 @@ public class LogRotatorTest {
             return true;
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }
 
+        @Override
         public Descriptor<Publisher> getDescriptor() {
             return new Descriptor<Publisher>(TestsFail.class) {};
         }
@@ -288,6 +290,7 @@ public class LogRotatorTest {
             }
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>jenkins-parent</artifactId>
-    <version>2.289</version>
+    <version>${revision}${changelist}</version>
   </parent>
 
   <artifactId>jenkins-test</artifactId>
@@ -75,7 +75,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1534.v6a685e457e95</version>
+      <version>1546.ve14c168c8a57</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -277,7 +277,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.6</version>
+            <version>0.8.7</version>
             <executions>
               <!--
                 Prepares the property pointing to the JaCoCo runtime agent which

@@ -27,29 +27,51 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.*;
+import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Launcher;
+import hudson.Util;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import jenkins.model.*;
+import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
+import jenkins.model.ArtifactManagerFactoryDescriptor;
+import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.*;
+import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -58,7 +80,9 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -124,6 +148,7 @@ public class DirectoryBrowserSupportTest {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
                 return true;

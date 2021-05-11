@@ -99,6 +99,7 @@ public class BuildCommand extends CLICommand {
 
     protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue.";
 
+    @Override
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
 

@@ -24,7 +24,6 @@
  */
 package hudson;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
@@ -220,7 +219,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
      * depends on the plugin e.g. UI support library bundle plugin.
      */
-    private static Set<String> CORE_ONLY_DEPENDANT = ImmutableSet.copyOf(Collections.singletonList("jenkins-core"));
+    private static Set<String> CORE_ONLY_DEPENDANT = Collections.singleton("jenkins-core");
 
     /**
      * Set the list of components that depend on this plugin.
@@ -449,6 +448,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         this.archive = archive;
     }
 
+    @Override
     public String getDisplayName() {
         return StringUtils.removeStart(getLongName(), "Jenkins ");
     }
@@ -1073,6 +1073,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Sort by short name.
      */
+    @Override
     public int compareTo(PluginWrapper pw) {
         return shortName.compareToIgnoreCase(pw.shortName);
     }
@@ -1134,6 +1135,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             plugins.put(plugin.shortName, plugin);
         }
 
+        @Override
         public boolean isActivated() {
             return !plugins.isEmpty();
         }

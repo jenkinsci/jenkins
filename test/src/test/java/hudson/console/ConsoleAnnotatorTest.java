@@ -57,6 +57,7 @@ public class ConsoleAnnotatorTest {
     @Test public void completedStatelessLogAnnotation() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 listener.getLogger().println("---");
                 listener.getLogger().println("ooo");
@@ -109,6 +110,7 @@ public class ConsoleAnnotatorTest {
     @Test public void consoleAnnotationFilterOut() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 listener.getLogger().print("abc\n");
                 listener.getLogger().print(HyperlinkNote.encodeTo("http://infradna.com/","def")+"\n");
@@ -169,6 +171,7 @@ public class ConsoleAnnotatorTest {
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 lock.phase(0);
                 // make sure the build is now properly started
@@ -204,6 +207,7 @@ public class ConsoleAnnotatorTest {
 
     @TestExtension("progressiveOutput")
     public static final ConsoleAnnotatorFactory STATEFUL_ANNOTATOR = new ConsoleAnnotatorFactory() {
+        @Override
         public ConsoleAnnotator newInstance(Object context) {
             return new StatefulAnnotator();
         }
@@ -212,6 +216,7 @@ public class ConsoleAnnotatorTest {
     public static class StatefulAnnotator extends ConsoleAnnotator<Object> {
         int n=1;
 
+        @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text) {
             if (text.getText().startsWith("line"))
                 text.addMarkup(0,5,"<b tag="+(n++)+">","</b>");
@@ -228,6 +233,7 @@ public class ConsoleAnnotatorTest {
         JenkinsRule.WebClient wc = r.createWebClient();
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 lock.phase(0);
                 // make sure the build is now properly started
@@ -272,6 +278,7 @@ public class ConsoleAnnotatorTest {
      * Places a triple dollar mark at the specified position.
      */
     public static final class DollarMark extends ConsoleNote<Object> {
+        @Override
         public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
             text.addMarkup(charPos,"$$$");
             return null;
@@ -302,6 +309,7 @@ public class ConsoleAnnotatorTest {
     }
 
     public static final class JustToIncludeScript extends ConsoleNote<Object> {
+        @Override
         public ConsoleAnnotator annotate(Object build, MarkupText text, int charPos) {
             return null;
         }
@@ -312,6 +320,7 @@ public class ConsoleAnnotatorTest {
 
     @TestExtension("scriptInclusion")
     public static final class JustToIncludeScriptAnnotator extends ConsoleAnnotatorFactory {
+        @Override
         public ConsoleAnnotator newInstance(Object context) {
             return null;
         }

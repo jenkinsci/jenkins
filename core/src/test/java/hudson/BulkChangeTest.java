@@ -61,6 +61,7 @@ public class BulkChangeTest {
             setY(y);
         }
 
+        @Override
         public void save() throws IOException {
             if(BulkChange.contains(this))   return;
             saveCount++;

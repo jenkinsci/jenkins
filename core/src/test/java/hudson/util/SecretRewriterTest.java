@@ -16,7 +16,7 @@ import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeFalse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

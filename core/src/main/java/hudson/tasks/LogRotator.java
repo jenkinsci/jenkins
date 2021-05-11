@@ -35,8 +35,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import hudson.Util;
 import hudson.util.RunList;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -139,6 +139,7 @@ public class LogRotator extends BuildDiscarder {
         
     }
     
+    @Override
     @SuppressWarnings("rawtypes")
     public void perform(Job<?,?> job) throws IOException, InterruptedException {
         //Exceptions thrown by the deletion submethods are collated and reported
@@ -217,7 +218,7 @@ public class LogRotator extends BuildDiscarder {
             //Collate all encountered exceptions into a single exception and throw that
             String msg = String.format(
                     "Failed to rotate logs for [%s]",
-                    Util.join(exceptionMap.keySet(), ", ")
+                    exceptionMap.keySet().stream().map(Object::toString).collect(Collectors.joining(", "))
             );
             throw new CompositeIOException(msg, new ArrayList<>(exceptionMap.values()));
         }

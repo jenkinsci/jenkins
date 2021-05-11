@@ -78,7 +78,7 @@ public class Security637Test {
     private static class URLHandlerCallable extends MasterToSlaveCallable<String, Exception> {
         private URL url;
         
-        public URLHandlerCallable(URL url) {
+        URLHandlerCallable(URL url) {
             this.url = url;
         }
         
@@ -130,7 +130,7 @@ public class Security637Test {
     private static class URLBuilderCallable extends MasterToSlaveCallable<URL, Exception> {
         private String url;
         
-        public URLBuilderCallable(String url) {
+        URLBuilderCallable(String url) {
             this.url = url;
         }
         
@@ -170,7 +170,7 @@ public class Security637Test {
     private static class URLTransferCallable extends MasterToSlaveCallable<URL, Exception> {
         private URL url;
         
-        public URLTransferCallable(URL url) {
+        URLTransferCallable(URL url) {
             this.url = url;
         }
         

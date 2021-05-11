@@ -28,7 +28,12 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Computer;
 import hudson.model.Slave;
-import hudson.security.*;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
+import hudson.security.Permission;
+import hudson.security.SecurityRealm;
 
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
@@ -1255,6 +1260,7 @@ public class Functions {
             return buf.append(c.getName());
         }
 
+        @Override
         public int compareTo(Tag that) {
             int r = Double.compare(that.ordinal, this.ordinal);
             if (r!=0)   return r; // descending for ordinal by reversing the order for compare
@@ -1481,6 +1487,7 @@ public class Functions {
             return map.get(ti.getThreadId());
         }
 
+        @Override
         public int compare(ThreadInfo a, ThreadInfo b) {
             int result = compare(a.getThreadId(), b.getThreadId());
             if (result == 0)
@@ -1493,6 +1500,7 @@ public class Functions {
 
         private static final long serialVersionUID = 5053631350439192685L;
 
+        @Override
         public int compare(Thread a, Thread b) {
             int result = compare(a.getId(), b.getId());
             if (result == 0)
@@ -2276,15 +2284,6 @@ public class Functions {
             rsp.setHeader("X-Hudson","1.395");
             rsp.setHeader("X-Jenkins", Jenkins.VERSION);
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
-
-            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal != null) { // headers used only by deprecated Remoting-based CLI
-                int p = tal.getAdvertisedPort();
-                rsp.setIntHeader("X-Hudson-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
-                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
-            }
         }
     }
 

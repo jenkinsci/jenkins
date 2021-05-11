@@ -24,7 +24,8 @@
 
 package hudson.cli;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.User;

@@ -47,7 +47,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -386,10 +387,12 @@ public abstract class LoadStatistics {
      */
     @Extension @Symbol("loadStatistics")
     public static class LoadStatisticsUpdater extends PeriodicWork {
+        @Override
         public long getRecurrencePeriod() {
             return CLOCK;
         }
 
+        @Override
         protected void doRun() {
             Jenkins j = Jenkins.get();
             List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();

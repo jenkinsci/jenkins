@@ -166,20 +166,23 @@ public class UpdateCenterTest {
         private final String computedSHA256;
         private final String computedSHA512;
 
-        public MockDownloadJob(String computedSHA1, String computedSHA256, String computedSHA512) {
+        MockDownloadJob(String computedSHA1, String computedSHA256, String computedSHA512) {
             this.computedSHA1 = computedSHA1;
             this.computedSHA256 = computedSHA256;
             this.computedSHA512 = computedSHA512;
         }
 
+        @Override
         public String getComputedSHA1() {
             return this.computedSHA1;
         }
 
+        @Override
         public String getComputedSHA256() {
             return computedSHA256;
         }
 
+        @Override
         public String getComputedSHA512() {
             return computedSHA512;
         }

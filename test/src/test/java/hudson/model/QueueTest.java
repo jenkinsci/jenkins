@@ -352,6 +352,7 @@ public class QueueTest {
         FreeStyleProject project = r.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();

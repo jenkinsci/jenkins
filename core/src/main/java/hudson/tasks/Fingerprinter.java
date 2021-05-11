@@ -23,7 +23,6 @@
  */
 package hudson.tasks;
 
-import com.google.common.collect.ImmutableMap;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -65,12 +64,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -205,6 +204,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return BuildStepMonitor.NONE;
     }
 
+    @Override
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         if (enableFingerprintsInDependencyGraph) {
             RunList builds = owner.getBuilds();
@@ -349,6 +349,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             return req.bindJSON(Fingerprinter.class, formData);
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -360,8 +361,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public static final class FingerprintAction implements RunAction2 {
 
         private transient Run build;
-        
-        private static final Random rand = new Random();
 
         /**
          * From file name to the digest.
@@ -387,14 +386,17 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             ref = null;
         }
 
+        @Override
         public String getIconFileName() {
             return "fingerprint.png";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.Fingerprinter_Action_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "fingerprints";
         }
@@ -456,7 +458,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 }
             }
 
-            m = ImmutableMap.copyOf(m);
+            m = Collections.unmodifiableMap(m);
             ref = new WeakReference<>(m);
             return m;
         }

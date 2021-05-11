@@ -69,6 +69,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
 
     @Extension @Symbol("cron")
     public static class DescriptorImpl extends TriggerDescriptor {
+        @Override
         public boolean isApplicable(Item item) {
             return item instanceof BuildableItem;
         }

@@ -6,3 +6,26 @@
    The base directory is <a href='ws/'>the workspace</a>.
    You can only archive files that are located in your workspace.
 </div>
+
+   <br>
+<div>
+   <p>Here are some examples of usage for pipeline: </p>
+   <ul>
+      <li>How to archive multiple artifacts from a specific folder:
+
+         <pre><code>archiveArtifacts artifacts: 'target/*.jar'</code></pre>
+      </li>
+      <br>
+
+      <li>How to archive multiple artifacts with different patterns:
+         <pre><code>archiveArtifacts artifacts: 'target/*.jar, target/*.war'</code></pre>
+      </li>
+      <br>
+      <li>
+         How to archive multiple nested artifacts:
+         <pre><code>archiveArtifacts artifacts: '**/*.jar'</code></pre>
+      </li>
+      <br>
+   </ul>
+
+</div>

@@ -39,7 +39,13 @@ import org.dom4j.io.XMLWriter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.*;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.Flavor;
+import org.kohsuke.stapler.export.Model;
+import org.kohsuke.stapler.export.ModelBuilder;
+import org.kohsuke.stapler.export.NamedPathPruner;
+import org.kohsuke.stapler.export.SchemaGenerator;
+import org.kohsuke.stapler.export.TreePruner;
 import org.kohsuke.stapler.export.TreePruner.ByDepth;
 
 import javax.servlet.ServletException;
@@ -78,10 +84,12 @@ public class Api extends AbstractModelObject {
         this.bean = bean;
     }
 
+    @Override
     public String getDisplayName() {
         return "API";
     }
 
+    @Override
     public String getSearchUrl() {
         return "api";
     }

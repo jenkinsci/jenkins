@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static hudson.Functions.jsStringEscape;
-import static hudson.Util.*;
+import static hudson.Util.singleQuote;
 
 /**
  * Represents the result of the form field validation.
@@ -267,6 +267,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if(message==null)
             return ok();
         return new FormValidation(kind, message) {
+            @Override
             public String renderHtml() {
                 StaplerRequest req = Stapler.getCurrentRequest();
                 if (req == null) { // being called from some other context
@@ -288,6 +289,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public static FormValidation respond(Kind kind, final String html) {
         return new FormValidation(kind) {
+            @Override
             public String renderHtml() {
                 return html;
             }
@@ -310,6 +312,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          * Singleton instance that does no check.
          */
         public static final FileValidator NOOP = new FileValidator() {
+            @Override
             public FormValidation validate(File f) {
                 return ok();
             }
@@ -542,6 +545,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         this.kind = kind;
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         respond(rsp, renderHtml());
     }
@@ -658,7 +662,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             if (names==null)    return null;
 
             if (dependsOn==null)
-                dependsOn = join(names," ");
+                dependsOn = String.join(" ", names);
             return dependsOn;
         }
 

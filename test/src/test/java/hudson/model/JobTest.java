@@ -129,6 +129,7 @@ public class JobTest {
             this.passed = false;
         }
 
+        @Override
         public void run() {
             try {
                 start.await();
@@ -201,6 +202,7 @@ public class JobTest {
         }
 
         private static final class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
             public String getDisplayName() {
                 return "";
             }
@@ -553,7 +555,7 @@ public class JobTest {
     static class NameChangingNode extends Slave {
         private String virtualName;
 
-        public NameChangingNode(JenkinsRule j, String name) throws Exception {
+        NameChangingNode(JenkinsRule j, String name) throws Exception {
             super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, new ArrayList<>());
         }
 

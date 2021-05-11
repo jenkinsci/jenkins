@@ -53,7 +53,10 @@ import hudson.views.ViewJobFilter;
 import jenkins.model.Jenkins;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -388,7 +391,7 @@ public class ListViewTest {
     private static class Stream extends ServletInputStream {
         private final InputStream inner;
 
-        public Stream(final InputStream inner) {
+        Stream(final InputStream inner) {
             this.inner = inner;
         }
 

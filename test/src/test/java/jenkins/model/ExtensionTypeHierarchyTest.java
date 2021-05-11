@@ -51,6 +51,7 @@ public class ExtensionTypeHierarchyTest {
      */
     private <T> T[] sort(T[] a) {
         Arrays.sort(a,new Comparator<T>() {
+            @Override
             public int compare(T o1, T o2) {
                 return o1.getClass().getName().compareTo(o2.getClass().getName());
             }

@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 import jenkins.security.MasterToSlaveCallable;
 
 /**

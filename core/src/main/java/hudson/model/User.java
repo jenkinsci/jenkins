@@ -70,6 +70,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.scm.RunWithSCM;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
@@ -255,6 +256,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return realm.getUserIdStrategy();
     }
 
+    @Override
     public int compareTo(@NonNull User that) {
         return idStrategy().compare(this.id, that.id);
     }
@@ -268,6 +270,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return "user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
 
+    @Override
     public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
     }
@@ -675,15 +678,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Returns the user name.
      */
+    @Override
     public @NonNull String getDisplayName() {
         return getFullName();
     }
 
     /**
-     * true if {@link AbstractBuild#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
+     * true if {@link RunWithSCM#hasParticipant} or {@link hudson.model.Cause.UserIdCause}
      */
-    private boolean relatedTo(@NonNull AbstractBuild<?, ?> b) {
-        if (b.hasParticipant(this)) {
+    private boolean relatedTo(@NonNull Run<?, ?> b) {
+        if (b instanceof RunWithSCM && ((RunWithSCM) b).hasParticipant(this)) {
             return true;
         }
         for (Cause cause : b.getCauses()) {
@@ -698,14 +702,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Gets the list of {@link Build}s that include changes by this user,
-     * by the timestamp order.
+     * Searches for builds which include changes by this user or which were triggered by this user.
      */
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @NonNull RunList getBuilds() {
         return RunList.fromJobs((Iterable) Jenkins.get().
-                allItems(Job.class)).filter((Predicate<Run<?, ?>>) r -> r instanceof AbstractBuild && relatedTo((AbstractBuild<?, ?>) r));
+                allItems(Job.class)).filter((Predicate<Run<?, ?>>) this::relatedTo);
     }
 
     /**
@@ -797,6 +800,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Save the user configuration.
      */
+    @Override
     public synchronized void save() throws IOException {
         if (!isIdOrFullnameAllowed(id)) {
             throw FormValidation.error(Messages.User_IllegalUsername(id));
@@ -914,8 +918,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<>();
-        for (AbstractProject<?, ?> p : Jenkins.get().allItems(AbstractProject.class)) {
-            for (AbstractBuild<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+        for (Job<?, ?> p : Jenkins.get().allItems(Job.class)) {
+            for (Run<?, ?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
                 if (relatedTo(b)) {
                     lastBuilds.add(b);
                     break;
@@ -1019,6 +1023,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return Collections.unmodifiableList(actions);
     }
 
+    @Override
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this, request, response);
     }

@@ -266,6 +266,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(name,port));
     }
 
+    @Override
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         XmlFile config = getXmlFile();

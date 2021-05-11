@@ -30,6 +30,7 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      * <p>
      * The default implementation does FIFO.
      */
+    @Override
     public int compare(BuildableItem lhs, BuildableItem rhs) {
         return Long.compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
     }

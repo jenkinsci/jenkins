@@ -82,10 +82,12 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
         return super.get(md5sum,createIfNotExist,createParams);
     }
 
+    @Override
     protected @NonNull Fingerprint create(@NonNull String md5sum, @NonNull FingerprintParams createParams) throws IOException {
         return new Fingerprint(createParams.build, createParams.fileName, Util.fromHexString(md5sum));
     }
 
+    @Override
     protected @CheckForNull Fingerprint load(@NonNull String key) throws IOException {
         return Fingerprint.load(key);
     }

@@ -31,7 +31,14 @@ import hudson.XmlFile;
 import hudson.matrix.Axis;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Fingerprint;
+import hudson.model.FingerprintCleanupThread;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Result;
 import hudson.util.RunList;
 import java.io.File;
 

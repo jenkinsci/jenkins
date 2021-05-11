@@ -267,7 +267,7 @@ public class ComputerConfigDotXmlTest {
 
             private final InputStream inner;
 
-            public Stream(final InputStream inner) {
+            Stream(final InputStream inner) {
                 this.inner = inner;
             }
 
