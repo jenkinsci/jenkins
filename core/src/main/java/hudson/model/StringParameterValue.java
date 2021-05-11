@@ -49,7 +49,7 @@ public class StringParameterValue extends ParameterValue {
 
     public StringParameterValue(String name, String value, String description) {
         super(name, description);
-        this.value = Util.fixNull(value);
+        this.value = Util.fixEmpty(value);
     }
 
     /**
