@@ -1975,6 +1975,8 @@ version: 2.9.0
 				if (p_oEvent.returnValue !== false) {
 
 					this.submitForm();
+					// avoid double form submission in HtmlUnit
+					Event.preventDefault(p_oEvent);
 
 				}
 
