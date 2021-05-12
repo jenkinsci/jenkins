@@ -268,7 +268,7 @@ public class Connection {
 
             return spk;
         } catch (ClassNotFoundException e) {
-            throw new Error(e); // impossible
+            throw new LinkageError(e.getMessage(), e); // impossible
         }
     }
 

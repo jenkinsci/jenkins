@@ -31,6 +31,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
 import hudson.model.AbstractProject;
+import java.lang.reflect.InvocationTargetException;
 import jenkins.model.DependencyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.Describable;
@@ -275,10 +276,14 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
             try {
-                DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).newInstance();
+                DescribableList r = (DescribableList) context.getRequiredType().asSubclass(DescribableList.class).getDeclaredConstructor().newInstance();
                 CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
                 r.data.replaceBy(core);
                 return r;
+            } catch (NoSuchMethodException e) {
+                NoSuchMethodError x = new NoSuchMethodError();
+                x.initCause(e);
+                throw x;
             } catch (InstantiationException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
@@ -287,6 +292,8 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
+            } catch (InvocationTargetException e) {
+                throw new LinkageError(e.getMessage(), e);
             }
         }
     }

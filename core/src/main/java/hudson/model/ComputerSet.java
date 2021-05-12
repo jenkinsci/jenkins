@@ -37,6 +37,7 @@ import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
+import java.lang.reflect.InvocationTargetException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
@@ -474,10 +475,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     private static NodeMonitor createDefaultInstance(Descriptor<NodeMonitor> d, boolean ignored) {
         try {
-            NodeMonitor nm = d.clazz.newInstance();
+            NodeMonitor nm = d.clazz.getDeclaredConstructor().newInstance();
             nm.setIgnored(ignored);
             return nm;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOGGER.log(Level.SEVERE, "Failed to instantiate "+d.clazz,e);
         }
         return null;

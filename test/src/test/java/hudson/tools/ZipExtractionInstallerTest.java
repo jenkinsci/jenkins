@@ -160,7 +160,7 @@ public class ZipExtractionInstallerTest {
                         }
                     }
                 } catch (NoSuchFieldException | IllegalAccessException e) {
-                    e.printStackTrace();
+                    throw new LinkageError(e.getMessage(), e);
                 }
             }
             return super.callFunction(page, function, scope, thisObject, args);

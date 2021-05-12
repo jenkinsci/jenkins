@@ -25,6 +25,7 @@ package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
 import hudson.Functions;
+import java.lang.reflect.InvocationTargetException;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import jenkins.model.Jenkins;
@@ -62,7 +63,11 @@ public abstract class Lifecycle implements ExtensionPoint {
             if(p!=null) {
                 try {
                     ClassLoader cl = Jenkins.get().getPluginManager().uberClassLoader;
-                    instance = (Lifecycle)cl.loadClass(p).newInstance();
+                    instance = (Lifecycle)cl.loadClass(p).getDeclaredConstructor().newInstance();
+                } catch (NoSuchMethodException e) {
+                    NoSuchMethodError x = new NoSuchMethodError(e.getMessage());
+                    x.initCause(e);
+                    throw x;
                 } catch (InstantiationException e) {
                     InstantiationError x = new InstantiationError(e.getMessage());
                     x.initCause(e);
@@ -75,6 +80,8 @@ public abstract class Lifecycle implements ExtensionPoint {
                     NoClassDefFoundError x = new NoClassDefFoundError(e.getMessage());
                     x.initCause(e);
                     throw x;
+                } catch (InvocationTargetException e) {
+                    throw new LinkageError(e.getMessage(), e);
                 }
             } else {
                 if(Functions.isWindows()) {

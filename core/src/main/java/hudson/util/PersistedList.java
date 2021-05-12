@@ -35,6 +35,7 @@ import hudson.model.Describable;
 import hudson.model.Saveable;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -287,9 +288,13 @@ public class PersistedList<T> extends AbstractList<T> {
             CopyOnWriteList core = copyOnWriteListConverter.unmarshal(reader, context);
 
             try {
-                PersistedList r = (PersistedList)context.getRequiredType().newInstance();
+                PersistedList r = (PersistedList)context.getRequiredType().getDeclaredConstructor().newInstance();
                 r.data.replaceBy(core);
                 return r;
+            } catch (NoSuchMethodException e) {
+                NoSuchMethodError x = new NoSuchMethodError();
+                x.initCause(e);
+                throw x;
             } catch (InstantiationException e) {
                 InstantiationError x = new InstantiationError();
                 x.initCause(e);
@@ -298,6 +303,8 @@ public class PersistedList<T> extends AbstractList<T> {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
                 throw x;
+            } catch (InvocationTargetException e) {
+                throw new LinkageError(e.getMessage(), e);
             }
         }
     }
