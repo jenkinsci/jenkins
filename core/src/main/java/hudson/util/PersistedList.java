@@ -35,6 +35,7 @@ import hudson.model.Describable;
 import hudson.model.Saveable;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -304,7 +305,18 @@ public class PersistedList<T> extends AbstractList<T> {
                 x.initCause(e);
                 throw x;
             } catch (InvocationTargetException e) {
-                throw new LinkageError(e.getMessage(), e);
+                Throwable t = e.getCause();
+                if (t instanceof RuntimeException) {
+                    throw (RuntimeException) t;
+                } else if (t instanceof IOException) {
+                    throw new UncheckedIOException((IOException) t);
+                } else if (t instanceof Exception) {
+                    throw new RuntimeException(t);
+                } else if (t instanceof Error) {
+                    throw (Error) t;
+                } else {
+                    throw new Error(e);
+                }
             }
         }
     }

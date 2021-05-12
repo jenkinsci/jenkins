@@ -25,6 +25,7 @@ package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
 import hudson.Functions;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import jenkins.util.SystemProperties;
 import hudson.Util;
@@ -81,7 +82,18 @@ public abstract class Lifecycle implements ExtensionPoint {
                     x.initCause(e);
                     throw x;
                 } catch (InvocationTargetException e) {
-                    throw new LinkageError(e.getMessage(), e);
+                    Throwable t = e.getCause();
+                    if (t instanceof RuntimeException) {
+                        throw (RuntimeException) t;
+                    } else if (t instanceof IOException) {
+                        throw new UncheckedIOException((IOException) t);
+                    } else if (t instanceof Exception) {
+                        throw new RuntimeException(t);
+                    } else if (t instanceof Error) {
+                        throw (Error) t;
+                    } else {
+                        throw new Error(e);
+                    }
                 }
             } else {
                 if(Functions.isWindows()) {
