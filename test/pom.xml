@@ -155,7 +155,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.0.3</version>
+      <version>4.1.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
