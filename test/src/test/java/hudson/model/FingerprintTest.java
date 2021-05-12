@@ -427,9 +427,11 @@ public class FingerprintTest {
         fingerprint.getFacets().remove(testFacet);
         assertThat(fingerprint.getFacets().size(), is(0));
         fingerprint.getFacets().add(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(1));
         Iterator<FingerprintFacet> itr = fingerprint.getFacets().iterator();
         itr.next();
         itr.remove();
+        assertThat(fingerprint.getFacets().size(), is(0));
     }
 
     @Test
