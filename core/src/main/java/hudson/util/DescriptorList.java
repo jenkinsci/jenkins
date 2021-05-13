@@ -212,7 +212,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (ClassNotFoundException e) {
-            throw new LinkageError(e.getMessage(), e);  // Can't happen
+            throw new AssertionError(e);  // Can't happen
         }
     }
 
