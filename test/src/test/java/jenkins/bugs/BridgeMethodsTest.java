@@ -1,4 +1,4 @@
-package test.compatibility;
+package jenkins.bugs;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
