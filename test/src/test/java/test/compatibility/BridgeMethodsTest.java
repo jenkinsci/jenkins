@@ -1,4 +1,4 @@
-package test.compatability;
+package test.compatibility;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -19,7 +19,7 @@ import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 public class BridgeMethodsTest {
 
     @Test
-    @Issue("[JENKINS-65605")
+    @Issue("JENKINS-65605")
     public void checkBridgeMethod() {
         /*
          * we should have 2 methods getFuture() in hudson.model.Queue$WaitingItem but with different return types :
@@ -28,7 +28,7 @@ public class BridgeMethodsTest {
          */
         Method[] methods = Queue.WaitingItem.class.getMethods();
         List<Method> collect = Arrays.stream(methods).filter(m -> m.getName().equals("getFuture") && m.getParameterCount() == 0).collect(Collectors.toList());
-        // hasSize(2)
+
         assertThat(collect, allOf(iterableWithSize(2),
                                   hasItem(hasProperty("returnType", is(Future.class))),
                                   hasItem(hasProperty("returnType", is(QueueTaskFuture.class)))));
