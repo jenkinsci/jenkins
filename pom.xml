@@ -111,7 +111,7 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
     <access-modifier-checker.version>1.21</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.1</junit.jupiter.version>
+    <junit.jupiter.version>5.7.2</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
     <spotless.version>2.11.0</spotless.version>
   </properties>
@@ -374,7 +374,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.18</version>
+          <version>1.21</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
