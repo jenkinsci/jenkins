@@ -49,7 +49,7 @@ import java.util.Locale;
  * Hudson started to overload colors &mdash; for example grey could mean
  * either disabled, aborted, or not yet built. As a result, {@link BallColor}
  * becomes more like a "logical" color, in the sense that different {@link BallColor}
- * values can map to the same RGB color. See issue #956.
+ * values can map to the same RGB color. See JENKINS-956.
  *
  * @author Kohsuke Kawaguchi
  */
