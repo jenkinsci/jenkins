@@ -1974,10 +1974,10 @@ version: 2.9.0
 
 				if (p_oEvent.returnValue !== false) {
 
-					this.submitForm();
-					// avoid double form submission in HtmlUnit
-					Event.preventDefault(p_oEvent);
-
+					if (this.submitForm() == "requestSubmit") {
+						// avoid double form submission in HtmlUnit
+						Event.preventDefault(p_oEvent);
+					}
 				}
 
 				break;
@@ -2714,11 +2714,13 @@ version: 2.9.0
                         /* Trying very hard to find the right button...
                         See https://issues.jenkins.io/browse/JENKINS-65585 */
                         var buttons = this.getElementsByTagName('button');
-                        if (buttons.length && buttons[0].type == 'submit') {
-                            return oForm.requestSubmit(buttons[0]);
+                        if (buttons.length == 1 && buttons[0].type == 'submit') {
+                            oForm.requestSubmit(buttons[0]);
+                            return "requestSubmit";
                         }
                     }
-                    return oForm.requestSubmit();
+                    oForm.requestSubmit();
+                    return "requestSubmit";
                 }
         
                 if (UA.ie && (UA.ie < 9)) {
