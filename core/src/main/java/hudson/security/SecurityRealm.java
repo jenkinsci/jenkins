@@ -51,6 +51,7 @@ import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.AcegiSecurityExceptionFilter;
 import jenkins.security.BasicHeaderProcessor;
+import jenkins.security.SafeSavedRequestAwareAuthenticationSuccessHandler;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -73,7 +74,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
@@ -594,7 +594,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
             apf.setRememberMeServices(sc.rememberMe2);
-            final SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+            final SafeSavedRequestAwareAuthenticationSuccessHandler successHandler = new SafeSavedRequestAwareAuthenticationSuccessHandler();
             successHandler.setTargetUrlParameter("from");
             apf.setAuthenticationSuccessHandler(successHandler);
             apf.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/loginError"));
@@ -633,12 +633,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         String from = null, returnValue = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
-        // Try to obtain a return point either from the Session
-        // or from the QueryParameter in this order
-        if (request != null
-                && request.getSession(false) != null) {
-            from = (String) request.getSession().getAttribute("from"); // TODO everyone setting this is commented out
-        } else if (request != null) {
+        // Try to obtain a return point from the query parameter
+        if (request != null) {
             from = request.getParameter("from");
         }
 
