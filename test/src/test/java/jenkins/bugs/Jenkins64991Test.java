@@ -29,7 +29,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.model.FreeStyleProject;
+import hudson.security.Messages;
 import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,8 +53,26 @@ public class Jenkins64991Test {
     @Before
     public void setUp() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Permission.READ).everywhere().toEveryone());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Permission.READ).everywhere().toEveryone().grant(Jenkins.ADMINISTER).everywhere().to("alice"));
     }
+
+    @Test
+    public void test403Redirect() throws Exception {
+        final JenkinsRule.WebClient webClient = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
+        final HtmlPage loginPage = webClient.goTo("manage");
+
+        assertTrue(loginPage.isHtmlPage());
+        assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("from=%2Fmanage"));
+
+        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+
+        final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
+        assertTrue(redirectedPage.isHtmlPage());
+        assertEquals(j.getURL() + "manage", redirectedPage.getUrl().toExternalForm());
+        assertThat(redirectedPage.getWebResponse().getContentAsString(), containsStringIgnoringCase(Messages.GlobalSecurityConfiguration_DisplayName()));
+    }
+
 
     @Test
     public void testRedirect() throws Exception {
