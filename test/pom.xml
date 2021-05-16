@@ -155,7 +155,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.0.3</version>
+      <version>4.1.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -277,7 +277,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.6</version>
+            <version>0.8.7</version>
             <executions>
               <!--
                 Prepares the property pointing to the JaCoCo runtime agent which

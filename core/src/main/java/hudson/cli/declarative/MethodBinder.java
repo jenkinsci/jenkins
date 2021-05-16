@@ -126,7 +126,7 @@ class MethodBinder {
     /**
      * {@link Argument} implementation that adds a bias to {@link #index()}.
      */
-    @SuppressWarnings({"ClassExplicitlyAnnotation"})
+    @SuppressWarnings("ClassExplicitlyAnnotation")
     private static final class ArgumentImpl implements Argument {
         private final Argument base;
         private final int bias;

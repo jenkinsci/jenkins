@@ -8,7 +8,7 @@ public class SecretUtilTest {
 
     @Issue("JENKINS-47500")
     @Test
-    public void decrypt() throws Exception {
+    public void decrypt() {
         String data = "{}";
 
         try {
@@ -23,7 +23,7 @@ public class SecretUtilTest {
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptJustSpace() throws Exception {
+    public void decryptJustSpace() {
         String data = " ";
 
         try {
@@ -37,7 +37,7 @@ public class SecretUtilTest {
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptWithSpace() throws Exception {
+    public void decryptWithSpace() {
         String data = "{ }";
 
         try {
@@ -51,7 +51,7 @@ public class SecretUtilTest {
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptWithSpaces() throws Exception {
+    public void decryptWithSpaces() {
         String data = "{     }";
 
         try {

@@ -76,7 +76,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.292</revision>
+    <revision>2.294</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -113,6 +113,7 @@ THE SOFTWARE.
     <access-modifier-checker.version>1.21</access-modifier-checker.version>
     <junit.jupiter.version>5.7.1</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
+    <spotless.version>2.10.3</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -453,16 +454,17 @@ THE SOFTWARE.
           <configuration>
             <consoleOutput>true</consoleOutput>
             <failsOnError>true</failsOnError>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
             <!-- define here because checkstyle and multi module is a PITA -->
             <checkstyleRules>
               <module name="Checker">
-                <module name="NewlineAtEndOfFile" />
                 <module name="UniqueProperties" />
                 <module name="TreeWalker">
                   <!--
                     Annotations: https://checkstyle.sourceforge.io/config_annotation.html
                   -->
                   <module name="MissingOverride" />
+                  <module name="AnnotationUseStyle" />
                   <!--
                     Class Design: https://checkstyle.sourceforge.io/config_design.html
                   -->
@@ -470,10 +472,11 @@ THE SOFTWARE.
                   <!--
                     Coding: https://checkstyle.sourceforge.io/config_coding.html
                   -->
+                  <module name="AvoidNoArgumentSuperConstructorCall" />
                   <module name="CovariantEquals" />
                   <module name="EqualsHashCode" />
+                  <module name="NoEnumTrailingComma" />
                   <module name="OneStatementPerLine" />
-                  <module name="PackageDeclaration" />
                   <module name="SimplifyBooleanExpression" />
                   <module name="StringLiteralEquality" />
                   <module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
@@ -489,7 +492,6 @@ THE SOFTWARE.
                     <property name="illegalClasses" value="javax.annotation.MatchesPattern.Checker, javax.annotation.Nonnegative.Checker, javax.annotation.Nonnull.Checker, javax.annotation.RegEx.Checker, javax.annotation.CheckForNull, javax.annotation.CheckForSigned, javax.annotation.CheckReturnValue, javax.annotation.Detainted, javax.annotation.MatchesPattern, javax.annotation.Nonnegative, javax.annotation.Nonnull, javax.annotation.Nullable, javax.annotation.OverridingMethodsMustInvokeSuper, javax.annotation.ParametersAreNonnullByDefault, javax.annotation.ParametersAreNullableByDefault, javax.annotation.PropertyKey, javax.annotation.RegEx, javax.annotation.Signed, javax.annotation.Syntax, javax.annotation.Tainted, javax.annotation.Untainted, javax.annotation.WillClose, javax.annotation.WillCloseWhenClosed, javax.annotation.WillNotClose, javax.annotation.concurrent.GuardedBy, javax.annotation.concurrent.Immutable, javax.annotation.concurrent.NotThreadSafe, javax.annotation.concurrent.ThreadSafe, javax.annotation.meta.TypeQualifierValidator, javax.annotation.meta.When, javax.annotation.meta.Exclusive, javax.annotation.meta.Exhaustive, javax.annotation.meta.TypeQualifier, javax.annotation.meta.TypeQualifierDefault, javax.annotation.meta.TypeQualifierNickname" />
                   </module>
                   <module name="RedundantImport" />
-                  <module name="UnusedImports" />
                   <!--
                     Miscellaneous: https://checkstyle.sourceforge.io/config_misc.html
                   -->
@@ -510,6 +512,26 @@ THE SOFTWARE.
               <id>validate</id>
               <phase>validate</phase>
               <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless.version}</version>
+          <configuration>
+            <java>
+              <endWithNewline />
+              <removeUnusedImports />
+            </java>
+          </configuration>
+          <executions>
+            <execution>
+              <!-- Runs in verify phase by default -->
+              <goals>
+                <!-- Can be disabled using -Dspotless.check.skip -->
                 <goal>check</goal>
               </goals>
             </execution>
@@ -611,6 +633,11 @@ THE SOFTWARE.
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <!-- Version specified in parent POM -->
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
       </plugin>
     </plugins>
 

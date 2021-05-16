@@ -295,7 +295,7 @@ public class UserIdMapperTest {
     }
 
     @Test
-    public void testXmlFileCorrupted() throws IOException {
+    public void testXmlFileCorrupted() {
         assertThrows(IOException.class, () -> createUserIdMapper(IdStrategy.CASE_INSENSITIVE));
     }
 

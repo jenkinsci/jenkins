@@ -23,7 +23,6 @@
  */
 package hudson.model.queue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -41,6 +40,7 @@ import hudson.security.ACL;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -370,7 +370,7 @@ public class MappingWorksheet {
             if (ec.node==null)  continue;   // evict out of sync node
             executors.add(ec);
         }
-        this.executors = ImmutableList.copyOf(executors);
+        this.executors = Collections.unmodifiableList(executors);
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
         Map<Object,List<SubTask>> m = new LinkedHashMap<>();
@@ -387,7 +387,7 @@ public class MappingWorksheet {
         for (List<SubTask> group : m.values()) {
             works.add(new WorkChunk(group,works.size()));
         }
-        this.works = ImmutableList.copyOf(works);
+        this.works = Collections.unmodifiableList(works);
     }
 
     public WorkChunk works(int index) {

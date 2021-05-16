@@ -1160,7 +1160,9 @@ public class Util {
 
     /**
      * Concatenate multiple strings by inserting a separator.
+     * @deprecated since TODO; use {@link String#join(CharSequence, Iterable)}
      */
+    @Deprecated
     @NonNull
     public static String join(@NonNull Collection<?> strings, @NonNull String separator) {
         StringBuilder buf = new StringBuilder();

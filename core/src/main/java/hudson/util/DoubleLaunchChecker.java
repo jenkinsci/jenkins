@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.init.Initializer;
 import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
@@ -68,6 +69,7 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  * @since 1.178
  */
+@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
 public class DoubleLaunchChecker {
     /**
      * The timestamp of the owner file when we updated it for the last time.
