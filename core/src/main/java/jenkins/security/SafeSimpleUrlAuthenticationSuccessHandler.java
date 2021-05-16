@@ -27,18 +27,18 @@ import hudson.Util;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Like {@link SavedRequestAwareAuthenticationSuccessHandler} but does not allow open redirects.
+ * Like {@link SimpleUrlAuthenticationSuccessHandler} but does not allow open redirects.
  *
  * @since TODO
  */
 @Restricted(NoExternalUse.class)
-public class SafeSavedRequestAwareAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
+public class SafeSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         String originalTargetUrl = super.determineTargetUrl(request, response, authentication);

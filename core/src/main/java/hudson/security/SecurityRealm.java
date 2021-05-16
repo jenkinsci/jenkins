@@ -51,7 +51,7 @@ import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.AcegiSecurityExceptionFilter;
 import jenkins.security.BasicHeaderProcessor;
-import jenkins.security.SafeSavedRequestAwareAuthenticationSuccessHandler;
+import jenkins.security.SafeSimpleUrlAuthenticationSuccessHandler;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -594,7 +594,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
             apf.setRememberMeServices(sc.rememberMe2);
-            final SafeSavedRequestAwareAuthenticationSuccessHandler successHandler = new SafeSavedRequestAwareAuthenticationSuccessHandler();
+            final SafeSimpleUrlAuthenticationSuccessHandler successHandler = new SafeSimpleUrlAuthenticationSuccessHandler();
             successHandler.setTargetUrlParameter("from");
             apf.setAuthenticationSuccessHandler(successHandler);
             apf.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/loginError"));
