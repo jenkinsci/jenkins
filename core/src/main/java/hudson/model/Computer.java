@@ -1677,7 +1677,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @see #getLogFile()
      */
-    // TODO migrate from slaves/ to agents/
+    // TODO(terminology) migrate from slaves/ to agents/
     @Initializer
     public static void relocateOldLogs() {
         relocateOldLogs(Jenkins.get().getRootDir());

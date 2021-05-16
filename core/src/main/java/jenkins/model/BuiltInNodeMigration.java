@@ -62,6 +62,6 @@ public class BuiltInNodeMigration extends AdministrativeMonitor {
 
     @Override
     public String getDisplayName() {
-        return "Built-In Node Label Migration"; // TODO i18n
+        return "Built-In Node Label Migration"; // TODO(terminology) i18n
     }
 }

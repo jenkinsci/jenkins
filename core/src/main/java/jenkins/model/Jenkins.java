@@ -4100,7 +4100,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
         if (toComputer() == null) {
-            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel)); // TODO blub? Controller? How is this used?
+            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel)); // TODO(terminology) Built-in node? Controller? How is this used?
         }
 
         // if the result isn't available in 5 sec, ignore that.

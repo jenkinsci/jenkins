@@ -30,7 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * This class tests that environment variables from node properties are applied,
  * and that the priority is maintained: parameters > agent node properties >
  * global (controller) node properties
- * TODO confirm that the built-in node has node properties separate from global (controller) node properties
+ * TODO(terminology) confirm that the built-in node has node properties separate from global (controller) node properties
  */
 public class EnvironmentVariableNodePropertyTest {
 
@@ -88,7 +88,7 @@ public class EnvironmentVariableNodePropertyTest {
 	 * @throws Exception
 	 */
 	@Test
-	// TODO is this correct? This sets a built-in node property, not a global property
+	// TODO(terminology) is this correct? This sets a built-in node property, not a global property
 	public void testAgentAndBuiltInNodePropertyAndParameterOnAgent()
 			throws Exception {
 		ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
