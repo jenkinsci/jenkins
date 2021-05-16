@@ -41,7 +41,7 @@ public final class AgentComputerUtil {
      * separate thread on agents, that'll fail.)
      *
      * @return null if the calling thread doesn't have any trace of where its controller is.
-     * @since 2.TODO
+     * @since TODO
      */
     @CheckForNull
     public static VirtualChannel getChannelToController() {
