@@ -42,31 +42,31 @@ public class BuiltInNodeMigrationTest {
 
     @Test
     public void newInstanceHasNewTerminology() throws Exception {
-        assertStatus(true, null, "built-in", "built-in");
+        assertStatus(j, true, null, "built-in", "built-in");
         assertFalse(ExtensionList.lookupSingleton(BuiltInNodeMigration.class).isActivated());
     }
 
     @Test
     @LocalData
     public void oldDataStartsWithOldTerminology() throws Exception {
-        assertStatus(false, true, "master", "master");
+        assertStatus(j, false, true, "master", "master");
         final BuiltInNodeMigration builtInNodeMigration = ExtensionList.lookupSingleton(BuiltInNodeMigration.class);
         assertTrue(builtInNodeMigration.isActivated());
 
         // Now perform rename and confirm it's done
         j.jenkins.performRenameMigration();
-        assertStatus(true, false, "built-in", "built-in");
+        assertStatus(j, true, false, "built-in", "built-in");
         assertFalse(builtInNodeMigration.isActivated());
     }
 
     @Test
     @LocalData
     public void migratedInstanceStartsWithNewTerminology() throws Exception {
-        assertStatus(true, false, "built-in", "built-in");
+        assertStatus(j, true, false, "built-in", "built-in");
         assertFalse(ExtensionList.lookupSingleton(BuiltInNodeMigration.class).isActivated());
     }
 
-    private void assertStatus(boolean migrationDoneGetterValue, Boolean migrationNeededFieldValue, String label, String nodeName) throws Exception {
+    public static void assertStatus(JenkinsRule j, boolean migrationDoneGetterValue, Boolean migrationNeededFieldValue, String label, String nodeName) throws Exception {
         assertEquals(migrationDoneGetterValue, j.jenkins.getRenameMigrationDone());
         assertEquals(migrationNeededFieldValue, j.jenkins.nodeRenameMigrationNeeded);
         assertEquals(new LabelAtom(label), j.jenkins.getSelfLabel());
