@@ -1,7 +1,5 @@
 package hudson.util;
 
-import hudson.Util;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,7 +76,7 @@ public abstract class CyclicGraphDetector<N> {
         public final List cycle;
 
         public CycleDetectedException(List cycle) {
-            super("Cycle detected: "+Util.join(cycle," -> "));
+            super("Cycle detected: "+ String.join(" -> ", cycle));
             this.cycle = cycle;
         }
     }

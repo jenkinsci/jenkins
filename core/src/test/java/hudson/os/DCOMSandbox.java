@@ -47,7 +47,7 @@ public class DCOMSandbox {
             return "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
         }
 
-        public JIComOxidStub(String address, String domain, String username, String password) {
+        JIComOxidStub(String address, String domain, String username, String password) {
             setTransportFactory(JIComTransportFactory.getSingleTon());
             setProperties(new Properties(defaults));
             getProperties().setProperty("rpc.security.username", username);

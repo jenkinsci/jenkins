@@ -23,8 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -85,6 +83,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -702,10 +702,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 post2(listener);
             } finally {
                 // update the culprit list
-                HashSet<String> r = new HashSet<>();
+                SortedSet<String> r = new TreeSet<>();
                 for (User u : getCulprits())
                     r.add(u.getId());
-                culprits = ImmutableSortedSet.copyOf(r);
+                culprits = Collections.unmodifiableSet(r);
                 CheckPoint.CULPRITS_DETERMINED.report();
             }
         }
@@ -986,7 +986,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return new EnvironmentList(buildEnvironments); 
         }
         
-        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : ImmutableList.copyOf(buildEnvironments));
+        return new EnvironmentList(buildEnvironments==null ? Collections.emptyList() : Collections.unmodifiableList(new ArrayList<>(buildEnvironments)));
     }
 
     public Calendar due() {
@@ -1407,4 +1407,3 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     private static final Logger LOGGER = Logger.getLogger(AbstractBuild.class.getName());
 }
-

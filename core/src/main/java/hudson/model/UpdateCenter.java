@@ -1161,7 +1161,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      * @since 1.266
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static class UpdateCenterConfiguration implements ExtensionPoint {
         /**
          * Creates default update center configuration - uses settings for global update center.

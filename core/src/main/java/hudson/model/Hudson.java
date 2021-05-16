@@ -341,7 +341,6 @@ public class Hudson extends Jenkins {
         }
 
         public CloudList() {// needed for XStream deserialization
-            super();
         }
     }
 }

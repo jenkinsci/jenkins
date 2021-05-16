@@ -261,7 +261,7 @@ public class EnvVars extends TreeMap<String,String> {
             String referrer = cycle.get(refererIndex);
             boolean removed = refereeSetMap.get(referrer).remove(referee);
             assert(removed);
-            LOGGER.warning(String.format("Cyclic reference detected: %s", Util.join(cycle," -> ")));
+            LOGGER.warning(String.format("Cyclic reference detected: %s", String.join(" -> ", cycle)));
             LOGGER.warning(String.format("Cut the reference %s -> %s", referrer, referee));
         }
         

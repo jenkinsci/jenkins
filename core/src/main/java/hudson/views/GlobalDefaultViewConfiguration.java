@@ -57,5 +57,3 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
         return true;
     }
 }
-
-

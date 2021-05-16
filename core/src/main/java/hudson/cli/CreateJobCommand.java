@@ -74,5 +74,3 @@ public class CreateJobCommand extends CLICommand {
         return 0;
     }
 }
-
-

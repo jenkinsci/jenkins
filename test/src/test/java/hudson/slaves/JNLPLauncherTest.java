@@ -197,13 +197,13 @@ public class JNLPLauncherTest {
     }
 
     private static class DelegatingComputerLauncherImpl extends DelegatingComputerLauncher {
-        public DelegatingComputerLauncherImpl(ComputerLauncher launcher) {
+        DelegatingComputerLauncherImpl(ComputerLauncher launcher) {
             super(launcher);
         }
     }
 
     private static class ComputerLauncherFilterImpl extends ComputerLauncherFilter {
-        public ComputerLauncherFilterImpl(ComputerLauncher launcher) {
+        ComputerLauncherFilterImpl(ComputerLauncher launcher) {
             super(launcher);
         }
     }

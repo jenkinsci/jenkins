@@ -54,7 +54,7 @@ import java.util.TreeMap;
  *
  * @author Kohsuke Kawaguchi
  */
-@SuppressWarnings({"unchecked"})
+@SuppressWarnings("unchecked")
 public final class PackedMap<K,V> extends AbstractMap<K,V> {
     private Object[] kvpairs;
 
@@ -87,7 +87,7 @@ public final class PackedMap<K,V> extends AbstractMap<K,V> {
                 }
 
                 @Override
-                @SuppressWarnings({"unchecked"})
+                @SuppressWarnings("unchecked")
                 public Entry<K, V> next() {
                     final K k = (K)kvpairs[index++];
                     final V v = (V)kvpairs[index++];

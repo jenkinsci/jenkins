@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static hudson.Functions.jsStringEscape;
-import static hudson.Util.join;
 import static hudson.Util.singleQuote;
 
 /**
@@ -663,7 +662,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
             if (names==null)    return null;
 
             if (dependsOn==null)
-                dependsOn = join(names," ");
+                dependsOn = String.join(" ", names);
             return dependsOn;
         }
 

@@ -70,7 +70,7 @@ public class RobustReflectionConverterTest {
     }
 
     @Test
-    public void classOwnership() throws Exception {
+    public void classOwnership() {
         XStream xs = new XStream2(new XStream2.ClassOwnership() {
             @Override public String ownerOf(Class<?> clazz) {
                 Owner o = clazz.getAnnotation(Owner.class);

@@ -2,7 +2,6 @@ package jenkins.model;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.EnvironmentContributor;
 import hudson.model.Executor;
@@ -14,6 +13,7 @@ import jenkins.model.Jenkins.MasterComputer;
 import org.jenkinsci.Symbol;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 /**
  * {@link EnvironmentContributor} that adds the basic set of environment variables that
@@ -66,7 +66,7 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
             }
             Node n = e.getOwner().getNode();
             if (n != null)
-                env.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
+                env.put("NODE_LABELS", n.getAssignedLabels().stream().map(Object::toString).collect(Collectors.joining(" ")));
         }
     }
 }

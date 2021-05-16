@@ -394,7 +394,7 @@ public class SetupWizardTest {
     private static class CustomJSONSignatureValidator extends JSONSignatureValidator {
         private String cert;
 
-        public CustomJSONSignatureValidator(String cert) {
+        CustomJSONSignatureValidator(String cert) {
             super("Custom JSON signature validator");
             this.cert = cert;
         }

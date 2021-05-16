@@ -85,7 +85,7 @@ public abstract class SU {
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     args.prepend(sudoExe(),"-S");
-                    listener.getLogger().println("$ "+Util.join(args.toList()," "));
+                    listener.getLogger().println("$ " + String.join(" ", args.toList()));
                     ProcessBuilder pb = new ProcessBuilder(args.toCommandArray());
                     Process p = pb.start();
                     // TODO: use -p to detect prompt

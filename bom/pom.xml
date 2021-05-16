@@ -39,9 +39,8 @@ THE SOFTWARE.
 
 
   <properties>
-    <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.30</slf4jVersion>
-    <stapler.version>1.263</stapler.version>
+    <stapler.version>1532.vfcf95addcb5f</stapler.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
@@ -92,12 +91,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>${guavaVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava-testlib</artifactId>
-        <version>${guavaVersion}</version>
+        <version>11.0.1</version>
       </dependency>
       <dependency>
         <groupId>com.google.inject</groupId>

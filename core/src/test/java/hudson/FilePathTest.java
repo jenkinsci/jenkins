@@ -269,7 +269,7 @@ public class FilePathTest {
             d.zip(NullOutputStream.NULL_OUTPUT_STREAM,"**/*");
     }
 
-    @Test public void normalization() throws Exception {
+    @Test public void normalization() {
         compare("abc/def\\ghi","abc/def\\ghi"); // allow mixed separators
 
         {// basic '.' trimming

@@ -147,4 +147,3 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
         rsp.sendRedirect(".");
     }
 }
-

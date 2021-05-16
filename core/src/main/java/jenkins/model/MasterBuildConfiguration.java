@@ -70,4 +70,3 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
         }
     }
 }
-

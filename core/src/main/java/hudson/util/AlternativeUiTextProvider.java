@@ -102,7 +102,7 @@ public abstract class AlternativeUiTextProvider implements ExtensionPoint {
         /**
          * Assists pattern matching in the {@link AlternativeUiTextProvider} implementation.
          */
-        @SuppressWarnings({"unchecked"})
+        @SuppressWarnings("unchecked")
         public T cast(Object context) {
             return (T)context;
         }

@@ -61,7 +61,7 @@ public class ViewDescriptorTest {
         assertContains(r.jenkins.getDescriptorByType(AllView.DescriptorImpl.class).doAutoCompleteCopyNewItemFrom("../d1/", d2), "../d1/prj");
     }
 
-    @SuppressWarnings({"rawtypes"}) // the usual API mistakes
+    @SuppressWarnings("rawtypes") // the usual API mistakes
     public static class RestrictiveFolder extends MockFolder {
 
         public RestrictiveFolder(ItemGroup parent, String name) {
@@ -156,7 +156,7 @@ public class ViewDescriptorTest {
             return this.someProperty;
         }
 
-        public CustomInvisibleProperty() {
+        CustomInvisibleProperty() {
             this.someProperty = "undefined";
         }
 
