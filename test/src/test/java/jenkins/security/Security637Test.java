@@ -75,7 +75,7 @@ public class Security637Test {
         });
     }
     
-    private static class URLHandlerCallable extends MasterToSlaveCallable<String, Exception> {
+    private static class URLHandlerCallable extends ControllerToAgentCallable<String, Exception> {
         private URL url;
         
         URLHandlerCallable(URL url) {
@@ -127,7 +127,7 @@ public class Security637Test {
         });
     }
     
-    private static class URLBuilderCallable extends MasterToSlaveCallable<URL, Exception> {
+    private static class URLBuilderCallable extends ControllerToAgentCallable<URL, Exception> {
         private String url;
         
         URLBuilderCallable(String url) {
@@ -167,7 +167,7 @@ public class Security637Test {
     }
     
     // the URL is serialized / deserialized twice, master => agent and then agent => master
-    private static class URLTransferCallable extends MasterToSlaveCallable<URL, Exception> {
+    private static class URLTransferCallable extends ControllerToAgentCallable<URL, Exception> {
         private URL url;
         
         URLTransferCallable(URL url) {

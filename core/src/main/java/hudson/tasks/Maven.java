@@ -25,7 +25,7 @@ package hudson.tasks;
 
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import hudson.Launcher;
 import hudson.Functions;
 import hudson.EnvVars;
@@ -59,7 +59,7 @@ import hudson.util.VariableResolver.ByMap;
 import hudson.util.VariableResolver.Union;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
@@ -249,7 +249,7 @@ public class Maven extends Builder {
      * Looks for {@code pom.xlm} or {@code project.xml} to determine the maven executable
      * name.
      */
-    private static final class DecideDefaultMavenCommand extends MasterToSlaveFileCallable<String> {
+    private static final class DecideDefaultMavenCommand extends ControllerToAgentFileCallable<String> {
         private static final long serialVersionUID = -2327576423452215146L;
         // command line arguments.
         private final String arguments;
@@ -575,7 +575,7 @@ public class Maven extends Builder {
             return false;
             
         }
-        private static class GetMavenVersion extends MasterToSlaveCallable<String, IOException> {
+        private static class GetMavenVersion extends ControllerToAgentCallable<String, IOException> {
             private final String home;
             GetMavenVersion(String home) {
                 this.home = home;
@@ -616,7 +616,7 @@ public class Maven extends Builder {
         public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
             return launcher.getChannel().call(new GetExecutable(getHome()));
         }
-        private static class GetExecutable extends MasterToSlaveCallable<String, IOException> {
+        private static class GetExecutable extends ControllerToAgentCallable<String, IOException> {
             private final String rawHome;
             GetExecutable(String rawHome) {
                 this.rawHome = rawHome;

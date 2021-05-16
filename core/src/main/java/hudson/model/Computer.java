@@ -67,7 +67,7 @@ import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.SystemProperties;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import jenkins.security.ImpersonatingExecutorService;
 
 import org.apache.commons.lang.StringUtils;
@@ -1316,7 +1316,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         oneOffExecutors.remove(e);
     }
 
-    private static class ListPossibleNames extends MasterToSlaveCallable<List<String>,IOException> {
+    private static class ListPossibleNames extends ControllerToAgentCallable<List<String>,IOException> {
         /**
          * In the normal case we would use {@link Computer} as the logger's name, however to
          * do that we would have to send the {@link Computer} class over to the remote classloader
@@ -1358,7 +1358,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         private static final long serialVersionUID = 1L;
     }
 
-    private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
+    private static class GetFallbackName extends ControllerToAgentCallable<String,IOException> {
         @Override
         public String call() throws IOException {
             return SystemProperties.getString("host.name");
@@ -1460,7 +1460,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
+    private static final class DumpExportTableTask extends ControllerToAgentCallable<String,IOException> {
         @Override
         public String call() throws IOException {
             final Channel ch = getChannelOrFail();

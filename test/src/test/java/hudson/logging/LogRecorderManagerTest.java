@@ -23,7 +23,7 @@
  */
 package hudson.logging;
 
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import org.jvnet.hudson.test.Url;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -120,7 +120,7 @@ public class LogRecorderManagerTest {
         assertFalse(text, text.contains("LambdaLog @FINER"));
     }
 
-    private static final class Log extends MasterToSlaveCallable<Boolean,Error> {
+    private static final class Log extends ControllerToAgentCallable<Boolean,Error> {
         private final Level level;
         private final String logger;
         private final String message;
@@ -145,7 +145,7 @@ public class LogRecorderManagerTest {
         }
     }
 
-    private static final class LambdaLog extends MasterToSlaveCallable<Boolean,Error> {
+    private static final class LambdaLog extends ControllerToAgentCallable<Boolean,Error> {
         private final Level level;
         private final String logger;
         LambdaLog(Level level, String logger) {

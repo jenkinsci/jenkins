@@ -27,7 +27,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Functions;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import hudson.Launcher;
 import jenkins.util.SystemProperties;
 import hudson.Util;
@@ -266,7 +266,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         private static final long serialVersionUID = 1L;
     }
 
-    private static final class FindRecords extends MasterToSlaveFileCallable<List<Record>> {
+    private static final class FindRecords extends ControllerToAgentFileCallable<List<Record>> {
 
         private final String targets;
         private final String excludes;

@@ -96,7 +96,7 @@ public class ClassFilterImplTest {
             }
         }
     }
-    private static class M2S extends MasterToSlaveCallable<String, RuntimeException> {
+    private static class M2S extends ControllerToAgentCallable<String, RuntimeException> {
         private final LinkedListMultimap<?, ?> obj = LinkedListMultimap.create();
         @Override
         public String call() throws RuntimeException {
@@ -129,7 +129,7 @@ public class ClassFilterImplTest {
             }
         }
     }
-    private static class S2M extends MasterToSlaveCallable<LinkedListMultimap<?, ?>, RuntimeException> {
+    private static class S2M extends ControllerToAgentCallable<LinkedListMultimap<?, ?>, RuntimeException> {
         @Override
         public LinkedListMultimap<?, ?> call() throws RuntimeException {
             return LinkedListMultimap.create();

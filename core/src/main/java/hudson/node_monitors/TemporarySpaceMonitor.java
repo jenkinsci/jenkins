@@ -25,7 +25,7 @@ package hudson.node_monitors;
 
 import hudson.Extension;
 import hudson.FilePath;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.remoting.Callable;
@@ -100,7 +100,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         return DESCRIPTOR;
     }
     
-    protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
+    protected static final class GetTempSpace extends ControllerToAgentFileCallable<DiskSpace> {
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
                 // if the disk is really filled up we can't even create a single file,

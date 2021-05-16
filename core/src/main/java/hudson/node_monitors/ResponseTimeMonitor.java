@@ -26,7 +26,7 @@ package hudson.node_monitors;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -92,7 +92,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
     };
 
-    private static final class Step1 extends MasterToSlaveCallable<Data,IOException> {
+    private static final class Step1 extends ControllerToAgentCallable<Data,IOException> {
         private Data cur;
 
         private Step1(Data cur) {
@@ -112,7 +112,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         private static final long serialVersionUID = 1L;
     }
 
-    private static final class Step2 extends MasterToSlaveCallable<Step3,IOException> {
+    private static final class Step2 extends ControllerToAgentCallable<Step3,IOException> {
         private final Data cur;
         private final long start = System.currentTimeMillis();
 

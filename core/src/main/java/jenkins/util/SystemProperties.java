@@ -44,7 +44,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 
 import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
@@ -138,7 +138,7 @@ public class SystemProperties {
         public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
             channel.call(new CopySystemProperties());
         }
-        private static final class CopySystemProperties extends MasterToSlaveCallable<Void, RuntimeException> {
+        private static final class CopySystemProperties extends ControllerToAgentCallable<Void, RuntimeException> {
             private static final long serialVersionUID = 1;
             private final Map<String, String> snapshot;
             CopySystemProperties() {

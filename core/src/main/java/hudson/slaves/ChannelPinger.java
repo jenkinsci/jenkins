@@ -32,7 +32,7 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import jenkins.slaves.PingFailureAnalyzer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -123,7 +123,7 @@ public class ChannelPinger extends ComputerListener {
 
     @VisibleForTesting
     @Restricted(NoExternalUse.class)
-    public static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
+    public static class SetUpRemotePing extends ControllerToAgentCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         @Deprecated
         private transient int pingInterval;

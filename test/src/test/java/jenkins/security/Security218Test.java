@@ -80,7 +80,7 @@ public class Security218Test implements Serializable {
             assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
         }
     }
-    private static class EvilReturnValue extends MasterToSlaveCallable<Object, RuntimeException> {
+    private static class EvilReturnValue extends ControllerToAgentCallable<Object, RuntimeException> {
         @Override
         public Object call() {
             return new MethodClosure("oops", "trim");

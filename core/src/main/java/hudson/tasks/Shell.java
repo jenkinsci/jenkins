@@ -33,7 +33,7 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 
 import hudson.util.LineEndingConversion;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterLocalRuleDescriptor;
 import net.sf.json.JSONObject;
@@ -247,7 +247,7 @@ public class Shell extends CommandInterpreter {
             return FormValidation.validateExecutable(value);
         }
 
-        private static final class Shellinterpreter extends MasterToSlaveCallable<String, IOException> {
+        private static final class Shellinterpreter extends ControllerToAgentCallable<String, IOException> {
 
             private static final long serialVersionUID = 1L;
 

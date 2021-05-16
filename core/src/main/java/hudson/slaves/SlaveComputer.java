@@ -57,7 +57,7 @@ import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpAgentReceiver;
 import jenkins.slaves.RemotingVersionInfo;
@@ -561,7 +561,7 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
+    static class LoadingCount extends ControllerToAgentCallable<Integer,RuntimeException> {
         private final boolean resource;
         LoadingCount(boolean resource) {
             this.resource = resource;
@@ -575,7 +575,7 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    static class LoadingPrefetchCacheCount extends MasterToSlaveCallable<Integer,RuntimeException> {
+    static class LoadingPrefetchCacheCount extends ControllerToAgentCallable<Integer,RuntimeException> {
         @Override public Integer call() {
             Channel c = Channel.current();
             if (c == null) {
@@ -585,7 +585,7 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    static class LoadingTime extends MasterToSlaveCallable<Long,RuntimeException> {
+    static class LoadingTime extends ControllerToAgentCallable<Long,RuntimeException> {
         private final boolean resource;
         LoadingTime(boolean resource) {
             this.resource = resource;
@@ -969,7 +969,7 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    private static class ListFullEnvironment extends MasterToSlaveCallable<Map<String,String>,IOException> {
+    private static class ListFullEnvironment extends ControllerToAgentCallable<Map<String,String>,IOException> {
         @Override
         public Map<String,String> call() throws IOException {
             Map<String, String> env = new TreeMap<>(System.getenv());
@@ -985,21 +985,21 @@ public class SlaveComputer extends Computer {
 
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
-    private static final class SlaveVersion extends MasterToSlaveCallable<String,IOException> {
+    private static final class SlaveVersion extends ControllerToAgentCallable<String,IOException> {
         @Override
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older agent.jar won't have VERSION
         }
     }
-    private static final class DetectOS extends MasterToSlaveCallable<Boolean,IOException> {
+    private static final class DetectOS extends ControllerToAgentCallable<Boolean,IOException> {
         @Override
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
         }
     }
 
-    private static final class AbsolutePath extends MasterToSlaveCallable<String,IOException> {
+    private static final class AbsolutePath extends ControllerToAgentCallable<String,IOException> {
 
         private static final long serialVersionUID = 1L;
 
@@ -1015,7 +1015,7 @@ public class SlaveComputer extends Computer {
         }
     }
 
-    private static final class DetectDefaultCharset extends MasterToSlaveCallable<String,IOException> {
+    private static final class DetectDefaultCharset extends ControllerToAgentCallable<String,IOException> {
         @Override
         public String call() throws IOException {
             return Charset.defaultCharset().name();
@@ -1033,7 +1033,7 @@ public class SlaveComputer extends Computer {
         static RingBufferLogHandler SLAVE_LOG_HANDLER;
     }
 
-    private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
+    private static class SlaveInitializer extends ControllerToAgentCallable<Void,RuntimeException> {
         final int ringBufferSize;
 
         SlaveInitializer(int ringBufferSize) {
@@ -1096,7 +1096,7 @@ public class SlaveComputer extends Computer {
         return SlaveSystemInfo.all();
     }
 
-    private static class SlaveLogFetcher extends MasterToSlaveCallable<List<LogRecord>,RuntimeException> {
+    private static class SlaveLogFetcher extends ControllerToAgentCallable<List<LogRecord>,RuntimeException> {
         @Override
         public List<LogRecord> call() {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());

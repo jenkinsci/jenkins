@@ -26,7 +26,7 @@ package hudson.node_monitors;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import hudson.Extension;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -60,7 +60,7 @@ public class ArchitectureMonitor extends NodeMonitor {
     /**
      * Obtains the string that represents the architecture.
      */
-    private static class GetArchTask extends MasterToSlaveCallable<String,IOException> {
+    private static class GetArchTask extends ControllerToAgentCallable<String,IOException> {
         @Override
         public String call() {
             String os = System.getProperty("os.name");

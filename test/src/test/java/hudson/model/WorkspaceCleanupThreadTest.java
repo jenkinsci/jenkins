@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -217,7 +217,7 @@ public class WorkspaceCleanupThreadTest {
         }
     }
 
-    private static final class Touch extends MasterToSlaveFileCallable<Void> {
+    private static final class Touch extends ControllerToAgentFileCallable<Void> {
         private static final long serialVersionUID = 1L;
         private final long time;
 

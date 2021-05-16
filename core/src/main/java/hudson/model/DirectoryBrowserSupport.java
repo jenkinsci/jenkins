@@ -53,7 +53,7 @@ import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
@@ -700,7 +700,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private static final class BuildChildPaths extends MasterToSlaveCallable<List<List<Path>>,IOException> {
+    private static final class BuildChildPaths extends ControllerToAgentCallable<List<List<Path>>,IOException> {
         private VirtualFile root;
         private final VirtualFile cur;
         private final Locale locale;

@@ -2,7 +2,7 @@ package jenkins.util;
 
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -22,7 +22,7 @@ public class JenkinsJVMRealTest {
         assertThat(slave.getChannel().call(new IsJenkinsJVM()), is(false));
     }
 
-    public static class IsJenkinsJVM extends MasterToSlaveCallable<Boolean, IOException> {
+    public static class IsJenkinsJVM extends ControllerToAgentCallable<Boolean, IOException> {
 
         @Override
         public Boolean call() throws IOException {

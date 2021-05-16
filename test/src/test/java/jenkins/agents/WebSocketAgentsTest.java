@@ -39,7 +39,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.security.SlaveToMasterCallable;
+
+import jenkins.security.AgentToControllerCallable;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.junit.ClassRule;
@@ -118,14 +119,14 @@ public class WebSocketAgentsTest {
         }
     }
 
-    private static class DummyTask extends SlaveToMasterCallable<String, RuntimeException> {
+    private static class DummyTask extends AgentToControllerCallable<String, RuntimeException> {
         @Override
         public String call() {
             return "response";
         }
     }
 
-    private static class FatTask extends SlaveToMasterCallable<String, RuntimeException> {
+    private static class FatTask extends AgentToControllerCallable<String, RuntimeException> {
         private byte[] payload;
 
         private FatTask() {

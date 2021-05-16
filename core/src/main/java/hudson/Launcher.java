@@ -39,7 +39,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.util.StreamCopyThread;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.ProcessTree;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import jenkins.tasks.filters.EnvVarsFilterRuleWrapper;
 import jenkins.tasks.filters.EnvVarsFilterLocalRule;
 import jenkins.tasks.filters.EnvVarsFilterableBuilder;
@@ -1154,7 +1154,7 @@ public abstract class Launcher {
             return "RemoteLauncher[" + getChannel() + "]";
         }
 
-        private static final class KillTask extends MasterToSlaveCallable<Void,RuntimeException> {
+        private static final class KillTask extends ControllerToAgentCallable<Void,RuntimeException> {
             private final Map<String, String> modelEnvVars;
 
             KillTask(Map<String, String> modelEnvVars) {
@@ -1333,7 +1333,7 @@ public abstract class Launcher {
         IOTriplet getIOtriplet();
     }
 
-    private static class RemoteLaunchCallable extends MasterToSlaveCallable<RemoteProcess,IOException> {
+    private static class RemoteLaunchCallable extends ControllerToAgentCallable<RemoteProcess,IOException> {
         private final @NonNull List<String> cmd;
         private final @CheckForNull boolean[] masks;
         private final @CheckForNull String[] env;
@@ -1436,7 +1436,7 @@ public abstract class Launcher {
         private static final long serialVersionUID = 1L;
     }
 
-    private static class RemoteChannelLaunchCallable extends MasterToSlaveCallable<OutputStream,IOException> {
+    private static class RemoteChannelLaunchCallable extends ControllerToAgentCallable<OutputStream,IOException> {
         @NonNull
         private final String[] cmd;
         @NonNull
