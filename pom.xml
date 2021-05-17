@@ -63,13 +63,6 @@ THE SOFTWARE.
     <tag>${scmTag}</tag>
   </scm>
 
-  <distributionManagement>
-    <site>
-      <id>github-pages</id>
-      <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
-    </site>
-  </distributionManagement>
-
   <issueManagement>
     <system>jira</system>
     <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
@@ -393,11 +386,6 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
           <!-- Version specified in parent POM -->
         </plugin>
@@ -640,14 +628,6 @@ THE SOFTWARE.
         <version>${spotless.version}</version>
       </plugin>
     </plugins>
-
-    <extensions>
-      <extension>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>wagon-gitsite</artifactId>
-        <version>0.3.5</version>
-      </extension>
-    </extensions>
   </build>
 
   <profiles>
