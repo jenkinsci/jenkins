@@ -49,7 +49,7 @@ public class SubClassGeneratorTest {
         Class<? extends Foo> c = new SubClassGenerator(getClass().getClassLoader()).generate(Foo.class, "12345");
         assertEquals("12345",c.getName());
 
-        c.newInstance();
+        c.getDeclaredConstructor().newInstance();
 
         Foo f = c.getConstructor(String.class).newInstance("aaa");
         assertEquals("aaa",f.s);
