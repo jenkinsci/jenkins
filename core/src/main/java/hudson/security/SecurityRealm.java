@@ -645,7 +645,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                 && request.getRequestURI() != null
                 && !request.getRequestURI().equals("/loginError")
                 && !request.getRequestURI().equals("/login")) {
-            from = request.getRequestURI();
+
+                from = request.getRequestURI();
         }
 
         // If deduced entry point isn't deduced yet or the content is a blank value
