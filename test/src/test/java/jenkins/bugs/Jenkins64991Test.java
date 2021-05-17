@@ -35,19 +35,34 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
 import static org.hamcrest.CoreMatchers.endsWithIgnoringCase;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(Parameterized.class)
 public class Jenkins64991Test {
+    @Parameterized.Parameters
+    public static List<String> contexts() {
+        return Arrays.asList("/jenkins", "");
+    }
+
+    public Jenkins64991Test(String context) {
+        j.contextPath = context;
+    }
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -55,6 +70,7 @@ public class Jenkins64991Test {
     public void setUp() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Permission.READ).everywhere().toEveryone().grant(Jenkins.ADMINISTER).everywhere().to("alice"));
+        j.createFreeStyleProject("foo bar");
     }
 
     @Test
@@ -98,9 +114,39 @@ public class Jenkins64991Test {
     }
 
     @Test
-    public void testRedirectToProject() throws Exception {
-        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+    public void withoutFrom() throws Exception {
+        final JenkinsRule.WebClient webClient = j.createWebClient();
+        final HtmlPage loginPage = webClient.goTo("login");
 
+        assertTrue(loginPage.isHtmlPage());
+
+        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+
+        final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
+        assertTrue(redirectedPage.isHtmlPage());
+        assertEquals(j.getURL(), redirectedPage.getUrl());
+    }
+
+    @Test
+    public void emptyFrom() throws Exception {
+        final JenkinsRule.WebClient webClient = j.createWebClient();
+        final HtmlPage loginPage = webClient.goTo("login?from=");
+
+        assertTrue(loginPage.isHtmlPage());
+
+        ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
+
+        final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
+        assertTrue(redirectedPage.isHtmlPage());
+        assertEquals(j.getURL(), redirectedPage.getUrl());
+    }
+
+    @Test
+    public void testRedirectToProject() throws Exception {
+        FreeStyleProject freeStyleProject = j.jenkins.getItemByFullName("foo bar", FreeStyleProject.class);
+        assertNotNull(freeStyleProject);
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage projectPage = webClient.getPage(freeStyleProject);
         assertThat(projectPage.getWebResponse().getContentAsString(), containsStringIgnoringCase("Project " + freeStyleProject.getDisplayName()));
@@ -111,7 +157,7 @@ public class Jenkins64991Test {
         // Could be simplified to `projectPage.getElementById("login-link").click();` if we're willing to edit loginLink.jelly
 
         assertTrue(loginPage.isHtmlPage());
-        assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("%2Fjob%2F" + freeStyleProject.getName()));
+        assertThat(loginPage.getUrl().toExternalForm(), endsWithIgnoringCase("%2Fjob%2Ffoo%2520bar%2F"));
 
         HtmlPage loginHtmlPage = (HtmlPage) loginPage;
         ((HtmlTextInput)loginHtmlPage.getElementByName("j_username")).setText("alice");
