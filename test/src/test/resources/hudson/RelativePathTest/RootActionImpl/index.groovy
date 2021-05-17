@@ -9,7 +9,7 @@ l.layout {
         set("instance",my)
         set("descriptor",my.descriptor)
         f.form() {
-            f.entry(field:"name") {
+            f.entry(field:"personName") {
                 f.textbox()
             }
             f.property(field:"model")

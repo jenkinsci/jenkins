@@ -429,7 +429,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         List<String> depends = buildFillDependencies(method, new ArrayList<>());
 
         if (!depends.isEmpty())
-            attributes.put("fillDependsOn",Util.join(depends," "));
+            attributes.put("fillDependsOn", String.join(" ", depends));
         attributes.put("fillUrl", String.format("%s/%s/fill%sItems", getCurrentDescriptorByNameUrl(), getDescriptorUrl(), capitalizedFieldName));
     }
 

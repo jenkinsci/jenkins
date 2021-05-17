@@ -69,7 +69,7 @@ public enum BallColor implements StatusIcon {
     ABORTED("aborted",Messages._BallColor_Aborted(), ColorPalette.DARK_GREY),
     ABORTED_ANIME("aborted_anime",Messages._BallColor_InProgress(), ColorPalette.DARK_GREY),
     NOTBUILT("nobuilt",Messages._BallColor_NotBuilt(), ColorPalette.LIGHT_GREY),
-    NOTBUILT_ANIME("nobuilt_anime",Messages._BallColor_InProgress(), ColorPalette.LIGHT_GREY),
+    NOTBUILT_ANIME("nobuilt_anime",Messages._BallColor_InProgress(), ColorPalette.LIGHT_GREY)
     ;
 
     private final Localizable description;

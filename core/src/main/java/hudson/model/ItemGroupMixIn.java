@@ -221,7 +221,7 @@ public abstract class ItemGroupMixIn {
     /**
      * Copies an existing {@link TopLevelItem} to a new name.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
         acl.checkPermission(Item.CREATE);
         src.checkPermission(Item.EXTENDED_READ);

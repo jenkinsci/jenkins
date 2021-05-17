@@ -28,8 +28,6 @@ package jenkins.model;
 
 import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -1064,7 +1062,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Maintains backwards compatibility. Invoked by XStream when this object is de-serialized.
      */
-    @SuppressWarnings({"unused"})
+    @SuppressWarnings("unused")
     protected Object readResolve() {
         if (jdks == null) {
             jdks = new ArrayList<>();
@@ -1575,7 +1573,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Either {@link Descriptor#getId()} (recommended) or the short name of a {@link Describable} subtype (for compatibility)
      * @throws IllegalArgumentException if a short name was passed which matches multiple IDs (fail fast)
      */
-    @SuppressWarnings({"rawtypes"}) // too late to fix
+    @SuppressWarnings("rawtypes") // too late to fix
     public Descriptor getDescriptor(String id) {
         // legacy descriptors that are registered manually doesn't show up in getExtensionList, so check them explicitly.
         Iterable<Descriptor> descriptors = Iterators.sequence(getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances());
@@ -2571,11 +2569,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Restricted(NoExternalUse.class)
     public static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
-        return Util.replaceMacro(base, ImmutableMap.of(
-                "JENKINS_HOME", Jenkins.get().getRootDir().getPath(),
-                "ITEM_ROOTDIR", itemRootDir,
-                "ITEM_FULLNAME", itemFullName,   // legacy, deprecated
-                "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
+        Map<String, String> properties = new HashMap<>();
+        properties.put("JENKINS_HOME", Jenkins.get().getRootDir().getPath());
+        properties.put("ITEM_ROOTDIR", itemRootDir);
+        properties.put("ITEM_FULLNAME", itemFullName); // legacy, deprecated
+        properties.put("ITEM_FULL_NAME", itemFullName.replace(':','$')); // safe, see JENKINS-12251
+        return Util.replaceMacro(base, Collections.unmodifiableMap(properties));
 
     }
 
@@ -2763,7 +2762,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Can be an empty list but never null.
      * @see ExtensionList#lookup
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
         ExtensionList<T> extensionList = extensionLists.get(extensionType);
         return extensionList != null ? extensionList : extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
@@ -2786,7 +2785,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return
      *      Can be an empty list but never null.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public @NonNull <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
@@ -5480,7 +5479,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
-    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(ImmutableSet.of(
+    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
         "login", // .jelly
         "loginError", // .jelly
         "logout", // #doLogout

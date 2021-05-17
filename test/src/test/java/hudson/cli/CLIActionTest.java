@@ -8,9 +8,13 @@ import hudson.model.Item;
 import hudson.model.User;
 import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
@@ -27,6 +31,10 @@ import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import static org.junit.Assert.assertEquals;
 
@@ -38,6 +46,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.args4j.Option;
 
 public class CLIActionTest {
     @Rule
@@ -207,6 +216,75 @@ public class CLIActionTest {
             return 0;
         }
 
+    }
+
+    @Issue("JENKINS-64294")
+    @Test
+    public void largeTransferWebSocket() throws Exception {
+        logging.record(CLIAction.class, Level.FINE);
+        File jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM);
+        long size = /*999_*/999_999;
+        // Download:
+        assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+            "java", "-jar", jar.getAbsolutePath(),
+                "-webSocket",
+                "-s", j.getURL().toString(),
+                "large-download",
+                "-size", Long.toString(size)).
+            stdout(cos).stderr(System.err).join());
+        assertEquals(size, cos.getByteCount());
+        // Upload:
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+            "java", "-jar", jar.getAbsolutePath(),
+                "-webSocket",
+                "-s", j.getURL().toString(),
+                "large-upload").
+            stdin(new NullInputStream(size)).
+            stdout(baos).stderr(System.err).join());
+        assertEquals("received " + size + " bytes", baos.toString().trim());
+    }
+
+    @TestExtension("largeTransferWebSocket")
+    public static final class LargeUploadCommand extends CLICommand {
+        @Override
+        protected int run() throws Exception {
+            try (InputStream is = new BufferedInputStream(stdin); CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM)) {
+                System.err.println("starting upload");
+                long start = System.nanoTime();
+                IOUtils.copyLarge(is, cos);
+                System.err.printf("finished upload in %.1fs%n", (System.nanoTime() - start) / 1_000_000_000.0);
+                stdout.println("received " + cos.getByteCount() + " bytes");
+                stdout.flush();
+            }
+            return 0;
+        }
+        @Override
+        public String getShortDescription() {
+            return "";
+        }
+    }
+
+    @TestExtension("largeTransferWebSocket")
+    public static final class LargeDownloadCommand extends CLICommand {
+        @Option(name = "-size", required = true)
+        public int size;
+        @Override
+        protected int run() throws Exception {
+            try (OutputStream os = new BufferedOutputStream(stdout)) {
+                System.err.println("starting download");
+                long start = System.nanoTime();
+                IOUtils.copyLarge(new NullInputStream(size), os);
+                System.err.printf("finished download in %.1fs%n", ((System.nanoTime() - start) / 1_000_000_000.0));
+            }
+            return 0;
+        }
+        @Override
+        public String getShortDescription() {
+            return "";
+        }
     }
 
 }

@@ -436,7 +436,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Obtains 'this' in a more type safe signature.
      */   
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     protected @NonNull RunT _this() {
         return (RunT)this;
     }

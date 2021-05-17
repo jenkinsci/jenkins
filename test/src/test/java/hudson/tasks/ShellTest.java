@@ -89,7 +89,6 @@ public class ShellTest {
 
         ReturnCodeFakeLauncher(int code)
         {
-            super();
             this.code = code;
         }
 

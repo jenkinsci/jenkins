@@ -33,7 +33,7 @@ import org.apache.commons.jelly.JellyContext;
  */
 public enum IconType {
     CORE,
-    PLUGIN,;
+    PLUGIN;
 
     /**
      * Qualify the supplied icon url.

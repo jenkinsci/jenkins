@@ -368,5 +368,3 @@ public class TarOutputStream extends FilterOutputStream {
         this.buffer.writeRecord(this.recordBuf);
     }
 }
-
-

@@ -33,7 +33,6 @@ import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Proc;
-import hudson.Util;
 import hudson.model.Slave;
 
 import org.apache.tools.ant.util.JavaEnvUtils;
@@ -46,7 +45,6 @@ import org.jvnet.hudson.test.LoggerRule;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.logging.Level;
 import jenkins.util.SystemProperties;
 
@@ -93,7 +91,7 @@ public class ArgumentListBuilder2Test {
 
         String out = echoArgs(specials);
 
-        String expected = String.format("%n%s", Util.join(Arrays.asList(specials), " "));
+        String expected = String.format("%n%s", String.join(" ", specials));
         assertThat(out, containsString(expected));
     }
 

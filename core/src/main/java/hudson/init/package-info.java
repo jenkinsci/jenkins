@@ -43,4 +43,3 @@
  * </ol>
  */
 package hudson.init;
-
