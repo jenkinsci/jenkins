@@ -42,6 +42,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
+import static org.hamcrest.CoreMatchers.endsWithIgnoringCase;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -76,6 +77,28 @@ public class Jenkins64991Test {
 
     @Test
     public void testRedirect() throws Exception {
+        final JenkinsRule.WebClient webClient = j.createWebClient();
+        final HtmlPage indexPage = webClient.goTo("");
+
+        final Page loginPage = indexPage.getElementsByTagName("a").stream().filter(
+                e -> e.hasAttribute("href") && e.getAttribute("href").contains(j.jenkins.getSecurityRealm().getLoginUrl())
+        ).findFirst().orElseThrow(() -> new RuntimeException("cannot find login link")).click();
+        // Could be simplified to `indexPage.getElementById("login-link").click();` if we're willing to edit loginLink.jelly
+
+        assertTrue(loginPage.isHtmlPage());
+        assertThat(loginPage.getUrl().toExternalForm(), endsWithIgnoringCase("%2F"));
+
+        HtmlPage loginHtmlPage = (HtmlPage) loginPage;
+        ((HtmlTextInput)loginHtmlPage.getElementByName("j_username")).setText("alice");
+        ((HtmlPasswordInput)loginHtmlPage.getElementByName("j_password")).setText("alice");
+
+        final Page redirectedPage = HtmlFormUtil.submit(loginHtmlPage.getFormByName("login"));
+        assertTrue(redirectedPage.isHtmlPage());
+        assertEquals(indexPage.getUrl(), redirectedPage.getUrl());
+    }
+
+    @Test
+    public void testRedirectToProject() throws Exception {
         final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
 
         final JenkinsRule.WebClient webClient = j.createWebClient();
