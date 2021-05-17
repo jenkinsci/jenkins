@@ -51,7 +51,7 @@ import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.AcegiSecurityExceptionFilter;
 import jenkins.security.BasicHeaderProcessor;
-import jenkins.security.SafeSimpleUrlAuthenticationSuccessHandler;
+import jenkins.security.AuthenticationSuccessHandler;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -594,7 +594,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
             apf.setRememberMeServices(sc.rememberMe2);
-            final SafeSimpleUrlAuthenticationSuccessHandler successHandler = new SafeSimpleUrlAuthenticationSuccessHandler();
+            final AuthenticationSuccessHandler successHandler = new AuthenticationSuccessHandler();
             successHandler.setTargetUrlParameter("from");
             apf.setAuthenticationSuccessHandler(successHandler);
             apf.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/loginError"));
@@ -645,7 +645,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                 && request.getRequestURI() != null
                 && !request.getRequestURI().equals("/loginError")
                 && !request.getRequestURI().equals("/login")) {
-            from = request.getRequestURI().substring(request.getContextPath().length());
+            from = request.getRequestURI();
         }
 
         // If deduced entry point isn't deduced yet or the content is a blank value

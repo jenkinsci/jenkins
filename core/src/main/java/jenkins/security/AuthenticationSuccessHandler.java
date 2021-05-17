@@ -38,10 +38,18 @@ import javax.servlet.http.HttpServletResponse;
  * @since TODO
  */
 @Restricted(NoExternalUse.class)
-public class SafeSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         String originalTargetUrl = super.determineTargetUrl(request, response, authentication);
+
+        // AbstractAuthenticationTargetUrlRequestHandler expects no context part as path of the redirect URL, so remove it.
+        final String contextPath = request.getContextPath();
+        if (originalTargetUrl.startsWith(contextPath)) {
+            originalTargetUrl = originalTargetUrl.substring(contextPath.length());
+        }
+
+        // Ensure we only redirect to local URLs
         if (Util.isSafeToRedirectTo(originalTargetUrl)) {
             return originalTargetUrl;
         }

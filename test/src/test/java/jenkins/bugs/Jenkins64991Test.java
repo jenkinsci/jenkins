@@ -62,7 +62,7 @@ public class Jenkins64991Test {
         final HtmlPage loginPage = webClient.goTo("manage");
 
         assertTrue(loginPage.isHtmlPage());
-        assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("from=%2Fmanage"));
+        assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("%2Fmanage"));
 
         ((HtmlTextInput)loginPage.getElementByName("j_username")).setText("alice");
         ((HtmlPasswordInput)loginPage.getElementByName("j_password")).setText("alice");
@@ -88,7 +88,7 @@ public class Jenkins64991Test {
         // Could be simplified to `projectPage.getElementById("login-link").click();` if we're willing to edit loginLink.jelly
 
         assertTrue(loginPage.isHtmlPage());
-        assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("from=%2Fjob%2F" + freeStyleProject.getName()));
+        assertThat(loginPage.getUrl().toExternalForm(), containsStringIgnoringCase("%2Fjob%2F" + freeStyleProject.getName()));
 
         HtmlPage loginHtmlPage = (HtmlPage) loginPage;
         ((HtmlTextInput)loginHtmlPage.getElementByName("j_username")).setText("alice");

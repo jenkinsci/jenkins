@@ -78,11 +78,6 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
         } else {
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
-            // We need to strip a leading context path (if any) from the requestURI to make it work with how
-            // AbstractAuthenticationTargetUrlRequestHandler implements the redirect.
-            if (uriFrom.startsWith(req.getContextPath())) {
-                uriFrom = uriFrom.substring(req.getContextPath().length());
-            }
             if(!StringUtils.isEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
             String loginForm = req.getContextPath() + loginFormUrl;
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
