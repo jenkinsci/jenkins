@@ -277,7 +277,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     protected synchronized void saveNextBuildNumber() throws IOException {
-        if (nextBuildNumber == 0) { // #3361
+        if (nextBuildNumber == 0) { // JENKINS-3361
             nextBuildNumber = 1;
         }
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
