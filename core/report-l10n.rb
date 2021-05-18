@@ -170,7 +170,7 @@ dan||da|Danish|danois
 dar|||Dargwa|dargwa
 day|||Land Dayak languages|dayak, langues
 del|||Delaware|delaware
-den|||Slavic (Athapascan)|slave (athapascan)
+den|||Slave (Athapascan)|esclave (athapascan)
 dgr|||Dogrib|dogrib
 din|||Dinka|dinka
 div||dv|Divehi; Dhivehi; Maldivian|maldivien
