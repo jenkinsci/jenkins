@@ -2715,6 +2715,7 @@ version: 2.9.0
                         See https://issues.jenkins.io/browse/JENKINS-65585 */
                         var buttons = this.getElementsByTagName('button');
                         if (buttons.length == 1 && buttons[0].type == 'submit') {
+                            buttons[0].formNoValidate = true; // we used to not validate forms, so keep things this way
                             oForm.requestSubmit(buttons[0]);
                             return "requestSubmit";
                         }
