@@ -820,7 +820,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs install site". -->
+      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
       <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>spotbugs</id>
       <properties>
