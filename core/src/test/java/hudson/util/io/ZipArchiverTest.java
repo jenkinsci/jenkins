@@ -2,173 +2,83 @@ package hudson.util.io;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.file.Path;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.Assume;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
 public class ZipArchiverTest {
 
-    private static final Logger LOGGER = Logger.getLogger(ZipArchiverTest.class.getName());
-
-    private File tmpDir;
-
-    @Before
-    public void setUp() {
-        try {
-            // initialize temp directory
-            tmpDir = File.createTempFile("temp", ".dir");
-            tmpDir.delete();
-            tmpDir.mkdir();
-        } catch (IOException e) {
-            fail("unable to create temp directory", e);
-        }
-    }
-
-    @After
-    public void tearDown() {
-        deleteDir(tmpDir);
-    }
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-9942")
     @Test
-    public void backwardsSlashesOnWindows()  {
+    public void backwardsSlashesOnWindows() throws IOException {
         // create foo/bar/baz/Test.txt
-        File tmpFile = null;
-        try {
-            File baz = new File(new File(new File(tmpDir, "foo"), "bar"), "baz");
-            baz.mkdirs();
-
-            tmpFile = new File(baz, "Test.txt");
-            tmpFile.createNewFile();
-        } catch (IOException e) {
-            fail("unable to prepare source directory for zipping", e);
-        }
+        Path baz = tmp.newFolder().toPath().resolve("foo").resolve("bar").resolve("baz");
+        Files.createDirectories(baz);
+        Path tmpFile = baz.resolve("Test.txt");
+        Files.createFile(tmpFile);
 
         // a file to store the zip archive in
-        File zipFile = null;
+        Path zipFile = Files.createTempFile(tmp.getRoot().toPath(), "test", ".zip");
 
         // create zip from tmpDir
-        ZipArchiver archiver = null;
-
-        try {
-            zipFile = File.createTempFile("test", ".zip");
-            archiver = new ZipArchiver(Files.newOutputStream(zipFile.toPath()));
-
-            archiver.visit(tmpFile, "foo\\bar\\baz\\Test.txt");
-        } catch (Exception e) {
-            fail("exception driving ZipArchiver", e);
-        } finally {
-            if (archiver != null) {
-                try {
-                    archiver.close();
-                } catch (IOException e) {
-                    // ignored
-                }
-            }
+        try (ZipArchiver archiver = new ZipArchiver(Files.newOutputStream(zipFile))) {
+            archiver.visit(tmpFile.toFile(), "foo\\bar\\baz\\Test.txt");
         }
 
         // examine zip contents and assert that none of the entry names (paths) have
         // back-slashes ("\")
-        String zipEntryName = null;
-
-        try (ZipFile zipFileVerify = new ZipFile(zipFile)) {
-
-            zipEntryName = ((ZipEntry) zipFileVerify.entries().nextElement()).getName();
-        } catch (Exception e) {
-            fail("failure enumerating zip entries", e);
+        try (ZipFile zipFileVerify = new ZipFile(zipFile.toFile())) {
+            assertEquals(1, zipFileVerify.size());
+            ZipEntry zipEntry = zipFileVerify.entries().nextElement();
+            assertEquals("foo/bar/baz/Test.txt", zipEntry.getName());
         }
-
-        assertEquals("foo/bar/baz/Test.txt", zipEntryName);
     }
 
     @Test
-    public void huge64bitFile()  {
+    public void huge64bitFile() throws IOException {
         // create huge64bitFileTest.txt
-
-        File hugeFile = new File(tmpDir, "huge64bitFileTest.txt");
-        try {
-            RandomAccessFile largeFile = new RandomAccessFile(hugeFile, "rw");
-            largeFile.setLength(4 * 1024 * 1024 * 1024 + 2);
+        Path hugeFile = tmp.newFolder().toPath().resolve("huge64bitFileTest.txt");
+        long length = 4L * 1024 * 1024 * 1024 + 2;
+        try (RandomAccessFile largeFile = new RandomAccessFile(hugeFile.toFile(), "rw")) {
+            largeFile.setLength(length);
         } catch (IOException e) {
-            /* We probably don't have enough free disk space
-             * That's ok, we'll skip this test...
-             */
-            LOGGER.log(Level.SEVERE, "Couldn't set up huge file for huge64bitFile test", e);
-            return;
+            // We probably don't have enough free disk space. That's ok, we'll skip this test...
+            Assume.assumeNoException(e);
         }
 
         // a file to store the zip archive in
-        File zipFile = null;
+        Path zipFile = Files.createTempFile(tmp.getRoot().toPath(), "test", ".zip");
 
         // create zip from tmpDir
-        ZipArchiver archiver = null;
-
-        try {
-            zipFile = File.createTempFile("test", ".zip");
-            archiver = new ZipArchiver(Files.newOutputStream(zipFile.toPath()));
-
-            archiver.visit(hugeFile, "huge64bitFileTest.txt");
-        } catch (Exception e) {
-            fail("exception driving ZipArchiver", e);
-        } finally {
-            if (archiver != null) {
-                try {
-                    archiver.close();
-                } catch (IOException e) {
-                    // ignored
-                }
-            }
+        try (ZipArchiver archiver = new ZipArchiver(Files.newOutputStream(zipFile))) {
+            archiver.visit(hugeFile.toFile(), "huge64bitFileTest.txt");
         }
 
         // examine zip contents and assert that there's an item there...
-        String zipEntryName = null;
-
-        try (ZipFile zipFileVerify = new ZipFile(zipFile)) {
-
-            zipEntryName = ((ZipEntry) zipFileVerify.entries().nextElement()).getName();
-        } catch (Exception e) {
-            fail("failure enumerating zip entries", e);
-        }
-
-        assertEquals("huge64bitFileTest.txt", zipEntryName);
-    }
-
-    /**
-     * Convenience method for failing with a cause.
-     *
-     * @param msg the failure description
-     * @param cause the root cause of the failure
-     */
-    private void fail(final String msg, final Throwable cause) {
-        LOGGER.log(Level.SEVERE, msg, cause);
-        Assert.fail(msg);
-    }
-
-    /**
-     * Recursively deletes a directory and all of its children.
-     *
-     * @param f the File (neé, directory) to delete
-     */
-    private void deleteDir(final File f) {
-        for (File c : f.listFiles()) {
-            if (c.isDirectory()) {
-                deleteDir(c);
+        try (ZipFile zipFileVerify = new ZipFile(zipFile.toFile())) {
+            assertEquals(1, zipFileVerify.size());
+            ZipEntry zipEntry = zipFileVerify.entries().nextElement();
+            assertEquals("huge64bitFileTest.txt", zipEntry.getName());
+            assertEquals(length, zipEntry.getSize());
+        } catch (ZipException e) {
+            if (e.getMessage().contains("invalid CEN header (bad signature)")) {
+                // Probably running on OpenJDK 8 and hitting JDK-8186464
+                Assume.assumeNoException(e);
             } else {
-                c.delete();
+                throw e;
             }
         }
-
-        f.delete();
     }
 }
