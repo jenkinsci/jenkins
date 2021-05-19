@@ -44,4 +44,3 @@ public class Configuration {
         return (value==null)?defaultValue:value;
     }
 }
-

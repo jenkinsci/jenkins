@@ -28,8 +28,6 @@ package jenkins.model;
 
 import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
@@ -1064,7 +1062,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Maintains backwards compatibility. Invoked by XStream when this object is de-serialized.
      */
-    @SuppressWarnings({"unused"})
+    @SuppressWarnings("unused")
     protected Object readResolve() {
         if (jdks == null) {
             jdks = new ArrayList<>();
@@ -1551,7 +1549,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the {@link JobPropertyDescriptor} by name. Primarily used for making them web-visible.
      */
     public JobPropertyDescriptor getJobProperty(String shortClassName) {
-        // combining these two lines triggers javac bug. See issue #610.
+        // combining these two lines triggers javac bug. See issue JENKINS-610
         Descriptor d = findDescriptor(shortClassName, JobPropertyDescriptor.all());
         return (JobPropertyDescriptor) d;
     }
@@ -1575,7 +1573,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Either {@link Descriptor#getId()} (recommended) or the short name of a {@link Describable} subtype (for compatibility)
      * @throws IllegalArgumentException if a short name was passed which matches multiple IDs (fail fast)
      */
-    @SuppressWarnings({"rawtypes"}) // too late to fix
+    @SuppressWarnings("rawtypes") // too late to fix
     public Descriptor getDescriptor(String id) {
         // legacy descriptors that are registered manually doesn't show up in getExtensionList, so check them explicitly.
         Iterable<Descriptor> descriptors = Iterators.sequence(getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances());
@@ -1663,6 +1661,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return d;
         }
         return null;
+    }
+
+    protected void updateNewComputer(Node n) {
+        updateNewComputer(n, AUTOMATIC_SLAVE_LAUNCH);
     }
 
     protected void updateComputerList() {
@@ -2571,11 +2573,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Restricted(NoExternalUse.class)
     public static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
-        return Util.replaceMacro(base, ImmutableMap.of(
-                "JENKINS_HOME", Jenkins.get().getRootDir().getPath(),
-                "ITEM_ROOTDIR", itemRootDir,
-                "ITEM_FULLNAME", itemFullName,   // legacy, deprecated
-                "ITEM_FULL_NAME", itemFullName.replace(':','$'))); // safe, see JENKINS-12251
+        Map<String, String> properties = new HashMap<>();
+        properties.put("JENKINS_HOME", Jenkins.get().getRootDir().getPath());
+        properties.put("ITEM_ROOTDIR", itemRootDir);
+        properties.put("ITEM_FULLNAME", itemFullName); // legacy, deprecated
+        properties.put("ITEM_FULL_NAME", itemFullName.replace(':','$')); // safe, see JENKINS-12251
+        return Util.replaceMacro(base, Collections.unmodifiableMap(properties));
 
     }
 
@@ -2687,7 +2690,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             HudsonFilter filter = HudsonFilter.get(servletContext);
             if (filter == null) {
-                // Fix for #3069: This filter is not necessarily initialized before the servlets.
+                // Fix for JENKINS-3069: This filter is not necessarily initialized before the servlets.
                 // when HudsonFilter does come back, it'll initialize itself.
                 LOGGER.fine("HudsonFilter has not yet been initialized: Can't perform security setup for now");
             } else {
@@ -2763,7 +2766,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Can be an empty list but never null.
      * @see ExtensionList#lookup
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
         ExtensionList<T> extensionList = extensionLists.get(extensionType);
         return extensionList != null ? extensionList : extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
@@ -2786,7 +2789,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return
      *      Can be an empty list but never null.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     public @NonNull <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
         return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
@@ -3762,7 +3765,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private void _cleanUpPersistQueue(List<Throwable> errors) {
         if(getRootDir().exists()) {
             // if we are aborting because we failed to create JENKINS_HOME,
-            // don't try to save. Issue #536
+            // don't try to save. JENKINS-536
             LOGGER.log(Main.isUnitTest ? Level.FINE : Level.INFO, "Persisting build queue");
             try {
                 getQueue().save();
@@ -4680,7 +4683,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(qs==null)
             throw new ServletException();
         Cookie cookie = new Cookie("iconSize", Functions.validateIconSize(qs));
-        cookie.setMaxAge(/* ~4 mo. */9999999); // #762
+        cookie.setMaxAge(/* ~4 mo. */9999999); // JENKINS-762
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
         rsp.addCookie(cookie);
@@ -5480,7 +5483,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
-    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(ImmutableSet.of(
+    private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
         "login", // .jelly
         "loginError", // .jelly
         "logout", // #doLogout

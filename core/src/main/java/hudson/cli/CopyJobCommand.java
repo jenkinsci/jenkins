@@ -78,4 +78,3 @@ public class CopyJobCommand extends CLICommand {
         return 0;
     }
 }
-

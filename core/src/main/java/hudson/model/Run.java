@@ -436,7 +436,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Obtains 'this' in a more type safe signature.
      */   
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings("unchecked")
     protected @NonNull RunT _this() {
         return (RunT)this;
     }
@@ -1949,7 +1949,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 // the significance of doing this is that Jenkins
                 // will now see this build as completed.
                 // things like triggering other builds requires this as pre-condition.
-                // see issue #980.
+                // see issue JENKINS-980.
                 LOGGER.log(FINER, "moving into POST_PRODUCTION on {0}", this);
                 state = State.POST_PRODUCTION;
 

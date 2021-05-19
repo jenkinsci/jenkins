@@ -23,7 +23,7 @@ public class AntWithFindResourceClassLoader extends AntClassLoader implements Cl
             $pathComponents.setAccessible(true);
             pathComponents = (ArrayList<File>)$pathComponents.get(this);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 

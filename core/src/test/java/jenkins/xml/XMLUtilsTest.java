@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 public class XMLUtilsTest {
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testSafeTransformDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
@@ -80,7 +80,7 @@ public class XMLUtilsTest {
 
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testUpdateByXmlIDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +

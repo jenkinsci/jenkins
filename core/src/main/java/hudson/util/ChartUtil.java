@@ -198,7 +198,7 @@ public class ChartUtil {
      * (So for example if N=3 then we can "fix" the graph as long as we only have less than 1/(3*3)=11.111...% bad data.
      *
      * <p>
-     * Also see issue #1246.
+     * Also see JENKINS-1246.
      */
     public static void adjustChebyshev(CategoryDataset dataset, NumberAxis yAxis) {
         // first compute E(X) and Var(X)

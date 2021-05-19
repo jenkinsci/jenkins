@@ -1414,7 +1414,7 @@ public class Util {
      * but don't remember it right now.
      *
      * @since 1.204
-     * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
+     * @deprecated since 2008-05-13. This method is broken (see JENKINS-1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
      * Use {@link #encode(String)} instead.

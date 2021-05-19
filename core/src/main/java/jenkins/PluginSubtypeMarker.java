@@ -55,7 +55,7 @@ import java.util.Set;
  */
 @SupportedAnnotationTypes("*")
 @MetaInfServices(Processor.class)
-@SuppressWarnings({"Since15"})
+@SuppressWarnings("Since15")
 public class PluginSubtypeMarker extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {

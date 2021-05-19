@@ -79,7 +79,6 @@ public class UpdateCenterCustomTest {
     public static final class CustomUpdateCenter extends UpdateCenter {
 
         public CustomUpdateCenter() {
-            super();
         }
         
         public CustomUpdateCenter(UpdateCenterConfiguration config) {
