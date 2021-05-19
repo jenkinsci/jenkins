@@ -90,8 +90,6 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <matrix-auth.version>2.6.6</matrix-auth.version>
-    <matrix-project.version>1.18</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
@@ -111,7 +109,7 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
     <access-modifier-checker.version>1.21</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.1</junit.jupiter.version>
+    <junit.jupiter.version>5.7.2</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
     <spotless.version>2.11.0</spotless.version>
   </properties>
