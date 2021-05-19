@@ -2,8 +2,10 @@ package jenkins.monitor;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
-import hudson.util.VersionNumber;
+import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import jenkins.util.java.JavaUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -17,37 +19,22 @@ import java.io.IOException;
 
 @Extension
 @Restricted(NoExternalUse.class)
-public class JavaLevelAdminMonitor extends AdministrativeMonitor {
-
-    private static final VersionNumber RECOMMENDED_MINIMUM_VERSION = new VersionNumber("11");
-    private final VersionNumber currentJavaVersion;
-
-    @SuppressWarnings("unused")
-    public JavaLevelAdminMonitor() {
-        this(JavaLevelAdminMonitor.class.getName(), getJavaVersion());
-    }
-
-    public JavaLevelAdminMonitor(String id, VersionNumber currentJavaVersion) {
-        super(id);
-        this.currentJavaVersion = currentJavaVersion;
-    }
-
-    private static VersionNumber getJavaVersion() {
-        String version = System.getProperty("java.version");
-        if (version.startsWith("1.")) {
-            version = version.substring(2).replace("_", ".");
-        }
-        return new VersionNumber(version);
-    }
+@Symbol("javaVersionRecommendation")
+public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        return currentJavaVersion.isOlderThan(RECOMMENDED_MINIMUM_VERSION);
+        return JavaUtils.isRunningWithJava8OrBelow();
     }
 
     @Override
     public String getDisplayName() {
         return Messages.JavaLevelAdminMonitor_DisplayName();
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 
     /**
