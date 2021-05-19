@@ -348,7 +348,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     /**
-     * Correct broken data gracefully (#1537)
+     * Correct broken data gracefully (JENKINS-1537)
      */
     private Object readResolve() {
         if(childProjects==null)

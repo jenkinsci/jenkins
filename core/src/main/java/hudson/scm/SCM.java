@@ -185,7 +185,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * The default implementation returns true.
      *
      * <p>
-     * See issue #1348 for more discussion of this feature.
+     * See issue JENKINS-1348 for more discussion of this feature.
      *
      * @since 1.196
      */

@@ -40,6 +40,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -481,9 +482,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected CLICommand createClone() {
         try {
-            return getClass().newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new AssertionError(e);
+            return getClass().getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 

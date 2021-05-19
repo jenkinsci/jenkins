@@ -38,8 +38,7 @@ public class BasicHeaderProcessorTest {
 
     @Before
     public void prepareListeners(){
-        //TODO simplify using #3021 into ExtensionList.lookupSingleton(SpySecurityListener.class)
-        this.spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
+        this.spySecurityListener = ExtensionList.lookupSingleton(SpySecurityListener.class);
     }
 
     /**
