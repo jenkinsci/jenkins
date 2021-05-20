@@ -268,7 +268,6 @@ THE SOFTWARE.
           <artifactId>maven-surefire-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
