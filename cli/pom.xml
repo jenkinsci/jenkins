@@ -72,7 +72,9 @@
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
-      <version>2.6.0</version>
+      <!-- 2.6.0 is buggy and 2.7.0 is ok but not yet released -->
+      <!-- https://issues.apache.org/jira/browse/SSHD-1105 -->
+      <version>2.5.1</version>
       <optional>true</optional>
     </dependency>
     <!-- ed25519 algorithm, see JENKINS-45318 -->
