@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Stack;
 
 /**
@@ -151,7 +150,7 @@ public class XStreamDOM {
     private String[] toAttributeList(Map<String, String> attributes) {
         String[] r = new String[attributes.size()*2];
         int i=0;
-        for (Entry<String, String> e : attributes.entrySet()) {
+        for (Map.Entry<String, String> e : attributes.entrySet()) {
             r[i++] = e.getKey();
             r[i++] = e.getValue();
         }

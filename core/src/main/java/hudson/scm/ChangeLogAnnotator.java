@@ -31,7 +31,6 @@ import hudson.MarkupText;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.CopyOnWriteList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,8 +77,8 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      *      will return the same string as {@link Entry#getMsgEscaped()}.
      * @since 1.568
      */
-    public void annotate(Run<?,?> build, Entry change, MarkupText text) {
-        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogAnnotator.class, getClass(), "annotate", AbstractBuild.class, Entry.class, MarkupText.class)) {
+    public void annotate(Run<?,?> build, ChangeLogSet.Entry change, MarkupText text) {
+        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogAnnotator.class, getClass(), "annotate", AbstractBuild.class, ChangeLogSet.Entry.class, MarkupText.class)) {
             annotate((AbstractBuild) build, change, text);
         } else {
             Logger.getLogger(ChangeLogAnnotator.class.getName()).log(Level.WARNING, "You must override the newer overload of annotate from {0}", getClass().getName());
@@ -87,7 +86,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
     }
 
     @Deprecated
-    public void annotate(AbstractBuild<?,?> build, Entry change, MarkupText text) {
+    public void annotate(AbstractBuild<?,?> build, ChangeLogSet.Entry change, MarkupText text) {
         annotate((Run) build, change, text);
     }
 

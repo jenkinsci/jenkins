@@ -33,7 +33,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -56,7 +55,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         protected Map<Computer, Data> monitor() throws InterruptedException {
             Result<Data> base = monitorDetailed();
             Map<Computer, Data> monitoringData = base.getMonitoringData();
-            for (Entry<Computer, Data> e : monitoringData.entrySet()) {
+            for (Map.Entry<Computer, Data> e : monitoringData.entrySet()) {
                 Computer c = e.getKey();
                 Data d = e.getValue();
                 if (base.getSkipped().contains(c)) {

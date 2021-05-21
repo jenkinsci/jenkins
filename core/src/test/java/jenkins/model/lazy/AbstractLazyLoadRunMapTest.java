@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -329,7 +328,7 @@ public class AbstractLazyLoadRunMapTest {
     @Issue("JENKINS-18065")
     @Test
     public void entrySetIterator() {
-        Iterator<Entry<Integer, Build>> itr = a.entrySet().iterator();
+        Iterator<Map.Entry<Integer, Build>> itr = a.entrySet().iterator();
 
         // iterator, when created fresh, shouldn't force loading everything
         // this involves binary searching, so it can load several.
@@ -337,7 +336,7 @@ public class AbstractLazyLoadRunMapTest {
 
         // check if the first entry is legit
         assertTrue(itr.hasNext());
-        Entry<Integer, Build> e = itr.next();
+        Map.Entry<Integer, Build> e = itr.next();
         assertEquals((Integer)5,e.getKey());
         e.getValue().asserts(5);
 
@@ -388,7 +387,7 @@ public class AbstractLazyLoadRunMapTest {
     @Issue("JENKINS-18065")
     @Test
     public void entrySetContains() {
-        for (Entry<Integer, Build> e : a.entrySet()) {
+        for (Map.Entry<Integer, Build> e : a.entrySet()) {
             assertTrue(a.entrySet().contains(e));
         }
     }

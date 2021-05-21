@@ -34,7 +34,6 @@ import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
-import hudson.util.FormValidation.Kind;
 import hudson.util.TextFile;
 import static java.util.concurrent.TimeUnit.DAYS;
 import java.io.File;
@@ -386,7 +385,7 @@ public class DownloadService {
                 JSONObject o = JSONObject.fromObject(jsonString);
                 if (signatureCheck) {
                     FormValidation e = updatesite.getJsonSignatureValidator(signatureValidatorPrefix +" '"+id+"'").verifySignature(o);
-                    if (e.kind!= Kind.OK) {
+                    if (e.kind!= FormValidation.Kind.OK) {
                         LOGGER.log(Level.WARNING, "signature check failed for " + site, e );
                         continue;
                     }

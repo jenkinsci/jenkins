@@ -30,7 +30,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import hudson.util.CopyOnWriteMap.Hash;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -40,7 +39,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Map.Entry;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -122,7 +120,7 @@ public class ConsistentHashTest {
         hash.remove(0);
 
         // verify that the mapping remains consistent
-        for (Entry<Integer,Integer> e : before.entrySet()) {
+        for (Map.Entry<Integer,Integer> e : before.entrySet()) {
             int m = hash.lookup(e.getKey());
             assertTrue(e.getValue() == 0 || e.getValue() == m);
         }
@@ -187,7 +185,7 @@ public class ConsistentHashTest {
     @Test
     @Ignore("Helper test for performance, no assertion")
     public void speed() {
-        Map<String,Integer> data = new Hash<>();
+        Map<String,Integer> data = new CopyOnWriteMap.Hash<>();
         for (int i = 0; i < 1000; i++) {
             data.put("node" + i, 100);
         }
