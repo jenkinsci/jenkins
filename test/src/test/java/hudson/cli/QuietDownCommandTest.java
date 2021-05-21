@@ -506,7 +506,6 @@ public class QuietDownCommandTest {
 
     /**
      * Asserts if Jenkins is in quiet mode, retrying for some time before failing.
-     * @throws TimeoutException
      */
     public static void assertJenkinsInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
@@ -516,7 +515,6 @@ public class QuietDownCommandTest {
 
     /**
      * Asserts if Jenkins is <strong>not</strong> in quiet mode, retrying for some time before failing.
-     * @throws TimeoutException
      */
     public static void assertJenkinsNotInQuietMode(final JenkinsRule j) {
         await().pollInterval(250, TimeUnit.MILLISECONDS)

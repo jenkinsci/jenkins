@@ -721,7 +721,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Disable a plugin wihout checking any dependency. Only add the disable file.
-     * @throws IOException
      */
     private void disableWithoutCheck() throws IOException {
         try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {

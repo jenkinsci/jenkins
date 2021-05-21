@@ -254,9 +254,6 @@ public class PluginManagerTest {
     
     /**
      * call org.jenkinsci.plugins.dependencytest.depender.Depender.getValue().
-     * 
-     * @return
-     * @throws Exception
      */
     private String callDependerValue() throws Exception {
         Class<?> c = r.jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
@@ -267,8 +264,6 @@ public class PluginManagerTest {
     /**
      * Load "dependee" and then load "depender".
      * Asserts that "depender" can access to "dependee".
-     * 
-     * @throws Exception
      */
     @Test public void installDependingPluginWithoutRestart() throws Exception {
         // Load dependee.
@@ -301,8 +296,6 @@ public class PluginManagerTest {
     /**
      * Load "depender" and then load "dependee".
      * Asserts that "depender" can access to "dependee".
-     * 
-     * @throws Exception
      */
     @Issue("JENKINS-19976")
     @Test public void installDependedPluginWithoutRestart() throws Exception {
@@ -342,8 +335,6 @@ public class PluginManagerTest {
     /**
      * Load "optional-depender" and then load "dependee".
      * Asserts that "depender" can access to "dependee".
-     *
-     * @throws Exception
      */
     @Issue("JENKINS-60449")
     @WithPlugin("variant.hpi")

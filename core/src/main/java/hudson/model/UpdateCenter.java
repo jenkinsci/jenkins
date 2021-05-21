@@ -1001,7 +1001,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Returns a list of plugins that should be shown in the "available" tab, grouped by category.
      * A plugin with multiple categories will appear multiple times in the list.
-     * @deprecated
      */
     @Deprecated
     public PluginEntry[] getCategorizedAvailables() {
@@ -1092,10 +1091,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * browse to the instance.
      *
      * @return a list of {@link FormValidation} for each updated Update Site
-     * @throws ExecutionException
-     * @throws InterruptedException
      * @since 1.501
-     *
      */
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<>();

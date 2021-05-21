@@ -71,8 +71,6 @@ public class UpdateViewCommandTest {
     /**
      * This test shows that updating a view using an XML that will be
      * converted by XStream via an alias will rightfully succeed.
-     *
-     * @throws Exception
      */
     @Test public void updateViewWithRenamedClass() throws Exception {
         ListView tv  = new ListView("tView");

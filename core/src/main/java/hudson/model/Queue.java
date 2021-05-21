@@ -2100,7 +2100,6 @@ public class Queue extends ResourceController implements Saveable {
          * Unique ID (per master) that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item} and into any subsequent
          * {@link Run} instance (see {@link Run#getQueueId()}).
-         * @return
          * @since 1.601
          */
         @Exported

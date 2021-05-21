@@ -4993,8 +4993,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * unique. It does not check the displayName against the displayName of the
      * job that the user is configuring though to prevent a validation warning
      * if the user sets the displayName to what it currently is.
-     * @param displayName
-     * @param currentJobName
      */
     boolean isDisplayNameUnique(String displayName, String currentJobName) {
         Collection<TopLevelItem> itemCollection = items.values();
