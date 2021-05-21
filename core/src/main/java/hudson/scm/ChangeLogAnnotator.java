@@ -74,7 +74,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      *      add additional annotations into this object. If other annotators
      *      are registered, the object may already contain some markups when this
      *      method is invoked. Never null. {@link MarkupText#getText()} on this instance
-     *      will return the same string as {@link Entry#getMsgEscaped()}.
+     *      will return the same string as {@link ChangeLogSet.Entry#getMsgEscaped()}.
      * @since 1.568
      */
     public void annotate(Run<?,?> build, ChangeLogSet.Entry change, MarkupText text) {
