@@ -133,6 +133,14 @@ public class XStream2Security383Test {
             return inner.read();
         }
         @Override
+        public int read(byte[] b) throws IOException {
+            return inner.read(b);
+        }
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return inner.read(b, off, len);
+        }
+        @Override
         public boolean isFinished() {
             throw new UnsupportedOperationException();
         }
