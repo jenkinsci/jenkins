@@ -37,6 +37,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -53,9 +54,16 @@ public class RunIdMigratorTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
+    private static TimeZone defaultTimezone;
+
     /** Ensures that legacy timestamps are interpreted in a predictable time zone. */
     @BeforeClass public static void timezone() {
-        TimeZone.setDefault(TimeZone.getTimeZone("EST"));
+        defaultTimezone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
+    }
+
+    @AfterClass public static void tearDown() {
+        TimeZone.setDefault(defaultTimezone);
     }
 
     // TODO could use LoggerRule only if it were extracted to an independent library
