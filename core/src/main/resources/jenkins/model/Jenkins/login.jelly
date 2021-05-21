@@ -28,6 +28,7 @@ THE SOFTWARE.
   <!-- deactivate all caching -->
   <st:setHeader name="Expires" value="0" />
   <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+  <st:setHeader name="Content-Security-Policy" value="default-src 'self';"/>
   <!-- needed for cli -->
   <j:if test="${request.servletPath=='/' || request.servletPath==''}">
     ${h.advertiseHeaders(response)}
@@ -106,12 +107,7 @@ THE SOFTWARE.
                 <input type="hidden" name="from" value="${from}" />
                 <div class="submit formRow"><f:submit value="${%signIn}" /></div>
                 <!-- focus the username field -->
-                <script type="text/javascript">
-                  document.getElementById('j_username').focus();
-                  var checkBoxClick = function(event) {
-                    document.getElementById('remember_me').click();
-                  }
-                </script>
+                <st:adjunct includes="jenkins.model.Jenkins.login-adjunct"/>
 
                 <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
                   <!-- remember me service only available for Spring Security -->

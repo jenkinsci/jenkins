@@ -30,6 +30,7 @@ THE SOFTWARE.
   <l:view xmlns:l="/lib/layout" contentType="text/html;charset=UTF-8">
     <st:setHeader name="Expires" value="0"/>
     <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
+    <st:setHeader name="Content-Security-Policy" value="default-src 'self';"/>
     <!--
     needed to generate a session if non exists,
     without it we would add ";jsessionid=" to the url which will result in a 404
@@ -145,92 +146,11 @@ THE SOFTWARE.
                                 >
                                     ${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}
                                 </label>
-                                <script type="text/javascript">
-                                    const togglePasswordType = function(event) {
-                                        const passwordField = document.getElementById('password1');
-                                        const showPass = document.getElementById('showPassword');
-                                        if (showPass.checked) {
-                                            passwordField.type = 'text';
-                                        } else {
-                                            passwordField.type = 'password';
-                                        }
-                                    };
-
-                                    const passwordScore = function(password) {
-                                        var score = 0;
-                                        if (!password) {
-                                            return score
-                                        }
-                                        // award every unique letter until 5 repetitions
-                                        var letters = {};
-                                        for (var i = 0; i &lt; password.length; i++) {
-                                            letters[password[i]] = (letters[password[i]] || 0) + 1
-                                            score += 5.0 / letters[password[i]]
-                                        }
-
-                                        // bonus points for mixing it up
-                                        var variations = {
-                                            digits: /\d/.test(password),
-                                            lower: /[a-z]/.test(password),
-                                            upper: /[A-Z]/.test(password),
-                                            nonWords: /\W/.test(password)
-                                        };
-
-                                        var variationCount = 0;
-                                        for (var check in variations) {
-                                            variationCount += variations[check] === true ? 1 : 0;
-                                        }
-                                        score += (variationCount - 1) * 10;
-                                        return parseInt(score);
-                                    };
-
-                                    const passwordStrength = function(score) {
-                                        if (score > 80) {
-                                            return "${%Strong}";
-                                        }
-                                        if (score > 60) {
-                                            return "${%Moderate}";
-                                        }
-                                        if (score >= 30) {
-                                            return "${%Weak}";
-                                        }
-                                        return "${%Poor}";
-                                    };
-
-                                    const passwordStrengthColor = function(score) {
-                                        if (score > 80) {
-                                            return "#3a7911"
-                                        }
-                                        if (score > 60) {
-                                            return "#c6810e"
-                                        }
-                                        if (score >= 30) {
-                                            return "#de5912"
-                                        }
-                                        return "#c4000a"
-                                    };
-
-                                    const validatePassword = function() {
-                                        const password = document.getElementById('password1');
-                                        if (password) {
-                                            const passwordStrengthWrapper =
-                                                    document.getElementById('passwordStrengthWrapper');
-                                            passwordStrengthWrapper.hidden = false;
-                                            const score = passwordScore(password.value);
-                                            const passwordStrengthIndicator = document.getElementById('passwordStrength');
-                                            passwordStrengthIndicator.innerText = passwordStrength(score);
-                                            passwordStrengthIndicator.setAttribute('style', 'color: ' +
-                                                passwordStrengthColor(score));
-                                            document.getElementById('password2').value = password.value;
-                                        }
-                                    }
-                                </script>
                                 <div class="Checkbox Checkbox-small">
                                     <label class="Checkbox-wrapper">
                                         <input
                                             type="checkbox"
                                             id="showPassword"
-                                            onClick="togglePasswordType(this)"
                                             name="remember_me"
                                             tabindex="7"
                                         />
@@ -252,7 +172,6 @@ THE SOFTWARE.
                                 </div>
                             </div>
                             <input
-                                onKeyUp="validatePassword()"
                                 class="${data.errors.containsKey('password1') ? 'danger' : 'normal'}"
                                 value="${data.password1}"
                                 type="password"
@@ -260,13 +179,7 @@ THE SOFTWARE.
                                 name="password1"
                                 id="password1"
                             />
-                            <div id="passwordStrengthWrapper">${%Strength}: <span id="passwordStrength">&#160;</span> </div>
-                            <script type="text/javascript">
-                                if (document.getElementById('passwordStrengthWrapper')) {
-                                    document.getElementById('passwordStrengthWrapper').hidden = true;
-                                }
-                            </script>
-
+                            <div id="passwordStrengthWrapper" data-strong="${%Strong}" data-moderate="${%Moderate}" data-weak="${%Weak}" data-poor="${%Poor}">${%Strength}: <span id="passwordStrength">&#160;</span> </div>
                         </div>
                         <div class="formRow">
                             ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
@@ -282,14 +195,6 @@ THE SOFTWARE.
                             <f:submit value="${%Create account}"/>
                         </div>
                         <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
-                        <j:if test="${data.errorField != null}">
-                            <script type="text/javascript">
-                                const errorField = document.getElementById('${data.errorField}');
-                                if(errorField &amp;&amp; errorField.focus) {
-                                    errorField.focus();
-                                }
-                            </script>
-                        </j:if>
                         <div class="footer">
                             <j:forEach var="decorator" items="${simpleDecorators}">
                                 <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>
@@ -298,6 +203,7 @@ THE SOFTWARE.
                     </form>
                 </div>
             </div>
+            <st:adjunct includes="hudson.security.HudsonPrivateSecurityRealm.signup-adjunct"/>
         </body>
     </html>
   </l:view>
