@@ -44,11 +44,7 @@ THE SOFTWARE.
         <l:header>
             <!-- for screen resolution detection -->
             <l:yui module="cookie" />
-            <script>
-              YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
-                path: "/"
-              });
-            </script>
+            <st:adjunct includes="hudson.model.View.screen-resolution"/>
         </l:header>
     </l:layout>
 </st:compress>

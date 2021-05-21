@@ -89,7 +89,7 @@ THE SOFTWARE.
               <tr class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.hasImpliedDependents() and p.enabled ? 'possibly-has-implied-dependents' : ''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
                 <j:set var="state" value="${p.enabled?'true':null}"/>
                 <td class="center pane enable" data="${state}">
-                  <input type="checkbox" checked="${state}" onclick="flip(event)"
+                  <input type="checkbox" checked="${state}" class="installed-flip"
                          url="plugin/${p.shortName}"
                          disabled="${readOnlyMode ? 'true' : null}"
                          original="${p.active?'true':'false'}"/>
@@ -222,37 +222,8 @@ THE SOFTWARE.
         </form>
       </div>
 
-
-      <script>
-        <!-- function to toggle the enable/disable state -->
-        function flip(o) {
-          btn = Event.element(o);
-
-          <!-- trigger -->
-          new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
-            method: "POST",
-            onFailure : function(req,o) {
-              $('needRestart').innerHTML = req.responseText;
-            }
-          });
-
-          updateMsg();
-        }
-
-        function updateMsg() {
-          <!-- is anything changed since its original state? -->
-          var e = $A(Form.getInputs('plugins', 'checkbox')).find(function(e) {
-            return String(e.checked)!=e.getAttribute('original');
-          });
-
-          <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
-            e = true;
-          </j:if>
-          $('needRestart').style.display = (e!=null?"block":"none");
-        }
-
-        updateMsg(); // set the initial state
-      </script>
+      <div id="installed-adjunct-data" data-restart-required="${app.updateCenter.isRestartRequiredForCompletion()}"/>
+      <st:adjunct includes="hudson.PluginManager.installed-adjunct"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>
