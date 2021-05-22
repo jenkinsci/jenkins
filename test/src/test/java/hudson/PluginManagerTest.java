@@ -536,8 +536,8 @@ public class PluginManagerTest {
                 if(job instanceof UpdateCenter.DownloadJob) {
 		    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob)job;
 		    assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
-                    done &= !(((j.status instanceof UpdateCenter.DownloadJob.Pending) || 
-			(j.status instanceof UpdateCenter.DownloadJob.Installing)));
+                    done &= !((j.status instanceof UpdateCenter.DownloadJob.Pending) || 
+			(j.status instanceof UpdateCenter.DownloadJob.Installing));
                 }		
             }
         } while(!done);

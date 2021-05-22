@@ -824,7 +824,7 @@ public class Fingerprint implements ModelObject, Saveable {
                               <end>1479</end>
                             </range>
                      */
-                    return new RangeSet((List<Range>)(collectionConv.unmarshal(reader,context)));
+                    return new RangeSet((List<Range>)collectionConv.unmarshal(reader,context));
                 } else {
                     return RangeSet.fromString(reader.getValue(),true);
                 }

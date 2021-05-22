@@ -29,7 +29,7 @@ public class ChangeLogSetTest {
         } catch (Throwable t) {
             fail(t.getMessage());
         }
-        assertEquals((new EntryImpl()).getMsg(), change.getMsg());
+        assertEquals(new EntryImpl().getMsg(), change.getMsg());
     }
 
     @Extension

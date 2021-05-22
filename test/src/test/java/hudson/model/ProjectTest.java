@@ -556,7 +556,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -575,7 +575,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -612,7 +612,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -650,7 +650,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -688,7 +688,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
