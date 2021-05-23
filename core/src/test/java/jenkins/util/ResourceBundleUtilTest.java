@@ -44,11 +44,11 @@ public class ResourceBundleUtilTest {
     public void test_known_locale() {
         JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", Locale.GERMAN);
         Assert.assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
-        bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt"));
-        Assert.assertEquals("Inicializando registros de log", bundle.getString("LogRecorderManager.init"));
+        bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("de"));
+        Assert.assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
 
         // Test caching - should get the same bundle instance back...
-        Assert.assertSame(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt")), bundle);
+        Assert.assertSame(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("de")), bundle);
     }
 
     /**
