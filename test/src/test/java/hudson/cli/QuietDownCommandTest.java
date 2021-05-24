@@ -334,7 +334,7 @@ public class QuietDownCommandTest {
         try {
             exec_task.get(2*TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            fail("Blocking call didn't finish after timeout!");
+            throw new AssertionError("Blocking call didn't finish after timeout!", e);
         }
         assertThat(exec_task.isDone(), equalTo(true));
         finish.signal();
