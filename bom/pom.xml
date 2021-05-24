@@ -40,7 +40,7 @@ THE SOFTWARE.
 
   <properties>
     <slf4jVersion>1.7.30</slf4jVersion>
-    <stapler.version>1532.vfcf95addcb5f</stapler.version>
+    <stapler.version>1534.v84f9bf0bb6ef</stapler.version> <!-- TODO https://github.com/stapler/stapler/pull/225 -->
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
@@ -197,6 +197,11 @@ THE SOFTWARE.
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
         <version>3.1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.1</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>

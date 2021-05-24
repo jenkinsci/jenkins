@@ -118,6 +118,10 @@ THE SOFTWARE.
       <artifactId>jnr-posix</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler</artifactId>
       <exclusions>
