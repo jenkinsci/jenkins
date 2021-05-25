@@ -11,7 +11,6 @@ public class SecretUtilTest {
     public void decrypt() {
         String data = "{}";
         Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
-        Assert.assertNull(secret);
     }
 
 
@@ -20,7 +19,7 @@ public class SecretUtilTest {
     public void decryptJustSpace() {
         String data = " ";
         Secret secret = Secret.decrypt(data);
-        Assert.assertNull(secret);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
     @Issue("JENKINS-47500")
@@ -28,7 +27,7 @@ public class SecretUtilTest {
     public void decryptWithSpace() {
         String data = "{ }";
         Secret secret = Secret.decrypt(data);
-        Assert.assertNull(secret);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
     @Issue("JENKINS-47500")
@@ -36,6 +35,6 @@ public class SecretUtilTest {
     public void decryptWithSpaces() {
         String data = "{     }";
         Secret secret = Secret.decrypt(data);
-        Assert.assertNull(secret);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 }
