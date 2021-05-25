@@ -54,7 +54,6 @@ import org.apache.tools.zip.ZipExtraField;
 import org.apache.tools.zip.ZipOutputStream;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -303,7 +302,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
         }
 
-        AntClassLoader2 classLoader = new AntClassLoader2(parent);
+        AntWithFindResourceClassLoader classLoader = new AntWithFindResourceClassLoader(parent, true);
         classLoader.addPathFiles(paths);
         return classLoader;
     }
@@ -704,20 +703,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
 
             return null;
-        }
-    }
-
-    /**
-     * {@link AntClassLoader} with a few methods exposed and {@link Closeable} support.
-     */
-    private final class AntClassLoader2 extends AntWithFindResourceClassLoader implements Closeable {
-        private AntClassLoader2(ClassLoader parent) {
-            super(parent, true);
-        }
-        
-        @Override
-        protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
-            return super.defineClassFromData(container, classData, classname);
         }
     }
 
