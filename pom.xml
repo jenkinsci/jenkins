@@ -87,7 +87,7 @@ THE SOFTWARE.
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
 
-    <changelog.url>https://jenkins.io/changelog</changelog.url>
+    <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
     <remoting.version>4.8</remoting.version>
@@ -723,7 +723,7 @@ THE SOFTWARE.
     <profile>
       <id>lts-release</id>
       <properties>
-        <changelog.url>https://jenkins.io/changelog-stable</changelog.url>
+        <changelog.url>https://www.jenkins.io/changelog-stable</changelog.url>
       </properties>
     </profile>
     <profile>

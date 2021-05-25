@@ -96,7 +96,7 @@ public final class Secret implements Serializable {
     @Deprecated
     public String toString() {
         final String from = new Throwable().getStackTrace()[1].toString();
-        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://jenkins.io/redirect/hudson.util.Secret/");
+        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://www.jenkins.io/redirect/hudson.util.Secret/");
         return value;
     }
 
