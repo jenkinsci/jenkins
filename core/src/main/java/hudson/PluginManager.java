@@ -79,7 +79,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.TaskBuilder;
@@ -334,8 +333,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     // and load plugin-contributed classes.
     public final ClassLoader uberClassLoader = new UberClassLoader();
 
-    private final Transformer compatibilityTransformer = new Transformer();
-
     /**
      * Once plugin is uploaded, this flag becomes true.
      * This is used to report a message that Jenkins needs to be restarted
@@ -366,17 +363,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
 
         strategy = createPluginStrategy();
-
-        // load up rules for the core first
-        try {
-            compatibilityTransformer.loadRules(getClass().getClassLoader());
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
-        }
-    }
-
-    public Transformer getCompatibilityTransformer() {
-        return compatibilityTransformer;
     }
 
     public Api getApi() {
@@ -520,13 +506,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     }
                                 }
                             });
-
-                            // Let's see for a while until we open this functionality up to plugins
-//                            g.followedBy().attains(PLUGINS_LISTED).add("Load compatibility rules", new Executable() {
-//                                public void run(Reactor reactor) throws Exception {
-//                                    compatibilityTransformer.loadRules(uberClassLoader);
-//                                }
-//                            });
 
                             session.addAll(g.discoverTasks(session));
 
