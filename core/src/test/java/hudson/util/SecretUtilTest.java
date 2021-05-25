@@ -10,7 +10,7 @@ public class SecretUtilTest {
     @Test
     public void decrypt() {
         String data = "{}";
-        Secret secret = Secret.decrypt(data);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
         Assert.assertNull(secret);
     }
 
