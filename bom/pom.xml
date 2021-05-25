@@ -184,11 +184,6 @@ THE SOFTWARE.
         <version>1.5</version>
       </dependency>
       <dependency>
-        <groupId>org.jvnet.hudson</groupId>
-        <artifactId>jtidy</artifactId>
-        <version>4aug2000r7-dev-hudson-1</version>
-      </dependency>
-      <dependency>
         <groupId>org.connectbot.jbcrypt</groupId>
         <artifactId>jbcrypt</artifactId>
         <version>1.0.0</version>
@@ -196,7 +191,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
-        <version>3.1.5</version>
+        <version>3.1.6</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>

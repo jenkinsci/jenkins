@@ -938,7 +938,7 @@ public class Functions {
         if(footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
-                footerURL = "https://jenkins.io/";
+                footerURL = "https://www.jenkins.io/";
             }
         }
         return footerURL;
@@ -2094,7 +2094,7 @@ public class Functions {
         /* Log a warning if we're in development mode (core or plugin): There's an f:password backed by a non-Secret */
         if (req != null && (Boolean.getBoolean("hudson.hpi.run") || Boolean.getBoolean("hudson.Main.development"))) {
             LOGGER.log(Level.WARNING, () -> "<f:password/> form control in " + getJellyViewsInformationForCurrentRequest() +
-                    " is not backed by hudson.util.Secret. Learn more: https://jenkins.io/redirect/hudson.util.Secret");
+                    " is not backed by hudson.util.Secret. Learn more: https://www.jenkins.io/redirect/hudson.util.Secret");
         }
 
         /* Return plain value if it's not a Secret and the escape hatch is set */
