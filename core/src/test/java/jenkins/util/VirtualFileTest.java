@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -76,8 +75,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 public class VirtualFileTest {
@@ -101,12 +100,7 @@ public class VirtualFileTest {
         VirtualFile hack = root.child("hack");
         assertFalse(hack.isFile());
         assertFalse(hack.exists());
-        try {
-            hack.open();
-            fail();
-        } catch (FileNotFoundException | NoSuchFileException x) {
-            // OK
-        }
+        assertThrows(FileNotFoundException.class, () -> hack.open());
     }
 
     @Issue("JENKINS-26810")
@@ -800,10 +794,7 @@ public class VirtualFileTest {
     }
 
     private void checkCommonAssertionForIsDescendant(VirtualFile virtualRoot, VirtualFile virtualRootChildA, VirtualFile virtualFromA, String absolutePath) throws Exception {
-        try {
-            virtualRootChildA.isDescendant(absolutePath);
-            fail("isDescendant should have refused the absolute path");
-        } catch (IllegalArgumentException e) {}
+        assertThrows("isDescendant should have refused the absolute path", IllegalArgumentException.class, () -> virtualRootChildA.isDescendant(absolutePath));
 
         assertTrue(virtualRootChildA.isDescendant("aa"));
         assertTrue(virtualRootChildA.isDescendant("aa/aa.txt"));
@@ -1134,12 +1125,7 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFile(ws).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> link.open(true));
     }
 
     @Test
@@ -1153,12 +1139,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         File childThroughSymlink = new File(tmp.getRoot(), "/" + symlinkName + "/" + childString);
         VirtualFile child = rootVirtualFile.child(symlinkName).child(childString);
-        try {
-        child.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> child.open(true));
     }
 
     @Test
@@ -1171,12 +1152,7 @@ public class VirtualFileTest {
         FileUtils.write(new File(ws, childString), childString);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(new FilePath(tmp.getRoot()));
         VirtualFile childVirtualPath = rootVirtualPath.child(symlinkName).child(childString);
-        try {
-            childVirtualPath.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> childVirtualPath.open(true));
     }
 
     @Test
@@ -1189,12 +1165,7 @@ public class VirtualFileTest {
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFilePath(new FilePath(ws)).child(linkString);
-        try {
-            link.open(true);
-            fail("Should have not followed links.");
-        } catch (IOException ioe) {
-            // expected
-        }
+        assertThrows("Should have not followed links", IOException.class, () -> link.open(true));
     }
 
     @Test
