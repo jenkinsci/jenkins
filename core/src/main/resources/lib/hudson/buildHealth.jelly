@@ -37,7 +37,7 @@ THE SOFTWARE.
     <j:if test="${td}"><j:set var="useTdElement" value="x"/></j:if>
     <x:element name="${useTdElement!=null?'td':'div'}">
         <x:attribute name="data">${buildHealth.score}</x:attribute>
-        <x:attribute name="class">healthReport Behaviour-healthReport</x:attribute>
+        <x:attribute name="class">healthReport</x:attribute>
         <j:if test="${buildHealth!=null}">
             <j:if test="${iconSizeClass == null}">
               <j:choose>
@@ -86,5 +86,4 @@ THE SOFTWARE.
             </div>
         </j:if>
     </x:element>
-    <st:adjunct includes="lib.hudson.buildHealth.adjunct "/>
 </j:jelly>
