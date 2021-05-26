@@ -42,6 +42,7 @@ import static org.objectweb.asm.Opcodes.RETURN;
  *
  * @author Kohsuke Kawaguchi
  */
+@Deprecated
 public class SubClassGenerator extends ClassLoader {
     public SubClassGenerator(ClassLoader parent) {
         super(parent);
