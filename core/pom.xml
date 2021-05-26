@@ -122,7 +122,7 @@ THE SOFTWARE.
       <artifactId>asm</artifactId>
     </dependency>
     <!--
-      For compatibility only; not included into the BOM for the same reason. Once
+      For compatibility only; not included into the BOM for the same reason. TODO once
       https://github.com/jenkinsci/scm-api-plugin/pull/88 is widely adopted, this
       dependency can be dropped.
     -->
