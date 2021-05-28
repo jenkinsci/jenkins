@@ -189,7 +189,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.18</version>
+      <version>1.21</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -742,7 +742,6 @@ THE SOFTWARE.
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
@@ -820,7 +819,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs install site". -->
+      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
       <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>spotbugs</id>
       <properties>

@@ -78,7 +78,7 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
             return targetUrl.substring(request.getContextPath().length());
 
         // not sure when this happens, but apparently this happens in some case.
-        // see #1274
+        // see JENKINS-1274
         return targetUrl;
     }
 

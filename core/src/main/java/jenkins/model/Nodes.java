@@ -141,17 +141,10 @@ public class Nodes implements Saveable {
 
         Node oldNode = nodes.get(node.getNodeName());
         if (node != oldNode) {
-            // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
-            // computer list for just the new node
             AtomicReference<Node> old = new AtomicReference<>();
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    old.set(nodes.put(node.getNodeName(), node));
-                    jenkins.updateComputerList();
-                    jenkins.trimLabels();
-                }
-            });
+            old.set(nodes.put(node.getNodeName(), node));
+            jenkins.updateNewComputer(node);
+            jenkins.trimLabels();
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             try {
                 persistNode(node);

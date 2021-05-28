@@ -266,7 +266,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>${matrix-auth.version}</version>
+                  <version>2.6.6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -284,7 +284,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>${matrix-project.version}</version>
+                  <version>1.18</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -563,7 +563,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.11.3</version>
+            <version>1.12.0</version>
             <executions>
 
               <execution>
