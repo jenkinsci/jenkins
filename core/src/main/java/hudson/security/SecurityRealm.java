@@ -51,6 +51,7 @@ import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.AcegiSecurityExceptionFilter;
 import jenkins.security.BasicHeaderProcessor;
+import jenkins.security.AuthenticationSuccessHandler;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -593,8 +594,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
             apf.setRememberMeServices(sc.rememberMe2);
+            final AuthenticationSuccessHandler successHandler = new AuthenticationSuccessHandler();
+            successHandler.setTargetUrlParameter("from");
+            apf.setAuthenticationSuccessHandler(successHandler);
             apf.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler("/loginError"));
-            // TODO apf.defaultTargetUrl = "/" try SavedRequestAwareAuthenticationSuccessHandler
             filters.add(apf);
         }
         filters.add(new RememberMeAuthenticationFilter(sc.manager2, sc.rememberMe2));
@@ -630,12 +633,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         String from = null, returnValue = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
-        // Try to obtain a return point either from the Session
-        // or from the QueryParameter in this order
-        if (request != null
-                && request.getSession(false) != null) {
-            from = (String) request.getSession().getAttribute("from");
-        } else if (request != null) {
+        // Try to obtain a return point from the query parameter
+        if (request != null) {
             from = request.getParameter("from");
         }
 

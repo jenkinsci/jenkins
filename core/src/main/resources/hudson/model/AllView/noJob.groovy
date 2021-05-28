@@ -68,7 +68,7 @@ div {
                             }
 
                             li(class: "content-block") {
-                                a(href: "https://jenkins.io/redirect/distributed-builds",
+                                a(href: "https://www.jenkins.io/redirect/distributed-builds",
                                         target: "_blank",
                                         class: "content-block__link content-block__help-link") {
                                     span(_("learnMoreDistributedBuilds"))

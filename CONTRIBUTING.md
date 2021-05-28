@@ -149,24 +149,24 @@ just submit a pull request.
 
 # Links
 
-* [Jenkins Contribution Landing Page](https://jenkins.io/participate/)
-* [Jenkins IRC Channel](https://jenkins.io/chat/)
+* [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
+* [Jenkins IRC Channel](https://www.jenkins.io/chat/)
 * [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
 * [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
-[Preparing for Plugin Development]: https://jenkins.io/doc/developer/tutorial/prepare/
+[Preparing for Plugin Development]: https://www.jenkins.io/doc/developer/tutorial/prepare/
 [newbie friendly issues]: https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)
-[Participate]: https://jenkins.io/participate/
-[building and debugging process here]: https://jenkins.io/doc/developer/building/
+[Participate]: https://www.jenkins.io/participate/
+[building and debugging process here]: https://www.jenkins.io/doc/developer/building/
 [guide]: https://wiki.jenkins.io/display/JENKINS/Starting+and+Accessing+Jenkins
 [Remote Debug Flags]: https://stackoverflow.com/questions/975271/remote-debugging-a-java-application
 [Acceptance Test Harness (ATH)]: https://github.com/jenkinsci/acceptance-test-harness
-[backporting process]: https://jenkins.io/download/lts/
+[backporting process]: https://www.jenkins.io/download/lts/
 [proposed template]: .github/PULL_REQUEST_TEMPLATE.md
 [MIT license]: ./LICENSE.txt
-[contributor agreement]: https://jenkins.io/project/governance/#cla
-[Jenkins Security Team]: https://jenkins.io/security/#team
+[contributor agreement]: https://www.jenkins.io/project/governance/#cla
+[Jenkins Security Team]: https://www.jenkins.io/security/#team
 [ci.jenkins.io]: https://ci.jenkins.io/
-[Jenkins Pipeline]: https://jenkins.io/doc/book/pipeline/
+[Jenkins Pipeline]: https://www.jenkins.io/doc/book/pipeline/
 [Jenkinsfile]: ./Jenkinsfile
 [download Maven here]: https://maven.apache.org/download.cgi

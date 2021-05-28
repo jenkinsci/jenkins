@@ -154,7 +154,7 @@ public class ClassFilterImplTest {
         assertEquals("modified", config.unrelated);
         Map<Saveable, OldDataMonitor.VersionRange> data = ExtensionList.lookupSingleton(OldDataMonitor.class).getData();
         assertEquals(Collections.singleton(config), data.keySet());
-        assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://jenkins.io/redirect/class-filter/")));
+        assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://www.jenkins.io/redirect/class-filter/")));
     }
 
     @Test

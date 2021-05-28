@@ -154,7 +154,7 @@ THE SOFTWARE.
                     </j:if>
                   </td>
                   <j:choose>
-                      <j:when test="${p.hasMandatoryDependents() or p.hasMandatoryDependents()}">
+                      <j:when test="${p.hasMandatoryDependents()}">
                             <j:set var="uninstallPossible" value="true"/>
                       </j:when>
                       <j:otherwise>
@@ -167,11 +167,22 @@ THE SOFTWARE.
                         <p>${%Uninstallation pending}</p>
                       </j:when>
                       <j:otherwise>
-                          <j:if test="${p.hasMandatoryDependents()}">
+                          <j:if test="${p.hasMandatoryDependents() or p.hasImpliedDependents()}">
                             <div class="dependent-list">
                               <j:forEach var="dependent" items="${p.mandatoryDependents}">
                                 <span data-plugin-id="${dependent}"></span>
                               </j:forEach>
+                              <j:set var="impliedDependents" value="${p.impliedDependents}" />
+                              <j:choose>
+                                <j:when test="${impliedDependents.size() lt 15}">
+                                  <j:forEach var="dependent" items="${impliedDependents}">
+                                    <span data-plugin-id="${dependent}"></span>
+                                  </j:forEach>
+                                </j:when>
+                                <j:otherwise>
+                                  <p>${%detached-many-dependents(impliedDependents.size())}</p>
+                                </j:otherwise>
+                              </j:choose>
                             </div>
                           </j:if>
                           <j:if test="${p.hasMandatoryDependencies()}">

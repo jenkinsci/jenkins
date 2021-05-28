@@ -73,8 +73,8 @@ updateCenter.post(
     }
   },
   "deprecations": {
-      "icon-shim": { "url": "https://jenkins.io/deprecations/icon-shim/" },
-      "variant": { "url": "https://jenkins.io/deprecations/variant/" }
+      "icon-shim": { "url": "https://www.jenkins.io/deprecations/icon-shim/" },
+      "variant": { "url": "https://www.jenkins.io/deprecations/variant/" }
   },
   "updateCenterVersion": 1
 }

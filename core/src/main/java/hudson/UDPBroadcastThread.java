@@ -54,7 +54,7 @@ public class UDPBroadcastThread {
     @Initializer(before=COMPLETED)
     public static void warn() {
         if (PORT > 0) {
-            LOGGER.warning("UDP broadcast capability has been removed from Jenkins. More information: https://jenkins.io/redirect/udp-broadcast");
+            LOGGER.warning("UDP broadcast capability has been removed from Jenkins. More information: https://www.jenkins.io/redirect/udp-broadcast");
         }
     }
 
