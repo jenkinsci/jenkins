@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  * Implementations should provide a {@code description.jelly} file with additional details about their purpose and
  * behavior which will be included in {@code help-usageStatisticsCollected.jelly} for {@link UsageStatistics}.
  *
- * @see <a href="https://jenkins.io/jep/214">JEP-214</a>
+ * @see <a href="https://www.jenkins.io/jep/214">JEP-214</a>
  *
  * @since 2.143
  */
@@ -77,7 +77,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * Good IDs are globally unique and human readable (i.e. no UUIDs).
      *
-     * For a periodically updated list of all public implementations, see https://jenkins.io/doc/developer/extensions/jenkins-core/#telemetry
+     * For a periodically updated list of all public implementations, see https://www.jenkins.io/doc/developer/extensions/jenkins-core/#telemetry
      *
      * @return ID of the collector, never null or empty
      */

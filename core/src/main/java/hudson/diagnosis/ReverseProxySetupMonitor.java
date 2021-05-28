@@ -122,7 +122,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             // of course the irony is that this redirect won't work
             return HttpResponses.redirectViaContextPath("/manage");
         } else {
-            return new HttpRedirect("https://jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
+            return new HttpRedirect("https://www.jenkins.io/redirect/troubleshooting/broken-reverse-proxy");
         }
     }
 

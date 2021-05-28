@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import jenkins.security.ClassFilterImpl;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import org.jvnet.hudson.test.LoggerRule;
 import static org.mockito.Mockito.when;
 
@@ -76,11 +77,7 @@ public class XStream2Security383Test {
 
             FileUtils.write(new File(tempJobDir, "config.xml"), exploitXml, StandardCharsets.UTF_8);
 
-            try {
-                Items.load(j.jenkins, tempJobDir);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            assertThrows(IOException.class, () -> Items.load(j.jenkins, tempJobDir));
             assertFalse("no file should be created here", exploitFile.exists());
         } finally {
             exploitFile.delete();
@@ -109,12 +106,7 @@ public class XStream2Security383Test {
             when(req.getContentType()).thenReturn("application/xml");
             when(req.getParameter("name")).thenReturn("foo");
 
-            try {
-                j.jenkins.doCreateItem(req, rsp);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            assertThrows(IOException.class, () -> j.jenkins.doCreateItem(req, rsp));
             assertFalse("no file should be created here", exploitFile.exists());
         } finally {
             exploitFile.delete();

@@ -59,7 +59,9 @@ import edu.umd.cs.findbugs.annotations.Nullable;
  * {@link IllegalStateException}.
  *
  * @since 2.111
+ * @deprecated use {@link Files#lines(Path)}
  */
+@Deprecated
 @CleanupObligation
 public class LinesStream implements Closeable, Iterable<String> {
 

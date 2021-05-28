@@ -36,7 +36,7 @@ THE SOFTWARE.
       as an administrator, you can mark commands as OK for agents to execute.
     </p>
     <div class="warning" style="margin:1em">
-      Please see <a href="https://jenkins.io/redirect/security-144">the discussion of this feature</a> to
+      Please see <a href="https://www.jenkins.io/redirect/security-144">the discussion of this feature</a> to
       understand the security implication of this.
     </div>
     <j:if test="${it.masterKillSwitch}">

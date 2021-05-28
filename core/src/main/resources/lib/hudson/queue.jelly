@@ -80,7 +80,7 @@ THE SOFTWARE.
                   <!-- TODO include estimated number as in BuildHistoryWidget/entries.jelly if possible -->
                   <j:if test="${stuck}">
                     &#160;
-                    <a href="https://jenkins.io/redirect/troubleshooting/executor-starvation">
+                    <a href="https://www.jenkins.io/redirect/troubleshooting/executor-starvation">
                       <l:icon class="icon-hourglass icon-sm"/>
                     </a>
                   </j:if>
