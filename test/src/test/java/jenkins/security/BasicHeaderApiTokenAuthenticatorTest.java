@@ -35,11 +35,10 @@ import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.net.URL;
@@ -56,20 +55,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BasicHeaderApiTokenAuthenticatorTest {
     @Rule
-    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
+    public JenkinsSessionRule sessions = new JenkinsSessionRule();
     
     @Test
     @Issue("SECURITY-896")
-    public void legacyToken_regularCase() {
+    public void legacyToken_regularCase() throws Throwable {
         AtomicReference<String> token = new AtomicReference<>();
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+        sessions.then(j -> {
                 enableLegacyTokenGenerationOnUserCreation();
-                configureSecurity();
+                configureSecurity(j);
                 
                 {
-                    JenkinsRule.WebClient wc = rr.j.createWebClient();
+                    JenkinsRule.WebClient wc = j.createWebClient();
                     // default SecurityListener will save the user when adding the LastGrantedAuthoritiesProperty
                     // and so the user is persisted
                     wc.login("user1");
@@ -77,24 +74,21 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                     String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
                     token.set(tokenValue);
                 }
-            }
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+        sessions.then(j -> {
                 User user = User.getById("user1", false);
                 assertNotNull(user);
                 
-                JenkinsRule.WebClient wc = rr.j.createWebClient();
+                JenkinsRule.WebClient wc = j.createWebClient();
                 wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
                 
                 { // for invalid token, no effect
-                    WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("user1", "invalid-token"));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
                 { // for invalid user, no effect
-                    WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("user-not-valid", token.get()));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
@@ -102,12 +96,11 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 assertNull(User.getById("user-not-valid", false));
                 
                 { // valid user with valid token, ok
-                    WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("user1", token.get()));
                     XmlPage xmlPage = wc.getPage(request);
                     assertThat(xmlPage, hasXPath("//name", is("user1")));
                 }
-            }
         });
     }
     
@@ -116,39 +109,34 @@ public class BasicHeaderApiTokenAuthenticatorTest {
      */
     @Test
     @Issue("SECURITY-896")
-    public void legacyToken_withoutLastGrantedAuthorities() {
+    public void legacyToken_withoutLastGrantedAuthorities() throws Throwable {
         AtomicReference<String> token = new AtomicReference<>();
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+        sessions.then(j -> {
                 enableLegacyTokenGenerationOnUserCreation();
-                configureSecurity();
+                configureSecurity(j);
                 
                 {
-                    JenkinsRule.WebClient wc = rr.j.createWebClient();
+                    JenkinsRule.WebClient wc = j.createWebClient();
                     wc.login("user1");
                     HtmlPage page = wc.goTo("user/user1/configure");
                     String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
                     token.set(tokenValue);
                 }
-            }
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+        sessions.then(j -> {
                 User user = User.getById("user1", false);
                 assertNull(user);
                 
-                JenkinsRule.WebClient wc = rr.j.createWebClient();
+                JenkinsRule.WebClient wc = j.createWebClient();
                 wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
                 
                 { // for invalid token, no effect
-                    WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("user1", "invalid-token"));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
                 { // for invalid user, no effect
-                    WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("user-not-valid", token.get()));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
@@ -157,19 +145,15 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 assertNull(User.getById("user-not-valid", false));
                 
                 { // valid user with valid token, ok
-                    WebRequest request = new WebRequest(new URL(rr.j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
                     request.setAdditionalHeader("Authorization", base64("user1", token.get()));
                     XmlPage xmlPage = wc.getPage(request);
                     assertThat(xmlPage, hasXPath("//name", is("user1")));
                 }
-            }
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+        sessions.then(j -> {
                 User user = User.getById("user1", false);
                 assertNull(user);
-            }
         });
     }
     
@@ -181,21 +165,21 @@ public class BasicHeaderApiTokenAuthenticatorTest {
         }
     }
     
-    private void enableLegacyTokenGenerationOnUserCreation() throws Exception {
+    private static void enableLegacyTokenGenerationOnUserCreation() throws Exception {
         ApiTokenPropertyConfiguration apiTokenConfiguration = GlobalConfiguration.all().getInstance(ApiTokenPropertyConfiguration.class);
         // by default it's false
         apiTokenConfiguration.setTokenGenerationOnCreationEnabled(true);
     }
     
-    private void configureSecurity() throws Exception {
-        rr.j.jenkins.setSecurityRealm(rr.j.createDummySecurityRealm());
-        rr.j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+    private static void configureSecurity(JenkinsRule j) throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().toEveryone());
         
-        rr.j.jenkins.save();
+        j.jenkins.save();
     }
     
-    private String base64(String login, String password) {
+    private static String base64(String login, String password) {
         return "Basic " + Base64.getEncoder().encodeToString((login + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
 }

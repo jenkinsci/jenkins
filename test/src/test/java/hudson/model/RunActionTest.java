@@ -32,37 +32,30 @@ import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 
 public class RunActionTest {
 
     @Rule
-    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
+    public JenkinsSessionRule sessions = new JenkinsSessionRule();
 
     @Issue("JENKINS-45892")
     @Test
-    public void badSerialization() {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                FreeStyleProject p = rr.j.createFreeStyleProject("p");
-                FreeStyleBuild b1 = rr.j.buildAndAssertSuccess(p);
-                FreeStyleBuild b2 = rr.j.buildAndAssertSuccess(p);
+    public void badSerialization() throws Throwable {
+        sessions.then(j -> {
+                FreeStyleProject p = j.createFreeStyleProject("p");
+                FreeStyleBuild b1 = j.buildAndAssertSuccess(p);
+                FreeStyleBuild b2 = j.buildAndAssertSuccess(p);
                 b2.addAction(new BadAction(b1));
                 b2.save();
                 String text = new XmlFile(new File(b2.getRootDir(), "build.xml")).asString();
                 assertThat(text, not(containsString("<owner class=\"build\">")));
                 assertThat(text, containsString("<id>p#1</id>"));
-            }
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                FreeStyleProject p = rr.j.jenkins.getItemByFullName("p", FreeStyleProject.class);
+        sessions.then(j -> {
+                FreeStyleProject p = j.jenkins.getItemByFullName("p", FreeStyleProject.class);
                 assertEquals(p.getBuildByNumber(1), p.getBuildByNumber(2).getAction(BadAction.class).owner);
-            }
         });
     }
     static class BadAction extends InvisibleAction {
