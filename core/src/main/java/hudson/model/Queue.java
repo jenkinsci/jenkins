@@ -76,7 +76,6 @@ import hudson.triggers.SafeTimerTask;
 import java.util.concurrent.TimeUnit;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
-import hudson.util.ConsistentHash.Hash;
 
 import java.io.File;
 import java.io.IOException;
@@ -1780,7 +1779,7 @@ public class Queue extends ResourceController implements Saveable {
         };
     }
 
-    private static final Hash<Node> NODE_HASH = Node::getNodeName;
+    private static final ConsistentHash.Hash<Node> NODE_HASH = Node::getNodeName;
 
     private boolean makePending(BuildableItem p) {
         // LOGGER.info("Making "+p.task+" pending"); // REMOVE

@@ -69,7 +69,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -429,7 +428,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         /** Share data structure with other builds, mainly those of the same job. */
         private PackedMap<String,String> compact(Map<String,String> record) {
             Map<String,String> b = new HashMap<>();
-            for (Entry<String,String> e : record.entrySet()) {
+            for (Map.Entry<String,String> e : record.entrySet()) {
                 b.put(e.getKey().intern(), e.getValue().intern());
             }
             return PackedMap.of(b);
@@ -448,7 +447,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             Jenkins h = Jenkins.get();
 
             Map<String,Fingerprint> m = new TreeMap<>();
-            for (Entry<String, String> r : record.entrySet()) {
+            for (Map.Entry<String, String> r : record.entrySet()) {
                 try {
                     Fingerprint fp = h._getFingerprint(r.getValue());
                     if(fp!=null)

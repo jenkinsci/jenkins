@@ -65,7 +65,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
@@ -344,7 +343,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return false;
 
             SortedMap<String,String> envs = getEnvironmentVariables();
-            for (Entry<String,String> e : modelEnvVar.entrySet()) {
+            for (Map.Entry<String,String> e : modelEnvVar.entrySet()) {
                 String v = envs.get(e.getKey());
                 if(v==null || !v.equals(e.getValue()))
                     return false;   // no match
@@ -650,7 +649,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return false;
 
             SortedMap<String,String> envs = getEnvironmentVariables2();
-            for (Entry<String,String> e : modelEnvVar.entrySet()) {
+            for (Map.Entry<String,String> e : modelEnvVar.entrySet()) {
                 String v = envs.get(e.getKey());
                 if(v==null || !v.equals(e.getValue()))
                     return false;   // no match
@@ -1895,7 +1894,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         @Deprecated
         public Remote(ProcessTree proxy, Channel ch) {
             this.proxy = ch.export(IProcessTree.class,proxy);
-            for (Entry<Integer,OSProcess> e : proxy.processes.entrySet())
+            for (Map.Entry<Integer,OSProcess> e : proxy.processes.entrySet())
                 processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
         }
         
@@ -1903,7 +1902,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             super(vetoersExist);
             
             this.proxy = ch.export(IProcessTree.class,proxy);
-            for (Entry<Integer,OSProcess> e : proxy.processes.entrySet())
+            for (Map.Entry<Integer,OSProcess> e : proxy.processes.entrySet())
                 processes.put(e.getKey(),new RemoteProcess(e.getValue(),ch));
         }
 

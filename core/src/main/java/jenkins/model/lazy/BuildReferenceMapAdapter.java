@@ -1,11 +1,11 @@
 package jenkins.model.lazy;
 
-import groovy.util.MapEntry;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.lang.reflect.Array;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -392,13 +392,13 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         }
 
         private Entry<Integer,BuildReference<R>> _wrap(Entry<Integer,R> e) {
-            return new MapEntry(e.getKey(),wrap(e.getValue()));
+            return new AbstractMap.SimpleEntry<>(e.getKey(),wrap(e.getValue()));
         }
         private Entry<Integer, R> _unwrap(Entry<Integer, BuildReference<R>> e) {
             R v = unwrap(e.getValue());
             if (v==null)
                 return null;
-            return new MapEntry(e.getKey(), v);
+            return new AbstractMap.SimpleEntry<>(e.getKey(), v);
         }
     }
 }

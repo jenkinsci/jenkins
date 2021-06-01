@@ -27,7 +27,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
-import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.node_monitors.ArchitectureMonitor;
 import hudson.security.Permission;
 import hudson.util.Secret;
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -143,7 +143,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
                 n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
-            DescriptorImpl descriptor = j.getDescriptorByType(DescriptorImpl.class);
+            ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
             n.put("os", descriptor.get(c));
             nodes.add(n);
         }

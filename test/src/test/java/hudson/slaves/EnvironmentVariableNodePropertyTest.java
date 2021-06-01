@@ -8,7 +8,6 @@ import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
-import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -47,7 +46,7 @@ public class EnvironmentVariableNodePropertyTest {
 	 */
 	@Test
 	public void testSlavePropertyOnSlave() throws Exception {
-		setVariables(slave, new Entry("KEY", "slaveValue"));
+		setVariables(slave, new EnvironmentVariablesNodeProperty.Entry("KEY", "slaveValue"));
 		Map<String, String> envVars = executeBuild(slave);
 		assertEquals("slaveValue", envVars.get("KEY"));
 	}
@@ -59,7 +58,7 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testMasterPropertyOnMaster() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "masterValue"))));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "masterValue"))));
 
 		Map<String, String> envVars = executeBuild(j.jenkins);
 
@@ -73,8 +72,8 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testSlaveAndMasterPropertyOnSlave() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "masterValue"))));
-		setVariables(slave, new Entry("KEY", "slaveValue"));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "masterValue"))));
+		setVariables(slave, new EnvironmentVariablesNodeProperty.Entry("KEY", "slaveValue"));
 
 		Map<String, String> envVars = executeBuild(slave);
 
@@ -93,8 +92,8 @@ public class EnvironmentVariableNodePropertyTest {
 				new StringParameterDefinition("KEY", "parameterValue"));
 		project.addProperty(pdp);
 
-		setVariables(j.jenkins, new Entry("KEY", "masterValue"));
-		setVariables(slave, new Entry("KEY", "slaveValue"));
+		setVariables(j.jenkins, new EnvironmentVariablesNodeProperty.Entry("KEY", "masterValue"));
+		setVariables(slave, new EnvironmentVariablesNodeProperty.Entry("KEY", "slaveValue"));
 
 		Map<String, String> envVars = executeBuild(slave);
 
@@ -105,7 +104,7 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testVariableResolving() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY1", "value"), new Entry("KEY2", "$KEY1"))));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY1", "value"), new EnvironmentVariablesNodeProperty.Entry("KEY2", "$KEY1"))));
 		Map<String,String> envVars = executeBuild(j.jenkins);
 		assertEquals("value", envVars.get("KEY1"));
 		assertEquals("value", envVars.get("KEY2"));
@@ -115,7 +114,7 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testFormRoundTripForMaster() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "value"))));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "value"))));
 		
 		WebClient webClient = j.createWebClient();
 		HtmlPage page = webClient.getPage(j.jenkins, "configure");
@@ -131,7 +130,7 @@ public class EnvironmentVariableNodePropertyTest {
 
 	@Test
 	public void testFormRoundTripForSlave() throws Exception {
-		setVariables(slave, new Entry("KEY", "value"));
+		setVariables(slave, new EnvironmentVariablesNodeProperty.Entry("KEY", "value"));
 		
 		WebClient webClient = j.createWebClient();
 		HtmlPage page = webClient.getPage(slave, "configure");
@@ -155,7 +154,7 @@ public class EnvironmentVariableNodePropertyTest {
 
 	// ////////////////////// helper methods /////////////////////////////////
 
-	private void setVariables(Node node, Entry... entries) throws IOException {
+	private void setVariables(Node node, EnvironmentVariablesNodeProperty.Entry... entries) throws IOException {
 		node.getNodeProperties().replaceBy(
 				Collections.singleton(new EnvironmentVariablesNodeProperty(
 						entries)));
