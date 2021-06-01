@@ -113,7 +113,6 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.util.AtmostOneTaskExecutor;
-import org.jenkinsci.bytecode.AdaptField;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -2107,7 +2106,6 @@ public class Queue extends ResourceController implements Saveable {
             return id;
         }
 
-        @AdaptField(was=int.class, name="id")
         @Deprecated
         public int getIdLegacy() {
             if (id > Integer.MAX_VALUE) {
