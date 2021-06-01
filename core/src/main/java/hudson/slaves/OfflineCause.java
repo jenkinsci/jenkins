@@ -147,7 +147,7 @@ public abstract class OfflineCause {
         }
 
         private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS.getName(), message));
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS2.getName(), message));
             this.userId = userId;
         }
 
@@ -159,7 +159,6 @@ public abstract class OfflineCause {
         }
 
         // Storing the User in a filed was a mistake, switch to userId
-        @SuppressWarnings("deprecation")
         private Object readResolve() throws ObjectStreamException {
             if (user != null) {
                 String id = user.getId();

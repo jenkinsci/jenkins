@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.Lists;
 import hudson.init.InitMilestone;
 import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
@@ -170,6 +169,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     public @NonNull Iterator<T> iterator() {
         // we need to intercept mutation, so for now don't allow Iterator.remove 
         return new AdaptedIterator<ExtensionComponent<T>,T>(Iterators.readOnly(ensureLoaded().iterator())) {
+            @Override
             protected T adapt(ExtensionComponent<T> item) {
                 return item.getInstance();
             }
@@ -183,10 +183,12 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
         return Collections.unmodifiableList(ensureLoaded());
     }
 
+    @Override
     public T get(int index) {
         return ensureLoaded().get(index).getInstance();
     }
     
+    @Override
     public int size() {
         return ensureLoaded().size();
     }
@@ -341,7 +343,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
             Collection<ExtensionComponent<T>> found = load(delta);
             if (!found.isEmpty()) {
-                List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
+                List<ExtensionComponent<T>> l = new ArrayList<>(extensions);
                 l.addAll(found);
                 extensions = sort(l);
                 fireOnChangeListeners = true;

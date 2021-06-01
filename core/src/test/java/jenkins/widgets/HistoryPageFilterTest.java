@@ -43,14 +43,11 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -65,7 +62,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_empty_page() {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> itemList = new ArrayList<>();
+        Iterable<ModelObject> itemList = Collections.emptyList();
 
         historyPageFilter.add(itemList);
         Assert.assertFalse(historyPageFilter.hasUpPage);
@@ -80,7 +77,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_partial_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> runs = newRuns(1, 2);
+        Iterable<ModelObject> runs = newRuns(1, 2);
         List<Queue.Item> queueItems = newQueueItems(3, 4);
 
         historyPageFilter.add(runs, queueItems);
@@ -104,7 +101,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_longer_list() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> runs = newRuns(1, 10);
+        Iterable<ModelObject> runs = newRuns(1, 10);
         List<Queue.Item> queueItems = newQueueItems(11, 12);
 
         historyPageFilter.add(runs, queueItems);
@@ -126,7 +123,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_gt_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 11L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -145,7 +142,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_lt_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 0L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -161,7 +158,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_leaving_part_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 4L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -181,7 +178,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_mid_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 8L);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -199,7 +196,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_gt_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 11L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -215,7 +212,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_lt_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 0L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -233,7 +230,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_near_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 3L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -253,7 +250,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_near_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 8L, null);
-        List<ModelObject> itemList = newRuns(1, 10);
+        Iterable<ModelObject> itemList = newRuns(1, 10);
 
         historyPageFilter.add(itemList);
 
@@ -272,7 +269,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_doesntIncludeQueuedItems() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 5L, null);
-        List<ModelObject> runs = newRuns(1, 10);
+        Iterable<ModelObject> runs = newRuns(1, 10);
         List<Queue.Item> queueItems = newQueueItems(11, 12);
 
         historyPageFilter.add(runs, queueItems);
@@ -293,7 +290,10 @@ public class HistoryPageFilterTest {
     @Test
     public void test_laterItemsNotEvaluated() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> itemList = newRuns(6, 10);
+        List<ModelObject> itemList = new ArrayList<>();
+        for (ModelObject run : newRuns(6, 10)) {
+            itemList.add(run);
+        }
         for (int queueId = 5; queueId >= 1; queueId--) {
             itemList.add(new ExplodingMockRun(queueId));
         }
@@ -312,7 +312,7 @@ public class HistoryPageFilterTest {
     public void test_search_runs_by_build_number() throws IOException {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> runs = newRuns(23, 24);
+        Iterable<ModelObject> runs = newRuns(23, 24);
         List<Queue.Item> queueItems = newQueueItems(25, 26);
         //and
         historyPageFilter.setSearchString("23");
@@ -328,44 +328,44 @@ public class HistoryPageFilterTest {
     @Test
     @Issue("JENKINS-42645")
     public void should_be_case_insensitive_by_default() throws IOException {
-        List<ModelObject> runs = Lists.newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
     }
 
     @Test
     public void should_lower_case_search_string_in_case_insensitive_search() throws IOException {
-        List<ModelObject> runs = Lists.newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        Iterable<ModelObject> runs = Arrays.asList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
     }
 
     @Test
     @Issue("JENKINS-40718")
-    public void should_search_builds_by_build_variables() throws IOException {
-        List<ModelObject> runs = ImmutableList.of(
-                new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")),
-                new MockBuild(1).withBuildVariables(ImmutableMap.of("env", "otherEnv")));
+    public void should_search_builds_by_build_variables() {
+        Iterable<ModelObject> runs = Arrays.asList(
+                new MockBuild(2).withBuildVariables(Collections.singletonMap("env", "dummyEnv")),
+                new MockBuild(1).withBuildVariables(Collections.singletonMap("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
     @Test
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_params() throws IOException {
-        List<ModelObject> runs = ImmutableList.<ModelObject>of(
-                new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")),
-                new MockBuild(1).withBuildParameters(ImmutableMap.of("env", "otherEnv")));
+        Iterable<ModelObject> runs = Arrays.asList(
+                new MockBuild(2).withBuildParameters(Collections.singletonMap("env", "dummyEnv")),
+                new MockBuild(1).withBuildParameters(Collections.singletonMap("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
     @Test
     @Issue("JENKINS-40718")
     public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
-        List<ModelObject> runs = ImmutableList.of(
-                new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")),
+        Iterable<ModelObject> runs = Arrays.asList(
+                new MockBuild(2).withBuildParameters(Collections.singletonMap("plainPassword", "pass1plain")),
                 new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("pass1", runs);
     }
 
-    private void assertOneMatchingBuildForGivenSearchStringAndRunItems(String searchString, List<ModelObject> runs) {
+    private void assertOneMatchingBuildForGivenSearchStringAndRunItems(String searchString, Iterable<ModelObject> runs) {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
         //and
@@ -389,7 +389,7 @@ public class HistoryPageFilterTest {
         return items;
     }
 
-    private List<ModelObject> newRuns(long startId, long endId) throws IOException {
+    private Iterable<ModelObject> newRuns(long startId, long endId) throws IOException {
         // Runs should be in reverse order, newest first.
         List<ModelObject> runs = new ArrayList<>();
         for (long queueId = endId; queueId >= startId; queueId--) {
@@ -412,12 +412,12 @@ public class HistoryPageFilterTest {
     private static class MockRun extends Run {
         private final long queueId;
 
-        public MockRun(long queueId) throws IOException {
+        MockRun(long queueId) throws IOException {
             super(Mockito.mock(Job.class));
             this.queueId = queueId;
         }
 
-        public MockRun(long queueId, Result result) throws IOException {
+        MockRun(long queueId, Result result) throws IOException {
             this(queueId);
             this.result = result;
         }
@@ -450,7 +450,7 @@ public class HistoryPageFilterTest {
 
     // A version of MockRun that will throw an exception if getQueueId or getNumber is called
     private static class ExplodingMockRun extends MockRun {
-        public ExplodingMockRun(long queueId) throws IOException {
+        ExplodingMockRun(long queueId) throws IOException {
             super(queueId);
         }
 
@@ -507,9 +507,9 @@ public class HistoryPageFilterTest {
             return parameterValues;
         }
 
-        MockBuild withSensitiveBuildParameters(String paramName, String paramValue) throws IOException {
-            addAction(new ParametersAction(ImmutableList.of(createSensitiveStringParameterValue(paramName, paramValue)),
-                    ImmutableList.of(paramName)));
+        MockBuild withSensitiveBuildParameters(String paramName, String paramValue) {
+            addAction(new ParametersAction(Collections.singletonList(createSensitiveStringParameterValue(paramName, paramValue)),
+                    Collections.singletonList(paramName)));
             return this;
         }
 

@@ -23,9 +23,10 @@
  */
 package hudson.util;
 
-import com.google.common.base.Predicate;
+import java.util.function.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.Node;
@@ -35,7 +36,17 @@ import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.util.Iterators.CountingPredicate;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * {@link List} of {@link Run}s, sorted in the descending date order.
@@ -94,6 +105,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
 
     private static <R extends Run> Iterable<R> combine(Iterable<Iterable<R>> runLists) {
         return Iterables.mergeSorted(runLists, new Comparator<R>() {
+            @Override
             public int compare(R o1, R o2) {
                 long lhs = o1.getTimeInMillis();
                 long rhs = o2.getTimeInMillis();
@@ -146,7 +158,8 @@ public class RunList<R extends Run> extends AbstractList<R> {
      */
     @Override
     public List<R> subList(int fromIndex, int toIndex) {
-        List<R> r = new ArrayList<>();
+        int sublistSize = toIndex < fromIndex ? 0 : toIndex - fromIndex;
+        List<R> r = new ArrayList<>(sublistSize);
         Iterator<R> itr = iterator();
         hudson.util.Iterators.skip(itr, fromIndex);
         for (int i=toIndex-fromIndex; i>0; i--) {
@@ -203,9 +216,33 @@ public class RunList<R extends Run> extends AbstractList<R> {
     /**
      * Returns elements that satisfy the given predicate.
      * <em>Warning:</em> this method mutates the original list and then returns it.
-     * @since 1.544
+     * @since 2.279
      */
     public RunList<R> filter(Predicate<R> predicate) {
+        return filter(new PredicateAdapter(predicate));
+    }
+
+    private static class PredicateAdapter<T> implements com.google.common.base.Predicate<T> {
+        private final Predicate<T> predicate;
+
+        PredicateAdapter(Predicate<T> predicate) {
+            this.predicate = predicate;
+        }
+
+        @Override
+        public boolean apply(@Nullable T r) {
+            return predicate.test(r);
+        }
+    }
+
+    /**
+     * Returns elements that satisfy the given predicate.
+     * <em>Warning:</em> this method mutates the original list and then returns it.
+     * @since 1.544
+     * @deprecated use {@link #filter(Predicate)}
+     */
+    @Deprecated
+    public RunList<R> filter(com.google.common.base.Predicate<R> predicate) {
         size = null;
         first = null;
         base = Iterables.filter(base,predicate);
@@ -222,6 +259,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
         first = null;
         final Iterable<R> nested = base;
         base = new Iterable<R>() {
+            @Override
             public Iterator<R> iterator() {
                 return hudson.util.Iterators.limit(nested.iterator(),predicate);
             }
@@ -243,6 +281,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      */
     public RunList<R> limit(final int n) {
         return limit(new CountingPredicate<R>() {
+            @Override
             public boolean apply(int index, R input) {
                 return index<n;
             }
@@ -254,11 +293,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> failureOnly() {
-        return filter(new Predicate<R>() {
-            public boolean apply(R r) {
-                return r.getResult()!=Result.SUCCESS;
-            }
-        });
+        return filter((Predicate<R>) r -> r.getResult() != Result.SUCCESS);
     }
 
     /**
@@ -267,11 +302,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * @since 1.517
      */
     public RunList<R> overThresholdOnly(final Result threshold) {
-        return filter(new Predicate<R>() {
-            public boolean apply(R r) {
-                return (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
-            }
-        });
+        return filter((Predicate<R>) r -> r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold));
     }
 
     /**
@@ -280,11 +311,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * @since 1.561
      */
     public RunList<R> completedOnly() {
-        return filter(new Predicate<R>() {
-            public boolean apply(R r) {
-                return !r.isBuilding();
-            }
-        });
+        return filter((Predicate<R>) r -> !r.isBuilding());
     }
 
     /**
@@ -292,11 +319,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> node(final Node node) {
-        return filter(new Predicate<R>() {
-            public boolean apply(R r) {
-                return (r instanceof AbstractBuild) && ((AbstractBuild)r).getBuiltOn()==node;
-            }
-        });
+        return filter((Predicate<R>) r -> r instanceof AbstractBuild && ((AbstractBuild) r).getBuiltOn() == node);
     }
 
     /**
@@ -304,11 +327,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * <em>Warning:</em> this method mutates the original list and then returns it.
      */
     public RunList<R> regressionOnly() {
-        return filter(new Predicate<R>() {
-            public boolean apply(R r) {
-                return r.getBuildStatusSummary().isWorse;
-            }
-        });
+        return filter((Predicate<R>) r -> r.getBuildStatusSummary().isWorse);
     }
 
     /**
@@ -320,14 +339,11 @@ public class RunList<R extends Run> extends AbstractList<R> {
     public RunList<R> byTimestamp(final long start, final long end) {
         return
         limit(new CountingPredicate<R>() {
+            @Override
             public boolean apply(int index, R r) {
                 return start<=r.getTimeInMillis();
             }
-        }).filter(new Predicate<R>() {
-        	public boolean apply(R r) {
-        		return r.getTimeInMillis()<end;
-                    }
-        });
+        }).filter((Predicate<R>) r -> r.getTimeInMillis() < end);
     }
 
     /**
@@ -342,13 +358,10 @@ public class RunList<R extends Run> extends AbstractList<R> {
         final long t = cal.getTimeInMillis();
 
         // can't publish on-going builds
-        return filter(new Predicate<R>() {
-            public boolean apply(R r) {
-                return !r.isBuilding();
-            }
-        })
+        return filter((Predicate<R>) r -> !r.isBuilding())
         // put at least 10 builds, but otherwise ignore old builds
         .limit(new CountingPredicate<R>() {
+            @Override
             public boolean apply(int index, R r) {
                 return index < 10 || r.getTimeInMillis() >= t;
             }

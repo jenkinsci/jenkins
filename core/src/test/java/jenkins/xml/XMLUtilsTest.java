@@ -40,14 +40,14 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPathExpressionException;
 
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.jvnet.hudson.test.Issue;
 import org.xml.sax.SAXException;
 
 public class XMLUtilsTest {
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testSafeTransformDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
@@ -80,7 +80,7 @@ public class XMLUtilsTest {
 
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testUpdateByXmlIDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +
@@ -117,7 +117,7 @@ public class XMLUtilsTest {
     }
     
     @Test
-    public void testParse_with_XXE() throws IOException, XPathExpressionException {
+    public void testParse_with_XXE() throws IOException {
         try {
             final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                     "<!DOCTYPE foo [\n" +

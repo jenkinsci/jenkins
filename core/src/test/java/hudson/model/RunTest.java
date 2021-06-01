@@ -24,9 +24,13 @@
 
 package hudson.model;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -36,24 +40,33 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.console.AnnotatedLargeText;
 import jenkins.model.Jenkins;
+import org.apache.commons.jelly.XMLOutput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.stapler.framework.io.ByteBuffer;
 import org.mockito.Mockito;
 
 
 public class RunTest {
+    private static final String SAMPLE_BUILD_OUTPUT = "Sample build output abc123.\n";
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-15816")
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @Test public void timezoneOfID() throws Exception {
+    @Test
+    public void timezoneOfID() throws Exception {
         TimeZone origTZ = TimeZone.getDefault();
         try {
             final Run r;
@@ -93,7 +106,7 @@ public class RunTest {
             TimeZone.setDefault(origTZ);
         }
     }
-    
+
 
     private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {
         Run r = new Run(new StubJob(), 0) {};
@@ -108,28 +121,28 @@ public class RunTest {
     @Test
     public void artifactListDisambiguation1() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/j.xml");
-        assertEquals(a.get(0).getDisplayPath(), "c.xml");
-        assertEquals(a.get(1).getDisplayPath(), "g.xml");
-        assertEquals(a.get(2).getDisplayPath(), "j.xml");
+        assertEquals("c.xml", a.get(0).getDisplayPath());
+        assertEquals("g.xml", a.get(1).getDisplayPath());
+        assertEquals("j.xml", a.get(2).getDisplayPath());
     }
 
     @Test
     public void artifactListDisambiguation2() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a/b/c.xml", "d/f/g.xml", "h/i/g.xml");
-        assertEquals(a.get(0).getDisplayPath(), "c.xml");
-        assertEquals(a.get(1).getDisplayPath(), "f/g.xml");
-        assertEquals(a.get(2).getDisplayPath(), "i/g.xml");
+        assertEquals("c.xml", a.get(0).getDisplayPath());
+        assertEquals("f/g.xml", a.get(1).getDisplayPath());
+        assertEquals("i/g.xml", a.get(2).getDisplayPath());
     }
 
     @Test
     public void artifactListDisambiguation3() throws Exception {
         List<? extends Run<?, ?>.Artifact> a = createArtifactList("a.xml", "a/a.xml");
-        assertEquals(a.get(0).getDisplayPath(), "a.xml");
-        assertEquals(a.get(1).getDisplayPath(), "a/a.xml");
+        assertEquals("a.xml", a.get(0).getDisplayPath());
+        assertEquals("a/a.xml", a.get(1).getDisplayPath());
     }
 
     @Issue("JENKINS-26777")
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     @Test
     public void getDurationString() throws IOException {
       LocaleProvider providerToRestore = LocaleProvider.getProvider();
@@ -141,7 +154,7 @@ public class RunTest {
                 return Locale.ENGLISH;
             }
         });
-        
+
         Run r = new Run(new StubJob(), 0) {};
         assertEquals("Not started yet", r.getDurationString());
         r.onStartBuilding();
@@ -157,6 +170,7 @@ public class RunTest {
     }
 
     @Issue("JENKINS-27441")
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAnEmptyListWhenCalledWith0() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -172,6 +186,7 @@ public class RunTest {
         assertTrue(logLines.isEmpty());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAnRightOrder() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -196,6 +211,7 @@ public class RunTest {
         assertEquals("[...truncated "+truncatedCount+" B...]", logLines.get(0));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void getLogReturnsAllLines() throws Exception {
         Job j = Mockito.mock(Job.class);
@@ -233,7 +249,7 @@ public class RunTest {
         treeSet.add(r2);
 
         assertTrue(r1.compareTo(r2) < 0);
-        assertTrue(treeSet.size() == 2);
+        assertEquals(2, treeSet.size());
     }
 
     @Issue("JENKINS-42319")
@@ -257,7 +273,53 @@ public class RunTest {
         treeSet.add(r1);
         treeSet.add(r2);
 
-        assertTrue(r1.compareTo(r2) != 0);
-        assertTrue(treeSet.size() == 2);
+        assertNotEquals(0, r1.compareTo(r2));
+        assertEquals(2, treeSet.size());
+    }
+
+    @Test
+    public void willTriggerLogToStartWithNextFullLine() throws Exception {
+        assertWriteLogToEquals(new String(new char[2]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 2 * SAMPLE_BUILD_OUTPUT.length() + 10);
+    }
+
+    @Test
+    public void wontPushOffsetOnRenderingFromBeginning() throws Exception {
+        assertWriteLogToEquals(new String(new char[5]).replace("\0", SAMPLE_BUILD_OUTPUT) + "Finished: SUCCESS.\n", 0);
+    }
+
+    @Test
+    public void willRenderNothingIfOffsetSetOnLastLine() throws Exception {
+        assertWriteLogToEquals("", 5 * SAMPLE_BUILD_OUTPUT.length() + 6);
+    }
+
+    private void assertWriteLogToEquals(String expectedOutput, long offset) throws Exception {
+        try (
+            ByteBuffer buf = new ByteBuffer();
+            PrintStream ps = new PrintStream(buf, true);
+            StringWriter writer = new StringWriter()
+        ) {
+            for (int i = 0; i < 5; i++) {
+                ps.print(SAMPLE_BUILD_OUTPUT);
+            }
+            ps.print("Finished: SUCCESS.\n");
+
+            final Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(Mockito.mock(Job.class)) {
+                @NonNull
+                @Override
+                public AnnotatedLargeText<?> getLogText() {
+                    return new AnnotatedLargeText<>(buf, StandardCharsets.UTF_8, true, null);
+                }
+
+                @NonNull
+                @Override
+                public InputStream getLogInputStream() throws IOException {
+                    return buf.newInputStream();
+                }
+            };
+            final XMLOutput xmlOutput = Mockito.mock(XMLOutput.class);
+            Mockito.when(xmlOutput.asWriter()).thenReturn(writer);
+            r.writeLogTo(offset, xmlOutput);
+            assertEquals(expectedOutput, writer.toString());
+        }
     }
 }

@@ -23,11 +23,11 @@
  */
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
-import hudson.util.CaseInsensitiveComparator;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -56,6 +56,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * The default case insensitive strategy.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static IdStrategy CASE_INSENSITIVE = new CaseInsensitive();
 
     /**
@@ -112,7 +113,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * Compare two IDs and return {@code true} IFF the two ids are the same. Normally we expect that this should be
      * the same as {@link #compare(String, String)} being equal to {@code 0}, however there may be a specific reason
      * for going beyond that, such as sorting id's case insensitively while treating them as case sensitive.
-     *
+     * 
+     * Subclasses may want to override this naïve implementation that calls {@code compare(id1, id2) == 0} for a more performant implementation.
+     * 
      * @param id1 the first id.
      * @param id2 the second id.
      * @return {@code true} if and only if the two ids are the same.
@@ -134,7 +137,6 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     public abstract int compare(@NonNull String id1, @NonNull String id2);
 
     @Override
-    @SuppressWarnings("unchecked")
     public IdStrategyDescriptor getDescriptor() {
         return (IdStrategyDescriptor) super.getDescriptor();
     }
@@ -209,8 +211,13 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         }
 
         @Override
+        public boolean equals(@NonNull String id1, @NonNull String id2) {
+            return id1.equalsIgnoreCase(id2);
+        }
+
+        @Override
         public int compare(@NonNull String id1, @NonNull String id2) {
-            return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
+            return id1.compareToIgnoreCase(id2);
         }
 
         @Extension @Symbol("caseInsensitive")

@@ -23,7 +23,7 @@ public class AntWithFindResourceClassLoader extends AntClassLoader implements Cl
             $pathComponents.setAccessible(true);
             pathComponents = (ArrayList<File>)$pathComponents.get(this);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 
@@ -32,15 +32,31 @@ public class AntWithFindResourceClassLoader extends AntClassLoader implements Cl
             addPathFile(f);
     }
 
+    @Override
     public void close() throws IOException {
         cleanup();
     }
 
     @Override
-    protected URL findResource(String name) {
+    public URL findResource(String name) {
         // try and load from this loader if the parent either didn't find
         // it or wasn't consulted.
         return getUrl(pathComponents, name);
+    }
+
+    /**
+     * Public version of {@link ClassLoader#findLoadedClass(String)}
+     */
+    public Class<?> findLoadedClass2(String name) {
+        return findLoadedClass(name);
+    }
+    
+    /**
+     * Public version of {@link ClassLoader#getClassLoadingLock(String)}
+     */
+    @Override
+    public Object getClassLoadingLock(String className) {
+        return super.getClassLoadingLock(className);
     }
 
 }

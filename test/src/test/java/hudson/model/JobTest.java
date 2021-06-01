@@ -34,6 +34,7 @@ import com.gargoylesoftware.htmlunit.TextPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.slaves.RetentionStrategy;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
@@ -41,6 +42,7 @@ import hudson.util.TextFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -49,6 +51,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import jenkins.model.Jenkins;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jenkins.model.ProjectNamingStrategy;
 
@@ -66,8 +70,14 @@ import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -119,6 +129,7 @@ public class JobTest {
             this.passed = false;
         }
 
+        @Override
         public void run() {
             try {
                 start.await();
@@ -165,7 +176,7 @@ public class JobTest {
             }
             catch (InterruptedException e) {}
             catch (IOException e) {
-                fail("Failed to assign build number");
+                throw new AssertionError("Failed to assign build number", e);
             }
             finally {
                 stop.countDown();
@@ -173,7 +184,6 @@ public class JobTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static class JobPropertyImpl extends JobProperty<Job<?,?>> {
         public static DescriptorImpl DESCRIPTOR = new DescriptorImpl();
         private final String testString;
@@ -192,18 +202,23 @@ public class JobTest {
         }
 
         private static final class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
             public String getDisplayName() {
                 return "";
             }
         }
     }
 
-    @LocalData
     @Test public void readPermission() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        FreeStyleProject p = j.createFreeStyleProject("testJob");
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.READ).everywhere().toEveryone().
+            grant(Item.READ).onItems(p).to("joe"));
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
-        wc.withBasicCredentials("joe");  // Has Item.READ permission
+        wc.withBasicCredentials("joe");
         // Verify we can access both URLs:
         wc.goTo("job/testJob/");
         wc.goTo("jobCaseInsensitive/TESTJOB/");
@@ -277,14 +292,11 @@ public class JobTest {
     
     @Test public void projectNamingStrategy() throws Exception {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
-        final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
-        assertNotNull("no project created", p);
         try {
-            j.createFreeStyleProject("project");
-            fail("should not get here, the project name is not allowed, therefore the creation must fail!");
-        } catch (Failure e) {
-            // OK, expected
-        }finally{
+            final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
+            assertNotNull("no project created", p);
+            assertThrows(Failure.class, () -> j.createFreeStyleProject("project"));
+        } finally {
             // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
             j.jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }
@@ -397,7 +409,7 @@ public class JobTest {
         if (dir == null || !dir.isDirectory()) {
             return null;
         }
-        StringBuilder str = new StringBuilder("");
+        StringBuilder str = new StringBuilder();
         final FilePath[] list = new FilePath(dir).list("**/*");
         Arrays.sort(list, Comparator.comparing(FilePath::getRemote));
         for (FilePath path : list) {
@@ -470,6 +482,17 @@ public class JobTest {
         tryRename("myJob7 ", " foo", "foo");
     }
 
+    @Issue("JENKINS-63899")
+    @Test
+    public void testRenameNonLatin() throws Exception {
+        tryRename("myJob8", "блины", "блины");
+    }
+
+    @Test
+    public void testRenameSpaceInBetween() throws Exception {
+        tryRename("myJob9", "my Job9", "my Job9");
+    }
+
     @Issue("JENKINS-35160")
     @Test
     public void interruptOnDelete() throws Exception {
@@ -492,6 +515,61 @@ public class JobTest {
         assertThat(build3.isCancelled(), Matchers.is(true));
     }
 
+    @Issue("SECURITY-1868")
+    @Test public void noXssPossible() throws Exception {
+        String desiredNodeName = "agent is a better name2 <script>alert(123)</script>";
+        String initialNodeName = "agent is a better name";
+
+        NameChangingNode node = new NameChangingNode(j, initialNodeName);
+        j.jenkins.addNode(node);
+
+        j.waitOnline(node);
+
+        j.jenkins.setNumExecutors(0);
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        node.setVirtualName(desiredNodeName);
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        AtomicReference<String> alertContent = new AtomicReference<>("");
+
+        wc.setAlertHandler((page, s1) ->
+                alertContent.set(s1)
+        );
+
+        wc.withThrowExceptionOnFailingStatusCode(false);
+        wc.getPage(p, "buildTimeTrend");
+
+        assertEquals("", alertContent.get());
+    }
+
+    /**
+     * This special class was created just to avoid running the test on unix only
+     * as the only limitation is the file path, if we change only the name, the XSS is possible also under windows
+     */
+    static class NameChangingNode extends Slave {
+        private String virtualName;
+
+        NameChangingNode(JenkinsRule j, String name) throws Exception {
+            super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, new ArrayList<>());
+        }
+
+        public void setVirtualName(String virtualName) {
+            this.virtualName = virtualName;
+        }
+
+        @Override
+        public String getNodeName() {
+            if (virtualName != null) {
+                return virtualName;
+            } else {
+                return super.getNodeName();
+            }
+        }
+    }
+
     private void tryRename(String initialName, String submittedName,
             String correctResult) throws Exception {
         j.jenkins.setCrumbIssuer(null);
@@ -503,7 +581,7 @@ public class JobTest {
         HtmlPage resultPage = j.submit(form);
 
         String urlString = MessageFormat.format(
-                "/job/{0}/", correctResult).replace(" ", "%20");
+                "/job/{0}/", Functions.encode(correctResult));
 
         assertThat(resultPage.getUrl().toString(), endsWith(urlString));
     }

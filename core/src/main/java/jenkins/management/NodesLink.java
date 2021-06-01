@@ -43,6 +43,7 @@ public class NodesLink extends ManagementLink {
         return "network.png";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.NodesLink_DisplayName();
     }
@@ -55,7 +56,7 @@ public class NodesLink extends ManagementLink {
     @NonNull
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.MANAGE;
+        return Jenkins.READ;
     }
 
     @Override

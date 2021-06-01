@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
@@ -32,6 +31,7 @@ import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
+import java.lang.reflect.InvocationTargetException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
@@ -86,6 +86,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Filter for jar files.
      */
     private static final FilenameFilter JAR_FILTER = new FilenameFilter() {
+        @Override
         public boolean accept(File dir,String name) {
             return name.endsWith(".jar");
         }
@@ -221,6 +222,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         if (disableFile.exists()) {
             LOGGER.info("Plugin " + archive.getName() + " is disabled");
         }
+        if (paths.isEmpty()) {
+            LOGGER.info("No classpaths found for plugin " + archive.getName());
+        }
 
         // compute dependencies
         List<PluginWrapper.Dependency> dependencies = new ArrayList<>();
@@ -271,8 +275,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * @see DetachedPluginsUtil#getImpliedDependencies(String, String)
+     *
+     * @deprecated since 2.163
      */
-    @Deprecated // since TODO
+    @Deprecated
     @NonNull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         return DetachedPluginsUtil.getImpliedDependencies(pluginName, jenkinsVersion);
@@ -316,9 +322,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return base;
     }
 
+    @Override
     public void initializeComponents(PluginWrapper plugin) {
     }
 
+    @Override
     public <T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson) {
 
         List<ExtensionFinder> finders;
@@ -338,7 +346,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             finder.scout(type, hudson);
         }
 
-        List<ExtensionComponent<T>> r = Lists.newArrayList();
+        List<ExtensionComponent<T>> r = new ArrayList<>();
         for (ExtensionFinder finder : finders) {
             try {
                 r.addAll(finder.find(type, hudson));
@@ -349,7 +357,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
         }
 
-        List<ExtensionComponent<T>> filtered = Lists.newArrayList();
+        List<ExtensionComponent<T>> filtered = new ArrayList<>();
         for (ExtensionComponent<T> e : r) {
             if (ExtensionFilter.isAllowed(type,e))
                 filtered.add(e);
@@ -358,6 +366,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return filtered;
     }
 
+    @Override
     public void load(PluginWrapper wrapper) throws IOException {
         // override the context classloader. This no longer makes sense,
         // but it is left for the backward compatibility
@@ -371,21 +380,21 @@ public class ClassicPluginStrategy implements PluginStrategy {
             } else {
                 try {
                     Class<?> clazz = wrapper.classLoader.loadClass(className);
-                    Object o = clazz.newInstance();
+                    Object o = clazz.getDeclaredConstructor().newInstance();
                     if(!(o instanceof Plugin)) {
                         throw new IOException(className+" doesn't extend from hudson.Plugin");
                     }
                     wrapper.setPlugin((Plugin) o);
                 } catch (LinkageError | ClassNotFoundException e) {
                     throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
-                } catch (IllegalAccessException | InstantiationException e) {
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
                 }
             }
 
             // initialize plugin
             try {
-                Plugin plugin = wrapper.getPlugin();
+                Plugin plugin = wrapper.getPluginOrFail();
                 plugin.setServletContext(pluginManager.context);
                 startPlugin(wrapper);
             } catch(Throwable t) {
@@ -398,7 +407,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     public void startPlugin(PluginWrapper plugin) throws Exception {
-        plugin.getPlugin().start();
+        plugin.getPluginOrFail().start();
     }
 
     @Override
@@ -513,7 +522,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         final long dirTime = archive.lastModified();
         // this ZipOutputStream is reused and not created for each directory
-        try (ZipOutputStream wrappedZOut = new ZipOutputStream(new NullOutputStream()) {
+        try (ZipOutputStream wrappedZOut = new ZipOutputStream(NullOutputStream.NULL_OUTPUT_STREAM) {
             @Override
             public void putNextEntry(ZipEntry ze) throws IOException {
                 ze.setTime(dirTime+1999);   // roundup
@@ -525,6 +534,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                  * Forces the fixed timestamp for directories to make sure
                  * classes.jar always get a consistent checksum.
                  */
+                @Override
                 protected void zipDir(Resource dir, ZipOutputStream zOut, String vPath,
                                       int mode, ZipExtraField[] extra)
                     throws IOException {
@@ -572,7 +582,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         private volatile List<PluginWrapper> transientDependencies;
 
-        public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
+        DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
             this._for = archive;
             this.dependencies = dependencies;
@@ -714,6 +724,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
+    /* Unused since 1.527, see https://github.com/jenkinsci/jenkins/commit/47de54d070f67af95b4fefb6d006a72bb31a5cb8 */
+    @Deprecated
     public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DISABLE_TRANSFORMER = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }

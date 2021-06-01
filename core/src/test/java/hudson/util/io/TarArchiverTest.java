@@ -35,9 +35,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Assume;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -141,7 +141,7 @@ public class TarArchiverTest {
         private Exception ex = null;
         private File file;
 
-        public GrowingFileRunnable(File file) {
+        GrowingFileRunnable(File file) {
             this.file = file;
         }
 

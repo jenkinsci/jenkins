@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
 
-import static hudson.util.jna.GNUCLibrary.*;
+import static hudson.util.jna.GNUCLibrary.LIBC;
 
 /**
  * Executes {@link Callable} as the super user, by forking a new process and executing the closure in there
@@ -77,13 +77,15 @@ public abstract class SU {
         String os = Util.fixNull(System.getProperty("os.name"));
         if(os.equals("Linux"))
             return new UnixSu() {
+                @Override
                 protected String sudoExe() {
                     return "sudo";
                 }
 
+                @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     args.prepend(sudoExe(),"-S");
-                    listener.getLogger().println("$ "+Util.join(args.toList()," "));
+                    listener.getLogger().println("$ " + String.join(" ", args.toList()));
                     ProcessBuilder pb = new ProcessBuilder(args.toCommandArray());
                     Process p = pb.start();
                     // TODO: use -p to detect prompt
@@ -98,10 +100,12 @@ public abstract class SU {
 
         if(os.equals("SunOS"))
             return new UnixSu() {
+                @Override
                 protected String sudoExe() {
                     return "/usr/bin/pfexec";
                 }
 
+                @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     listener.getLogger().println("Running with embedded_su");
                     ProcessBuilder pb = new ProcessBuilder(args.prepend(sudoExe()).toCommandArray());
@@ -134,7 +138,7 @@ public abstract class SU {
         }
     }
 
-    private static abstract class UnixSu {
+    private abstract static class UnixSu {
 
         protected abstract String sudoExe();
 
@@ -147,13 +151,13 @@ public abstract class SU {
                 return newLocalChannel();
 
             String javaExe = System.getProperty("java.home") + "/bin/java";
-            File slaveJar = Which.jarFile(Launcher.class);
+            File agentJar = Which.jarFile(Launcher.class);
 
             ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
-            if(slaveJar.isFile())
-                args.add("-jar").add(slaveJar);
+            if(agentJar.isFile())
+                args.add("-jar").add(agentJar);
             else // in production code this never happens, but during debugging this is convenient    
-                args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
+                args.add("-cp").add(agentJar).add(hudson.remoting.Launcher.class.getName());
 
             if (Util.fixEmptyAndTrim(rootPassword) == null) {
                 // try sudo, in the hope that the user has the permission to do so without password

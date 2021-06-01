@@ -43,6 +43,7 @@ public class ConfigureLink extends ManagementLink {
         return "gear2.png";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ConfigureLink_DisplayName();
     }

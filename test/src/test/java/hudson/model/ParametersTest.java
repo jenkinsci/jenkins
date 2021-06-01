@@ -8,15 +8,21 @@ import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.httpclient.HttpStatus;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -57,33 +63,33 @@ public class ParametersTest {
 
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='string']");
+        HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, "//div[input/@value='string']")).getParentNode();
         assertNotNull(element);
-        assertEquals("string description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
+        assertEquals("string description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
 
         HtmlTextInput stringParameterInput = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
-        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
+        assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
         stringParameterInput.setAttribute("value", "newValue");
 
-        element = DomNodeUtil.selectSingleNode(form, "//tr[td/div/input/@value='boolean']");
+        element = DomNodeUtil.selectSingleNode(form, "//div[input/@value='boolean']");
         assertNotNull(element);
-        assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
+        assertEquals("boolean description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode().getNextSibling().getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
         Object o = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         System.out.println(o);
         HtmlCheckBoxInput booleanParameterInput = (HtmlCheckBoxInput) o;
-        assertEquals(true, booleanParameterInput.isChecked());
-        assertEquals("boolean", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-main']")).getTextContent());
+        assertTrue(booleanParameterInput.isChecked());
+        assertEquals("boolean", element.getTextContent());
 
-        element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
+        element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
+        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
 
-        element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='run']");
+        element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='run']")).getParentNode();
         assertNotNull(element);
-        assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
-        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
+        assertEquals("run description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
+        assertEquals("run", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
 
         j.submit(form);
         Queue.Item q = j.jenkins.getQueue().getItem(project);
@@ -110,11 +116,11 @@ public class ParametersTest {
         HtmlPage page = wc.goTo("job/" + project.getName() + "/build?delay=0sec");
         HtmlForm form = page.getFormByName("parameters");
 
-        HtmlElement element = DomNodeUtil.selectSingleNode(form, ".//tr[td/div/input/@value='choice']");
+        HtmlElement element = (HtmlElement) ((HtmlElement) DomNodeUtil.selectSingleNode(form, ".//div[input/@value='choice']")).getParentNode();
         assertNotNull(element);
-        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "td[@class='setting-description']")).getTextContent());
-        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element, "td[@class='setting-name']")).getTextContent());
-        HtmlOption opt = DomNodeUtil.selectSingleNode(element, "td/div/select/option[@value='Choice <2>']");
+        assertEquals("choice description", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getNextSibling().getNextSibling(), "div[@class='setting-description']")).getTextContent());
+        assertEquals("choice", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'setting-name')]")).getTextContent());
+        HtmlOption opt = DomNodeUtil.selectSingleNode(element.getParentNode(), "div/div/select/option[@value='Choice <2>']");
         assertNotNull(opt);
         assertEquals("Choice <2>", opt.asText());
         opt.setSelected(true);
@@ -237,7 +243,7 @@ public class ParametersTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "build?delay=0sec");
-        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpStatus.SC_METHOD_NOT_ALLOWED)); // 405 to dissuade scripts from thinking this triggered the build
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD)); // 405 to dissuade scripts from thinking this triggered the build
         String text = page.getWebResponse().getContentAsString();
         collector.checkThat("build page should escape param name", text, containsString("&lt;param name&gt;"));
         collector.checkThat("build page should not leave param name unescaped", text, not(containsString("<param name>")));
@@ -262,7 +268,7 @@ public class ParametersTest {
     }
     static class MyMarkupFormatter extends MarkupFormatter {
         @Override
-        public void translate(String markup, Writer output) throws IOException {
+        public void translate(String markup, @NonNull Writer output) throws IOException {
             Matcher m = Pattern.compile("[<>]").matcher(markup);
             StringBuffer buf = new StringBuffer();
             while (m.find()) {

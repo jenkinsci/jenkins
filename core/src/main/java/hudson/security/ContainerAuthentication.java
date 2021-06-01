@@ -24,34 +24,38 @@
 package hudson.security;
 
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  * {@link Authentication} implementation for {@link Principal}
  * given through {@link HttpServletRequest}.
  *
  * <p>
- * This is used to plug the container authentication to Acegi,
+ * This is used to plug the container authentication to Spring Security,
  * for backward compatibility with Hudson &lt; 1.160.
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public final class ContainerAuthentication implements Authentication {
     private final Principal principal;
-    private GrantedAuthority[] authorities;
+    private Collection<? extends GrantedAuthority> authorities;
 
     /**
      * Servlet container can tie a {@link ServletRequest} to the request handling thread,
      * so we need to capture all the information upfront to allow {@link Authentication}
-     * to be passed to other threads, like update center does. See HUDSON-5382. 
+     * to be passed to other threads, like update center does. See JENKINS-5382.
      */
     public ContainerAuthentication(HttpServletRequest request) {
         this.principal = request.getUserPrincipal();
@@ -63,36 +67,43 @@ public final class ContainerAuthentication implements Authentication {
         List<GrantedAuthority> l = new ArrayList<>();
         for( String g : Jenkins.get().getAuthorizationStrategy().getGroups()) {
             if(request.isUserInRole(g))
-                l.add(new GrantedAuthorityImpl(g));
+                l.add(new SimpleGrantedAuthority(g));
         }
-        l.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
-        authorities = l.toArray(new GrantedAuthority[0]);
+        l.add(SecurityRealm.AUTHENTICATED_AUTHORITY2);
+        authorities = l;
     }
 
-    public GrantedAuthority[] getAuthorities() {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
 
+    @Override
     public Object getCredentials() {
         return null;
     }
 
+    @Override
     public Object getDetails() {
         return null;
     }
 
+    @Override
     public String getPrincipal() {
         return principal.getName();
     }
 
+    @Override
     public boolean isAuthenticated() {
         return true;
     }
 
+    @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
         // noop
     }
 
+    @Override
     public String getName() {
         return getPrincipal();
     }

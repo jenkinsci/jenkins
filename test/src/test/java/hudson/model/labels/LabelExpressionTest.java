@@ -23,7 +23,10 @@
  */
 package hudson.model.labels;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import antlr.ANTLRException;
@@ -34,7 +37,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.FreeStyleProject.DescriptorImpl;
 import hudson.model.Label;
 import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
@@ -74,6 +76,7 @@ public class LabelExpressionTest {
 
         FreeStyleProject p1 = j.createFreeStyleProject();
         p1.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 seq.phase(0); // first, make sure the w32 agent is occupied
                 seq.phase(2);
@@ -141,11 +144,11 @@ public class LabelExpressionTest {
     public void setLabelString() throws Exception {
         DumbSlave s = j.createSlave("foo", "", null);
 
-        assertSame(s.getLabelString(), "");
+        assertSame("", s.getLabelString());
 
         s.setLabelString("bar");
 
-        assertSame(s.getLabelString(), "bar");
+        assertSame("bar", s.getLabelString());
     }
 
     /**
@@ -173,7 +176,7 @@ public class LabelExpressionTest {
     }
 
     private void parseAndVerify(String expected, String expr) throws ANTLRException {
-        assertEquals(expected, LabelExpression.parseExpression(expr).getName());
+        assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
     @Test
@@ -186,14 +189,14 @@ public class LabelExpressionTest {
     public void laxParsing() {
         // this should parse as an atom
         LabelAtom l = (LabelAtom) j.jenkins.getLabel("lucene.zones.apache.org (Solaris 10)");
-        assertEquals(l.getName(),"lucene.zones.apache.org (Solaris 10)");
-        assertEquals(l.getExpression(),"\"lucene.zones.apache.org (Solaris 10)\"");
+        assertEquals("lucene.zones.apache.org (Solaris 10)", l.getName());
+        assertEquals("\"lucene.zones.apache.org (Solaris 10)\"", l.getExpression());
     }
 
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
         assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
-        DumbSlave slave = new DumbSlave("abc def (xyz) : test", "dummy",
+        DumbSlave slave = new DumbSlave("abc def (xyz) test", "dummy",
                 j.createTmpDir().getPath(), "1", Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
         j.jenkins.addNode(slave);
 
@@ -241,7 +244,7 @@ public class LabelExpressionTest {
 
     private void parseShouldFail(String expr) {
         try {
-            LabelExpression.parseExpression(expr);
+            Label.parseExpression(expr);
             fail(expr + " should fail to parse");
         } catch (ANTLRException e) {
             // expected
@@ -251,16 +254,15 @@ public class LabelExpressionTest {
     @Test
     public void formValidation() throws Exception {
         j.executeOnServer(new Callable<Object>() {
+            @Override
             public Object call() throws Exception {
-                DescriptorImpl d = j.jenkins.getDescriptorByType(DescriptorImpl.class);
-
                 Label l = j.jenkins.getLabel("foo");
                 DumbSlave s = j.createSlave(l);
-                String msg = d.doCheckLabel(null, "goo").renderHtml();
+                String msg = LabelExpression.validate("goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
 
-                msg = d.doCheckLabel(null, "master && goo").renderHtml();
+                msg = LabelExpression.validate("master && goo").renderHtml();
                 assertTrue(msg.contains("foo"));
                 assertTrue(msg.contains("goo"));
                 return null;

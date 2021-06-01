@@ -61,12 +61,14 @@ public abstract class FileVisitor {
             this.visitor = visitor;
         }
 
+        @Override
         public void visit(File f, String relativePath) throws IOException {
             if(f.isDirectory() || filter.accept(f))
                 visitor.visit(f,relativePath);
         }
 
         private static final FileFilter PASS_THROUGH = new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 return true;
             }

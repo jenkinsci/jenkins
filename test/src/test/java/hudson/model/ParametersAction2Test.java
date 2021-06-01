@@ -11,8 +11,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -123,7 +127,7 @@ public class ParametersAction2Test {
 
         // remove bar and undef from parameters definition
         p.removeProperty(ParametersDefinitionProperty.class);
-        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
+        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
                 new StringParameterDefinition("foo", "foo"))));
 
         assertEquals("the build still have 2 parameters", 2, build.getAction(ParametersAction.class).getParameters().size());
@@ -136,7 +140,7 @@ public class ParametersAction2Test {
     @Issue("SECURITY-170")
     public void whitelistedParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Arrays.<ParameterDefinition>asList(
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(
                 new StringParameterDefinition("foo", "foo"),
                 new StringParameterDefinition("bar", "bar"))));
 
@@ -303,8 +307,8 @@ public class ParametersAction2Test {
 
         assertEquals(1, p1.getLastBuild().getAction(ParametersAction.class).getParameters().size());
         assertEquals(1, p2.getLastBuild().getAction(ParametersAction.class).getParameters().size());
-        assertEquals(p1.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p1");
-        assertEquals(p2.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p2");
+        assertEquals("for p1", p1.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue());
+        assertEquals("for p2", p2.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue());
     }
 
     @Issue("JENKINS-49573")

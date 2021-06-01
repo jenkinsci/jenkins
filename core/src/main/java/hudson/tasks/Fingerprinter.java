@@ -23,7 +23,6 @@
  */
 package hudson.tasks;
 
-import com.google.common.collect.ImmutableMap;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -51,7 +50,6 @@ import hudson.util.FormValidation;
 import hudson.util.PackedMap;
 import hudson.util.RunList;
 import net.sf.json.JSONObject;
-import org.acegisecurity.AccessDeniedException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.Symbol;
@@ -66,18 +64,19 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Records fingerprints of the specified files.
@@ -168,15 +167,17 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     }
 
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public void perform(Run<?,?> build, FilePath workspace, EnvVars environment, Launcher launcher, TaskListener listener) throws InterruptedException {
         try {
             listener.getLogger().println(Messages.Fingerprinter_Recording());
 
             Map<String,String> record = new HashMap<>();
             
-            EnvVars environment = build.getEnvironment(listener);
             if(targets.length()!=0) {
-                String expandedTargets = environment.expand(targets);
+                String expandedTargets = targets;
+                if (build instanceof AbstractBuild) { // no expansion for pipelines
+                    expandedTargets = environment.expand(expandedTargets);
+                }
                 record(build, workspace, listener, record, expandedTargets);
             }
 
@@ -198,10 +199,12 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         // failing to record fingerprints is an error but not fatal
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
 
+    @Override
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         if (enableFingerprintsInDependencyGraph) {
             RunList builds = owner.getBuilds();
@@ -248,7 +251,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         final String fileName;
         final String md5sum;
 
-        public Record(boolean produced, String relativePath, String fileName, String md5sum) {
+        Record(boolean produced, String relativePath, String fileName, String md5sum) {
             this.produced = produced;
             this.relativePath = relativePath;
             this.fileName = fileName;
@@ -324,6 +327,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
     @Extension @Symbol("fingerprint")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @Override
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();
         }
@@ -345,6 +349,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             return req.bindJSON(Fingerprinter.class, formData);
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -356,8 +361,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
     public static final class FingerprintAction implements RunAction2 {
 
         private transient Run build;
-        
-        private static final Random rand = new Random();
 
         /**
          * From file name to the digest.
@@ -383,14 +386,17 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             ref = null;
         }
 
+        @Override
         public String getIconFileName() {
             return "fingerprint.png";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.Fingerprinter_Action_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "fingerprints";
         }
@@ -452,7 +458,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 }
             }
 
-            m = ImmutableMap.copyOf(m);
+            m = Collections.unmodifiableMap(m);
             ref = new WeakReference<>(m);
             return m;
         }

@@ -38,7 +38,12 @@ import org.jvnet.hudson.test.TestExtension;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public class NodesTest {
 
@@ -135,7 +140,7 @@ public class NodesTest {
         // JEP-200 whitelist changes prevent this field (and thus instances of this class) from being serialized.
         private ClassLoader cl = InvalidNode.class.getClassLoader();
 
-        public InvalidNode(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
+        InvalidNode(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super(name, remoteFS, launcher);
         }
     }

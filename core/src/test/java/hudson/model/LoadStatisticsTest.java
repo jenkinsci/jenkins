@@ -38,7 +38,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -48,14 +48,17 @@ public class LoadStatisticsTest {
     @Test
     public void graph() throws IOException {
         LoadStatistics ls = new LoadStatistics(0, 0) {
+            @Override
             public int computeIdleExecutors() {
                 throw new UnsupportedOperationException();
             }
 
+            @Override
             public int computeTotalExecutors() {
                 throw new UnsupportedOperationException();
             }
 
+            @Override
             public int computeQueueLength() {
                 throw new UnsupportedOperationException();
             }

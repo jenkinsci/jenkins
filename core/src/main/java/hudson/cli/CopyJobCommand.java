@@ -49,6 +49,7 @@ public class CopyJobCommand extends CLICommand {
     @Argument(metaVar="DST",usage="Name of the new job to be created.",index=1,required=true)
     public String dst;
 
+    @Override
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.get();
 
@@ -77,4 +78,3 @@ public class CopyJobCommand extends CLICommand {
         return 0;
     }
 }
-

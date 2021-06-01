@@ -30,7 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import net.sf.json.JSONObject;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -59,7 +60,7 @@ public class DownloadService2Test {
         assertNotNull(file, resource);
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSONHTML(resource));
         @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
-        assertEquals(expected, new TreeSet<String>(keySet).toString());
+        assertEquals(expected, new TreeSet<>(keySet).toString());
     }
 
 }

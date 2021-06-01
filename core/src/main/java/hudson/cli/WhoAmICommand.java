@@ -25,8 +25,8 @@ package hudson.cli;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * Report the current granted authorities
@@ -40,8 +40,9 @@ public class WhoAmICommand extends CLICommand {
         return Messages.WhoAmICommand_ShortDescription();
     }
 
+    @Override
     protected int run() {
-        Authentication a = Jenkins.getAuthentication();
+        Authentication a = Jenkins.getAuthentication2();
         stdout.println("Authenticated as: "+a.getName());
         stdout.println("Authorities:");
         for (GrantedAuthority ga : a.getAuthorities()) {
@@ -50,4 +51,3 @@ public class WhoAmICommand extends CLICommand {
         return 0;
     }
 }
-

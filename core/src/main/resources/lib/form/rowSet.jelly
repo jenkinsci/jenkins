@@ -37,15 +37,19 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <j:choose>
-    <j:when test="${attrs.ref==null and attrs.name==null}">
-      <!-- noop -->
-      <d:invokeBody />
-    </j:when>
-    <j:otherwise>
-      <tr ref="${attrs.ref}" class="row-set-start row-group-start" style="display:none" name="${attrs.name}" />
-      <d:invokeBody />
-      <tr class="row-set-end row-group-end" />
-    </j:otherwise>
-  </j:choose>
+  <div class="rowSet-container">
+    <j:choose>
+      <j:when test="${attrs.ref==null and attrs.name==null}">
+        <!-- noop -->
+        <d:invokeBody />
+      </j:when>
+      <j:otherwise>
+        <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
+        <div class="form-container tr">
+          <d:invokeBody />
+        </div>
+        <div class="row-set-end row-group-end tr"></div>
+      </j:otherwise>
+    </j:choose>
+  </div>
 </j:jelly>

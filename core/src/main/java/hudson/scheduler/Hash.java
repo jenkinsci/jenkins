@@ -54,6 +54,7 @@ public abstract class Hash {
      */
     public abstract int next(int n);
 
+    @SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
     public static Hash from(String seed) {
         try {
             MessageDigest md5 = getMd5();

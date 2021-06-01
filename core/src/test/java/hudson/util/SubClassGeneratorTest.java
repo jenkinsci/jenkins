@@ -38,7 +38,10 @@ public class SubClassGeneratorTest {
         int y;
         public Foo() {}
         public Foo(String s) {this.s=s;}
-        public Foo(double x, int y) {this.x=x;this.y=y;}
+        public Foo(double x, int y) {
+            this.x = x;
+            this.y = y;
+        }
     }
 
     @Test
@@ -46,7 +49,7 @@ public class SubClassGeneratorTest {
         Class<? extends Foo> c = new SubClassGenerator(getClass().getClassLoader()).generate(Foo.class, "12345");
         assertEquals("12345",c.getName());
 
-        c.newInstance();
+        c.getDeclaredConstructor().newInstance();
 
         Foo f = c.getConstructor(String.class).newInstance("aaa");
         assertEquals("aaa",f.s);

@@ -30,7 +30,7 @@ public class SuspiciousRequestFilter implements Filter {
         if (!allowSemicolonsInPath && httpRequest.getRequestURI().contains(";")) {
             LOGGER.warning(() -> "Denying HTTP " + httpRequest.getMethod() + " to " + httpRequest.getRequestURI() +
                     " as it has an illegal semicolon in the path. This behavior can be overridden by setting the system property " +
-                    ALLOW_SEMICOLONS_IN_PATH + " to true. For more information, see https://jenkins.io/redirect/semicolons-in-urls");
+                    ALLOW_SEMICOLONS_IN_PATH + " to true. For more information, see https://www.jenkins.io/redirect/semicolons-in-urls");
             httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Semicolons are not allowed in the request URI");
         } else {
             chain.doFilter(request, response);

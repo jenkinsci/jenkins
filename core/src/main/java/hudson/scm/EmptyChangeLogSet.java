@@ -26,6 +26,7 @@ final class EmptyChangeLogSet extends ChangeLogSet<ChangeLogSet.Entry> {
         return true;
     }
 
+    @Override
     public Iterator<Entry> iterator() {
         return Collections.emptyIterator();
     }

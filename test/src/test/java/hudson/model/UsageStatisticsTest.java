@@ -23,12 +23,14 @@
  */
 package hudson.model;
 
-import com.google.common.io.Resources;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
 
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -46,16 +48,17 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.jvnet.hudson.test.TestPluginManager;
 
@@ -88,7 +91,7 @@ public class UsageStatisticsTest {
 
         byte[] cipherText = Base64.getDecoder().decode(data.getBytes(StandardCharsets.UTF_8));
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
-                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), "UTF-8");
+                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), StandardCharsets.UTF_8);
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
         Jenkins jenkins = j.jenkins;
         // A bit intrusive with UsageStatistics internals, but done to prevent undetected changes
@@ -150,11 +153,7 @@ public class UsageStatisticsTest {
     // Plugins can be retrieved in any order, so sorting them so that the test is stable
     private List<JSONObject> sortPlugins(List<JSONObject> list) {
         List<JSONObject> sorted = new ArrayList<>(list);
-        Collections.sort(sorted, new Comparator<JSONObject>() {
-            public int compare(JSONObject j1, JSONObject j2) {
-                return j1.getString("name").compareTo(j2.getString("name"));
-            }
-        });
+        sorted.sort(Comparator.comparing(j -> j.getString("name")));
         return sorted;
     }
 
@@ -167,11 +166,11 @@ public class UsageStatisticsTest {
         return sorted;
     }
 
-    private void compareWithFile(String fileName, Object object) throws IOException {
+    private void compareWithFile(String fileName, Object object) throws IOException, URISyntaxException {
 
         Class clazz = this.getClass();
-        String fileContent = Resources.toString(clazz.getResource(clazz.getSimpleName() + "/" + fileName), StandardCharsets.UTF_8);
-        fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vendor"));
+        String fileContent = new String(Files.readAllBytes(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI())), StandardCharsets.UTF_8);
+        fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
         assertEquals(fileContent, object.toString());

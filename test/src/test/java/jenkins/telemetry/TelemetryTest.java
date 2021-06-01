@@ -2,8 +2,12 @@ package jenkins.telemetry;
 
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import hudson.security.csrf.CrumbExclusion;
 import net.sf.json.JSONObject;

@@ -75,6 +75,7 @@ public class ChartUtil {
             return run;
         }
 
+        @Override
         public int compareTo(NumberOnlyBuildLabel that) {
             return this.run.number-that.run.number;
         }
@@ -142,6 +143,7 @@ public class ChartUtil {
     @Deprecated
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
         new Graph(-1,defaultW,defaultH) {
+            @Override
             protected JFreeChart createGraph() {
                 return chart;
             }
@@ -170,6 +172,7 @@ public class ChartUtil {
     @Deprecated
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
         new Graph(-1,defaultW,defaultH) {
+            @Override
             protected JFreeChart createGraph() {
                 return chart;
             }
@@ -195,7 +198,7 @@ public class ChartUtil {
      * (So for example if N=3 then we can "fix" the graph as long as we only have less than 1/(3*3)=11.111...% bad data.
      *
      * <p>
-     * Also see issue #1246.
+     * Also see JENKINS-1246.
      */
     public static void adjustChebyshev(CategoryDataset dataset, NumberAxis yAxis) {
         // first compute E(X) and Var(X)
@@ -253,6 +256,7 @@ public class ChartUtil {
         yAxis.setRange(min,max);
     }
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static double CHEBYSHEV_N = 3;
 
     static {

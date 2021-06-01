@@ -44,6 +44,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -60,14 +61,14 @@ public class Hudson extends Jenkins {
      * @deprecated as of 1.286
      */
     @Deprecated
-    private transient final CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
+    private final transient CopyOnWriteList<ItemListener> itemListeners = ExtensionListView.createCopyOnWriteList(ItemListener.class);
 
     /**
     * List of registered {@link hudson.slaves.ComputerListener}s.
      * @deprecated as of 1.286
      */
     @Deprecated
-    private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
+    private final transient CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
     /** @deprecated Here only for compatibility. Use {@link Jenkins#get} instead. */
     @Deprecated
@@ -281,7 +282,7 @@ public class Hudson extends Jenkins {
     public static boolean adminCheck(StaplerRequest req,StaplerResponse rsp) throws IOException {
         if (isAdmin(req)) return true;
 
-        rsp.sendError(StaplerResponse.SC_FORBIDDEN);
+        rsp.sendError(HttpServletResponse.SC_FORBIDDEN);
         return false;
     }
 
@@ -340,7 +341,6 @@ public class Hudson extends Jenkins {
         }
 
         public CloudList() {// needed for XStream deserialization
-            super();
         }
     }
 }

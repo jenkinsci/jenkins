@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -36,11 +37,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.util.regex.Pattern;
-import javax.servlet.ServletException;
 
-import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -75,10 +73,11 @@ public class FileParameterValue extends ParameterValue {
      * It's not recommended to enable for security reasons. That option is only present for backward compatibility.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE = 
             Boolean.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
 
-    private transient final FileItem file;
+    private final transient FileItem file;
 
     /**
      * The name of the originally uploaded file.
@@ -134,6 +133,7 @@ public class FileParameterValue extends ParameterValue {
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
         return new VariableResolver<String>() {
+            @Override
             public String resolve(String name) {
                 return FileParameterValue.this.name.equals(name) ? originalFileName : null;
             }
@@ -173,6 +173,12 @@ public class FileParameterValue extends ParameterValue {
                     }
                     FilePath locationFilePath = ws.child(location);
                     locationFilePath.getParent().mkdirs();
+
+                    // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+                    if (locationFilePath.exists() && !locationFilePath.isDirectory()) {
+                        locationFilePath.delete();
+                    }
+
             	    locationFilePath.copyFrom(file);
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
             	}
@@ -226,46 +232,11 @@ public class FileParameterValue extends ParameterValue {
      *
      * @param request
      * @param response
-     * @throws ServletException
-     * @throws IOException
      */
-    public void doDynamic(StaplerRequest request, StaplerResponse response) throws ServletException, IOException {
-        if (("/" + originalFileName).equals(request.getRestOfPath())) {
-            AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
-            File fileParameter = getLocationUnderBuild(build);
-
-            if (!ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE) {
-                File fileParameterFolder = getFileParameterFolderUnderBuild(build);
-
-                //TODO can be replaced by Util#isDescendant in 2.80+
-                Path child = fileParameter.getAbsoluteFile().toPath().normalize();
-                Path parent = fileParameterFolder.getAbsoluteFile().toPath().normalize();
-                if (!child.startsWith(parent)) {
-                    throw new IllegalStateException("The fileParameter tried to escape the expected folder: " + location);
-                }
-            }
-
-            if (fileParameter.isFile()) {
-                try (InputStream data = Files.newInputStream(fileParameter.toPath())) {
-                    long lastModified = fileParameter.lastModified();
-                    long contentLength = fileParameter.length();
-                    if (request.hasParameter("view")) {
-                        response.serveFile(request, data, lastModified, contentLength, "plain.txt");
-                    } else {
-                        String csp = SystemProperties.getString(DirectoryBrowserSupport.class.getName() + ".CSP", DirectoryBrowserSupport.DEFAULT_CSP_VALUE);
-                        if (!csp.trim().equals("")) {
-                            // allow users to prevent sending this header by setting empty system property
-                            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                                response.setHeader(header, csp);
-                            }
-                        }
-                        response.serveFile(request, data, lastModified, contentLength, originalFileName);
-                    }
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
-                }
-            }
-        }
+    public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
+        AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
+        File fileParameter = getFileParameterFolderUnderBuild(build);
+        return new DirectoryBrowserSupport(build, new FilePath(fileParameter), Messages.FileParameterValue_IndexTitle(), "folder.png", false);
     }
 
     /**
@@ -295,6 +266,7 @@ public class FileParameterValue extends ParameterValue {
             this.file = file;
         }
 
+        @Override
         public InputStream getInputStream() throws IOException {
             try {
                 return Files.newInputStream(file.toPath());
@@ -303,22 +275,27 @@ public class FileParameterValue extends ParameterValue {
             }
         }
 
+        @Override
         public String getContentType() {
             return null;
         }
 
+        @Override
         public String getName() {
             return file.getName();
         }
 
+        @Override
         public boolean isInMemory() {
             return false;
         }
 
+        @Override
         public long getSize() {
             return file.length();
         }
 
+        @Override
         public byte[] get() {
             try {
                 try (InputStream inputStream = Files.newInputStream(file.toPath())) {
@@ -329,36 +306,45 @@ public class FileParameterValue extends ParameterValue {
             }
         }
 
+        @Override
         public String getString(String encoding) throws UnsupportedEncodingException {
             return new String(get(), encoding);
         }
 
+        @Override
         public String getString() {
             return new String(get());
         }
 
+        @Override
         public void write(File to) throws Exception {
             new FilePath(file).copyTo(new FilePath(to));
         }
 
+        @Override
         public void delete() {
             file.delete();
         }
 
+        @Override
         public String getFieldName() {
             return null;
         }
 
+        @Override
         public void setFieldName(String name) {
         }
 
+        @Override
         public boolean isFormField() {
             return false;
         }
 
+        @Override
         public void setFormField(boolean state) {
         }
 
+        @Override
         @Deprecated
         public OutputStream getOutputStream() throws IOException {
             try {

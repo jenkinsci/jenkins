@@ -1,7 +1,13 @@
 package hudson.console;
 
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Item;
+import hudson.model.Label;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.User;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -55,7 +61,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
     }
 
     /**
-     * @since TODO
+     * @since 2.230
      */
     public static String encodeTo(Label label) {
         return encodeTo("/" + label.getUrl(), label.getName());
@@ -67,6 +73,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
 
     @Extension @Symbol("hyperlinkToModels")
     public static class DescriptorImpl extends HyperlinkNote.DescriptorImpl {
+        @Override
         public String getDisplayName() {
             return "Hyperlinks to models";
         }

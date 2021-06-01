@@ -23,7 +23,6 @@
  */
 package hudson.model.queue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import hudson.model.Computer;
 import hudson.model.Executor;
@@ -41,13 +40,14 @@ import hudson.security.ACL;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
 
 /**
  * Defines a mapping problem for answering "where do we execute this task?"
@@ -100,10 +100,12 @@ public class MappingWorksheet {
             this.base = base;
         }
 
+        @Override
         public E get(int index) {
             return base.get(index);
         }
 
+        @Override
         public int size() {
             return base.size();
         }
@@ -134,7 +136,7 @@ public class MappingWorksheet {
             if (c.assignedLabel!=null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission(item.authenticate(), Computer.BUILD))
+            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission2(item.authenticate2(), Computer.BUILD))
                 return false;   // tasks don't have a permission to run on this node
 
             return true;
@@ -368,7 +370,7 @@ public class MappingWorksheet {
             if (ec.node==null)  continue;   // evict out of sync node
             executors.add(ec);
         }
-        this.executors = ImmutableList.copyOf(executors);
+        this.executors = Collections.unmodifiableList(executors);
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
         Map<Object,List<SubTask>> m = new LinkedHashMap<>();
@@ -385,7 +387,7 @@ public class MappingWorksheet {
         for (List<SubTask> group : m.values()) {
             works.add(new WorkChunk(group,works.size()));
         }
-        this.works = ImmutableList.copyOf(works);
+        this.works = Collections.unmodifiableList(works);
     }
 
     public WorkChunk works(int index) {
@@ -396,7 +398,7 @@ public class MappingWorksheet {
         return executors.get(index);
     }
 
-    public static abstract class ExecutorSlot {
+    public abstract static class ExecutorSlot {
         public abstract Executor getExecutor();
 
         public abstract boolean isAvailable();

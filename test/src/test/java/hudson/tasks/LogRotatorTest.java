@@ -27,7 +27,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Launcher;
@@ -73,11 +74,11 @@ public class LogRotatorTest {
         assertEquals(Result.FAILURE, build(project)); // #2
         assertEquals(Result.FAILURE, build(project)); // #3
         assertEquals(1, numberOf(project.getLastSuccessfulBuild()));
-        project.getBuildersList().replaceBy(Collections.<Builder>emptySet());
+        project.getBuildersList().replaceBy(Collections.emptySet());
         assertEquals(Result.SUCCESS, build(project)); // #4
         assertEquals(4, numberOf(project.getLastSuccessfulBuild()));
-        assertEquals(null, project.getBuildByNumber(1));
-        assertEquals(null, project.getBuildByNumber(2));
+        assertNull(project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(2));
         assertEquals(3, numberOf(project.getLastFailedBuild()));
     }
 
@@ -91,10 +92,10 @@ public class LogRotatorTest {
         assertEquals(Result.UNSTABLE, build(project)); // #2
         assertEquals(Result.UNSTABLE, build(project)); // #3
         assertEquals(1, numberOf(project.getLastStableBuild()));
-        project.getPublishersList().replaceBy(Collections.<Publisher>emptySet());
+        project.getPublishersList().replaceBy(Collections.emptySet());
         assertEquals(Result.SUCCESS, build(project)); // #4
-        assertEquals(null, project.getBuildByNumber(1));
-        assertEquals(null, project.getBuildByNumber(2));
+        assertNull(project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(2));
     }
 
     @Test
@@ -129,7 +130,7 @@ public class LogRotatorTest {
         assertTrue(project.getBuildByNumber(5).getHasArtifacts());
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
         assertEquals(Result.SUCCESS, build(project)); // #7
-        assertEquals(null, project.getBuildByNumber(1));
+        assertNull(project.getBuildByNumber(1));
         assertNotNull(project.getBuildByNumber(2));
         assertFalse("lastSuccessful was #6 for ArtifactArchiver", project.getBuildByNumber(2).getHasArtifacts());
         assertFalse(project.getBuildByNumber(3).getHasArtifacts());
@@ -138,7 +139,7 @@ public class LogRotatorTest {
         assertTrue(project.getBuildByNumber(6).getHasArtifacts());
         assertTrue(project.getBuildByNumber(7).getHasArtifacts());
         assertEquals(Result.SUCCESS, build(project)); // #8
-        assertEquals(null, project.getBuildByNumber(2));
+        assertNull(project.getBuildByNumber(2));
         assertNotNull(project.getBuildByNumber(3));
         assertFalse(project.getBuildByNumber(3).getHasArtifacts());
         assertFalse(project.getBuildByNumber(4).getHasArtifacts());
@@ -210,15 +211,18 @@ public class LogRotatorTest {
     }
 
     static class TestsFail extends Publisher {
-        public @Override boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
+        @Override
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
             build.setResult(Result.UNSTABLE);
             return true;
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }
 
+        @Override
         public Descriptor<Publisher> getDescriptor() {
             return new Descriptor<Publisher>(TestsFail.class) {};
         }
@@ -236,7 +240,8 @@ public class LogRotatorTest {
         
         private final ArtifactArchiver archiver = new ArtifactArchiver("f");
 
-        public @Override boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
+        @Override
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
                 throws IOException, InterruptedException {
             archiver.perform(build, launcher, listener);
             Logger.getAnonymousLogger().log(Level.INFO, "Building #{0}", build.getNumber());
@@ -285,6 +290,7 @@ public class LogRotatorTest {
             }
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }

@@ -30,6 +30,7 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
@@ -46,27 +47,17 @@ import jenkins.security.SecurityListener;
 import jenkins.util.SystemProperties;
 import jenkins.security.seed.UserSeedProperty;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.encoding.PasswordEncoder;
-import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.dao.DataAccessException;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.Filter;
@@ -82,14 +73,28 @@ import javax.servlet.http.HttpSession;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.security.SecureRandom;
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * {@link SecurityRealm} that performs authentication by looking up {@link User}.
@@ -179,12 +184,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This implementation doesn't support groups.
      */
     @Override
-    public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
+    public GroupDetails loadGroupByGroupname2(String groupname, boolean fetchMembers) throws UsernameNotFoundException {
         throw new UsernameNotFoundException(groupname);
     }
 
     @Override
-    public Details loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
+    public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
+        return load(username).asUserDetails();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public Details load(String username) throws UsernameNotFoundException {
         User u = User.getById(username, false);
         Details p = u!=null ? u.getProperty(Details.class) : null;
         if(p==null)
@@ -195,18 +205,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     @Override
-    protected Details authenticate(String username, String password) throws AuthenticationException {
-        Details u = loadUserByUsername(username);
+    protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
+        Details u = load(username);
         if (!u.isPasswordCorrect(password)) {
-            String message;
-            try {
-                message = ResourceBundle.getBundle("org.acegisecurity.messages").getString("AbstractUserDetailsAuthenticationProvider.badCredentials");
-            } catch (MissingResourceException x) {
-                message = "Bad credentials";
-            }
-            throw new BadCredentialsException(message);
+            throw new BadCredentialsException("Bad credentials");
         }
-        return u;
+        return u.asUserDetails();
     }
 
     /**
@@ -277,7 +281,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         
         // ... and let him login
         Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
-        a = this.getSecurityComponents().manager.authenticate(a);
+        a = this.getSecurityComponents().manager2.authenticate(a);
         SecurityContextHolder.getContext().setAuthentication(a);
 
         SecurityListener.fireLoggedIn(u.getId());
@@ -531,18 +535,22 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * This is used primarily when the object is listed in the breadcrumb, in the user management screen.
      */
+    @Override
     public String getDisplayName() {
         return Messages.HudsonPrivateSecurityRealm_DisplayName();
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getACL();
     }
 
+    @Override
     public void checkPermission(Permission permission) {
         Jenkins.get().checkPermission(permission);
     }
 
+    @Override
     public boolean hasPermission(Permission permission) {
         return Jenkins.get().hasPermission(permission);
     }
@@ -571,7 +579,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     // TODO
-    private static final GrantedAuthority[] TEST_AUTHORITY = {AUTHENTICATED_AUTHORITY};
+    private static final Collection<? extends GrantedAuthority> TEST_AUTHORITY = Collections.singleton(AUTHENTICATED_AUTHORITY2);
 
     public static final class SignupInfo {
         public String username,password1,password2,fullname,email,captcha;
@@ -615,7 +623,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * is sent to the hidden input field by using {@link Protector}, so that
      * the same password can be retained but without leaking information to the browser.
      */
-    public static final class Details extends UserProperty implements InvalidatableUserDetails {
+    public static final class Details extends UserProperty {
         /**
          * Hashed password.
          */
@@ -638,12 +646,23 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         static Details fromPlainPassword(String rawPassword) {
-            return new Details(PASSWORD_ENCODER.encodePassword(rawPassword,null));
+            return new Details(PASSWORD_ENCODER.encode(rawPassword));
         }
 
-        public GrantedAuthority[] getAuthorities() {
+        /**
+         * @since 2.266
+         */
+        public Collection<? extends GrantedAuthority> getAuthorities2() {
             // TODO
             return TEST_AUTHORITY;
+        }
+
+        /**
+         * @deprecated use {@link #getAuthorities2}
+         */
+        @Deprecated
+        public org.acegisecurity.GrantedAuthority[] getAuthorities() {
+            return org.acegisecurity.GrantedAuthority.fromSpring(getAuthorities2());
         }
 
         public String getPassword() {
@@ -651,7 +670,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         public boolean isPasswordCorrect(String candidate) {
-            return PASSWORD_ENCODER.isPasswordValid(getPassword(),candidate,null);
+            return PASSWORD_ENCODER.matches(candidate, getPassword());
         }
 
         public String getProtectedPassword() {
@@ -683,8 +702,57 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return true;
         }
 
-        public boolean isInvalid() {
-            return user==null;
+        UserDetails asUserDetails() {
+            return new UserDetailsImpl();
+        }
+
+        private final class UserDetailsImpl implements UserDetails {
+
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return Details.this.getAuthorities2();
+            }
+
+            @Override
+            public String getPassword() {
+                return Details.this.getPassword();
+            }
+
+            @Override
+            public String getUsername() {
+                return Details.this.getUsername();
+            }
+
+            @Override
+            public boolean isAccountNonExpired() {
+                return Details.this.isAccountNonExpired();
+            }
+
+            @Override
+            public boolean isAccountNonLocked() {
+                return Details.this.isAccountNonLocked();
+            }
+
+            @Override
+            public boolean isCredentialsNonExpired() {
+                return Details.this.isCredentialsNonExpired();
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return Details.this.isEnabled();
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof UserDetailsImpl && ((UserDetailsImpl) o).getUsername().equals(getUsername());
+            }
+
+            @Override
+            public int hashCode() {
+                return getUsername().hashCode();
+            }
+
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
@@ -692,7 +760,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             @Override protected void callback(Details d, UnmarshallingContext context) {
                 // Convert to hashed password and report to monitor if we load old data
                 if (d.password!=null && d.passwordHash==null) {
-                    d.passwordHash = PASSWORD_ENCODER.encodePassword(Scrambler.descramble(d.password),null);
+                    d.passwordHash = PASSWORD_ENCODER.encode(Scrambler.descramble(d.password));
                     OldDataMonitor.report(context, "1.283");
                 }
             }
@@ -712,16 +780,37 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     throw new FormException("Stapler request is missing in the call", "staplerRequest");
                 }
                 String pwd = Util.fixEmpty(req.getParameter("user.password"));
-                String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
+                String pwd2 = Util.fixEmpty(req.getParameter("user.password2"));
 
-                if(!Util.fixNull(pwd).equals(Util.fixNull(pwd2)))
-                    throw new FormException("Please confirm the password by typing it twice","user.password2");
+                if (pwd == null || pwd2 == null) {
+                    // one of the fields is empty
+                    throw new FormException("Please confirm the password by typing it twice", "user.password2");
+                }
 
+                // will be null if it wasn't encrypted
                 String data = Protector.unprotect(pwd);
-                if(data!=null) {
+                String data2 = Protector.unprotect(pwd2);
+
+                if ((data == null) != (data2 == null)) {
+                    // Require that both values are protected or unprotected; do not allow user to change just one text field
+                    throw new FormException("Please confirm the password by typing it twice", "user.password2");
+                }
+
+                if (data != null /* && data2 != null */ && !MessageDigest.isEqual(data.getBytes(StandardCharsets.UTF_8), data2.getBytes(StandardCharsets.UTF_8))) {
+                    // passwords are different encrypted values
+                    throw new FormException("Please confirm the password by typing it twice", "user.password2");
+                }
+
+                if (data == null /* && data2 == null */ && !pwd.equals(pwd2)) {
+                    // passwords are different plain values
+                    throw new FormException("Please confirm the password by typing it twice","user.password2");
+                }
+
+                if (data != null) {
                     String prefix = Stapler.getCurrentRequest().getSession().getId() + ':';
-                    if(data.startsWith(prefix))
+                    if (data.startsWith(prefix)) {
                         return Details.fromHashedPassword(data.substring(prefix.length()));
+                    }
                 }
 
                 User user = Util.getNearestAncestorOfTypeOrThrow(req, User.class);
@@ -740,6 +829,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
             }
 
+            @Override
             public UserProperty newInstance(User user) {
                 return null;
             }
@@ -752,6 +842,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     @Extension @Symbol("localUsers")
     public static final class ManageUserLinks extends ManagementLink {
+        @Override
         public String getIconFileName() {
             if(Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
                 return "user.png";
@@ -759,10 +850,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return null;    // not applicable now
         }
 
+        @Override
         public String getUrlName() {
             return "securityRealm/";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_ManageUserLinks_DisplayName();
         }
@@ -779,56 +872,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    /**
-     * {@link PasswordEncoder} based on SHA-256 and random salt generation.
-     *
-     * <p>
-     * The salt is prepended to the hashed password and returned. So the encoded password is of the form
-     * {@code SALT ':' hash(PASSWORD,SALT)}.
-     *
-     * <p>
-     * This abbreviates the need to store the salt separately, which in turn allows us to hide the salt handling
-     * in this little class. The rest of the Acegi thinks that we are not using salt.
-     */
-    /*package*/ static final PasswordEncoder CLASSIC = new PasswordEncoder() {
-        private final PasswordEncoder passwordEncoder = new ShaPasswordEncoder(256);
-
-        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
-            return hash(rawPass);
-        }
-
-        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
-            // pull out the sale from the encoded password
-            int i = encPass.indexOf(':');
-            if(i<0) return false;
-            String salt = encPass.substring(0,i);
-            return encPass.substring(i+1).equals(passwordEncoder.encodePassword(rawPass,salt));
-        }
-
-        /**
-         * Creates a hashed password by generating a random salt.
-         */
-        private String hash(String password) {
-            String salt = generateSalt();
-            return salt+':'+passwordEncoder.encodePassword(password,salt);
-        }
-
-        /**
-         * Generates random salt.
-         */
-        private String generateSalt() {
-            StringBuilder buf = new StringBuilder();
-            SecureRandom sr = new SecureRandom();
-            for( int i=0; i<6; i++ ) {// log2(52^6)=34.20... so, this is about 32bit strong.
-                boolean upper = sr.nextBoolean();
-                char ch = (char)(sr.nextInt(26) + 'a');
-                if(upper)   ch=Character.toUpperCase(ch);
-                buf.append(ch);
-            }
-            return buf.toString();
-        }
-    };
-
+    // TODO can we instead use BCryptPasswordEncoder from Spring Security, which has its own copy of BCrypt so we could drop the special library?
     /**
      * {@link PasswordEncoder} that uses jBCrypt.
      */
@@ -841,12 +885,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2a\\$([0-9]{2})\\$.{53}$");
 
-        public String encodePassword(String rawPass, Object obj) throws DataAccessException {
-            return BCrypt.hashpw(rawPass,BCrypt.gensalt());
+        @Override
+        public String encode(CharSequence rawPassword) {
+            return BCrypt.hashpw(rawPassword.toString(), BCrypt.gensalt());
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object obj) throws DataAccessException {
-            return BCrypt.checkpw(rawPass,encPass);
+        @Override
+        public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            return BCrypt.checkpw(rawPassword.toString(), encodedPassword);
         }
 
         /**
@@ -870,9 +916,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     /* package */ static final JBCryptEncoder JBCRYPT_ENCODER = new JBCryptEncoder();
 
+    // TODO check if DelegatingPasswordEncoder can be used
     /**
-     * Combines {@link #JBCRYPT_ENCODER} and {@link #CLASSIC} into one so that we can continue
-     * to accept {@link #CLASSIC} format but new encoding will always done via {@link #JBCRYPT_ENCODER}.
+     * Wraps {@link #JBCRYPT_ENCODER}.
+     * There used to be a SHA-256-based encoder but this is long deprecated, and insecure anyway.
      */
     /* package */ static class MultiPasswordEncoder implements PasswordEncoder {
         /**
@@ -886,15 +933,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             '#' is neither in base64 nor hex, which makes it a good choice.
          */
-        public String encodePassword(String rawPass, Object salt) throws DataAccessException {
-            return JBCRYPT_HEADER+JBCRYPT_ENCODER.encodePassword(rawPass,salt);
+        @Override
+        public String encode(CharSequence rawPassword) {
+            return JBCRYPT_HEADER+JBCRYPT_ENCODER.encode(rawPassword);
         }
 
-        public boolean isPasswordValid(String encPass, String rawPass, Object salt) throws DataAccessException {
+        @Override
+        public boolean matches(CharSequence rawPassword, String encPass) {
             if (isPasswordHashed(encPass)) {
-                return JBCRYPT_ENCODER.isPasswordValid(encPass.substring(JBCRYPT_HEADER.length()), rawPass, salt);
+                return JBCRYPT_ENCODER.matches(rawPassword, encPass.substring(JBCRYPT_HEADER.length()));
             } else {
-                return CLASSIC.isPasswordValid(encPass, rawPass, salt);
+                return false;
             }
         }
 
@@ -914,15 +963,25 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
+        @Override
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();
+        }
+
+        public FormValidation doCheckAllowsSignup(@QueryParameter boolean value) {
+            if (value) {
+                return FormValidation.warning(Messages.HudsonPrivateSecurityRealm_SignupWarning());
+            }
+            return FormValidation.ok();
         }
     }
 
     private static final Filter CREATE_FIRST_USER_FILTER = new Filter() {
+        @Override
         public void init(FilterConfig config) throws ServletException {
         }
 
+        @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             HttpServletRequest req = (HttpServletRequest) request;
 
@@ -943,6 +1002,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 && Jenkins.get().getSecurityRealm() instanceof HudsonPrivateSecurityRealm;
         }
 
+        @Override
         public void destroy() {
         }
     };

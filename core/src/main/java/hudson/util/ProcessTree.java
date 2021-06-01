@@ -33,7 +33,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.SlaveComputer;
+import jenkins.agents.AgentComputerUtil;
 import hudson.util.ProcessKillingVeto.VetoCause;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,6 +131,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Lists all the processes in the system.
      */
+    @Override
     @NonNull
     public final Iterator<OSProcess> iterator() {
         return processes.values().iterator();
@@ -157,6 +157,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * them all. This is suitable for locating daemon processes
      * that cannot be tracked by the regular ancestor/descendant relationship.
      */
+    @Override
     public abstract void killAll(@NonNull Map<String, String> modelEnvVars) throws InterruptedException;
 
     /**
@@ -193,7 +194,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ final List<ProcessKiller> getKillers() throws InterruptedException {
         if (killers==null)
             try {
-                VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
                 if (channelToMaster!=null) {
                     killers = channelToMaster.call(new ListAll());
                 } else {
@@ -225,6 +226,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             this.pid = pid;
         }
 
+        @Override
         public final int getPid() {
             return pid;
         }
@@ -233,6 +235,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * there's no guarantee that we are getting a consistent snapshot
          * of the whole system state.
          */
+        @Override
         @CheckForNull
         public abstract OSProcess getParent();
 
@@ -255,6 +258,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Kills this process.
          */
+        @Override
         public abstract void kill() throws InterruptedException;
 
         void killByKiller() throws InterruptedException {
@@ -276,6 +280,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * where the recursive operation is not supported, this just kills
          * the current process.
          */
+        @Override
         public abstract void killRecursively() throws InterruptedException;
 
         /**
@@ -288,7 +293,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             // Quick check, does anything exist to check against
             if (!skipVetoes) {
                 try {
-                    VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                    VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
                     if (channelToMaster!=null) {
                         CheckVetoes vetoCheck = new CheckVetoes(this);
                         causeMessage = channelToMaster.call(vetoCheck);
@@ -313,6 +318,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * On Windows, where the OS models command-line arguments as a single string, this method
          * computes the approximated tokenization.
          */
+        @Override
         @NonNull
         public abstract List<String> getArguments();
 
@@ -323,6 +329,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          *      empty map if failed (for example because the process is already dead,
          *      or the permission was denied.)
          */
+        @Override
         @NonNull
         public abstract EnvVars getEnvironmentVariables();
 
@@ -349,6 +356,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Executes a chunk of code at the same machine where this process resides.
          */
+        @Override
         public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
             return callable.invoke(this, FilePath.localChannel);
         }
@@ -360,7 +368,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
             private IOSProcess process;
             
-            public CheckVetoes(IOSProcess processToCheck) {
+            CheckVetoes(IOSProcess processToCheck) {
                 process = processToCheck;
             }
         
@@ -429,10 +437,17 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         // Check for the existance of vetoers if I don't know already
         if (vetoersExist == null) {
             try {
-                VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
                 if (channelToMaster != null) {
                     vetoersExist = channelToMaster.call(new DoVetoersExist());
                 }
+            }
+            catch (InterruptedException ie) {
+                // If we receive an InterruptedException here, we probably can't do much anyway.
+                // Perhaps we should just return at this point since we probably can't do anything else.
+                // It might make sense to introduce retries, but it's probably not going to get better.
+                LOGGER.log(Level.FINE, "Caught InterruptedException while checking if vetoers exist: ", ie);
+                Thread.interrupted(); // Clear the interrupt flag and just accept that no known vetoers exist.
             }
             catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
@@ -480,18 +495,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Empty process list as a default value if the platform doesn't support it.
      */
     /*package*/ static final ProcessTree DEFAULT = new Local() {
+        @Override
         public OSProcess get(@NonNull final Process proc) {
             return new OSProcess(-1) {
+                @Override
                 @CheckForNull
                 public OSProcess getParent() {
                     return null;
                 }
 
+                @Override
                 public void killRecursively() {
                     // fall back to a single process killer
                     proc.destroy();
                 }
 
+                @Override
                 public void kill() throws InterruptedException {
                     if (getVeto() != null) 
                         return;
@@ -499,11 +518,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     killByKiller();
                 }
 
+                @Override
                 @NonNull
                 public List<String> getArguments() {
                     return Collections.emptyList();
                 }
 
+                @Override
                 @NonNull
                 public EnvVars getEnvironmentVariables() {
                     return new EnvVars();
@@ -511,6 +532,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             };
         }
 
+        @Override
         public void killAll(@NonNull Map<String, String> modelEnvVars) {
             // no-op
         }
@@ -717,8 +739,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     }
 
-    static abstract class Unix extends Local {
-        public Unix(boolean vetoersExist) {
+    abstract static class Unix extends Local {
+        Unix(boolean vetoersExist) {
             super(vetoersExist);
         }
 
@@ -728,6 +750,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return get(UnixReflection.pid(proc));
         }
 
+        @Override
         public void killAll(@NonNull Map<String, String> modelEnvVars) throws InterruptedException {
             for (OSProcess p : this)
                 if(p.hasMatchingEnvVars(modelEnvVars))
@@ -737,15 +760,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * {@link ProcessTree} based on /proc.
      */
-    static abstract class ProcfsUnix extends Unix {
+    abstract static class ProcfsUnix extends Unix {
         ProcfsUnix(boolean vetoersExist) {
             super(vetoersExist);
             
-            File[] processes = new File("/proc").listFiles(new FileFilter() {
-                public boolean accept(File f) {
-                    return f.isDirectory();
-                }
-            });
+            File[] processes = new File("/proc").listFiles(File::isDirectory);
             if(processes==null) {
                 LOGGER.info("No /proc");
                 return;
@@ -785,6 +804,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         /**
          * Tries to kill this process.
          */
+        @Override
         public void kill() throws InterruptedException {
             // after sending SIGTERM, wait for the process to cease to exist
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
@@ -824,6 +844,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             killByKiller();
         }
 
+        @Override
         public void killRecursively() throws InterruptedException {
             // after sending SIGTERM, wait for the processes to cease to exist until the deadline
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(softKillWaitSeconds);
@@ -850,6 +871,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          *      empty list if failed (for example because the process is already dead,
          *      or the permission was denied.)
          */
+        @Override
         @NonNull
         public abstract List<String> getArguments();
     }
@@ -940,10 +962,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
 
     static class Linux extends ProcfsUnix {
-        public Linux(boolean vetoersExist) {
+        Linux(boolean vetoersExist) {
             super(vetoersExist);
         }
         
+        @Override
         protected LinuxProcess createProcess(int pid) throws IOException {
             return new LinuxProcess(pid);
         }
@@ -970,11 +993,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     throw new IOException("Failed to parse PPID from /proc/"+pid+"/status");
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized List<String> getArguments() {
                 if(arguments!=null)
@@ -998,6 +1023,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return arguments;
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars !=null)
@@ -1050,10 +1076,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class AIX extends ProcfsUnix {
-        public AIX(boolean vetoersExist) {
+        AIX(boolean vetoersExist) {
             super(vetoersExist);
         }
         
+        @Override
         protected OSProcess createProcess(final int pid) throws IOException {
             return new AIXProcess(pid);
         }
@@ -1192,11 +1219,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized List<String> getArguments() {
                 if (arguments != null)
@@ -1244,6 +1273,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return arguments;
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars != null)
@@ -1372,10 +1402,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      *     when accessing this file.
      */
     static class Solaris extends ProcfsUnix {
-        public Solaris(boolean vetoersExist) {
+        Solaris(boolean vetoersExist) {
             super(vetoersExist);
         }
         
+        @Override
         protected OSProcess createProcess(final int pid) throws IOException {
             return new SolarisProcess(pid);
         }
@@ -1479,11 +1510,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized List<String> getArguments() {
                 if(arguments!=null)
@@ -1520,6 +1553,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return arguments;
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars !=null)
@@ -1676,11 +1710,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 this.ppid = ppid;
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 return get(ppid);
             }
 
+            @Override
             @NonNull
             public synchronized EnvVars getEnvironmentVariables() {
                 if(envVars !=null)
@@ -1689,6 +1725,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return envVars;
             }
 
+            @Override
             @NonNull
             public List<String> getArguments() {
                 if(arguments !=null)
@@ -1803,7 +1840,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             arguments.add(m.readString());
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please see https://jenkins.io/redirect/troubleshooting/darwin-failed-to-parse-arguments",e);
+                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please see https://www.jenkins.io/redirect/troubleshooting/darwin-failed-to-parse-arguments",e);
                     }
 
                     // read env vars that follow
@@ -1839,7 +1876,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Represents a local process tree, where this JVM and the process tree run on the same system.
      * (The opposite of {@link Remote}.)
      */
-    public static abstract class Local extends ProcessTree {
+    public abstract static class Local extends ProcessTree {
         @Deprecated
         Local() {
         }
@@ -1881,6 +1918,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             proxy.killAll(modelEnvVars);
         }
 
+        @Override
         Object writeReplace() {
             return this; // cancel out super.writeReplace()
         }
@@ -1895,6 +1933,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 this.proxy = ch.export(IOSProcess.class,proxy);
             }
 
+            @Override
             @CheckForNull
             public OSProcess getParent() {
                 IOSProcess p = proxy.getParent();
@@ -1902,28 +1941,34 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return get(p.getPid());
             }
 
+            @Override
             public void kill() throws InterruptedException {
                 proxy.kill();
             }
 
+            @Override
             public void killRecursively() throws InterruptedException {
                 proxy.killRecursively();
             }
 
+            @Override
             @NonNull
             public List<String> getArguments() {
                 return proxy.getArguments();
             }
 
+            @Override
             @NonNull
             public EnvVars getEnvironmentVariables() {
                 return proxy.getEnvironmentVariables();
             }
 
+            @Override
             Object writeReplace() {
                 return this; // cancel out super.writeReplace()
             }
 
+            @Override
             public <T> T act(ProcessCallable<T> callable) throws IOException, InterruptedException {
                 return proxy.act(callable);
             }
@@ -1979,9 +2024,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * This feature involves some native code, so we are allowing the user to disable this
      * in case there's a fatal problem.
      *
-     * <p>
-     * This property supports two names for a compatibility reason.
      */
-    public static boolean enabled = !SystemProperties.getBoolean(ProcessTreeKiller.class.getName()+".disable")
-                                 && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
+    public static boolean enabled = !SystemProperties.getBoolean("hudson.util.ProcessTreeKiller.disable")
+            && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
 }

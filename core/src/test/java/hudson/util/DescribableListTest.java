@@ -28,14 +28,14 @@ import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.jvnet.hudson.test.Issue;
 
 public class DescribableListTest {
 
     @Issue("JENKINS-49054")
     @Test
-    public void exceptionDuringUnmarshalling() throws Exception {
+    public void exceptionDuringUnmarshalling() {
         Data data = new Data();
         data.list.add(new Datum(1));
         data.list.add(new Datum(2));

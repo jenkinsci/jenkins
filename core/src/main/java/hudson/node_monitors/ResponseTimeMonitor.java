@@ -81,6 +81,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             return monitoringData;
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.ResponseTimeMonitor_DisplayName();
         }
@@ -98,6 +99,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             this.cur = cur;
         }
 
+        @Override
         public Data call() {
             // this method must be being invoked locally, which means the roundtrip time is zero and zero forever
             return new Data(cur,0);
@@ -114,10 +116,11 @@ public class ResponseTimeMonitor extends NodeMonitor {
         private final Data cur;
         private final long start = System.currentTimeMillis();
 
-        public Step2(Data cur) {
+        Step2(Data cur) {
             this.cur = cur;
         }
 
+        @Override
         public Step3 call() {
             // this method must be being invoked locally, which means the roundtrip time is zero and zero forever
             return new Step3(cur,start);

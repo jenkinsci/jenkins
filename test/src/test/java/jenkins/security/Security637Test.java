@@ -51,7 +51,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Ignore;
 
 public class Security637Test {
@@ -78,7 +78,7 @@ public class Security637Test {
     private static class URLHandlerCallable extends MasterToSlaveCallable<String, Exception> {
         private URL url;
         
-        public URLHandlerCallable(URL url) {
+        URLHandlerCallable(URL url) {
             this.url = url;
         }
         
@@ -130,7 +130,7 @@ public class Security637Test {
     private static class URLBuilderCallable extends MasterToSlaveCallable<URL, Exception> {
         private String url;
         
-        public URLBuilderCallable(String url) {
+        URLBuilderCallable(String url) {
             this.url = url;
         }
         
@@ -170,7 +170,7 @@ public class Security637Test {
     private static class URLTransferCallable extends MasterToSlaveCallable<URL, Exception> {
         private URL url;
         
-        public URLTransferCallable(URL url) {
+        URLTransferCallable(URL url) {
             this.url = url;
         }
         

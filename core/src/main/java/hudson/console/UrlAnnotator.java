@@ -20,6 +20,7 @@ public class UrlAnnotator extends ConsoleAnnotatorFactory<Object> {
     }
 
     private static class UrlConsoleAnnotator extends ConsoleAnnotator {
+        @Override
         public ConsoleAnnotator annotate(Object context, MarkupText text) {
             for (SubText t : text.findTokens(URL)) {
                 int prev = t.start() - 1;

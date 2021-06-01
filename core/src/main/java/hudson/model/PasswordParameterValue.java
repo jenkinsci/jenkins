@@ -44,10 +44,16 @@ public class PasswordParameterValue extends ParameterValue {
         this(name, value, null);
     }
 
-    @DataBoundConstructor
+    @Deprecated
     public PasswordParameterValue(String name, String value, String description) {
         super(name, description);
         this.value = Secret.fromString(value);
+    }
+
+    @DataBoundConstructor
+    public PasswordParameterValue(String name, Secret value, String description) {
+        super(name, description);
+        this.value = value;
     }
 
     @Override
@@ -60,6 +66,7 @@ public class PasswordParameterValue extends ParameterValue {
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
         return new VariableResolver<String>() {
+            @Override
             public String resolve(String name) {
                 return PasswordParameterValue.this.name.equals(name) ? Secret.toString(value) : null;
             }
@@ -72,6 +79,7 @@ public class PasswordParameterValue extends ParameterValue {
     }
 
     @NonNull
+    @Override
     public Secret getValue() {
         return value;
     }

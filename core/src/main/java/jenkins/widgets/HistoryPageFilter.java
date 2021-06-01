@@ -110,17 +110,6 @@ public class HistoryPageFilter<T> {
      * Add build items to the History page.
      *
      * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
-     * @deprecated Replaced by add(Iterable&lt;T&gt;) as of version 2.15
-     */
-    @Deprecated
-    public void add(@NonNull List<T> runItems) {
-        addInternal(runItems);
-    }
-
-    /**
-     * Add build items to the History page.
-     *
-     * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
      * @since 2.17
      */
     public void add(@NonNull Iterable<T> runItems) {
@@ -230,7 +219,7 @@ public class HistoryPageFilter<T> {
         return queueItems.size() + runs.size();
     }
 
-    private void sort(List<? extends Object> items) {
+    private void sort(List<?> items) {
         // Queue items can start building out of order with how they got added to the queue. Sorting them
         // before adding to the page. They'll still get displayed before the building items coz they end
         // up in a different list in HistoryPageFilter.

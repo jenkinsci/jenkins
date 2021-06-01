@@ -26,7 +26,16 @@ package hudson.security;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
-import hudson.model.*;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractItem;
+import hudson.model.AbstractProject;
+import hudson.model.Computer;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.User;
+import hudson.model.View;
 import hudson.slaves.Cloud;
 import hudson.util.DescriptorList;
 import jenkins.model.Jenkins;
@@ -94,12 +103,12 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * @since 1.220
      */
     public @NonNull ACL getACL(final @NonNull View item) {
-        return ACL.lambda((a, permission) -> {
+        return ACL.lambda2((a, permission) -> {
                 ACL base = item.getOwner().getACL();
 
-                boolean hasPermission = base.hasPermission(a, permission);
+                boolean hasPermission = base.hasPermission2(a, permission);
                 if (!hasPermission && permission == View.READ) {
-                    return base.hasPermission(a,View.CONFIGURE) || !item.getItems().isEmpty();
+                    return base.hasPermission2(a,View.CONFIGURE) || !item.getItems().isEmpty();
                 }
 
                 return hasPermission;
@@ -171,7 +180,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * If such enumeration is impossible, do the best to list as many as possible, then
      * return it. In the worst case, just return an empty list. Doing so would prevent
-     * users from using role names as group names (see HUDSON-2716 for such one such report.)
+     * users from using role names as group names (see JENKINS-2716 for such one such report.)
      *
      * @return
      *      never null.
@@ -221,7 +230,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             return Collections.emptySet();
         }
 
-        private static final ACL UNSECURED_ACL = ACL.lambda((a, p) -> true);
+        private static final ACL UNSECURED_ACL = ACL.lambda2((a, p) -> true);
 
         @Extension @Symbol("unsecured")
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {

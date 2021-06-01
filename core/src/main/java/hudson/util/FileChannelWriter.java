@@ -45,12 +45,12 @@ public class FileChannelWriter extends Writer {
      * So we introduced this field to be able to still get a better integrity for the use case of {@link AtomicFileWriter}.
      * Because from there, we make sure to call {@link #close()} from {@link AtomicFileWriter#commit()} anyway.
      */
-    private boolean forceOnFlush;
+    private final boolean forceOnFlush;
 
     /**
      * See forceOnFlush. You probably never want to set forceOnClose to false.
      */
-    private boolean forceOnClose;
+    private final boolean forceOnClose;
 
     /**
      * @param filePath     the path of the file to write to.

@@ -34,7 +34,9 @@ import org.apache.commons.beanutils.Converter;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.*;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Parameters;
+import org.kohsuke.args4j.spi.Setter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.export.CustomExportedBean;
 
@@ -113,6 +115,29 @@ public final class Result implements Serializable, CustomExportedBean {
             return this;
     }
 
+    /**
+     * Combines two {@link Result}s and returns the worse one.
+     * <p>
+     * This method is null-safe (any {@link Result} is "worse" than {@code null}, and {@code null} is returned if both
+     * parameters are {@code null}).
+     *
+     * @param r1
+     *      a result (may be {@code null})
+     * @param r2
+     *      a result (may be {@code null})
+     * @return the worst result (may be {@code null})
+     * @since 2.257
+     */
+    public static Result combine(Result r1, Result r2) {
+        if (r1 == null) {
+            return r2;
+        } else if (r2 == null) {
+            return r1;
+        } else {
+            return r1.combine(r2);
+        }
+    }
+
     public boolean isWorseThan(@NonNull Result that) {
         return this.ordinal > that.ordinal;
     }
@@ -142,6 +167,7 @@ public final class Result implements Serializable, CustomExportedBean {
         return name;
     }
 
+    @Override
     public @NonNull String toExportedObject() {
         return name;
     }
@@ -211,6 +237,7 @@ public final class Result implements Serializable, CustomExportedBean {
     @Initializer
     public static void init() {
         Stapler.CONVERT_UTILS.register(new Converter() {
+            @Override
             public Object convert(Class type, Object value) {
                 return Result.fromString(value.toString());
             }

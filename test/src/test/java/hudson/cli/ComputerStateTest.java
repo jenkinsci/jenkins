@@ -23,8 +23,9 @@
  */
 package hudson.cli;
 
-import static org.junit.Assert.*;
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;

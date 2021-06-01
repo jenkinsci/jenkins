@@ -41,8 +41,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import hudson.tasks.LogRotatorTest;
 import hudson.tasks.Recorder;
@@ -77,7 +83,6 @@ public class AbstractBuildTest {
     
     @Test
     @Issue("JENKINS-30730")
-    @SuppressWarnings("deprecation")
     public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
         ErroneousJobProperty erroneousJobProperty = new ErroneousJobProperty();

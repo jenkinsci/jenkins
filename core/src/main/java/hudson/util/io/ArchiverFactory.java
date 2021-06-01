@@ -24,7 +24,10 @@
 
 package hudson.util.io;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath.TarCompression;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,6 +48,7 @@ public abstract class ArchiverFactory implements Serializable {
     /**
      * Uncompressed tar format.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static ArchiverFactory TAR = new TarArchiverFactory(TarCompression.NONE);
 
     /**
@@ -55,9 +59,18 @@ public abstract class ArchiverFactory implements Serializable {
     /**
      * Zip format.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static ArchiverFactory ZIP = new ZipArchiverFactory();
 
-
+    /**
+     * Zip format, without following symlinks.
+     * @param prefix The portion of file path that will be added at the beginning of the relative path inside the archive.
+     *               If non-empty, a trailing forward slash will be enforced.
+     */
+    @Restricted(NoExternalUse.class)
+    public static ArchiverFactory createZipWithoutSymlink(String prefix) {
+        return new ZipWithoutSymLinksArchiverFactory(prefix);
+    }
 
     private static final class TarArchiverFactory extends ArchiverFactory {
         private final TarCompression method;
@@ -66,6 +79,7 @@ public abstract class ArchiverFactory implements Serializable {
             this.method = method;
         }
 
+        @Override
         public Archiver create(OutputStream out) throws IOException {
             return new TarArchiver(method.compress(out));
         }
@@ -74,8 +88,24 @@ public abstract class ArchiverFactory implements Serializable {
     }
 
     private static final class ZipArchiverFactory extends ArchiverFactory {
+        @Override
         public Archiver create(OutputStream out) {
             return new ZipArchiver(out);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
+    private static final class ZipWithoutSymLinksArchiverFactory extends ArchiverFactory {
+        private final String prefix;
+
+        ZipWithoutSymLinksArchiverFactory(String prefix){
+            this.prefix = prefix;
+        }
+
+        @Override
+        public Archiver create(OutputStream out) {
+            return new ZipArchiver(out, true, prefix);
         }
 
         private static final long serialVersionUID = 1L;

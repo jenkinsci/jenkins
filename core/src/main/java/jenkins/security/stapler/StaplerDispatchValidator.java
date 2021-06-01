@@ -25,6 +25,7 @@
 package jenkins.security.stapler;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
@@ -90,6 +91,7 @@ public class StaplerDispatchValidator implements DispatchValidator {
     /**
      * Escape hatch to disable dispatch validation.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* script-console editable */ boolean DISABLED = SystemProperties.getBoolean(ESCAPE_HATCH);
 
     private static @CheckForNull Boolean setStatus(@NonNull StaplerRequest req, @CheckForNull Boolean status) {

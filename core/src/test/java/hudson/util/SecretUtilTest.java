@@ -8,58 +8,34 @@ public class SecretUtilTest {
 
     @Issue("JENKINS-47500")
     @Test
-    public void decrypt() throws Exception {
+    public void decrypt() {
         String data = "{}";
-
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
-
+        Secret secret = Secret.decrypt(data);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptJustSpace() throws Exception {
+    public void decryptJustSpace() {
         String data = " ";
-
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
-
+        Secret secret = Secret.decrypt(data);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptWithSpace() throws Exception {
+    public void decryptWithSpace() {
         String data = "{ }";
-
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
-
+        Secret secret = Secret.decrypt(data);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 
     @Issue("JENKINS-47500")
     @Test
-    public void decryptWithSpaces() throws Exception {
+    public void decryptWithSpaces() {
         String data = "{     }";
-
-        try {
-            Secret secret = Secret.decrypt(data);
-            Assert.assertNull(secret);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Assert.fail(data + " shouldn't throw an ArrayIndexOutOfBoundsException but returning null");
-        }
-
+        Secret secret = Secret.decrypt(data);
+        Assert.assertNull(secret); // expected to not throw ArrayIndexOutOfBoundsException
     }
 }

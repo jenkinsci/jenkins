@@ -1,6 +1,5 @@
 package hudson;
 
-import org.acegisecurity.AcegiSecurityException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.expression.Expression;
@@ -15,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * {@link ExpressionFactory} so that security exception aborts the page rendering.
@@ -22,6 +22,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
 */
 final class ExpressionFactory2 implements ExpressionFactory {
+    @Override
     public Expression createExpression(String text) throws JellyException {
         try {
             return new JexlExpression(
@@ -52,7 +53,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
         /** The Jexl expression object */
         private org.apache.commons.jexl.Expression expression;
 
-        public JexlExpression(org.apache.commons.jexl.Expression expression) {
+        JexlExpression(org.apache.commons.jexl.Expression expression) {
             this.expression = expression;
         }
 
@@ -63,16 +64,18 @@ final class ExpressionFactory2 implements ExpressionFactory {
 
         // Expression interface
         //-------------------------------------------------------------------------
+        @Override
         public String getExpressionText() {
             return "${" + expression.getExpression() + "}";
         }
 
+        @Override
         public Object evaluate(JellyContext context) {
             try {
                 CURRENT_CONTEXT.set(context);
                 JexlContext jexlContext = new JellyJexlContext( context );
                 return expression.evaluate(jexlContext);
-            } catch (AcegiSecurityException e) {
+            } catch (AccessDeniedException e) {
                 // let the security exception pass through
                 throw e;
             } catch (Exception e) {
@@ -94,11 +97,13 @@ final class ExpressionFactory2 implements ExpressionFactory {
             this.vars = new JellyMap( context );
         }
 
+        @Override
         public void setVars(Map vars) {
             this.vars.clear();
             this.vars.putAll( vars );
         }
 
+        @Override
         public Map getVars() {
             return this.vars;
         }
@@ -113,50 +118,62 @@ final class ExpressionFactory2 implements ExpressionFactory {
             this.context = context;
         }
 
+        @Override
         public Object get(Object key) {
             return context.getVariable( (String) key );
         }
 
+        @Override
         public void clear() {
             // not implemented
         }
 
+        @Override
         public boolean containsKey(Object key) {
             return ( get( key ) != null );
         }
 
+        @Override
         public boolean containsValue(Object value) {
             return false;
         }
 
+        @Override
         public Set entrySet() {
             return null;
         }
 
+        @Override
         public boolean isEmpty() {
             return false;
         }
 
+        @Override
         public Set keySet() {
             return null;
         }
 
+        @Override
         public Object put(Object key, Object value) {
             return null;
         }
 
+        @Override
         public void putAll(Map t) {
             // not implemented
         }
 
+        @Override
         public Object remove(Object key) {
             return null;
         }
 
+        @Override
         public int size() {
             return -1;
         }
 
+        @Override
         public Collection values() {
             return null;
         }

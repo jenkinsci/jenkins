@@ -3,6 +3,7 @@ package hudson.util;
 import hudson.model.Items;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,10 +20,12 @@ import javax.servlet.ServletInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import jenkins.security.ClassFilterImpl;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import org.jvnet.hudson.test.LoggerRule;
 import static org.mockito.Mockito.when;
 
@@ -43,9 +46,16 @@ public class XStream2Security383Test {
     @Mock
     private StaplerResponse rsp;
 
+    private AutoCloseable mocks;
+
+    @After
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
     @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+    public void setUp() {
+        mocks = MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -61,17 +71,13 @@ public class XStream2Security383Test {
 
             String exploitXml = IOUtils.toString(
                     XStream2Security383Test.class.getResourceAsStream(
-                            "/hudson/util/XStream2Security383Test/config.xml"), "UTF-8");
+                            "/hudson/util/XStream2Security383Test/config.xml"), StandardCharsets.UTF_8);
 
             exploitXml = exploitXml.replace("@TOKEN@", exploitFile.getAbsolutePath());
 
-            FileUtils.write(new File(tempJobDir, "config.xml"), exploitXml);
+            FileUtils.write(new File(tempJobDir, "config.xml"), exploitXml, StandardCharsets.UTF_8);
 
-            try {
-                Items.load(j.jenkins, tempJobDir);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            assertThrows(IOException.class, () -> Items.load(j.jenkins, tempJobDir));
             assertFalse("no file should be created here", exploitFile.exists());
         } finally {
             exploitFile.delete();
@@ -91,21 +97,16 @@ public class XStream2Security383Test {
 
             String exploitXml = IOUtils.toString(
                     XStream2Security383Test.class.getResourceAsStream(
-                            "/hudson/util/XStream2Security383Test/config.xml"), "UTF-8");
+                            "/hudson/util/XStream2Security383Test/config.xml"), StandardCharsets.UTF_8);
 
             exploitXml = exploitXml.replace("@TOKEN@", exploitFile.getAbsolutePath());
 
             when(req.getMethod()).thenReturn("POST");
-            when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(exploitXml)));
+            when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(exploitXml, StandardCharsets.UTF_8)));
             when(req.getContentType()).thenReturn("application/xml");
             when(req.getParameter("name")).thenReturn("foo");
 
-            try {
-                j.jenkins.doCreateItem(req, rsp);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            assertThrows(IOException.class, () -> j.jenkins.doCreateItem(req, rsp));
             assertFalse("no file should be created here", exploitFile.exists());
         } finally {
             exploitFile.delete();
@@ -115,7 +116,7 @@ public class XStream2Security383Test {
     private static class Stream extends ServletInputStream {
         private final InputStream inner;
 
-        public Stream(final InputStream inner) {
+        Stream(final InputStream inner) {
             this.inner = inner;
         }
 

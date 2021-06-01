@@ -24,7 +24,13 @@
 package jenkins.model.lazy;
 
 import java.io.File;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import jenkins.model.lazy.AbstractLazyLoadRunMap.Direction;
 import org.junit.Before;
@@ -238,7 +244,7 @@ public class AbstractLazyLoadRunMapTest {
     }
 
     @Test
-    public void eagerLoading() throws IOException {
+    public void eagerLoading() {
         Map.Entry[] b = a.entrySet().toArray(new Map.Entry[3]);
         ((Build)b[0].getValue()).asserts(5);
         ((Build)b[1].getValue()).asserts(3);
@@ -279,7 +285,7 @@ public class AbstractLazyLoadRunMapTest {
         FakeMap map = f.make();
 
         Build x = map.search(Integer.MAX_VALUE, Direction.DESC);
-        assert x.n==201;
+        assertEquals(201, x.n);
     }
 
     @Issue("JENKINS-18065")

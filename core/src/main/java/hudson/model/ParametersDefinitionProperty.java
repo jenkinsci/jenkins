@@ -231,14 +231,17 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         }
     }
 
+    @Override
     public String getDisplayName() {
         return null;
     }
 
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getUrlName() {
         return null;
     }
@@ -246,14 +249,16 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private static class DefinitionsAbstractList extends AbstractList<String> {
         private final List<ParameterDefinition> parameterDefinitions;
 
-        public DefinitionsAbstractList(List<ParameterDefinition> parameterDefinitions) {
+        DefinitionsAbstractList(List<ParameterDefinition> parameterDefinitions) {
             this.parameterDefinitions = parameterDefinitions;
         }
 
+        @Override
         public String get(int index) {
             return this.parameterDefinitions.get(index).getName();
         }
 
+        @Override
         public int size() {
             return this.parameterDefinitions.size();
         }

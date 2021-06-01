@@ -52,6 +52,7 @@ public class PluginFirstClassLoader
 
     private List<URL> urls = new ArrayList<>();
 
+    @Override
     public void addPathFiles( Collection<File> paths )
         throws IOException
     {
@@ -70,6 +71,7 @@ public class PluginFirstClassLoader
         return urls;
     }
     
+    @Override
     public void close()
         throws IOException
     {
@@ -84,7 +86,7 @@ public class PluginFirstClassLoader
     }
 
     @Override
-    protected Enumeration findResources( String name )
+    public Enumeration findResources( String name )
         throws IOException
     {
         return super.findResources( name );

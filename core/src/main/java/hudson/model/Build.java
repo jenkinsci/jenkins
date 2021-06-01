@@ -139,6 +139,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
             deprecated class here.
          */
 
+        @Override
         protected Result doRun(@NonNull BuildListener listener) throws Exception {
             if(!preBuild(listener,project.getBuilders()))
                 return FAILURE;
@@ -168,20 +169,12 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 throw e;
             } finally {
                 if (r != null) setResult(r);
-                // tear down in reverse order
-                boolean failed=false;
-                for( int i=buildEnvironments.size()-1; i>=0; i-- ) {
-                    if (!buildEnvironments.get(i).tearDown(Build.this,listener)) {
-                        failed=true;
-                    }                    
-                }
-                // WARNING The return in the finally clause will trump any return before
-                if (failed) return FAILURE;
             }
 
             return r;
         }
 
+        @Override
         public void post2(@NonNull BuildListener listener) throws IOException, InterruptedException {
             if (!performAllBuildSteps(listener, project.getPublishersList(), true))
                 setResult(FAILURE);

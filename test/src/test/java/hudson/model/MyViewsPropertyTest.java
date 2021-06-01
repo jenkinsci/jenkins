@@ -23,19 +23,23 @@
  */
 package hudson.model;
 
-import org.junit.Test;
-import org.junit.Rule;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.model.Descriptor.FormException;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.context.SecurityContextHolder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import static org.junit.Assert.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 /**
  *
  * @author Lucie Votypkova
@@ -47,7 +51,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testReadResolve() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.setUser(user);
         user.addProperty(property);
@@ -81,7 +85,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testGetViews() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -93,7 +97,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testGetView() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -106,7 +110,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testGetPrimaryView() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -120,7 +124,7 @@ public class MyViewsPropertyTest {
     
     @Test
     public void testCanDelete() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -136,7 +140,7 @@ public class MyViewsPropertyTest {
 
     @Test
     public void testDeleteView() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -169,7 +173,7 @@ public class MyViewsPropertyTest {
 
     @Test
     public void testOnViewRenamed() throws IOException, Failure, FormException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -184,7 +188,7 @@ public class MyViewsPropertyTest {
     @Test
     public void testAddView() throws Exception {
         {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -195,7 +199,7 @@ public class MyViewsPropertyTest {
         }
         rule.jenkins.reload();
         {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = user.getProperty(MyViewsProperty.class);
         assertTrue("Property should save changes.", property.getViews().contains(property.getView("foo")));
         }
@@ -204,7 +208,7 @@ public class MyViewsPropertyTest {
     @Test
     public void testDoCreateView() throws Exception {
         {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -217,14 +221,14 @@ public class MyViewsPropertyTest {
         }
         rule.jenkins.reload();
         {
-        MyViewsProperty property = User.get("User").getProperty(MyViewsProperty.class);
+        MyViewsProperty property = User.getOrCreateByIdOrFullName("User").getProperty(MyViewsProperty.class);
         assertNotNull("Property should save changes", property.getView("foo"));
         }
     }
 
     @Test
     public void testGetACL() throws IOException {
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -237,8 +241,8 @@ public class MyViewsPropertyTest {
     @Test
     public void testCheckPermission() throws IOException {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        User user = User.get("User");
-        User user2 = User.get("User2");
+        User user = User.getOrCreateByIdOrFullName("User");
+        User user2 = User.getOrCreateByIdOrFullName("User2");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
@@ -246,7 +250,7 @@ public class MyViewsPropertyTest {
         rule.jenkins.setAuthorizationStrategy(auth);     
         user.addProperty(property);
         boolean ex = false;
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         try{
             property.checkPermission(Permission.CONFIGURE);
         }
@@ -254,14 +258,14 @@ public class MyViewsPropertyTest {
             ex = true;
         }
         assertTrue("Property should throw AccessDeniedException.",ex);
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         try{
             property.checkPermission(Permission.CONFIGURE);
         }
         catch(AccessDeniedException e){
             fail("Property should not throw AccessDeniedException - user should control of himself.");
         }
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         auth.add(Jenkins.ADMINISTER, "User2");
         try{
             property.checkPermission(Permission.CONFIGURE);
@@ -274,17 +278,17 @@ public class MyViewsPropertyTest {
     @Test
     public void testHasPermission() throws IOException {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        User user = User.get("User");
-        User user2 = User.get("User2");
+        User user = User.getOrCreateByIdOrFullName("User");
+        User user2 = User.getOrCreateByIdOrFullName("User2");
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         rule.jenkins.setAuthorizationStrategy(auth);    
         user.addProperty(property);
-        SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         assertFalse("User User2 should not configure permission for user User",property.hasPermission(Permission.CONFIGURE));
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertTrue("User should control of himself.", property.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, "User2");
         assertTrue("User User2 should configure permission for user User",property.hasPermission(Permission.CONFIGURE));
@@ -294,7 +298,7 @@ public class MyViewsPropertyTest {
     @Issue("JENKINS-48157")
     public void shouldNotFailWhenMigratingLegacyViewsWithoutPrimaryOne() throws IOException {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
-        User user = User.get("User");
+        User user = User.getOrCreateByIdOrFullName("User");
 
         // Emulates creation of a new object with Reflection in User#load() does.
         MyViewsProperty property = new MyViewsProperty(null);

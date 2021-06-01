@@ -25,7 +25,6 @@
 package hudson.model;
 
 import hudson.PluginWrapper;
-import hudson.PluginWrapper.Dependency;
 import hudson.model.UpdateSite.Data;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
@@ -38,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -45,7 +45,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
@@ -113,38 +118,38 @@ public class UpdateSiteTest {
     }
     
     @Test public void relativeURLs() throws Exception {
-        URL url = new URL(baseUrl, "/plugins/tasks-update-center.json");
+        URL url = new URL(baseUrl, "/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         overrideUpdateSite(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         Data data = site.getData();
         assertNotNull(data);
         assertEquals(new URL(url, "jenkins.war").toString(), data.core.url);
-        assertEquals(new HashSet<String>(Arrays.asList("tasks", "dummy")), data.plugins.keySet());
-        assertEquals(new URL(url, "tasks.jpi").toString(), data.plugins.get("tasks").url);
+        assertEquals(new HashSet<>(Arrays.asList("htmlpublisher", "dummy")), data.plugins.keySet());
+        assertEquals(new URL(url, "htmlpublisher.jpi").toString(), data.plugins.get("htmlpublisher").url);
         assertEquals("http://nowhere.net/dummy.hpi", data.plugins.get("dummy").url);
 
-        UpdateSite.Plugin tasksPlugin = data.plugins.get("tasks");
-        assertEquals("Wrong name of plugin found", "Task Scanner Plug-in", tasksPlugin.getDisplayName());
+        UpdateSite.Plugin htmlPublisherPlugin = data.plugins.get("htmlpublisher");
+        assertEquals("Wrong name of plugin found", "HTML Publisher", htmlPublisherPlugin.getDisplayName());
     }
 
     @Test public void wikiUrlFromSingleSite() throws Exception {
-        UpdateSite site = getUpdateSite("/plugins/tasks-update-center.json");
+        UpdateSite site = getUpdateSite("/plugins/htmlpublisher-update-center.json");
         overrideUpdateSite(site);
         PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
         assertEquals("https://plugins.jenkins.io/dummy", wrapper.getUrl());
     }
 
     @Test public void wikiUrlFromMoreSites() throws Exception {
-        UpdateSite site = getUpdateSite("/plugins/tasks-update-center.json");
+        UpdateSite site = getUpdateSite("/plugins/htmlpublisher-update-center.json");
         UpdateSite alternativeSite = getUpdateSite("/plugins/alternative-update-center.json", "alternative");
         overrideUpdateSite(site, alternativeSite);
         // sites use different Wiki URL for dummy -> use URL from manifest 
         PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
         assertEquals("https://wiki.jenkins.io/display/JENKINS/dummy", wrapper.getUrl());
-        // sites use the same Wiki URL for tasks -> use it
-        wrapper = buildPluginWrapper("tasks", "https://wiki.jenkins.io/display/JENKINS/tasks");
-        assertEquals("https://plugins.jenkins.io/tasks", wrapper.getUrl());
+        // sites use the same Wiki URL for HTML Publisher -> use it
+        wrapper = buildPluginWrapper("htmlpublisher", "https://plugins.jenkins.io/htmlpublisher");
+        assertEquals("https://plugins.jenkins.io/htmlpublisher", wrapper.getUrl());
         // only one site has it
         wrapper = buildPluginWrapper("foo", "https://wiki.jenkins.io/display/JENKINS/foo");
         assertEquals("https://plugins.jenkins.io/foo", wrapper.getUrl());
@@ -212,6 +217,13 @@ public class UpdateSiteTest {
         assertFalse("isLegacyDefault should be false with null url",new UpdateSite(null,null).isLegacyDefault());
     }
 
+    @Test public void getAvailables() throws Exception {
+        UpdateSite site = getUpdateSite("/plugins/available-update-center.json");
+        List<UpdateSite.Plugin> available = site.getAvailables();
+        assertEquals("ALowTitle", available.get(0).getDisplayName());
+        assertEquals("TheHighTitle", available.get(1).getDisplayName());
+    }
+
     private UpdateSite getUpdateSite(String path) throws Exception {
         return getUpdateSite(path, UpdateCenter.ID_DEFAULT);
     }
@@ -243,7 +255,7 @@ public class UpdateSiteTest {
                 null,
                 new File("/tmp/" + name + ".jpi.disabled"),
                 null,
-                new ArrayList<Dependency>()
+                new ArrayList<>()
         );
     }
 }

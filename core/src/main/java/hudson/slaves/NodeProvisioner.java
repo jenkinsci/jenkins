@@ -23,9 +23,16 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.ExtensionPoint;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Label;
+import hudson.model.LoadStatistics;
+import hudson.model.MultiStageTimeSeries;
+import hudson.model.Node;
+import hudson.model.PeriodicWork;
+import hudson.model.Queue;
 import jenkins.model.Jenkins;
 
 import static hudson.model.LoadStatistics.DECAY;
@@ -209,120 +216,105 @@ public class NodeProvisioner {
         try {
             lastSuggestedReview = System.currentTimeMillis();
             queuedReview = false;
-            // We need to get the lock on Queue for two reasons:
-            // 1. We will potentially adding a lot of nodes and we don't want to fight with Queue#maintain to acquire
-            //    the Queue#lock in order to add each node. Much better is to hold the Queue#lock until all nodes
-            //    that were provisioned since last we checked have been added.
-            // 2. We want to know the idle executors count, which can only be measured if you hold the Queue#lock
-            //    Strictly speaking we don't need an accurate measure for this, but as we had to get the Queue#lock
-            //    anyway, we might as well get an accurate measure.
-            //
-            // We do not need the Queue#lock to get the count of items in the queue as that is a lock-free call
-            // Since adding a node should not (in principle) confuse Queue#maintain (it is only removal of nodes
-            // that causes issues in Queue#maintain) we should be able to remove the need for Queue#lock
-            //
-            // TODO once Nodes#addNode is made lock free, we should be able to remove the requirement for Queue#lock
-            Queue.withLock(() -> {
-                    Jenkins jenkins = Jenkins.get();
-                    // clean up the cancelled launch activity, then count the # of executors that we are about to
-                    // bring up.
+            Jenkins jenkins = Jenkins.get();
+            // clean up the cancelled launch activity, then count the # of executors that we are about to
+            // bring up.
 
-                    int plannedCapacitySnapshot = 0;
+            int plannedCapacitySnapshot = 0;
 
-                    List<PlannedNode> snapPendingLaunches = new ArrayList<>(pendingLaunches.get());
-                    for (PlannedNode f : snapPendingLaunches) {
-                        if (f.future.isDone()) {
-                            try {
-                                Node node = null;
-                                try {
-                                    node = f.future.get();
-                                } catch (InterruptedException e) {
-                                    throw new AssertionError("InterruptedException occurred", e); // since we confirmed that the future is already done
-                                } catch (ExecutionException e) {
-                                    Throwable cause = e.getCause();
-                                    if (!(cause instanceof AbortException)) {
-                                        LOGGER.log(Level.WARNING,
-                                                "Unexpected exception encountered while provisioning agent "
-                                                        + f.displayName,
-                                                cause);
-                                    }
-                                    fireOnFailure(f, cause);
-                                }
-
-                                if (node != null) {
-                                    fireOnComplete(f, node);
-
-                                    try {
-                                        jenkins.addNode(node);
-                                        LOGGER.log(Level.INFO,
-                                                "{0} provisioning successfully completed. "
-                                                        + "We have now {1,number,integer} computer(s)",
-                                                new Object[]{f.displayName, jenkins.getComputers().length});
-                                        fireOnCommit(f, node);
-                                    } catch (IOException e) {
-                                        LOGGER.log(Level.WARNING,
-                                                "Provisioned agent " + f.displayName + " failed to launch",
-                                                e);
-                                        fireOnRollback(f, node, e);
-                                    }
-                                }
-                            } catch (Error e) {
-                                // we are not supposed to try and recover from Errors
-                                throw e;
-                            } catch (Throwable e) {
-                                // Just log it
-                                LOGGER.log(Level.SEVERE,
-                                        "Unexpected uncaught exception encountered while processing agent "
+            List<PlannedNode> snapPendingLaunches = new ArrayList<>(pendingLaunches.get());
+            for (PlannedNode f : snapPendingLaunches) {
+                if (f.future.isDone()) {
+                    try {
+                        Node node = null;
+                        try {
+                            node = f.future.get();
+                        } catch (InterruptedException e) {
+                            throw new AssertionError("InterruptedException occurred", e); // since we confirmed that the future is already done
+                        } catch (ExecutionException e) {
+                            Throwable cause = e.getCause();
+                            if (!(cause instanceof AbortException)) {
+                                LOGGER.log(Level.WARNING,
+                                        "Unexpected exception encountered while provisioning agent "
                                                 + f.displayName,
-                                        e);
-                            } finally {
-                                while (true) {
-                                    List<PlannedNode> orig = pendingLaunches.get();
-                                    List<PlannedNode> repl = new ArrayList<>(orig);
-                                    // the contract for List.remove(o) is that the first element i where
-                                    // (o==null ? get(i)==null : o.equals(get(i)))
-                                    // is true will be removed from the list
-                                    // since PlannedNode.equals(o) is not final and we cannot assume
-                                    // that subclasses do not override with an equals which does not
-                                    // assure object identity comparison, we need to manually
-                                    // do the removal based on instance identity not equality
-                                    boolean changed = false;
-                                    for (Iterator<PlannedNode> iterator = repl.iterator(); iterator.hasNext(); ) {
-                                        PlannedNode p = iterator.next();
-                                        if (p == f) {
-                                            iterator.remove();
-                                            changed = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!changed || pendingLaunches.compareAndSet(orig, repl)) {
-                                        break;
-                                    }
-                                }
-                                f.spent();
+                                        cause);
                             }
-                        } else {
-                            plannedCapacitySnapshot += f.numExecutors;
+                            fireOnFailure(f, cause);
                         }
+
+                        if (node != null) {
+                            fireOnComplete(f, node);
+
+                            try {
+                                jenkins.addNode(node);
+                                LOGGER.log(Level.INFO,
+                                        "{0} provisioning successfully completed. "
+                                                + "We have now {1,number,integer} computer(s)",
+                                        new Object[]{f.displayName, jenkins.getComputers().length});
+                                fireOnCommit(f, node);
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING,
+                                        "Provisioned agent " + f.displayName + " failed to launch",
+                                        e);
+                                fireOnRollback(f, node, e);
+                            }
+                        }
+                    } catch (Error e) {
+                        // we are not supposed to try and recover from Errors
+                        throw e;
+                    } catch (Throwable e) {
+                        // Just log it
+                        LOGGER.log(Level.SEVERE,
+                                "Unexpected uncaught exception encountered while processing agent "
+                                        + f.displayName,
+                                e);
+                    } finally {
+                        while (true) {
+                            List<PlannedNode> orig = pendingLaunches.get();
+                            List<PlannedNode> repl = new ArrayList<>(orig);
+                            // the contract for List.remove(o) is that the first element i where
+                            // (o==null ? get(i)==null : o.equals(get(i)))
+                            // is true will be removed from the list
+                            // since PlannedNode.equals(o) is not final and we cannot assume
+                            // that subclasses do not override with an equals which does not
+                            // assure object identity comparison, we need to manually
+                            // do the removal based on instance identity not equality
+                            boolean changed = false;
+                            for (Iterator<PlannedNode> iterator = repl.iterator(); iterator.hasNext(); ) {
+                                PlannedNode p = iterator.next();
+                                if (p == f) {
+                                    iterator.remove();
+                                    changed = true;
+                                    break;
+                                }
+                            }
+                            if (!changed || pendingLaunches.compareAndSet(orig, repl)) {
+                                break;
+                            }
+                        }
+                        f.spent();
                     }
+                } else {
+                    plannedCapacitySnapshot += f.numExecutors;
+                }
+            }
 
-                    float plannedCapacity = plannedCapacitySnapshot;
-                    plannedCapacitiesEMA.update(plannedCapacity);
+            float plannedCapacity = plannedCapacitySnapshot;
+            plannedCapacitiesEMA.update(plannedCapacity);
 
-                    final LoadStatistics.LoadStatisticsSnapshot snapshot = stat.computeSnapshot();
+            final LoadStatistics.LoadStatisticsSnapshot snapshot = stat.computeSnapshot();
 
-                    int availableSnapshot = snapshot.getAvailableExecutors();
-                    int queueLengthSnapshot = snapshot.getQueueLength();
+            int availableSnapshot = snapshot.getAvailableExecutors();
+            int queueLengthSnapshot = snapshot.getQueueLength();
 
-                    if (queueLengthSnapshot <= availableSnapshot) {
-                        LOGGER.log(Level.FINER,
-                                "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
-                                new Object[]{queueLengthSnapshot, availableSnapshot});
-                        provisioningState = null;
-                    } else {
-                        provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);
-                    }
-            });
+            if (queueLengthSnapshot <= availableSnapshot) {
+                LOGGER.log(Level.FINER,
+                        "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
+                        new Object[]{queueLengthSnapshot, availableSnapshot});
+                provisioningState = null;
+            } else {
+                provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);
+            }
 
             if (provisioningState != null) {
                 List<Strategy> strategies = Jenkins.get().getExtensionList(Strategy.class);
@@ -372,7 +364,7 @@ public class NodeProvisioner {
      * Extension point for node provisioning strategies.
      * @since 1.588
      */
-    public static abstract class Strategy implements ExtensionPoint {
+    public abstract static class Strategy implements ExtensionPoint {
 
         /**
          * Called by {@link NodeProvisioner#update()} to apply this strategy against the specified state.
@@ -705,9 +697,10 @@ public class NodeProvisioner {
                         if (excessWorkload < 0) {
                             break;  // enough agents allocated
                         }
+                        Cloud.CloudState cloudState = new Cloud.CloudState(state.getLabel(), state.getAdditionalPlannedCapacity());
 
                         // Make sure this cloud actually can provision for this label.
-                        if (c.canProvision(state.getLabel())) {
+                        if (c.canProvision(cloudState)) {
                             // provisioning a new node should be conservative --- for example if excessWorkload is 1.4,
                             // we don't want to allocate two nodes but just one.
                             // OTOH, because of the exponential decay, even when we need one agent,
@@ -719,14 +712,13 @@ public class NodeProvisioner {
                             int workloadToProvision = (int) Math.round(Math.floor(excessWorkload + m));
 
                             for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                if (cl.canProvision(c, state.getLabel(), workloadToProvision) != null) {
+                                if (cl.canProvision(c, cloudState, workloadToProvision) != null) {
                                     // consider displaying reasons in a future cloud ux
                                     continue CLOUD;
                                 }
                             }
 
-                            Collection<PlannedNode> additionalCapacities =
-                                    c.provision(state.getLabel(), workloadToProvision);
+                            Collection<PlannedNode> additionalCapacities = c.provision(cloudState, workloadToProvision);
 
                             fireOnStarted(c, state.getLabel(), additionalCapacities);
 
@@ -803,7 +795,9 @@ public class NodeProvisioner {
          * Give some initial warm up time so that statically connected agents
          * can be brought online before we start allocating more.
          */
+        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
         public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
+        @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
         public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
 
         @Override
@@ -811,6 +805,7 @@ public class NodeProvisioner {
             return INITIALDELAY;
         }
 
+        @Override
         public long getRecurrencePeriod() {
             return RECURRENCEPERIOD;
         }

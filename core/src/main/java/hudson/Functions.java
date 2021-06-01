@@ -25,10 +25,16 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.model.Computer;
 import hudson.model.Slave;
-import hudson.security.*;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
+import hudson.security.Permission;
+import hudson.security.SecurityRealm;
 
-import java.text.SimpleDateFormat;
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
@@ -108,6 +114,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,7 +151,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
-import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -158,7 +164,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgument;
+import org.kohsuke.stapler.RawHtmlArgument;
 
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
@@ -166,12 +172,13 @@ import hudson.util.RunList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Utility functions used in views.
@@ -188,6 +195,7 @@ public class Functions {
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
 
     public Functions() {
@@ -233,7 +241,7 @@ public class Functions {
      */
     @Restricted(NoExternalUse.class)
     public static String localDate(Date date) {
-        return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+        return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
     }
 
     public static String rfc822Date(Calendar cal) {
@@ -300,7 +308,7 @@ public class Functions {
          */
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
-
+        context.setVariable("divBasedFormLayout", true);
         context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
         IconSet.initPageVariables(context);
     }
@@ -641,6 +649,7 @@ public class Functions {
     /**
      * Set to true if you need to use the debug version of YUI.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
 
     /**
@@ -753,7 +762,7 @@ public class Functions {
         int i = size.indexOf('x');
         i = Integer.parseInt(i > 0 ? size.substring(0, i) : size) / 10;
         StringBuilder buf = new StringBuilder(30);
-        for (int j = 0; j < i; j++)
+        for (int j = 2; j <= i; j++)
             buf.append("&nbsp;");
         return buf.toString();
     }
@@ -929,7 +938,7 @@ public class Functions {
         if(footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
-                footerURL = "https://jenkins.io/";
+                footerURL = "https://www.jenkins.io/";
             }
         }
         return footerURL;
@@ -965,7 +974,7 @@ public class Functions {
     }
 
     public static List<SCMDescriptor<?>> getSCMDescriptors(AbstractProject<?,?> project) {
-        return SCM._for(project);
+        return SCM._for((Job) project);
     }
 
     /**
@@ -976,7 +985,7 @@ public class Functions {
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
-        return Jenkins.get().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
+        return Jenkins.get().getDescriptorList(ComputerLauncher.class);
     }
 
     /**
@@ -1159,6 +1168,43 @@ public class Functions {
     /**
      * Checks if the current security principal has one of the supplied permissions.
      *
+     * @since 2.238
+     */
+    public static boolean hasAnyPermission(AccessControlled ac, Permission[] permissions) {
+        if (permissions == null || permissions.length == 0) {
+            return true;
+        }
+
+        return ac.hasAnyPermission(permissions);
+    }
+
+    /**
+     * This version is so that the 'hasAnyPermission'
+     * degrades gracefully if "it" is not an {@link AccessControlled} object.
+     * Otherwise it will perform no check and that problem is hard to notice.
+     *
+     * @since 2.238
+     */
+    public static boolean hasAnyPermission(Object object, Permission[] permissions) throws IOException, ServletException {
+        if (permissions == null || permissions.length == 0) {
+            return true;
+        }
+
+        if (object instanceof AccessControlled)
+            return hasAnyPermission((AccessControlled) object, permissions);
+        else {
+            AccessControlled ac = Stapler.getCurrentRequest().findAncestorObject(AccessControlled.class);
+            if (ac != null) {
+                return hasAnyPermission(ac, permissions);
+            }
+            
+            return hasAnyPermission(Jenkins.get(), permissions);
+        }
+    }
+
+    /**
+     * Checks if the current security principal has one of the supplied permissions.
+     *
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
      *
@@ -1214,6 +1260,7 @@ public class Functions {
             return buf.append(c.getName());
         }
 
+        @Override
         public int compareTo(Tag that) {
             int r = Double.compare(that.ordinal, this.ordinal);
             if (r!=0)   return r; // descending for ordinal by reversing the order for compare
@@ -1409,7 +1456,7 @@ public class Functions {
     private static class ThreadSorterBase {
         protected Map<Long,String> map = new HashMap<>();
 
-        public ThreadSorterBase() {
+        ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
@@ -1440,6 +1487,7 @@ public class Functions {
             return map.get(ti.getThreadId());
         }
 
+        @Override
         public int compare(ThreadInfo a, ThreadInfo b) {
             int result = compare(a.getThreadId(), b.getThreadId());
             if (result == 0)
@@ -1452,6 +1500,7 @@ public class Functions {
 
         private static final long serialVersionUID = 5053631350439192685L;
 
+        @Override
         public int compare(Thread a, Thread b) {
             int result = compare(a.getId(), b.getId());
             if (result == 0)
@@ -1502,9 +1551,6 @@ public class Functions {
                         sb.append('\n');
                         break;
                     case WAITING:
-                        sb.append("\t-  waiting on ").append(ti.getLockInfo());
-                        sb.append('\n');
-                        break;
                     case TIMED_WAITING:
                         sb.append("\t-  waiting on ").append(ti.getLockInfo());
                         sb.append('\n');
@@ -1665,7 +1711,7 @@ public class Functions {
                 summary = summary.substring(0, summary.length() - suffix.length());
             }
         }
-        s.append(summary).append(IOUtils.LINE_SEPARATOR);
+        s.append(summary).append(System.lineSeparator());
         StackTraceElement[] trace = t.getStackTrace();
         int end = trace.length;
         if (higher != null) {
@@ -1679,7 +1725,7 @@ public class Functions {
             }
         }
         for (int i = 0; i < end; i++) {
-            s.append(prefix).append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
+            s.append(prefix).append("\tat ").append(trace[i]).append(System.lineSeparator());
         }
     }
 
@@ -1720,7 +1766,7 @@ public class Functions {
      */
     @Deprecated
     @Restricted(DoNotUse.class)
-    @RestrictedSince("since TODO")
+    @RestrictedSince("2.173")
     public static String toCCStatus(Item i) {
         return "Unknown";
     }
@@ -1731,7 +1777,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return ACL.isAnonymous(Jenkins.getAuthentication());
+        return ACL.isAnonymous2(Jenkins.getAuthentication2());
     }
 
     /**
@@ -1835,7 +1881,7 @@ public class Functions {
     /**
      * Obtains the host name of the Hudson server that clients can use to talk back to.
      * <p>
-     * This is primarily used in {@code slave-agent.jnlp.jelly} to specify the destination
+     * This is primarily used in {@code jenkins-agent.jnlp.jelly} to specify the destination
      * that the agents talk to.
      */
     public String getServerName() {
@@ -1909,7 +1955,7 @@ public class Functions {
      * Gets all the {@link PageDecorator}s.
      */
     public static List<PageDecorator> getPageDecorators() {
-        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608 
+        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see JENKINS-3608
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
@@ -2013,21 +2059,70 @@ public class Functions {
      * Used by {@code <f:password/>} so that we send an encrypted value to the client.
      */
     public String getPasswordValue(Object o) {
-        if (o==null)    return null;
-        if (o instanceof Secret) {
-            StaplerRequest req = Stapler.getCurrentRequest();
+        if (o == null) {
+            return null;
+        }
+
+        /*
+         Return plain value if it's the default value for PasswordParameterDefinition.
+         This needs to work even when the user doesn't have CONFIGURE permission
+         */
+        if (o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
+            return o.toString();
+        }
+
+        /* Mask from Extended Read */
+        StaplerRequest req = Stapler.getCurrentRequest();
+        if (o instanceof Secret || Secret.BLANK_NONSECRET_PASSWORD_FIELDS_WITHOUT_ITEM_CONFIGURE) {
             if (req != null) {
                 Item item = req.findAncestorObject(Item.class);
                 if (item != null && !item.hasPermission(Item.CONFIGURE)) {
                     return "********";
                 }
+                Computer computer = req.findAncestorObject(Computer.class);
+                if (computer != null && !computer.hasPermission(Computer.CONFIGURE)) {
+                    return "********";
+                }
             }
+        }
+
+        /* Return encrypted value if it's a Secret */
+        if (o instanceof Secret) {
             return ((Secret) o).getEncryptedValue();
         }
-        if (getIsUnitTest() && !o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
-            throw new SecurityException("attempted to render plaintext ‘" + o + "’ in password field; use a getter of type Secret instead");
+
+        /* Log a warning if we're in development mode (core or plugin): There's an f:password backed by a non-Secret */
+        if (req != null && (Boolean.getBoolean("hudson.hpi.run") || Boolean.getBoolean("hudson.Main.development"))) {
+            LOGGER.log(Level.WARNING, () -> "<f:password/> form control in " + getJellyViewsInformationForCurrentRequest() +
+                    " is not backed by hudson.util.Secret. Learn more: https://www.jenkins.io/redirect/hudson.util.Secret");
         }
-        return o.toString();
+
+        /* Return plain value if it's not a Secret and the escape hatch is set */
+        if (!Secret.AUTO_ENCRYPT_PASSWORD_CONTROL) {
+            return o.toString();
+        }
+
+        /* Make it a Secret and return its encrypted value */
+        return Secret.fromString(o.toString()).getEncryptedValue();
+    }
+
+    private String getJellyViewsInformationForCurrentRequest() {
+        final Thread thread = Thread.currentThread();
+        String threadName = thread.getName();
+
+        // try to simplify based on org.kohsuke.stapler.jelly.JellyViewScript
+        // Views are expected to contain a slash and a period, neither as the first char, and the last slash before the first period: Class/view.jelly
+        // Nested classes use slashes, so we do not expect period before: Class/Nested/view.jelly
+        String views = Arrays.stream(threadName.split(" ")).filter(part -> {
+            int slash = part.lastIndexOf("/");
+            int firstPeriod = part.indexOf(".");
+            return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
+        }).collect(Collectors.joining(" "));
+        if (StringUtils.isBlank(views)) {
+            // fallback to full thread name if there are no apparent views
+            return threadName;
+        }
+        return views;
     }
 
     public List filterDescriptors(Object context, Iterable descriptors) {
@@ -2108,11 +2203,7 @@ public class Functions {
 
     public static ArrayList<CLICommand> getCLICommands() {
         ArrayList<CLICommand> all = new ArrayList<>(CLICommand.all());
-        Collections.sort(all, new Comparator<CLICommand>() {
-            public int compare(CLICommand cliCommand, CLICommand cliCommand1) {
-                return cliCommand.getName().compareTo(cliCommand1.getName());
-            }
-        });
+        all.sort(Comparator.comparing(CLICommand::getName));
         return all;
     }
 
@@ -2193,15 +2284,6 @@ public class Functions {
             rsp.setHeader("X-Hudson","1.395");
             rsp.setHeader("X-Jenkins", Jenkins.VERSION);
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
-
-            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal != null) { // headers used only by deprecated Remoting-based CLI
-                int p = tal.getAdvertisedPort();
-                rsp.setIntHeader("X-Hudson-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
-                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
-            }
         }
     }
 

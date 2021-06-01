@@ -67,9 +67,9 @@ public class MissingClassTelemetry extends Telemetry {
     private static MissingClassEvents events = new MissingClassEvents();
 
     // When we begin to gather these data
-    private final static LocalDate START = LocalDate.of(2019, 4, 1);
+    private static final LocalDate START = LocalDate.of(2019, 4, 1);
     // Gather for 2 years (who knows how long people will need to migrate to Java 11)
-    private final static LocalDate END = START.plusMonths(24);
+    private static final LocalDate END = START.plusMonths(24);
 
     // The types of exceptions which can be reported
     private static final Set reportableExceptions =
@@ -82,7 +82,7 @@ public class MissingClassTelemetry extends Telemetry {
      * Packages removed from java8 up to java11
      * https://blog.codefx.org/java/java-11-migration-guide/
      */
-    private final static String[] MOVED_PACKAGES = new String[] {"javax.activation", "javax.annotation", "javax.jws",
+    private static final String[] MOVED_PACKAGES = new String[] {"javax.activation", "javax.annotation", "javax.jws",
             "javax.rmi", "javax.transaction", "javax.xml.bind", "javax.xml.soap", "javax.xml.ws", "org.omg",
             "javax.activity", "com.sun", "sun"};
 
@@ -107,7 +107,9 @@ public class MissingClassTelemetry extends Telemetry {
             {"org.codehaus.groovy.control.ClassNodeResolver", "tryAsLoaderClassOrScript"},
             {"org.kohsuke.stapler.RequestImpl$TypePair", "convertJSON"},
             {"net.bull.javamelody.FilterContext", "isMojarraAvailable"}, // JENKINS-60725
-            {"hudson.remoting.RemoteClassLoader$ClassLoaderProxy", "fetch3"} // JENKINS-61521
+            {"hudson.remoting.RemoteClassLoader$ClassLoaderProxy", "fetch3"}, // JENKINS-61521
+            //Don't add "java.base/" before sun.reflect.generics.factory.CoreReflectionFactory
+            {"sun.reflect.generics.factory.CoreReflectionFactory", "makeNamedType"}, // JENKINS-61920
             
     };
 
@@ -239,13 +241,18 @@ public class MissingClassTelemetry extends Telemetry {
             // We call the methods in this order because if the missing class is not java related, we don't loop over the
             // stack trace to look if it's not thrown from an ignored place avoiding an impact on performance.
             if (isFromMovedPackage(name) && !calledFromIgnoredPlace(e)) {
-                events.put(name, e);
-                if (LOGGER.isLoggable(Level.WARNING))
+                if (LOGGER.isLoggable(Level.WARNING) && !wasAlreadyReported(name)) {
                     LOGGER.log(Level.WARNING, "Added a missed class for missing class telemetry. Class: " + name, e);
+                }
+                events.put(name, e);
             }
         }
     }
 
+    private static boolean wasAlreadyReported(@NonNull String className) {
+        return events.alreadyRegistered(className);
+    }
+    
     /**
      * Determine if the exception specified was thrown from an ignored place
      * @param throwable The exception thrown

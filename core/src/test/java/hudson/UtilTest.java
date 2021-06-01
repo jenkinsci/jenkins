@@ -30,26 +30,37 @@ import hudson.util.StreamTaskListener;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -57,8 +68,6 @@ import static org.junit.Assert.*;
 public class UtilTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-
-    @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void testReplaceMacro() {
@@ -124,7 +133,7 @@ public class UtilTest {
         assertEquals(Messages.Util_millisecond(17), Util.getTimeSpanString(17L));
         // 1ms
         assertEquals(Messages.Util_millisecond(1), Util.getTimeSpanString(1L));
-        // Test HUDSON-2843 (locale with comma as fraction separator got exception for <10 sec)
+        // Test JENKINS-2843 (locale with comma as fraction separator got exception for <10 sec)
         Locale saveLocale = Locale.getDefault();
         Locale.setDefault(Locale.GERMANY);
         try {
@@ -143,7 +152,7 @@ public class UtilTest {
     public void testEncodeSpaces() {
         final String urlWithSpaces = "http://hudson/job/Hudson Job";
         String encoded = Util.encode(urlWithSpaces);
-        assertEquals(encoded, "http://hudson/job/Hudson%20Job");
+        assertEquals("http://hudson/job/Hudson%20Job", encoded);
     }
 
     /**
@@ -334,11 +343,12 @@ public class UtilTest {
 
 		private String error;
 
-		public DigesterThread(String string, String expectedDigest) {
+		DigesterThread(String string, String expectedDigest) {
     		this.string = string;
     		this.expectedDigest = expectedDigest;
     	}
 
+		@Override
 		public void run() {
 			for (int i=0; i < 1000; i++) {
 				String digest = Util.getDigestOf(this.string);
@@ -351,6 +361,7 @@ public class UtilTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testIsAbsoluteUri() {
         assertTrue(Util.isAbsoluteUri("http://foobar/"));
         assertTrue(Util.isAbsoluteUri("mailto:kk@kohsuke.org"));
@@ -495,8 +506,8 @@ public class UtilTest {
 
         assertEquals("Non-permission bits should be ignored", PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540));
 
-        expectedException.expectMessage(startsWith("Invalid mode"));
-        Util.modeToPermissions(01777);
+        Exception e = Assert.assertThrows(Exception.class, () -> Util.modeToPermissions(01777));
+        assertThat(e.getMessage(), startsWith("Invalid mode"));
     }
 
     @Test
@@ -515,30 +526,30 @@ public class UtilTest {
 
     @Test
     public void testDifferenceDays() throws Exception {
-        Date may_6_10am = parseDate("2018-05-06 10:00:00"); 
-        Date may_6_11pm55 = parseDate("2018-05-06 23:55:00"); 
-        Date may_7_01am = parseDate("2018-05-07 01:00:00"); 
-        Date may_7_11pm = parseDate("2018-05-07 11:00:00"); 
-        Date may_8_08am = parseDate("2018-05-08 08:00:00"); 
-        Date june_3_08am = parseDate("2018-06-03 08:00:00"); 
-        Date june_9_08am = parseDate("2018-06-09 08:00:00"); 
-        Date june_9_08am_nextYear = parseDate("2019-06-09 08:00:00"); 
-        
+        Date may_6_10am = parseDate("2018-05-06 10:00:00");
+        Date may_6_11pm55 = parseDate("2018-05-06 23:55:00");
+        Date may_7_01am = parseDate("2018-05-07 01:00:00");
+        Date may_7_11pm = parseDate("2018-05-07 11:00:00");
+        Date may_8_08am = parseDate("2018-05-08 08:00:00");
+        Date june_3_08am = parseDate("2018-06-03 08:00:00");
+        Date june_9_08am = parseDate("2018-06-09 08:00:00");
+        Date june_9_08am_nextYear = parseDate("2019-06-09 08:00:00");
+
         assertEquals(0, Util.daysBetween(may_6_10am, may_6_11pm55));
         assertEquals(1, Util.daysBetween(may_6_10am, may_7_01am));
         assertEquals(1, Util.daysBetween(may_6_11pm55, may_7_01am));
         assertEquals(2, Util.daysBetween(may_6_10am, may_8_08am));
         assertEquals(1, Util.daysBetween(may_7_11pm, may_8_08am));
-        
+
         // larger scale
         assertEquals(28, Util.daysBetween(may_6_10am, june_3_08am));
         assertEquals(34, Util.daysBetween(may_6_10am, june_9_08am));
         assertEquals(365 + 34, Util.daysBetween(may_6_10am, june_9_08am_nextYear));
-        
+
         // reverse order
         assertEquals(-1, Util.daysBetween(may_8_08am, may_7_11pm));
     }
-    
+
     private Date parseDate(String dateString) throws ParseException {
         return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dateString);
     }
@@ -558,7 +569,7 @@ public class UtilTest {
         File aa = new File(a, "aa");
         aa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa");
+        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
 
         File b = new File(root, "b");
         b.mkdir();
@@ -579,5 +590,35 @@ public class UtilTest {
         // intermediate symlinks are NOT resolved
         assertNull(Util.resolveSymlinkToFile(new File(_a, "aa")));
         assertNull(Util.resolveSymlinkToFile(new File(_a, "aa/aa.txt")));
+    }
+
+    @Test
+    public void ifOverriddenSuccess() {
+        assertTrue(Util.ifOverridden(() -> true, BaseClass.class, DerivedClassSuccess.class, "method"));
+    }
+
+    @Test
+    public void ifOverriddenFailure() {
+        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> {
+            Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method");
+        });
+        assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
+    }
+
+    public static class BaseClass {
+        protected String method() {
+            return "base";
+        }
+    }
+
+    public static class DerivedClassFailure extends BaseClass {
+
+    }
+
+    public static class DerivedClassSuccess extends BaseClass {
+        @Override
+        protected String method() {
+            return DerivedClassSuccess.class.getName();
+        }
     }
 }

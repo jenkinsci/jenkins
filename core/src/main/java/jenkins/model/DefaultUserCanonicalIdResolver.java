@@ -59,6 +59,7 @@ public class DefaultUserCanonicalIdResolver extends User.CanonicalIdResolver {
     }
 
     public static final Descriptor<User.CanonicalIdResolver> DESCRIPTOR = new Descriptor<User.CanonicalIdResolver>() {
+        @Override
         public String getDisplayName() {
             return "compute default user ID";
         }

@@ -14,6 +14,8 @@ import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -68,6 +70,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported(inline=true)
         public final List<MenuItem> items = new ArrayList<>();
         
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
             rsp.serveExposedBean(req,this,Flavor.JSON);
         }
@@ -126,6 +129,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 items.add(item);
             }
             return this;
+        }
+
+        /**
+         * Add a header row (no icon, no URL, rendered in header style).
+         *
+         * @since 2.231
+         */
+        @Restricted(DoNotUse.class) // manage.jelly only
+        public ContextMenu addHeader(String title) {
+            final MenuItem item = new MenuItem().withDisplayName(title);
+            item.header = true;
+            return add(item);
         }
 
         /**
@@ -202,10 +217,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 request.setAttribute("mode","side-panel");
                 // run sidepanel but ignore generated HTML
                 facet.scriptInvoker.invokeScript(request,response,new Script() {
+                    @Override
                     public Script compile() throws JellyException {
                         return this;
                     }
 
+                    @Override
                     public void run(JellyContext context, XMLOutput output) throws JellyTagException {
                         Functions.initPageVariables(context);
                         s.run(context,output);
@@ -258,6 +275,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @since 1.512
          */
         @Exported public boolean requiresConfirmation;
+
+
+        /**
+         * True to display this item as a section header.
+         * @since 2.231
+         */
+        @Exported public boolean header;
 
         /**
          * If this is a submenu, definition of subitems.

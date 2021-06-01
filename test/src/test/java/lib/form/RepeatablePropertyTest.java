@@ -24,81 +24,98 @@
 
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.InvisibleAction;
+import hudson.model.RootAction;
 import jenkins.model.Jenkins;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Predicate;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class RepeatablePropertyTest extends HudsonTestCase implements Describable<RepeatablePropertyTest> {
+public class RepeatablePropertyTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     private static final String VIEW_WITHOUT_DEFAULT = "noDefault";
     private static final String VIEW_WITH_DEFAULT = "withDefault";
     
-    public ArrayList<ExcitingObject> testRepeatable;
-    public ArrayList<ExcitingObject> defaults;
-    public List<ExcitingObjectContainer> testRepeatableContainer;
+    private RootActionImpl rootAction;
     
+    @Before
+    public void setUp() {
+        rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+    }
+
+    @Test
     public void testSimple() throws Exception {
-        testRepeatable = createRepeatable();
-        assertFormContents(VIEW_WITHOUT_DEFAULT, testRepeatable);
+        rootAction.testRepeatable = createRepeatable();
+        assertFormContents(VIEW_WITHOUT_DEFAULT, rootAction.testRepeatable);
     }
     
+    @Test
     public void testNullFieldNoDefault() throws Exception {
-        assertFormContents(VIEW_WITHOUT_DEFAULT, new ArrayList<ExcitingObject>());
+        assertFormContents(VIEW_WITHOUT_DEFAULT, new ArrayList<>());
     }
     
+    @Test
     public void testNullFieldWithDefault() throws Exception {
-        defaults = createRepeatable();
-        assertFormContents(VIEW_WITH_DEFAULT, defaults);
+        rootAction.defaults = createRepeatable();
+        assertFormContents(VIEW_WITH_DEFAULT, rootAction.defaults);
     }
     
+    @Test
     public void testFieldNotNullWithDefaultIgnoresDefaults() throws Exception {
-        testRepeatable = createRepeatable();
-        defaults = new ArrayList<ExcitingObject>(Arrays.asList(
+        rootAction.testRepeatable = createRepeatable();
+        rootAction.defaults = new ArrayList<>(Arrays.asList(
            new ExcitingObject("This default should be ignored"),
            new ExcitingObject("Ignore me too")
         ));
-        assertFormContents(VIEW_WITH_DEFAULT, testRepeatable);
+        assertFormContents(VIEW_WITH_DEFAULT, rootAction.testRepeatable);
     }
 
     @Issue("JENKINS-37599")
+    @Test
     public void testNestedRepeatableProperty() throws Exception {
-        testRepeatableContainer = Collections.emptyList();
+        rootAction.testRepeatableContainer = Collections.emptyList();
         // minimum="1" is set for the upper one,
         // the form should be:
         // * 1 ExcitingObjectCotainer
         // * no ExcitingObject
         final HtmlForm form = getForm("nested");
-        List<HtmlTextInput> containerNameInputs = form.getElementsByAttribute("input", "type", "text");
-        CollectionUtils.filter(containerNameInputs, new Predicate<HtmlTextInput>() {
-            @Override
-            public boolean evaluate(HtmlTextInput input) {
-                return input.getNameAttribute().endsWith(".containerName");
-            }
-        });
-        List<HtmlTextInput> greatPropertyInputs = form.getElementsByAttribute("input", "type", "text");
-        CollectionUtils.filter(greatPropertyInputs, new Predicate<HtmlTextInput>() {
-            @Override
-            public boolean evaluate(HtmlTextInput input) {
-                return input.getNameAttribute().endsWith(".greatProperty");
-            }
-        });
+        List<HtmlTextInput> containerNameInputs =
+                form.getElementsByAttribute("input", "type", "text").stream()
+                        .map(HtmlTextInput.class::cast)
+                        .filter((input) -> input.getNameAttribute().endsWith(".containerName"))
+                        .collect(Collectors.toList());
+        List<HtmlTextInput> greatPropertyInputs =
+                form.getElementsByAttribute("input", "type", "text").stream()
+                        .map(HtmlTextInput.class::cast)
+                        .filter((input) -> input.getNameAttribute().endsWith(".greatProperty"))
+                        .collect(Collectors.toList());
         assertEquals(1, containerNameInputs.size());
         assertEquals(0, greatPropertyInputs.size());
     }
@@ -113,7 +130,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
     
     private List<HtmlTextInput> toTextInputList(final List<HtmlElement> inputs) {
         assertNotNull(inputs);
-        final List<HtmlTextInput> textInputList = new ArrayList<HtmlTextInput>();
+        final List<HtmlTextInput> textInputList = new ArrayList<>();
         for (HtmlElement input : inputs) {
             assertTrue(input instanceof HtmlTextInput);
             textInputList.add((HtmlTextInput) input);
@@ -122,7 +139,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
     }
     
     private ArrayList<ExcitingObject> createRepeatable() {
-        return new ArrayList<ExcitingObject>(Arrays.asList(
+        return new ArrayList<>(Arrays.asList(
            new ExcitingObject("A nice thing"),
            new ExcitingObject("I'm even better"),
            new ExcitingObject("Don't bother, I'm not exciting at all")
@@ -130,18 +147,11 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
     }
 
     private HtmlForm getForm(final String viewName) throws Exception {
-        final HtmlPage page = createWebClient().goTo("self/" + viewName);
+        final HtmlPage page = j.createWebClient().goTo("self/" + viewName);
         final HtmlForm form = page.getFormByName("config");
         return form;
     }
 
-    public DescriptorImpl getDescriptor() {
-        return jenkins.getDescriptorByType(DescriptorImpl.class);
-    }
-
-    @Extension
-    public static final class DescriptorImpl extends Descriptor<RepeatablePropertyTest> {}
-        
     public static final class ExcitingObject implements Describable<ExcitingObject> {
         private final String greatProperty;
         @DataBoundConstructor
@@ -151,6 +161,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
         public String getGreatProperty() {
             return greatProperty;
         }
+        @Override
         public Descriptor<ExcitingObject> getDescriptor() {
             return Jenkins.get().getDescriptor(ExcitingObject.class);
         }
@@ -159,7 +170,7 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ExcitingObject that = (ExcitingObject) o;
-            if (greatProperty != null ? !greatProperty.equals(that.greatProperty) : that.greatProperty != null)
+            if (!Objects.equals(greatProperty, that.greatProperty))
                 return false;
             return true;
         }
@@ -197,6 +208,27 @@ public class RepeatablePropertyTest extends HudsonTestCase implements Describabl
         }
         @Extension
         public static final class DescriptorImpl extends Descriptor<ExcitingObjectContainer> {
+        }
+    }
+
+    @TestExtension
+    public static final class RootActionImpl extends InvisibleAction implements Describable<RootActionImpl>, RootAction {
+
+        public ArrayList<ExcitingObject> testRepeatable;
+        public ArrayList<ExcitingObject> defaults;
+        public List<ExcitingObjectContainer> testRepeatableContainer;
+
+        @Override
+        public Descriptor<RootActionImpl> getDescriptor() {
+            return Objects.requireNonNull(Jenkins.get().getDescriptorByType(DescriptorImpl.class));
+        }
+
+        @TestExtension
+        public static final class DescriptorImpl extends Descriptor<RootActionImpl> {}
+
+        @Override
+        public String getUrlName() {
+            return "self";
         }
     }
 }

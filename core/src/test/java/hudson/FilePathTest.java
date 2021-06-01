@@ -28,6 +28,7 @@ import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
+import hudson.slaves.WorkspaceList;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import org.apache.commons.io.FileUtils;
@@ -41,23 +42,51 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
-import java.io.*;
-import java.net.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -135,6 +164,7 @@ public class FilePathTest {
         List<Callable<Integer>> r = new ArrayList<>();
         for (int i=0; i<100; i++) {
             r.add(new Callable<Integer>() {
+                @Override
                 public Integer call() throws Exception {
                     class Sink extends OutputStream {
                         private Exception closed;
@@ -235,11 +265,11 @@ public class FilePathTest {
     @Test public void archiveBug() throws Exception {
             FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
             d.child("test").touch(0);
-            d.zip(new NullOutputStream());
-            d.zip(new NullOutputStream(),"**/*");
+            d.zip(NullOutputStream.NULL_OUTPUT_STREAM);
+            d.zip(NullOutputStream.NULL_OUTPUT_STREAM,"**/*");
     }
 
-    @Test public void normalization() throws Exception {
+    @Test public void normalization() {
         compare("abc/def\\ghi","abc/def\\ghi"); // allow mixed separators
 
         {// basic '.' trimming
@@ -293,7 +323,7 @@ public class FilePathTest {
     }
 
     @Issue("JENKINS-6494")
-    @Test public void getParent() throws Exception {
+    @Test public void getParent() {
         FilePath fp = new FilePath((VirtualChannel)null, "/abc/def");
         assertEquals("/abc", (fp = fp.getParent()).getRemote());
         assertEquals("/", (fp = fp.getParent()).getRemote());
@@ -491,7 +521,7 @@ public class FilePathTest {
     }
 
     @Issue("JENKINS-13649")
-    @Test public void multiSegmentRelativePaths() throws Exception {
+    @Test public void multiSegmentRelativePaths() {
         VirtualChannel d = Mockito.mock(VirtualChannel.class);
         FilePath winPath = new FilePath(d, "c:\\app\\jenkins\\workspace");
         FilePath nixPath = new FilePath(d, "/opt/jenkins/workspace");
@@ -549,7 +579,7 @@ public class FilePathTest {
     }
     
     @Issue("JENKINS-5253")
-    public void testValidateCaseSensitivity() throws Exception {
+    @Test public void testValidateCaseSensitivity() throws Exception {
         File tmp = Util.createTempDir();
         try {
             FilePath d = new FilePath(channels.french, tmp.getPath());
@@ -804,6 +834,20 @@ public class FilePathTest {
         assertFalse("could not delete target", Files.exists(toDelete));
     }
 
+    @Test
+    @Issue("JENKINS-44909")
+    public void deleteSuffixesRecursive() throws Exception {
+        File deleteSuffixesRecursiveFolder = temp.newFolder("deleteSuffixesRecursive");
+        FilePath filePath = new FilePath(deleteSuffixesRecursiveFolder);
+        FilePath suffix = filePath.withSuffix(WorkspaceList.COMBINATOR + "suffixed");
+        FilePath textTempFile = suffix.createTextTempFile("tmp", null, "dummy", true);
+
+        assertThat(textTempFile.exists(), is(true));
+        
+        filePath.deleteSuffixesRecursive();
+        assertThat(textTempFile.exists(), is(false));
+    }
+
     @Test public void deleteRecursiveOnWindows() throws Exception {
         assumeTrue("Uses Windows-specific features", Functions.isWindows());
         Path targetDir = temp.newFolder("targetDir").toPath();
@@ -1046,12 +1090,12 @@ public class FilePathTest {
         assertThat(nonexistent.isDescendant("."), is(false));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @Issue("SECURITY-904")
     public void isDescendant_throwIfAbsolutePathGiven() throws Exception {
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
         rootFolder.mkdirs();
-        rootFolder.isDescendant(temp.newFile().getAbsolutePath());
+        assertThrows(IllegalArgumentException.class, () -> rootFolder.isDescendant(temp.newFile().getAbsolutePath()));
     }
 
     @Test

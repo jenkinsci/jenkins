@@ -38,15 +38,30 @@ import hudson.security.Permission;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-import org.acegisecurity.Authentication;
+import hudson.views.StatusFilter;
+import hudson.views.ViewJobFilter;
+import jenkins.model.Jenkins;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,6 +79,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
 public class ListViewTest {
@@ -74,7 +90,7 @@ public class ListViewTest {
 
     @Issue("JENKINS-15309")
     @LocalData
-    @Test public void nullJobNames() throws Exception {
+    @Test public void nullJobNames() {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
     }
     
@@ -148,15 +164,15 @@ public class ListViewTest {
         v.add(p1);
         v.add(p2);
         v.add(p3);
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2, p3)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2, p3)), new HashSet<>(v.getItems()));
         sub.renameTo("lower");
         MockFolder stuff = top.createProject(MockFolder.class, "stuff");
         Items.move(p1, stuff);
         p3.delete();
         top.createProject(FreeStyleProject.class, "p3");
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
         top.renameTo("upper");
-        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<TopLevelItem>(v.getItems()));
+        assertEquals(new HashSet<TopLevelItem>(Arrays.asList(p1, p2)), new HashSet<>(v.getItems()));
     }
 
     @Issue("JENKINS-23893")
@@ -234,7 +250,7 @@ public class ListViewTest {
         ListView v = new ListView("v", j.jenkins);
         v.add(p);
         j.jenkins.addView(v);
-        try (ACLContext acl = ACL.as(User.get("alice"))) {
+        try (ACLContext acl = ACL.as(User.getOrCreateByIdOrFullName("alice"))) {
             p.renameTo("p2");
         }
         assertEquals(Collections.singletonList(p), v.getItems());
@@ -247,7 +263,7 @@ public class ListViewTest {
         StaplerRequest req = mock(StaplerRequest.class);
         StaplerResponse rsp = mock(StaplerResponse.class);
 
-        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), "UTF-8");
+        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), StandardCharsets.UTF_8);
 
         when(req.getMethod()).thenReturn("POST");
         when(req.getParameter("name")).thenReturn("job1");
@@ -281,7 +297,78 @@ public class ListViewTest {
             view.doRemoveJobFromView("job2");
             fail("Remove job2");
         } catch(Failure e) {
-            assertEquals(e.getMessage(), "Query parameter 'name' does not correspond to a known and readable item");
+            assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
+        }
+    }
+
+    @Test public void getItemsNames() throws Exception {
+        MockFolder f1 = j.createFolder("f1");
+        MockFolder f2 = j.createFolder("f2");
+        FreeStyleProject p1 = j.createFreeStyleProject("p1");
+        FreeStyleProject p2 = j.createFreeStyleProject("p2");
+        FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
+        FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
+        ListView lv = new ListView("view", Jenkins.get());
+        lv.setRecurse(false);
+        Set<String> names = new TreeSet<>();
+        names.add("p1");
+        names.add("p2");
+        names.add("f1/p3");
+        names.add("f2/p4");
+        lv.setJobNames(names);
+        assertThat(lv.getItems(), containsInAnyOrder(p1,p2));
+        lv.setRecurse(true);
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2, p3, p4));
+    }
+
+    @Test public void getItemsRegex() throws Exception {
+        MockFolder f1 = j.createFolder("f1");
+        MockFolder f2 = j.createFolder("f2");
+        FreeStyleProject p1 = j.createFreeStyleProject("p1");
+        FreeStyleProject p2 = j.createFreeStyleProject("p2");
+        FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
+        FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
+        ListView lv = new ListView("view", Jenkins.get());
+        lv.setRecurse(false);
+        lv.setIncludeRegex("p.*");
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2));
+        lv.setRecurse(true);
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2));
+        lv.setIncludeRegex("f.*");
+        assertThat(lv.getItems(), containsInAnyOrder(p3, p4, f1, f2));
+        lv.setRecurse(false);
+        assertThat(lv.getItems(), containsInAnyOrder(f1, f2));
+    }
+
+    @Test public void withJobViewFilter() throws Exception {
+        MockFolder f1 = j.createFolder("f1");
+        MockFolder f2 = j.createFolder("f2");
+        FreeStyleProject p1 = j.createFreeStyleProject("p1");
+        FreeStyleProject p2 = j.createFreeStyleProject("p2");
+        FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
+        FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
+        ListView lv = new ListView("view", Jenkins.get());
+        lv.setJobFilters(Collections.singletonList(new AllFilter()));
+        lv.setRecurse(false);
+        assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2));
+        lv.setRecurse(true);
+        assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2, p3, p4));
+    }
+
+    @Issue("JENKINS-62661")
+    @Test @LocalData public void migrateStatusFilter() {
+        View v = j.jenkins.getView("testview");
+        assertThat(v, notNullValue());
+        assertThat(v, instanceOf(ListView.class));
+        ListView lv = (ListView) v;
+        StatusFilter sf = lv.getJobFilters().get(StatusFilter.class);
+        assertThat(sf.getStatusFilter(), is(true));
+    }
+
+    private static final class AllFilter extends ViewJobFilter {
+        @Override
+        public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
+            return new ArrayList<>(all);
         }
     }
 
@@ -294,8 +381,8 @@ public class ListViewTest {
         }
         @Override public ACL getACL(View item) {
             return new ACL() {
-                @Override public boolean hasPermission(Authentication a, Permission permission) {
-                    return a.equals(SYSTEM);
+                @Override public boolean hasPermission2(Authentication a, Permission permission) {
+                    return a.equals(SYSTEM2);
                 }
             };
         }
@@ -304,7 +391,7 @@ public class ListViewTest {
     private static class Stream extends ServletInputStream {
         private final InputStream inner;
 
-        public Stream(final InputStream inner) {
+        Stream(final InputStream inner) {
             this.inner = inner;
         }
 

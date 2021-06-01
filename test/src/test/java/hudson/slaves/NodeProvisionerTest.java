@@ -25,7 +25,12 @@ package hudson.slaves;
 
 import hudson.BulkChange;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Label;
+import hudson.model.Result;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +41,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -74,6 +80,7 @@ public class NodeProvisionerTest {
          */
         public Builder createBuilder() {
             return new Builder() {
+                @Override
                 public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                     block();
                     return true;
@@ -184,12 +191,12 @@ public class NodeProvisionerTest {
 
         // no build on the master, to make sure we get everything from the cloud
         r.jenkins.setNumExecutors(0);
-        r.jenkins.setNodes(Collections.<Node>emptyList());
+        r.jenkins.setNodes(Collections.emptyList());
         return cloud;
     }
 
     private List<FreeStyleProject> create5SlowJobs(Latch l) throws IOException {
-        List<FreeStyleProject> jobs = new ArrayList<FreeStyleProject>();
+        List<FreeStyleProject> jobs = new ArrayList<>();
         for( int i=0; i<l.init; i++)
             //set a large delay, to simulate the situation where we need to provision more slaves
             // to keep up with the load
@@ -202,7 +209,7 @@ public class NodeProvisionerTest {
      */
     private List<Future<FreeStyleBuild>> buildAll(List<FreeStyleProject> jobs) {
         System.out.println("Scheduling builds for "+jobs.size()+" jobs");
-        List<Future<FreeStyleBuild>> builds = new ArrayList<Future<FreeStyleBuild>>();
+        List<Future<FreeStyleBuild>> builds = new ArrayList<>();
         for (FreeStyleProject job : jobs)
             builds.add(job.scheduleBuild2(0));
         return builds;
