@@ -72,8 +72,6 @@
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
-      <!-- 2.6.0 is buggy and 2.7.0 is ok but not yet released -->
-      <!-- https://issues.apache.org/jira/browse/SSHD-1105 -->
       <version>2.7.0</version>
       <optional>true</optional>
     </dependency>
