@@ -29,7 +29,6 @@ import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
-import hudson.util.FormFieldValidatorTest.BrokenFormValidatorBuilder.DescriptorImpl;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,7 +74,7 @@ public class FormFieldValidatorTest {
     @Test
     @Issue("JENKINS-3382")
     public void negative() throws Exception {
-        DescriptorImpl d = new DescriptorImpl();
+        BrokenFormValidatorBuilder.DescriptorImpl d = new BrokenFormValidatorBuilder.DescriptorImpl();
         Publisher.all().add(d);
         try {
             FreeStyleProject p = j.createFreeStyleProject();

@@ -286,7 +286,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -1549,7 +1548,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the {@link JobPropertyDescriptor} by name. Primarily used for making them web-visible.
      */
     public JobPropertyDescriptor getJobProperty(String shortClassName) {
-        // combining these two lines triggers javac bug. See issue #610.
+        // combining these two lines triggers javac bug. See issue JENKINS-610
         Descriptor d = findDescriptor(shortClassName, JobPropertyDescriptor.all());
         return (JobPropertyDescriptor) d;
     }
@@ -1661,6 +1660,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return d;
         }
         return null;
+    }
+
+    protected void updateNewComputer(Node n) {
+        updateNewComputer(n, AUTOMATIC_SLAVE_LAUNCH);
     }
 
     protected void updateComputerList() {
@@ -2686,7 +2689,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             HudsonFilter filter = HudsonFilter.get(servletContext);
             if (filter == null) {
-                // Fix for #3069: This filter is not necessarily initialized before the servlets.
+                // Fix for JENKINS-3069: This filter is not necessarily initialized before the servlets.
                 // when HudsonFilter does come back, it'll initialize itself.
                 LOGGER.fine("HudsonFilter has not yet been initialized: Can't perform security setup for now");
             } else {
@@ -3761,7 +3764,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private void _cleanUpPersistQueue(List<Throwable> errors) {
         if(getRootDir().exists()) {
             // if we are aborting because we failed to create JENKINS_HOME,
-            // don't try to save. Issue #536
+            // don't try to save. JENKINS-536
             LOGGER.log(Main.isUnitTest ? Level.FINE : Level.INFO, "Persisting build queue");
             try {
                 getQueue().save();
@@ -4071,7 +4074,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         long endTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
 
         Map<String,Map<String,String>> r = new HashMap<>();
-        for (Entry<String, Future<Map<String, String>>> e : future.entrySet()) {
+        for (Map.Entry<String, Future<Map<String, String>>> e : future.entrySet()) {
             try {
                 r.put(e.getKey(), e.getValue().get(endTime-System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             } catch (Exception x) {
@@ -4679,7 +4682,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(qs==null)
             throw new ServletException();
         Cookie cookie = new Cookie("iconSize", Functions.validateIconSize(qs));
-        cookie.setMaxAge(/* ~4 mo. */9999999); // #762
+        cookie.setMaxAge(/* ~4 mo. */9999999); // JENKINS-762
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
         rsp.addCookie(cookie);

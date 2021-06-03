@@ -63,20 +63,13 @@ THE SOFTWARE.
     <tag>${scmTag}</tag>
   </scm>
 
-  <distributionManagement>
-    <site>
-      <id>github-pages</id>
-      <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
-    </site>
-  </distributionManagement>
-
   <issueManagement>
     <system>jira</system>
     <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
   </issueManagement>
 
   <properties>
-    <revision>2.294</revision>
+    <revision>2.297</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -90,16 +83,14 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <matrix-auth.version>2.6.6</matrix-auth.version>
-    <matrix-project.version>1.18</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
 
-    <changelog.url>https://jenkins.io/changelog</changelog.url>
+    <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.7</remoting.version>
+    <remoting.version>4.9</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -111,9 +102,9 @@ THE SOFTWARE.
     <!-- TODO keep these in sync -->
     <access-modifier-annotation.version>1.21</access-modifier-annotation.version>
     <access-modifier-checker.version>1.21</access-modifier-checker.version>
-    <junit.jupiter.version>5.7.1</junit.jupiter.version>
+    <junit.jupiter.version>5.7.2</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.10.3</spotless.version>
+    <spotless.version>2.11.1</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -141,7 +132,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.9.0</version>
+        <version>3.10.0</version>
       </dependency>
 
       <dependency>
@@ -277,7 +268,6 @@ THE SOFTWARE.
           <artifactId>maven-surefire-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
-            <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
@@ -374,7 +364,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.18</version>
+          <version>1.21</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -390,11 +380,6 @@ THE SOFTWARE.
           <groupId>org.jvnet.updatecenter2</groupId>
           <artifactId>maven-makepkgs-plugin</artifactId>
           <version>0.6.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -447,7 +432,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.42</version>
+              <version>8.43</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
@@ -640,14 +625,6 @@ THE SOFTWARE.
         <version>${spotless.version}</version>
       </plugin>
     </plugins>
-
-    <extensions>
-      <extension>
-        <groupId>org.kohsuke</groupId>
-        <artifactId>wagon-gitsite</artifactId>
-        <version>0.3.5</version>
-      </extension>
-    </extensions>
   </build>
 
   <profiles>
@@ -746,7 +723,7 @@ THE SOFTWARE.
     <profile>
       <id>lts-release</id>
       <properties>
-        <changelog.url>https://jenkins.io/changelog-stable</changelog.url>
+        <changelog.url>https://www.jenkins.io/changelog-stable</changelog.url>
       </properties>
     </profile>
     <profile>

@@ -32,7 +32,6 @@ import hudson.Util;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.FormValidation;
-import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
 import static jenkins.util.MemoryReductionUtil.EMPTY_STRING_ARRAY;
 import static jenkins.util.MemoryReductionUtil.getPresizedMutableMap;
@@ -239,7 +238,7 @@ public class UpdateSite {
 
         if (signatureCheck) {
             FormValidation e = verifySignatureInternal(o);
-            if (e.kind!=Kind.OK) {
+            if (e.kind!=FormValidation.Kind.OK) {
                 LOGGER.severe(e.toString());
                 return e;
             }

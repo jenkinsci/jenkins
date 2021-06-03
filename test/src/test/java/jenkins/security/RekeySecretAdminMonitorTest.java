@@ -8,12 +8,10 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Util;
@@ -112,14 +110,14 @@ public class RekeySecretAdminMonitorTest {
         // one should see the warning. try scheduling it
         assertFalse(monitor.isScanOnBoot());
         HtmlForm form = getRekeyForm(wc);
-        submit(wc, form, "schedule");
+        j.submit(form, "schedule");
         assertTrue(monitor.isScanOnBoot());
         form = getRekeyForm(wc);
         assertTrue(getButton(form, 1).isDisabled());
 
         // run it now
         assertFalse(monitor.getLogFile().exists());
-        submit(wc, form, "background");
+        j.submit(form, "background");
         assertTrue(monitor.getLogFile().exists());
 
         // should be no warning/error now
@@ -134,24 +132,13 @@ public class RekeySecretAdminMonitorTest {
         // dismiss and the message will be gone
         assertTrue(monitor.isEnabled());
         form = getRekeyForm(wc);
-        submit(wc, form, "dismiss");
+        j.submit(form, "dismiss");
         assertFalse(monitor.isEnabled());
         assertThrows(ElementNotFoundException.class, () -> getRekeyForm(wc));
     }
 
     private HtmlForm getRekeyForm(JenkinsRule.WebClient wc) throws IOException, SAXException {
         return wc.goTo("manage").getFormByName("rekey");
-    }
-
-    private void submit(JenkinsRule.WebClient wc, HtmlForm form, String name) throws IOException {
-        WebRequest request = form.getWebRequest(null);
-        /*
-         * TODO There is a long-undiagnosed issue with the test harness not being compatible with
-         * message.groovy's f.submit. Work around this by matching the behavior of a real browser
-         * (adding the desired button to the request as a parameter).
-         */
-        request.getRequestParameters().add(new NameValuePair(name, ""));
-        wc.getPage(request);
     }
 
     private HtmlButton getButton(HtmlForm form, int index) {
