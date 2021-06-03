@@ -87,6 +87,11 @@ THE SOFTWARE.
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <exclusions>
+        <exclusion>
+          <!-- Provided by spring-aop via spring-security-web -->
+          <groupId>aopalliance</groupId>
+          <artifactId>aopalliance</artifactId>
+        </exclusion>
         <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
