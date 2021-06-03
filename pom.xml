@@ -69,7 +69,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.294</revision>
+    <revision>2.297</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -87,10 +87,10 @@ THE SOFTWARE.
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <java.level>8</java.level>
 
-    <changelog.url>https://jenkins.io/changelog</changelog.url>
+    <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.8</remoting.version>
+    <remoting.version>4.9</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -132,7 +132,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.9.0</version>
+        <version>3.10.0</version>
       </dependency>
 
       <dependency>
@@ -432,7 +432,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.42</version>
+              <version>8.43</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
@@ -723,7 +723,7 @@ THE SOFTWARE.
     <profile>
       <id>lts-release</id>
       <properties>
-        <changelog.url>https://jenkins.io/changelog-stable</changelog.url>
+        <changelog.url>https://www.jenkins.io/changelog-stable</changelog.url>
       </properties>
     </profile>
     <profile>

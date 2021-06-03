@@ -87,9 +87,9 @@ public class ClassFilterImpl extends ClassFilter {
         }
         ClassFilter.setDefault(new ClassFilterImpl());
         if (SUPPRESS_ALL) {
-            LOGGER.warning("All class filtering suppressed. Your Jenkins installation is at risk from known attacks. See https://jenkins.io/redirect/class-filter/");
+            LOGGER.warning("All class filtering suppressed. Your Jenkins installation is at risk from known attacks. See https://www.jenkins.io/redirect/class-filter/");
         } else if (SUPPRESS_WHITELIST) {
-            LOGGER.warning("JEP-200 class filtering by whitelist suppressed. Your Jenkins installation may be at risk. See https://jenkins.io/redirect/class-filter/");
+            LOGGER.warning("JEP-200 class filtering by whitelist suppressed. Your Jenkins installation may be at risk. See https://www.jenkins.io/redirect/class-filter/");
         }
     }
 
@@ -176,12 +176,12 @@ public class ClassFilterImpl extends ClassFilter {
             }
             if (SUPPRESS_WHITELIST || SUPPRESS_ALL) {
                 notifyRejected(_c, null,
-                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+                        String.format("%s in %s might be dangerous, so would normally be rejected; see https://www.jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
 
                 return false;
             }
             notifyRejected(_c, null,
-                    String.format("%s in %s might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
+                    String.format("%s in %s might be dangerous, so rejecting; see https://www.jenkins.io/redirect/class-filter/", name, location != null ?location : "JRE"));
             return true;
         });
     }
@@ -315,11 +315,11 @@ public class ClassFilterImpl extends ClassFilter {
         if (ClassFilter.STANDARD.isBlacklisted(name)) {
             if (SUPPRESS_ALL) {
                 notifyRejected(null, name,
-                        String.format("would normally reject %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
+                        String.format("would normally reject %s according to standard blacklist; see https://www.jenkins.io/redirect/class-filter/", name));
                 return false;
             }
             notifyRejected(null, name,
-                    String.format("rejecting %s according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name));
+                    String.format("rejecting %s according to standard blacklist; see https://www.jenkins.io/redirect/class-filter/", name));
             return true;
         } else {
             return false;

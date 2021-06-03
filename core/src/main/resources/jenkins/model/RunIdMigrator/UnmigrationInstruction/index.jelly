@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:main-panel>
       <p>
         To reverse the effect of build record migration, run the following command
-        on the server. See <a href="https://jenkins.io/redirect/build-record-migration">documentation</a>
+        on the server. See <a href="https://www.jenkins.io/redirect/build-record-migration">documentation</a>
         for more details:
       </p>
       <table style="width:100%">

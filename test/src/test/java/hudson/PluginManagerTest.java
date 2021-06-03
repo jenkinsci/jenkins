@@ -631,7 +631,7 @@ public class PluginManagerTest {
         assertTrue(iconShim.isDeprecated());
         List<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
         assertEquals(1, deprecations.size());
-        assertEquals("https://jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
+        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
         assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin", iconShim.getInfo().wiki);
 
         final PluginWrapper tokenMacro = pm.getPlugin("token-macro");
@@ -646,7 +646,7 @@ public class PluginManagerTest {
         assertTrue(variant.isDeprecated());
         deprecations = variant.getDeprecations();
         assertEquals(1, deprecations.size());
-        assertEquals("https://jenkins.io/deprecations/variant/", deprecations.get(0).url);
+        assertEquals("https://www.jenkins.io/deprecations/variant/", deprecations.get(0).url);
         assertNull(variant.getInfo());
     }
 

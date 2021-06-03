@@ -59,8 +59,8 @@ import jenkins.model.GlobalConfiguration;
  * <p>
  * A plugin may {@linkplain #Plugin derive from this class}, or it may directly define extension
  * points annotated with {@link hudson.Extension}. For a list of extension
- * points, see <a href="https://jenkins.io/redirect/developer/extension-points">
- * https://jenkins.io/redirect/developer/extension-points</a>.
+ * points, see <a href="https://www.jenkins.io/redirect/developer/extension-points">
+ * https://www.jenkins.io/redirect/developer/extension-points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point

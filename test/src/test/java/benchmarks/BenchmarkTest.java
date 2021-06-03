@@ -21,7 +21,7 @@ public class BenchmarkTest {
      * {@link jenkins.benchmark.jmh.BenchmarkFinder} to automatically find classes for benchmark which are annotated
      * with {@link jenkins.benchmark.jmh.JmhBenchmark}.
      * @throws Exception when the benchmark fails to run or throws an exception.
-     * @see <a href="https://jenkins.io/blog/2019/06/21/performance-testing-jenkins/">Blog post on writing benchmarks</a>
+     * @see <a href="https://www.jenkins.io/blog/2019/06/21/performance-testing-jenkins/">Blog post on writing benchmarks</a>
      */
     @Test
     public void runSampleBenchmark() throws Exception {

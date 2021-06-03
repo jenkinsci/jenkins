@@ -38,6 +38,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -70,7 +71,7 @@ public class WideExecutionTest {
                             try {
                                 b.setDescription("I was here");
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                throw new UncheckedIOException(e);
                             }
                         }
 

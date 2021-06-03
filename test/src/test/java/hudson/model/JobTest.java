@@ -74,8 +74,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
@@ -176,7 +176,7 @@ public class JobTest {
             }
             catch (InterruptedException e) {}
             catch (IOException e) {
-                fail("Failed to assign build number");
+                throw new AssertionError("Failed to assign build number", e);
             }
             finally {
                 stop.countDown();
@@ -292,14 +292,11 @@ public class JobTest {
     
     @Test public void projectNamingStrategy() throws Exception {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
-        final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
-        assertNotNull("no project created", p);
         try {
-            j.createFreeStyleProject("project");
-            fail("should not get here, the project name is not allowed, therefore the creation must fail!");
-        } catch (Failure e) {
-            // OK, expected
-        }finally{
+            final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
+            assertNotNull("no project created", p);
+            assertThrows(Failure.class, () -> j.createFreeStyleProject("project"));
+        } finally {
             // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
             j.jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }

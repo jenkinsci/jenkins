@@ -63,7 +63,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -398,7 +397,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         private <U> void _find(Class<U> type, List<ExtensionComponent<U>> result, Injector container) {
-            for (Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
+            for (Map.Entry<Key<?>, Binding<?>> e : container.getBindings().entrySet()) {
                 if (type.isAssignableFrom(e.getKey().getTypeLiteral().getRawType())) {
                     Annotation a = annotations.get(e.getKey());
                     Object o = e.getValue().getProvider().get();

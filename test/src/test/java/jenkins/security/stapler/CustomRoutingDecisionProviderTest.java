@@ -38,6 +38,7 @@ import org.kohsuke.stapler.WebMethod;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -98,7 +99,9 @@ public class CustomRoutingDecisionProviderTest {
         try {
             resp.getWriter().write("ok");
             resp.flushBuffer();
-        } catch (IOException e) {}
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
     
     @Test
