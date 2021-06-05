@@ -141,9 +141,7 @@ public class IOUtils {
                 return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
             }
         } catch (IOException cause) {
-            PosixException e = new PosixException("Unable to get file permissions", null);
-            e.initCause(cause);
-            throw e;
+            throw new PosixException("Unable to get file permissions", cause);
         }
     }
 
