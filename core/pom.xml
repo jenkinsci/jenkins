@@ -454,6 +454,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>javax.xml.stream</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -466,10 +473,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-    </dependency>
-    <dependency><!-- StAX implementation. See JENKINS-2547. -->
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>wstx-asl</artifactId>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
