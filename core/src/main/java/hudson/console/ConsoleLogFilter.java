@@ -46,7 +46,7 @@ import jenkins.util.JenkinsJVM;
  * data, which isn't possible from the other interfaces.
  * ({@link ArgumentListBuilder#add(String, boolean)} is a simpler way to suppress a single password.)
  * <p>Implementations which are {@link Serializable} may be sent to an agent JVM for processing.
- * In particular, this happens under <a href="https://jenkins.io/jep/210">JEP-210</a>.
+ * In particular, this happens under <a href="https://www.jenkins.io/jep/210">JEP-210</a>.
  * In this case, the implementation should not assume that {@link JenkinsJVM#isJenkinsJVM},
  * and if generating {@link ConsoleNote}s will need to encode them on the master side first.
  * @author dty

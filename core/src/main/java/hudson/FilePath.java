@@ -3278,7 +3278,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         try {
             return getChannelForSerialization();
         } catch (NotSerializableException x) {
-            LOGGER.log(Level.WARNING, "A FilePath object is being serialized when it should not be, indicating a bug in a plugin. See https://jenkins.io/redirect/filepath-serialization for details.", x);
+            LOGGER.log(Level.WARNING, "A FilePath object is being serialized when it should not be, indicating a bug in a plugin. See https://www.jenkins.io/redirect/filepath-serialization for details.", x);
             return null;
         }
     }

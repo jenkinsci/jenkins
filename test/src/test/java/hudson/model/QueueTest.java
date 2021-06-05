@@ -111,6 +111,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -147,8 +148,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.jvnet.hudson.test.LoggerRule;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -792,22 +793,14 @@ public class QueueTest {
         p.setAssignedNode(slave);
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
-        try {
-            f.get(3, TimeUnit.SECONDS);
-            fail("Should time out (as the slave is offline).");
-        } catch (TimeoutException e) {
-        }
+        assertThrows("Should time out (as the agent is offline)", TimeoutException.class, () -> f.get(3, TimeUnit.SECONDS));
 
         Queue.Item item = Queue.getInstance().getItem(p);
         assertNotNull(item);
         Queue.getInstance().doCancelItem(item.getId());
         assertNull(Queue.getInstance().getItem(p));
 
-        try {
-            f.get(10, TimeUnit.SECONDS);
-            fail("Should not get (as it is cancelled).");
-        } catch (CancellationException e) {
-        }
+        assertThrows("Should not get (as it is cancelled)", CancellationException.class, () -> f.get(10, TimeUnit.SECONDS));
     }
 
     @Test public void waitForStartAndCancelBeforeStart() throws Exception {
@@ -824,16 +817,15 @@ public class QueueTest {
             public void run() {
                    try {
                        Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException | ServletException e) {
-                       e.printStackTrace();
+                   } catch (IOException e) {
+                       throw new UncheckedIOException(e);
+                   } catch (ServletException e) {
+                       throw new RuntimeException(e);
                    }
             }
             }, 2, TimeUnit.SECONDS);
 
-        try {
-            f.waitForStart();
-            fail("Expected an CancellationException to be thrown");
-        } catch (CancellationException e) {}
+        assertThrows(CancellationException.class, () -> f.waitForStart());
     }
 
     @Ignore("TODO flakes in CI")

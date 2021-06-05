@@ -1070,6 +1070,27 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Get list of implied dependencies.
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull Set<String> getImpliedDependents() {
+        if (!isDetached()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> implied = new HashSet<>();
+        for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
+            for (Dependency dependency : DetachedPluginsUtil.getImpliedDependencies(p.shortName, p.getRequiredCoreVersion())) {
+                if (dependency.shortName.equals(shortName)) {
+                    implied.add(p.shortName);
+                }
+            }
+        }
+        return implied;
+    }
+
+    /**
      * Sort by short name.
      */
     @Override

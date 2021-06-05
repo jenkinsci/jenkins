@@ -1,7 +1,7 @@
 <!-- Comment: 
 A great PR typically begins with the line below.
 Replace XXXXX with the numeric part of the issue's id you created on JIRA.
-Please note that if you want your changes backported into LTS, you will need to create a JIRA ticket for it. Read https://jenkins.io/download/lts/#backporting-process for more.
+Please note that if you want your changes backported into LTS, you will need to create a JIRA ticket for it. Read https://www.jenkins.io/download/lts/#backporting-process for more.
 -->
 See [JENKINS-XXXXX](https://issues.jenkins-ci.org/browse/JENKINS-XXXXX).
 
@@ -19,7 +19,7 @@ If the issue is not fully described in the ticket, add more information here (ju
 * ...
 
 <!-- Comment: 
-The changelogs will be integrated by the core maintainers after the merge.  See the changelog examples here: https://jenkins.io/changelog/ -->
+The changelogs will be integrated by the core maintainers after the merge.  See the changelog examples here: https://www.jenkins.io/changelog/ -->
 
 ### Proposed upgrade guidelines
 

@@ -59,7 +59,7 @@ They are also responsible to monitor the weekly release status and to perform tr
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
-Led by the link:https://jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:https://jenkins.io/download/lts/[Stable release line].
+Led by the link:https://www.jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:https://www.jenkins.io/download/lts/[Stable release line].
 Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines. LTS release steps are documented in link:https://github.com/jenkins-infra/release/blob/master/.github/ISSUE_TEMPLATE/1-lts-release-checklist.md[jenkins-infra/release]
 
 === Ladder
@@ -68,7 +68,7 @@ Team members get `Write` permissions in the Jenkins core repository, and they al
   There is no precondition except having a GitHub account, just submit pull requests or comment in existing ones!
 * **Core Pull Request Reviewers** can be nominated by contributors in the link:https://groups.google.com/d/forum/jenkinsci-dev[developer mailing list]. 
 Self-nomination is fine.
-Decision is made by a consensus in the mailing list or via voting at the link:https://jenkins.io/project/governance-meeting/[governance meeting].
+Decision is made by a consensus in the mailing list or via voting at the link:https://www.jenkins.io/project/governance-meeting/[governance meeting].
 * **Core Maintainers** - same process as for Core PR reviewers.
   All nominees must also sign an link:https://github.com/jenkinsci/infra-cla/[Individual Contributor License Agreement] before getting the permission in GitHub repositories.
 * **Release Team Members** are assigned by the Jenkins Release officer
@@ -125,9 +125,9 @@ and we do not enforce a single code style across the codebase at the moment.
 
 ==== Maintaining documentation
 
-* Jenkins documentation is hosted on https://jenkins.io/doc/.
+* Jenkins documentation is hosted on https://www.jenkins.io/doc/.
   When a new user-facing change is added, we should encourage contributors to update documentation in downstream pull requests.
-* Same applies to Jenkins changelogs (link:https://jenkins.io/changelog[weekly], link:https://jenkins.io/changelog-stable/[stable]) and link:https://jenkins.io/doc/upgrade-guide/[upgrade guidelines]:
+* Same applies to Jenkins changelogs (link:https://www.jenkins.io/changelog[weekly], link:https://www.jenkins.io/changelog-stable/[stable]) and link:https://www.jenkins.io/doc/upgrade-guide/[upgrade guidelines]:
   We have a semi-automated process which is based on pull request summaries and labels.
   Core maintainers are expected to validate the entries as a part of the pull request review/merge process.
   See the checklist below in the _Merge process_ section.
@@ -145,7 +145,7 @@ code reviewers are expected to suggest proper channels for contributors to discu
 
 * A discussion in the link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List] is the default way to go
 * If no consensus can be reached on the mailing list,
-  voting at the link:https://jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision.
+  voting at the link:https://www.jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision.
 
 === Review non-goals
 
@@ -343,7 +343,7 @@ Merge process can be initiated once a pull request matches the requirements:
 
 ==== Step 2: Is it a good time to merge?
 
-link:https://jenkins.io/security/[Jenkins security updates] are coordinated with the LTS calendar and if the weekly release on the weekend before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes and a working Jenkins.
+link:https://www.jenkins.io/security/[Jenkins security updates] are coordinated with the LTS calendar and if the weekly release on the weekend before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes and a working Jenkins.
 The Jenkins security team will usually send a "pre-announcement" to link:https://groups.google.com/forum/#!forum/jenkinsci-advisories[the advisories list] on Wednesday or Thursday the week before release, but that's not always doable.
 For these reasons, the following changes should not be merged during the week before LTS releases (weeks 3, 7, 11, 15, etc. on the page linked above):
 
@@ -419,8 +419,8 @@ References:
 
 === LTS Process
 
-Jenkins also offers the link:https://jenkins.io/download/lts/[LTS Release Line].
-It is maintained by the Jenkins Release Team which coordinates link:https://jenkins.io/download/lts/#backporting-process[backporting] and release candidate testing.
+Jenkins also offers the link:https://www.jenkins.io/download/lts/[LTS Release Line].
+It is maintained by the Jenkins Release Team which coordinates link:https://www.jenkins.io/download/lts/#backporting-process[backporting] and release candidate testing.
 Any Jenkins contributors are welcome to participate in backporting and release candidate testing.
 
 * Backporting discussions happen through the developer mailing list.

@@ -74,16 +74,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>crypto-util</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>jtidy</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
 
     <dependency><!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
@@ -116,6 +106,20 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
+    <!--
+      For compatibility only; not included into the BOM for the same reason. TODO once
+      https://github.com/jenkinsci/scm-api-plugin/pull/88 is widely adopted, this
+      dependency can be dropped.
+    -->
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>asm5</artifactId>
+      <version>5.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -210,10 +214,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
-      <artifactId>bytecode-compatibility-transformer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
       <artifactId>task-reactor</artifactId>
     </dependency>
     <dependency>
@@ -272,16 +272,6 @@ THE SOFTWARE.
     <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-digester</groupId>
-      <artifactId>commons-digester</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>

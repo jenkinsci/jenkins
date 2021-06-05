@@ -38,7 +38,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class PluginSubtypeMarker extends AbstractProcessor {
                             try {
                                 write(e);
                             } catch (IOException x) {
-                                processingEnv.getMessager().printMessage(Kind.ERROR, Functions.printThrowable(x), e);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Functions.printThrowable(x), e);
                             }
                         }
                     }
