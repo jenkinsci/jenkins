@@ -18,6 +18,7 @@ import java.util.concurrent.TimeoutException;
  * @author Kohsuke Kawaguchi
  * @since 1.557
  */
+@Deprecated
 public abstract class InterceptingExecutorService extends ForwardingExecutorService {
     private final ExecutorService base;
 
