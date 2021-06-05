@@ -32,9 +32,7 @@ THE SOFTWARE.
   <l:layout title="${it.fullDisplayName} Console">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <t:buildCaption>
-        <span style="margin-left:.2em;">${%Console Output}</span>
-      </t:buildCaption>
+      <t:buildCaption>${%Console Output}</t:buildCaption>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
       <j:set var="offset" value="${empty(consoleFull) ? it.logText.length()-threshold*1024 : 0}" />
