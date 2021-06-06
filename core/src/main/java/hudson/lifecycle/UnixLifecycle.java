@@ -23,11 +23,12 @@
  */
 package hudson.lifecycle;
 
-import com.sun.akuma.JavaVMArguments;
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,6 +38,7 @@ import static hudson.util.jna.GNUCLibrary.F_SETFD;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import hudson.Platform;
+import jenkins.JavaVMArguments;
 import jenkins.model.Jenkins;
 
 /**
@@ -50,12 +52,12 @@ import jenkins.model.Jenkins;
  * @since 1.304
  */
 public class UnixLifecycle extends Lifecycle {
-    private JavaVMArguments args;
+    private List<String> args;
     private Throwable failedToObtainArgs;
 
     public UnixLifecycle() throws IOException {
         try {
-            args = JavaVMArguments.current();
+            args = new ArrayList<>(JavaVMArguments.current());
 
             // if we are running as daemon, don't fork into background one more time during restart
             args.remove("--daemon");
