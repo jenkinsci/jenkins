@@ -1972,7 +1972,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
 
                 long count = size.getValue().longValue() / sizeOf_kinfo_proc;
-                LOGGER.fine("Found " + count + " processes");
+                LOGGER.fine(() -> "Found " + count + " processes");
 
                 for (long base = 0; base < size.getValue().longValue(); base += sizeOf_kinfo_proc) {
                     int pid = m.getInt(base + kinfo_proc_pid_offset);
