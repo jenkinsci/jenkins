@@ -28,6 +28,7 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.NativeLongByReference;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Util;
@@ -1632,18 +1633,17 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 kinfo_proc_ppid_offset = kinfo_proc_ppid_offset_32;
             }
             try {
-                IntByReference ref = new IntByReference(sizeOfInt);
-                IntByReference size = new IntByReference(sizeOfInt);
+                NativeLongByReference size = new NativeLongByReference(new NativeLong(0));
                 Memory m;
                 int nRetry = 0;
                 while(true) {
                     // find out how much memory we need to do this
-                    if(LIBC.sysctl(MIB_PROC_ALL,3, NULL, size, NULL, ref)!=0)
+                    if(LIBC.sysctl(MIB_PROC_ALL,3, NULL, size, NULL, new NativeLong(0))!=0)
                         throw new IOException("Failed to obtain memory requirement: "+LIBC.strerror(Native.getLastError()));
 
                     // now try the real call
-                    m = new Memory(size.getValue());
-                    if(LIBC.sysctl(MIB_PROC_ALL,3, m, size, NULL, ref)!=0) {
+                    m = new Memory(size.getValue().longValue());
+                    if(LIBC.sysctl(MIB_PROC_ALL,3, m, size, NULL, new NativeLong(0))!=0) {
                         if(Native.getLastError()==ENOMEM && nRetry++<16)
                             continue; // retry
                         throw new IOException("Failed to call kern.proc.all: "+LIBC.strerror(Native.getLastError()));
@@ -1651,10 +1651,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     break;
                 }
 
-                int count = size.getValue()/sizeOf_kinfo_proc;
+                int count = size.getValue().intValue()/sizeOf_kinfo_proc;
                 LOGGER.fine("Found "+count+" processes");
 
-                for( int base=0; base<size.getValue(); base+=sizeOf_kinfo_proc) {
+                for( int base=0; base<size.getValue().intValue(); base+=sizeOf_kinfo_proc) {
                     int pid = m.getInt(base+ kinfo_proc_pid_offset);
                     int ppid = m.getInt(base+ kinfo_proc_ppid_offset);
 //                    int effective_uid = m.getInt(base+304);
@@ -1706,53 +1706,63 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     arguments = new ArrayList<>();
                     envVars = new EnvVars();
 
-                    IntByReference intByRef = new IntByReference();
-
                     IntByReference argmaxRef = new IntByReference(0);
-                    IntByReference size = new IntByReference(sizeOfInt);
+                    NativeLongByReference size = new NativeLongByReference(new NativeLong(sizeOfInt));
 
                     // for some reason, I was never able to get sysctlbyname work.
 //        if(LIBC.sysctlbyname("kern.argmax", argmaxRef.getPointer(), size, NULL, _)!=0)
-                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, intByRef)!=0)
+                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, new NativeLong(0))!=0)
                         throw new IOException("Failed to get kern.argmax: "+LIBC.strerror(Native.getLastError()));
 
                     int argmax = argmaxRef.getValue();
 
                     class StringArrayMemory extends Memory {
                         private long offset=0;
+                        private long length=0;
 
                         StringArrayMemory(long l) {
                             super(l);
+                            length = l;
+                        }
+
+                        void setLength(long l) {
+                            length = Math.min(l, size());
                         }
 
                         int readInt() {
+                            if (offset > length - sizeOfInt)
+                                return 0;
                             int r = getInt(offset);
                             offset+=sizeOfInt;
                             return r;
                         }
 
                         byte peek() {
+                            if (offset >= length)
+                                return 0;
                             return getByte(offset);
                         }
 
                         String readString() {
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             byte ch;
-                            while((ch = getByte(offset++))!='\0')
+                            while(offset < length && (ch = getByte(offset++))!='\0')
                                 baos.write(ch);
                             return baos.toString();
                         }
 
                         void skip0() {
                             // skip padding '\0's
-                            while(getByte(offset)=='\0')
+                            while(offset < length && getByte(offset)=='\0')
                                 offset++;
                         }
                     }
                     StringArrayMemory m = new StringArrayMemory(argmax);
-                    size.setValue(argmax);
-                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_PROCARGS2,pid},3, m, size, NULL, intByRef)!=0)
+                    m.clear();
+                    size.setValue(new NativeLong(argmax));
+                    if(LIBC.sysctl(new int[]{CTL_KERN,KERN_PROCARGS2,pid},3, m, size, NULL, new NativeLong(0))!=0)
                         throw new IOException("Failed to obtain ken.procargs2: "+LIBC.strerror(Native.getLastError()));
+                    m.setLength(size.getValue().longValue());
 
 
                     /*
@@ -1783,8 +1793,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         * | env[n]        |
                         * |---------------|
                         * | 0             |
-                        * |---------------| <-- Beginning of data returned by sysctl()
-                        * | exec_path     |     is here.
+                        * |---------------| <-- Beginning of data returned by sysctl() is here.
+                        * | argc          |
+                        * |---------------|
+                        * | exec_path     |
                         * |:::::::::::::::|
                         * |               |
                         * | String area.  |
@@ -1796,7 +1808,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         */
 
                     // I find the Darwin source code of the 'ps' command helpful in understanding how it does this:
-                    // see http://www.opensource.apple.com/source/adv_cmds/adv_cmds-147/ps/print.c
+                    // see https://opensource.apple.com/source/adv_cmds/adv_cmds-176/ps/print.c
                     int argc = m.readInt();
                     String args0 = m.readString(); // exec path
                     m.skip0();
