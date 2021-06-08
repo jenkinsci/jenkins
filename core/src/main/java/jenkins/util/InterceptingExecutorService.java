@@ -21,6 +21,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  * @since 1.557
  */
+@Deprecated
 @Restricted(NoExternalUse.class)
 @RestrictedSince("TODO")
 public abstract class InterceptingExecutorService extends ForwardingExecutorService {
