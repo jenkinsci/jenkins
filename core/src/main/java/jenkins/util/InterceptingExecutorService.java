@@ -2,6 +2,7 @@ package jenkins.util;
 
 import com.google.common.util.concurrent.ForwardingExecutorService;
 
+import hudson.RestrictedSince;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link ExecutorService} that wraps all the tasks that run inside.
@@ -18,7 +21,8 @@ import java.util.concurrent.TimeoutException;
  * @author Kohsuke Kawaguchi
  * @since 1.557
  */
-@Deprecated
+@Restricted(NoExternalUse.class)
+@RestrictedSince("TODO")
 public abstract class InterceptingExecutorService extends ForwardingExecutorService {
     private final ExecutorService base;
 
