@@ -103,12 +103,12 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      */
     public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
-        if (cl instanceof AntClassLoader) {
-            return ((AntClassLoader) cl).findClass(name);
-        }
-
         synchronized (getClassLoadingLock(cl, name)) {
-            return (Class) invoke(FindClass.FIND_CLASS, ClassNotFoundException.class, cl, name);
+            if (cl instanceof AntClassLoader) {
+                return ((AntClassLoader) cl).findClass(name);
+            } else {
+                return (Class) invoke(FindClass.FIND_CLASS, ClassNotFoundException.class, cl, name);
+            }
         }
     }
 

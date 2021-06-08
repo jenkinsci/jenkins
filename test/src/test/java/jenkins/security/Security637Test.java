@@ -33,9 +33,8 @@ import hudson.slaves.DumbSlave;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
@@ -57,21 +56,18 @@ import org.junit.Ignore;
 public class Security637Test {
     
     @Rule
-    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
+    public JenkinsSessionRule sessions = new JenkinsSessionRule();
     
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_handler_inSameJVMRemotingContext() {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Exception {
-                DumbSlave slave = rr.j.createOnlineSlave();
+    public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
+        sessions.then(j -> {
+                DumbSlave slave = j.createOnlineSlave();
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
                 
                 String safeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("file", null, -1, "", null)));
                 assertThat(safeHandlerClassName, not(containsString("SafeURLStreamHandler")));
-            }
         });
     }
     
@@ -94,27 +90,22 @@ public class Security637Test {
     @Ignore("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
-    public void urlDnsEquivalence() {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Exception {
+    public void urlDnsEquivalence() throws Throwable {
+        sessions.then(j -> {
                 // due to the DNS resolution they are equal
                 assertEquals(
                         new URL("https://jenkins.io"),
                         new URL("https://www.jenkins.io")
                 );
-            }
         });
     }
     
     @Ignore("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Exception {
-                DumbSlave slave = rr.j.createOnlineSlave();
+    public void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() throws Throwable {
+        sessions.then(j -> {
+                DumbSlave slave = j.createOnlineSlave();
                 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
@@ -123,7 +114,6 @@ public class Security637Test {
                                 slave.getChannel().call(new URLBuilderCallable("https://www.jenkins.io"))
                         ))
                 );
-            }
         });
     }
     
@@ -143,11 +133,9 @@ public class Security637Test {
     @Ignore("TODO these map to different IPs now")
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Exception {
-                DumbSlave slave = rr.j.createOnlineSlave();
+    public void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() throws Throwable {
+        sessions.then(j -> {
+                DumbSlave slave = j.createOnlineSlave();
                 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
@@ -162,7 +150,6 @@ public class Security637Test {
                         new URL("https://jenkins.io"),
                         new URL("https://www.jenkins.io")
                 );
-            }
         });
     }
     
@@ -182,11 +169,9 @@ public class Security637Test {
     
     @Test
     @Issue("SECURITY-637")
-    public void urlSafeDeserialization_inXStreamContext() {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Exception {
-                FreeStyleProject project = rr.j.createFreeStyleProject("project-with-url");
+    public void urlSafeDeserialization_inXStreamContext() throws Throwable {
+        sessions.then(j -> {
+                FreeStyleProject project = j.createFreeStyleProject("project-with-url");
                 URLJobProperty URLJobProperty = new URLJobProperty(
                         // url to be wrapped
                         new URL("https://www.google.com/"),
@@ -196,13 +181,10 @@ public class Security637Test {
                 project.addProperty(URLJobProperty);
                 
                 project.save();
-            }
         });
         
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Exception {
-                FreeStyleProject project = rr.j.jenkins.getItemByFullName("project-with-url", FreeStyleProject.class);
+        sessions.then(j -> {
+                FreeStyleProject project = j.jenkins.getItemByFullName("project-with-url", FreeStyleProject.class);
                 assertNotNull(project);
                 
                 Field handlerField = URL.class.getDeclaredField("handler");
@@ -217,7 +199,6 @@ public class Security637Test {
                         assertThat(handler.getClass().getName(), containsString("SafeURLStreamHandler"));
                     }
                 }
-            }
         });
     }
     
