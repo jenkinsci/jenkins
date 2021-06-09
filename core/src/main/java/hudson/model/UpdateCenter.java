@@ -1092,8 +1092,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * browse to the instance.
      *
      * @return a list of {@link FormValidation} for each updated Update Site
-     * @throws ExecutionException
-     * @throws InterruptedException
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
      * @since 1.501
      *
      */

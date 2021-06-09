@@ -419,7 +419,7 @@ public class Iterators {
     }
 
     /**
-     * Similar to {@link com.google.common.collect.Iterators#skip} except not {@link Beta}.
+     * Similar to {@link com.google.common.collect.Iterators#advance(Iterator, int)} except not {@link Beta}.
      * @param iterator some iterator
      * @param count a nonnegative count
      */

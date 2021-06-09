@@ -70,7 +70,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
 
     /**
      * Get a crumb value based on user specific information in the request.
-     * @param request
+     * @param request The servlet request
      */
     public String getCrumb(ServletRequest request) {
         String crumb = null;
@@ -100,8 +100,8 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      *  <li>an implementation specific guarded secret.
      * </ul>
      *
-     * @param request
-     * @param salt
+     * @param request The servlet request to identify the client
+     * @param salt The salt value
      */
     protected abstract String issueCrumb(ServletRequest request, String salt);
 
@@ -110,7 +110,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * in the current request. The salt and request parameter that is used is
      * defined by the current configuration.
      *
-     * @param request
+     * @param request The servlet request
      */
     public boolean validateCrumb(ServletRequest request) {
         CrumbIssuerDescriptor<CrumbIssuer> desc = getDescriptor();
@@ -125,8 +125,8 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      * in the current request. The salt and request parameter that is used is
      * defined by the current configuration.
      *
-     * @param request
-     * @param parser
+     * @param request The current request
+     * @param parser The multipart form data
      */
     public boolean validateCrumb(ServletRequest request, MultipartFormDataParser parser) {
         CrumbIssuerDescriptor<CrumbIssuer> desc = getDescriptor();
@@ -139,8 +139,8 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
     /**
      * Validate a previously created crumb against information in the current request.
      *
-     * @param request
-     * @param salt
+     * @param request The current request
+     * @param salt The salt value
      * @param crumb The previously generated crumb to validate against information in the current request
      */
     public abstract boolean validateCrumb(ServletRequest request, String salt, String crumb);

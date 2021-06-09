@@ -69,7 +69,7 @@ public class ChunkedOutputStream extends OutputStream {
      * Wraps a stream and chunks the output.
      * @param stream to wrap
      * @param bufferSize minimum chunk size (excluding last chunk)
-     * @throws IOException
+     * @throws IOException an I/O exception
      *
      * @since 3.0
      */
@@ -81,8 +81,8 @@ public class ChunkedOutputStream extends OutputStream {
     /**
      * Wraps a stream and chunks the output. The default buffer size of 2048 was chosen because
      * the chunk overhead is less than 0.5%
-     * @param stream
-     * @throws IOException
+     * @param stream the stream
+     * @throws IOException an I/O exception
      */
     public ChunkedOutputStream(OutputStream stream) throws IOException {
         this(stream, 2048);
@@ -91,7 +91,9 @@ public class ChunkedOutputStream extends OutputStream {
     // ----------------------------------------------------------- Internal methods
     /**
      * Writes the cache out onto the underlying stream
-     * @throws IOException
+     * @throws IOException if an I/O error occurs. In particular,
+     * an <code>IOException</code> is thrown if the output
+     * stream is closed.
      *
      * @since 3.0
      */
@@ -108,10 +110,10 @@ public class ChunkedOutputStream extends OutputStream {
     /**
      * Writes the cache and bufferToAppend to the underlying stream
      * as one large chunk
-     * @param bufferToAppend
-     * @param off
-     * @param len
-     * @throws IOException
+     * @param bufferToAppend the data
+     * @param      off   the start offset in the data.
+     * @param      len   the number of bytes to write.
+     * @throws IOException if an I/O error occurs.
      *
      * @since 3.0
      */
@@ -135,7 +137,7 @@ public class ChunkedOutputStream extends OutputStream {
     // ----------------------------------------------------------- Public Methods
     /**
      * Must be called to ensure the internal cache is flushed and the closing chunk is written.
-     * @throws IOException
+     * @throws IOException if an I/O error occurs.
      *
      * @since 3.0
      */
@@ -167,8 +169,8 @@ public class ChunkedOutputStream extends OutputStream {
     /**
      * Writes the array. If the array does not fit within the buffer, it is
      * not split, but rather written out as one large chunk.
-     * @param b
-     * @throws IOException
+     * @param b The byte to be written
+     * @throws IOException if an input/output error occurs
      *
      * @since 3.0
      */
@@ -189,7 +191,7 @@ public class ChunkedOutputStream extends OutputStream {
 
     /**
      * Flushes the underlying stream, but leaves the internal buffer alone.
-     * @throws IOException
+     * @throws IOException if an input/output error occurs
      */
     @Override
     public void flush() throws IOException {
@@ -199,7 +201,7 @@ public class ChunkedOutputStream extends OutputStream {
 
     /**
      * Finishes writing to the underlying stream, but does NOT close the underlying stream.
-     * @throws IOException
+     * @throws IOException if an input/output error occurs
      */
     @Override
     public void close() throws IOException {

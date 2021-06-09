@@ -236,8 +236,8 @@ public class Functions {
 
     /**
      * Returns a localized string for the specified date, not including time.
-     * @param date
-     * @return
+     * @param date the date
+     * @return the localized string
      */
     @Restricted(NoExternalUse.class)
     public static String localDate(Date date) {
@@ -251,8 +251,8 @@ public class Functions {
     /**
      * Returns a human-readable string describing the time difference between now and the specified date.
      *
-     * @param date
-     * @return
+     * @param date the date
+     * @return the human-readable string
      */
     @Restricted(NoExternalUse.class)
     public static String getTimeSpanString(Date date) {

@@ -170,7 +170,7 @@ public class SCMTrigger extends Trigger<Item> {
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
      * to trigger a build at a specific revision number.
      * 
-     * @param additionalActions
+     * @param additionalActions the additional build action.
      * @since 1.375
      */
     public void run(Action[] additionalActions) {

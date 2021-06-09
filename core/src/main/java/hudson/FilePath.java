@@ -2022,8 +2022,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * List up files in this directory that matches the given Ant-style filter.
      *
-     * @param includes
-     * @param excludes
+     * @param includes the includes filter
+     * @param excludes the exclude filter
      *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @return
      *      can be empty but always non-null.
@@ -2037,8 +2037,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * List up files in this directory that matches the given Ant-style filter.
      *
-     * @param includes
-     * @param excludes
+     * @param includes the includes filter
+     * @param excludes the exclude filter
      *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @param defaultExcludes whether to use the ant default excludes
      * @return
@@ -2307,9 +2307,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * I/O operations also happens asynchronously from the {@link Channel#call(Callable)} operations, so if
      * you write to a remote file and then execute {@link Channel#call(Callable)} and try to access the newly copied
      * file, it might not be fully written yet.
-     *
-     * <p>
-     *
      */
     public OutputStream write() throws IOException, InterruptedException {
         if(channel==null) {

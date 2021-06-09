@@ -132,8 +132,8 @@ public class ChartUtil {
     /**
      * Generates the graph in PNG format and sends that to the response.
      *
-     * @param defaultW
-     * @param defaultH
+     * @param defaultW the default width
+     * @param defaultH  the default height
      *      The size of the picture to be generated. These values can be overridden
      *      by the query parameter 'width' and 'height' in the request.
      * @deprecated as of 1.320

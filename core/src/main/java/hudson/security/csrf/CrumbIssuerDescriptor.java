@@ -39,7 +39,7 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
 
     /**
      * Set the salt value. Must not be null.
-     * @param salt
+     * @param salt The salt value
      */
     public void setCrumbSalt(String salt) {
         if (Util.fixEmptyAndTrim(salt) == null) {
@@ -60,7 +60,7 @@ public abstract class CrumbIssuerDescriptor<T extends CrumbIssuer> extends Descr
     /**
      * Set the request parameter name. Must not be null.
      *
-     * @param requestField
+     * @param requestField The request parameter name
      */
     public void setCrumbRequestField(String requestField) {
         if (Util.fixEmptyAndTrim(requestField) == null) {

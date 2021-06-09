@@ -8,7 +8,7 @@ public abstract class WorkspaceListener implements ExtensionPoint {
     
     /**
      * Called after a workspace is deleted successfully.
-     * @param project
+     * @param project the job that build software
      */
     public void afterDelete(AbstractProject project) {
         
@@ -16,9 +16,9 @@ public abstract class WorkspaceListener implements ExtensionPoint {
 
     /**
      * Called before a build uses a workspace. IE, before any SCM checkout.
-     * @param b
-     * @param workspace
-     * @param listener 
+     * @param b the build run
+     * @param workspace the workspace file path
+     * @param listener the build listerner
      */
     public void beforeUse(AbstractBuild b, FilePath workspace, BuildListener listener) {
         

@@ -40,7 +40,7 @@ public interface PluginLocaleDrivenResourceProvider extends ExtensionPoint {
      *
      * @see org.kohsuke.stapler.LocaleDrivenResourceProvider
      *
-     * @param s
+     * @param s the resource path
      * @return URL to the localized resource, or {@code null} if inapplicable.
      */
     @CheckForNull

@@ -494,7 +494,8 @@ public class ListView extends View implements DirectlyModifiableView {
 
     /**
      * Deprecated see, {@link StatusFilter}
-     * @param statusFilter
+     * @param statusFilter the filter to enabled/disabled status of jobs.
+     * Null for no filter, true for enabled-only, false for disabled-only.
      */
     @Deprecated
     @DataBoundSetter

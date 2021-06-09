@@ -298,7 +298,7 @@ public class InstallUtil {
 
     /**
      * Persists a list of installing plugins; this is used in the case Jenkins fails mid-installation and needs to be restarted
-     * @param installingPlugins
+     * @param installingPlugins the list of installing plugins
      */
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();

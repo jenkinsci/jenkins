@@ -65,9 +65,9 @@ public abstract class CyclicGraphDetector<N> {
     
     /**
      * React on detected cycles - default implementation throws an exception.
-     * @param q
-     * @param cycle
-     * @throws CycleDetectedException
+     * @param q The node
+     * @param cycle the list of nodes where the cycle has been detected
+     * @throws CycleDetectedException By default it raises this exception
      */
     protected void reactOnCycle(N q, List<N> cycle) throws CycleDetectedException{
         throw new CycleDetectedException(cycle);
