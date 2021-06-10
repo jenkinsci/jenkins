@@ -132,7 +132,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.10.0</version>
+        <version>3.11.0</version>
       </dependency>
 
       <dependency>
