@@ -13,6 +13,13 @@
     <Bug pattern="CRLF_INJECTION_LOGS"/>
   </Match>
   <Match>
+    <!--
+      This is a false positive in Spotbugs 4.2.3. TODO remove this exclusion
+      when the fix for spotbugs/spotbugs#1539 is widely adopted.
+    -->
+    <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE"/>
+  </Match>
+  <Match>
     <!--Jenkins handles this issue differently or doesn't care about it.-->
     <Bug pattern="INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE"/>
   </Match>
