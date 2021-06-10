@@ -31,6 +31,7 @@ import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.NativeLongByReference;
 import hudson.os.PosixAPI;
 import jnr.posix.POSIX;
 import org.jvnet.libpam.impl.CLibrary.passwd;
@@ -85,15 +86,26 @@ public interface GNUCLibrary extends Library {
     // see http://www.gnu.org/s/libc/manual/html_node/Renaming-Files.html
     int rename(String oldname, String newname);
 
+    // The following three functions are Darwin-specific. The native "long" and "size_t" types always have
+    // the same size on Darwin, we use NativeLong and NativeLongByReference where the native functions use
+    // "size_t" and "size_t *" respectively. By updating JNA to 5.9.0 and adding a dependency on "jna-platform",
+    // the "com.sun.jna.platform.unix.LibCAPI.size_t" and "com.sun.jna.platform.unix.LIBCAPI.size_t.ByReference"
+    // types could be used instead.
 
     // this is listed in http://developer.apple.com/DOCUMENTATION/Darwin/Reference/ManPages/man3/sysctlbyname.3.html
     // but not in http://www.gnu.org/software/libc/manual/html_node/System-Parameters.html#index-sysctl-3493
     // perhaps it is only supported on BSD?
+    @Deprecated
     int sysctlbyname(String name, Pointer oldp, IntByReference oldlenp, Pointer newp, IntByReference newlen);
+    int sysctlbyname(String name, Pointer oldp, NativeLongByReference oldlenp, Pointer newp, NativeLong newlen);
 
+    @Deprecated
     int sysctl(int[] mib, int nameLen, Pointer oldp, IntByReference oldlenp, Pointer newp, IntByReference newlen);
+    int sysctl(int[] name, int namelen, Pointer oldp, NativeLongByReference oldlenp, Pointer newp, NativeLong newlen);
 
+    @Deprecated
     int sysctlnametomib(String name, Pointer mibp, IntByReference size);
+    int sysctlnametomib(String name, Pointer mibp, NativeLongByReference sizep);
 
     /**
      * Creates a symlink.
