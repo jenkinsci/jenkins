@@ -46,6 +46,7 @@ import static org.objectweb.asm.Opcodes.RETURN;
  */
 @Deprecated
 @Restricted(DoNotUse.class)
+@RestrictedSince("TODO")
 public class SubClassGenerator extends ClassLoader {
     public SubClassGenerator(ClassLoader parent) {
         super(parent);
