@@ -24,12 +24,13 @@
 package hudson.util;
 
 import hudson.PluginManager.UberClassLoader;
+import hudson.RestrictedSince;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import java.lang.reflect.Constructor;
 
