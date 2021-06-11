@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.model.Descriptor.FormException;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.Indenter;
 import hudson.Extension;
 import jenkins.util.SystemProperties;
@@ -63,7 +62,7 @@ public class TreeView extends View implements ViewGroup {
      * List of job names. This is what gets serialized.
      */
     private final Set<String> jobNames
-        = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+        = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
     /**
      * Nested views.
