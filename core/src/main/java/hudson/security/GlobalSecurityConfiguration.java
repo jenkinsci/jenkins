@@ -199,7 +199,6 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
 
     /**
-     * @return
      * @see Describable#getDescriptor()
      */
     @SuppressWarnings("unchecked")

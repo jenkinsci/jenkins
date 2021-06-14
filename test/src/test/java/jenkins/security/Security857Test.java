@@ -25,7 +25,6 @@ public class Security857Test {
 
     /**
      * Test that a jelly is escaped right thanks to the CustomJellyContext.ESCAPE_BY_DEFAULT field. Its default value is true.
-     * @throws Exception
      */
     @Issue("SECURITY-857")
     @Test
@@ -35,7 +34,6 @@ public class Security857Test {
 
     /**
      * Test that a jelly is not escaped when the escape-by-default='false' directive is set in it.
-     * @throws Exception
      */
     @Issue("SECURITY-857")
     @Test
@@ -46,7 +44,6 @@ public class Security857Test {
 
     /**
      * Test that a jelly is escaped when the escape-by-default='true' directive is set in it.
-     * @throws Exception
      */
     @Issue("SECURITY-857")
     @Test

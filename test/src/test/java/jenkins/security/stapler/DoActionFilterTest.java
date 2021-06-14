@@ -45,7 +45,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -166,9 +165,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         
         @JsonResponse // does not support list
         public Map<String, Object> doAnnotatedJsonResponse() {
-            return new HashMap<String, Object>() {{
-                put("a", "b");
-            }};
+            return Collections.singletonMap("a", "b");
         }
         
         @LimitedTo("admin")
@@ -387,9 +384,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         // WebClient forces us to use POST to have the possibility to send requestBody
         settings.setHttpMethod(HttpMethod.POST);
         settings.setAdditionalHeader("Content-Type", "application/json");
-        settings.setRequestBody(JSONObject.fromObject(new HashMap<String, Object>() {{
-            put("name", "Test");
-        }}).toString());
+        settings.setRequestBody(JSONObject.fromObject(Collections.singletonMap("name", "Test")).toString());
         assertReachableWithSettings(settings);
     }
     
@@ -401,9 +396,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         settings.setRequestParameters(Collections.singletonList(
                 new NameValuePair(
                         "json",
-                        JSONObject.fromObject(new HashMap<String, Object>() {{
-                            put("name", "Test");
-                        }}).toString()
+                        JSONObject.fromObject(Collections.singletonMap("name", "Test")).toString()
                 )
         ));
         assertReachableWithSettings(settings);

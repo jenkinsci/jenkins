@@ -868,7 +868,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         for (UserPropertyDescriptor d : UserProperty.all()) {
             UserProperty p = getProperty(d.clazz);
 
-            JSONObject o = json.optJSONObject("userProperty" + (i++));
+            JSONObject o = json.optJSONObject("userProperty" + i++);
             if (o != null) {
                 if (p != null) {
                     p = p.reconfigure(req, o);
