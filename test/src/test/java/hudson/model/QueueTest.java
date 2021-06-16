@@ -1123,7 +1123,7 @@ public class QueueTest {
         r.jenkins.setCrumbIssuer(null);
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ, Item.CANCEL).everywhere().to("admin")
+                .grant(Jenkins.READ, Item.READ, Item.CANCEL).everywhere().to("admin")
                 .grant(Jenkins.READ).everywhere().to("user")
         );
 

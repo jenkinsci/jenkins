@@ -867,8 +867,16 @@ public class Executor extends Thread implements ModelObject {
         try {
             if (executable != null) {
                 if (runExtId == null || runExtId.isEmpty() || ! (executable instanceof Run)
-                        || (executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
-                    getParentOf(executable).getOwnerTask().checkAbortPermission();
+                        || (runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
+                    final Queue.Task ownerTask = getParentOf(executable).getOwnerTask();
+                    boolean canAbort = ownerTask.hasAbortPermission();
+                    if (canAbort && ownerTask instanceof AccessControlled) {
+                        if (!((AccessControlled) ownerTask).hasPermission(Item.READ)) {
+                            // pretend the build does not exist
+                            return HttpResponses.forwardToPreviousPage();
+                        }
+                    }
+                    ownerTask.checkAbortPermission();
                     interrupt();
                 }
             }
