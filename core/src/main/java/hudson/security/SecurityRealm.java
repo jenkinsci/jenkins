@@ -49,6 +49,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import jenkins.security.AcegiSecurityExceptionFilter;
 import jenkins.security.BasicHeaderProcessor;
 import jenkins.security.AuthenticationSuccessHandler;
@@ -78,6 +79,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 /**
@@ -593,6 +595,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         {
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
+            if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 1) {
+                // Optionally use the 'canonical' protection from Spring Security; see AuthenticationProcessingFilter2#successfulAuthentication for default
+                apf.setSessionAuthenticationStrategy(new SessionFixationProtectionStrategy());
+            }
             apf.setRememberMeServices(sc.rememberMe2);
             final AuthenticationSuccessHandler successHandler = new AuthenticationSuccessHandler();
             successHandler.setTargetUrlParameter("from");
