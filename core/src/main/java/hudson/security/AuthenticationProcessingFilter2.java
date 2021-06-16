@@ -58,43 +58,6 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
         setPasswordParameter("j_password");
     }
 
-    /* TODO none of this compiles against Spring Security; rewrite (try InteractiveAuthenticationSuccessEvent & SimpleUrlAuthenticationFailureHandler):
-
-    @Override
-    protected String determineTargetUrl(HttpServletRequest request) {
-        AbstractAuthenticationProcessingFilter f = new UsernamePasswordAuthenticationFilter();
-        String targetUrl = request.getParameter("from");
-        request.getSession().setAttribute("from", targetUrl);
-
-        if (targetUrl == null)
-            return getDefaultTargetUrl();
-
-        if (!Util.isSafeToRedirectTo(targetUrl))
-            return "."; // avoid open redirect
-
-        // URL returned from determineTargetUrl() is resolved against the context path,
-        // whereas the "from" URL is resolved against the top of the website, so adjust this.
-        if(targetUrl.startsWith(request.getContextPath()))
-            return targetUrl.substring(request.getContextPath().length());
-
-        // not sure when this happens, but apparently this happens in some case.
-        // see #1274
-        return targetUrl;
-    }
-
-    /**
-     * @see AbstractProcessingFilter#determineFailureUrl(HttpServletRequest, AuthenticationException)
-     * /
-    @Override
-    protected String determineFailureUrl(HttpServletRequest request, AuthenticationException failed) {
-        Properties excMap = getExceptionMappings();
-		String failedClassName = failed.getClass().getName();
-		String whereFrom = request.getParameter("from");
-		request.getSession().setAttribute("from", whereFrom);
-		return excMap.getProperty(failedClassName, getAuthenticationFailureUrl());
-    }
-    */
-
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         super.successfulAuthentication(request, response, chain, authResult);
