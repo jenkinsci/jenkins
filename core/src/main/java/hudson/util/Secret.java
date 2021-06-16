@@ -182,14 +182,14 @@ public final class Secret implements Serializable {
             switch (payload[0]) {
                 case PAYLOAD_V1:
                     // For PAYLOAD_V1 we use this byte shifting model, V2 probably will need DataOutput
-                    int ivLength = ((payload[1] & 0xff) << 24)
-                            | ((payload[2] & 0xff) << 16)
-                            | ((payload[3] & 0xff) << 8)
-                            | (payload[4] & 0xff);
-                    int dataLength = ((payload[5] & 0xff) << 24)
-                            | ((payload[6] & 0xff) << 16)
-                            | ((payload[7] & 0xff) << 8)
-                            | (payload[8] & 0xff);
+                    int ivLength = (payload[1] & 0xff) << 24
+                            | (payload[2] & 0xff) << 16
+                            | (payload[3] & 0xff) << 8
+                            | payload[4] & 0xff;
+                    int dataLength = (payload[5] & 0xff) << 24
+                            | (payload[6] & 0xff) << 16
+                            | (payload[7] & 0xff) << 8
+                            | payload[8] & 0xff;
                     if (payload.length != 1 + 8 + ivLength + dataLength) {
                         // not valid v1
                         return null;

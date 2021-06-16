@@ -83,7 +83,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     public StreamTaskListener(@NonNull OutputStream out, @CheckForNull Charset charset) {
         try {
             if (charset == null)
-                this.out = (out instanceof PrintStream) ? (PrintStream)out : new PrintStream(out, false);
+                this.out = out instanceof PrintStream ? (PrintStream)out : new PrintStream(out, false);
             else
                 this.out = new PrintStream(out, false, charset.name());
             this.charset = charset;

@@ -306,7 +306,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * plugin, otherwise {@code false}.
      */
     public boolean hasDependents() {
-        return (isBundled || !dependents.isEmpty());
+        return isBundled || !dependents.isEmpty();
     }
 
     /**

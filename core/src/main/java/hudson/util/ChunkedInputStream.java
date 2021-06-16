@@ -175,7 +175,7 @@ public class ChunkedInputStream extends InputStream {
     private void readCRLF() throws IOException {
         int cr = in.read();
         int lf = in.read();
-        if ((cr != '\r') || (lf != '\n')) {
+        if (cr != '\r' || lf != '\n') {
             throw new IOException(
                 "CRLF expected at end of chunk: " + cr + "/" + lf);
         }
@@ -264,7 +264,7 @@ public class ChunkedInputStream extends InputStream {
         //parse data
         String dataString = new String(baos.toByteArray(), StandardCharsets.US_ASCII);
         int separator = dataString.indexOf(';');
-        dataString = (separator > 0)
+        dataString = separator > 0
             ? dataString.substring(0, separator).trim()
             : dataString.trim();
 

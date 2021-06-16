@@ -355,7 +355,7 @@ public class ListView extends View implements DirectlyModifiableView {
     public boolean isAddToCurrentView() {
         synchronized(this) {
             return !jobNames.isEmpty() || // There are already items in this view specified by name
-                    (jobFilters.isEmpty() && includePattern == null) // No other way to include items is used
+                    jobFilters.isEmpty() && includePattern == null // No other way to include items is used
                     ;
         }
     }

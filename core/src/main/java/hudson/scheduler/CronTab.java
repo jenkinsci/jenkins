@@ -119,7 +119,7 @@ public final class CronTab {
         specTimezone = timezone;
 
         parser.startRule(this);
-        if((dayOfWeek&(1<<7))!=0) {
+        if ((dayOfWeek & 1 << 7) != 0) {
             dayOfWeek |= 1; // copy bit 7 over to bit 0
             dayOfWeek &= ~(1<<7); // clear bit 7 or CalendarField#ceil will return an invalid value 7
         }
@@ -223,7 +223,7 @@ public final class CronTab {
          */
         private int ceil(CronTab c, int n) {
             long bits = bits(c);
-            while ((bits|(1L<<n))!=bits) {
+            while ((bits | 1L << n) != bits) {
                 if (n>60)   return -1;
                 n++;
             }
@@ -239,7 +239,7 @@ public final class CronTab {
 
         private int floor(CronTab c, int n) {
             long bits = bits(c);
-            while ((bits|(1L<<n))!=bits) {
+            while ((bits | 1L << n) != bits) {
                 if (n==0)   return -1;
                 n--;
             }
@@ -464,7 +464,7 @@ public final class CronTab {
      * Returns true if n-th bit is on.
      */
     private boolean checkBits(long bitMask, int n) {
-        return (bitMask|(1L<<n))==bitMask;
+        return (bitMask | 1L << n) == bitMask;
     }
 
     @Override
@@ -492,7 +492,7 @@ public final class CronTab {
      */
     public @CheckForNull String checkSanity() {
         OUTER: for (int i = 0; i < 5; i++) {
-            long bitMask = (i<4)?bits[i]:(long)dayOfWeek;
+            long bitMask = i < 4 ? bits[i] : (long) dayOfWeek;
             for( int j=BaseParser.LOWER_BOUNDS[i]; j<=BaseParser.UPPER_BOUNDS[i]; j++ ) {
                 if(!checkBits(bitMask,j)) {
                     // this rank has a sparse entry.

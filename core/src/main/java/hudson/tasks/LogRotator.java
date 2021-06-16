@@ -80,7 +80,7 @@ public class LogRotator extends BuildDiscarder {
 
         public CollatedLogRotatorException(String msg, Collection<Exception> values) {
             super(msg);
-            this.collated = (values != null) ? values : Collections.emptyList();
+            this.collated = values != null ? values : Collections.emptyList();
         }
     }
     

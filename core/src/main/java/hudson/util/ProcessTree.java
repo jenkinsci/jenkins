@@ -455,7 +455,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
         
         // Null-check in case the previous call worked
-        boolean vetoes = (vetoersExist == null ? true : vetoersExist);
+        boolean vetoes = vetoersExist == null ? true : vetoersExist;
         
         try {
             if(File.pathSeparatorChar==';')
@@ -1252,7 +1252,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         // Itterate through argument vector
                         for( int n=0; ; n++ ) {
 
-                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp+(n*psize)));
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp + n * psize));
                             long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
 
                             if (addr == 0) // completed the walk
@@ -1300,7 +1300,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         // Itterate through environment vector
                         for( int n=0; ; n++ ) {
 
-                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp+(n*psize)));
+                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp + n * psize));
                             long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
 
                             if (addr == 0) // completed the walk
@@ -1361,7 +1361,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          */
         private static int adjust(int i) {
             if(IS_LITTLE_ENDIAN)
-                return (i<<24) |((i<<8) & 0x00FF0000) | ((i>>8) & 0x0000FF00) | (i>>>24);
+                return i << 24 | i << 8 & 0x00FF0000 | i >> 8 & 0x0000FF00 | i >>> 24;
             else
                 return i;
         }
@@ -1496,13 +1496,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         argc = adjust(psinfo.readInt());
                         argp = adjustL(psinfo.readLong());
                         envp = adjustL(psinfo.readLong());
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                        b64 = psinfo.readByte() == PR_MODEL_LP64;
                     } else {
                         psinfo.seek(188);  // offset of pr_argc
                         argc = adjust(psinfo.readInt());
                         argp = to64(adjust(psinfo.readInt()));
                         envp = to64(adjust(psinfo.readInt()));
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                        b64 = psinfo.readByte() == PR_MODEL_LP64;
                     }
                 }
                 if(ppid==-1)
@@ -1632,7 +1632,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          */
         private static int adjust(int i) {
             if(IS_LITTLE_ENDIAN)
-                return (i<<24) |((i<<8) & 0x00FF0000) | ((i>>8) & 0x0000FF00) | (i>>>24);
+                return i << 24 | i << 8 & 0x00FF0000 | i >> 8 & 0x0000FF00 | i >>> 24;
             else
                 return i;
         }

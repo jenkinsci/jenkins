@@ -35,7 +35,7 @@ public class LabelAutoCompleteSeeder {
         boolean trailingQuote = source.endsWith("\"");
         boolean leadingQuote = source.startsWith("\"");
         boolean trailingSpace = source.endsWith(" ");
-        if (trailingQuote || (trailingSpace && !leadingQuote)) {
+        if (trailingQuote || trailingSpace && !leadingQuote) {
             terms.add("");
         } else {
             if (leadingQuote) {

@@ -119,7 +119,7 @@ abstract class BaseParser extends LLkParser {
         } else {
             assert step==NO_STEP;
             // step=1 (i.e. omitted) in the case of hash is actually special; means pick one value, not step by 1
-            return 1L << (s+hash.next(e+1-s));
+            return 1L << s + hash.next(e + 1 - s);
         }
     }
     

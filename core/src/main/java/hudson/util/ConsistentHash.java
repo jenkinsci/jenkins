@@ -312,7 +312,7 @@ public class ConsistentHash<T> {
             for (int i = 0; i < 4; i++) {
                 digest[i] ^= digest[i + 4] + digest[i + 8] + digest[i + 12];
             }
-            return (b2i(digest[0]) << 24) | (b2i(digest[1]) << 16) | (b2i(digest[2]) << 8) | b2i(digest[3]);
+            return b2i(digest[0]) << 24 | b2i(digest[1]) << 16 | b2i(digest[2]) << 8 | b2i(digest[3]);
         } catch (GeneralSecurityException e) {
             throw new RuntimeException("Could not generate SHA-256 hash", e);
         }
@@ -326,7 +326,7 @@ public class ConsistentHash<T> {
      * unsigned byte->int.
      */
     private int b2i(byte b) {
-        return ((int)b) & 0xFF;
+        return (int) b & 0xFF;
     }
 
     /**

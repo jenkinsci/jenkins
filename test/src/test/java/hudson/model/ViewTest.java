@@ -234,9 +234,9 @@ public class ViewTest {
         User.get("user", true);
 
         // as long as the cloudbees-folder is included as test dependency, its Folder will load icon
-        boolean folderPluginActive = (j.jenkins.getPlugin("cloudbees-folder") != null);
+        boolean folderPluginActive = j.jenkins.getPlugin("cloudbees-folder") != null;
         // link to Folder class is done here to ensure if we remove the dependency, this code will fail and so will be removed
-        boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor(Folder.class) != null);
+        boolean folderPluginClassesLoaded = j.jenkins.getDescriptor(Folder.class) != null;
         // this could be written like this to avoid the hard dependency:
         // boolean folderPluginClassesLoaded = (j.jenkins.getDescriptor("com.cloudbees.hudson.plugins.folder.Folder") != null);
         if (!folderPluginActive && folderPluginClassesLoaded) {

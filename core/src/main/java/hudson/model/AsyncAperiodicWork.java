@@ -147,8 +147,8 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
             }
         }
         if (f.isFile()) {
-            if ((lastRotateMillis + logRotateMillis < System.currentTimeMillis())
-                    || (logRotateSize > 0 && f.length() > logRotateSize)) {
+            if (lastRotateMillis + logRotateMillis < System.currentTimeMillis()
+                    || logRotateSize > 0 && f.length() > logRotateSize) {
                 lastRotateMillis = System.currentTimeMillis();
                 File prev = null;
                 for (int i = 5; i >= 0; i--) {

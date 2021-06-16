@@ -1309,7 +1309,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.get() || (view != null && ig == view.getOwner().getItemGroup())) {
+            if (ig == Jenkins.get() || view != null && ig == view.getOwner().getItemGroup()) {
                 assert i instanceof TopLevelItem;
                 if (view != null) {
                     // assume p and the current page belong to the same view, so return a relative path
@@ -1862,10 +1862,10 @@ public class Functions {
         StringBuilder buf = new StringBuilder(projectName.length());
         for( int i=0; i<projectName.length(); i++ ) {
             char ch = projectName.charAt(i);
-            if(('a'<=ch && ch<='z')
-            || ('A'<=ch && ch<='Z')
-            || ('0'<=ch && ch<='9')
-            || "-_.".indexOf(ch)>=0)
+            if ('a' <= ch && ch <= 'z'
+            || 'A' <= ch && ch <= 'Z'
+            || '0' <= ch && ch <= '9'
+            || "-_.".indexOf(ch) >= 0)
                 buf.append(ch);
             else
                 buf.append('_');    // escape

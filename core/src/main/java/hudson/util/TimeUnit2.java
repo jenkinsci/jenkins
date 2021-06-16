@@ -84,7 +84,7 @@ public enum TimeUnit2 {
         @Override public long convert(long d, TimeUnit2 u) { return u.toNanos(d); }
         @Override public long convert(long d, TimeUnit u) { return u.toNanos(d); }
         @Override
-        int excessNanos(long d, long m) { return (int)(d - (m*C2)); }
+        int excessNanos(long d, long m) { return (int) (d - m * C2); }
     },
     MICROSECONDS {
         @Override public long toNanos(long d)   { return x(d, C1/C0, MAX/(C1/C0)); }
@@ -97,7 +97,7 @@ public enum TimeUnit2 {
         @Override public long convert(long d, TimeUnit2 u) { return u.toMicros(d); }
         @Override public long convert(long d, TimeUnit u) { return u.toMicros(d); }
         @Override
-        int excessNanos(long d, long m) { return (int)((d*C1) - (m*C2)); }
+        int excessNanos(long d, long m) { return (int) (d * C1 - m * C2); }
     },
     MILLISECONDS {
         @Override public long toNanos(long d)   { return x(d, C2/C0, MAX/(C2/C0)); }

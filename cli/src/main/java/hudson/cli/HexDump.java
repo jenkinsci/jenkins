@@ -28,7 +28,7 @@ class HexDump {
                     inText = false;
                 }
                 r.append("0x");
-                r.append(CODE.charAt((b>>4)&15));
+                r.append(CODE.charAt(b >> 4 & 15));
                 r.append(CODE.charAt(b&15));
                 if (i < len - 1) {
                     if (b == 10) {

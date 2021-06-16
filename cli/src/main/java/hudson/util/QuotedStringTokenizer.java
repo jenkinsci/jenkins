@@ -438,7 +438,7 @@ public class QuotedStringTokenizer
 
         char first=s.charAt(0);
         char last=s.charAt(s.length()-1);
-        if (first!=last || (first!='"' && first!='\''))
+        if (first != last || first != '"' && first != '\'')
             return s;
 
         StringBuilder b=new StringBuilder(s.length()-2);
@@ -534,9 +534,9 @@ public class QuotedStringTokenizer
      */
     public static byte convertHexDigit( byte b )
     {
-        if ((b >= '0') && (b <= '9')) return (byte)(b - '0');
-        if ((b >= 'a') && (b <= 'f')) return (byte)(b - 'a' + 10);
-        if ((b >= 'A') && (b <= 'F')) return (byte)(b - 'A' + 10);
+        if (b >= '0' && b <= '9') return (byte) (b - '0');
+        if (b >= 'a' && b <= 'f') return (byte) (b - 'a' + 10);
+        if (b >= 'A' && b <= 'F') return (byte) (b - 'A' + 10);
         return 0;
     }
 

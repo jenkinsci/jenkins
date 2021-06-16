@@ -139,7 +139,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
 
         private Object readResolve() {
             long end = System.currentTimeMillis();
-            return new Data(cur,(end-start));
+            return new Data(cur, end - start);
         }
 
         private static final long serialVersionUID = 1L;

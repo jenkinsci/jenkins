@@ -172,7 +172,7 @@ public class TarInputStream extends FilterInputStream {
             }
             skip -= numRead;
         }
-        return (numToSkip - skip);
+        return numToSkip - skip;
     }
 
     /**
@@ -305,7 +305,7 @@ public class TarInputStream extends FilterInputStream {
     @Override
     public int read() throws IOException {
         int num = this.read(this.oneBuf, 0, 1);
-        return num == -1 ? -1 : ((int) this.oneBuf[0]) & 0xFF;
+        return num == -1 ? -1 : (int) this.oneBuf[0] & 0xFF;
     }
 
     /**
@@ -329,7 +329,7 @@ public class TarInputStream extends FilterInputStream {
             return -1;
         }
 
-        if ((numToRead + this.entryOffset) > this.entrySize) {
+        if (numToRead + this.entryOffset > this.entrySize) {
             numToRead = (int) (this.entrySize - this.entryOffset);
         }
 

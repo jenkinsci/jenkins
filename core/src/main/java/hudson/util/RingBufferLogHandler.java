@@ -91,7 +91,7 @@ public class RingBufferLogHandler extends Handler {
             public LogRecord get(int index) {
                 // flip the order
                 synchronized (RingBufferLogHandler.this) {
-                    return records[(start+(size-(index+1)))%records.length];
+                    return records[(start + size - (index + 1)) % records.length];
                 }
             }
 

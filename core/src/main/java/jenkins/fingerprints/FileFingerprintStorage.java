@@ -265,7 +265,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     private boolean cleanFingerprint(File fingerprintFile, TaskListener listener) {
         try {
             Fingerprint fp = loadFingerprint(fingerprintFile);
-            if (fp == null || (!fp.isAlive() && fp.getFacetBlockingDeletion() == null) ) {
+            if (fp == null || !fp.isAlive() && fp.getFacetBlockingDeletion() == null) {
                 listener.getLogger().println("deleting obsolete " + fingerprintFile);
                 fingerprintFile.delete();
                 return true;

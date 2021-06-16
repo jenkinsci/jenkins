@@ -166,8 +166,8 @@ public class BackFiller extends LoadPredictor {
         }
 
         public boolean overlapsWith(TimeRange that) {
-            return (this.start <= that.start && that.start <=this.end)
-                || (that.start <= this.start && this.start <=that.end);
+            return this.start <= that.start && that.start <=this.end
+                || that.start <= this.start && this.start <=that.end;
         }
 
         public FutureLoad toFutureLoad(int size) {
