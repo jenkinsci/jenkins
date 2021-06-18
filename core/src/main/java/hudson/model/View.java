@@ -959,8 +959,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for(TopLevelItem item : items) {
             
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
-                            item.getSearchUrl(), item.getDisplayName())));
+                LOGGER.fine(String.format("Adding url=%s,displayName=%s",
+                            item.getSearchUrl(), item.getDisplayName()));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
         }        

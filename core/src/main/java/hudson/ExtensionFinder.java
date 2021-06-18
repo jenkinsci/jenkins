@@ -60,7 +60,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -569,7 +568,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
             public <T> void onProvision(ProvisionInvocation<T> provision) {
                 final T instance = provision.provision();
                 if (instance == null) return;
-                List<Method> methods = new LinkedList<>();
+                List<Method> methods = new ArrayList<>();
                 Class c = instance.getClass();
 
                 // find PostConstruct methods in class hierarchy, the one from parent class being first in list

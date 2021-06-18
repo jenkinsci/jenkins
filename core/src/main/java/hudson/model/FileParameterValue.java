@@ -229,9 +229,6 @@ public class FileParameterValue extends ParameterValue {
 
     /**
      * Serve this file parameter in response to a {@link StaplerRequest}.
-     *
-     * @param request
-     * @param response
      */
     public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
         AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();

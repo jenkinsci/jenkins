@@ -52,9 +52,6 @@ class MethodBinder {
     private final Method method;
     private final Object[] arguments;
 
-    /**
-     * @param method
-     */
     MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
         this.method = method;
         this.command = command;
