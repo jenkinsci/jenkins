@@ -133,9 +133,11 @@ public class ChartUtil {
      * Generates the graph in PNG format and sends that to the response.
      *
      * @param defaultW
+     *      The size of the picture to be generated. These values can be overridden
+     *      by the query parameter 'width' in the request.
      * @param defaultH
      *      The size of the picture to be generated. These values can be overridden
-     *      by the query parameter 'width' and 'height' in the request.
+     *      by the query parameter 'height' in the request.
      * @deprecated as of 1.320
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)

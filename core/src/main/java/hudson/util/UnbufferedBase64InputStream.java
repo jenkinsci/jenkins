@@ -45,7 +45,7 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
             pos = 0;
         }
 
-        return (decoded[pos++])&0xFF;
+        return decoded[pos++] & 0xFF;
     }
 
     @Override

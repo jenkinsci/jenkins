@@ -494,7 +494,6 @@ public class ListView extends View implements DirectlyModifiableView {
 
     /**
      * Deprecated see, {@link StatusFilter}
-     * @param statusFilter
      */
     @Deprecated
     @DataBoundSetter

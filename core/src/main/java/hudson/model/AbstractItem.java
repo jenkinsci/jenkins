@@ -187,8 +187,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * This method exists so that the Job configuration pages can use 
      * getDisplayNameOrNull so that nothing is shown in the display name text
      * box if the display name is not set.
-     * @param displayName
-     * @throws IOException
      */
     public void setDisplayNameOrNull(String displayName) throws IOException {
         setDisplayName(displayName);

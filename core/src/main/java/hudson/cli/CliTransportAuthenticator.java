@@ -30,7 +30,6 @@ public abstract class CliTransportAuthenticator implements ExtensionPoint {
      *      Protocol identifier that {@link #supportsProtocol(String)} returned true.
      * @param channel
      *      Communication channel to the client.
-     * @param con
      */
     public abstract void authenticate(String protocol, Channel channel, Connection con);
 

@@ -31,6 +31,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
@@ -168,7 +169,7 @@ public class FilePathTest {
                 public Integer call() throws Exception {
                     class Sink extends OutputStream {
                         private Exception closed;
-                        private volatile int count;
+                        private final AtomicInteger count = new AtomicInteger();
 
                         private void checkNotClosed() throws IOException {
                             if (closed != null)
@@ -177,19 +178,19 @@ public class FilePathTest {
 
                         @Override
                         public void write(int b) throws IOException {
-                            count++;
+                            count.incrementAndGet();
                             checkNotClosed();
                         }
 
                         @Override
                         public void write(byte[] b) throws IOException {
-                            count+=b.length;
+                            count.addAndGet(b.length);
                             checkNotClosed();
                         }
 
                         @Override
                         public void write(byte[] b, int off, int len) throws IOException {
-                            count+=len;
+                            count.addAndGet(len);
                             checkNotClosed();
                         }
 
@@ -204,7 +205,7 @@ public class FilePathTest {
                     FilePath f = new FilePath(channels.french, file.getPath());
                     Sink sink = new Sink();
                     f.copyTo(sink);
-                    return sink.count;
+                    return sink.count.get();
                 }
             });
         }
