@@ -27,7 +27,7 @@ public class AtmostOneTaskExecutorTest {
             try {
                 lock.block();
             } catch (InterruptedException x) {
-                assert false : x;
+                throw new RuntimeException(x);
             }
             return null;
         });

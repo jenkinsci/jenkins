@@ -83,7 +83,6 @@ public class EnvironmentVariableNodePropertyTest {
 	/**
 	 * Agent and master properties and parameters are available.
 	 * Priority: parameters > agent > master
-	 * @throws Exception
 	 */
 	@Test
 	public void testSlaveAndMasterPropertyAndParameterOnSlave()

@@ -30,11 +30,15 @@ THE SOFTWARE.
       The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
     </st:attribute>
 
+    <st:attribute name="id">
+      ID of the icon element. Since TODO.
+    </st:attribute>
+
     <st:attribute name="src">
       Icon source raw URL. Only relevant if the 'class' attribute is NOT specified.
     </st:attribute>
 
-    <st:attribute name="onclick">onclick handler.</st:attribute>
+    <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
     <st:attribute name="title">title</st:attribute>
     <st:attribute name="style">style</st:attribute>
     <st:attribute name="tooltip">tooltip</st:attribute>
@@ -66,19 +70,19 @@ THE SOFTWARE.
 
       <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
           <span class="build-status-icon__outer">
-            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" />
+            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" />
           </span>
-          <l:svgIcon class="${attrs.class}" href="${iconSrc}"/>
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
       </span>
     </j:when>
 
     <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
-      <l:svgIcon class="${attrs.class}" href="${iconSrc}"/>
+      <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
     </j:when>
 
     <j:otherwise>
       <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
-           alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>
+           alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip}" id="${attrs.id}" />
     </j:otherwise>
   </j:choose>
   

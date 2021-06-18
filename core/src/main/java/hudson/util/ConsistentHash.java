@@ -157,7 +157,7 @@ public class ConsistentHash<T> {
                     if (!hasNext()) {
                         throw new NoSuchElementException();
                     }
-                    return (T) owner[(start + (pos++)) % owner.length];
+                    return (T) owner[(start + pos++) % owner.length];
                 }
 
                 @Override

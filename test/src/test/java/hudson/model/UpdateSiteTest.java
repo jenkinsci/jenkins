@@ -86,7 +86,6 @@ public class UpdateSiteTest {
 
     /**
      * Startup a web server to access resources via HTTP.
-     * @throws Exception 
      */
     @Before
     public void setUpWebServer() throws Exception {
