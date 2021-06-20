@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import static java.lang.Math.max;
 
@@ -335,7 +334,7 @@ public class MappingWorksheet {
             long duration = item.task.getEstimatedDuration();
             if (duration > 0) {
                 long now = System.currentTimeMillis();
-                for (Entry<Computer, List<ExecutorSlot>> e : j.entrySet()) {
+                for (Map.Entry<Computer, List<ExecutorSlot>> e : j.entrySet()) {
                     final List<ExecutorSlot> list = e.getValue();
                     final int max = e.getKey().countExecutors();
 

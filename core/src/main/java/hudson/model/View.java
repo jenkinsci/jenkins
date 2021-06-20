@@ -35,7 +35,6 @@ import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -147,7 +146,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner {
 
     /**
      * Container of this view. Set right after the construction
@@ -757,8 +756,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         if (r instanceof RunWithSCM) {
                             RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
 
-                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                for (Entry entry : c) {
+                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet.Entry entry : c) {
                                     User user = entry.getAuthor();
 
                                     UserInfo info = users.get(user);
@@ -799,8 +798,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     for (Run<?,?> r : runs) {
                         if (r instanceof RunWithSCM) {
                             RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
-                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                for (Entry entry : c) {
+                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet.Entry entry : c) {
                                     User user = entry.getAuthor();
                                     if (user != null)
                                         return true;
@@ -960,8 +959,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for(TopLevelItem item : items) {
             
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
-                            item.getSearchUrl(), item.getDisplayName())));
+                LOGGER.fine(String.format("Adding url=%s,displayName=%s",
+                            item.getSearchUrl(), item.getDisplayName()));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
         }        

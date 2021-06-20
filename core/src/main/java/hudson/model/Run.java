@@ -1507,7 +1507,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns an input stream that reads from the log file.
      * It will use a gzip-compressed log file (log.gz) if that exists.
      *
-     * @throws IOException 
      * @return An input stream from the log file. 
      *   If the log file does not exist, the error message will be returned to the output.
      * @since 1.349

@@ -2023,6 +2023,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * List up files in this directory that matches the given Ant-style filter.
      *
      * @param includes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @param excludes
      *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @return
@@ -2038,6 +2039,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * List up files in this directory that matches the given Ant-style filter.
      *
      * @param includes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @param excludes
      *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @param defaultExcludes whether to use the ant default excludes

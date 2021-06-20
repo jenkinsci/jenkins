@@ -45,7 +45,6 @@ public abstract class WorkspaceBrowser implements ExtensionPoint {
 
     /**
      * Provide access to job's workspace
-     * @param job
      * @return {@code null} if this WorkspaceBrowser don't have a workspace for this job
      */
     public abstract @CheckForNull FilePath getWorkspace(Job job);

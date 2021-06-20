@@ -57,6 +57,8 @@ THE SOFTWARE.
     <l:view contentType="${attrs.contentType?:'text/html;charset=UTF-8'}">
       <!-- No "flushing" tag should be used before the contentType or the status is set on the request -->
       <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+      <!-- To be consistent with layout.html through FrameOptionsPageDecorator -->
+      <st:setHeader name="X-Frame-Options" value="sameorigin" />
       <d:invokeBody/>
     </l:view>
   </j:if>

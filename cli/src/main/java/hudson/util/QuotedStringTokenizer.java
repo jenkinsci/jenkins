@@ -472,7 +472,7 @@ public class QuotedStringTokenizer
                                 (convertHexDigit((byte)s.charAt(i++))<<24)+
                                 (convertHexDigit((byte)s.charAt(i++))<<16)+
                                 (convertHexDigit((byte)s.charAt(i++))<<8)+
-                                (convertHexDigit((byte)s.charAt(i++)))
+                                convertHexDigit((byte)s.charAt(i++))
                                 )
                         );
                         break;

@@ -8,7 +8,6 @@ import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
-import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -48,7 +47,7 @@ public class EnvironmentVariableNodePropertyTest {
 	 */
 	@Test
 	public void testAgentPropertyOnAgent() throws Exception {
-		setVariables(agent, new Entry("KEY", "agentValue"));
+		setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "agentValue"));
 		Map<String, String> envVars = executeBuild(agent);
 		assertEquals("agentValue", envVars.get("KEY"));
 	}
@@ -60,7 +59,7 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testControllerPropertyOnBuiltInNode() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "globalValue"))));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "globalValue"))));
 
 		Map<String, String> envVars = executeBuild(j.jenkins);
 
@@ -74,8 +73,8 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testAgentAndControllerPropertyOnAgent() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "globalValue"))));
-		setVariables(agent, new Entry("KEY", "agentValue"));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "globalValue"))));
+		setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "agentValue"));
 
 		Map<String, String> envVars = executeBuild(agent);
 
@@ -85,7 +84,6 @@ public class EnvironmentVariableNodePropertyTest {
 	/**
 	 * Agent and controller properties and parameters are available.
 	 * Priority: parameters > agent > controller
-	 * @throws Exception
 	 */
 	@Test
 	// TODO(terminology) is this correct? This sets a built-in node property, not a global property
@@ -95,8 +93,8 @@ public class EnvironmentVariableNodePropertyTest {
 				new StringParameterDefinition("KEY", "parameterValue"));
 		project.addProperty(pdp);
 
-		setVariables(j.jenkins, new Entry("KEY", "builtInNodeValue"));
-		setVariables(agent, new Entry("KEY", "agentValue"));
+		setVariables(j.jenkins, new EnvironmentVariablesNodeProperty.Entry("KEY", "builtInNodeValue"));
+		setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "agentValue"));
 
 		Map<String, String> envVars = executeBuild(agent);
 
@@ -107,7 +105,7 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testVariableResolving() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY1", "value"), new Entry("KEY2", "$KEY1"))));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY1", "value"), new EnvironmentVariablesNodeProperty.Entry("KEY2", "$KEY1"))));
 		Map<String,String> envVars = executeBuild(j.jenkins);
 		assertEquals("value", envVars.get("KEY1"));
 		assertEquals("value", envVars.get("KEY2"));
@@ -117,7 +115,7 @@ public class EnvironmentVariableNodePropertyTest {
 	public void testFormRoundTripForController() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
                 Collections.singleton(new EnvironmentVariablesNodeProperty(
-                        new Entry("KEY", "value"))));
+                        new EnvironmentVariablesNodeProperty.Entry("KEY", "value"))));
 		
 		WebClient webClient = j.createWebClient();
 		HtmlPage page = webClient.getPage(j.jenkins, "configure");
@@ -133,7 +131,7 @@ public class EnvironmentVariableNodePropertyTest {
 
 	@Test
 	public void testFormRoundTripForAgent() throws Exception {
-		setVariables(agent, new Entry("KEY", "value"));
+		setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "value"));
 
 		WebClient webClient = j.createWebClient();
 		HtmlPage page = webClient.getPage(agent, "configure");
@@ -157,7 +155,7 @@ public class EnvironmentVariableNodePropertyTest {
 
 	// ////////////////////// helper methods /////////////////////////////////
 
-	private void setVariables(Node node, Entry... entries) throws IOException {
+	private void setVariables(Node node, EnvironmentVariablesNodeProperty.Entry... entries) throws IOException {
 		node.getNodeProperties().replaceBy(
 				Collections.singleton(new EnvironmentVariablesNodeProperty(
 						entries)));

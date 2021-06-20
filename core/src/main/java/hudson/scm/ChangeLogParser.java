@@ -26,7 +26,6 @@ package hudson.scm;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
-import hudson.scm.ChangeLogSet.Entry;
 import java.io.File;
 import java.io.IOException;
 import org.xml.sax.SAXException;
@@ -44,7 +43,7 @@ public abstract class ChangeLogParser {
     /**
      * @since 1.568
      */
-    public ChangeLogSet<? extends Entry> parse(Run build, RepositoryBrowser<?> browser, File changelogFile) throws IOException, SAXException {
+    public ChangeLogSet<? extends ChangeLogSet.Entry> parse(Run build, RepositoryBrowser<?> browser, File changelogFile) throws IOException, SAXException {
         if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parse", AbstractBuild.class, File.class)) {
             return parse((AbstractBuild) build, changelogFile);
         } else {
@@ -53,7 +52,7 @@ public abstract class ChangeLogParser {
     }
 
     @Deprecated
-    public ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
+    public ChangeLogSet<? extends ChangeLogSet.Entry> parse(AbstractBuild build, File changelogFile) throws IOException, SAXException {
         return parse(build, build.getProject().getScm().getEffectiveBrowser(), changelogFile);
     }
 }
