@@ -30,7 +30,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     AdminWhitelistRule rule;
 
     public AdminCallableMonitor() {
-        super("agentToControllerAccessControl");
+        super("slaveToMasterAccessControl"); // TODO Can we change this while retaining compatibility?
     }
 
     @Override
