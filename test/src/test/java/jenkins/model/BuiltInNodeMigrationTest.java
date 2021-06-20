@@ -42,7 +42,7 @@ public class BuiltInNodeMigrationTest {
 
     @Test
     public void newInstanceHasNewTerminology() throws Exception {
-        assertStatus(j, true, null, "built-in", "built-in");
+        assertStatus(j, true, false, "built-in", "built-in");
         assertFalse(ExtensionList.lookupSingleton(BuiltInNodeMigration.class).isActivated());
     }
 

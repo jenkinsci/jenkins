@@ -867,6 +867,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * If this is false, no migration is needed to reconfigure the built-in node (formerly 'master', now 'built-in').
      * Otherwise, {@link BuiltInNodeMigration} will show up.
      */
+    // See #readResolve for null -> true transition and #save for null -> false transition
     @Restricted(NoExternalUse.class)
     /* package-private */ Boolean nodeRenameMigrationNeeded;
 
@@ -3241,7 +3242,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /* package */ boolean getRenameMigrationDone() {
         if (nodeRenameMigrationNeeded == null) {
-            /* Jenkins instance created without having loaded from disk */
+            /* This is exceptionally unlikely to occur since we replace 'null' with 'true' on save */
             return true;
         }
         return !nodeRenameMigrationNeeded;
@@ -3506,6 +3507,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             version = VERSION;
         } else {
             LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, currentMilestone});
+        }
+
+        if (nodeRenameMigrationNeeded == null) {
+            /*
+            If we initialized this object bypassing #readResolve, i.e. a new instance,
+            we need to persist this value, otherwise on restart we'd flag this as migration needed.
+             */
+            nodeRenameMigrationNeeded = false;
         }
 
         getConfigFile().write(this);

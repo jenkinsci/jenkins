@@ -48,7 +48,7 @@ public class BuiltInNodeMigrationPropertyTest {
 
     @Test
     public void overrideAppliesToNewInstance() throws Exception {
-        BuiltInNodeMigrationTest.assertStatus(j, true, null, OVERRIDE_VALUE, OVERRIDE_VALUE);
+        BuiltInNodeMigrationTest.assertStatus(j, true, false, OVERRIDE_VALUE, OVERRIDE_VALUE);
     }
 
     @Test
