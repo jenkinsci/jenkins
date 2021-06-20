@@ -540,7 +540,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j!=null) {// only when running on the master
+        if (j != null) { // only when running on the controller
             cls.put(j.getPluginManager().uberClassLoader);
 
             ResourceNameIterator servicesIter =

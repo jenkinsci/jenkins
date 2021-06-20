@@ -1,6 +1,6 @@
 package jenkins.util;
 
-import hudson.slaves.DumbSlave;
+import hudson.model.Node;
 import java.io.IOException;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.ClassRule;
@@ -18,7 +18,7 @@ public class JenkinsJVMRealTest {
     @Test
     public void isJenkinsJVM() throws Throwable {
         assertThat(new IsJenkinsJVM().call(), is(true));
-        DumbSlave slave = j.createOnlineSlave();
+        Node slave = j.createOnlineSlave();
         assertThat(slave.getChannel().call(new IsJenkinsJVM()), is(false));
     }
 

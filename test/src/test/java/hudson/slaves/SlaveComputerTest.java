@@ -170,7 +170,7 @@ public class SlaveComputerTest {
 
     /**
      * Get remote path through json api
-     * @param node slave node
+     * @param node agent node
      * @param user the user for webClient
      * @return remote path
      * @throws IOException in case of communication problem.
