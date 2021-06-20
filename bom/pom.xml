@@ -40,7 +40,7 @@ THE SOFTWARE.
 
   <properties>
     <slf4jVersion>1.7.30</slf4jVersion>
-    <stapler.version>1539.v2f05ce93882d</stapler.version>
+    <stapler.version>1563.v3da2d02f9572</stapler.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
 
