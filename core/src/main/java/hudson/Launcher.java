@@ -136,7 +136,7 @@ public abstract class Launcher {
      * @return
      *      {@code null} if the target node is not configured to support this.
      *      this is a transitional measure.
-     *      Note that a launcher for the master is always non-null.
+     *      Note that a launcher for the built-in node is always non-null.
      */
     @CheckForNull
     public VirtualChannel getChannel() {

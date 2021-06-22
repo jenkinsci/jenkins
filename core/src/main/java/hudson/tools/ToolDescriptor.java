@@ -173,7 +173,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
     /**
      * May be overridden to provide tool-specific validation of a tool home directory.
-     * @param home a possible value for {@link ToolInstallation#getHome}, known to already exist on the master
+     * @param home a possible value for {@link ToolInstallation#getHome}, known to already exist on the controller TODO(terminology) or is it built-in?
      * @return by default, {@link FormValidation#ok()}
      * @since 1.563
      */

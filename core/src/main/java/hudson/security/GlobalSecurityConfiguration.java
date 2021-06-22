@@ -80,7 +80,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     /**
      * @since 2.24
-     * @return true if the slave agent port is enforced on this instance.
+     * @return true if the inbound agent port is enforced on this instance.
      */
     @Restricted(NoExternalUse.class)
     public boolean isSlaveAgentPortEnforced() {

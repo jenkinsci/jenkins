@@ -65,7 +65,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
  *
  * <p>
  * In Jenkins, often we need to build up "environment variable overrides"
- * on master, then to execute the process on agents. This causes a problem
+ * on the controller, then to execute the process on agents. This causes a problem
  * when working with variables like {@code PATH}. So to make this work,
  * we introduce a special convention {@code PATH+FOO} &mdash; all entries
  * that starts with {@code PATH+} are merged and prepended to the inherited
@@ -156,7 +156,7 @@ public class EnvVars extends TreeMap<String,String> {
             if(v==null) v=value;
             else {
                 // we might be handling environment variables for a agent that can have different path separator
-                // than the master, so the following is an attempt to get it right.
+                // than the controller, so the following is an attempt to get it right.
                 // it's still more error prone that I'd like.
                 char ch = platform==null ? File.pathSeparatorChar : platform.pathSeparator;
                 v=value+ch+v;
@@ -451,8 +451,8 @@ public class EnvVars extends TreeMap<String,String> {
      *
      * <p>
      * Despite what the name might imply, this is the environment variable
-     * of the current JVM process. And therefore, it is Jenkins master's environment
-     * variables only when you access this from the master.
+     * of the current JVM process. And therefore, it is the Jenkins controller's
+     * environment variables only when you access this from the controller.
      *
      * <p>
      * If you access this field from agents, then this is the environment

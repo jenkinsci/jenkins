@@ -240,7 +240,7 @@ public class NodeTest {
         assertNotNull("Channel should be set.", path.getChannel());
         assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());
         path = node2.createPath(absolutePath);
-        assertNull("Path should be null if slave have channel null.", path);
+        assertNull("Path should be null if agent have channel null.", path);
     }
 
     @Test
@@ -266,33 +266,33 @@ public class NodeTest {
 
     @Test
     public void testGetChannel() throws Exception {
-        Slave slave = j.createOnlineSlave();
+        Slave agent = j.createOnlineSlave();
         Node nodeOffline = j.createSlave();
-        Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
+        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
         assertNull("Channel of node should be null because node has not assigned computer.", node.getChannel());
         assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
-        assertNotNull("Channel of node should not be null.", slave.getChannel());
+        assertNotNull("Channel of node should not be null.", agent.getChannel());
     }
 
     @Test
     public void testToComputer() throws Exception {
-        Slave slave = j.createOnlineSlave();
-        Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
-        assertNull("Slave which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
-        assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
+        Slave agent = j.createOnlineSlave();
+        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
+        assertNull("Agent which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
+        assertNotNull("Agent which is added into Jenkins list nodes should have assigned computer.", agent.toComputer());
     }
 
     @Issue("JENKINS-27188")
     @Test public void envPropertiesImmutable() throws Exception {
-        Slave slave = j.createSlave();
+        Slave agent = j.createSlave();
 
         String propertyKey = "JENKINS-27188";
-        EnvVars envVars = slave.getComputer().getEnvironment();
+        EnvVars envVars = agent.getComputer().getEnvironment();
         envVars.put(propertyKey, "huuhaa");
         assertTrue(envVars.containsKey(propertyKey));
-        assertFalse(slave.getComputer().getEnvironment().containsKey(propertyKey));
+        assertFalse(agent.getComputer().getEnvironment().containsKey(propertyKey));
 
-        assertNotSame(slave.getComputer().getEnvironment(), slave.getComputer().getEnvironment());
+        assertNotSame(agent.getComputer().getEnvironment(), agent.getComputer().getEnvironment());
     }
 
     /**
@@ -377,7 +377,7 @@ public class NodeTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void masterComputerConfigDotXml() throws Exception {
+    public void builtInComputerConfigDotXml() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
         WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
