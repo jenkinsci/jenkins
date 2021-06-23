@@ -1,6 +1,5 @@
 package jenkins.diagnosis;
 
-import com.sun.akuma.JavaVMArguments;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
@@ -27,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.JavaVMArguments;
 
 import org.jenkinsci.Symbol;
 
@@ -71,8 +71,7 @@ public class HsErrPidList extends AdministrativeMonitor {
             // on different platforms, rules about the default locations are a lot more subtle.
 
             // check our arguments in the very end since this might fail on some platforms
-            JavaVMArguments args = JavaVMArguments.current();
-            for (String a : args) {
+            for (String a : JavaVMArguments.current()) {
                 // see http://www.oracle.com/technetwork/java/javase/felog-138657.html
                 if (a.startsWith(ERROR_FILE_OPTION)) {
                     scan(a.substring(ERROR_FILE_OPTION.length()));
