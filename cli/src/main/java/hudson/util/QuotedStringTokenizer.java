@@ -438,7 +438,7 @@ public class QuotedStringTokenizer
 
         char first=s.charAt(0);
         char last=s.charAt(s.length()-1);
-        if (first != last || first != '"' && first != '\'')
+        if (first!=last || (first!='"' && first!='\''))
             return s;
 
         StringBuilder b=new StringBuilder(s.length()-2);

@@ -219,8 +219,8 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
     private synchronized void reloadFromUserControlledList() {
         File file = getConfigFile();
         if (!file.exists()) {
-            if (whitelistSignaturesFromUserControlledList != null && whitelistSignaturesFromUserControlledList.isEmpty() ||
-                    blacklistSignaturesFromUserControlledList != null && blacklistSignaturesFromUserControlledList.isEmpty()) {
+            if ((whitelistSignaturesFromUserControlledList != null && whitelistSignaturesFromUserControlledList.isEmpty()) ||
+                    (blacklistSignaturesFromUserControlledList != null && blacklistSignaturesFromUserControlledList.isEmpty())) {
                 LOGGER.log(Level.INFO, "No whitelist source file found at " + file + " so resetting user-controlled whitelist");
             }
             whitelistSignaturesFromUserControlledList = new HashSet<>();

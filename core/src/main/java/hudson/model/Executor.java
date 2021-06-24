@@ -872,7 +872,7 @@ public class Executor extends Thread implements ModelObject {
         try {
             if (executable != null) {
                 if (runExtId == null || runExtId.isEmpty() || ! (executable instanceof Run)
-                        || executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId())) {
+                        || (executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
                     getParentOf(executable).getOwnerTask().checkAbortPermission();
                     interrupt();
                 }

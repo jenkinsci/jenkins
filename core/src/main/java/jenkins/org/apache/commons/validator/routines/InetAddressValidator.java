@@ -133,11 +133,11 @@ public class InetAddressValidator implements Serializable {
      */
     public boolean isValidInet6Address(String inet6Address) {
         boolean containsCompressedZeroes = inet6Address.contains("::");
-        if (containsCompressedZeroes && inet6Address.indexOf("::") != inet6Address.lastIndexOf("::")) {
+        if (containsCompressedZeroes && (inet6Address.indexOf("::") != inet6Address.lastIndexOf("::"))) {
             return false;
         }
-        if (inet6Address.startsWith(":") && !inet6Address.startsWith("::")
-                || inet6Address.endsWith(":") && !inet6Address.endsWith("::")) {
+        if ((inet6Address.startsWith(":") && !inet6Address.startsWith("::"))
+                || (inet6Address.endsWith(":") && !inet6Address.endsWith("::"))) {
             return false;
         }
         String[] octets = inet6Address.split(":");
@@ -188,7 +188,7 @@ public class InetAddressValidator implements Serializable {
             }
             validOctets++;
         }
-        if (validOctets > IPV6_MAX_HEX_GROUPS || validOctets < IPV6_MAX_HEX_GROUPS && !containsCompressedZeroes) {
+        if (validOctets > IPV6_MAX_HEX_GROUPS || (validOctets < IPV6_MAX_HEX_GROUPS && !containsCompressedZeroes)) {
             return false;
         }
         return true;

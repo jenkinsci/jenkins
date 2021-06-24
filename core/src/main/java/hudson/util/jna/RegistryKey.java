@@ -75,7 +75,7 @@ public class RegistryKey implements AutoCloseable {
      * @return int
      */
     static int convertBufferToInt(byte[] buf) {
-        return (buf[0] & 0xff) + ((buf[1] & 0xff) << 8) + ((buf[2] & 0xff) << 16) + ((buf[3] & 0xff) << 24);
+        return ((buf[0] & 0xff) + ((buf[1] & 0xff) << 8) + ((buf[2] & 0xff) << 16) + ((buf[3] & 0xff) << 24));
     }
 
     public String getStringValue(String valueName) {
@@ -137,9 +137,9 @@ public class RegistryKey implements AutoCloseable {
     public void setValue(String name, int value) {
         byte[] data = new byte[4];
         data[0] = (byte) (value & 0xff);
-        data[1] = (byte) (value >> 8 & 0xff);
-        data[2] = (byte) (value >> 16 & 0xff);
-        data[3] = (byte) (value >> 24 & 0xff);
+        data[1] = (byte) ((value >> 8) & 0xff);
+        data[2] = (byte) ((value >> 16) & 0xff);
+        data[3] = (byte) ((value >> 24) & 0xff);
 
         check(Advapi32.INSTANCE.RegSetValueEx(handle, name, 0, WINNT.REG_DWORD, data, data.length));
     }

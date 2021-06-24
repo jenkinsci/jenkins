@@ -346,7 +346,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
                     quotedArgs.append('"');
                 }
                 else if (percent && escapeVars
-                         && (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z')) {
+                         && ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
                     if (!quoted) quoted = startQuoting(quotedArgs, arg, j);
                     quotedArgs.append('"').append(c);
                     c = '"';

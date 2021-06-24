@@ -284,8 +284,8 @@ public class OldDataMonitor extends AdministrativeMonitor {
          */
         public boolean isOld(int threshold) {
             return currentVersion != null && min != null && (currentVersion.getDigitAt(0) > min.getDigitAt(0)
-                    || currentVersion.getDigitAt(0) == min.getDigitAt(0)
-                    && currentVersion.getDigitAt(1) - min.getDigitAt(1) >= threshold);
+                    || (currentVersion.getDigitAt(0) == min.getDigitAt(0)
+                    && currentVersion.getDigitAt(1) - min.getDigitAt(1) >= threshold));
         }
 
     }

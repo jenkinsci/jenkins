@@ -361,7 +361,7 @@ public class Util {
          */
         try {
             BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-            return attrs.isSymbolicLink() || attrs instanceof DosFileAttributes && attrs.isOther();
+            return attrs.isSymbolicLink() || (attrs instanceof DosFileAttributes && attrs.isOther());
         } catch (IOException ignored) {
             return false;
         }
@@ -384,7 +384,7 @@ public class Util {
             // never mind that the drive mappings can be changed between sessions, we just want to
             // know if the 3rd character is a `\` (or a '/' is acceptable too)
             char p = path.charAt(0);
-            if ('A' <= p && p <= 'Z' || 'a' <= p && p <= 'z') {
+            if (('A' <= p && p <= 'Z') || ('a' <= p && p <= 'z')) {
                 return path.charAt(2) != '\\' && path.charAt(2) != '/';
             }
         }
@@ -861,7 +861,7 @@ public class Util {
                     w.flush();
                     for (byte b : buf.toByteArray()) {
                         out.append('%');
-                        out.append(toDigit(b >> 4 & 0xF));
+                        out.append(toDigit((b >> 4) & 0xF));
                         out.append(toDigit(b & 0xF));
                     }
                     buf.reset();
@@ -928,7 +928,7 @@ public class Util {
                         while (bytes.hasRemaining()) {
                             byte b = bytes.get();
                             out.append('%');
-                            out.append(toDigit(b >> 4 & 0xF));
+                            out.append(toDigit((b >> 4) & 0xF));
                             out.append(toDigit(b & 0xF));
                         }
                     } catch (CharacterCodingException ex) {
@@ -946,7 +946,7 @@ public class Util {
                 byte[] bytes = new String(new int[] { codePoint }, 0, 1).getBytes(StandardCharsets.UTF_8);
                 for (byte aByte : bytes) {
                     out.append('%');
-                    out.append(toDigit(aByte >> 4 & 0xF));
+                    out.append(toDigit((aByte >> 4) & 0xF));
                     out.append(toDigit(aByte & 0xF));
                 }
 

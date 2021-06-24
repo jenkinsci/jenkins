@@ -1257,7 +1257,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             for (AgentProtocol p : AgentProtocol.all()) {
                 String name = p.getName();
                 if (name != null && (p.isRequired()
-                        || !disabled.contains(name) && (!p.isOptIn() || enabled.contains(name)))) {
+                        || (!disabled.contains(name) && (!p.isOptIn() || enabled.contains(name))))) {
                     result.add(name);
                 }
             }

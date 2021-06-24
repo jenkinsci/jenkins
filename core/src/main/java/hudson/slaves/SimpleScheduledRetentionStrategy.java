@@ -242,7 +242,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
     private boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
-        return lastStart < now && lastStop > now || nextStart < now && nextStop > now;
+        return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
     }
 
     @Extension @Symbol("schedule")

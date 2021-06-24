@@ -426,7 +426,7 @@ public class Items {
         return r;
     }
     private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r, Predicate<T> pred) {
-        List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems(t -> t instanceof ItemGroup || type.isInstance(t) && pred.test(type.cast(t))));
+        List<Item> items = new ArrayList<>(((ItemGroup<?>) root).getItems(t -> t instanceof ItemGroup || (type.isInstance(t) && pred.test(type.cast(t)))));
         // because we add items depth first, we can use the quicker BY_NAME comparison
         items.sort(BY_NAME);
         for (Item i : items) {
@@ -645,7 +645,7 @@ public class Items {
                 if (next != null) {
                     return true;
                 }
-                Predicate<Item> search = t -> t instanceof ItemGroup || type.isInstance(t) && pred.test(type.cast(t));
+                Predicate<Item> search = t -> t instanceof ItemGroup || (type.isInstance(t) && pred.test(type.cast(t)));
                 while (true) {
                     if (delegate == null || !delegate.hasNext()) {
                         if (stack.isEmpty()) {

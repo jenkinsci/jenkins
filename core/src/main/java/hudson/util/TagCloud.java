@@ -51,7 +51,7 @@ public class TagCloud<T> extends AbstractList<TagCloud<T>.Entry> {
         }
 
         public String getClassName() {
-            return "tag" + (int) scale();
+            return "tag"+((int)scale());
         }
     }
 

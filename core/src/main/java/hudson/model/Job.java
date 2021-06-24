@@ -1291,7 +1291,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             i = i.getPreviousBuild();
         }
         if (totalCount > 0) {
-            int score = (int) (100.0 * (totalCount - failCount) / totalCount);
+            int score = (int) ((100.0 * (totalCount - failCount)) / totalCount);
 
             Localizable description;
             if (failCount == 0) {
@@ -1474,7 +1474,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 for (Run r : getNewBuilds()) {
                     if (r.isBuilding())
                         continue;
-                    data.add((double) r.getDuration() / (1000 * 60), "min",
+                    data.add(((double) r.getDuration()) / (1000 * 60), "min",
                             new ChartLabel(r));
                 }
 

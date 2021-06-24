@@ -42,7 +42,7 @@ public class EncodingStream extends FilterOutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        out.write(chars.charAt(b >> 4 & 0xF));
+        out.write(chars.charAt((b >> 4) & 0xF));
         out.write(chars.charAt(b & 0xF));
     }
 
