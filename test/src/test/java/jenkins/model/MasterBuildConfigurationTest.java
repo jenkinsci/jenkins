@@ -18,7 +18,7 @@ public class MasterBuildConfigurationTest {
     public void retainMasterLabelWhenNoSlaveDefined() throws Exception {
         Jenkins jenkins = j.getInstance();
 
-        assertEquals("Test is for master with no slave", 1, jenkins.getComputers().length);
+        assertEquals("Test is for controller with no agent", 1, jenkins.getComputers().length);
         
         // set our own label & mode
         final String myTestLabel = "TestLabelx0123";
@@ -29,7 +29,7 @@ public class MasterBuildConfigurationTest {
         j.configRoundtrip();
         
         // make sure settings were not lost
-        assertEquals("Master's label is lost", myTestLabel, jenkins.getLabelString());
-        assertEquals("Master's mode is lost", Mode.EXCLUSIVE, jenkins.getMode());
+        assertEquals("Built in node's label is lost", myTestLabel, jenkins.getLabelString());
+        assertEquals("Built in node's mode is lost", Mode.EXCLUSIVE, jenkins.getMode());
     }
 }

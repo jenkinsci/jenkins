@@ -31,6 +31,7 @@ import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.IOUtils;
 import hudson.util.MaskingClassLoader;
+import java.lang.reflect.InvocationTargetException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
@@ -51,10 +52,8 @@ import org.apache.tools.ant.util.GlobPatternMapper;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipExtraField;
 import org.apache.tools.zip.ZipOutputStream;
-import org.jenkinsci.bytecode.Transformer;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -85,6 +84,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
      * Filter for jar files.
      */
     private static final FilenameFilter JAR_FILTER = new FilenameFilter() {
+        @Override
         public boolean accept(File dir,String name) {
             return name.endsWith(".jar");
         }
@@ -302,7 +302,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
         }
 
-        AntClassLoader2 classLoader = new AntClassLoader2(parent);
+        AntWithFindResourceClassLoader classLoader = new AntWithFindResourceClassLoader(parent, true);
         classLoader.addPathFiles(paths);
         return classLoader;
     }
@@ -320,9 +320,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return base;
     }
 
+    @Override
     public void initializeComponents(PluginWrapper plugin) {
     }
 
+    @Override
     public <T> List<ExtensionComponent<T>> findComponents(Class<T> type, Hudson hudson) {
 
         List<ExtensionFinder> finders;
@@ -362,6 +364,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return filtered;
     }
 
+    @Override
     public void load(PluginWrapper wrapper) throws IOException {
         // override the context classloader. This no longer makes sense,
         // but it is left for the backward compatibility
@@ -375,14 +378,14 @@ public class ClassicPluginStrategy implements PluginStrategy {
             } else {
                 try {
                     Class<?> clazz = wrapper.classLoader.loadClass(className);
-                    Object o = clazz.newInstance();
+                    Object o = clazz.getDeclaredConstructor().newInstance();
                     if(!(o instanceof Plugin)) {
                         throw new IOException(className+" doesn't extend from hudson.Plugin");
                     }
                     wrapper.setPlugin((Plugin) o);
                 } catch (LinkageError | ClassNotFoundException e) {
                     throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
-                } catch (IllegalAccessException | InstantiationException e) {
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
                 }
             }
@@ -577,7 +580,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         private volatile List<PluginWrapper> transientDependencies;
 
-        public DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
+        DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies) {
             super(parent);
             this._for = archive;
             this.dependencies = dependencies;
@@ -703,24 +706,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
-    /**
-     * {@link AntClassLoader} with a few methods exposed, {@link Closeable} support, and {@link Transformer} support.
-     */
-    private final class AntClassLoader2 extends AntWithFindResourceClassLoader implements Closeable {
-        private AntClassLoader2(ClassLoader parent) {
-            super(parent, true);
-        }
-        
-        @Override
-        protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
-            if (!DISABLE_TRANSFORMER)
-                classData = pluginManager.getCompatibilityTransformer().transform(classname, classData, this);
-            return super.defineClassFromData(container, classData, classname);
-        }
-    }
-
     /* Unused since 1.527, see https://github.com/jenkinsci/jenkins/commit/47de54d070f67af95b4fefb6d006a72bb31a5cb8 */
     @Deprecated
     public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
-    public static boolean DISABLE_TRANSFORMER = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }

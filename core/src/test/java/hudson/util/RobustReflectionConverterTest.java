@@ -70,7 +70,7 @@ public class RobustReflectionConverterTest {
     }
 
     @Test
-    public void classOwnership() throws Exception {
+    public void classOwnership() {
         XStream xs = new XStream2(new XStream2.ClassOwnership() {
             @Override public String ownerOf(Class<?> clazz) {
                 Owner o = clazz.getAnnotation(Owner.class);
@@ -113,7 +113,7 @@ public class RobustReflectionConverterTest {
     public static class Bild {
         Steppe[] steppes;
     }
-    public static abstract class Steppe {
+    public abstract static class Steppe {
         int number;
     }
     @Owner("p1")
@@ -130,7 +130,7 @@ public class RobustReflectionConverterTest {
     public static class Boot {}
     public static class Jacket {}
     @Owner("p2")
-    public static abstract class Lover {}
+    public abstract static class Lover {}
     @Owner("p3")
     public static class Billy extends Lover {}
     @Owner("p4")

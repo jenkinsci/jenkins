@@ -65,7 +65,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
  *
  * <p>
  * In Jenkins, often we need to build up "environment variable overrides"
- * on master, then to execute the process on agents. This causes a problem
+ * on the controller, then to execute the process on agents. This causes a problem
  * when working with variables like {@code PATH}. So to make this work,
  * we introduce a special convention {@code PATH+FOO} &mdash; all entries
  * that starts with {@code PATH+} are merged and prepended to the inherited
@@ -156,7 +156,7 @@ public class EnvVars extends TreeMap<String,String> {
             if(v==null) v=value;
             else {
                 // we might be handling environment variables for a agent that can have different path separator
-                // than the master, so the following is an attempt to get it right.
+                // than the controller, so the following is an attempt to get it right.
                 // it's still more error prone that I'd like.
                 char ch = platform==null ? File.pathSeparatorChar : platform.pathSeparator;
                 v=value+ch+v;
@@ -195,7 +195,7 @@ public class EnvVars extends TreeMap<String,String> {
             private final Comparator<? super String> comparator;
             public Set<String> referredVariables;
             
-            public TraceResolver(Comparator<? super String> comparator) {
+            TraceResolver(Comparator<? super String> comparator) {
                 this.comparator = comparator;
                 clear();
             }
@@ -204,6 +204,7 @@ public class EnvVars extends TreeMap<String,String> {
                 referredVariables = new TreeSet<>(comparator);
             }
             
+            @Override
             public String resolve(String name) {
                 referredVariables.add(name);
                 return "";
@@ -214,7 +215,7 @@ public class EnvVars extends TreeMap<String,String> {
             // map from a variable to a set of variables that variable refers.
             private final Map<String, Set<String>> refereeSetMap;
             
-            public VariableReferenceSorter(Map<String, Set<String>> refereeSetMap) {
+            VariableReferenceSorter(Map<String, Set<String>> refereeSetMap) {
                 this.refereeSetMap = refereeSetMap;
             }
             
@@ -239,7 +240,7 @@ public class EnvVars extends TreeMap<String,String> {
         private Map<String, Set<String>> refereeSetMap;
         private List<String> orderedVariableNames;
         
-        public OverrideOrderCalculator(@NonNull EnvVars target, @NonNull Map<String,String> overrides) {
+        OverrideOrderCalculator(@NonNull EnvVars target, @NonNull Map<String,String> overrides) {
             comparator = target.comparator();
             this.target = target;
             this.overrides = overrides;
@@ -260,7 +261,7 @@ public class EnvVars extends TreeMap<String,String> {
             String referrer = cycle.get(refererIndex);
             boolean removed = refereeSetMap.get(referrer).remove(referee);
             assert(removed);
-            LOGGER.warning(String.format("Cyclic reference detected: %s", Util.join(cycle," -> ")));
+            LOGGER.warning(String.format("Cyclic reference detected: %s", String.join(" -> ", cycle)));
             LOGGER.warning(String.format("Cut the reference %s -> %s", referrer, referee));
         }
         
@@ -438,6 +439,7 @@ public class EnvVars extends TreeMap<String,String> {
     }
 
     private static final class GetEnvVars extends MasterToSlaveCallable<EnvVars,RuntimeException> {
+        @Override
         public EnvVars call() {
             return new EnvVars(EnvVars.masterEnvVars);
         }
@@ -449,8 +451,8 @@ public class EnvVars extends TreeMap<String,String> {
      *
      * <p>
      * Despite what the name might imply, this is the environment variable
-     * of the current JVM process. And therefore, it is Jenkins master's environment
-     * variables only when you access this from the master.
+     * of the current JVM process. And therefore, it is the Jenkins controller's
+     * environment variables only when you access this from the controller.
      *
      * <p>
      * If you access this field from agents, then this is the environment

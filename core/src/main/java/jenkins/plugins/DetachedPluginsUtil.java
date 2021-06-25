@@ -1,8 +1,6 @@
 package jenkins.plugins;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import hudson.ClassicPluginStrategy;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
@@ -16,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -52,7 +51,7 @@ public class DetachedPluginsUtil {
 
     static {
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugins.txt")) {
-            DETACHED_LIST = ImmutableList.copyOf(configLines(is).map(line -> {
+            DETACHED_LIST = Collections.unmodifiableList(configLines(is).map(line -> {
                 String[] pieces = line.split(" ");
 
                 // defaults to Java 1.0 to install unconditionally if unspecified
@@ -65,7 +64,7 @@ public class DetachedPluginsUtil {
             throw new ExceptionInInitializerError(x);
         }
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugin-cycles.txt")) {
-            BREAK_CYCLES = ImmutableSet.copyOf(configLines(is).collect(Collectors.toSet()));
+            BREAK_CYCLES = Collections.unmodifiableSet(configLines(is).collect(Collectors.toSet()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }

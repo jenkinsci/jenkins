@@ -8,10 +8,10 @@ import hudson.slaves.NodeSpecific;
 import net.sf.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.net.URL;
 
@@ -58,6 +58,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         return null;
     }
 
+    @Override
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath expected = preferredLocation(tool, node);
 
@@ -121,7 +122,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         return null;
     }
 
-    public static abstract class DescriptorImpl<T extends DownloadFromUrlInstaller> extends ToolInstallerDescriptor<T> {
+    public abstract static class DescriptorImpl<T extends DownloadFromUrlInstaller> extends ToolInstallerDescriptor<T> {
         
         @SuppressWarnings("deprecation") // intentionally adding dynamic item here
         protected DescriptorImpl() {
@@ -176,7 +177,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
          * @return the merged ToolInstallerList wrapped in a JSONObject
          */
         private JSONObject reduce(List<JSONObject> jsonList) {
-            List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
+            List<ToolInstallerEntry> reducedToolEntries = new ArrayList<>();
 
             HashSet<String> processedIds = new HashSet<>();
             for (JSONObject jsonToolList : jsonList) {

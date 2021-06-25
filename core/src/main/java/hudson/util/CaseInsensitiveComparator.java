@@ -36,6 +36,7 @@ public final class CaseInsensitiveComparator implements Comparator<String>, Seri
 
     private CaseInsensitiveComparator() {}
 
+    @Override
     public int compare(String lhs, String rhs) {
         return lhs.compareToIgnoreCase(rhs);
     }

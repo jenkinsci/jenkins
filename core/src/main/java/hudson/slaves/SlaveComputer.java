@@ -109,7 +109,7 @@ import org.jenkinsci.remoting.util.LoggingChannelListener;
  */
 public class SlaveComputer extends Computer {
     private volatile Channel channel;
-    private volatile transient boolean acceptingTasks = true;
+    private transient volatile boolean acceptingTasks = true;
     private Charset defaultCharset;
     private Boolean isUnix;
     /**
@@ -246,7 +246,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Return the {@link ComputerLauncher} for this SlaveComputer.
+     * Return the {@link ComputerLauncher} for this {@code SlaveComputer}.
      * @since 1.312
      */
     public ComputerLauncher getLauncher() {
@@ -272,6 +272,7 @@ public class SlaveComputer extends Computer {
         return l;
     }
 
+    @Override
     protected Future<?> _connect(boolean forceReconnect) {
         if(channel!=null)   return Futures.precomputed(null);
         if(!forceReconnect && isConnecting())
@@ -692,7 +693,7 @@ public class SlaveComputer extends Computer {
                 // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
                 // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,
                 // we'll end up queuing the lot of threads in a pseudo deadlock.
-                // This implementation prevents that by avoiding a lock. HUDSON-1705 is likely a manifestation of this.
+                // This implementation prevents that by avoiding a lock. JENKINS-1705 is likely a manifestation of this.
                 channel.close();
                 throw new IllegalStateException("Already connected");
             }
@@ -732,10 +733,12 @@ public class SlaveComputer extends Computer {
         return channel;
     }
 
+    @Override
     public Charset getDefaultCharset() {
         return defaultCharset;
     }
 
+    @Override
     public List<LogRecord> getLogRecords() throws IOException, InterruptedException {
         if(channel==null)
             return Collections.emptyList();
@@ -758,6 +761,7 @@ public class SlaveComputer extends Computer {
     public Future<?> disconnect(OfflineCause cause) {
         super.disconnect(cause);
         return Computer.threadPoolForRemoting.submit(new Runnable() {
+            @Override
             public void run() {
                 // do this on another thread so that any lengthy disconnect operation
                 // (which could be typical) won't block UI thread.
@@ -812,7 +816,7 @@ public class SlaveComputer extends Computer {
         return new Slave.JnlpJar(fileName);
     }
 
-    @WebMethod(name="slave-agent.jnlp")
+    @WebMethod(name="slave-agent.jnlp") // backward compatibility
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
         return doJenkinsAgentJnlp(req, res);
     }
@@ -828,7 +832,7 @@ public class SlaveComputer extends Computer {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
 
-        @WebMethod(name="slave-agent.jnlp")
+        @WebMethod(name="slave-agent.jnlp") // backward compatibility
         public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) {
             return SlaveComputer.this.doJenkinsAgentJnlp(req, res);
         }
@@ -862,6 +866,7 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    @Override
     public RetentionStrategy getRetentionStrategy() {
         Slave n = getNode();
         return n==null ? RetentionStrategy.NOOP : n.getRetentionStrategy();
@@ -965,6 +970,7 @@ public class SlaveComputer extends Computer {
     }
 
     private static class ListFullEnvironment extends MasterToSlaveCallable<Map<String,String>,IOException> {
+        @Override
         public Map<String,String> call() throws IOException {
             Map<String, String> env = new TreeMap<>(System.getenv());
             if(Main.isUnitTest || Main.isDevelopmentMode) {
@@ -980,12 +986,14 @@ public class SlaveComputer extends Computer {
     private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
 
     private static final class SlaveVersion extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older agent.jar won't have VERSION
         }
     }
     private static final class DetectOS extends MasterToSlaveCallable<Boolean,IOException> {
+        @Override
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
         }
@@ -1001,12 +1009,14 @@ public class SlaveComputer extends Computer {
             this.relativePath = relativePath;
         }
 
+        @Override
         public String call() throws IOException {
             return new File(relativePath).getAbsolutePath();
         }
     }
 
     private static final class DetectDefaultCharset extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             return Charset.defaultCharset().name();
         }
@@ -1026,14 +1036,15 @@ public class SlaveComputer extends Computer {
     private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
         final int ringBufferSize;
 
-        public SlaveInitializer(int ringBufferSize) {
+        SlaveInitializer(int ringBufferSize) {
             this.ringBufferSize = ringBufferSize;
         }
 
+        @Override
         public Void call() {
             SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
 
-            // avoid double installation of the handler. Inbound agents can reconnect to the master multiple times
+            // avoid double installation of the handler. Inbound agents can reconnect to the controller multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
             for (Handler h : LOGGER.getHandlers()) {
@@ -1062,12 +1073,12 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the master.
-     * This method can be called from any thread on the master, or from agent (more precisely,
+     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the controller.
+     * This method can be called from any thread on the controller, or from agent (more precisely,
      * it only works from the remoting request-handling thread in agents, which means if you've started
      * separate thread on agents, that'll fail.)
      *
-     * @return null if the calling thread doesn't have any trace of where its master is.
+     * @return null if the calling thread doesn't have any trace of where its controller is.
      * @since 1.362
      * @deprecated Use {@link AgentComputerUtil#getChannelToMaster()} instead.
      */
@@ -1086,6 +1097,7 @@ public class SlaveComputer extends Computer {
     }
 
     private static class SlaveLogFetcher extends MasterToSlaveCallable<List<LogRecord>,RuntimeException> {
+        @Override
         public List<LogRecord> call() {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
         }

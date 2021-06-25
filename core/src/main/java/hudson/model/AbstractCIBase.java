@@ -27,6 +27,7 @@
 package hudson.model;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.AccessControlled;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.RetentionStrategy;
@@ -35,13 +36,18 @@ import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelItem>, StaplerProxy, StaplerFallback, ViewGroup, AccessControlled, DescriptorByNameOwner {
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean LOG_STARTUP_PERFORMANCE = SystemProperties.getBoolean(Jenkins.class.getName() + "." + "logStartupPerformance", false);
 
     private static final Logger LOGGER = Logger.getLogger(AbstractCIBase.class.getName());
@@ -62,6 +68,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      *      Why are you calling a method that always returns ""?
     *       You probably want to call {@link Jenkins#getRootUrl()}
      */
+    @Override
     @Deprecated
     public String getUrl() {
         return "";
@@ -116,7 +123,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
      /**
      * Returns all {@link Node}s in the system, excluding {@link jenkins.model.Jenkins} instance itself which
-     * represents the master.
+     * represents the built-in node in this context.
      */
     public abstract List<Node> getNodes();
 
@@ -128,10 +135,8 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * Computer API uses package protection heavily
      * ============================================================================================================== */
 
-    private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used, boolean automaticSlaveLaunch) {
-        Map<Node,Computer> computers = getComputerMap();
-        Computer c;
-        c = byNameMap.get(n.getNodeName());
+    private void updateComputer(Node n, Map<String,Computer> byNameMap, Set<Computer> used, boolean automaticAgentLaunch) {
+        Computer c = byNameMap.get(n.getNodeName());
         if (c!=null) {
             try {
                 c.setNode(n); // reuse
@@ -140,35 +145,46 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 LOGGER.log(Level.WARNING, "Error updating node " + n.getNodeName() + ", continuing", e);
             }
         } else {
-            // we always need Computer for the master as a fallback in case there's no other Computer.
-            if(n.getNumExecutors()>0 || n==Jenkins.get()) {
-                try {
-                    c = n.createComputer();
-                } catch(RuntimeException ex) { // Just in case there is a bogus extension
-                    LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
-                }
-                if (c == null) {
-                    LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node", 
-                            new Object[]{n.getNodeName(), n.getClass().getName()});
-                    return;
-                }
-                
-                computers.put(n, c);
-                if (!n.isHoldOffLaunchUntilSave() && automaticSlaveLaunch) {
-                    RetentionStrategy retentionStrategy = c.getRetentionStrategy();
-                    if (retentionStrategy != null) {
-                        // if there is a retention strategy, it is responsible for deciding to start the computer
-                        retentionStrategy.start(c);
-                    } else {
-                        // we should never get here, but just in case, we'll fall back to the legacy behaviour
-                        c.connect(true);
-                    }
-                }
+            c = createNewComputerForNode(n, automaticAgentLaunch);
+            if (c != null) {
                 used.add(c);
-            } else {
-                // TODO: Maybe it should be allowed, but we would just get NPE in the original logic before JENKINS-43496
-                LOGGER.log(Level.WARNING, "Node {0} has no executors. Cannot update the Computer instance of it", n.getNodeName());
             }
+        }
+    }
+
+    @CheckForNull
+    private Computer createNewComputerForNode(Node n, boolean automaticAgentLaunch) {
+        Computer c = null;
+        Map<Node,Computer> computers = getComputerMap();
+        // we always need Computer for the built-in node as a fallback in case there's no other Computer.
+        if(n.getNumExecutors()>0 || n==Jenkins.get()) {
+            try {
+                c = n.createComputer();
+            } catch(RuntimeException ex) { // Just in case there is a bogus extension
+                LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
+            }
+            if (c == null) {
+                LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node",
+                        new Object[]{n.getNodeName(), n.getClass().getName()});
+                return null;
+            }
+
+            computers.put(n, c);
+            if (!n.isHoldOffLaunchUntilSave() && automaticAgentLaunch) {
+                RetentionStrategy retentionStrategy = c.getRetentionStrategy();
+                if (retentionStrategy != null) {
+                    // if there is a retention strategy, it is responsible for deciding to start the computer
+                    retentionStrategy.start(c);
+                } else {
+                    // we should never get here, but just in case, we'll fall back to the legacy behaviour
+                    c.connect(true);
+                }
+            }
+            return c;
+        } else {
+            // TODO: Maybe it should be allowed, but we would just get NPE in the original logic before JENKINS-43496
+            LOGGER.log(Level.WARNING, "Node {0} has no executors. Cannot update the Computer instance of it", n.getNodeName());
+            return null;
         }
     }
 
@@ -193,6 +209,24 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         return computers.get(n);
     }
 
+    protected void updateNewComputer(final Node n, boolean automaticAgentLaunch) {
+        final String nodeName = n.getNodeName();
+        final Map<Node, Computer> computers = getComputerMap();
+        if (computers.containsKey(n)) {
+            LOGGER.warning("Node " + nodeName + " is not a new node skipping");
+            return;
+        }
+        createNewComputerForNode(n, automaticAgentLaunch);
+        getQueue().scheduleMaintenance();
+        for (ComputerListener cl : ComputerListener.all()) {
+            try {
+                cl.onConfigurationChange();
+            } catch (Throwable t) {
+                LOGGER.log(Level.WARNING, null, t);
+            }
+        }
+    }
+
     /**
      * Updates Computers.
      *
@@ -200,7 +234,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * This method tries to reuse existing {@link Computer} objects
      * so that we won't upset {@link Executor}s running in it.
      */
-    protected void updateComputerList(final boolean automaticSlaveLaunch) {
+    protected void updateComputerList(final boolean automaticAgentLaunch) {
         final Map<Node,Computer> computers = getComputerMap();
         final Set<Computer> old = new HashSet<>(computers.size());
         Queue.withLock(new Runnable() {
@@ -217,10 +251,10 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
                 Set<Computer> used = new HashSet<>(old.size());
 
-                updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
+                updateComputer(AbstractCIBase.this, byName, used, automaticAgentLaunch);
                 for (Node s : getNodes()) {
                     long start = System.currentTimeMillis();
-                    updateComputer(s, byName, used, automaticSlaveLaunch);
+                    updateComputer(s, byName, used, automaticAgentLaunch);
                     if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Took %dms to update node %s",
                                 System.currentTimeMillis() - start, s.getNodeName()));

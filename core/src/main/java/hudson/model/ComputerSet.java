@@ -37,6 +37,7 @@ import hudson.triggers.SafeTimerTask;
 import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
+import java.lang.reflect.InvocationTargetException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
@@ -79,6 +80,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * This is the owner that persists {@link #monitors}.
      */
     private static final Saveable MONITORS_OWNER = new Saveable() {
+        @Override
         public void save() throws IOException {
             getConfigFile().write(monitors);
             SaveableListener.fireOnChange(this, getConfigFile());
@@ -88,6 +90,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     private static final DescribableList<NodeMonitor,Descriptor<NodeMonitor>> monitors
             = new DescribableList<>(MONITORS_OWNER);
 
+    @Override
     @Exported
     public String getDisplayName() {
         return Messages.ComputerSet_DisplayName();
@@ -107,6 +110,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return Jenkins.get().getComputers();
     }
 
+    @Override
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu m = new ContextMenu();
         for (Computer c : get_all()) {
@@ -145,10 +149,12 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return new AbstractList<String>() {
             final List<Node> nodes = Jenkins.get().getNodes();
 
+            @Override
             public String get(int index) {
                 return nodes.get(index).getNodeName();
             }
 
+            @Override
             public int size() {
                 return nodes.size();
             }
@@ -194,6 +200,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return r;
     }
 
+    @Override
     public String getSearchUrl() {
         return "/computers/";
     }
@@ -376,6 +383,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return new Api(this);
     }
 
+    @Override
     public Descriptor<ComputerSet> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(ComputerSet.class);
     }
@@ -406,6 +414,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public static void init() {
         // start monitoring nodes, although there's no hurry.
         Timer.get().schedule(new SafeTimerTask() {
+            @Override
             public void doRun() {
                 ComputerSet.initialize();
             }
@@ -466,10 +475,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     private static NodeMonitor createDefaultInstance(Descriptor<NodeMonitor> d, boolean ignored) {
         try {
-            NodeMonitor nm = d.clazz.newInstance();
+            NodeMonitor nm = d.clazz.getDeclaredConstructor().newInstance();
             nm.setIgnored(ignored);
             return nm;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOGGER.log(Level.SEVERE, "Failed to instantiate "+d.clazz,e);
         }
         return null;

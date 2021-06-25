@@ -155,7 +155,7 @@ Behaviour.specify("DIV.repeated-container", 'repeatable', -100, function(e) {
         if(isInsideRemovable(e))    return;
 
         // compute the insertion point
-        var ip = $(e.lastChild);
+        var ip = $(e.lastElementChild);
         while (!ip.hasClassName("repeatable-insertion-point"))
             ip = ip.previous();
         // set up the logic

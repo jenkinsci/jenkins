@@ -74,6 +74,7 @@ public final class RemotingDiagnostics {
     }
 
     private static final class GetSystemProperties extends MasterToSlaveCallable<Map<Object,Object>,RuntimeException> {
+        @Override
         public Map<Object,Object> call() {
             return new TreeMap<>(System.getProperties());
         }
@@ -93,6 +94,7 @@ public final class RemotingDiagnostics {
     }
 
     private static final class GetThreadDump extends MasterToSlaveCallable<Map<String,String>,RuntimeException> {
+        @Override
         public Map<String,String> call() {
             Map<String,String> r = new LinkedHashMap<>();
                 ThreadInfo[] data = Functions.getThreadInfos();
@@ -120,10 +122,12 @@ public final class RemotingDiagnostics {
             cl = getClassLoader();
         }
 
+        @Override
         public ClassLoader getClassLoader() {
             return Jenkins.get().getPluginManager().uberClassLoader;
         }
 
+        @Override
         public String call() throws RuntimeException {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl==null)       cl = Thread.currentThread().getContextClassLoader();

@@ -53,6 +53,16 @@ THE SOFTWARE.
         <div class="manage-page__row">
         <j:forEach var="m" items="${category.value}">
           <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
+          <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icon + ' icon-xlg')}"/>
+          <j:if test="${iconMetadata == null}">
+            <!-- Icon could be provided as a simple iconFileName e.g. "settings.png" -->
+            <j:set var="iconMetadata" value="${icons.getIconByClassSpec(icons.toNormalizedIconNameClass(icon) + ' icon-xlg')}"/>
+          </j:if>
+          <j:if test="${iconMetadata == null}">
+            <j:set var="iconMetadata" value="${icons.getIconByUrl(icon)}"/>
+          </j:if>
+          
+          
           <j:if test="${icon!=null}">
             <div class="manage-option manage-page__column">
             <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
@@ -61,7 +71,16 @@ THE SOFTWARE.
             <j:choose>
               <j:when test="${m.requiresConfirmation}">
                 <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                  <img class="icon" src="${iconUrl}" />
+                  <j:choose>
+                    <j:when test="${iconMetadata != null}">
+                      <l:icon class="${iconMetadata.classSpec}"/>
+                    </j:when>
+                    <j:otherwise>
+                      <l:icon src="${iconUrl}"
+                              class="icon"
+                              alt="[${%alt}]" />
+                    </j:otherwise>
+                  </j:choose>
                   <dl>
                     <dt>${m.displayName}</dt>
                     <dd><j:out value="${m.description}"/></dd>
@@ -71,7 +90,17 @@ THE SOFTWARE.
               </j:when>
               <j:when test="${m.requiresPOST}">
                 <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                  <img class="icon" src="${iconUrl}" alt="[${%alt}]"/>
+                  <j:choose>
+                    <j:when test="${iconMetadata != null}">
+                      <l:icon class="${iconMetadata.classSpec}"
+                              alt="[${%alt}]"/>
+                    </j:when>
+                    <j:otherwise>
+                      <l:icon src="${iconUrl}"
+                              class="icon"
+                              alt="[${%alt}]" />
+                    </j:otherwise>
+                  </j:choose>
                   <dl>
                     <dt>${m.displayName}</dt>
                     <dd><j:out value="${m.description}"/></dd>
@@ -81,7 +110,17 @@ THE SOFTWARE.
               </j:when>
               <j:otherwise>
                 <a href="${m.urlName}" title="${m.displayName}">
-                  <img class="icon" src="${iconUrl}" alt="manage-option"/>
+                  <j:choose>
+                    <j:when test="${iconMetadata != null}">
+                      <l:icon class="${iconMetadata.classSpec}"
+                              alt="[${%alt}]"/>
+                    </j:when>
+                    <j:otherwise>
+                      <l:icon src="${iconUrl}"
+                              class="icon"
+                              alt="[${%alt}]" />
+                    </j:otherwise>
+                  </j:choose>
                   <dl>
                     <dt>${m.displayName}</dt>
                     <dd><j:out value="${m.description}"/></dd>

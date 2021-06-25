@@ -131,8 +131,8 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         return Objects.equals(defaultValue, other.defaultValue);
     }
 
-    @Extension @Symbol({"password"})
-    public final static class ParameterDescriptorImpl extends ParameterDescriptor {
+    @Extension @Symbol("password")
+    public static final class ParameterDescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
             return Messages.PasswordParameterDefinition_DisplayName();

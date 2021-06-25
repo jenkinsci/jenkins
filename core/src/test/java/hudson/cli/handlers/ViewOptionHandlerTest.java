@@ -266,16 +266,18 @@ public class ViewOptionHandlerTest {
 
     private void parse(final String... params) throws CmdLineException {
         handler.parseArguments(new Parameters() {
+            @Override
             public String getParameter(int idx) {
                 return params[idx];
             }
+            @Override
             public int size() {
                 return params.length;
             }
         });
     }
 
-    private static abstract class CompositeView extends View implements ViewGroup {
+    private abstract static class CompositeView extends View implements ViewGroup {
         protected CompositeView(String name) {
             super(name);
         }

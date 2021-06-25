@@ -310,10 +310,12 @@ public interface BuildStep {
             if(!contains(d)) core.add(d);
         }
 
+        @Override
         public Descriptor<Publisher> get(int index) {
             return core.get(index);
         }
 
+        @Override
         public int size() {
             return core.size();
         }

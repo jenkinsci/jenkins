@@ -81,6 +81,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     /**
      * Schedules this periodic work now in a new thread, if one isn't already running.
      */
+    @Override
     @SuppressWarnings("deprecation") // in this case we really want to use PeriodicWork.logger since it reports the impl class
     public final void doRun() {
         try {

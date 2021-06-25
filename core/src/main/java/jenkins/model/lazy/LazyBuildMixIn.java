@@ -165,7 +165,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
         try {
             return getBuildClass().getConstructor(asJob().getClass(), File.class).newInstance(asJob(), dir);
         } catch (InstantiationException | NoSuchMethodException | IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         } catch (InvocationTargetException e) {
             throw handleInvocationTargetException(e);
         }
@@ -187,7 +187,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
             throw handleInvocationTargetException(e);
         } catch (ReflectiveOperationException | IllegalStateException e) {
             LOGGER.log(Level.WARNING, String.format("A new build could not be created in job %s", asJob().getFullName()), e);
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 
@@ -285,9 +285,9 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
 
     /**
      * Accompanying helper for the run type.
-     * Stateful but should be held in a {@code transient final} field.
+     * Stateful but should be held in a {@code final transient} field.
      */
-    public static abstract class RunMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
+    public abstract static class RunMixIn<JobT extends Job<JobT,RunT> & Queue.Task & LazyBuildMixIn.LazyLoadingJob<JobT,RunT>, RunT extends Run<JobT,RunT> & LazyLoadingRun<JobT,RunT>> {
 
         /**
          * Pointers to form bi-directional link between adjacent runs using

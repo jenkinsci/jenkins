@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import java.util.*;
+import java.util.Enumeration;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -80,10 +80,12 @@ import java.io.IOException;
 public class ResponseHeaderFilter implements Filter {
 	private FilterConfig config;
 
+	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		config = filterConfig;
 	}
 
+	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException,
 			ServletException {
 		HttpServletResponse httpResp = (HttpServletResponse) resp;
@@ -100,6 +102,7 @@ public class ResponseHeaderFilter implements Filter {
 		chain.doFilter(req, resp);
 	}
 
+	@Override
 	public void destroy() {
 	}
 }

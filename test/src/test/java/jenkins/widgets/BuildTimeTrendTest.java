@@ -62,7 +62,7 @@ public class BuildTimeTrendTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void withAbstractJob_OnMaster() throws Exception {
+    public void withAbstractJob_OnBuiltInNode() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
@@ -76,7 +76,7 @@ public class BuildTimeTrendTest {
     }
 
     @Test
-    public void withAbstractJob_OnNode() throws Exception {
+    public void withAbstractJob_OnAgentNode() throws Exception {
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
@@ -122,7 +122,7 @@ public class BuildTimeTrendTest {
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals(masterName))
                 .findFirst();
-        // for the build on master
+        // for the build on built-in node
         assertTrue(td.isPresent());
     }
 

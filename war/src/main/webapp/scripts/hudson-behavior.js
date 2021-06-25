@@ -216,7 +216,7 @@ var FormChecker = {
     },
 
     sendRequest : function(url, params) {
-        if (params.method == "post") {
+        if (params.method != "get") {
             var idx = url.indexOf('?');
             params.parameters = url.substring(idx + 1);
             url = url.substring(0, idx);
@@ -387,9 +387,9 @@ function findFollowingTR(node, className, nodeClass) {
 function findInFollowingTR(input, className) {
     var node = findFollowingTR(input, className);
     if (node.tagName == 'TR') {
-        node = node.firstChild.nextSibling;
+        node = node.firstElementChild.nextSibling;
     } else {
-        node = node.firstChild;
+        node = node.firstElementChild;
     }
     return node;
 }
@@ -411,8 +411,8 @@ function findPrevious(src,filter) {
     return find(src,filter,function (e) {
         var p = e.previousSibling;
         if(p==null) return e.parentNode;
-        while(p.lastChild!=null)
-            p = p.lastChild;
+        while(p.lastElementChild!=null)
+            p = p.lastElementChild;
         return p;
     });
 }
@@ -421,8 +421,8 @@ function findNext(src,filter) {
     return find(src,filter,function (e) {
         var n = e.nextSibling;
         if(n==null) return e.parentNode;
-        while(n.firstChild!=null)
-            n = n.firstChild;
+        while(n.firstElementChild!=null)
+            n = n.firstElementChild;
         return n;
     });
 }
@@ -450,13 +450,14 @@ function findNextFormItem(src,name) {
     return findFormItem(src,name,findNext);
 }
 
+// This method seems unused in the ecosystem, only grails-plugin was using it but it's blacklisted now
 /**
  * Parse HTML into DOM.
  */
 function parseHtml(html) {
     var c = document.createElement("div");
     c.innerHTML = html;
-    return c.firstChild;
+    return c.firstElementChild;
 }
 
 /**
@@ -508,7 +509,7 @@ function registerValidator(e) {
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstChild.nextSibling;
+    e.targetElement = tr.firstElementChild.nextSibling;
 
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
@@ -531,7 +532,7 @@ function registerValidator(e) {
             return url+ q.toString();
         }
     };
-    var method = e.getAttribute("checkMethod") || "get";
+    var method = e.getAttribute("checkMethod") || "post";
 
     var url = e.targetUrl();
     try {
@@ -548,7 +549,14 @@ function registerValidator(e) {
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
             onComplete : function(x) {
-                target.innerHTML = x.responseText;
+                if (x.status == 200) {
+                    // All FormValidation responses are 200
+                    target.innerHTML = x.responseText;
+                } else {
+                    // Content is taken from FormValidation#_errorWithMarkup
+                    // TODO Add i18n support
+                    target.innerHTML = "<div class='error'>An internal error occurred during form field validation (HTTP " + x.status + "). Please reload the page and if the problem persists, ask the administrator for help.</div>";
+                }
                 Behaviour.applySubtree(target);
             }
         });
@@ -582,7 +590,7 @@ function registerRegexpValidator(e,regexp,message) {
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstChild.nextSibling;
+    e.targetElement = tr.firstElementChild.nextSibling;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -598,6 +606,79 @@ function registerRegexpValidator(e,regexp,message) {
     }
     e.onchange.call(e);
     e = null; // avoid memory leak
+}
+
+/**
+ * Add a validator for number fields which contains 'min', 'max' attribute
+ * @param e Input element
+ */
+function registerMinMaxValidator(e) {
+    var tr = findFollowingTR(e, "validation-error-area");
+    if (!tr) {
+        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        return;
+    }
+    // find the validation-error-area
+    e.targetElement = tr.firstElementChild.nextSibling;
+    var checkMessage = e.getAttribute('checkMessage');
+    if (checkMessage) message = checkMessage;
+    var oldOnchange = e.onchange;
+    e.onchange = function() {
+        var set = oldOnchange != null ? oldOnchange.call(this) : false;
+
+        const min = this.getAttribute('min');
+        const max = this.getAttribute('max');
+
+        function isInteger(str) {
+            return str.match(/^-?\d*$/) !== null;
+        }
+
+        if (isInteger(this.value)) {  // Ensure the value is an integer
+            if ((min !== null && isInteger(min)) && (max !== null && isInteger(max))) {  // Both min and max attributes are available
+
+                if (min <= max) {  // Add the validator if min <= max
+                    if (parseInt(min) > parseInt(this.value) || parseInt(this.value) > parseInt(max)) {  // The value is out of range
+                        this.targetElement.innerHTML = "<div class=error>This value should be between " + min + " and " + max + "</div>";
+                        set = true;
+                    } else {
+                        if (!set) this.targetElement.innerHTML = "<div/>";  // The value is valid
+                    }
+                }
+
+            } else if ((min !== null && isInteger(min)) && (max === null || !isInteger(max))) {  // There is only 'min' available
+
+                if (parseInt(min) > parseInt(this.value)) {
+                    this.targetElement.innerHTML = "<div class=error>This value should be larger than " + min + "</div>";
+                    set = true;
+                } else {
+                    if (!set) this.targetElement.innerHTML = "<div/>";
+                }
+
+            } else if ((min === null || !isInteger(min)) && (max !== null && isInteger(max))) {  // There is only 'max' available
+
+                if (parseInt(max) < parseInt(this.value)) {
+                    this.targetElement.innerHTML = "<div class=error>This value should be less than " + max + "</div>";
+                    set = true;
+                } else {
+                    if (!set) this.targetElement.innerHTML = "<div/>";
+                }
+            }
+        }
+        return set;
+    }
+    e.onchange.call(e);
+    e = null; // avoid memory leak
+}
+
+
+/**
+ * Prevent user input 'e' or 'E' in <f:number>
+ * @param event Input event
+ */
+function preventInputEe(event) {
+    if (event.which === 69 || event.which === 101) {
+        event.preventDefault();
+    }
 }
 
 /**
@@ -675,15 +756,15 @@ function renderOnDemand(e,callback,noBehaviour) {
         if (contextTagName=="TBODY") {
             c = document.createElement("DIV");
             c.innerHTML = "<TABLE><TBODY>"+t.responseText+"</TBODY></TABLE>";
-            c = c./*JENKINS-15494*/lastChild.firstChild;
+            c = c./*JENKINS-15494*/lastElementChild.firstElementChild;
         } else {
             c = document.createElement(contextTagName);
             c.innerHTML = t.responseText;
         }
 
         var elements = [];
-        while (c.firstChild!=null) {
-            var n = c.firstChild;
+        while (c.firstElementChild!=null) {
+            var n = c.firstElementChild;
             e.parentNode.insertBefore(n,e);
             if (n.nodeType==1 && !noBehaviour)
                 elements.push(n);
@@ -890,47 +971,32 @@ function rowvgStartEachRow(recursive,f) {
 
     // validate form values to be an integer
     Behaviour.specify("INPUT.number", "input-number", ++p, function(e) {
-        e.addEventListener('keypress', function (event) {
-            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
-                event.preventDefault();
-            }
-        })
-        registerRegexpValidator(e,/^(\d+|)$/,"Not an integer");
+        e.addEventListener('keypress', preventInputEe)
+        registerMinMaxValidator(e);
+        registerRegexpValidator(e,/^((\-?\d+)|)$/,"Not an integer");
     });
 
     Behaviour.specify("INPUT.number-required", "input-number-required", ++p, function(e) {
-        e.addEventListener('keypress', function (event) {
-            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
-                event.preventDefault();
-            }
-        })
+        e.addEventListener('keypress', preventInputEe)
+        registerMinMaxValidator(e);
         registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer");
     });
 
     Behaviour.specify("INPUT.non-negative-number-required", "input-non-negative-number-required", ++p, function(e) {
-        e.addEventListener('keypress', function (event) {
-            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
-                event.preventDefault();
-            }
-        })
-        registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
+        e.addEventListener('keypress', preventInputEe)
+        registerMinMaxValidator(e);
+        registerRegexpValidator(e,/^\d+$/,"Not a non-negative integer");
     });
 
     Behaviour.specify("INPUT.positive-number", "input-positive-number", ++p, function(e) {
-        e.addEventListener('keypress', function (event) {
-            if (event.which === 69 || event.which === 101) { // Prevent user input 'e' or 'E'
-                event.preventDefault();
-            }
-        })
+        e.addEventListener('keypress', preventInputEe)
+        registerMinMaxValidator(e);
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
     });
 
     Behaviour.specify("INPUT.positive-number-required", "input-positive-number-required", ++p, function(e) {
-        e.addEventListener('keypress', function (event) {
-            if (event.which === 69 || event.which === 101) { // Prevent user input 'e', 'E', '.'
-                event.preventDefault();
-            }
-        })
+        e.addEventListener('keypress', preventInputEe)
+        registerMinMaxValidator(e);
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 
@@ -1031,7 +1097,7 @@ function rowvgStartEachRow(recursive,f) {
                     document.body.appendChild(div);
                     div.innerHTML = x.responseText;
                     var id = "map" + (iota++);
-                    div.firstChild.setAttribute("name", id);
+                    div.firstElementChild.setAttribute("name", id);
                     e.setAttribute("usemap", "#" + id);
                 }
             });
@@ -1223,7 +1289,7 @@ function rowvgStartEachRow(recursive,f) {
             changeTo(this,".png");
         };
         e.parentNode.onclick = function(event) {
-            var e = this.firstChild;
+            var e = this.firstElementChild;
             var s = e.getAttribute("state");
             if(s=="plus") {
                 e.setAttribute("state","minus");
@@ -1259,7 +1325,7 @@ function rowvgStartEachRow(recursive,f) {
         var subForms = [];
         var start = findInFollowingTR(e, 'dropdownList-container'), end;
 
-        do { start = start.firstChild; } while (start && !isTR(start));
+        do { start = start.firstElementChild; } while (start && !isTR(start));
 
         if (start && !Element.hasClassName(start,'dropdownList-start'))
             start = findFollowingTR(start, 'dropdownList-start');
@@ -1341,7 +1407,7 @@ function rowvgStartEachRow(recursive,f) {
 
         var edge = document.createElement("div");
         edge.className = "bottom-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstChild);
+        sticker.insertBefore(edge,sticker.firstElementChild);
 
         function adjustSticker() {
             shadow.style.height = sticker.offsetHeight + "px";
@@ -1382,7 +1448,7 @@ function rowvgStartEachRow(recursive,f) {
 
         var edge = document.createElement("div");
         edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstChild);
+        sticker.insertBefore(edge,sticker.firstElementChild);
 
         var initialBreadcrumbPosition = DOM.getRegion(shadow);
         function adjustSticker() {
@@ -1546,7 +1612,7 @@ function applyNameRefHelper(s,e,id) {
         if(x.getAttribute("nameRef")==null) {
             x.setAttribute("nameRef",id);
             if (x.hasClassName('tr'))
-                applyNameRefHelper(x.firstChild,null,id);
+                applyNameRefHelper(x.firstElementChild,null,id);
         }
     }
 }
@@ -2488,7 +2554,7 @@ function createSearchBox(searchURL) {
             cssWidth =  getStyle(sizer, "minWidth");
         }
         box.style.width =
-        comp.firstChild.style.minWidth = "calc(60px + " + cssWidth + ")";
+        comp.firstElementChild.style.minWidth = "calc(60px + " + cssWidth + ")";
 
         var pos = YAHOO.util.Dom.getXY(box);
         pos[1] += YAHOO.util.Dom.get(box).offsetHeight + 2;
@@ -2556,7 +2622,7 @@ function shortenName(name) {
 
 //
 // structured form submission handling
-//   see https://jenkins.io/redirect/developer/structured-form-submission
+//   see https://www.jenkins.io/redirect/developer/structured-form-submission
 function buildFormTree(form) {
     try {
         // I initially tried to use an associative array with DOM elements as keys
@@ -2802,7 +2868,7 @@ function loadScript(href,callback) {
 
     // Use insertBefore instead of appendChild  to circumvent an IE6 bug.
     // This arises when a base node is used (#2709 and #4378).
-    head.insertBefore( script, head.firstChild );
+    head.insertBefore( script, head.firstElementChild );
 }
 
 // logic behind <f:validateButton />
@@ -2864,8 +2930,8 @@ function applyErrorMessage(elt, rsp) {
         var error = document.getElementById('error-description'); // cf. oops.jelly
         if (error) {
             var div = document.getElementById(id);
-            while (div.firstChild) {
-                div.removeChild(div.firstChild);
+            while (div.firstElementChild) {
+                div.removeChild(div.firstElementChild);
             }
             div.appendChild(error);
         }
@@ -2954,7 +3020,7 @@ var notificationBar = {
             this.div = document.createElement("div");
             YAHOO.util.Dom.setStyle(this.div,"opacity",0);
             this.div.id="notification-bar";
-            document.body.insertBefore(this.div, document.body.firstChild);
+            document.body.insertBefore(this.div, document.body.firstElementChild);
             var self = this;
             this.div.onclick = function() {
                 self.hide();

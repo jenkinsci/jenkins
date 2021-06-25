@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -218,9 +219,9 @@ public class FingerprintTest {
         final Fingerprint fp = getFingerprint(build, "test.txt");
         
         // Init Users
-        User user1 = User.get("user1"); // can access project1
-        User user2 = User.get("user2"); // can access project2
-        User user3 = User.get("user3"); // cannot access anything
+        User user1 = User.getOrCreateByIdOrFullName("user1"); // can access project1
+        User user2 = User.getOrCreateByIdOrFullName("user2"); // can access project2
+        User user3 = User.getOrCreateByIdOrFullName("user3"); // cannot access anything
           
         // Project permissions
         setupProjectMatrixAuthStrategy(Jenkins.READ);
@@ -277,7 +278,7 @@ public class FingerprintTest {
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1");   
+        User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(false, Jenkins.READ, Item.DISCOVER);
         setJobPermissionsOnce(project, "user1", Item.DISCOVER); // Prevents the fallback to the folder ACL
         folder.setPermissions("user1", Item.READ);
@@ -304,7 +305,7 @@ public class FingerprintTest {
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1"); // can access project1     
+        User user1 = User.getOrCreateByIdOrFullName("user1"); // can access project1
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
         
         // Ensure we can read the original from user account
@@ -329,7 +330,7 @@ public class FingerprintTest {
         final Fingerprint fp = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1");  
+        User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.READ, Item.DISCOVER);
         project.delete();
 
@@ -347,7 +348,7 @@ public class FingerprintTest {
         final Fingerprint fingerprint = getFingerprint(build, "test.txt");
         
         // Init Users and security
-        User user1 = User.get("user1"); 
+        User user1 = User.getOrCreateByIdOrFullName("user1");
         setupProjectMatrixAuthStrategy(Jenkins.ADMINISTER);
         project.delete();
 
@@ -411,6 +412,26 @@ public class FingerprintTest {
         // could also be reached using static/<anything>/
         Page page2 = rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + fp.getHashString() + "/")));
         assertEquals(200, page2.getWebResponse().getStatusCode());
+    }
+
+    @Test
+    @Issue("JENKINS-65611")
+    public void canModifyFacets() {
+        Fingerprint fingerprint = new Fingerprint(new Fingerprint.BuildPtr("foo", 3),
+                "stuff&more.jar", Util.fromHexString(SOME_MD5));
+        TestFacet testFacet = new TestFacet(fingerprint, 0, "test");
+        assertThat(fingerprint.getFacets().size(), is(0));
+        fingerprint.getFacets().add(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(1));
+        assertTrue(fingerprint.getFacets().contains(testFacet));
+        fingerprint.getFacets().remove(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(0));
+        fingerprint.getFacets().add(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(1));
+        Iterator<FingerprintFacet> itr = fingerprint.getFacets().iterator();
+        itr.next();
+        itr.remove();
+        assertThat(fingerprint.getFacets().size(), is(0));
     }
 
     @Test

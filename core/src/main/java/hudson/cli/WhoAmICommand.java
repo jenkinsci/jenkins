@@ -40,6 +40,7 @@ public class WhoAmICommand extends CLICommand {
         return Messages.WhoAmICommand_ShortDescription();
     }
 
+    @Override
     protected int run() {
         Authentication a = Jenkins.getAuthentication2();
         stdout.println("Authenticated as: "+a.getName());
@@ -50,4 +51,3 @@ public class WhoAmICommand extends CLICommand {
         return 0;
     }
 }
-

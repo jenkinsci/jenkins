@@ -71,7 +71,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -277,7 +276,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     protected synchronized void saveNextBuildNumber() throws IOException {
-        if (nextBuildNumber == 0) { // #3361
+        if (nextBuildNumber == 0) { // JENKINS-3361
             nextBuildNumber = 1;
         }
         getNextBuildNumberFile().write(String.valueOf(nextBuildNumber) + '\n');
@@ -479,6 +478,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
+            @Override
             public void find(String token, List<SearchItem> result) {
                 try {
                     if (token.startsWith("#"))
@@ -493,12 +493,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             }
 
+            @Override
             public void suggest(String token, List<SearchItem> result) {
                 find(token, result);
             }
         }).add("configure", "config", "configure");
     }
 
+    @Override
     public Collection<? extends Job> getAllJobs() {
         return Collections.<Job> singleton(this);
     }
@@ -597,6 +599,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Overrides from job properties.
      * @see JobProperty#getJobOverrides
      */
+    @Override
     public Collection<?> getOverrides() {
         List<Object> r = new ArrayList<>();
         for (JobProperty<? super JobT> p : properties)
@@ -618,6 +621,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<Run>() {
+        @Override
         public int compare(Run record, String key) {
             try {
                 int k = Integer.parseInt(key);
@@ -627,14 +631,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
         }
 
+        @Override
         public String getKey(Run record) {
             return String.valueOf(record.getNumber());
         }
 
+        @Override
         public boolean isBuilding(Run record) {
             return record.isBuilding();
         }
 
+        @Override
         public String getNextKey(String key) {
             try {
                 int k = Integer.parseInt(key);
@@ -743,7 +750,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Obtains all the {@link Run}s whose build numbers matches the given {@link RangeSet}.
      */
     public synchronized List<RunT> getBuilds(RangeSet rs) {
-        List<RunT> builds = new LinkedList<>();
+        List<RunT> builds = new ArrayList<>();
 
         for (Range r : rs.getRanges()) {
             for (RunT b = getNearestBuild(r.start); b!=null && b.getNumber()<r.end; b=b.getNextBuild()) {
@@ -1080,7 +1087,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             ChangeLogSet.Entry e;
             int idx;
 
-            public FeedItem(ChangeLogSet.Entry e, int idx) {
+            FeedItem(ChangeLogSet.Entry e, int idx) {
                 this.e = e;
                 this.idx = idx;
             }
@@ -1098,7 +1105,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             for (SCM s : scmItem.getSCMs()) {
                 scmNames.add(s.getDescriptor().getDisplayName());
             }
-            scmDisplayName = " " + Util.join(scmNames, ", ");
+            scmDisplayName = " " + String.join(", ", scmNames);
         }
 
         for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
@@ -1115,18 +1122,22 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 getDisplayName() + scmDisplayName + " changes",
                 getUrl() + "changes",
                 entries, new FeedAdapter<FeedItem>() {
+                    @Override
                     public String getEntryTitle(FeedItem item) {
                         return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
                     }
 
+                    @Override
                     public String getEntryUrl(FeedItem item) {
                         return item.getBuild().getUrl() + "changes#detail" + item.idx;
                     }
 
+                    @Override
                     public String getEntryID(FeedItem item) {
                             return getEntryUrl(item);
                         }
 
+                    @Override
                     public String getEntryDescription(FeedItem item) {
                         StringBuilder buf = new StringBuilder();
                         for (String path : item.e.getAffectedPaths())
@@ -1134,10 +1145,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                         return buf.toString();
                     }
 
+                    @Override
                     public Calendar getEntryTimestamp(FeedItem item) {
                             return item.getBuild().getTimestamp();
                         }
 
+                    @Override
                     public String getEntryAuthor(FeedItem entry) {
                         return JenkinsLocationConfiguration.get().getAdminAddress();
                     }
@@ -1405,17 +1418,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 class ChartLabel implements Comparable<ChartLabel> {
                     final Run run;
 
-                    public ChartLabel(Run r) {
+                    ChartLabel(Run r) {
                         this.run = r;
                     }
 
+                    @Override
                     public int compareTo(ChartLabel that) {
                         return this.run.number - that.run.number;
                     }
 
                     @Override
                     public boolean equals(Object o) {
-                        // HUDSON-2682 workaround for Eclipse compilation bug
+                        // JENKINS-2682 workaround for Eclipse compilation bug
                         // on (c instanceof ChartLabel)
                         if (o == null || !ChartLabel.class.isAssignableFrom( o.getClass() ))  {
                             return false;
@@ -1587,5 +1601,5 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new BuildTimelineWidget(getBuilds());
     }
 
-    private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
+    private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
 }

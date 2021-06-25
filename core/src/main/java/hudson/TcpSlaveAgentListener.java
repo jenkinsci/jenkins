@@ -237,7 +237,7 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private final int id;
 
-        public ConnectionHandler(Socket s, ConnectionHandlerFailureCallback parentTerminator) {
+        ConnectionHandler(Socket s, ConnectionHandlerFailureCallback parentTerminator) {
             this.s = s;
             synchronized(getClass()) {
                 id = iotaGen++;
@@ -356,10 +356,10 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     // This is essentially just to be able to pass the parent thread into the callback, as it can't access it otherwise
-    private static abstract class ConnectionHandlerFailureCallback {
+    private abstract static class ConnectionHandlerFailureCallback {
         private Thread parentThread;
 
-        public ConnectionHandlerFailureCallback(Thread parentThread) {
+        ConnectionHandlerFailureCallback(Thread parentThread) {
             this.parentThread = parentThread;
         }
 
@@ -371,7 +371,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * This extension provides a Ping protocol that allows people to verify that the TcpSlaveAgentListener is alive.
+     * This extension provides a Ping protocol that allows people to verify that the {@link TcpSlaveAgentListener} is alive.
      * We also use this to wake the acceptor thread on termination.
      *
      * @since 1.653
@@ -526,6 +526,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * Connection terminated because we are reconnected from the current peer.
      */
     public static class ConnectionFromCurrentPeer extends OfflineCause {
+        @Override
         public String toString() {
             return "The current peer is reconnecting";
         }

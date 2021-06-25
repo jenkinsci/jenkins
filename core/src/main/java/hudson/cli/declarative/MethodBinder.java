@@ -52,10 +52,7 @@ class MethodBinder {
     private final Method method;
     private final Object[] arguments;
 
-    /**
-     * @param method
-     */
-    public MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
+    MethodBinder(Method method, CLICommand command, CmdLineParser parser) {
         this.method = method;
         this.command = command;
 
@@ -70,14 +67,17 @@ class MethodBinder {
 
             // TODO: collection and map support
             Setter setter = new Setter() {
+                @Override
                 public void addValue(Object value) throws CmdLineException {
                     arguments[index] = value;
                 }
 
+                @Override
                 public Class getType() {
                     return p.type();
                 }
 
+                @Override
                 public boolean isMultiValued() {
                     return false;
                 }
@@ -123,7 +123,7 @@ class MethodBinder {
     /**
      * {@link Argument} implementation that adds a bias to {@link #index()}.
      */
-    @SuppressWarnings({"ClassExplicitlyAnnotation"})
+    @SuppressWarnings("ClassExplicitlyAnnotation")
     private static final class ArgumentImpl implements Argument {
         private final Argument base;
         private final int bias;
@@ -133,30 +133,37 @@ class MethodBinder {
             this.bias = bias;
         }
 
+        @Override
         public String usage() {
             return base.usage();
         }
 
+        @Override
         public String metaVar() {
             return base.metaVar();
         }
 
+        @Override
         public boolean required() {
             return base.required();
         }
 
+        @Override
         public Class<? extends OptionHandler> handler() {
             return base.handler();
         }
 
+        @Override
         public int index() {
             return base.index()+bias;
         }
 
+        @Override
         public boolean multiValued() {
             return base.multiValued();
         }
 
+        @Override
         public Class<? extends Annotation> annotationType() {
             return base.annotationType();
         }

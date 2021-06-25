@@ -35,7 +35,6 @@ import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -147,7 +146,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner {
 
     /**
      * Container of this view. Set right after the construction
@@ -343,6 +342,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return DescriptorVisibilityFilter.apply(this, getApplicablePropertyDescriptors());
     }
 
+    @Override
     public void save() throws IOException {
         // persistence is a part of the owner
         // due to initialization timing issue, it can be null when this method is called
@@ -360,10 +360,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return getProperties().toList();
     }
 
+    @Override
     public ViewDescriptor getDescriptor() {
         return (ViewDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
+    @Override
     public String getDisplayName() {
         return getViewName();
     }
@@ -475,7 +477,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return false;
     }
 
-    private final static int FILTER_LOOP_MAX_COUNT = 10;
+    private static final int FILTER_LOOP_MAX_COUNT = 10;
 
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
         if (!isFilterQueue()) {
@@ -555,6 +557,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return super.toString() + "[" + getViewUrl() + "]";
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrl();
     }
@@ -618,6 +621,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the {@link ACL} for this object.
      */
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -681,6 +685,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return Util.XS_DATETIME_FORMATTER.format(lastChange.getTime());
         }
 
+        @Override
         public int compareTo(UserInfo that) {
             long rhs = that.ordinal();
             long lhs = this.ordinal();
@@ -751,8 +756,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         if (r instanceof RunWithSCM) {
                             RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
 
-                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                for (Entry entry : c) {
+                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet.Entry entry : c) {
                                     User user = entry.getAuthor();
 
                                     UserInfo info = users.get(user);
@@ -793,8 +798,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     for (Run<?,?> r : runs) {
                         if (r instanceof RunWithSCM) {
                             RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
-                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                for (Entry entry : c) {
+                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet.Entry entry : c) {
                                     User user = entry.getAuthor();
                                     if (user != null)
                                         return true;
@@ -954,8 +959,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for(TopLevelItem item : items) {
             
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine((String.format("Adding url=%s,displayName=%s",
-                            item.getSearchUrl(), item.getDisplayName())));
+                LOGGER.fine(String.format("Adding url=%s,displayName=%s",
+                            item.getSearchUrl(), item.getDisplayName()));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
         }        
@@ -969,7 +974,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     protected void makeSearchIndex(SearchIndexBuilder sib) {
         sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
+            @Override
             protected TopLevelItem get(String key) { return getItem(key); }
+            @Override
             protected Collection<TopLevelItem> all() { return getItems(); }
             @Override
             protected String getName(TopLevelItem o) {
@@ -1182,6 +1189,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // read
             checkPermission(READ);
             return new HttpResponse() {
+                @Override
                 public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                     rsp.setContentType("application/xml");
                     View.this.writeXml(rsp.getOutputStream());
@@ -1249,6 +1257,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         save();
     }
 
+    @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
         for (TopLevelItem i : getItems())
@@ -1299,6 +1308,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     public static final Comparator<View> SORTER = new Comparator<View>() {
+        @Override
         public int compare(View lhs, View rhs) {
             return lhs.getViewName().compareTo(rhs.getViewName());
         }
@@ -1357,7 +1367,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
 
             // create a view
-            v = descriptor.newInstance(req,req.getSubmittedForm());
+            JSONObject submittedForm = req.getSubmittedForm();
+            submittedForm.put("name", name);
+            v = descriptor.newInstance(req, submittedForm);
         }
         owner.getACL().checkCreatePermission(owner, v.getDescriptor());
         v.owner = owner;
@@ -1426,5 +1438,5 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public static final Message<View> NEW_PRONOUN = new Message<>();
 
-    private final static Logger LOGGER = Logger.getLogger(View.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(View.class.getName());
 }

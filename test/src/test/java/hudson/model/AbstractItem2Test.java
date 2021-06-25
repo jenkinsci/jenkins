@@ -31,43 +31,36 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 
 public class AbstractItem2Test {
 
     @Rule
-    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
+    public JenkinsSessionRule sessions = new JenkinsSessionRule();
 
     @Rule
     public LoggerRule logging = new LoggerRule().record(XmlFile.class, Level.WARNING).capture(100);
 
     @Issue("JENKINS-45892")
     @Test
-    public void badSerialization() {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                FreeStyleProject p1 = rr.j.createFreeStyleProject("p1");
+    public void badSerialization() throws Throwable {
+        sessions.then(j -> {
+                FreeStyleProject p1 = j.createFreeStyleProject("p1");
                 p1.setDescription("this is p1");
-                FreeStyleProject p2 = rr.j.createFreeStyleProject("p2");
+                FreeStyleProject p2 = j.createFreeStyleProject("p2");
                 p2.addProperty(new BadProperty(p1));
                 String text = p2.getConfigFile().asString();
                 assertThat(text, not(containsString("<description>this is p1</description>")));
                 assertThat(text, containsString("<fullName>p1</fullName>"));
                 assertThat(logging.getMessages().toString(), containsString(p1.toString()));
                 assertThat(logging.getMessages().toString(), containsString(p2.getConfigFile().toString()));
-            }
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                FreeStyleProject p1 = rr.j.jenkins.getItemByFullName("p1", FreeStyleProject.class);
-                FreeStyleProject p2 = rr.j.jenkins.getItemByFullName("p2", FreeStyleProject.class);
+        sessions.then(j -> {
+                FreeStyleProject p1 = j.jenkins.getItemByFullName("p1", FreeStyleProject.class);
+                FreeStyleProject p2 = j.jenkins.getItemByFullName("p2", FreeStyleProject.class);
                 assertEquals(/* does not work yet: p1 */ null, p2.getProperty(BadProperty.class).other);
-            }
         });
     }
     static class BadProperty extends JobProperty<FreeStyleProject> {

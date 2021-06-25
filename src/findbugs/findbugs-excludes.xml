@@ -4,8 +4,6 @@
       <!-- Used for backward compatibility and extending utility classes -->
       <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS"/>
       <!-- Various debug probes have non final static fields -->
-      <!-- TODO: Replace by in-code annotations -->
-      <Bug pattern="MS_SHOULD_BE_FINAL"/>
       <!-- TODO: It's a real issue, but the code is flooded by it right now-->
       <Bug pattern="DM_DEFAULT_ENCODING"/>
     </Or>
@@ -13,6 +11,13 @@
   <Match>
     <!--We don't care about this behavior.-->
     <Bug pattern="CRLF_INJECTION_LOGS"/>
+  </Match>
+  <Match>
+    <!--
+      This is a false positive in Spotbugs 4.2.3. TODO remove this exclusion
+      when the fix for spotbugs/spotbugs#1539 is widely adopted.
+    -->
+    <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE"/>
   </Match>
   <Match>
     <!--Jenkins handles this issue differently or doesn't care about it.-->

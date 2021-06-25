@@ -41,7 +41,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     private boolean defaultValue;
 
     /**
-     * @since TODO
+     * @since 2.281
      */
     @DataBoundConstructor
     public BooleanParameterDefinition(String name) {
@@ -69,7 +69,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     }
 
     /**
-     * @since TODO
+     * @since 2.281
      */
     @DataBoundSetter
     public void setDefaultValue(boolean defaultValue) {
@@ -83,6 +83,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
         return value;
     }
 
+    @Override
     public ParameterValue createValue(String value) {
         return new BooleanParameterValue(getName(),Boolean.parseBoolean(value),getDescription());
     }
@@ -120,7 +121,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
 
     // unlike all the other ParameterDescriptors, using 'booleanParam' as the primary
     // to avoid picking the Java reserved word "boolean" as the primary identifier
-    @Extension @Symbol({"booleanParam"})
+    @Extension @Symbol("booleanParam")
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

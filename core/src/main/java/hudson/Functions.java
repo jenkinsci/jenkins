@@ -25,11 +25,16 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Computer;
 import hudson.model.Slave;
-import hudson.security.*;
+import hudson.security.ACL;
+import hudson.security.AccessControlled;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
+import hudson.security.Permission;
+import hudson.security.SecurityRealm;
 
-import java.text.SimpleDateFormat;
 import java.util.function.Predicate;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
@@ -109,6 +114,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,6 +195,7 @@ public class Functions {
     private static Logger LOGGER = Logger.getLogger(Functions.class.getName());
 
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* non-final */ boolean UI_REFRESH = SystemProperties.getBoolean("jenkins.ui.refresh");
 
     public Functions() {
@@ -229,12 +236,10 @@ public class Functions {
 
     /**
      * Returns a localized string for the specified date, not including time.
-     * @param date
-     * @return
      */
     @Restricted(NoExternalUse.class)
     public static String localDate(Date date) {
-        return SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(date);
+        return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
     }
 
     public static String rfc822Date(Calendar cal) {
@@ -243,9 +248,6 @@ public class Functions {
 
     /**
      * Returns a human-readable string describing the time difference between now and the specified date.
-     *
-     * @param date
-     * @return
      */
     @Restricted(NoExternalUse.class)
     public static String getTimeSpanString(Date date) {
@@ -642,6 +644,7 @@ public class Functions {
     /**
      * Set to true if you need to use the debug version of YUI.
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DEBUG_YUI = SystemProperties.getBoolean("debug.YUI");
 
     /**
@@ -930,7 +933,7 @@ public class Functions {
         if(footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
-                footerURL = "https://jenkins.io/";
+                footerURL = "https://www.jenkins.io/";
             }
         }
         return footerURL;
@@ -1252,6 +1255,7 @@ public class Functions {
             return buf.append(c.getName());
         }
 
+        @Override
         public int compareTo(Tag that) {
             int r = Double.compare(that.ordinal, this.ordinal);
             if (r!=0)   return r; // descending for ordinal by reversing the order for compare
@@ -1447,7 +1451,7 @@ public class Functions {
     private static class ThreadSorterBase {
         protected Map<Long,String> map = new HashMap<>();
 
-        public ThreadSorterBase() {
+        ThreadSorterBase() {
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
             while (tg.getParent() != null) tg = tg.getParent();
             Thread[] threads = new Thread[tg.activeCount()*2];
@@ -1478,6 +1482,7 @@ public class Functions {
             return map.get(ti.getThreadId());
         }
 
+        @Override
         public int compare(ThreadInfo a, ThreadInfo b) {
             int result = compare(a.getThreadId(), b.getThreadId());
             if (result == 0)
@@ -1490,6 +1495,7 @@ public class Functions {
 
         private static final long serialVersionUID = 5053631350439192685L;
 
+        @Override
         public int compare(Thread a, Thread b) {
             int result = compare(a.getId(), b.getId());
             if (result == 0)
@@ -1944,7 +1950,7 @@ public class Functions {
      * Gets all the {@link PageDecorator}s.
      */
     public static List<PageDecorator> getPageDecorators() {
-        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608 
+        // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see JENKINS-3608
         if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
@@ -2083,7 +2089,7 @@ public class Functions {
         /* Log a warning if we're in development mode (core or plugin): There's an f:password backed by a non-Secret */
         if (req != null && (Boolean.getBoolean("hudson.hpi.run") || Boolean.getBoolean("hudson.Main.development"))) {
             LOGGER.log(Level.WARNING, () -> "<f:password/> form control in " + getJellyViewsInformationForCurrentRequest() +
-                    " is not backed by hudson.util.Secret. Learn more: https://jenkins.io/redirect/hudson.util.Secret");
+                    " is not backed by hudson.util.Secret. Learn more: https://www.jenkins.io/redirect/hudson.util.Secret");
         }
 
         /* Return plain value if it's not a Secret and the escape hatch is set */
@@ -2273,15 +2279,6 @@ public class Functions {
             rsp.setHeader("X-Hudson","1.395");
             rsp.setHeader("X-Jenkins", Jenkins.VERSION);
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
-
-            TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal != null) { // headers used only by deprecated Remoting-based CLI
-                int p = tal.getAdvertisedPort();
-                rsp.setIntHeader("X-Hudson-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI-Port", p);
-                rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
-                rsp.setHeader("X-Jenkins-CLI-Host", TcpSlaveAgentListener.CLI_HOST_NAME);
-            }
         }
     }
 

@@ -28,8 +28,8 @@ import hudson.security.ACL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -47,7 +47,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class SecurityContextExecutorServiceTest {
 
-    final private int NUM_THREADS = 10;
+    private final int NUM_THREADS = 10;
     private ExecutorService wrappedService = null;
     private SecurityContext systemContext = null;
     private SecurityContext userContext = null;
@@ -55,6 +55,7 @@ public class SecurityContextExecutorServiceTest {
     private volatile SecurityContext runnableThreadContext;
     @Rule
     public JenkinsRule j = new JenkinsRule() {
+        @Override
         public void before() throws Throwable {
             setPluginManager(null);
             super.before();
@@ -80,6 +81,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testRunnableAgainstAllContexts() throws Exception {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 runnableThreadContext = SecurityContextHolder.getContext();
             }
@@ -110,6 +112,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableAgainstAllContexts() throws Exception {
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
+            @Override
             public SecurityContext call() throws Exception {
                 return SecurityContextHolder.getContext();
             }
@@ -133,8 +136,9 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableCollectionAgainstAllContexts() throws Exception {
-        Collection<Callable<SecurityContext>> callables = new LinkedList<>();
+        Collection<Callable<SecurityContext>> callables = new ArrayList<>();
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
+            @Override
             public SecurityContext call() throws Exception {
                 return SecurityContextHolder.getContext();
             }
@@ -170,6 +174,7 @@ public class SecurityContextExecutorServiceTest {
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testFailedRunnableResetsContext() throws Exception {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 SecurityContextHolder.setContext(nullContext);
                 throw new RuntimeException("Simulate a failure");

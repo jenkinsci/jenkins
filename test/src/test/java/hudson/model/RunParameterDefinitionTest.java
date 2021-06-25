@@ -275,20 +275,22 @@ public class RunParameterDefinitionTest {
 
         private final Result result;
 
-        public ResultPublisher(Result result) {
+        ResultPublisher(Result result) {
             this.result = result;
         }
 
-        public @Override
-        boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
             build.setResult(result);
             return true;
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }
 
+        @Override
         public Descriptor<Publisher> getDescriptor() {
             return new Descriptor<Publisher>(ResultPublisher.class) {};
         }

@@ -41,7 +41,6 @@ import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
-import hudson.model.Cause.UserCause;
 import hudson.scm.NullSCM;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.SCMTrigger.BuildAction;
@@ -114,12 +113,12 @@ public class SCMTriggerTest {
         private volatile int myRev = 1;
         private final OneShotEvent checkoutStarted;
 
-        public TestSCM(OneShotEvent checkoutStarted) {
+        TestSCM(OneShotEvent checkoutStarted) {
             this.checkoutStarted = checkoutStarted;
         }
 
-        @Override synchronized
-        public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
+        @Override
+        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
             return myRev < 2;
         }
 
@@ -143,6 +142,7 @@ public class SCMTriggerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();
@@ -155,11 +155,11 @@ public class SCMTriggerTest {
         p.addTrigger(t);
 
         // Start one build to block others
-        assertTrue(p.scheduleBuild(new UserCause()));
+        assertTrue(p.scheduleBuild(new Cause.UserCause()));
         buildStarted.block(); // wait for the build to really start
 
         // Schedule a new build, and trigger it many ways while it sits in queue
-        Future<FreeStyleBuild> fb = p.scheduleBuild2(0, new UserCause());
+        Future<FreeStyleBuild> fb = p.scheduleBuild2(0, new Cause.UserCause());
         assertNotNull(fb);
         assertTrue(p.scheduleBuild(new SCMTriggerCause("First poll")));
         assertTrue(p.scheduleBuild(new SCMTriggerCause("Second poll")));

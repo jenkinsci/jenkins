@@ -198,7 +198,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         @CheckForNull
         private OutputStream log;
 
-        public State(@NonNull SlaveComputer node) {
+        State(@NonNull SlaveComputer node) {
             this.node = node;
         }
 

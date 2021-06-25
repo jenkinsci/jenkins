@@ -52,9 +52,9 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * If this SCM has corresponding {@link RepositoryBrowser},
      * that type. Otherwise this SCM will not have any repository browser.
      */
-    public transient final Class<? extends RepositoryBrowser> repositoryBrowser;
+    public final transient Class<? extends RepositoryBrowser> repositoryBrowser;
     
-    private transient final AtomicInteger atomicGeneration = new AtomicInteger(1);
+    private final transient AtomicInteger atomicGeneration = new AtomicInteger(1);
 
     protected SCMDescriptor(Class<T> clazz, Class<? extends RepositoryBrowser> repositoryBrowser) {
         super(clazz);
@@ -95,9 +95,9 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
         atomicGeneration.incrementAndGet();
     }
 
-    // work around HUDSON-4514. The repositoryBrowser field was marked as non-transient until 1.325,
+    // work around JENKINS-4514. The repositoryBrowser field was marked as non-transient until 1.325,
     // causing the field to be persisted and overwritten on the load method.
-    @SuppressWarnings({"ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void load() {
         Class<? extends RepositoryBrowser> rb = repositoryBrowser;

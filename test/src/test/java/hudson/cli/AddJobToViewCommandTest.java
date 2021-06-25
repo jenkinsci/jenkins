@@ -26,7 +26,7 @@ package hudson.cli;
 
 import hudson.model.DirectlyModifiableView;
 import hudson.model.FreeStyleProject;
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.model.ListView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
@@ -55,7 +55,7 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, succeededSilently());
@@ -74,7 +74,7 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(true));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, succeededSilently());
@@ -93,7 +93,7 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "aProject2");
 
         assertThat(result, succeededSilently());
@@ -111,7 +111,7 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject", "aProject");
 
         assertThat(result, succeededSilently());

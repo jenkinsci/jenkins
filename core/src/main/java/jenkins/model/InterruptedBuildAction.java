@@ -23,13 +23,14 @@
  */
 package jenkins.model;
 
-import com.google.common.collect.ImmutableList;
 import hudson.model.InvisibleAction;
 import hudson.model.Run;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,7 +44,7 @@ public class InterruptedBuildAction extends InvisibleAction {
     private final List<CauseOfInterruption> causes;
 
     public InterruptedBuildAction(Collection<? extends CauseOfInterruption> causes) {
-        this.causes = ImmutableList.copyOf(causes);
+        this.causes = Collections.unmodifiableList(new ArrayList<>(causes));
     }
 
     @Exported

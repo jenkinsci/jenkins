@@ -55,7 +55,7 @@ public final class ContainerAuthentication implements Authentication {
     /**
      * Servlet container can tie a {@link ServletRequest} to the request handling thread,
      * so we need to capture all the information upfront to allow {@link Authentication}
-     * to be passed to other threads, like update center does. See HUDSON-5382. 
+     * to be passed to other threads, like update center does. See JENKINS-5382.
      */
     public ContainerAuthentication(HttpServletRequest request) {
         this.principal = request.getUserPrincipal();
@@ -73,30 +73,37 @@ public final class ContainerAuthentication implements Authentication {
         authorities = l;
     }
 
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
 
+    @Override
     public Object getCredentials() {
         return null;
     }
 
+    @Override
     public Object getDetails() {
         return null;
     }
 
+    @Override
     public String getPrincipal() {
         return principal.getName();
     }
 
+    @Override
     public boolean isAuthenticated() {
         return true;
     }
 
+    @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
         // noop
     }
 
+    @Override
     public String getName() {
         return getPrincipal();
     }

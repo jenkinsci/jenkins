@@ -40,6 +40,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -313,7 +314,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     @Deprecated
     public Channel checkChannel() throws AbortException {
-        throw new AbortException("This command is requesting the -remoting mode which is no longer supported. See https://jenkins.io/redirect/cli-command-requires-channel");
+        throw new AbortException("This command is requesting the -remoting mode which is no longer supported. See https://www.jenkins.io/redirect/cli-command-requires-channel");
     }
 
     /**
@@ -481,9 +482,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected CLICommand createClone() {
         try {
-            return getClass().newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new AssertionError(e);
+            return getClass().getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 
@@ -539,7 +540,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j!=null) {// only when running on the master
+        if (j != null) { // only when running on the controller
             cls.put(j.getPluginManager().uberClassLoader);
 
             ResourceNameIterator servicesIter =

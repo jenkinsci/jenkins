@@ -66,14 +66,17 @@ public class LargeText {
 
     public LargeText(final File file, boolean completed) {
         this.source = new Source() {
+            @Override
             public Session open() throws IOException {
                 return new FileSession(file);
             }
 
+            @Override
             public long length() {
                 return file.length();
             }
 
+            @Override
             public boolean exists() {
                 return file.exists();
             }
@@ -84,14 +87,17 @@ public class LargeText {
     @SuppressWarnings("deprecation")
     public LargeText(final ByteBuffer memory, boolean completed) {
         this.source = new Source() {
+            @Override
             public Session open() throws IOException {
                 return new BufferSession(memory);
             }
 
+            @Override
             public long length() {
                 return memory.length();
             }
 
+            @Override
             public boolean exists() {
                 return true;
             }
@@ -113,6 +119,7 @@ public class LargeText {
     public Reader readAll() throws IOException {
         return new InputStreamReader(new InputStream() {
             final Session session = source.open();
+            @Override
             public int read() throws IOException {
                 byte[] buf = new byte[1];
                 int n = session.read(buf);
@@ -222,7 +229,7 @@ public class LargeText {
         protected ByteBuf buf;
         protected int pos;
 
-        public Mark(ByteBuf buf) {
+        Mark(ByteBuf buf) {
             this.buf = buf;
         }
     }
@@ -232,7 +239,7 @@ public class LargeText {
      * to the output yet.
      */
     private static final class HeadMark extends Mark {
-        public HeadMark(ByteBuf buf) {
+        HeadMark(ByteBuf buf) {
             super(buf);
         }
 
@@ -259,7 +266,7 @@ public class LargeText {
      * Points to the end of the region.
      */
     private static final class TailMark extends Mark {
-        public TailMark(ByteBuf buf) {
+        TailMark(ByteBuf buf) {
             super(buf);
         }
 
@@ -287,7 +294,7 @@ public class LargeText {
         private int size = 0;
         private ByteBuf next;
 
-        public ByteBuf(ByteBuf previous, Session f) throws IOException {
+        ByteBuf(ByteBuf previous, Session f) throws IOException {
             if(previous!=null) {
                 assert previous.next==null;
                 previous.next = this;
@@ -311,6 +318,7 @@ public class LargeText {
      * Methods generally follow the contracts of {@link InputStream}.
      */
     private interface Session extends AutoCloseable {
+        @Override
         void close() throws IOException;
         void skip(long start) throws IOException;
         int read(byte[] buf) throws IOException;
@@ -323,22 +331,26 @@ public class LargeText {
     private static final class FileSession implements Session {
         private final RandomAccessFile file;
 
-        public FileSession(File file) throws IOException {
+        FileSession(File file) throws IOException {
             this.file = new RandomAccessFile(file,"r");
         }
 
+        @Override
         public void close() throws IOException {
             file.close();
         }
 
+        @Override
         public void skip(long start) throws IOException {
             file.seek(file.getFilePointer()+start);
         }
 
+        @Override
         public int read(byte[] buf) throws IOException {
             return file.read(buf);
         }
 
+        @Override
         public int read(byte[] buf, int offset, int length) throws IOException {
             return file.read(buf,offset,length);
         }
@@ -351,24 +363,28 @@ public class LargeText {
         private final InputStream in;
 
         @SuppressWarnings("deprecation")
-        public BufferSession(ByteBuffer buf) {
+        BufferSession(ByteBuffer buf) {
             this.in = buf.newInputStream();
         }
 
 
+        @Override
         public void close() throws IOException {
             in.close();
         }
 
+        @Override
         public void skip(long n) throws IOException {
             while(n>0)
                 n -= in.skip(n);
         }
 
+        @Override
         public int read(byte[] buf) throws IOException {
             return in.read(buf);
         }
 
+        @Override
         public int read(byte[] buf, int offset, int length) throws IOException {
             return in.read(buf,offset,length);
         }

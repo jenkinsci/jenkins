@@ -24,6 +24,8 @@
 package hudson;
 
 import java.util.concurrent.TimeUnit;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -57,8 +59,8 @@ import jenkins.model.GlobalConfiguration;
  * <p>
  * A plugin may {@linkplain #Plugin derive from this class}, or it may directly define extension
  * points annotated with {@link hudson.Extension}. For a list of extension
- * points, see <a href="https://jenkins.io/redirect/developer/extension-points">
- * https://jenkins.io/redirect/developer/extension-points</a>.
+ * points, see <a href="https://www.jenkins.io/redirect/developer/extension-points">
+ * https://www.jenkins.io/redirect/developer/extension-points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point
@@ -275,6 +277,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *
      * @since 1.245
      */
+    @Override
     public void save() throws IOException {
         if(BulkChange.contains(this))   return;
         XmlFile config = getConfigXml();
@@ -309,6 +312,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Plugin.class.getName() + ".skipPermissionCheck");
 
     /**

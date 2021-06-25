@@ -8,7 +8,7 @@ complete {
     def lgpl = license("LGPL 2.1","http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html")
     def mitLicense = license("MIT License","http://www.opensource.org/licenses/mit-license.php")
     def bsdLicense = license("BSD License","http://opensource.org/licenses/BSD-2-Clause")
-    def jenkinsLicense = license("MIT License","https://jenkins.io/mit-license")
+    def jenkinsLicense = license("MIT License","https://www.jenkins.io/mit-license")
     def ccby = license("Creative Commons Attribution License","http://creativecommons.org/licenses/by/2.5")
 
 
@@ -81,13 +81,4 @@ complete {
     match("net.jcip:jcip-annotations") {
         rewriteLicense([],ccby)
     }
-
-    //
-    // Choose from multi-licensed modules
-    //==========================================================================
-
-    match("*:jna-posix") {
-        accept("GNU Lesser General Public License Version 2.1")
-    }
-
 }

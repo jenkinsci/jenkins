@@ -74,6 +74,7 @@ final class ZipArchiver extends Archiver {
         zip.setUseZip64(Zip64Mode.AsNeeded);
     }
 
+    @Override
     public void visit(final File f, final String _relativePath) throws IOException {
         int mode = IOUtils.mode(f);
 
@@ -94,6 +95,7 @@ final class ZipArchiver extends Archiver {
             ZipEntry fileZipEntry = new ZipEntry(this.prefix + relativePath);
             if (mode!=-1)   fileZipEntry.setUnixMode(mode);
             fileZipEntry.setTime(f.lastModified());
+            fileZipEntry.setSize(f.length());
             zip.putNextEntry(fileZipEntry);
             try (InputStream in = Files.newInputStream(f.toPath(), openOptions)) {
                 int len;
@@ -107,6 +109,7 @@ final class ZipArchiver extends Archiver {
         entriesWritten++;
     }
 
+    @Override
     public void close() throws IOException {
         zip.close();
     }

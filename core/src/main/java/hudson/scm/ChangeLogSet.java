@@ -137,7 +137,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     }
 
     @ExportedBean(defaultVisibility=999)
-    public static abstract class Entry {
+    public abstract static class Entry {
         private ChangeLogSet parent;
 
         public ChangeLogSet getParent() {

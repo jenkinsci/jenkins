@@ -23,6 +23,7 @@
  */
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.Functions;
@@ -79,7 +80,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     /**
      * @since 2.24
-     * @return true if the slave agent port is enforced on this instance.
+     * @return true if the inbound agent port is enforced on this instance.
      */
     @Restricted(NoExternalUse.class)
     public boolean isSlaveAgentPortEnforced() {
@@ -194,10 +195,10 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     @Restricted(NoExternalUse.class)
     @RestrictedSince("2.222")
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof GlobalConfigurationCategory.Security;
 
     /**
-     * @return
      * @see Describable#getDescriptor()
      */
     @SuppressWarnings("unchecked")

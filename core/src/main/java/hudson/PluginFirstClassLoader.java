@@ -71,6 +71,7 @@ public class PluginFirstClassLoader
         return urls;
     }
     
+    @Override
     public void close()
         throws IOException
     {

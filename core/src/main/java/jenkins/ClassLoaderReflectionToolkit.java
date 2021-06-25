@@ -31,7 +31,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return method.invoke(obj, args);
         } catch (IllegalAccessException x) {
-            throw new AssertionError(x);
+            throw new LinkageError(x.getMessage(), x);
         } catch (InvocationTargetException x) {
             Throwable x2 = x.getCause();
             if (x2 instanceof RuntimeException) {
@@ -103,12 +103,12 @@ public class ClassLoaderReflectionToolkit {
      * @since 1.553
      */
     public static @NonNull Class<?> _findClass(ClassLoader cl, String name) throws ClassNotFoundException {
-        if (cl instanceof AntClassLoader) {
-            return ((AntClassLoader) cl).findClass(name);
-        }
-
         synchronized (getClassLoadingLock(cl, name)) {
-            return (Class) invoke(FindClass.FIND_CLASS, ClassNotFoundException.class, cl, name);
+            if (cl instanceof AntClassLoader) {
+                return ((AntClassLoader) cl).findClass(name);
+            } else {
+                return (Class) invoke(FindClass.FIND_CLASS, ClassNotFoundException.class, cl, name);
+            }
         }
     }
 
@@ -193,7 +193,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (Class)FindLoadedClass.FIND_LOADED_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 
@@ -203,7 +203,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (Class)FindClass.FIND_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 
@@ -213,7 +213,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (URL)FindResource.FIND_RESOURCE.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 
@@ -223,7 +223,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (Enumeration<URL>)FindResources.FIND_RESOURCES.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new Error(e);
+            throw new LinkageError(e.getMessage(), e);
         }
     }
 

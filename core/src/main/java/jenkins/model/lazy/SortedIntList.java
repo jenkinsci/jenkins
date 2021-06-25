@@ -37,7 +37,7 @@ class SortedIntList extends AbstractList<Integer> {
     private int[] data;
     private int size;
 
-    public SortedIntList(int capacity) {
+    SortedIntList(int capacity) {
         this.data = new int[capacity];
         this.size = 0;
     }
@@ -45,7 +45,7 @@ class SortedIntList extends AbstractList<Integer> {
     /**
      * Internal copy constructor.
      */
-    public SortedIntList(SortedIntList that) {
+    SortedIntList(SortedIntList that) {
         this.data = new int[that.size+8];
         System.arraycopy(that.data, 0, this.data, 0,
                          that.size);

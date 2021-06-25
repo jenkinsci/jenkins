@@ -38,7 +38,7 @@ Behaviour.specify("IMG.treeview-fold-control", 'projectViewNested', 0, function(
             onComplete : function(x) {
                 var cont = document.createElement("div");
                 cont.innerHTML = x.responseText;
-                var rows = $A(cont.firstChild.rows);
+                var rows = $A(cont.firstElementChild.rows);
                 var anim = { opacity: { from:0, to:1 } };
                 rows.reverse().each(function(r) {
                     YAHOO.util.Dom.setStyle(r, 'opacity', 0); // hide

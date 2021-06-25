@@ -143,6 +143,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
 // default no-op implementation
 //
 
+    @Override
     public boolean prebuild(AbstractBuild<?,?> build, BuildListener listener) {
         return true;
     }
@@ -167,10 +168,12 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
         return BuildStepMonitor.NONE;
     }
 
+    @Override
     public final Action getProjectAction(AbstractProject<?,?> project) {
         return getJobAction((J)project);
     }
 
+    @Override
     @NonNull
     public final Collection<? extends Action> getProjectActions(AbstractProject<?,?> project) {
         return getJobActions((J)project);
@@ -181,6 +184,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
         return Collections.emptyList();
     }
 
+    @Override
     public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
         return form==null ? null : getDescriptor().newInstance(req,form);
     }

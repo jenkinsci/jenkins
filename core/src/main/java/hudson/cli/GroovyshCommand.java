@@ -78,7 +78,7 @@ public class GroovyshCommand extends CLICommand {
         return shell.run(commandLine.toString());
     }
 
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings("rawtypes")
     protected Groovysh createShell(InputStream stdin, PrintStream stdout,
         PrintStream stderr) {
 

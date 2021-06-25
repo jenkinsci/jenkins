@@ -32,7 +32,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 
 /**
- * Adds the configuration regarding building on master.
+ * Adds the configuration regarding building on the built-in node.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -70,4 +70,3 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
         }
     }
 }
-

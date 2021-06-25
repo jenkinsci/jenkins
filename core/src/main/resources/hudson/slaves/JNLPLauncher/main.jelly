@@ -51,7 +51,7 @@ THE SOFTWARE.
             <j:otherwise>
               <li>
                 <p>
-                  <a href="https://jenkins.io/redirect/java11-java-web-start">
+                  <a href="https://www.jenkins.io/redirect/java11-java-web-start">
                     ${%Java Web Start is not available for the JVM version running Jenkins}
                   </a>
                 </p>

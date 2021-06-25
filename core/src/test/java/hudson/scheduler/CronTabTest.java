@@ -36,7 +36,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.Url;
 
 import static java.util.Calendar.MONDAY;
 import java.util.List;
@@ -96,7 +95,7 @@ public class CronTabTest {
     /**
      * Verifies that HUDSON-8656 never crops up again.
      */
-    @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
     public void testCeil4() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
@@ -118,7 +117,7 @@ public class CronTabTest {
     /**
      * Verifies that HUDSON-8656 never crops up again.
      */
-    @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
+    @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
     public void testCeil5() throws ANTLRException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
@@ -212,6 +211,7 @@ public class CronTabTest {
     @Test
     public void testHash1() throws Exception {
         CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+            @Override
             public int next(int n) {
                 return n-1;
             }
@@ -236,6 +236,7 @@ public class CronTabTest {
     @Test
     public void testHash2() throws Exception {
         CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+            @Override
             public int next(int n) {
                 return 1;
             }
@@ -287,7 +288,7 @@ public class CronTabTest {
         new CronTab("H(0-59) H(0-23) H(1-31) H(1-12) H(0-7)");
     }
 
-    @Test public void rangeBoundsCheckFailHour() throws Exception {
+    @Test public void rangeBoundsCheckFailHour() {
         try {
             new CronTab("H H(12-24) * * *");
             fail();
@@ -296,7 +297,7 @@ public class CronTabTest {
         }
     }
 
-    @Test public void rangeBoundsCheckFailMinute() throws Exception {
+    @Test public void rangeBoundsCheckFailMinute() {
         try {
             new CronTab("H(33-66) * * * *");
             fail();

@@ -24,7 +24,6 @@
  */
 package hudson;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
@@ -220,7 +219,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
      * depends on the plugin e.g. UI support library bundle plugin.
      */
-    private static Set<String> CORE_ONLY_DEPENDANT = ImmutableSet.copyOf(Collections.singletonList("jenkins-core"));
+    private static Set<String> CORE_ONLY_DEPENDANT = Collections.singleton("jenkins-core");
 
     /**
      * Set the list of components that depend on this plugin.
@@ -449,6 +448,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         this.archive = archive;
     }
 
+    @Override
     public String getDisplayName() {
         return StringUtils.removeStart(getLongName(), "Jenkins ");
     }
@@ -721,7 +721,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Disable a plugin wihout checking any dependency. Only add the disable file.
-     * @throws IOException
      */
     private void disableWithoutCheck() throws IOException {
         try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
@@ -1071,8 +1070,30 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Get list of implied dependencies.
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull Set<String> getImpliedDependents() {
+        if (!isDetached()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> implied = new HashSet<>();
+        for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
+            for (Dependency dependency : DetachedPluginsUtil.getImpliedDependencies(p.shortName, p.getRequiredCoreVersion())) {
+                if (dependency.shortName.equals(shortName)) {
+                    implied.add(p.shortName);
+                }
+            }
+        }
+        return implied;
+    }
+
+    /**
      * Sort by short name.
      */
+    @Override
     public int compareTo(PluginWrapper pw) {
         return shortName.compareToIgnoreCase(pw.shortName);
     }
@@ -1122,7 +1143,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     @Extension
-    public final static PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
+    public static final PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
 
     /**
      * Administrative Monitor for failed plugins
@@ -1134,6 +1155,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             plugins.put(plugin.shortName, plugin);
         }
 
+        @Override
         public boolean isActivated() {
             return !plugins.isEmpty();
         }

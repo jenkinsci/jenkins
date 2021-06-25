@@ -57,7 +57,6 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -260,7 +259,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
                             continue; // handled specially
                         }
-                        Collection<ReverseBuildTrigger> triggers = result.computeIfAbsent(upstream, k -> new LinkedList<>());
+                        Collection<ReverseBuildTrigger> triggers = result.computeIfAbsent(upstream, k -> new ArrayList<>());
                         triggers.remove(trigger);
                         triggers.add(trigger);
                     }

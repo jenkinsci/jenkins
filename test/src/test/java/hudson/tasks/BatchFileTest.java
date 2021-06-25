@@ -49,7 +49,6 @@ public class BatchFileTest {
 
         ReturnCodeFakeLauncher(int code)
         {
-            super();
             this.code = code;
         }
 

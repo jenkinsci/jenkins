@@ -26,10 +26,18 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
-import hudson.*;
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Launcher;
+import hudson.Util;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException3;
-import hudson.tasks.*;
+import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BatchFile;
+import hudson.tasks.BuildTrigger;
+import hudson.tasks.Fingerprinter;
+import hudson.tasks.Shell;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
@@ -448,7 +456,7 @@ public class ProjectTest {
         assertNotNull(ws);
         FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
-        BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
+        BuildListener listener = new StreamBuildListener(TaskListener.NULL.getLogger(), Charset.defaultCharset());
         assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
         p.setScm(scm);
         assertTrue("Project should perform checkout without problems.",p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
@@ -548,7 +556,7 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
@@ -567,13 +575,13 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
         auth.add(Jenkins.READ, user.getId());
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.DELETE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.DELETE, user.getId());
 
         // use Basic to speedup the test, normally it's pure UI testing
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -604,13 +612,13 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.BUILD, user.getId());
-        auth.add(Job.WIPEOUT, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.BUILD, user.getId());
+        auth.add(Item.WIPEOUT, user.getId());
         auth.add(Jenkins.READ, user.getId());
         Slave slave = j.createOnlineSlave();
         project.setAssignedLabel(slave.getSelfLabel());
@@ -642,12 +650,12 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.CONFIGURE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -680,12 +688,12 @@ public class ProjectTest {
             fail("User should not have permission to build project");
         }
         catch(Exception e){
-            if(!(e.getClass().isAssignableFrom(AccessDeniedException3.class))){
+            if(!e.getClass().isAssignableFrom(AccessDeniedException3.class)){
                fail("AccessDeniedException should be thrown.");
             }
         } 
-        auth.add(Job.READ, user.getId());
-        auth.add(Job.CONFIGURE, user.getId());
+        auth.add(Item.READ, user.getId());
+        auth.add(Item.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -703,7 +711,6 @@ public class ProjectTest {
     
     /**
      * Job is un-restricted (no nabel), this is submitted to queue, which spawns an on demand slave
-     * @throws Exception 
      */
     @Test
     public void testJobSubmittedShouldSpawnCloud() throws Exception {
@@ -733,7 +740,6 @@ public class ProjectTest {
     
     /**
      * Job is restricted, but label can not be provided by any cloud, only normal agents. Then job will not submit, because no slave is available.
-     * @throws Exception
      */
     @Test
     public void testUnrestrictedJobNoLabelByCloudNoQueue() throws Exception {
@@ -778,7 +784,6 @@ public class ProjectTest {
     
     /**
      * Job is restricted. Label is on slave that can be started in cloud. Job is submitted to queue, which spawns an on demand slave.
-     * @throws Exception 
      */
     @Test
     public void testRestrictedLabelOnSlaveYesQueue() throws Exception {        

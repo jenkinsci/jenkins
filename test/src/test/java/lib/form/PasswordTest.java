@@ -33,7 +33,18 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Computer;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
+import hudson.model.RootAction;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -624,7 +635,7 @@ public class PasswordTest {
         }
 
         final MockAuthorizationStrategy a = new MockAuthorizationStrategy();
-        a.grant(Jenkins.READ, Job.READ, Job.EXTENDED_READ).everywhere().toEveryone();
+        a.grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().toEveryone();
         j.jenkins.setAuthorizationStrategy(a);
 
         /* Now go to the page without Item/Configure and expect asterisks */

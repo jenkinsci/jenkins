@@ -25,7 +25,7 @@ public class DNSMultiCast {
     @Initializer(before=COMPLETED)
     public static void warn() {
         if (!disabled) {
-            LOGGER.warning("DNS multicast capability has been removed from Jenkins. More information: https://jenkins.io/redirect/dns-multicast");
+            LOGGER.warning("DNS multicast capability has been removed from Jenkins. More information: https://www.jenkins.io/redirect/dns-multicast");
         }
     }
 

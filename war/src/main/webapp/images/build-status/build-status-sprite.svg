@@ -1,0 +1,59 @@
+<svg width="0" height="0" class="hidden">
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 38" stroke="currentColor" id="build-status-static">
+		<g fill="none" fill-rule="evenodd">
+			<g transform="translate(1 1)" stroke-width="4">
+				<circle stroke-opacity="1" cx="18" cy="18" r="16"/>
+			</g>
+		</g>
+	</symbol>
+
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" stroke="currentColor" id="build-status-in-progress">
+		<g fill="none" fill-rule="evenodd">
+			<g transform="translate(1 1)" stroke-width="4">
+				<circle stroke-opacity=".4" cx="19" cy="19" r="18"/>
+				<path d="M37 19c0-9.94-8.06-18-18-18" />
+			</g>
+		</g>
+	</symbol>
+
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-failed">
+		<g id="Group" transform="translate(8.000000, 8.000000)" stroke-width="3" stroke="currentColor">
+			<path d="M8,0 L0,8 L8,0 Z"></path>
+			<path d="M8,0 L0,8 L8,0 Z" transform="translate(4.000000, 4.000000) scale(-1, 1) translate(-4.000000, -4.000000) "></path>
+		</g>
+	</symbol>
+
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-successful">
+		<title>last-build-successful</title>
+		<path d="M10.843 16.894L6.6 12.65l2.121-2.121 2.121 2.121 4.951-4.95 2.122 2.121-7.072 7.073z"></path>
+	</symbol>
+
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-unstable">
+		<g stroke="currentColor" stroke-width="1">
+			<circle cx="12" cy="16.5" r="1"/>
+			<path d="M11 6.5h2v6h-2z"/>
+		</g>
+	</svg>
+
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-aborted">
+		<g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd">
+			<path d="M19.3961792,4.5 L4.5,19.3961792 L19.3961792,4.5 Z"></path>
+			<path d="M19.3961792,4.5 L4.5,19.3961792 L19.3961792,4.5 Z" transform="translate(11.948090, 11.948090) scale(-1, 1) translate(-11.948090, -11.948090) "></path>
+		</g>
+	</symbol>
+
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" id="last-disabled">
+		<g stroke="currentColor" stroke-width="3" fill="none" fill-rule="evenodd">
+			<path d="M18.4085057,9.72715652 L9.75138867,18.3842736 L18.4085057,9.72715652 Z" transform="translate(14.079947, 14.055715) rotate(-5.000000) translate(-14.079947, -14.055715) "></path>
+		</g>
+	</symbol>
+
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="never-built">
+		<g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+			<!-- <circle id="Oval" stroke="currentColor" stroke-width="3" fill-rule="nonzero" cx="12" cy="12" r="10.5"></circle> -->
+			<circle id="Oval-Copy-10" fill="currentColor" cx="7.35714286" cy="12.0371429" r="1.85714286"></circle>
+			<circle id="Oval-Copy-11" fill="currentColor" cx="16.6428571" cy="12.0371429" r="1.85714286"></circle>
+			<circle id="Oval-Copy-12" fill="currentColor" cx="12" cy="12.0371429" r="1.85714286"></circle>
+		</g>
+	</symbol>
+</svg>

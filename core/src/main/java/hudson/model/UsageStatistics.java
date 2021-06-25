@@ -23,10 +23,11 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
-import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
+import hudson.node_monitors.ArchitectureMonitor;
 import hudson.security.Permission;
 import hudson.util.Secret;
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -75,12 +76,12 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     /**
      * Lazily computed {@link PublicKey} representation of {@link #keyImage}.
      */
-    private volatile transient RSAPublicKey key;
+    private transient volatile RSAPublicKey key;
 
     /**
      * When was the last time we asked a browser to send the usage stats for us?
      */
-    private volatile transient long lastAttempt = -1;
+    private transient volatile long lastAttempt = -1;
 
     public UsageStatistics() {
         this(DEFAULT_KEY_BYTES);
@@ -142,7 +143,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
                 n.put("jvm-version", System.getProperty("java.version"));
             }
             n.put("executors",c.getNumExecutors());
-            DescriptorImpl descriptor = j.getDescriptorByType(DescriptorImpl.class);
+            ArchitectureMonitor.DescriptorImpl descriptor = j.getDescriptorByType(ArchitectureMonitor.DescriptorImpl.class);
             n.put("os", descriptor.get(c));
             nodes.add(n);
         }
@@ -287,5 +288,6 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     private static final long DAY = DAYS.toMillis(1);
 
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

@@ -46,12 +46,14 @@ public class ExceptionCatchingThreadFactory implements ThreadFactory, Thread.Unc
         this.core = core;
     }
 
+    @Override
     public Thread newThread(Runnable r) {
         Thread t = core.newThread(r);
         t.setUncaughtExceptionHandler(this);
         return t;
     }
 
+    @Override
     public void uncaughtException(Thread t, Throwable e) {
         LOGGER.log(Level.WARNING, "Thread "+t.getName()+" terminated unexpectedly",e);
     }

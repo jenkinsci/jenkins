@@ -23,6 +23,9 @@
  */
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -38,9 +41,10 @@ import hudson.tasks.Publisher;
 import hudson.util.ComboBoxModel;
 
 import jenkins.model.OptionalJobProperty;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.HudsonTestCase.WebClient;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -48,7 +52,9 @@ import org.kohsuke.stapler.QueryParameter;
 /**
  * @author John McNally
  */
-public class ComboBoxTest extends HudsonTestCase {
+public class ComboBoxTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     /**
      * Used in testCompoundFieldDependentCombobox for Issue("JENKINS-16719")
@@ -65,6 +71,7 @@ public class ComboBoxTest extends HudsonTestCase {
         
         @Extension
         public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -84,6 +91,7 @@ public class ComboBoxTest extends HudsonTestCase {
         }
 
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }
@@ -118,15 +126,16 @@ public class ComboBoxTest extends HudsonTestCase {
      * Confirms that relative paths work when prefilling a combobox text field
      */
     @Issue("JENKINS-16719")
+    @Test
     public void testCompoundFieldDependentComboBox() throws Exception {
         Descriptor d1 = new CompoundFieldComboBoxBuilder.DescriptorImpl();
         Publisher.all().add(d1);
         Descriptor d2 = new CompoundField.DescriptorImpl();
         Publisher.all().add(d2);
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList().add(new CompoundFieldComboBoxBuilder(new CompoundField("AABBCC", "XXYYZZ"), null));
         try {
-            new WebClient().getPage(p,"configure");
+            j.createWebClient().getPage(p,"configure");
             
         } catch(AssertionError e) {
             if(e.getMessage().contains("doFillFooItems is broken")) {
@@ -156,14 +165,13 @@ public class ComboBoxTest extends HudsonTestCase {
     }
 
     @Issue("SECURITY-1525")
+    @Test
     public void testEnsureXssNotPossible() throws Exception {
         XssProperty xssProperty = new XssProperty();
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(xssProperty);
 
-        WebClient wc = new WebClient();
-
-        HtmlPage configurePage = wc.getPage(p, "configure");
+        HtmlPage configurePage = j.createWebClient().getPage(p, "configure");
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
         HtmlElement comboBox = configurePage.getElementByName("_.xss");

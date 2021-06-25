@@ -74,7 +74,7 @@ public class QueueItemAuthenticatorMonitor extends AdministrativeMonitor {
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String redirect, @QueryParameter String dismiss, @QueryParameter String reset) throws IOException {
         if (redirect != null) {
-            return HttpResponses.redirectTo("https://jenkins.io/redirect/queue-item-security");
+            return HttpResponses.redirectTo("https://www.jenkins.io/redirect/queue-item-security");
         }
         if (dismiss != null) {
             this.disable(true);

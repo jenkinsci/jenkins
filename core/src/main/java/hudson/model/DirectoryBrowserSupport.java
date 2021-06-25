@@ -147,6 +147,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         this.serveDirIndex = serveDirIndex;
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         if (!ResourceDomainConfiguration.isResourceRequest(req) && ResourceDomainConfiguration.isResourceDomainConfigured()) {
             resourceToken = ResourceDomainRootAction.get().getToken(this, req);
@@ -524,7 +525,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath) throws IOException {
         // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
         // TODO On Linux file names can contain backslashes which should not treated as file separators.
-        //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+        //      Unfortunately, only the file separator char of the controller is known (File.separatorChar)
         //      but not the file separator char of the (maybe remote) "dir".
         ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
 
@@ -680,6 +681,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             this.collator = Collator.getInstance(locale);
         }
 
+        @Override
         public int compare(VirtualFile lhs, VirtualFile rhs) {
             // directories first, files next
             int r = dirRank(lhs)-dirRank(rhs);

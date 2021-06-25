@@ -30,7 +30,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.*;
+import hudson.model.labels.LabelAtom;
+import hudson.model.labels.LabelExpression;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -41,12 +42,14 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
-import hudson.slaves.OfflineCause.ByCLI;
-import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
@@ -92,13 +95,13 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
-        OfflineCause cause = new ByCLI("message");
+        OfflineCause cause = new OfflineCause.ByCLI("message");
         node.setTemporaryOfflineCause(cause);
         for(ComputerListener l : ComputerListener.all()){
             l.onOnline(node.toComputer(), TaskListener.NULL);
         }
         assertEquals("Node should have offline cause which was set.", cause, node.toComputer().getOfflineCause());
-        OfflineCause cause2 = new ByCLI("another message");
+        OfflineCause cause2 = new OfflineCause.ByCLI("another message");
         node.setTemporaryOfflineCause(cause2);
         assertEquals("Node should have original offline cause after setting another.", cause, node.toComputer().getOfflineCause());
     }
@@ -109,19 +112,19 @@ public class NodeTest {
         Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
 
-        final User someone = User.get("someone@somewhere.com");
+        final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
         ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
-        final User root = User.get("root@localhost");
+        final User root = User.getOrCreateByIdOrFullName("root@localhost");
         ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
@@ -138,7 +141,7 @@ public class NodeTest {
             computer.doToggleOffline("original message");
         }
 
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertThat(cause.toString(), endsWith("Disconnected by anonymous : original message"));
         assertEquals(User.getUnknown(), cause.getUser());
 
@@ -147,7 +150,7 @@ public class NodeTest {
         try (ACLContext ctxt = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
-        cause = (UserCause) computer.getOfflineCause();
+        cause = (OfflineCause.UserCause) computer.getOfflineCause();
         assertThat(cause.toString(), endsWith("Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
@@ -237,7 +240,7 @@ public class NodeTest {
         assertNotNull("Channel should be set.", path.getChannel());
         assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());
         path = node2.createPath(absolutePath);
-        assertNull("Path should be null if slave have channel null.", path);
+        assertNull("Path should be null if agent have channel null.", path);
     }
 
     @Test
@@ -257,39 +260,39 @@ public class NodeTest {
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
         SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
 
-        user = User.get("anonymous");
+        user = User.getOrCreateByIdOrFullName("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));
     }
 
     @Test
     public void testGetChannel() throws Exception {
-        Slave slave = j.createOnlineSlave();
+        Slave agent = j.createOnlineSlave();
         Node nodeOffline = j.createSlave();
-        Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
+        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
         assertNull("Channel of node should be null because node has not assigned computer.", node.getChannel());
         assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
-        assertNotNull("Channel of node should not be null.", slave.getChannel());
+        assertNotNull("Channel of node should not be null.", agent.getChannel());
     }
 
     @Test
     public void testToComputer() throws Exception {
-        Slave slave = j.createOnlineSlave();
-        Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
-        assertNull("Slave which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
-        assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
+        Slave agent = j.createOnlineSlave();
+        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
+        assertNull("Agent which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
+        assertNotNull("Agent which is added into Jenkins list nodes should have assigned computer.", agent.toComputer());
     }
 
     @Issue("JENKINS-27188")
     @Test public void envPropertiesImmutable() throws Exception {
-        Slave slave = j.createSlave();
+        Slave agent = j.createSlave();
 
         String propertyKey = "JENKINS-27188";
-        EnvVars envVars = slave.getComputer().getEnvironment();
+        EnvVars envVars = agent.getComputer().getEnvironment();
         envVars.put(propertyKey, "huuhaa");
         assertTrue(envVars.containsKey(propertyKey));
-        assertFalse(slave.getComputer().getEnvironment().containsKey(propertyKey));
+        assertFalse(agent.getComputer().getEnvironment().containsKey(propertyKey));
 
-        assertNotSame(slave.getComputer().getEnvironment(), slave.getComputer().getEnvironment());
+        assertNotSame(agent.getComputer().getEnvironment(), agent.getComputer().getEnvironment());
     }
 
     /**
@@ -337,7 +340,7 @@ public class NodeTest {
         n4.setLabelString("label1 label");
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
+        p.setAssignedLabel(Label.parseExpression("label1 && (label2 || label3)"));
 
         // Node 1 should not be tied to any labels
         TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();
@@ -374,7 +377,7 @@ public class NodeTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void masterComputerConfigDotXml() throws Exception {
+    public void builtInComputerConfigDotXml() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
         WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));

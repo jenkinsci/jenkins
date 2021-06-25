@@ -12,6 +12,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -44,7 +45,7 @@ public class FreestyleJobPublisherTest {
         assertEquals("Build must fail, because we used FalsePublisher", Result.FAILURE, b.getResult());
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertEquals("Publisher, after publisher with return false status, must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
+        assertEquals("Publisher, after publisher with return false status, must see FAILURE status", FileUtils.readFileToString(file, StandardCharsets.UTF_8), Result.FAILURE.toString());
     }
 
     /**
@@ -69,7 +70,7 @@ public class FreestyleJobPublisherTest {
         j.assertLogContains("Threw AbortException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
+        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file, StandardCharsets.UTF_8), Result.FAILURE.toString());
     }
 
     /**
@@ -94,6 +95,6 @@ public class FreestyleJobPublisherTest {
         j.assertLogContains("Threw IOException from publisher!", b); // log must contain exact error message
         File file = new File(b.getArtifactsDir(), "result.txt");
         assertTrue("ArtifactArchiver is executed even prior publisher fails", file.exists());
-        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file), Result.FAILURE.toString());
+        assertEquals("Third publisher must see FAILURE status", FileUtils.readFileToString(file, StandardCharsets.UTF_8), Result.FAILURE.toString());
     }
 }

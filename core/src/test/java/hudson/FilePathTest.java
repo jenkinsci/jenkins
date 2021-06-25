@@ -31,6 +31,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
@@ -42,15 +43,34 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
-import java.io.*;
-import java.net.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -60,11 +80,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -142,10 +165,11 @@ public class FilePathTest {
         List<Callable<Integer>> r = new ArrayList<>();
         for (int i=0; i<100; i++) {
             r.add(new Callable<Integer>() {
+                @Override
                 public Integer call() throws Exception {
                     class Sink extends OutputStream {
                         private Exception closed;
-                        private volatile int count;
+                        private final AtomicInteger count = new AtomicInteger();
 
                         private void checkNotClosed() throws IOException {
                             if (closed != null)
@@ -154,19 +178,19 @@ public class FilePathTest {
 
                         @Override
                         public void write(int b) throws IOException {
-                            count++;
+                            count.incrementAndGet();
                             checkNotClosed();
                         }
 
                         @Override
                         public void write(byte[] b) throws IOException {
-                            count+=b.length;
+                            count.addAndGet(b.length);
                             checkNotClosed();
                         }
 
                         @Override
                         public void write(byte[] b, int off, int len) throws IOException {
-                            count+=len;
+                            count.addAndGet(len);
                             checkNotClosed();
                         }
 
@@ -181,7 +205,7 @@ public class FilePathTest {
                     FilePath f = new FilePath(channels.french, file.getPath());
                     Sink sink = new Sink();
                     f.copyTo(sink);
-                    return sink.count;
+                    return sink.count.get();
                 }
             });
         }
@@ -246,7 +270,7 @@ public class FilePathTest {
             d.zip(NullOutputStream.NULL_OUTPUT_STREAM,"**/*");
     }
 
-    @Test public void normalization() throws Exception {
+    @Test public void normalization() {
         compare("abc/def\\ghi","abc/def\\ghi"); // allow mixed separators
 
         {// basic '.' trimming
@@ -1067,12 +1091,12 @@ public class FilePathTest {
         assertThat(nonexistent.isDescendant("."), is(false));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     @Issue("SECURITY-904")
     public void isDescendant_throwIfAbsolutePathGiven() throws Exception {
         FilePath rootFolder = new FilePath(temp.newFolder("root"));
         rootFolder.mkdirs();
-        rootFolder.isDescendant(temp.newFile().getAbsolutePath());
+        assertThrows(IllegalArgumentException.class, () -> rootFolder.isDescendant(temp.newFile().getAbsolutePath()));
     }
 
     @Test

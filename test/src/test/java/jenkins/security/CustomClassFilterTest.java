@@ -36,7 +36,7 @@ import jenkins.util.TreeString;
 import jenkins.util.TreeStringBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;

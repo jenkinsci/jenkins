@@ -1,11 +1,11 @@
 package jenkins.security.s2m;
 
-import com.google.common.collect.ImmutableSet;
 import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +32,7 @@ public class CallableRejectionConfig extends ConfigFile<Class,Set<Class>> {
 
     @Override
     protected Set<Class> readOnly(Set<Class> base) {
-        return ImmutableSet.copyOf(base);
+        return Collections.unmodifiableSet(new HashSet<>(base));
     }
 
     @Override

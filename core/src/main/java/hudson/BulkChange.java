@@ -161,6 +161,7 @@ public class BulkChange implements Closeable {
      * true for everything.
      */
     public static final Saveable ALL = new Saveable() {
+        @Override
         public void save() {
         }
     };

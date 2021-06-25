@@ -66,5 +66,5 @@ public class Maven3MojoNote extends ConsoleNote {
         }
     }
 
-    public static Pattern PATTERN = Pattern.compile("\\[INFO\\] --- .+-plugin:[^:]+:[^ ]+ \\(.+\\) @ .+ ---");
+    public static final Pattern PATTERN = Pattern.compile("\\[INFO\\] --- .+-plugin:[^:]+:[^ ]+ \\(.+\\) @ .+ ---");
 }

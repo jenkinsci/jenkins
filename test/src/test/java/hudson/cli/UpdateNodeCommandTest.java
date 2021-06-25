@@ -58,11 +58,11 @@ public class UpdateNodeCommandTest {
 
     @Test public void updateNodeShouldFailWithoutComputerConfigurePermission() throws Exception {
 
-        j.createSlave("MySlave", null, null);
+        j.createSlave("MyAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
-                .invokeWithArgs("MySlave")
+                .invokeWithArgs("MyAgent")
         ;
 
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Configure permission"));
@@ -72,20 +72,20 @@ public class UpdateNodeCommandTest {
 
     @Test public void updateNodeShouldModifyNodeConfiguration() throws Exception {
 
-        j.createSlave("MySlave", null, null);
+        j.createSlave("MyAgent", null, null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
                 .withStdin(Computer.class.getResourceAsStream("node.xml"))
-                .invokeWithArgs("MySlave")
+                .invokeWithArgs("MyAgent")
         ;
 
         assertThat(result, succeededSilently());
 
-        assertThat("An agent with old name should not exist", j.jenkins.getNode("MySlave"), nullValue());
+        assertThat("An agent with old name should not exist", j.jenkins.getNode("MyAgent"), nullValue());
 
-        final Node updatedSlave = j.jenkins.getNode("SlaveFromXML");
-        assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
+        final Node updatedSlave = j.jenkins.getNode("AgentFromXML");
+        assertThat(updatedSlave.getNodeName(), equalTo("AgentFromXML"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
     }
 
@@ -94,10 +94,10 @@ public class UpdateNodeCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONFIGURE, Jenkins.READ)
                 .withStdin(Computer.class.getResourceAsStream("node.xml"))
-                .invokeWithArgs("MySlave")
+                .invokeWithArgs("MyAgent")
         ;
 
-        assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
+        assertThat(result.stderr(), containsString("ERROR: No such node 'MyAgent'"));
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }

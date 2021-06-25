@@ -30,22 +30,23 @@ THE SOFTWARE.
       The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
     </st:attribute>
 
+    <st:attribute name="id">
+      ID of the icon element. Since TODO.
+    </st:attribute>
+
     <st:attribute name="src">
       Icon source raw URL. Only relevant if the 'class' attribute is NOT specified.
     </st:attribute>
 
-    <st:attribute name="onclick">onclick handler.</st:attribute>
+    <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
     <st:attribute name="title">title</st:attribute>
     <st:attribute name="style">style</st:attribute>
     <st:attribute name="tooltip">tooltip</st:attribute>
-
     <st:attribute name="alt">alt</st:attribute>
   </st:documentation>
 
-  <j:set var="imgSrc" value="${attrs.src}"/>
+  <j:set var="iconSrc" value="${attrs.src}"/>
   <j:set var="imgStyle" value="${attrs.style}"/>
-  <j:if test="${attrs.class != null}">
-  </j:if>
 
   <j:choose>
     <j:when test="${attrs.class != null}">
@@ -54,16 +55,35 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <!-- Attempt to work back from the image url (backward compatibility)... -->
-      <j:set var="iconMetadata" value="${icons.getIconByUrl(imgSrc)}"/>
+      <j:set var="iconMetadata" value="${icons.getIconByUrl(iconSrc)}"/>
     </j:otherwise>
   </j:choose>
 
   <j:if test="${iconMetadata != null}">
-    <j:set var="imgSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
+    <j:set var="iconSrc" value="${iconMetadata.getQualifiedUrl(context)}"/>
     <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
   </j:if>
 
-  <img class="${attrs.class}" src="${imgSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
-       alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip }"/>
+  <j:choose>
+    <j:when test="${iconMetadata.buildStatus}">
+      <j:set var="outerLayer" value="${iconMetadata.inProgress ? 'build-status-in-progress' : 'build-status-static'}" />
 
+      <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
+          <span class="build-status-icon__outer">
+            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" />
+          </span>
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
+      </span>
+    </j:when>
+
+    <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
+      <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
+    </j:when>
+
+    <j:otherwise>
+      <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
+           alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip}" id="${attrs.id}" />
+    </j:otherwise>
+  </j:choose>
+  
 </j:jelly>

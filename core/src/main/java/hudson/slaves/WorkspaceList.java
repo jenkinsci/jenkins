@@ -109,7 +109,7 @@ public final class WorkspaceList {
     /**
      * Represents a leased workspace that needs to be returned later.
      */
-    public static abstract class Lease implements /*Auto*/Closeable {
+    public abstract static class Lease implements /*Auto*/Closeable {
         public final @NonNull FilePath path;
 
         protected Lease(@NonNull FilePath path) {
@@ -137,6 +137,7 @@ public final class WorkspaceList {
          */
         public static Lease createDummyLease(@NonNull FilePath p) {
             return new Lease(p) {
+                @Override
                 public void release() {
                     // noop
                 }
@@ -149,6 +150,7 @@ public final class WorkspaceList {
          */
         public static Lease createLinkedDummyLease(@NonNull FilePath p, final Lease parent) {
             return new Lease(p) {
+                @Override
                 public void release() {
                     parent.release();
                 }
@@ -277,6 +279,7 @@ public final class WorkspaceList {
     private Lease lease(@NonNull FilePath p) {
         return new Lease(p) {
             final AtomicBoolean released = new AtomicBoolean();
+            @Override
             public void release() {
                 _release(path);
             }

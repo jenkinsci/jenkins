@@ -152,8 +152,8 @@ public class Maven extends Builder {
      */
     private @NonNull Boolean injectBuildVariables;
 
-    private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
-    private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
+    private static final String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
+    private static final String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
     
     private static final Pattern S_PATTERN = Pattern.compile("(^| )-s ");
     private static final Pattern GS_PATTERN = Pattern.compile("(^| )-gs ");
@@ -254,10 +254,11 @@ public class Maven extends Builder {
         // command line arguments.
         private final String arguments;
 
-        public DecideDefaultMavenCommand(String arguments) {
+        DecideDefaultMavenCommand(String arguments) {
             this.arguments = arguments;
         }
 
+        @Override
         public String invoke(File ws, VirtualChannel channel) throws IOException {
             String seed=null;
 
@@ -433,6 +434,7 @@ public class Maven extends Builder {
             DESCRIPTOR = this;
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -663,10 +665,12 @@ public class Maven extends Builder {
 
         private static final long serialVersionUID = 1L;
 
+        @Override
         public MavenInstallation forEnvironment(EnvVars environment) {
             return new MavenInstallation(getName(), environment.expand(getHome()), getProperties().toList());
         }
 
+        @Override
         public MavenInstallation forNode(Node node, TaskListener log) throws IOException, InterruptedException {
             return new MavenInstallation(getName(), translateFor(node, log), getProperties().toList());
         }

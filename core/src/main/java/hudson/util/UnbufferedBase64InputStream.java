@@ -45,7 +45,7 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
             pos = 0;
         }
 
-        return (decoded[pos++])&0xFF;
+        return decoded[pos++] & 0xFF;
     }
 
     @Override
@@ -65,7 +65,8 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
         while (n>0) {
             int ch = read();
             if (ch<0)   break;
-            n--; r++;
+            n--;
+            r++;
         }
         return r;
     }

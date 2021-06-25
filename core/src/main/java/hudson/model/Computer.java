@@ -101,7 +101,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -121,7 +129,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
-import static javax.servlet.http.HttpServletResponse.*;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Represents the running state of a remote computer that holds {@link Executor}s.
@@ -134,7 +142,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * This object is related to {@link Node} but they have some significant differences.
  * {@link Computer} primarily works as a holder of {@link Executor}s, so
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
- * you won't have a {@link Computer} object for it (except for the master node,
+ * you won't have a {@link Computer} object for it (except for the built-in node,
  * which always gets its {@link Computer} in case we have no static executors and
  * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
@@ -194,7 +202,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     protected final Object statusChangeLock = new Object();
 
-    private final Object logDirLock = new String("logDirLock");
+    private final Object logDirLock = new Object();
 
     /**
      * Keeps track of stack traces to track the termination requests for this computer.
@@ -202,7 +210,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.607
      * @see Executor#resetWorkUnit(String)
      */
-    private transient final List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList<>());
+    private final transient List<TerminationRequest> terminatedBy = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * This method captures the information of a request to terminate a computer instance. Method is public as
@@ -337,6 +345,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return new AnnotatedLargeText<>(getLogFile(), Charset.defaultCharset(), false, this);
     }
 
+    @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
@@ -480,7 +489,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Disconnect this computer.
      *
-     * If this is the master, no-op. This method may return immediately
+     * If this is the built-in node, no-op. This method may return immediately
      * while the launch operation happens asynchronously.
      *
      * @param cause
@@ -1130,6 +1139,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         });
     }
 
+    @Override
     public String getSearchUrl() {
         return getUrl();
     }
@@ -1287,7 +1297,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             }
         }
 
-        // allow the administrator to manually specify the host name as a fallback. HUDSON-5373
+        // allow the administrator to manually specify the host name as a fallback. JENKINS-5373
         cachedHostName = channel.call(new GetFallbackName());
         hostNameCached = true;
         return cachedHostName;
@@ -1318,6 +1328,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
          */
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
 
+        @Override
         public List<String> call() throws IOException {
             List<String> names = new ArrayList<>();
 
@@ -1348,6 +1359,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             return SystemProperties.getString("host.name");
         }
@@ -1449,6 +1461,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() throws IOException {
             final Channel ch = getChannelOrFail();
             StringWriter sw = new StringWriter();
@@ -1493,7 +1506,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new ServletException("No such node " + nodeName);
         }
 
-        if ((!proposedName.equals(nodeName))
+        if (!proposedName.equals(nodeName)
                 && Jenkins.get().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
@@ -1545,8 +1558,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
+        Node previous = getNode();
+        if (previous == null) {
+            throw HttpResponses.notFound();
+        }
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
-        Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
+        if (previous.getClass() != result.getClass()) {
+            // ensure node type doesn't change
+            throw HttpResponses.errorWithoutStack(SC_BAD_REQUEST, "Node types do not match");
+        }
+        Jenkins.get().getNodesObject().replaceNode(previous, result);
     }
 
     /**
@@ -1602,6 +1623,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Escape hatch for StaplerProxy-based access control
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**

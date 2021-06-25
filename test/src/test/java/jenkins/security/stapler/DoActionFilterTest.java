@@ -45,12 +45,11 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * To check the previous behavior you can use:
@@ -85,26 +84,14 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         try {
             wc.goTo("testAccessModifierUrl/public/value", null);
         } catch (FailingHttpStatusCodeException e) {
-            fail("should have access to a public method");
+            throw new AssertionError("should have access to a public method", e);
         }
-        try {
-            wc.goTo("testAccessModifierUrl/protected/value", null);
-            fail("should not have allowed protected access");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-        }
-        try {
-            wc.goTo("testAccessModifierUrl/internal/value", null);
-            fail("should not have allowed internal access");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-        }
-        try {
-            wc.goTo("testAccessModifierUrl/private/value", null);
-            fail("should not have allowed private access");
-        } catch (FailingHttpStatusCodeException x) {
-            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-        }
+        FailingHttpStatusCodeException x = assertThrows("should not have allowed protected access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/protected/value", null));
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
+        x = assertThrows("should not have allowed internal access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/internal/value", null));
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
+        x = assertThrows("should not have allowed private access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/private/value", null));
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
     }
     
     //================================= doXxx methods =================================
@@ -178,9 +165,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         
         @JsonResponse // does not support list
         public Map<String, Object> doAnnotatedJsonResponse() {
-            return new HashMap<String, Object>() {{
-                put("a", "b");
-            }};
+            return Collections.singletonMap("a", "b");
         }
         
         @LimitedTo("admin")
@@ -216,7 +201,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         }
     }
     
-    public static abstract class HttpResponseExceptionChild extends HttpResponses.HttpResponseException {
+    public abstract static class HttpResponseExceptionChild extends HttpResponses.HttpResponseException {
     }
     
     public static class ExceptionImplementingOnlyHttpResponse extends RuntimeException implements HttpResponse {
@@ -369,13 +354,9 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     
     @Test
     public void testAnnotatedMethodOk_annotatedLimitedTo() throws Exception {
-        try {
-            wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/"));
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(500, e.getStatusCode());
-            assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
+        assertEquals(500, e.getStatusCode());
+        assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));
     }
     
     @Test
@@ -403,9 +384,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         // WebClient forces us to use POST to have the possibility to send requestBody
         settings.setHttpMethod(HttpMethod.POST);
         settings.setAdditionalHeader("Content-Type", "application/json");
-        settings.setRequestBody(JSONObject.fromObject(new HashMap<String, Object>() {{
-            put("name", "Test");
-        }}).toString());
+        settings.setRequestBody(JSONObject.fromObject(Collections.singletonMap("name", "Test")).toString());
         assertReachableWithSettings(settings);
     }
     
@@ -417,9 +396,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         settings.setRequestParameters(Collections.singletonList(
                 new NameValuePair(
                         "json",
-                        JSONObject.fromObject(new HashMap<String, Object>() {{
-                            put("name", "Test");
-                        }}).toString()
+                        JSONObject.fromObject(Collections.singletonMap("name", "Test")).toString()
                 )
         ));
         assertReachableWithSettings(settings);
@@ -516,7 +493,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         public void doWithRequestAndResponse(RequestAndResponse requestAndResponse) { replyOk(); }
         
         // special case to keep Groovy parameter name, but does not seem to indicate it's automatically a web method
-        @CapturedParameterNames({"req"})
+        @CapturedParameterNames("req")
         public void doAnnotatedResponseSuccess(Object req) { replyOk(); }
         
 //        // as mentioned in its documentation, it requires to have JavaScriptMethod, that has its own test
@@ -524,7 +501,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 //        public void doAnnotatedJsonOutputFilter() { replyOk(); }
     }
     
-    public static abstract class RequestAndResponse implements StaplerRequest, StaplerResponse {
+    public abstract static class RequestAndResponse implements StaplerRequest, StaplerResponse {
         @Override
         public CollectionAndEnumeration getHeaderNames() {
             return null;
@@ -535,7 +512,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
             return null;
         }
         
-        public static abstract class CollectionAndEnumeration implements Collection, Enumeration {
+        public abstract static class CollectionAndEnumeration implements Collection, Enumeration {
         }
     }
     
@@ -603,13 +580,16 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         @Override
         public void doNotAnnotatedAtAll() { replyOk(); }
         
+        @Override
         public void doOnlyAnnotatedInA() { replyOk(); }
         
+        @Override
         @WebMethod(name = "onlyAnnotatedInB")
         public void doOnlyAnnotatedInB() { replyOk(); }
         
         // doOnlyAnnotatedInANotOverrided: not overrided
         
+        @Override
         @WebMethod(name = "annotatedButDifferent2")
         public void doAnnotatedButDifferent() { replyOk(); }
     }

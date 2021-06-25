@@ -6,7 +6,8 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import static hudson.init.TermMilestone.*;
+import static hudson.init.TermMilestone.COMPLETED;
+import static hudson.init.TermMilestone.STARTED;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 

@@ -12,6 +12,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import java.nio.charset.StandardCharsets;
+
 public class ApplyButtonTest {
 
     @Rule
@@ -30,7 +32,7 @@ public class ApplyButtonTest {
         HtmlPage config = j.createWebClient().getPage(b, "configure");
         HtmlForm form = config.getFormByName("config");
         // HtmlUnit doesn't have JSON, so we need to emulate one
-        config.executeJavaScript(IOUtils.toString(ApplyButtonTest.class.getResource("JSON.js")));
+        config.executeJavaScript(IOUtils.toString(ApplyButtonTest.class.getResource("JSON.js"), StandardCharsets.UTF_8));
         // it's hard to emulate the keytyping, so we just set the value into codemirror and test if this gets
         // reflected back into TEXTAREA
         config.executeJavaScript("document.getElementsByTagName('TEXTAREA')[0].codemirrorObject.setLine(0,'foobar')");

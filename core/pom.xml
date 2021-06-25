@@ -74,16 +74,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>crypto-util</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>jtidy</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
 
     <dependency><!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
@@ -97,6 +87,11 @@ THE SOFTWARE.
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <exclusions>
+        <exclusion>
+          <!-- Provided by spring-aop via spring-security-web -->
+          <groupId>aopalliance</groupId>
+          <artifactId>aopalliance</artifactId>
+        </exclusion>
         <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
@@ -108,14 +103,23 @@ THE SOFTWARE.
       <groupId>org.connectbot.jbcrypt</groupId>
       <artifactId>jbcrypt</artifactId>
     </dependency>
-    <dependency> <!-- for compatibility only; all new code should use JNR. Not included into BOM due to the same reason -->
-      <groupId>org.jruby.ext.posix</groupId>
-      <artifactId>jna-posix</artifactId>
-      <version>1.0.3-jenkins-1</version>
-    </dependency>
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
+    <!--
+      For compatibility only; not included into the BOM for the same reason. TODO once
+      https://github.com/jenkinsci/scm-api-plugin/pull/88 is widely adopted, this
+      dependency can be dropped.
+    -->
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>asm5</artifactId>
+      <version>5.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -189,7 +193,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.infradna.tool</groupId>
       <artifactId>bridge-method-annotation</artifactId>
-      <version>1.18</version>
+      <version>1.21</version>
     </dependency>
 
     <dependency><!-- until we get this version through Stapler -->
@@ -207,10 +211,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>bytecode-compatibility-transformer</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -239,8 +239,8 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <!--
-    still including the xpp3 driver to ensure backwards compatibilty
-    for other plugins that may be depending on it. Not included into BOM
+      still including the xpp3 driver to ensure backwards compatibilty
+      for other plugins that may be depending on it. Not included into BOM
     -->
     <dependency>
       <groupId>xpp3</groupId>
@@ -274,22 +274,12 @@ THE SOFTWARE.
       <artifactId>commons-lang</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-digester</groupId>
-      <artifactId>commons-digester</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-compress</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
     </dependency>
     <dependency>
       <groupId>com.sun.mail</groupId>
@@ -464,6 +454,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>javax.xml.stream</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -476,10 +473,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-    </dependency>
-    <dependency><!-- StAX implementation. See HUDSON-2547. -->
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>wstx-asl</artifactId>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
@@ -566,11 +559,6 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava-testlib</artifactId>
-      <scope>test</scope>
-    </dependency>
     <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
     <dependency>
       <groupId>com.jcraft</groupId>
@@ -592,29 +580,31 @@ THE SOFTWARE.
 
   <build>
     <plugins>
-        <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>build-helper-maven-plugin</artifactId>
-         <executions>
-             <execution>
-                 <id>add-source</id>
-                 <phase>generate-sources</phase>
-                 <goals>
-                     <goal>add-source</goal>
-                 </goals>
-                 <configuration>
-                     <sources>
-                         <source>${project.build.directory}/generated-sources/antlr</source>
-                         <source>${project.build.directory}/generated-sources/localizer</source>
-                         <source>${project.build.directory}/generated-sources/taglib-interface</source>
-                     </sources>
-                 </configuration>
-             </execution>
-         </executions>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/antlr</source>
+                <source>${project.build.directory}/generated-sources/localizer</source>
+                <source>${project.build.directory}/generated-sources/taglib-interface</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
             <goals>
@@ -714,6 +704,7 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <executions>
           <execution>
             <id>winsw</id>
@@ -740,10 +731,10 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
@@ -767,7 +758,7 @@ THE SOFTWARE.
       <plugin><!-- generate Jelly tag lib documentation -->
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
-        <version>${maven-stapler-plugin.version}</version>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <patterns>
             <pattern>/lib/.*</pattern>
@@ -776,7 +767,7 @@ THE SOFTWARE.
       </plugin>
       <plugin><!-- skip slow dependency analysis -->
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.1.1</version>
+        <!-- Version specified in grandparent POM -->
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>
@@ -821,7 +812,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs install site". -->
+      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
       <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>spotbugs</id>
       <properties>

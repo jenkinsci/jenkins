@@ -25,19 +25,24 @@ package hudson.util;
 
 import hudson.PluginManager.UberClassLoader;
 import jenkins.model.Jenkins;
-import org.kohsuke.asm5.ClassWriter;
-import org.kohsuke.asm5.MethodVisitor;
-import org.kohsuke.asm5.Type;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
 
-import static org.kohsuke.asm5.Opcodes.*;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.RETURN;
 
 /**
  * Generates a new class that just defines constructors into the super types.
  *
  * @author Kohsuke Kawaguchi
  */
+@Deprecated
 public class SubClassGenerator extends ClassLoader {
     public SubClassGenerator(ClassLoader parent) {
         super(parent);

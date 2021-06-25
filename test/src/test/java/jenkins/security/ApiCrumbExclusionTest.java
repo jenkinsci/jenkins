@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 public class ApiCrumbExclusionTest {
     @Rule
@@ -63,7 +63,7 @@ public class ApiCrumbExclusionTest {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setCrumbIssuer(null);
-        User foo = User.get("foo");
+        User foo = User.getOrCreateByIdOrFullName("foo");
 
         wc = j.createWebClient();
 
@@ -97,7 +97,7 @@ public class ApiCrumbExclusionTest {
         checkWeCanChangeMyDescription(200);
     }
 
-    private void makeRequestAndVerify(String expected) throws IOException, SAXException {
+    private void makeRequestAndVerify(String expected) throws IOException {
         WebRequest req = new WebRequest(new URL(j.getURL(), "test-post"));
         req.setHttpMethod(HttpMethod.POST);
         req.setEncodingType(null);
@@ -105,13 +105,9 @@ public class ApiCrumbExclusionTest {
         assertEquals(expected, p.getWebResponse().getContentAsString());
     }
 
-    private void makeRequestAndFail(int expectedCode) throws IOException, SAXException {
-        try {
-            makeRequestAndVerify("-");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(expectedCode, e.getStatusCode());
-        }
+    private void makeRequestAndFail(int expectedCode) {
+        final FailingHttpStatusCodeException exception = assertThrows(FailingHttpStatusCodeException.class, () -> makeRequestAndVerify("-"));
+        assertEquals(expectedCode, exception.getStatusCode());
     }
 
     private void checkWeCanChangeMyDescription(int expectedCode) throws IOException, SAXException {

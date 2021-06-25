@@ -15,8 +15,8 @@ Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
 
             // move the contents of the advanced portion into the main table
             var nameRef = tr.getAttribute("nameref");
-            while (container.lastChild != null) {
-                var row = container.lastChild;
+            while (container.lastElementChild != null) {
+                var row = container.lastElementChild;
                 if(nameRef!=null && row.getAttribute("nameref")==null)
                     row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
                 $(row).setOpacity(0);

@@ -168,6 +168,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
             return false;
         }
         
+        @Override
         public UserProperty newInstance(User user) {
             return null;
         }

@@ -41,7 +41,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -302,9 +303,10 @@ public class AbstractBuildTest {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 if (build.number == 1) {
                     e1.signal();  // signal that build #1 is in publisher
+                } else if (build.number == 2) {
+                    e2.signal();  // signal that build #2 is in publisher
                 } else {
-                    assert build.number == 2;
-                    e2.signal();
+                    throw new IllegalArgumentException("unexpected build number: " + build.number);
                 }
 
                 done.block();

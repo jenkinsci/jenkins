@@ -208,6 +208,7 @@ public class HeteroListTest {
     }
 
     public static class TestItemDescribable implements Describable<TestItemDescribable> {
+        @Override
         public Descriptor<TestItemDescribable> getDescriptor() {
             return ExtensionList.lookupSingleton(DynamicDisplayNameDescriptor.class);
         }
@@ -227,16 +228,19 @@ public class HeteroListTest {
     public static class RootActionImpl implements UnprotectedRootAction {
         public List<Descriptor<?>> descriptorList;
 
+        @Override
         @CheckForNull
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         @CheckForNull
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         @CheckForNull
         public String getUrlName() {
             return "root";
@@ -254,15 +258,18 @@ public class HeteroListTest {
         public static class DescriptorImpl extends ToolDescriptor<Xss> {
             private Xss[] installations = new Xss[0];
 
+            @Override
             public String getDisplayName() {
                 return "XSS: <img src=x onerror=console.warn('" + getClass().getName() +"') />";
             }
 
-            public @Override Xss[] getInstallations() {
+            @Override
+            public Xss[] getInstallations() {
                 return installations;
             }
 
-            public @Override void setInstallations(Xss... xsses) {
+            @Override
+            public void setInstallations(Xss... xsses) {
                 this.installations = xsses;
             }
 

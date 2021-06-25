@@ -49,7 +49,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
 
-import static hudson.Util.fixEmpty;
 import org.springframework.security.access.AccessDeniedException;
 
 /**
@@ -251,7 +250,7 @@ public abstract class FormFieldValidator {
      *      Use {@link FormValidation.URLCheck}
      */
     @Deprecated
-    public static abstract class URLCheck extends FormFieldValidator {
+    public abstract static class URLCheck extends FormFieldValidator {
 
         public URLCheck(StaplerRequest request, StaplerResponse response) {
             // can be used to check the existence of any file in file system
@@ -328,6 +327,7 @@ public abstract class FormFieldValidator {
             super(request, response);
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             if(value==null) {// nothing entered yet
@@ -379,6 +379,7 @@ public abstract class FormFieldValidator {
             this.errorIfNotExist = errorIfNotExist;
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             AbstractProject<?,?> p = (AbstractProject<?,?>)subject;
@@ -448,6 +449,7 @@ public abstract class FormFieldValidator {
             this.expectingFile = expectingFile;
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String value = fixEmpty(request.getParameter("value"));
             AbstractProject<?,?> p = (AbstractProject<?,?>)subject;
@@ -528,6 +530,7 @@ public abstract class FormFieldValidator {
             super(request, response, true);
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;
@@ -608,6 +611,7 @@ public abstract class FormFieldValidator {
             this.errorMessage = errorMessage;
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             try {
                 String v = request.getParameter("value");
@@ -648,6 +652,7 @@ public abstract class FormFieldValidator {
             super(null);
         }
 
+        @Override
         protected void check() throws IOException, ServletException {
             try {
                 String value = request.getParameter("value");
