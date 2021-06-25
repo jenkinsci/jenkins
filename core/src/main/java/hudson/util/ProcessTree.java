@@ -456,7 +456,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
         
         // Null-check in case the previous call worked
-        boolean vetoes = (vetoersExist == null ? true : vetoersExist);
+        boolean vetoes = vetoersExist == null ? true : vetoersExist;
         
         try {
             if(File.pathSeparatorChar==';')
@@ -1499,13 +1499,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         argc = adjust(psinfo.readInt());
                         argp = adjustL(psinfo.readLong());
                         envp = adjustL(psinfo.readLong());
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                        b64 = psinfo.readByte() == PR_MODEL_LP64;
                     } else {
                         psinfo.seek(188);  // offset of pr_argc
                         argc = adjust(psinfo.readInt());
                         argp = to64(adjust(psinfo.readInt()));
                         envp = to64(adjust(psinfo.readInt()));
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                        b64 = psinfo.readByte() == PR_MODEL_LP64;
                     }
                 }
                 if(ppid==-1)

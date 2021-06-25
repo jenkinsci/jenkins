@@ -193,7 +193,7 @@ public class FileParameterValue extends ParameterValue {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ ((location == null) ? 0 : location.hashCode());
+				+ (location == null ? 0 : location.hashCode());
 		return result;
 	}
 

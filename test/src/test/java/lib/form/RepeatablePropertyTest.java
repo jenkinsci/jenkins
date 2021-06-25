@@ -109,12 +109,12 @@ public class RepeatablePropertyTest {
         List<HtmlTextInput> containerNameInputs =
                 form.getElementsByAttribute("input", "type", "text").stream()
                         .map(HtmlTextInput.class::cast)
-                        .filter((input) -> input.getNameAttribute().endsWith(".containerName"))
+                        .filter(input -> input.getNameAttribute().endsWith(".containerName"))
                         .collect(Collectors.toList());
         List<HtmlTextInput> greatPropertyInputs =
                 form.getElementsByAttribute("input", "type", "text").stream()
                         .map(HtmlTextInput.class::cast)
-                        .filter((input) -> input.getNameAttribute().endsWith(".greatProperty"))
+                        .filter(input -> input.getNameAttribute().endsWith(".greatProperty"))
                         .collect(Collectors.toList());
         assertEquals(1, containerNameInputs.size());
         assertEquals(0, greatPropertyInputs.size());

@@ -76,7 +76,7 @@ public class UserAvatarResolverTest {
 
         @Override
         public String findAvatarFor(User u, int width, int height) {
-            if ((u != null) && (u == expUser)) {
+            if (u != null && u == expUser) {
                 return "http://myown.image";
             }
             return null;

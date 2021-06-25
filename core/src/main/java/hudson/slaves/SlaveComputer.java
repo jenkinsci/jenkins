@@ -797,7 +797,7 @@ public class SlaveComputer extends Computer {
 
     public void tryReconnect() {
         numRetryAttempt++;
-        if(numRetryAttempt<6 || (numRetryAttempt%12)==0) {
+        if (numRetryAttempt < 6 || numRetryAttempt % 12 == 0) {
             // initially retry several times quickly, and after that, do it infrequently.
             logger.info("Attempting to reconnect "+nodeName);
             connect(true);

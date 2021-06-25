@@ -62,7 +62,7 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
             // if it's more than 90% full and less than the minimum, activate
             // it's AND and not OR so that small Hudson home won't get a warning,
             // and similarly, if you have a 1TB disk, you don't get a warning when you still have 100GB to go.
-            HudsonHomeDiskUsageMonitor.get().activated = (total/free>10 && free< FREE_SPACE_THRESHOLD);
+            HudsonHomeDiskUsageMonitor.get().activated = total / free > 10 && free < FREE_SPACE_THRESHOLD;
     }
 
     private static final Logger LOGGER = Logger.getLogger(HudsonHomeDiskUsageChecker.class.getName());

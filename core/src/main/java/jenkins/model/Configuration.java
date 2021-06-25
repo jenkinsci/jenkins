@@ -34,13 +34,13 @@ public class Configuration {
 
     public static boolean getBooleanConfigParameter(String name, boolean defaultValue) {
         String value = getStringConfigParameter(name,null);
-        return (value==null)?defaultValue:Boolean.parseBoolean(value);
+        return value == null ? defaultValue : Boolean.parseBoolean(value);
     }
 
     public static String getStringConfigParameter(String name, String defaultValue) {
         String value = SystemProperties.getString(Jenkins.class.getName()+"." + name);
         if( value == null )
             value = SystemProperties.getString(Hudson.class.getName()+"." + name);
-        return (value==null)?defaultValue:value;
+        return value == null ? defaultValue : value;
     }
 }

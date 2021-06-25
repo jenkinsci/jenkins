@@ -791,7 +791,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
+        return node != null ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -799,7 +799,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
+        return node != null ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
@@ -1088,7 +1088,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public @NonNull String getDescription() {
         Node node = getNode();
-        return (node != null) ? node.getNodeDescription() : "";
+        return node != null ? node.getNodeDescription() : "";
     }
 
 

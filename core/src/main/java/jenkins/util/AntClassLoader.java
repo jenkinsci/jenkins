@@ -130,7 +130,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
          */
         @Override
         public boolean hasMoreElements() {
-            return (this.nextResource != null);
+            return this.nextResource != null;
         }
 
         /**
@@ -156,7 +156,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener {
          */
         private void findNextResource() {
             URL url = null;
-            while ((pathElementsIndex < pathComponents.size()) && (url == null)) {
+            while (pathElementsIndex < pathComponents.size() && url == null) {
                 try {
                     File pathComponent = pathComponents.get(pathElementsIndex);
                     url = getResourceURL(pathComponent, this.resourceName);
