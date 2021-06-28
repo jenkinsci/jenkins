@@ -196,7 +196,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.1</version>
+        <version>9.2</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
