@@ -1,18 +1,18 @@
 /*
  * The MIT License
- *
+ * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt, Matthew R. Harrah, Red Hat, Inc., Stephen Connolly, Tom Huybrechts, CloudBees, Inc.
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -122,7 +122,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
- *
+ * 
  * <p>
  * Every time it "runs", it will be recorded as a {@link Run} object.
  *
@@ -303,14 +303,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RunT b = getLastBuild();
         return b!=null && b.isBuilding();
     }
-
+    
     /**
      * Returns true if the log file is still being updated.
      */
     public boolean isLogUpdated() {
         RunT b = getLastBuild();
         return b!=null && b.isLogUpdated();
-    }
+    }    
 
     @Override
     public String getPronoun() {
@@ -404,12 +404,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Programmatically updates the next build number.
-     *
+     * 
      * <p>
      * Much of Hudson assumes that the build number is unique and monotonic, so
      * this method can only accept a new value that's bigger than
      * {@link #getLastBuild()} returns. Otherwise it'll be no-op.
-     *
+     * 
      * @since 1.199 (before that, this method was package private.)
      */
     public synchronized void updateNextBuildNumber(int next) throws IOException {
@@ -556,7 +556,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Adds {@link JobProperty}.
-     *
+     * 
      * @since 1.188
      */
     public void addProperty(JobProperty<? super JobT> jobProp) throws IOException {
@@ -776,7 +776,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets the read-only view of all the builds.
-     *
+     * 
      * @return never null. The first entry is the latest build.
      */
     @Exported(name="allBuilds",visibility=-2)
@@ -881,7 +881,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets the youngest build #m that satisfies {@code n&lt;=m}.
-     *
+     * 
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      * @see LazyBuildMixIn#getNearestBuild
@@ -896,7 +896,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets the latest build #m that satisfies {@code m&lt;=n}.
-     *
+     * 
      * This is useful when you'd like to fetch a build but the exact build might
      * be already gone (deleted, rotated, etc.)
      * @see LazyBuildMixIn#getNearestOldBuild
@@ -937,7 +937,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Some {@link Job}s may not have backing data store for {@link Run}s, but
      * those {@link Job}s that use file system for storing data should use this
      * directory for consistency.
-     *
+     * 
      * @see RunMap
      */
     public File getBuildDir() {
@@ -953,7 +953,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Gets all the runs.
-     *
+     * 
      * The resulting map must be treated immutable (by employing copy-on-write
      * semantics.) The map is descending order, with newest builds at the top.
      * @see LazyBuildMixIn#_getRuns
@@ -962,7 +962,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Called from {@link Run} to remove it from this job.
-     *
+     * 
      * The files are deleted already. So all the callee needs to do is to remove
      * a reference from this {@link Job}.
      * @see LazyBuildMixIn#removeRun
@@ -1000,7 +1000,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the last successful build, if any. Otherwise null. A successful build
      * would include either {@link Result#SUCCESS} or {@link Result#UNSTABLE}.
-     *
+     * 
      * @see #getLastStableBuild()
      */
     @Exported
@@ -1056,10 +1056,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public RunT getLastCompletedBuild() {
         return (RunT)Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }
-
+    
     /**
      * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}
-     *
+     * 
      * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
      *   if not enough builds satisfying the threshold have been found. Never null.
      */
@@ -1067,13 +1067,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RunT r = getLastBuild();
         return r.getBuildsOverThreshold(numberOfBuilds, threshold);
     }
-
+    
     /**
      * Returns candidate build for calculating the estimated duration of the current run.
-     *
+     * 
      * Returns the 3 last successful (stable or unstable) builds, if there are any.
      * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
-     *
+     * 
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
      */
     protected List<RunT> getEstimatedDurationCandidates() {
@@ -1100,20 +1100,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             i++;
             r = r.getPreviousBuild();
         }
-
+        
         while (candidates.size() < 3) {
             if (fallbackCandidates.isEmpty())
                 break;
             RunT run = fallbackCandidates.remove(0);
             candidates.add(run);
         }
-
+        
         return candidates;
     }
-
+    
     public long getEstimatedDuration() {
         List<RunT> builds = getEstimatedDurationCandidates();
-
+        
         if(builds.isEmpty())     return -1;
 
         long totalDuration = 0;
@@ -1251,7 +1251,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Get the current health report for a job.
-     *
+     * 
      * @return the health report. Never returns null
      */
     public HealthReport getBuildHealth() {
