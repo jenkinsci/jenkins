@@ -45,10 +45,10 @@ THE SOFTWARE.
               <li id="item_${i.path}">
                 <j:choose>
                   <j:when test="${i.getProjectName()!=null}">
-                    <a href="${h.getRootUrl()}${i.item.getSearchUrl()}">${i.path} <small>(${i.getProjectName()})</small></a>
+                    <a href="${rootURL}/${i.item.getSearchUrl()}">${i.path} <small>(${i.getProjectName()})</small></a>
                   </j:when>
                   <j:otherwise>
-                    <a href="${h.getRootUrl()}${i.item.getSearchUrl()}">${i.path}</a>
+                    <a href="${rootURL}/${i.item.getSearchUrl()}">${i.path}</a>
                   </j:otherwise>
                 </j:choose>
               </li>

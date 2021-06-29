@@ -1896,17 +1896,6 @@ public class Functions {
     }
 
     /**
-     * Returns the URL of the Jenkins.
-     * This method is different from {@link RunUrl#getBaseUrl()}.
-     * This method return Jenkins' base URL instead of only host of URL.
-     * For example, in development mode, Jenkins' base URL is "http://localhost:8080/jenkins" instead of "http://localhost:8080",
-     * thus, this method will return "http://localhost:8080/jenkins"
-     */
-    public String getRootUrl() {
-        return Jenkins.get().getRootUrl();
-    }
-
-    /**
      * Determines the form validation check URL. See textbox.jelly
      *
      * @deprecated
