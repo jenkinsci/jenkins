@@ -33,6 +33,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.XStream2;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import org.xml.sax.Attributes;
@@ -185,8 +186,18 @@ public final class XmlFile {
     }
 
     public void write( Object o ) throws IOException {
+        write(o, true);
+    }
+
+    /**
+     * @param fsync Whether or not to flush the page cache to stable storage before this method
+     *     returns. If you set this to {@code false}, you will lose data integrity.
+     */
+    public void write(Object o, boolean fsync) throws IOException {
         mkdirs();
-        AtomicFileWriter w = new AtomicFileWriter(file);
+        AtomicFileWriter w = fsync
+                ? new AtomicFileWriter(file)
+                : new AtomicFileWriter(file.toPath(), StandardCharsets.UTF_8, false, false);
         try {
             w.write("<?xml version='1.1' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);
