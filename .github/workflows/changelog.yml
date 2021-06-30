@@ -25,9 +25,9 @@ jobs:
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:
-          app_id: ${{ secrets.JENKINS_DEPENDENCY_UPDATER_APP_ID }}
-          private_key: ${{ secrets.JENKINS_DEPENDENCY_UPDATER_PRIVATE_KEY }}
-          repository: timja/jenkins.io
+          app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
+          private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
+          repository: jenkins-infra/jenkins.io
       - name: Check out
         uses: actions/checkout@v2.3.4
         with:
