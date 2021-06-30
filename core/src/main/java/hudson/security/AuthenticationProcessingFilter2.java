@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import jenkins.security.SecurityListener;
 import jenkins.security.seed.UserSeedProperty;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
@@ -60,15 +61,13 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {
+            // This is the default session fixation prevention fix.
+            // While use of SessionFixationProtectionStrategy would be the canonical Spring Security approach, it seems less compatible with some security realms.
+            request.getSession().invalidate();
+            HttpSession newSession = request.getSession(true);
+        }
         super.successfulAuthentication(request, response, chain, authResult);
-        // make sure we have a session to store this successful authentication, given that we no longer
-        // let HttpSessionContextIntegrationFilter2 to create sessions.
-        // SecurityContextPersistenceFilter stores the updated SecurityContext object into this session later
-        // (either when a redirect is issued, via its HttpResponseWrapper, or when the execution returns to its
-        // doFilter method.
-        /* TODO causes an ISE on the next line:
-        request.getSession().invalidate();
-        */
         HttpSession newSession = request.getSession();
 
         if (!UserSeedProperty.DISABLE_USER_SEED) {
