@@ -38,7 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
           GITHUB_AUTH: "nobody:${{ steps.generate-token.outputs.token }}"
-          GIT_AUTHOR_NAME: jenkins-dependency-updater
+          GIT_AUTHOR_NAME: jenkins-infra-changelog-generator
           GIT_AUTHOR_EMAIL: <86592549+jenkins-infra-changelog-generator[bot]@users.noreply.github.com>
           GIT_COMMITTER_NAME: jenkins-infra-changelog-generator
           GIT_COMMITTER_EMAIL: <86592549+jenkins-infra-changelog-generator[bot]@users.noreply.github.com>
