@@ -121,6 +121,7 @@ import jenkins.SoloFilePathFilter;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -526,7 +527,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     @Restricted(NoExternalUse.class)
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner,
                        String verificationRoot, boolean noFollowLinks) throws IOException, InterruptedException {
-        final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
+        final OutputStream out = channel != null ? new RemoteOutputStream(os) : os;
         return act(new Archive(factory, out, scanner, verificationRoot, noFollowLinks));
     }
     private class Archive extends SecureFileCallable<Integer> {
@@ -2920,7 +2921,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.592
      */
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
+    public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.

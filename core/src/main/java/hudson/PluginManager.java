@@ -1104,7 +1104,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final String entryName = jarURLConnection.getEntryName();
             
             try(JarFile jarFile = jarURLConnection.getJarFile()) {
-                final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
+                final JarEntry entry = entryName != null && jarFile != null ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
                     try(InputStream i = jarFile.getInputStream(entry)) {
                         byte[] manifestBytes = IOUtils.toByteArray(i);
@@ -2425,5 +2425,5 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
 }

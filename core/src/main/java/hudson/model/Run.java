@@ -1010,7 +1010,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         RunT r = _this();
         while (r != null && builds.size() < numberOfBuilds) {
             if (!r.isBuilding() &&
-                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
+                 r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold)) {
                 builds.add(r);
             }
             r = r.getPreviousBuild();
@@ -1205,7 +1205,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             String childPath = path + child;
             String childHref = pathHref + Util.rawEncode(child);
             String length = sub.isFile() ? String.valueOf(sub.length()) : "";
-            boolean collapsed = (kids.length==1 && parent!=null);
+            boolean collapsed = kids.length == 1 && parent != null;
             SerializableArtifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
@@ -1550,7 +1550,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     int r;
                     do {
                         r = bufferedInputStream.read();
-                        start = (r == -1)? 0 : start + 1;
+                        start = r == -1 ? 0 : start + 1;
                     } while (r != -1 && r != '\n');
                 }
             }
@@ -2675,7 +2675,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Run.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Run.class.getName() + ".skipPermissionCheck");
 
 
     public static class RedirectUp {

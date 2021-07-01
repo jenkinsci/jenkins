@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -52,7 +54,7 @@ public class StandardArtifactManager extends ArtifactManager {
     @Restricted(NoExternalUse.class)
     @VisibleForTesting
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static FilePath.TarCompression TAR_COMPRESSION = Boolean.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
+    public static FilePath.TarCompression TAR_COMPRESSION = SystemProperties.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
             ? FilePath.TarCompression.NONE
             : FilePath.TarCompression.GZIP;
 

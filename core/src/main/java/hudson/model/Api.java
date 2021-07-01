@@ -116,7 +116,7 @@ public class Api extends AbstractModelObject {
 
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());
-        TreePruner pruner = (tree!=null) ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
+        TreePruner pruner = tree != null ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
         p.writeTo(bean,pruner,Flavor.XML.createDataWriter(bean,sw));
 
         // apply XPath

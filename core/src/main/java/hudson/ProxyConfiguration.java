@@ -183,7 +183,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      */
     @Deprecated
     public String getEncryptedPassword() {
-        return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
+        return secretPassword == null ? null : secretPassword.getEncryptedValue();
     }
 
     public String getTestUrl() {

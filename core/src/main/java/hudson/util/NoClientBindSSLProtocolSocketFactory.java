@@ -163,7 +163,7 @@ public class NoClientBindSSLProtocolSocketFactory implements SecureProtocolSocke
      */
     @Override
     public boolean equals(Object obj) {
-        return ((obj != null) && obj.getClass().equals(SSLProtocolSocketFactory.class));
+        return obj != null && obj.getClass().equals(SSLProtocolSocketFactory.class);
     }
 
     /**

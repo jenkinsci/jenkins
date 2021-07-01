@@ -272,7 +272,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
 
     private static String getKeyAlgorithm(String algorithm) {
         int index = algorithm.indexOf('/');
-        return (index>0)?algorithm.substring(0,index):algorithm;
+        return index > 0 ? algorithm.substring(0, index) : algorithm;
     }
 
     private static Cipher toCipher(RSAKey key, int mode) throws GeneralSecurityException {

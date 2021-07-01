@@ -277,7 +277,7 @@ public class CLIActionTest {
                 System.err.println("starting download");
                 long start = System.nanoTime();
                 IOUtils.copyLarge(new NullInputStream(size), os);
-                System.err.printf("finished download in %.1fs%n", ((System.nanoTime() - start) / 1_000_000_000.0));
+                System.err.printf("finished download in %.1fs%n", (System.nanoTime() - start) / 1_000_000_000.0);
             }
             return 0;
         }

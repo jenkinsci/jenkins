@@ -885,7 +885,7 @@ public class Util {
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
         for (int j = 0; j < raw.length(); i++, j++)
-            uriMap[i] = (raw.charAt(j) == ' ');
+            uriMap[i] = raw.charAt(j) == ' ';
         // If we add encodeQuery() just add a 2nd map to encode &+=
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
@@ -1449,7 +1449,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if ((numberStr == null) || (numberStr.length() == 0)) {
+        if (numberStr == null || numberStr.length() == 0) {
             return defaultNumber;
         }
         try {

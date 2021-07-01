@@ -56,7 +56,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * The default case insensitive strategy.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in several plugins")
     public static IdStrategy CASE_INSENSITIVE = new CaseInsensitive();
 
     /**

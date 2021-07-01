@@ -97,8 +97,8 @@ public class GroovyshCommand extends CLICommand {
             @SuppressWarnings("unused")
             @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) {
-                assert(args.length == 1);
-                assert(args[0] instanceof Shell);
+                assert args.length == 1;
+                assert args[0] instanceof Shell;
 
                 Shell shell = (Shell)args[0];
                 XmlCommandRegistrar r = new XmlCommandRegistrar(shell, cl);
