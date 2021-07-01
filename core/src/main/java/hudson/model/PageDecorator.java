@@ -83,9 +83,6 @@ public abstract class PageDecorator extends Descriptor<PageDecorator> implements
         super(self());
     }
 
-    // this will never work because Descriptor and Describable are the same thing.
-//    protected PageDecorator() {
-//    }
 
     @Override
     public final Descriptor<PageDecorator> getDescriptor() {

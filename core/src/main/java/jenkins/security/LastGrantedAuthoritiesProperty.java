@@ -136,28 +136,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
             // while this initially seemed like a good idea to avoid allowing wrong impersonation for too long,
             // doing this means a malicious user can break the impersonation capability
             // just by failing to login. See ApiTokenFilter that does the following, which seems better:
-            /*
-                try {
-                    Jenkins.get().getSecurityRealm().loadUserByUsername(username);
-                } catch (UserMayOrMayNotExistException x) {
-                    // OK, give them the benefit of the doubt.
-                } catch (UsernameNotFoundException x) {
-                    // Not/no longer a user; deny the API token. (But do not leak the information that this happened.)
-                    chain.doFilter(request, response);
-                    return;
-                } catch (DataAccessException x) {
-                    throw new ServletException(x);
-                }
-             */
-
-//            try {
-//                User u = User.getById(username,false);
-//                LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
-//                if (o!=null)
-//                    o.invalidate();
-//            } catch (IOException e) {
-//                LOGGER.log(Level.WARNING, "Failed to record granted authorities",e);
-//            }
         }
     }
 

@@ -284,25 +284,6 @@ public class ChunkedInputStream extends InputStream {
     private void parseTrailerHeaders() throws IOException {
         // I feel lazy. No trailing header support
         readCRLF();
-
-//        Header[] footers = null;
-//        try {
-//            String charset = "US-ASCII";
-//            if (this.method != null) {
-//                charset = this.method.getParams().getHttpElementCharset();
-//            }
-//            footers = HttpParser.parseHeaders(in, charset);
-//        } catch(HttpException e) {
-//            LOG.error("Error parsing trailer headers", e);
-//            IOException ioe = new IOException(e.getMessage());
-//            ExceptionUtil.initCause(ioe, e);
-//            throw ioe;
-//        }
-//        if (this.method != null) {
-//            for (int i = 0; i < footers.length; i++) {
-//                this.method.addResponseFooter(footers[i]);
-//            }
-//        }
     }
 
     /**

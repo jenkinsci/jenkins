@@ -97,19 +97,11 @@ public class TreeView extends View implements ViewGroup {
     @Override
     public synchronized List<TopLevelItem> getItems() {
         return Jenkins.get().getItems();
-//        List<TopLevelItem> items = new ArrayList<TopLevelItem>(jobNames.size());
-//        for (String name : jobNames) {
-//            TopLevelItem item = Hudson.getInstance().getItem(name);
-//            if(item!=null)
-//                items.add(item);
-//        }
-//        return items;
     }
 
     @Override
     public boolean contains(TopLevelItem item) {
         return true;
-//        return jobNames.contains(item.getName());
     }
 
     @Override

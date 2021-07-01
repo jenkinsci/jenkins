@@ -621,15 +621,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return transientDependencies;
         }
 
-//        public List<PluginWrapper> getDependencyPluginWrappers() {
-//            List<PluginWrapper> r = new ArrayList<PluginWrapper>();
-//            for (Dependency d : dependencies) {
-//                PluginWrapper w = pluginManager.getPlugin(d.shortName);
-//                if (w!=null)    r.add(w);
-//            }
-//            return r;
-//        }
-
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             if (PluginManager.FAST_LOOKUP) {
