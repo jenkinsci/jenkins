@@ -62,10 +62,9 @@ public final class AuthenticationProcessingFilter2 extends UsernamePasswordAuthe
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 2) {
-            // This is the default session fixation prevention fix.
-            // While use of SessionFixationProtectionStrategy would be the canonical Spring Security approach, it seems less compatible with some security realms.
+            // While use of SessionFixationProtectionStrategy is the canonical Spring Security approach, it may not be compatible with some security realms, so offer this alternative
             request.getSession().invalidate();
-            HttpSession newSession = request.getSession(true);
+            request.getSession(true);
         }
         super.successfulAuthentication(request, response, chain, authResult);
         HttpSession newSession = request.getSession();

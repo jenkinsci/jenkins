@@ -596,7 +596,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             AuthenticationProcessingFilter2 apf = new AuthenticationProcessingFilter2(getAuthenticationGatewayUrl());
             apf.setAuthenticationManager(sc.manager2);
             if (SystemProperties.getInteger(SecurityRealm.class.getName() + ".sessionFixationProtectionMode", 1) == 1) {
-                // Optionally use the 'canonical' protection from Spring Security; see AuthenticationProcessingFilter2#successfulAuthentication for default
+                // By default, use the 'canonical' protection from Spring Security; see AuthenticationProcessingFilter2#successfulAuthentication for alternative
                 apf.setSessionAuthenticationStrategy(new SessionFixationProtectionStrategy());
             }
             apf.setRememberMeServices(sc.rememberMe2);
