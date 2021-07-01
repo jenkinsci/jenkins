@@ -963,7 +963,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             if (!hasPermission(Item.DISCOVER)) {
                 return null;
             }
-            getACL().checkPermission(Item.READ);
+            checkPermission(Item.READ);
         }
         return this;
     }
