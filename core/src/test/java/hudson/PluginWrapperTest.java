@@ -13,7 +13,6 @@ import jenkins.model.Jenkins;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.jvnet.hudson.test.Issue;
@@ -22,8 +21,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -65,47 +64,35 @@ public class PluginWrapperTest {
     @Test
     public void jenkinsCoreTooOld() {
         PluginWrapper pw = pluginWrapper("fake").requiredCoreVersion("3.0").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: fake (42)", "Jenkins (3.0) or higher required");
-        }
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: fake (42)", "Jenkins (3.0) or higher required");
     }
 
     @Test
     public void dependencyNotInstalled() {
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:42").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Plugin is missing: dependency (42)");
-        }
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: dependee (42)", "Plugin is missing: dependency (42)");
     }
 
     @Test
     public void dependencyOutdated() {
         pluginWrapper("dependency").version("3").buildLoaded();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:5").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Update required: dependency (3) to be updated to 5 or higher");
-        }
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: dependee (42)", "Update required: dependency (3) to be updated to 5 or higher");
     }
 
     @Test
     public void dependencyFailedToLoad() {
         pluginWrapper("dependency").version("5").buildFailed();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:3").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Failed to load: dependency (5)");
-        }
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: dependee (42)", "Failed to load: dependency (5)");
     }
 
     private void assertContains(Throwable ex, String... patterns) {
@@ -123,18 +110,15 @@ public class PluginWrapperTest {
     private final HashMap<String, PluginWrapper> plugins = new HashMap<>();
     private final PluginManager pm = mock(PluginManager.class);
     {
-        when(pm.getPlugin(any(String.class))).thenAnswer(new Answer<PluginWrapper>() {
-            @Override public PluginWrapper answer(InvocationOnMock invocation) throws Throwable {
-                return plugins.get(invocation.getArguments()[0]);
-            }
-        });
+        when(pm.getPlugin(any(String.class))).thenAnswer((Answer<PluginWrapper>) invocation -> plugins.get(invocation.getArguments()[0]));
     }
+
     private final class PluginWrapperBuilder {
-        private String name;
+        private final String name;
         private String version = "42";
         private String requiredCoreVersion = "1.0";
-        private List<PluginWrapper.Dependency> deps = new ArrayList<>();
-        private List<PluginWrapper.Dependency> optDeps = new ArrayList<>();
+        private final List<PluginWrapper.Dependency> deps = new ArrayList<>();
+        private final List<PluginWrapper.Dependency> optDeps = new ArrayList<>();
 
         private PluginWrapperBuilder(String name) {
             this.name = name;
@@ -153,13 +137,6 @@ public class PluginWrapperTest {
         public PluginWrapperBuilder deps(String... deps) {
             for (String dep: deps) {
                 this.deps.add(new PluginWrapper.Dependency(dep));
-            }
-            return this;
-        }
-
-        public PluginWrapperBuilder optDeps(String... optDeps) {
-            for (String dep: optDeps) {
-                this.optDeps.add(new PluginWrapper.Dependency(dep));
             }
             return this;
         }
