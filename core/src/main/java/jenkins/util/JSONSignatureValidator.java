@@ -73,9 +73,9 @@ public class JSONSignatureValidator {
                         try {
                             c.checkValidity();
                         } catch (CertificateExpiredException e) { // even if the certificate isn't valid yet, we'll proceed it anyway
-                            warning = FormValidation.warning(e, String.format("Certificate %s has expired in %s", cert.toString(), name));
+                            warning = FormValidation.warning(e, String.format("Certificate %s has expired in %s", cert, name));
                         } catch (CertificateNotYetValidException e) {
-                            warning = FormValidation.warning(e, String.format("Certificate %s is not yet valid in %s", cert.toString(), name));
+                            warning = FormValidation.warning(e, String.format("Certificate %s is not yet valid in %s", cert, name));
                         }
                         LOGGER.log(Level.FINE, "Add certificate found in JSON document:\n\tsubjectDN: {0}\n\tissuer: {1}\n\tnotBefore: {2}\n\tnotAfter: {3}",
                                 new Object[] { c.getSubjectDN(), c.getIssuerDN(), c.getNotBefore(), c.getNotAfter() });

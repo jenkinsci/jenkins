@@ -1,7 +1,6 @@
 package jenkins;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
