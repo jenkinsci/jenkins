@@ -567,8 +567,8 @@ public abstract class FormFieldValidator {
                 public void validate(File fexe) {
                     try {
                         self.checkExecutable(fexe);
-                    } catch (IOException | ServletException ioe) {
-                        exceptions[0] = ioe;
+                    } catch (IOException | ServletException ex) {
+                        exceptions[0] = ex;
                     }
                 }
             });
