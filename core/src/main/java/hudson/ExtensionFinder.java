@@ -543,12 +543,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             // make unique key, because Guice wants that.
                             Key key = Key.get(extType, Names.named(item.className() + "." + item.memberName()));
                             annotations.put(key,a);
-                            bind(key).toProvider(new Provider() {
-                                    @Override
-                                    public Object get() {
-                                        return instantiate(item);
-                                    }
-                                }).in(scope);
+                            bind(key).toProvider(() -> instantiate(item)).in(scope);
                         }
                         loadedIndex.add(item);
                     } catch (Exception|LinkageError e) {

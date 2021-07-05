@@ -69,12 +69,7 @@ class FilePathRuleConfig extends ConfigDirectory<FilePathRule,List<FilePathRule>
             return OpMatcher.ALL;
 
         final Set<String> ops = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(token.split(","))));
-        return new OpMatcher() {
-            @Override
-            public boolean matches(String op) {
-                return ops.contains(op);
-            }
-        };
+        return ops::contains;
     }
 
     public boolean checkFileAccess(String op, File path) throws SecurityException {

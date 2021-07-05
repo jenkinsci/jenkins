@@ -130,12 +130,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             }
         }
 
-        topologicalOrder = new Comparator<AbstractProject<?, ?>>() {
-            @Override
-            public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
-                return topoOrder.get(o1)-topoOrder.get(o2);
-            }
-        };
+        topologicalOrder = Comparator.comparingInt(topoOrder::get);
 
         topologicallySorted = Collections.unmodifiableList(topologicallySorted);
     }

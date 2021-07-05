@@ -133,12 +133,7 @@ public class FileParameterValue extends ParameterValue {
 
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
-        return new VariableResolver<String>() {
-            @Override
-            public String resolve(String name) {
-                return FileParameterValue.this.name.equals(name) ? originalFileName : null;
-            }
-        };
+        return name -> FileParameterValue.this.name.equals(name) ? originalFileName : null;
     }
 
     /**

@@ -98,12 +98,7 @@ public class TableNestChecker extends XMLFilterImpl {
         boolean isAllowed(String childTag);
     }
 
-    private static final Checker ALL_ALLOWED = new Checker() {
-        @Override
-        public boolean isAllowed(String childTag) {
-            return true;
-        }
-    };
+    private static final Checker ALL_ALLOWED = childTag -> true;
 
     private static final class InList implements Checker {
         private final Set<String> tags;
