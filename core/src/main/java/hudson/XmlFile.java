@@ -123,13 +123,25 @@ public final class XmlFile {
     private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
     private static final ThreadLocal<File> writing = new ThreadLocal<>();
 
+    /**
+     * @param force Whether or not to flush the page cache to the storage device with {@link
+     *     FileChannel#force} (i.e., {@code fsync}} or {@code FlushFileBuffers}) before this method
+     *     returns. If you set this to {@code false}, you will lose data integrity.
+     */
+    private final boolean force;
+
     public XmlFile(File file) {
         this(DEFAULT_XSTREAM,file);
     }
 
     public XmlFile(XStream xs, File file) {
+        this(xs, file, true);
+    }
+
+    public XmlFile(XStream xs, File file, boolean force) {
         this.xs = xs;
         this.file = file;
+        this.force = force;
     }
 
     public File getFile() {
@@ -187,15 +199,6 @@ public final class XmlFile {
     }
 
     public void write( Object o ) throws IOException {
-        write(o, true);
-    }
-
-    /**
-     * @param force Whether or not to flush the page cache to stable storage with {@link
-     *     FileChannel#force} (i.e., {@code fsync()}} or {@code FlushFileBuffers()}) before this
-     *     method returns. If you set this to {@code false}, you will lose data integrity.
-     */
-    public void write(Object o, boolean force) throws IOException {
         mkdirs();
         AtomicFileWriter w = force
                 ? new AtomicFileWriter(file)
