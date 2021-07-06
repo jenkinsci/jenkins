@@ -120,15 +120,9 @@ import org.apache.commons.io.IOUtils;
 public final class XmlFile {
     private final XStream xs;
     private final File file;
+    private final boolean force;
     private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
     private static final ThreadLocal<File> writing = new ThreadLocal<>();
-
-    /**
-     * @param force Whether or not to flush the page cache to the storage device with {@link
-     *     FileChannel#force} (i.e., {@code fsync}} or {@code FlushFileBuffers}) before this method
-     *     returns. If you set this to {@code false}, you will lose data integrity.
-     */
-    private final boolean force;
 
     public XmlFile(File file) {
         this(DEFAULT_XSTREAM,file);
@@ -138,6 +132,11 @@ public final class XmlFile {
         this(xs, file, true);
     }
 
+    /**
+     * @param force Whether or not to flush the page cache to the storage device with {@link
+     *     FileChannel#force} (i.e., {@code fsync}} or {@code FlushFileBuffers}) before this method
+     *     returns. If you set this to {@code false}, you will lose data integrity.
+     */
     public XmlFile(XStream xs, File file, boolean force) {
         this.xs = xs;
         this.file = file;
