@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
@@ -62,6 +63,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -73,6 +76,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -208,6 +212,85 @@ public class DirectoryBrowserSupportTest {
         is.close();
         readzip.close();
         zipfile.delete();
+    }
+
+    @Test
+    public void zipDownloadFileLeakMx_hypothesis() throws Exception {
+        // this test is meant to just ensure zipDownloadFileLeakMx hypothesis about the UI work fine
+
+        String content = "Hello world!";
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("artifact.out", content));
+        p.getPublishersList().add(new ArtifactArchiver("*", "", true));
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        Page downloadPage = page.getAnchorByHref("artifact.out").click();
+        assertEquals(content, downloadPage.getWebResponse().getContentAsString());
+    }
+
+    @Test
+    @Issue({"JENKINS-64632", "JENKINS-61121"})
+    public void zipDownloadFileLeakMx() throws Exception {
+        Assume.assumeFalse(Functions.isWindows());
+
+        int numOfClicks = 10;
+        int totalRuns = 10;
+        boolean freeFromLeak = false;
+        long[][] openFds = new long[totalRuns][2];
+        for (int runs = 0; runs < totalRuns && !freeFromLeak; runs++) {
+            long initialOpenFds = getOpenFdCount();
+            FreeStyleProject p = j.createFreeStyleProject();
+
+            // add randomness just to prevent any potential caching issue
+            p.setScm(new SingleFileSCM("artifact.out", "Hello world! " + Math.random()));
+            p.getPublishersList().add(new ArtifactArchiver("*", "", true));
+            assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+            HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+            for (int clicks = 0; clicks < numOfClicks; clicks++) {
+                page.getAnchorByHref("artifact.out").click();
+            }
+            long finalOpenFds = getOpenFdCount();
+
+            if (finalOpenFds < initialOpenFds + numOfClicks) {
+                // when there was a file leak, the number of open file handle was always 
+                // greater or equal to the number of download
+                // in reverse, since the correction, the likelihood to overpass the limit was less than 1%
+                freeFromLeak = true;
+            }
+
+            openFds[runs][0] = initialOpenFds;
+            openFds[runs][1] = finalOpenFds;
+        }
+
+        List<String> messages = new ArrayList<>();
+        Map<Long, Long> differences = new TreeMap<>();
+        for (int runs = 0; runs < totalRuns; runs++) {
+            long difference = openFds[runs][1] - openFds[runs][0];
+            Long storedDifference = differences.get(difference);
+            if (storedDifference == null) {
+                differences.put(difference, 1L);
+            } else {
+                differences.put(difference, ++storedDifference);
+            }
+            messages.add("Initial=" + openFds[runs][0] + ", Final=" + openFds[runs][1] + ", difference=" + difference);
+        }
+        for (Long difference : differences.keySet()) {
+            messages.add("Difference=" + difference + " occurs " + differences.get(difference) + " times");
+        }
+
+        String summary = String.join("\n", messages);
+        System.out.println("Summary of the test: \n"+ summary);
+        assertTrue("There should be no difference greater than "+numOfClicks+", but the output was: \n"+ summary, freeFromLeak);
+    }
+
+    private long getOpenFdCount() {
+        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+        if(os instanceof UnixOperatingSystemMXBean){
+            return ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount();
+        }
+        return -1;
     }
 
     @Issue("SECURITY-95")
