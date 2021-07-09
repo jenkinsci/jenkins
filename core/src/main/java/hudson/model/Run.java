@@ -1331,28 +1331,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             for (int i = 0; i < tokens.length; i++)
                 get(i).displayPath = combineLast(tokens[i],len[i]);
-
-//            OUTER:
-//            for( int n=1; n<maxLen; n++ ) {
-//                // if we just display the last n token, would it be suffice for disambiguation?
-//                Set<String> names = new HashSet<String>();
-//                for (String[] token : tokens) {
-//                    if(!names.add(combineLast(token,n)))
-//                        continue OUTER; // collision. Increase n and try again
-//                }
-//
-//                // this n successfully disambiguates
-//                for (int i = 0; i < tokens.length; i++) {
-//                    String[] token = tokens[i];
-//                    get(i).displayPath = combineLast(token,n);
-//                }
-//                return;
-//            }
-
-//            // it's impossible to get here, as that means
-//            // we have the same artifacts archived twice, but be defensive
-//            for (Artifact a : this)
-//                a.displayPath = a.relativePath;
         }
 
         /**

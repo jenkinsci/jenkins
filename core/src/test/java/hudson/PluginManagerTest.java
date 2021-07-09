@@ -48,7 +48,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests of {@link PluginManager}.
@@ -81,14 +81,11 @@ public class PluginManagerTest {
                 "</root>\n";
 
         PluginManager pluginManager = new LocalPluginManager(Util.createTempDir());
-        try {
-            pluginManager.parseRequestedPlugins(new StringInputStream(evilXML));
-            fail("XML contains an external entity, but no exception was thrown.");
-        }
-        catch (IOException ex) {
-            assertThat(ex.getCause(), instanceOf(SAXException.class));
-            assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));
-        }
+        final IOException ex = assertThrows(IOException.class,
+                () -> pluginManager.parseRequestedPlugins(new StringInputStream(evilXML)),
+                "XML contains an external entity, but no exception was thrown.");
+        assertThat(ex.getCause(), instanceOf(SAXException.class));
+        assertThat(ex.getCause().getMessage(), containsString("Refusing to resolve entity with publicId(null) and systemId (file:///)"));
     }
     
     @Test
