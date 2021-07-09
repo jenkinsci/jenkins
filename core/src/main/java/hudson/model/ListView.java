@@ -32,7 +32,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
@@ -86,7 +85,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * List of job names. This is what gets serialized.
      */
     @GuardedBy("this")
-    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
@@ -151,7 +150,7 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         synchronized(this) {
             if (jobNames == null) {
-                jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+                jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
             }
         }
         initColumns();
