@@ -84,7 +84,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
                     c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
             return rb.format(key);
         } catch (ClassNotFoundException x) {
-            LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+e.toString(),x);
+            LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+ e,x);
             return key;
         } catch (MissingResourceException x) {
             LOGGER.log(WARNING, "Could not find key '" + key + "' in " + c.getPackage().getName() + ".Messages", x);

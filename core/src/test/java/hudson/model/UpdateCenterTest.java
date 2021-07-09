@@ -10,8 +10,8 @@ import java.util.Locale;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class UpdateCenterTest {
 
@@ -52,12 +52,10 @@ public class UpdateCenterTest {
 
     @Test
     public void noChecksums() {
-        try {
-            UpdateCenter.verifyChecksums(new MockDownloadJob(null, null, null), buildEntryWithExpectedChecksums(null, null, null), new File("example"));
-            fail();
-        } catch (IOException ex) {
-            assertEquals("Unable to confirm integrity of downloaded file, refusing installation", ex.getMessage());
-        }
+        final IOException ex = assertThrows(IOException.class,
+                () -> UpdateCenter.verifyChecksums(new MockDownloadJob(null, null, null),
+                        buildEntryWithExpectedChecksums(null, null, null), new File("example")));
+        assertEquals("Unable to confirm integrity of downloaded file, refusing installation", ex.getMessage());
     }
 
     @Test
@@ -69,14 +67,10 @@ public class UpdateCenterTest {
 
     @Test
     public void sha1Mismatch() {
-        try {
-            UpdateCenter.verifyChecksums(
-                    new MockDownloadJob(EMPTY_SHA1.replace('k', 'f'), null, null),
-                    buildEntryWithExpectedChecksums(EMPTY_SHA1, null, null), new File("example"));
-            fail();
-        } catch (IOException ex) {
-            assertTrue(ex.getMessage().contains("does not match expected SHA-1, expected '2jmj7l5rSw0yVb/vlWAYkK/YBwk=', actual '2jmj7l5rSw0yVb/vlWAYfK/YBwf='"));
-        }
+        final IOException ex = assertThrows(IOException.class, () -> UpdateCenter.verifyChecksums(
+                new MockDownloadJob(EMPTY_SHA1.replace('k', 'f'), null, null),
+                buildEntryWithExpectedChecksums(EMPTY_SHA1, null, null), new File("example")));
+        assertTrue(ex.getMessage().contains("does not match expected SHA-1, expected '2jmj7l5rSw0yVb/vlWAYkK/YBwk=', actual '2jmj7l5rSw0yVb/vlWAYfK/YBwf='"));
     }
 
     @Test
@@ -95,45 +89,32 @@ public class UpdateCenterTest {
 
     @Test
     public void sha1DoesNotIgnoreCase() {
-        try {
-            UpdateCenter.verifyChecksums(
-                    new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256, EMPTY_SHA512),
-                    buildEntryWithExpectedChecksums(EMPTY_SHA1.toUpperCase(Locale.US), null, null), new File("example"));
-            fail();
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("does not match expected SHA-1, expected '2JMJ7L5RSW0YVB/VLWAYKK/YBWK=', actual '2jmj7l5rSw0yVb/vlWAYkK/YBwk='"));
-        }
-
+        final Exception ex = assertThrows(Exception.class, () -> UpdateCenter.verifyChecksums(
+                new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256, EMPTY_SHA512),
+                buildEntryWithExpectedChecksums(EMPTY_SHA1.toUpperCase(Locale.US), null, null), new File("example")));
+        assertTrue(ex.getMessage().contains("does not match expected SHA-1, expected '2JMJ7L5RSW0YVB/VLWAYKK/YBWK=', actual '2jmj7l5rSw0yVb/vlWAYkK/YBwk='"));
     }
 
     @Test
     public void noOverlapForComputedAndProvidedChecksums() {
-        try {
-            UpdateCenter.verifyChecksums(
-                    new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256, null),
-                    buildEntryWithExpectedChecksums(null, null, EMPTY_SHA512), new File("example"));
-            fail();
-        } catch (Exception e) {
-            assertEquals("Unable to confirm integrity of downloaded file, refusing installation", e.getMessage());
-        }
+        final Exception ex = assertThrows(Exception.class, () -> UpdateCenter.verifyChecksums(
+                new MockDownloadJob(EMPTY_SHA1, EMPTY_SHA256, null),
+                buildEntryWithExpectedChecksums(null, null, EMPTY_SHA512), new File("example")));
+        assertEquals("Unable to confirm integrity of downloaded file, refusing installation", ex.getMessage());
     }
 
     @Test
     public void noOverlapForComputedAndProvidedChecksumsForSpecIncompliantJVM() {
-        try {
-            UpdateCenter.verifyChecksums(
-                    new MockDownloadJob(EMPTY_SHA1, null, null),
-                    buildEntryWithExpectedChecksums(null, EMPTY_SHA256, EMPTY_SHA512), new File("example"));
-            fail();
-        } catch (Exception e) {
-            assertEquals("Unable to confirm integrity of downloaded file, refusing installation", e.getMessage());
-        }
+        final Exception ex = assertThrows(Exception.class, () -> UpdateCenter.verifyChecksums(
+                new MockDownloadJob(EMPTY_SHA1, null, null),
+                buildEntryWithExpectedChecksums(null, EMPTY_SHA256, EMPTY_SHA512), new File("example")));
+        assertEquals("Unable to confirm integrity of downloaded file, refusing installation", ex.getMessage());
     }
 
 
-    private static String EMPTY_SHA1 = "2jmj7l5rSw0yVb/vlWAYkK/YBwk=";
-    private static String EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-    private static String EMPTY_SHA512 = "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e";
+    private static final String EMPTY_SHA1 = "2jmj7l5rSw0yVb/vlWAYkK/YBwk=";
+    private static final String EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    private static final String EMPTY_SHA512 = "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e";
 
     private static UpdateSite.Entry buildEntryWithExpectedChecksums(String expectedSHA1, String expectedSHA256, String expectedSHA512) {
         JSONObject o = new JSONObject();
