@@ -64,6 +64,11 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 @ExportedBean
 public abstract class Cause {
     /**
+     * correlation-id of the cause (generally coming from the X-Correlation-ID HTTP Header field) 
+     */
+	private String correlationId = null; 
+	
+    /**
      * One-line human-readable text of the cause.
      *
      * <p>
@@ -71,6 +76,16 @@ public abstract class Cause {
      */
     @Exported(visibility=3)
     public abstract String getShortDescription();
+
+    @Exported(visibility = 3)
+    public String getCorrelationId() {
+    	return this.correlationId;
+    }
+    
+    public Cause setCorrelationId(final String correlationId) {
+    	this.correlationId = correlationId; 
+    	return this;
+    }
 
     /**
      * Called when the cause is registered.
