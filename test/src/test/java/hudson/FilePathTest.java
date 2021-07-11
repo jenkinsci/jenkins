@@ -222,4 +222,63 @@ public class FilePathTest {
         assertThat(simple1.exists(), is(true));
         assertThat(simple2.exists(), is(true));
     }
+
+    @Test
+    @Issue("JENKINS-66094")
+    @LocalData("ZipSlipSamePathPrefix")
+    public void zipSlipSamePathPrefix() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        // > unzip -l evil.zip
+        // good.txt
+        //  ../foo_evil.txt
+        FilePath zipFile = r.jenkins.getRootPath().child("evil.zip");
+
+        // foo_evil.txt will be extracted to unzip-target/foo_evil.txt
+        // which has the same path prefix as unzip-target/foo
+        FilePath targetLocationParent = r.jenkins.getRootPath().child("unzip-target");
+        FilePath targetLocationFoo = targetLocationParent.child("foo");
+        FilePath evilEntry = targetLocationParent.child("foo_evil.txt");
+
+        assertThat(evilEntry.exists(), is(false));
+
+        try {
+            zipFile.unzip(targetLocationFoo);
+            fail("The ../foo_evil.txt should have triggered an exception");
+        } catch(IOException e){
+            e.printStackTrace();
+            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
+        }
+
+        assertThat(evilEntry.exists(), is(false));
+    }
+
+    @Test
+    @Issue("JENKINS-66094")
+    @LocalData("ZipSlipSamePathPrefix")
+    public void zipSlipSamePathPrefixWin() throws Exception {
+        assumeTrue(Functions.isWindows());
+
+        // > unzip -l evil-win.zip
+        // good.txt
+        //  ..\foo_evil.txt
+        FilePath zipFile = r.jenkins.getRootPath().child("evil-win.zip");
+
+        // foo_evil.txt will be extracted to unzip-target\foo_evil.txt
+        // which has the same path prefix as unzip-target\foo
+        FilePath targetLocationParent = r.jenkins.getRootPath().child("unzip-target");
+        FilePath targetLocationFoo = targetLocationParent.child("foo");
+        FilePath evilEntry = targetLocationParent.child("foo_evil.txt");
+
+        assertThat(evilEntry.exists(), is(false));
+
+        try {
+            zipFile.unzip(targetLocationFoo);
+            fail("The ../foo_evil.txt should have triggered an exception");
+        } catch(IOException e){
+            assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
+        }
+
+        assertThat(evilEntry.exists(), is(false));
+    }
 }
