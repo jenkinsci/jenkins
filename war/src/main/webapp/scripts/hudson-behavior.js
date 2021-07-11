@@ -2923,18 +2923,24 @@ function applyErrorMessage(elt, rsp) {
     if (rsp.status == 200) {
         elt.innerHTML = rsp.responseText;
     } else {
-        var id = 'valerr' + (iota++);
-        elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
-        + '\').style.display=\'block\';return false">ERROR</a><div id="'
-        + id + '" style="display:none">' + rsp.responseText + '</div>';
-        var error = document.getElementById('error-description'); // cf. oops.jelly
-        if (error) {
-            var div = document.getElementById(id);
-            while (div.firstElementChild) {
-                div.removeChild(div.firstElementChild);
-            }
-            div.appendChild(error);
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(rsp.responseText, 'text/html');
+        var message = doc.querySelector('#error-description') || doc.body;
+        // Remove styles and scripts
+        var harmfulElements = doc.querySelectorAll('style, script');
+        harmfulElements.forEach(function(el) {
+            el.parentElement.removeChild(el);
+        });
+        // Clear out previous errors
+        while(elt.firstChild) {
+            elt.removeChild(elt.firstChild);
         }
+        var details = document.createElement('details');
+        var summary = document.createElement('summary');
+        summary.textContent = 'Field Validation ERROR';
+        details.appendChild(summary);
+        details.appendChild(document.adoptNode(message));
+        elt.appendChild(details);
     }
     Behaviour.applySubtree(elt);
 }
