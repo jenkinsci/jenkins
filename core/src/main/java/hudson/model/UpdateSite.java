@@ -68,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -1521,7 +1522,10 @@ public class UpdateSite {
                 return false;
             }
             // TODO: cache it in a hashset for performance improvements
-            return Arrays.asList(categories).contains(category);
+            return Arrays.stream(categories)
+                    .map(c -> c.toLowerCase(Locale.ROOT))
+                    .collect(Collectors.toSet())
+                    .contains(category.toLowerCase(Locale.ROOT));
         }
 
         /**

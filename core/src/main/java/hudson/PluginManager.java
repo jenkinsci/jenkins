@@ -123,6 +123,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -130,6 +131,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1341,41 +1343,55 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     
     @Restricted(NoExternalUse.class)
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
+        final String _query = query.toLowerCase(Locale.ROOT);
+        final boolean isWarningsQuery = _query.contains("warning:");
         List<JSONObject> plugins = new ArrayList<>();
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
             List<JSONObject> sitePlugins = site.getAvailables().stream()
                 .filter(plugin -> {
-                    if (StringUtils.isBlank(query)) {
+                    // preserve an existing feature for the "warning:" query
+                    if (isWarningsQuery && plugin.hasWarnings()) {
                         return true;
                     }
-                    return StringUtils.containsIgnoreCase(plugin.name, query) ||
-                        StringUtils.containsIgnoreCase(plugin.title, query) ||
-                        StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
-                        plugin.hasCategory(query) ||
-                        plugin.getCategoriesStream()
-                            .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
-                        plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
+                    // if the query is a category, return plugins in that category
+                    if (plugin.hasCategory(_query)) {
+                        return true;
+                    }
+                    // otherwise we need to find a specific plugin based on the query
+                    // for short queries, we want plugins whose title or name starts with the query
+                    // for longer, multi-word queries, we want any part of the title to match the query words
+                    final String _title = plugin.title.toLowerCase(Locale.ROOT);
+                    final String _name = plugin.name.toLowerCase(Locale.ROOT);
+                    switch(_query.length()) {
+                        case 0:
+                            return true;
+                        case 1:
+                        case 2:
+                        case 3: // maybe go up to 4 or 5?
+                            return _title.startsWith(_query)
+                                    || _name.startsWith(_query);
+                        default:
+                            List<String> _firstQueryWords = new LinkedList<>(Arrays.asList(_query.split("\\s+")));
+                            String _lastQueryWord = _firstQueryWords.size() > 1
+                                    ? _firstQueryWords.remove(_firstQueryWords.size() - 1)
+                                    : "";
+                            List<String> _titleWords = Arrays.asList(_title.split("\\s+"));
+                            boolean titleWordsContainQueryWord = _titleWords.stream().anyMatch(_firstQueryWords::contains);
+                            boolean aTitleWordStartsWithLastQueryWord = _lastQueryWord.length() > 1
+                                    && _titleWords.stream().anyMatch(tw -> tw.startsWith(_lastQueryWord));
+                            return _title.startsWith(_query)
+                                    || _name.startsWith(_query)
+                                    || titleWordsContainQueryWord && aTitleWordStartsWithLastQueryWord;
+                    }
                 })
                 .limit(Math.max(limit - plugins.size(), 1))
-                .sorted((o1, o2) -> {
-                    String o1DisplayName = o1.getDisplayName();
-                    if (o1.name.equalsIgnoreCase(query) ||
-                        o1DisplayName.equalsIgnoreCase(query)) {
-                        return -1;
+                .sorted((p1, p2) -> {
+                    if (_query.length() == 0 || _query.equals("warning:")) {
+                        // sort by popularity for "" and "warning" queries
+                        return Double.compare(p2.popularity, p1.popularity);
                     }
-                    String o2DisplayName = o2.getDisplayName();
-                    if (o2.name.equalsIgnoreCase(query) || o2DisplayName.equalsIgnoreCase(query)) {
-                        return 1;
-                    }
-                    if (o1.name.equals(o2.name)) {
-                        return 0;
-                    }
-                    final int pop = Double.compare(o2.popularity, o1.popularity);
-                    if (pop != 0) {
-                        return pop; // highest popularity first
-                    }
-                    return o1DisplayName.compareTo(o2DisplayName);
+                    // sort every other query by title
+                    return p1.title.toLowerCase(Locale.ROOT).compareTo(p2.title.toLowerCase(Locale.ROOT));
                 })
                 .map(plugin -> {
                     JSONObject jsonObject = new JSONObject();
