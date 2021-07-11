@@ -51,7 +51,7 @@ public class ResourceDomainTest {
 
     @Test
     public void secondDomainBasics() throws Exception {
-        JenkinsRule.WebClient webClient = j.createWebClient();
+        JenkinsRule.WebClient webClient = j.createWebClient().withJavaScriptEnabled(false);
 
         { // DBS directory listing is shown as always
             Page page = webClient.goTo("userContent");
@@ -159,7 +159,7 @@ public class ResourceDomainTest {
 
     @Test
     public void secondDomainCannotBeFaked() throws Exception {
-        JenkinsRule.WebClient webClient = j.createWebClient();
+        JenkinsRule.WebClient webClient = j.createWebClient().withJavaScriptEnabled(false);
 
         String resourceResponseUrl;
         { // first, obtain a resource response URL
