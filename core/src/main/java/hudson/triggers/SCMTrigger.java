@@ -212,7 +212,11 @@ public class SCMTrigger extends Trigger<Item> {
      * Returns the file that records the last/current polling activity.
      */
     public File getLogFile() {
-        return new File(job.getRootDir(),"scm-polling.log");
+        if (job != null) {
+            return new File(job.getRootDir(), "scm-polling.log");
+        } else {
+            return null;
+        }
     }
 
     @Extension @Symbol("pollSCM")
@@ -694,7 +698,11 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Override
         public int hashCode() {
-            return job.hashCode();
+            if (job == null) {
+                return 0;
+            } else {
+                return job.hashCode();
+            }
         }
     }
 
