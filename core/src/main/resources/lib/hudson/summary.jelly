@@ -46,8 +46,6 @@ THE SOFTWARE.
   </st:documentation>
   <j:if test="${h.hasPermission(it,attrs.permission)}">
     <j:if test="${attrs.icon!=null}">
-      <tr>
-        <td>
           <!--
             Backward compatibility.  Ugly but needed for now.
 
@@ -93,8 +91,6 @@ THE SOFTWARE.
               </j:choose>
             </j:otherwise>
           </j:choose>
-        </td>
-        <td style="vertical-align:middle">
           <j:choose>
             <j:when test="${attrs.href!=null &amp;&amp; !attrs.iconOnly}">
               <a href="${attrs.href}">
@@ -105,8 +101,6 @@ THE SOFTWARE.
               <d:invokeBody />
             </j:otherwise>
           </j:choose>
-        </td>
-      </tr>
     </j:if>
   </j:if>
 </j:jelly>

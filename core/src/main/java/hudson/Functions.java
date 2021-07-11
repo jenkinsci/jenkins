@@ -304,6 +304,7 @@ public class Functions {
         context.setVariable("resURL",rootURL+getResourcePath());
         context.setVariable("imagesURL",rootURL+getResourcePath()+"/images");
         context.setVariable("divBasedFormLayout", true);
+        context.setVariable("divBasedRunLayout", true);
         context.setVariable("userAgent", currentRequest.getHeader("User-Agent"));
         IconSet.initPageVariables(context);
     }
