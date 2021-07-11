@@ -107,6 +107,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.ByteArrayInputStream;
@@ -2027,7 +2028,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public Map<String,VersionNumber> parseRequestedPlugins(InputStream configXml) throws IOException {
         final Map<String,VersionNumber> requestedPlugins = new TreeMap<>();
         try {
-            SAXParserFactory.newInstance().newSAXParser().parse(configXml, new DefaultHandler() {
+            SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+            // this is no real issue, it is just a false positive, since jenkins handles it differently
+            // for more information check: https://github.com/jenkinsci/jenkins/pull/4779
+            String FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
+            parserFactory.setFeature(FEATURE, true);
+            parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            parserFactory.newSAXParser().parse(configXml, new DefaultHandler() {
                 @Override public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                     String plugin = attributes.getValue("plugin");
                     if (plugin == null) {
