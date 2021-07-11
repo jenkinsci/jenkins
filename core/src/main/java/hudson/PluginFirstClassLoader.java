@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +42,6 @@ import jenkins.util.AntWithFindResourceClassLoader;
  */
 public class PluginFirstClassLoader
     extends AntWithFindResourceClassLoader
-    implements Closeable
 {
 
     public PluginFirstClassLoader() {
@@ -69,13 +67,6 @@ public class PluginFirstClassLoader
     public List<URL> getURLs() 
     {
         return urls;
-    }
-    
-    @Override
-    public void close()
-        throws IOException
-    {
-        cleanup();
     }
 
     @Override
