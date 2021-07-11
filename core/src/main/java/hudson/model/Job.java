@@ -44,6 +44,7 @@ import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.search.SearchItems;
+import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
 import hudson.util.AlternativeUiTextProvider;
@@ -475,27 +476,75 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return true;
     }
 
+
+    /**
+     * Search the build by build number. This function is for search box which is at the nav bar
+     *
+     * @param token The keyword entered in the search box
+     * @param result Result list that will show on the page
+     */
+    void searchByBuildNumber(String token, List<SearchItem> result) {
+        token = token.substring(1); // ignore leading '#'
+        try {
+            int n = Integer.parseInt(token);
+            Run b = getBuildByNumber(n);
+            if (b == null)
+                return; // no such build
+            result.add(SearchItems.create("#" + n, "" + n, b));
+        } catch (NumberFormatException e) {
+            // not a number
+        }
+    }
+
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex().add(new SearchIndex() {
             @Override
             public void find(String token, List<SearchItem> result) {
-                try {
-                    if (token.startsWith("#"))
-                        token = token.substring(1); // ignore leading '#'
-                    int n = Integer.parseInt(token);
-                    Run b = getBuildByNumber(n);
-                    if (b == null)
-                        return; // no such build
-                    result.add(SearchItems.create("#" + n, "" + n, b));
-                } catch (NumberFormatException e) {
-                    // not a number.
+
+                if (token.startsWith("#")) { // Search by build number
+                    searchByBuildNumber(token, result);
+                } else { // Search by build display name
+                    boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
+                    if (isCaseSensitive)
+                        token = token.toLowerCase();
+
+                    SortedMap<Integer, ? extends RunT> runs = _getRuns();
+                    final String finalToken = token; // Variable in lambda should be final
+
+                    // Search the build and put them into result-list
+                    runs.values()
+                            .stream()
+                            .filter(run -> isCaseSensitive ?
+                                    run.getDisplayName().toLowerCase().equals(finalToken) :
+                                    run.getDisplayName().equals(finalToken)
+                            )
+                            .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
                 }
             }
 
             @Override
             public void suggest(String token, List<SearchItem> result) {
-                find(token, result);
+
+                if (token.startsWith("#")) { // Search by build number
+                    searchByBuildNumber(token, result);
+                } else { // Search by build display name
+                    boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
+                    if (isCaseSensitive)
+                        token = token.toLowerCase();
+
+                    SortedMap<Integer, ? extends RunT> runs = _getRuns();
+                    final String finalToken = token; // Variable in lambda should be final
+
+                    // Search the build and put them to result-list
+                    runs.values()
+                            .stream()
+                            .filter(run -> isCaseSensitive ?
+                                            run.getDisplayName().toLowerCase().contains(finalToken) :
+                                            run.getDisplayName().contains(finalToken)
+                                    )
+                            .forEach(run -> result.add(SearchItems.create(run.getDisplayName(), run.getUrl(), run)));
+                }
             }
         }).add("configure", "config", "configure");
     }
@@ -789,6 +838,19 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public RunT getBuildByNumber(int n) {
         return _getRuns().get(n);
+    }
+
+    public List<RunT> searchBuildByDisplayName(String displayName) {
+        SortedMap<Integer, ? extends RunT> runs = _getRuns();
+
+        List<RunT> result = new ArrayList<>();
+
+        for(Map.Entry<Integer, ? extends RunT> entry: runs.entrySet()) {
+            if (entry.getValue().getDisplayName().toLowerCase().contains(displayName.toLowerCase())) {
+                result.add(entry.getValue());
+            }
+        }
+        return result;
     }
 
     /**

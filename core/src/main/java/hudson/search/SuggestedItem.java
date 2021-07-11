@@ -26,6 +26,9 @@ package hudson.search;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * One item of a search result.
  *
@@ -43,6 +46,28 @@ public class SuggestedItem {
     public SuggestedItem(SuggestedItem parent, SearchItem item) {
         this.parent = parent;
         this.item = item;
+    }
+
+    /**
+     * Get the project name of a build.
+     * If the item is not a build, return null.
+     *
+     * @return Project name
+     */
+    public String getProjectName() {
+        String url = this.item.getSearchUrl();
+        Pattern pattern = Pattern.compile("job/([^/]*)(/[^/]+)+");
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()){
+            try {
+                return matcher.group(1);
+            } catch (IndexOutOfBoundsException e) {
+                return null; // No such group
+            }
+        }
+        else {
+            return null;
+        }
     }
 
     public String getPath() {
