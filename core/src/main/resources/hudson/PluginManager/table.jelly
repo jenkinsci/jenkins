@@ -49,7 +49,7 @@ THE SOFTWARE.
               type="text"
               id="filter-box"
               value="${request.getParameter('filter')}"
-              placeholder="${filtered == 'true' ? '%search' : '%filter'}" />
+              placeholder="${filtered == 'true' ? '%Search' : '%Filter'}" />
           <span class="plugin-manager__icon-leading">
             <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_search_24px" />
           </span>
