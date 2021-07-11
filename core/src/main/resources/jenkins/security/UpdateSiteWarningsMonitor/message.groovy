@@ -40,15 +40,6 @@ def pluginWarnings = my.activePluginWarningsByPlugin
 
 div(class: "alert alert-danger", role: "alert") {
 
-    l.isAdmin() {
-        form(method: "post", action: "${rootURL}/${my.url}/forward") {
-            if (!pluginWarnings.isEmpty()) {
-                f.submit(name: 'fix', value: _("pluginManager.link"))
-            }
-            f.submit(name: 'configure', value: _("configureSecurity.link"))
-        }
-    }
-
     text(_("blurb"))
 
     if (!coreWarnings.isEmpty()) {
@@ -72,5 +63,16 @@ div(class: "alert alert-danger", role: "alert") {
 
     if (my.hasApplicableHiddenWarnings()) {
         text(_("more"))
+    }
+
+    p {
+        l.isAdmin() {
+            form(method: "post", action: "${rootURL}/${my.url}/forward") {
+                if (!pluginWarnings.isEmpty()) {
+                    f.submit(name: 'fix', value: _("pluginManager.link"))
+                }
+                f.submit(name: 'configure', value: _("configureSecurity.link"))
+            }
+        }
     }
 }
