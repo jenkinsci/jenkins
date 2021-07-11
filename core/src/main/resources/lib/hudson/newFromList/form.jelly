@@ -54,14 +54,12 @@ THE SOFTWARE.
 
   <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
     <s:entry title="${attrs.nameTitle}">
-      <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
-                 onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
-      <script>$('name').focus();</script>
+      <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)" />
     </s:entry>
 
     <j:forEach var="descriptor" items="${descriptors}">
       <s:block>
-        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <input class="mode-radio-button" type="radio" name="mode" value="${descriptor.id}" />
         <label class="attach-previous"><b>${descriptor.displayName}</b></label>
       </s:block>
       <s:entry>
@@ -71,7 +69,7 @@ THE SOFTWARE.
     </j:forEach>
     <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
       <s:block>
-        <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <input type="radio" id="copy" name="mode" value="copy" />
         <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
       </s:block>
       <s:entry>
@@ -83,7 +81,7 @@ THE SOFTWARE.
           </j:when>
           <j:otherwise>
             <j:set var="descriptor" value="${it.descriptor}" />
-            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
+            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" />
           </j:otherwise>
         </j:choose>
       </s:entry>
@@ -99,22 +97,5 @@ THE SOFTWARE.
       <input type="submit" name="Submit" value="${%OK}" id="ok" style="margin-left:5em" />
     </s:bottomButtonBar>
   </s:form>
-  <script><![CDATA[
-    var okButton = makeButton($('ok'),null);
-
-    function updateOk(form) {
-      function state() {
-        if($('name').value.length==0)   return true;
-        var radio = form.elements['mode'];
-        if (radio.length==2)  return false; // this means we only have dummy checkboxes
-        for(i=0;i<radio.length;i++)
-          if(radio[i].checked)
-            return false;
-        return true;
-      }
-
-      okButton.set('disabled',state(),false);
-    }
-    updateOk(okButton.getForm());
-  ]]></script>
+  <st:adjunct includes="lib.hudson.newFromList.adjunct" />
 </j:jelly>

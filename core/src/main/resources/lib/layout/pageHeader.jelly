@@ -59,8 +59,8 @@
                         <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_help_outline_24px" />
                     </a>
 
-                    <div id="search-box-completion" />
-                    <script>createSearchBox("${searchURL}");</script>
+                    <div id="search-box-completion" data-search-url="${searchURL}" />
+                    <st:adjunct includes="lib.layout.search-box" />
                 </div>
             </form>
         </div>
