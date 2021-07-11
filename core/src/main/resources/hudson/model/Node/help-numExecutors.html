@@ -9,12 +9,12 @@
   the second build could take advantage of the spare I/O capacity at that
   moment.
   <p>
-  Agents (nodes that are not the master) must have at least one executor.
+  Agents (nodes that are not the built-in node) must have at least one executor.
   To temporarily prevent any builds from being executed on an agent, use the
   <i>Mark this node temporarily offline</i> button on the agent's page.
   <p>
-  For the master, set the number of executors to zero to prevent it from
-  executing builds locally.
-  <i>Note:<i> master will always be able to run flyweight tasks including
+  For the built-in node, set the number of executors to zero to prevent it from
+  executing builds locally on the controller.
+  <i>Note:<i> The built-in node will always be able to run flyweight tasks including
   Pipeline's top-level task.
 </div>

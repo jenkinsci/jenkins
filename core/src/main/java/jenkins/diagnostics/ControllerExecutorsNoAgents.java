@@ -37,7 +37,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import java.io.IOException;
 
 @Extension
-@Symbol("controllerExecutorsWithoutAgents")
+@Symbol({"executorsOnBuiltInNodeWithoutAgents", "controllerExecutorsWithoutAgents"})
 @Restricted(NoExternalUse.class)
 public class ControllerExecutorsNoAgents extends AdministrativeMonitor {
 

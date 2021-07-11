@@ -137,7 +137,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                 }
             } else {
                 event.reject(new ConnectionRefusalException(String.format(
-                        "%s is already connected to this master. Rejecting this connection.", clientName)));
+                        "%s is already connected to this controller. Rejecting this connection.", clientName)));
                 return;
             }
         }

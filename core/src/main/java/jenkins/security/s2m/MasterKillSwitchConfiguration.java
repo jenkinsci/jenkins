@@ -11,7 +11,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * Exposes {@link AdminWhitelistRule#masterKillSwitch} to the admin.
+ * Exposes {@code AdminWhitelistRule#masterKillSwitch} to the admin.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.587 / 1.580.1
@@ -38,7 +38,7 @@ public class MasterKillSwitchConfiguration extends GlobalConfiguration {
         if (isRelevant()) {
             // don't record on/off unless this becomes relevant, so that we can differentiate
             // those who have disabled vs those who haven't cared.
-            rule.setMasterKillSwitch(!json.has("masterToSlaveAccessControl"));
+            rule.setMasterKillSwitch(!json.has("agentToControllerAccessControl"));
         }
         return true;
     }

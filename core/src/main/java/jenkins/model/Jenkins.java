@@ -673,9 +673,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient Set<String> agentProtocols;
 
     /**
-     * Whitespace-separated labels assigned to the master as a {@link Node}.
+     * Whitespace-separated labels assigned to the built-in node as a {@link Node}.
      */
     private String label="";
+
+    //@SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    private static /* non-final for Groovy */ String nodeNameAndSelfLabelOverride = SystemProperties.getString(Jenkins.class.getName() + ".nodeNameAndSelfLabelOverride");
 
     /**
      * {@link hudson.security.csrf.CrumbIssuer}
@@ -861,6 +864,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private Boolean noUsageStatistics;
 
     /**
+     * If this is false, no migration is needed to reconfigure the built-in node (formerly 'master', now 'built-in').
+     * Otherwise, {@link BuiltInNodeMigration} will show up.
+     */
+    // See #readResolve for null -> true transition and #save for null -> false transition
+    @Restricted(NoExternalUse.class)
+    /* package-private */ Boolean nodeRenameMigrationNeeded;
+
+    /**
      * HTTP proxy configuration.
      */
     public transient volatile ProxyConfiguration proxy;
@@ -1031,7 +1042,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         } catch (Exception e) {
                             // Per Javadoc log exceptions but still go online.
                             // NOTE: this does not include Errors, which indicate a fatal problem
-                            LOGGER.log(WARNING, String.format("Exception in onOnline() for the computer listener %s on the Jenkins master node",
+                            LOGGER.log(WARNING, String.format("Exception in onOnline() for the computer listener %s on the built-in node",
                                     cl.getClass()), e);
                         }
                     }
@@ -1082,6 +1093,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         // no longer persisted
         installStateName = null;
+
+        if (nodeRenameMigrationNeeded == null) {
+            /* deserializing without a value set means we need to migrate */
+            nodeRenameMigrationNeeded = true;
+        }
+
         return this;
     }
 
@@ -2037,7 +2054,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @CLIResolver
     public @CheckForNull Computer getComputer(@Argument(required=true,metaVar="NAME",usage="Node name") @NonNull String name) {
-        if(name.equals("(master)"))
+        if(name.equals("(built-in)")
+                || name.equals("(master)")) // backwards compatibility for URLs
             name = "";
 
         for (Computer c : computers.values()) {
@@ -2180,7 +2198,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Returns all {@link Node}s in the system, excluding {@link Jenkins} instance itself which
-     * represents the master.
+     * represents the built-in node (in other words, this only returns agents).
      */
     @Override
     @NonNull
@@ -3213,7 +3231,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public LabelAtom getSelfLabel() {
+        if (nodeNameAndSelfLabelOverride != null) {
+            return getLabelAtom(nodeNameAndSelfLabelOverride);
+        }
+        if (getRenameMigrationDone()) {
+            return getLabelAtom("built-in");
+        }
         return getLabelAtom("master");
+    }
+
+    /* package */ boolean getRenameMigrationDone() {
+        if (nodeRenameMigrationNeeded == null) {
+            /* This is exceptionally unlikely to occur since we replace 'null' with 'true' on save */
+            return true;
+        }
+        return !nodeRenameMigrationNeeded;
+    }
+
+    /* package */ void performRenameMigration() throws IOException {
+        this.nodeRenameMigrationNeeded = false;
+        this.save();
+        this.trimLabels();
     }
 
     @Override
@@ -3469,6 +3507,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             version = VERSION;
         } else {
             LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, currentMilestone});
+        }
+
+        if (nodeRenameMigrationNeeded == null) {
+            /*
+            If we initialized this object bypassing #readResolve, i.e. a new instance,
+            we need to persist this value, otherwise on restart we'd flag this as migration needed.
+             */
+            nodeRenameMigrationNeeded = false;
         }
 
         getConfigFile().write(this);
@@ -4066,7 +4112,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
         if (toComputer() == null) {
-            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel));
+            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel)); // TODO(terminology) Built-in node? Controller? How is this used?
         }
 
         // if the result isn't available in 5 sec, ignore that.
@@ -4412,7 +4458,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
         if (Main.isUnitTest) {
-            throw new RestartNotSupportedException("Restarting the master JVM is not supported in JenkinsRule-based tests");
+            throw new RestartNotSupportedException("Restarting the controller JVM is not supported in JenkinsRule-based tests");
         }
         Lifecycle lifecycle = Lifecycle.get();
         lifecycle.verifyRestartable();
@@ -5089,7 +5135,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public String getUrl() {
-            return "computer/(master)/";
+            return "computer/(built-in)/";
         }
 
         @Override

@@ -50,7 +50,7 @@ THE SOFTWARE.
           <f:textbox />
         </f:entry>
 
-        <f:slave-mode name="master.mode" node="${it.node}"/>
+        <f:slave-mode name="builtin.mode" node="${it.node}"/>
 
         <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 
