@@ -44,7 +44,7 @@ import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.ComputerLauncher;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -132,7 +132,7 @@ public class OldRemotingAgentTest {
         }
         assertThat(sw.toString(), containsString("@@@ANNOTATED@@@"));
     }
-    private static final class RemoteConsoleNotePrinter extends MasterToSlaveCallable<Void, IOException> {
+    private static final class RemoteConsoleNotePrinter extends ControllerToAgentCallable<Void, IOException> {
         private final TaskListener listener;
         RemoteConsoleNotePrinter(TaskListener listener) {
             this.listener = listener;

@@ -60,9 +60,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import jenkins.model.ArtifactManager;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
@@ -301,7 +301,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         return false;
     }
 
-    private static final class CollectFiles extends MasterToSlaveCallable<Collection<String>, IOException> {
+    private static final class CollectFiles extends ControllerToAgentCallable<Collection<String>, IOException> {
         private static final long serialVersionUID = 1;
         private final VirtualFile root;
         CollectFiles(VirtualFile root) {
@@ -1103,7 +1103,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             return joinWithForwardSlashes(relativePath);
         }
     }
-    private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {
+    private static final class Scanner extends ControllerToAgentFileCallable<List<String>> {
         private final String includes, excludes;
         private final boolean useDefaultExcludes;
         private final String verificationRoot;
@@ -1138,7 +1138,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         }
 
     }
-    private static final class Readable extends MasterToSlaveFileCallable<Boolean> {
+    private static final class Readable extends ControllerToAgentFileCallable<Boolean> {
         @Override public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return f.canRead();
         }

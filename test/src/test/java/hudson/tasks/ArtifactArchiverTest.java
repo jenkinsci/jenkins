@@ -46,7 +46,7 @@ import java.util.List;
 import hudson.model.Run;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import jenkins.model.StandardArtifactManager;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
@@ -444,7 +444,7 @@ public class ArtifactArchiverTest {
         assertEquals("8", artifact.getLength());
     }
 
-    private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
+    private static class RemoveReadPermission extends ControllerToAgentFileCallable<Object> {
         @Override
         public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             assertTrue(f.createNewFile());

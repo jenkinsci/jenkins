@@ -24,7 +24,7 @@
 package hudson.node_monitors;
 
 import hudson.Functions;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
@@ -167,7 +167,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         private static final long serialVersionUID = 2L;
     }
 
-    protected static final class GetUsableSpace extends MasterToSlaveFileCallable<DiskSpace> {
+    protected static final class GetUsableSpace extends ControllerToAgentFileCallable<DiskSpace> {
         public GetUsableSpace() {}
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {

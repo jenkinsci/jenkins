@@ -28,7 +28,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import jenkins.MasterToSlaveFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
@@ -292,7 +292,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
     }
 
-    private static final class ListFiles extends MasterToSlaveFileCallable<Map<String,String>> {
+    private static final class ListFiles extends ControllerToAgentFileCallable<Map<String,String>> {
         private static final long serialVersionUID = 1;
         private final String includes, excludes;
         private final boolean defaultExcludes;

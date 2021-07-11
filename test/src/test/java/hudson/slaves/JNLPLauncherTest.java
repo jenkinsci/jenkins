@@ -34,7 +34,7 @@ import hudson.model.Slave;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
 
-import jenkins.security.SlaveToMasterCallable;
+import jenkins.security.AgentToControllerCallable;
 import jenkins.slaves.RemotingWorkDirSettings;
 
 import org.junit.Assume;
@@ -278,7 +278,7 @@ public class JNLPLauncherTest {
         return c;
     }
 
-    private static class NoopTask extends SlaveToMasterCallable<String,RuntimeException> {
+    private static class NoopTask extends AgentToControllerCallable<String,RuntimeException> {
         @Override
         public String call() {
             return "done";

@@ -39,7 +39,7 @@ import hudson.util.ProcessKillingVeto.VetoCause;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
-import jenkins.security.SlaveToMasterCallable;
+import jenkins.security.AgentToControllerCallable;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import jenkins.util.java.JavaUtils;
 import org.jvnet.winp.WinProcess;
@@ -209,7 +209,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             }
         return killers;
     }
-    private static class ListAll extends SlaveToMasterCallable<List<ProcessKiller>, IOException> {
+    private static class ListAll extends AgentToControllerCallable<List<ProcessKiller>, IOException> {
         @Override
         public List<ProcessKiller> call() throws IOException {
             return new ArrayList<>(ProcessKiller.all());
@@ -366,7 +366,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return new SerializedProcess(pid);
         }
         
-        private class CheckVetoes extends SlaveToMasterCallable<String, IOException> {
+        private class CheckVetoes extends AgentToControllerCallable<String, IOException> {
             private IOSProcess process;
             
             CheckVetoes(IOSProcess processToCheck) {
@@ -481,7 +481,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         return DEFAULT;
     }
     
-    private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {
+    private static class DoVetoersExist extends AgentToControllerCallable<Boolean, IOException> {
         @Override
         public Boolean call() throws IOException {
             return ProcessKillingVeto.all().size() > 0;

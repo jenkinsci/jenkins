@@ -28,7 +28,7 @@ import hudson.util.CaseInsensitiveComparator;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.VariableResolver;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 
 import java.io.File;
 import java.io.IOException;
@@ -438,7 +438,7 @@ public class EnvVars extends TreeMap<String,String> {
         return channel.call(new GetEnvVars());
     }
 
-    private static final class GetEnvVars extends MasterToSlaveCallable<EnvVars,RuntimeException> {
+    private static final class GetEnvVars extends ControllerToAgentCallable<EnvVars,RuntimeException> {
         @Override
         public EnvVars call() {
             return new EnvVars(EnvVars.masterEnvVars);

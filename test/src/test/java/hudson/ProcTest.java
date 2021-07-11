@@ -13,7 +13,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -82,7 +82,7 @@ public class ProcTest {
         return ch;
     }
 
-    private static class ChannelFiller extends MasterToSlaveCallable<Void,IOException> {
+    private static class ChannelFiller extends ControllerToAgentCallable<Void,IOException> {
         private final OutputStream o;
 
         private ChannelFiller(OutputStream o) {

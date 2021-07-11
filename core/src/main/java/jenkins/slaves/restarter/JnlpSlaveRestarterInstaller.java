@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 
 /**
  * Actual agent restart logic.
@@ -64,7 +64,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             Functions.printStackTrace(e, listener.error("Failed to install restarter"));
         }
     }
-    private static class FindEffectiveRestarters extends MasterToSlaveCallable<List<SlaveRestarter>, IOException> {
+    private static class FindEffectiveRestarters extends ControllerToAgentCallable<List<SlaveRestarter>, IOException> {
         private final List<SlaveRestarter> restarters;
         FindEffectiveRestarters(List<SlaveRestarter> restarters) {
             this.restarters = restarters;

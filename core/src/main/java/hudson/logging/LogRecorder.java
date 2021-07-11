@@ -45,7 +45,7 @@ import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.XStream2;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -284,7 +284,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
     }
 
-    private static final class SetLevel extends MasterToSlaveCallable<Void,Error> {
+    private static final class SetLevel extends ControllerToAgentCallable<Void,Error> {
         /** known loggers (kept per agent), to avoid GC */
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<>();
         private final String name;

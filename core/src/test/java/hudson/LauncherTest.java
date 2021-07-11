@@ -32,7 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.Charset;
 
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -81,7 +81,7 @@ public class LauncherTest {
             // hangs and on agent machine pgrep sleep => one process; after manual kill, script returns.
     }
 
-    private static class NoopCallable extends MasterToSlaveCallable<Object,RuntimeException> {
+    private static class NoopCallable extends ControllerToAgentCallable<Object,RuntimeException> {
         @Override
         public Object call() throws RuntimeException {
             return null;

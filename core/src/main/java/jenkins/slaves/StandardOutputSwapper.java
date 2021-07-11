@@ -9,7 +9,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.StandardOutputStream;
 import hudson.slaves.ComputerListener;
 import hudson.util.jna.GNUCLibrary;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -37,7 +37,7 @@ public class StandardOutputSwapper extends ComputerListener {
         }
     }
 
-    private static final class ChannelSwapper extends MasterToSlaveCallable<Boolean,Exception> {
+    private static final class ChannelSwapper extends ControllerToAgentCallable<Boolean,Exception> {
         @Override
         public Boolean call() throws Exception {
             if (File.pathSeparatorChar==';')    return false;   // Windows

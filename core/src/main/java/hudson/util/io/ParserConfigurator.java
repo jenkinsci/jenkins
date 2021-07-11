@@ -27,7 +27,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
 import jenkins.model.Jenkins;
-import jenkins.security.SlaveToMasterCallable;
+import jenkins.security.AgentToControllerCallable;
 import org.dom4j.io.SAXReader;
 
 import java.io.IOException;
@@ -86,7 +86,7 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
         for (ParserConfigurator pc : all)
             pc.configure(reader,context);
     }
-    private static class GetParserConfigurators extends SlaveToMasterCallable<Collection<ParserConfigurator>, IOException> {
+    private static class GetParserConfigurators extends AgentToControllerCallable<Collection<ParserConfigurator>, IOException> {
         private static final long serialVersionUID = -2178106894481500733L;
         @Override
         public Collection<ParserConfigurator> call() throws IOException {

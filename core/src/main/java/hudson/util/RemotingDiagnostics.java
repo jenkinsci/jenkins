@@ -33,7 +33,7 @@ import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -73,7 +73,7 @@ public final class RemotingDiagnostics {
         return channel.call(new GetSystemProperties());
     }
 
-    private static final class GetSystemProperties extends MasterToSlaveCallable<Map<Object,Object>,RuntimeException> {
+    private static final class GetSystemProperties extends ControllerToAgentCallable<Map<Object,Object>,RuntimeException> {
         @Override
         public Map<Object,Object> call() {
             return new TreeMap<>(System.getProperties());
@@ -93,7 +93,7 @@ public final class RemotingDiagnostics {
         return channel.callAsync(new GetThreadDump());
     }
 
-    private static final class GetThreadDump extends MasterToSlaveCallable<Map<String,String>,RuntimeException> {
+    private static final class GetThreadDump extends ControllerToAgentCallable<Map<String,String>,RuntimeException> {
         @Override
         public Map<String,String> call() {
             Map<String,String> r = new LinkedHashMap<>();
@@ -113,7 +113,7 @@ public final class RemotingDiagnostics {
         return channel.call(new Script(script));
     }
 
-    private static final class Script extends MasterToSlaveCallable<String,RuntimeException> implements DelegatingCallable<String,RuntimeException> {
+    private static final class Script extends ControllerToAgentCallable<String,RuntimeException> implements DelegatingCallable<String,RuntimeException> {
         private final String script;
         private transient ClassLoader cl;
 
@@ -159,7 +159,7 @@ public final class RemotingDiagnostics {
     public static FilePath getHeapDump(VirtualChannel channel) throws IOException, InterruptedException {
         return channel.call(new GetHeapDump());
     }
-    private static class GetHeapDump extends MasterToSlaveCallable<FilePath, IOException> {
+    private static class GetHeapDump extends ControllerToAgentCallable<FilePath, IOException> {
             @Override
             public FilePath call() throws IOException {
                 final File hprof = File.createTempFile("hudson-heapdump", "hprof");

@@ -28,7 +28,7 @@ import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelClosedException;
 import hudson.remoting.PingThread;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -91,7 +91,7 @@ public class PingThreadTest {
         }
     }
 
-    private static final class GetPid extends MasterToSlaveCallable<String, IOException> {
+    private static final class GetPid extends ControllerToAgentCallable<String, IOException> {
         @Override public String call() throws IOException {
             return ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", "");
         }

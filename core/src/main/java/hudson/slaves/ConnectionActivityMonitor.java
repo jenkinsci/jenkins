@@ -31,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.Extension;
+import jenkins.security.AgentToControllerCallable;
 import jenkins.util.SystemProperties;
-import jenkins.security.SlaveToMasterCallable;
 import org.jenkinsci.Symbol;
 
 import java.io.IOException;
@@ -106,7 +106,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     public boolean enabled = SystemProperties.getBoolean(ConnectionActivityMonitor.class.getName()+".enabled");
 
     private static final PingCommand PING_COMMAND = new PingCommand();
-    private static final class PingCommand extends SlaveToMasterCallable<Void,RuntimeException> {
+    private static final class PingCommand extends AgentToControllerCallable<Void,RuntimeException> {
         @Override
         public Void call() throws RuntimeException {
             return null;

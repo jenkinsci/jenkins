@@ -51,8 +51,8 @@ public class CallableDirectionChecker extends RoleChecker {
     public void check(RoleSensitive subject, @NonNull Collection<Role> expected) throws SecurityException {
         final String name = subject.getClass().getName();
 
-        if (expected.contains(Roles.MASTER)) {
-            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the master role", name);
+        if (expected.contains(Roles.CONTROLLER)) {
+            LOGGER.log(Level.FINE, "Executing {0} is allowed since it is targeted for the controller role", name);
             return;    // known to be safe
         }
 

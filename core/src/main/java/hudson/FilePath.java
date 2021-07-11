@@ -114,12 +114,12 @@ import java.util.regex.Pattern;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import jenkins.AgentToControllerFileCallable;
 import jenkins.FilePathFilter;
-import jenkins.MasterToSlaveFileCallable;
-import jenkins.SlaveToMasterFileCallable;
+import jenkins.ControllerToAgentFileCallable;
 import jenkins.SoloFilePathFilter;
 import jenkins.model.Jenkins;
-import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.ControllerToAgentCallable;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
@@ -1037,7 +1037,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     // this reads from arbitrary URL
-    private final class Unpack extends MasterToSlaveFileCallable<Void> {
+    private final class Unpack extends ControllerToAgentFileCallable<Void> {
         private final URL archive;
         Unpack(URL archive) {
             this.archive = archive;
@@ -1118,8 +1118,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * <strong>Warning:</strong> implementations must be serializable, so prefer a static nested class to an inner class.
      *
      * <p>
-     * Subtypes would likely want to extend from either {@link MasterToSlaveCallable}
-     * or {@link SlaveToMasterFileCallable}.
+     * Subtypes would likely want to extend from either {@link jenkins.ControllerToAgentFileCallable}
+     * or {@link jenkins.AgentToControllerFileCallable}.
      *
      * @see FilePath#act(FileCallable)
      */
@@ -1142,10 +1142,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * {@link FileCallable}s that can be executed anywhere, including the controller.
      *
-     * The code is the same as {@link SlaveToMasterFileCallable}, but used as a marker to
+     * The code is the same as {@link AgentToControllerFileCallable}, but used as a marker to
      * designate those impls that use {@link FilePathFilter}.
      */
-    /*package*/ abstract static class SecureFileCallable<T> extends SlaveToMasterFileCallable<T> {
+    /*package*/ abstract static class SecureFileCallable<T> extends AgentToControllerFileCallable<T> {
     }
 
     /**
@@ -2882,7 +2882,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return new RemoteLauncher(listener,channel,channel.call(new IsUnix()));
     }
 
-    private static final class IsUnix extends MasterToSlaveCallable<Boolean,IOException> {
+    private static final class IsUnix extends ControllerToAgentCallable<Boolean,IOException> {
         @Override
         @NonNull
         public Boolean call() throws IOException {
@@ -2939,7 +2939,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public @CheckForNull String validateAntFileMask(final String fileMasks, final int bound, final boolean caseSensitive) throws IOException, InterruptedException {
         return act(new ValidateAntFileMask(fileMasks, caseSensitive, bound));
     }
-    private class ValidateAntFileMask extends MasterToSlaveFileCallable<String> {
+    private class ValidateAntFileMask extends ControllerToAgentFileCallable<String> {
         private final String fileMasks;
         private final boolean caseSensitive;
         private final int bound;
@@ -3379,7 +3379,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public static FilePath getHomeDirectory(VirtualChannel ch) throws InterruptedException, IOException {
         return ch.call(new GetHomeDirectory());
     }
-    private static class GetHomeDirectory extends MasterToSlaveCallable<FilePath, IOException> {
+    private static class GetHomeDirectory extends ControllerToAgentCallable<FilePath, IOException> {
         @Override
         public FilePath call() throws IOException {
             return new FilePath(new File(System.getProperty("user.home")));
