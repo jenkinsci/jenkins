@@ -272,7 +272,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                             listener.getLogger().println(msg);
                         }
                     } catch (Exception e) {
-                        Functions.printStackTrace(e, listener.getLogger());
+                        if (!allowEmptyArchive) {
+                            Functions.printStackTrace(e, listener.getLogger());
+                        }
                     }
                     if (allowEmptyArchive) {
                         listener.getLogger().println(Messages.ArtifactArchiver_NoMatchFound(artifacts));
