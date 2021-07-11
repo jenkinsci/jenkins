@@ -35,7 +35,7 @@ THE SOFTWARE.
     <f:entry title="${%Description}" help="/help/parameter/description.html">
         <f:textarea name="parameter.description" value="${instance.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
-    <f:entry name="filter" title="${%Filter}" help="/help/parameter/run-filter.html">
+    <f:entry title="${%Filter}" help="/help/parameter/run-filter.html">
         <select name="filter">
             <f:option selected="${instance.filter=='ALL'}" value="ALL">${%All Builds}</f:option>
             <f:option selected="${instance.filter=='COMPLETED'}" value="COMPLETED">${%Completed Builds Only}</f:option>
