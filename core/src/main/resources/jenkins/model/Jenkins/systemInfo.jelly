@@ -38,6 +38,10 @@ THE SOFTWARE.
             <h1>${%Environment Variables}</h1>
             <t:propertyTable items="${h.envVars}" />
         </l:hasPermission>
+        <l:hasPermission permission="${app.SYSTEM_READ}">
+            <st:include page="_systemProperties.groovy"/>
+        </l:hasPermission>
+
         <h1>${%Plugins}</h1>
         <table class="pane sortable bigtable">
           <j:choose>

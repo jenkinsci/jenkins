@@ -32,13 +32,17 @@ import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.slaves.ComputerListener;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
@@ -84,6 +88,77 @@ public class SystemProperties {
     private interface Handler {
         @CheckForNull
         String getString(String key);
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static class Access {
+        public Instant lastAccessTime;
+        public long accessCount;
+        public String lastAccessValue;
+        public boolean nonDefaultValue;
+        public final Set<StackTraceElement> accessingCode = new CopyOnWriteArraySet<>();
+
+        private Access(Instant lastAccessTime, String lastAccessValue, boolean set) {
+            this.lastAccessTime = lastAccessTime;
+            this.lastAccessValue = lastAccessValue;
+            this.nonDefaultValue = set;
+        }
+
+        private synchronized Access accessedBy(StackTraceElement ste, Instant now) {
+            if (ste != null) {
+                accessingCode.add(ste);
+            }
+            accessCount += 1;
+            lastAccessTime = now;
+            return this;
+        }
+
+        private synchronized Access accessedBy(StackTraceElement ste, Instant now, String value, boolean set) {
+            if (ste != null) {
+                accessingCode.add(ste);
+            }
+            accessCount += 1;
+            lastAccessTime = now;
+            lastAccessValue = value;
+            nonDefaultValue = set;
+            return this;
+        }
+
+        private static Access updating(Access access, String value, boolean set) {
+            final Instant now = Instant.now();
+            final StackTraceElement caller = findAccessingCall();
+            if (access == null) {
+                return new Access(now, value, set).accessedBy(caller, now);
+            }
+            return access.accessedBy(caller, now, value, set);
+        }
+    }
+
+    private static final Map<String, Access> accesses = new ConcurrentHashMap<>();
+
+    private static String recordingAccess(String property, String value, boolean set) {
+        if (JenkinsJVM.isJenkinsJVM()) {
+            accesses.compute(property, (k, v) -> Access.updating(v, value, set));
+        }
+        return value;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Map<String, Access> getAccesses() {
+        return new HashMap<>(accesses);
+    }
+
+    private static StackTraceElement findAccessingCall() {
+        Exception e = new Exception();
+        StackTraceElement firstOutsideThisClass = null;
+        for (StackTraceElement ste : e.getStackTrace()) {
+            if (ste.getClassName().startsWith(SystemProperties.class.getName())) {
+                firstOutsideThisClass = null;
+            } else if (firstOutsideThisClass == null) {
+                firstOutsideThisClass = ste;
+            }
+        }
+        return firstOutsideThisClass;
     }
 
     private static final Handler NULL_HANDLER = key -> null;
@@ -228,7 +303,7 @@ public class SystemProperties {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (system): {0} => {1}", new Object[] {key, value});
             }
-            return value;
+            return recordingAccess(key, value, true);
         } 
         
         value = handler.getString(key);
@@ -236,14 +311,14 @@ public class SystemProperties {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (context): {0} => {1}", new Object[]{key, value});
             }
-            return value;
+            return recordingAccess(key, value, true);
         }
         
         value = def;
         if (LOGGER.isLoggable(logLevel)) {
             LOGGER.log(logLevel, "Property (default): {0} => {1}", new Object[] {key, value});
         }
-        return value;
+        return recordingAccess(key, value, false);
     }
 
     /**
@@ -279,12 +354,9 @@ public class SystemProperties {
       * @return  the {@code boolean} value of the system property.
       */
     public static boolean getBoolean(String name, boolean def) {
-        String v = getString(name);
+        String v = getString(name, Boolean.toString(def));
        
-        if (v != null) {
-            return Boolean.parseBoolean(v);
-        }
-        return def;
+        return Boolean.parseBoolean(v);
     }
 
     /**
@@ -351,7 +423,7 @@ public class SystemProperties {
       *          Result may be {@code null} only if the default value is {@code null}.
       */
     public static Integer getInteger(String name, Integer def, Level logLevel) {
-        String v = getString(name);
+        String v = getString(name, def == null ? null : def.toString());
        
         if (v != null) {
             try {
@@ -415,7 +487,7 @@ public class SystemProperties {
       *          Result may be {@code null} only if the default value is {@code null}.
       */
     public static Long getLong(String name, Long def, Level logLevel) {
-        String v = getString(name);
+        String v = getString(name, def == null ? null : def.toString());
        
         if (v != null) {
             try {
