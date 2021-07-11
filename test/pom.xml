@@ -129,7 +129,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.50</version>
+      <version>1.51</version>
       <scope>test</scope>
     </dependency>
     <dependency>
