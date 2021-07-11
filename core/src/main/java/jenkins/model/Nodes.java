@@ -42,7 +42,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -306,12 +305,8 @@ public class Nodes implements Saveable {
             xmlFile.write(n);
             SaveableListener.fireOnChange(this, xmlFile);
         }
-        for (File forDeletion : nodesDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && !existing.contains(pathname.getName());
-            }
-        })) {
+        for (File forDeletion : nodesDir.listFiles(pathname ->
+                pathname.isDirectory() && !existing.contains(pathname.getName()))) {
             Util.deleteRecursive(forDeletion);
         }
     }
@@ -334,12 +329,7 @@ public class Nodes implements Saveable {
      */
     public void load() throws IOException {
         final File nodesDir = getNodesDir();
-        final File[] subdirs = nodesDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File child) {
-                return child.isDirectory();
-            }
-        });
+        final File[] subdirs = nodesDir.listFiles(File::isDirectory);
         final Map<String, Node> newNodes = new TreeMap<>();
         if (subdirs != null) {
             for (File subdir : subdirs) {

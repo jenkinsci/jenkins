@@ -52,9 +52,6 @@ public interface Saveable {
      * {@link Saveable} that doesn't save anything.
      * @since 1.301.
      */
-    Saveable NOOP = new Saveable() {
-        @Override
-        public void save() throws IOException {
-        }
+    Saveable NOOP = () -> {
     };
 }
