@@ -24,6 +24,7 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.Jenkins;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
@@ -44,6 +45,9 @@ public interface AccessControlled {
      * Convenient short-cut for {@code getACL().checkPermission(permission)}
      */
     default void checkPermission(@NonNull Permission permission) throws AccessDeniedException {
+        if (Jenkins.getAuthentication2().equals(ACL.SYSTEM2)) {
+            return;
+        }
         getACL().checkPermission(permission);
     }
 
@@ -61,6 +65,9 @@ public interface AccessControlled {
      * Convenient short-cut for {@code getACL().hasPermission(permission)}
      */
     default boolean hasPermission(@NonNull Permission permission) {
+        if (Jenkins.getAuthentication2().equals(ACL.SYSTEM2)) {
+            return true;
+        }
         return getACL().hasPermission(permission);
     }
 
