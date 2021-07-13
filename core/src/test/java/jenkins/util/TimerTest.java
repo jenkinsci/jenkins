@@ -78,7 +78,7 @@ public class TimerTest {
                                 startLatch.countDown();
                                 contextClassloaders[j] = Thread.currentThread().getContextClassLoader();
                             } catch (Exception ex) {
-                                throw  new RuntimeException(ex);
+                                throw new RuntimeException(ex);
                             }
                         }
                     }, 0, TimeUnit.SECONDS);
