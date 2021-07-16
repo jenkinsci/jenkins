@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
 
 import jenkins.model.Jenkins;
 
@@ -57,17 +56,13 @@ public class ListJobsCommandTest {
     }
 
     @Test
-    public void failForNonexistingName() throws Exception {
+    public void failForNonexistentName() {
 
         when(jenkins.getView("NoSuchViewOrItemGroup")).thenReturn(null);
         when(jenkins.getItemByFullName("NoSuchViewOrItemGroup")).thenReturn(null);
 
-        try {
-            runWith("NoSuchViewOrItemGroup");
-            fail("Exception should be thrown in the previous call.");
-        } catch (IllegalArgumentException e) { // Expected
-            assertThat(e.getMessage(), containsString("No view or item group with the given name 'NoSuchViewOrItemGroup' found."));
-        }
+        final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> runWith("NoSuchViewOrItemGroup"));
+        assertThat(e.getMessage(), containsString("No view or item group with the given name 'NoSuchViewOrItemGroup' found."));
         assertThat(stdout, is(empty()));
     }
 
