@@ -2937,7 +2937,7 @@ function applyErrorMessage(elt, rsp) {
         }
         var details = document.createElement('details');
         var summary = document.createElement('summary');
-        summary.textContent = 'Field Validation ERROR';
+        summary.textContent = 'Error validating this field';
         details.appendChild(summary);
         details.appendChild(document.adoptNode(message));
         elt.appendChild(details);
