@@ -3,7 +3,7 @@
  */
 function buildTimeTrend_displayBuilds(data) {
 	var p = document.getElementById('trend');
-	var isMasterSlaveEnabled = 'true' === p.getAttribute("data-is-master-slave-enabled");
+	var isMasterSlaveEnabled = 'true' === p.getAttribute("data-is-distributed-build-enabled");
 	var imagesURL = document.head.getAttribute('data-imagesurl');
 	var rootURL = document.head.getAttribute('data-rooturl');
 	
