@@ -74,7 +74,7 @@ import jenkins.util.SystemProperties;
  */
 @Extension
 public class UsageStatistics extends PageDecorator implements PersistentDescriptor {
-    private final Logger LOG = Logger.getLogger(UsageStatistics.class.getName());
+    private final static Logger LOG = Logger.getLogger(UsageStatistics.class.getName());
     
     private final String keyImage;
 
