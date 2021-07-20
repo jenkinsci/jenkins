@@ -130,7 +130,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
 
         @Override
         public boolean containsKey(Object key) {
-            return ( get( key ) != null );
+            return get(key) != null;
         }
 
         @Override

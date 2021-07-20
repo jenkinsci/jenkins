@@ -23,9 +23,9 @@
  */
 package jenkins.tools;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
@@ -108,8 +108,9 @@ public class GlobalToolConfiguration extends ManagementLink {
         return d.configure(req, js);
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.TODO")
+    public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
 
     private static final Logger LOGGER = Logger.getLogger(GlobalToolConfiguration.class.getName());
 }

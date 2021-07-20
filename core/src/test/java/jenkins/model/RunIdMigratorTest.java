@@ -37,11 +37,12 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import org.junit.Before;
@@ -53,9 +54,16 @@ public class RunIdMigratorTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
+    private static TimeZone defaultTimezone;
+
     /** Ensures that legacy timestamps are interpreted in a predictable time zone. */
     @BeforeClass public static void timezone() {
-        TimeZone.setDefault(TimeZone.getTimeZone("EST"));
+        defaultTimezone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
+    }
+
+    @AfterClass public static void tearDown() {
+        TimeZone.setDefault(defaultTimezone);
     }
 
     // TODO could use LoggerRule only if it were extracted to an independent library
@@ -199,12 +207,7 @@ public class RunIdMigratorTest {
         File dest = new File(tmp.getRoot(), "dest");
         RunIdMigrator.move(src, dest);
         File dest2 = tmp.newFile();
-        try {
-            RunIdMigrator.move(dest, dest2);
-            fail();
-        } catch (IOException x) {
-            System.err.println("Got expected move exception: " + x);
-        }
+        assertThrows(IOException.class, () -> RunIdMigrator.move(dest, dest2));
     }
 
 }

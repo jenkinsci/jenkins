@@ -167,7 +167,7 @@ public class SimpleBuildWrapperTest {
             private static final long serialVersionUID = 1;
             private int tearDownCount = 0;
             @Override public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-                listener.getLogger().println("ran DisposerImpl #" + (++tearDownCount));
+                listener.getLogger().println("ran DisposerImpl #" + ++tearDownCount);
             }
         }
         @TestExtension({ "disposer", "failedJobWithInterruptedDisposer" }) public static class DescriptorImpl extends BuildWrapperDescriptor {

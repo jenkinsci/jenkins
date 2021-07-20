@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -104,7 +103,7 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
 
         final Map<Computer,T> data = new HashMap<>();
 
-        for (Entry<Computer, Future<T>> e : futures.entrySet()) {
+        for (Map.Entry<Computer, Future<T>> e : futures.entrySet()) {
             Computer c = e.getKey();
             Future<T> f = futures.get(c);
             data.put(c, null);  // sentinel value

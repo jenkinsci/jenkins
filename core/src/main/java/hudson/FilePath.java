@@ -121,6 +121,7 @@ import jenkins.SoloFilePathFilter;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -152,7 +153,7 @@ import org.apache.tools.ant.BuildException;
  *
  * <p>
  * Unlike {@link File}, which always implies a file path on the current computer,
- * {@link FilePath} represents a file path on a specific agent or the master.
+ * {@link FilePath} represents a file path on a specific agent or the controller.
  *
  * Despite that, {@link FilePath} can be used much like {@link File}. It exposes
  * a bunch of operations (and we should add more operations as long as they are
@@ -171,7 +172,7 @@ import org.apache.tools.ant.BuildException;
  * it makes more sense to move some computation closer to the data, as opposed to
  * move the data to the computation. For example, if you are just computing a MD5
  * digest of a file, then it would make sense to do the digest on the host where
- * the file is located, as opposed to send the whole data to the master and do MD5
+ * the file is located, as opposed to send the whole data to the controller and do MD5
  * digesting there.
  *
  * <p>
@@ -220,21 +221,21 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * When this {@link FilePath} represents the remote path,
-     * this field is always non-null on master (the field represents
+     * this field is always non-null on the controller (the field represents
      * the channel to the remote agent.) When transferred to a agent via remoting,
      * this field reverts back to null, since it's transient.
      *
-     * When this {@link FilePath} represents a path on the master,
-     * this field is null on master. When transferred to a agent via remoting,
+     * When this {@link FilePath} represents a path on the controller,
+     * this field is null on the controller. When transferred to a agent via remoting,
      * this field becomes non-null, representing the {@link Channel}
-     * back to the master.
+     * back to the controller.
      *
-     * This is used to determine whether we are running on the master or the agent.
+     * This is used to determine whether we are running on the controller / the built-in node, or an agent.
      */
     private transient VirtualChannel channel;
     
     /**
-     * Represent the path to the file in the master or the agent
+     * Represent the path to the file in the controller or the agent
      * Since the platform of the agent might be different, can't use java.io.File
      *
      * The field could not be final since it's modified in {@link #readResolve()}
@@ -526,7 +527,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     @Restricted(NoExternalUse.class)
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner,
                        String verificationRoot, boolean noFollowLinks) throws IOException, InterruptedException {
-        final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
+        final OutputStream out = channel != null ? new RemoteOutputStream(os) : os;
         return act(new Archive(factory, out, scanner, verificationRoot, noFollowLinks));
     }
     private class Archive extends SecureFileCallable<Integer> {
@@ -1139,7 +1140,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * {@link FileCallable}s that can be executed anywhere, including the master.
+     * {@link FileCallable}s that can be executed anywhere, including the controller.
      *
      * The code is the same as {@link SlaveToMasterFileCallable}, but used as a marker to
      * designate those impls that use {@link FilePathFilter}.
@@ -1176,7 +1177,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * This extension point allows to contribute a wrapper around a fileCallable so that a plugin can "intercept" a
      * call.
-     * <p>The {@link #wrap(hudson.remoting.DelegatingCallable)} method itself will be executed on master
+     * <p>The {@link #wrap(hudson.remoting.DelegatingCallable)} method itself will be executed on the controller
      * (and may collect contextual data if needed) and the returned wrapper will be executed on remote.
      *
      * @since 1.482
@@ -2023,6 +2024,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * List up files in this directory that matches the given Ant-style filter.
      *
      * @param includes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @param excludes
      *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @return
@@ -2038,6 +2040,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * List up files in this directory that matches the given Ant-style filter.
      *
      * @param includes
+     *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @param excludes
      *      See {@link FileSet} for the syntax. String like "foo/*.zip" or "foo/*&#42;/*.xml"
      * @param defaultExcludes whether to use the ant default excludes
@@ -2918,7 +2921,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.592
      */
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
+    public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.

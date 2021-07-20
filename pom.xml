@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.63</version>
+    <version>1.65</version>
     <relativePath />
   </parent>
 
@@ -69,7 +69,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.296</revision>
+    <revision>2.303</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -90,7 +90,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>4.8</remoting.version>
+    <remoting.version>4.10</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>3.14</remoting.minimum.supported.version>
 
@@ -104,7 +104,7 @@ THE SOFTWARE.
     <access-modifier-checker.version>1.21</access-modifier-checker.version>
     <junit.jupiter.version>5.7.2</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.11.1</spotless.version>
+    <spotless.version>2.12.1</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -132,7 +132,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>3.10.0</version>
+        <version>3.11.2</version>
       </dependency>
 
       <dependency>
@@ -432,7 +432,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.42</version>
+              <version>8.44</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->

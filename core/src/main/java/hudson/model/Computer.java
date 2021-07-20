@@ -142,7 +142,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
  * This object is related to {@link Node} but they have some significant differences.
  * {@link Computer} primarily works as a holder of {@link Executor}s, so
  * if a {@link Node} is configured (probably temporarily) with 0 executors,
- * you won't have a {@link Computer} object for it (except for the master node,
+ * you won't have a {@link Computer} object for it (except for the built-in node,
  * which always gets its {@link Computer} in case we have no static executors and
  * we need to run a {@link FlyweightTask} - see JENKINS-7291 for more discussion.)
  *
@@ -489,7 +489,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Disconnect this computer.
      *
-     * If this is the master, no-op. This method may return immediately
+     * If this is the built-in node, no-op. This method may return immediately
      * while the launch operation happens asynchronously.
      *
      * @param cause
@@ -791,7 +791,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
+        return node != null ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -799,7 +799,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
+        return node != null ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
@@ -1088,7 +1088,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public @NonNull String getDescription() {
         Node node = getNode();
-        return (node != null) ? node.getNodeDescription() : "";
+        return node != null ? node.getNodeDescription() : "";
     }
 
 
@@ -1506,7 +1506,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new ServletException("No such node " + nodeName);
         }
 
-        if ((!proposedName.equals(nodeName))
+        if (!proposedName.equals(nodeName)
                 && Jenkins.get().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
@@ -1624,7 +1624,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
      * Gets the current {@link Computer} that the build is running.

@@ -87,7 +87,7 @@ public abstract class RepositoryBrowser<E extends ChangeLogSet.Entry> extends Ab
 
         // normalize
         String q = url.getQuery();
-        q = q!=null?('?'+q):"";
+        q = q != null ? '?' + q : "";
         try {
             return new URL(url,url.getPath()+'/'+q);
         } catch (MalformedURLException e) {

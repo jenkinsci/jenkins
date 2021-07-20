@@ -3,7 +3,8 @@ package hudson.model;
 import hudson.EnvVars;
 import hudson.model.queue.SubTask;
 import hudson.tasks.BuildWrapper;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -112,7 +113,7 @@ public class ParametersActionTest {
         assertEquals(2, vars.size());   
         parametersAction.createVariableResolver(build);
         
-        LinkedList<BuildWrapper> wrappers = new LinkedList<>();
+        List<BuildWrapper> wrappers = new ArrayList<>();
         parametersAction.createBuildWrappers(build, wrappers);
         assertEquals(0, wrappers.size());
         

@@ -492,7 +492,7 @@ public final class CronTab {
      */
     public @CheckForNull String checkSanity() {
         OUTER: for (int i = 0; i < 5; i++) {
-            long bitMask = (i<4)?bits[i]:(long)dayOfWeek;
+            long bitMask = i < 4 ? bits[i] : (long) dayOfWeek;
             for( int j=BaseParser.LOWER_BOUNDS[i]; j<=BaseParser.UPPER_BOUNDS[i]; j++ ) {
                 if(!checkBits(bitMask,j)) {
                     // this rank has a sparse entry.

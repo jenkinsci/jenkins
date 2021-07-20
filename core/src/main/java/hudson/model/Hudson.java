@@ -306,7 +306,7 @@ public class Hudson extends Jenkins {
      */
     @Deprecated
     public static boolean isAdmin() {
-        return Jenkins.get().getACL().hasPermission(ADMINISTER);
+        return Jenkins.get().hasPermission(ADMINISTER);
     }
 
     /**

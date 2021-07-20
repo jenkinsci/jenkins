@@ -87,6 +87,11 @@ THE SOFTWARE.
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <exclusions>
+        <exclusion>
+          <!-- Provided by spring-aop via spring-security-web -->
+          <groupId>aopalliance</groupId>
+          <artifactId>aopalliance</artifactId>
+        </exclusion>
         <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
@@ -97,11 +102,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.connectbot.jbcrypt</groupId>
       <artifactId>jbcrypt</artifactId>
-    </dependency>
-    <dependency> <!-- for compatibility only; all new code should use JNR. Not included into BOM due to the same reason -->
-      <groupId>org.jruby.ext.posix</groupId>
-      <artifactId>jna-posix</artifactId>
-      <version>1.0.3-jenkins-1</version>
     </dependency>
     <dependency>
       <groupId>com.github.jnr</groupId>
@@ -214,10 +214,6 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
-      <artifactId>bytecode-compatibility-transformer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
       <artifactId>task-reactor</artifactId>
     </dependency>
     <dependency>
@@ -276,16 +272,6 @@ THE SOFTWARE.
     <dependency><!-- hudson doesn't use this directly, but some plugins wanted to use the latest -->
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-digester</groupId>
-      <artifactId>commons-digester</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
@@ -468,6 +454,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>javax.xml.stream</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -484,6 +477,13 @@ THE SOFTWARE.
     <dependency><!-- StAX implementation. See JENKINS-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>stax</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>

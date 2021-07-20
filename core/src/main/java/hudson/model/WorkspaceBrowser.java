@@ -34,7 +34,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
  * Allows to access a workspace as an alternative to online build node.
  * <p>
  * Primary use case is {@link hudson.slaves.Cloud} implementations that don't keep the agent
- * online to browse workspace, but maintain a copy of node workspace on master.
+ * online to browse workspace, but maintain a copy of node workspace on the controller.
  *
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @since 1.502
@@ -45,7 +45,6 @@ public abstract class WorkspaceBrowser implements ExtensionPoint {
 
     /**
      * Provide access to job's workspace
-     * @param job
      * @return {@code null} if this WorkspaceBrowser don't have a workspace for this job
      */
     public abstract @CheckForNull FilePath getWorkspace(Job job);

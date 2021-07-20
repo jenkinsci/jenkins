@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
 
 /**
@@ -110,7 +109,7 @@ public class BackFiller extends LoadPredictor {
 
             // figure out how many executors we need on each computer?
             Map<Computer,Integer> footprint = new HashMap<>();
-            for (Entry<WorkChunk, ExecutorChunk> e : m.toMap().entrySet()) {
+            for (Map.Entry<WorkChunk, ExecutorChunk> e : m.toMap().entrySet()) {
                 Computer c = e.getValue().computer;
                 Integer v = footprint.get(c);
                 if (v==null)    v = 0;
@@ -130,7 +129,7 @@ public class BackFiller extends LoadPredictor {
 
             // now, based on the real predicted loads, figure out the approximation of when we can
             // start executing this guy.
-            for (Entry<Computer, Integer> e : footprint.entrySet()) {
+            for (Map.Entry<Computer, Integer> e : footprint.entrySet()) {
                 Computer computer = e.getKey();
                 Timeline timeline = new Timeline();
                 for (LoadPredictor lp : LoadPredictor.all()) {

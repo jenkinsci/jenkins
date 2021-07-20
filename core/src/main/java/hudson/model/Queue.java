@@ -76,7 +76,6 @@ import hudson.triggers.SafeTimerTask;
 import java.util.concurrent.TimeUnit;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
-import hudson.util.ConsistentHash.Hash;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,7 +113,6 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.util.AtmostOneTaskExecutor;
-import org.jenkinsci.bytecode.AdaptField;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -613,7 +611,7 @@ public class Queue extends ResourceController implements Saveable {
                     shouldScheduleItem |= action.shouldSchedule(actions);
                 }
                 for (QueueAction action : Util.filter(actions, QueueAction.class)) {
-                    shouldScheduleItem |= action.shouldSchedule((new ArrayList<>(item.getAllActions())));
+                    shouldScheduleItem |= action.shouldSchedule(new ArrayList<>(item.getAllActions()));
                 }
                 if (!shouldScheduleItem) {
                     duplicatesInQueue.add(item);
@@ -749,6 +747,9 @@ public class Queue extends ResourceController implements Saveable {
     @RequirePOST
     public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
+        if (item != null && !hasReadPermission(item, true)) {
+            item = null;
+        }
         if (item != null) {
             if(item.hasCancelPermission()){
                 if(cancel(item)) {
@@ -800,14 +801,27 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<Item> checkPermissionsAndAddToList(List<Item> r, Item t) {
-        if (t.task instanceof AccessControlled) {
-            AccessControlled taskAC = (AccessControlled) t.task;
-            if (taskAC.hasPermission(hudson.model.Item.READ)
-                    || taskAC.hasPermission(Permission.READ)) {
-                r.add(t);
-            }
+        // TODO Changing the second arg to 'true' should reveal some tasks currently hidden for no obvious reason
+        if (hasReadPermission(t.task, false)) {
+            r.add(t);
         }
         return r;
+    }
+
+    private static boolean hasReadPermission(Item t, boolean valueIfNotAccessControlled) {
+        return hasReadPermission(t.task, valueIfNotAccessControlled);
+    }
+
+    private static boolean hasReadPermission(Queue.Task t, boolean valueIfNotAccessControlled) {
+        if (t instanceof AccessControlled) {
+            AccessControlled taskAC = (AccessControlled) t;
+            if (taskAC.hasPermission(hudson.model.Item.READ)
+                    || taskAC.hasPermission(Permission.READ)) { // TODO should be unnecessary given the 'implies' relationship
+                return true;
+            }
+            return false;
+        }
+        return valueIfNotAccessControlled;
     }
 
     /**
@@ -1780,7 +1794,7 @@ public class Queue extends ResourceController implements Saveable {
         };
     }
 
-    private static final Hash<Node> NODE_HASH = Node::getNodeName;
+    private static final ConsistentHash.Hash<Node> NODE_HASH = Node::getNodeName;
 
     private boolean makePending(BuildableItem p) {
         // LOGGER.info("Making "+p.task+" pending"); // REMOVE
@@ -2100,7 +2114,6 @@ public class Queue extends ResourceController implements Saveable {
          * Unique ID (per master) that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item} and into any subsequent
          * {@link Run} instance (see {@link Run#getQueueId()}).
-         * @return
          * @since 1.601
          */
         @Exported
@@ -2108,7 +2121,6 @@ public class Queue extends ResourceController implements Saveable {
             return id;
         }
 
-        @AdaptField(was=int.class, name="id")
         @Deprecated
         public int getIdLegacy() {
             if (id > Integer.MAX_VALUE) {

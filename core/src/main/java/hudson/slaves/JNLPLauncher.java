@@ -52,7 +52,7 @@ import org.kohsuke.stapler.QueryParameter;
 */
 public class JNLPLauncher extends ComputerLauncher {
     /**
-     * If the agent needs to tunnel the connection to the master,
+     * If the agent needs to tunnel the connection to the controller,
      * specify the "host:port" here. This can include the special
      * syntax "host:" and ":port" to indicate the default host/port
      * shall be used.

@@ -73,7 +73,7 @@ public class AgentProtocolTest {
         Set<String> agentProtocols = jenkins.getAgentProtocols();
         List<String> failedChecks = new ArrayList<>();
         for (String protocol : protocolNames) {
-            if (shouldBeEnabled && !(agentProtocols.contains(protocol))) {
+            if (shouldBeEnabled && !agentProtocols.contains(protocol)) {
                 failedChecks.add(protocol);
             }
             if (!shouldBeEnabled && agentProtocols.contains(protocol)) {

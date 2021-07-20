@@ -110,7 +110,6 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
-import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -231,7 +230,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * List of all {@link Trigger}s for this project.
      */
-    @AdaptField(was=List.class)
     protected volatile DescribableList<Trigger<?>,TriggerDescriptor> triggers = new DescribableList<>(this);
     private static final AtomicReferenceFieldUpdater<AbstractProject,DescribableList> triggersUpdater
             = AtomicReferenceFieldUpdater.newUpdater(AbstractProject.class,DescribableList.class,"triggers");
@@ -1836,7 +1834,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public DirectoryBrowserSupport doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(Item.WORKSPACE);
         FilePath ws = getSomeWorkspace();
-        if ((ws == null) || (!ws.exists())) {
+        if (ws == null || !ws.exists()) {
             // if there's no workspace, report a nice error message
             // Would be good if when asked for *plain*, do something else!
             // (E.g. return 404, or send empty doc.)
