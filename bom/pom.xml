@@ -266,7 +266,7 @@ THE SOFTWARE.
       <dependency><!-- StAX implementation. See JENKINS-2547. -->
         <groupId>org.codehaus.woodstox</groupId>
         <artifactId>wstx-asl</artifactId>
-        <version>3.2.9</version>
+        <version>4.0.0</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
