@@ -107,10 +107,6 @@ THE SOFTWARE.
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
     <!--
       For compatibility only; not included into the BOM for the same reason. TODO once
       https://github.com/jenkinsci/scm-api-plugin/pull/88 is widely adopted, this

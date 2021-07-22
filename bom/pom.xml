@@ -194,11 +194,6 @@ THE SOFTWARE.
         <version>3.1.7</version>
       </dependency>
       <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>9.1</version>
-      </dependency>
-      <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>windows-package-checker</artifactId>
         <version>1.2</version>
