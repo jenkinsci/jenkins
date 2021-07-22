@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 
   <properties>
-    <slf4jVersion>1.7.31</slf4jVersion>
+    <slf4jVersion>1.7.32</slf4jVersion>
     <stapler.version>1563.v3da2d02f9572</stapler.version>
     <groovy.version>2.4.12</groovy.version>
   </properties>
@@ -66,7 +66,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.10</version>
+        <version>1.10.11</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -192,11 +192,6 @@ THE SOFTWARE.
         <groupId>com.github.jnr</groupId>
         <artifactId>jnr-posix</artifactId>
         <version>3.1.7</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>9.1</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
