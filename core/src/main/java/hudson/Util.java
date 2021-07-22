@@ -1805,16 +1805,4 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
-
-    /**
-     * If this flag is true, native implementations of {@link FilePath#chmod}
-     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
-     * <p>
-     * This should only be enabled if the setgid/setuid/sticky bits are
-     * intentionally set on the Jenkins installation and they are being
-     * overwritten by Jenkins erroneously.
-     */
-    @Restricted(value = NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

@@ -35,7 +35,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -1895,11 +1894,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         // Anyway the existing calls already skip this method if on Windows.
         if (File.pathSeparatorChar==';')  return; // noop
 
-        if (Util.NATIVE_CHMOD_MODE) {
-            PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
-        } else {
-            Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
-        }
+        Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
     }
 
     private static boolean CHMOD_WARNED = false;
