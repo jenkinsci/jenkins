@@ -104,7 +104,7 @@ THE SOFTWARE.
     <access-modifier-checker.version>1.21</access-modifier-checker.version>
     <junit.jupiter.version>5.7.2</junit.jupiter.version>
     <powermock.version>2.0.9</powermock.version>
-    <spotless.version>2.12.1</spotless.version>
+    <spotless.version>2.12.2</spotless.version>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
