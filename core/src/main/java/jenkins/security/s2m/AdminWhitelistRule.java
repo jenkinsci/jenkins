@@ -162,7 +162,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     @RequirePOST
     public HttpResponse doSubmit(StaplerRequest req) throws IOException {
         StringBuilder whitelist = new StringBuilder(Util.fixNull(req.getParameter("whitelist")));
-        if ((whitelist.length() > 0) && (whitelist.charAt(whitelist.length() - 1) != '\n'))
+        if (whitelist.length() > 0 && whitelist.charAt(whitelist.length() - 1) != '\n')
             whitelist.append("\n");
 
         Enumeration e = req.getParameterNames();

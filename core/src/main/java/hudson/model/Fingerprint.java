@@ -374,25 +374,6 @@ public class Fingerprint implements ModelObject, Saveable {
             };
         }
 
-//        /**
-//         * List up builds.
-//         */
-//        public <J extends Job<J,R>,R extends Run<J,R>>  Iterable<R> listBuilds(final J job) {
-//            return new Iterable<R>() {
-//                public Iterator<R> iterator() {
-//                    return new Iterators.FilterIterator<R>(new AdaptedIterator<Integer,R>(listNumbers().iterator()) {
-//                        protected R adapt(Integer n) {
-//                            return job.getBuildByNumber(n);
-//                        }
-//                    }) {
-//                        protected boolean filter(R r) {
-//                            return r!=null;
-//                        }
-//                    };
-//                }
-//            };
-//        }
-
         /**
          * List all numbers in this range set in the descending order.
          */
@@ -1436,7 +1417,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     @Override public String toString() {
-        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + ((usages == null) ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
+        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + (usages == null ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
     }
     
     /**

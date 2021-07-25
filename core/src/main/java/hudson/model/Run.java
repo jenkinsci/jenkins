@@ -1010,7 +1010,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         RunT r = _this();
         while (r != null && builds.size() < numberOfBuilds) {
             if (!r.isBuilding() &&
-                 (r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold))) {
+                 r.getResult() != null && r.getResult().isBetterOrEqualTo(threshold)) {
                 builds.add(r);
             }
             r = r.getPreviousBuild();
@@ -1205,7 +1205,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             String childPath = path + child;
             String childHref = pathHref + Util.rawEncode(child);
             String length = sub.isFile() ? String.valueOf(sub.length()) : "";
-            boolean collapsed = (kids.length==1 && parent!=null);
+            boolean collapsed = kids.length == 1 && parent != null;
             SerializableArtifact a;
             if (collapsed) {
                 // Collapse single items into parent node where possible:
@@ -1331,28 +1331,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             for (int i = 0; i < tokens.length; i++)
                 get(i).displayPath = combineLast(tokens[i],len[i]);
-
-//            OUTER:
-//            for( int n=1; n<maxLen; n++ ) {
-//                // if we just display the last n token, would it be suffice for disambiguation?
-//                Set<String> names = new HashSet<String>();
-//                for (String[] token : tokens) {
-//                    if(!names.add(combineLast(token,n)))
-//                        continue OUTER; // collision. Increase n and try again
-//                }
-//
-//                // this n successfully disambiguates
-//                for (int i = 0; i < tokens.length; i++) {
-//                    String[] token = tokens[i];
-//                    get(i).displayPath = combineLast(token,n);
-//                }
-//                return;
-//            }
-
-//            // it's impossible to get here, as that means
-//            // we have the same artifacts archived twice, but be defensive
-//            for (Artifact a : this)
-//                a.displayPath = a.relativePath;
         }
 
         /**
@@ -1550,7 +1528,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     int r;
                     do {
                         r = bufferedInputStream.read();
-                        start = (r == -1)? 0 : start + 1;
+                        start = r == -1 ? 0 : start + 1;
                     } while (r != -1 && r != '\n');
                 }
             }
@@ -2675,7 +2653,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Run.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Run.class.getName() + ".skipPermissionCheck");
 
 
     public static class RedirectUp {

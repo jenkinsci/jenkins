@@ -216,7 +216,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             if (o1 == o2) {
                 return 0;
             }
-            return o1 instanceof Jenkins ? -1 : (o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName()));
+            return o1 instanceof Jenkins ? -1 : o2 instanceof Jenkins ? 1 : o1.getNodeName().compareTo(o2.getNodeName());
         }
     }
 

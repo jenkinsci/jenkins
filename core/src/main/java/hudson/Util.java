@@ -885,7 +885,7 @@ public class Util {
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
         for (int j = 0; j < raw.length(); i++, j++)
-            uriMap[i] = (raw.charAt(j) == ' ');
+            uriMap[i] = raw.charAt(j) == ' ';
         // If we add encodeQuery() just add a 2nd map to encode &+=
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
@@ -1449,7 +1449,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if ((numberStr == null) || (numberStr.length() == 0)) {
+        if (numberStr == null || numberStr.length() == 0) {
             return defaultNumber;
         }
         try {
@@ -1805,16 +1805,4 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
-
-    /**
-     * If this flag is true, native implementations of {@link FilePath#chmod}
-     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
-     * <p>
-     * This should only be enabled if the setgid/setuid/sticky bits are
-     * intentionally set on the Jenkins installation and they are being
-     * overwritten by Jenkins erroneously.
-     */
-    @Restricted(value = NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

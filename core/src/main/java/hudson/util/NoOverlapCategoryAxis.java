@@ -111,8 +111,8 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                     x0 = state.getCursor() + this.getCategoryLabelPositionOffset();
                     x1 = x0 - state.getMax();
                 }
-                Rectangle2D area = new Rectangle2D.Double(x0, y0, (x1 - x0),
-                        (y1 - y0));
+                Rectangle2D area = new Rectangle2D.Double(x0, y0, x1 - x0,
+                        y1 - y0);
                 if (r == null || !r.intersects(area)) {
                     Point2D anchorPoint = RectangleAnchor.coordinates(area,
                             position.getCategoryAnchor());

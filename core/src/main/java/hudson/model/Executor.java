@@ -417,7 +417,7 @@ public class Executor extends Thread implements ModelObject {
                     }
                 }
 
-                setName(getName() + " : executing " + executable.toString());
+                setName(getName() + " : executing " + executable);
                 Authentication auth = workUnit.context.item.authenticate2();
                 LOGGER.log(FINE, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
                 if (LOGGER.isLoggable(FINE) && auth.equals(ACL.SYSTEM2)) { // i.e., unspecified
@@ -872,8 +872,16 @@ public class Executor extends Thread implements ModelObject {
         try {
             if (executable != null) {
                 if (runExtId == null || runExtId.isEmpty() || ! (executable instanceof Run)
-                        || (executable instanceof Run && runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
-                    getParentOf(executable).getOwnerTask().checkAbortPermission();
+                        || (runExtId.equals(((Run<?,?>) executable).getExternalizableId()))) {
+                    final Queue.Task ownerTask = getParentOf(executable).getOwnerTask();
+                    boolean canAbort = ownerTask.hasAbortPermission();
+                    if (canAbort && ownerTask instanceof AccessControlled) {
+                        if (!((AccessControlled) ownerTask).hasPermission(Item.READ)) {
+                            // pretend the build does not exist
+                            return HttpResponses.forwardToPreviousPage();
+                        }
+                    }
+                    ownerTask.checkAbortPermission();
                     interrupt();
                 }
             }

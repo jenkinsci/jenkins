@@ -1685,7 +1685,7 @@ public class Functions {
         if (Util.isOverridden(Throwable.class, t.getClass(), "printStackTrace", PrintWriter.class)) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
-            s.append(sw.toString());
+            s.append(sw);
             return;
         }
         Throwable lower = t.getCause();

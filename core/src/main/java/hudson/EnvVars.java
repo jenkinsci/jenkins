@@ -257,10 +257,10 @@ public class EnvVars extends TreeMap<String,String> {
             // This should not be negative, for the first and last one is same.
             int refererIndex = cycle.lastIndexOf(referee) - 1;
             
-            assert(refererIndex >= 0);
+            assert refererIndex >= 0;
             String referrer = cycle.get(refererIndex);
             boolean removed = refereeSetMap.get(referrer).remove(referee);
-            assert(removed);
+            assert removed;
             LOGGER.warning(String.format("Cyclic reference detected: %s", String.join(" -> ", cycle)));
             LOGGER.warning(String.format("Cut the reference %s -> %s", referrer, referee));
         }

@@ -33,6 +33,8 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.XStream2;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import org.xml.sax.Attributes;
@@ -118,6 +120,7 @@ import org.apache.commons.io.IOUtils;
 public final class XmlFile {
     private final XStream xs;
     private final File file;
+    private final boolean force;
     private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
     private static final ThreadLocal<File> writing = new ThreadLocal<>();
 
@@ -126,8 +129,18 @@ public final class XmlFile {
     }
 
     public XmlFile(XStream xs, File file) {
+        this(xs, file, true);
+    }
+
+    /**
+     * @param force Whether or not to flush the page cache to the storage device with {@link
+     *     FileChannel#force} (i.e., {@code fsync}} or {@code FlushFileBuffers}) before this method
+     *     returns. If you set this to {@code false}, you will lose data integrity.
+     */
+    public XmlFile(XStream xs, File file, boolean force) {
         this.xs = xs;
         this.file = file;
+        this.force = force;
     }
 
     public File getFile() {
@@ -186,7 +199,9 @@ public final class XmlFile {
 
     public void write( Object o ) throws IOException {
         mkdirs();
-        AtomicFileWriter w = new AtomicFileWriter(file);
+        AtomicFileWriter w = force
+                ? new AtomicFileWriter(file)
+                : new AtomicFileWriter(file.toPath(), StandardCharsets.UTF_8, false, false);
         try {
             w.write("<?xml version='1.1' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);

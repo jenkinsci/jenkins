@@ -209,7 +209,7 @@ public class JenkinsManagePermissionTest {
             @Override
             public boolean matches(final Object item) {
                 final WebResponse response = (WebResponse) item;
-                return (response.getStatusCode() == httpStatus);
+                return response.getStatusCode() == httpStatus;
             }
 
             @Override

@@ -114,7 +114,7 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
     public boolean cleanFingerprint(@NonNull Fingerprint fingerprint, TaskListener taskListener) {
         try {
             if (!fingerprint.isAlive() && fingerprint.getFacetBlockingDeletion() == null) {
-                taskListener.getLogger().println("deleting obsolete " + fingerprint.toString());
+                taskListener.getLogger().println("deleting obsolete " + fingerprint);
                 Fingerprint.delete(fingerprint.getHashString());
                 return true;
             } else {

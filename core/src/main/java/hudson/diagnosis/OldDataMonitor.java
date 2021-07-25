@@ -274,7 +274,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
         @Override
         public String toString() {
-            return min==null ? "" : min.toString() + (single ? "" : " - " + max.toString());
+            return min==null ? "" : min + (single ? "" : " - " + max.toString());
         }
 
         /**

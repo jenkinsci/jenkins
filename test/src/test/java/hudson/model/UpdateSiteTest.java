@@ -78,7 +78,7 @@ public class UpdateSiteTest {
     private String getResource(String resourceName) throws IOException {
         try {
             URL url = UpdateSiteTest.class.getResource(resourceName);
-            return (url != null)?FileUtils.readFileToString(new File(url.toURI())):null;
+            return url != null ? FileUtils.readFileToString(new File(url.toURI())) : null;
         } catch(URISyntaxException e) {
             return null;
         }

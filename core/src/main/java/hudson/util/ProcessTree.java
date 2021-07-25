@@ -69,6 +69,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -455,7 +456,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
         
         // Null-check in case the previous call worked
-        boolean vetoes = (vetoersExist == null ? true : vetoersExist);
+        boolean vetoes = vetoersExist == null ? true : vetoersExist;
         
         try {
             if(File.pathSeparatorChar==';')
@@ -470,6 +471,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return new Solaris(vetoes);
             if(os.equals("Mac OS X"))
                 return new Darwin(vetoes);
+            if(os.equals("FreeBSD"))
+                return new FreeBSD(vetoes);
         } catch (LinkageError e) {
             LOGGER.log(Level.WARNING,"Failed to load winp. Reverting to the default",e);
             enabled = false;
@@ -1496,13 +1499,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         argc = adjust(psinfo.readInt());
                         argp = adjustL(psinfo.readLong());
                         envp = adjustL(psinfo.readLong());
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                        b64 = psinfo.readByte() == PR_MODEL_LP64;
                     } else {
                         psinfo.seek(188);  // offset of pr_argc
                         argc = adjust(psinfo.readInt());
                         argp = to64(adjust(psinfo.readInt()));
                         envp = to64(adjust(psinfo.readInt()));
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
+                        b64 = psinfo.readByte() == PR_MODEL_LP64;
                     }
                 }
                 if(ppid==-1)
@@ -1688,9 +1691,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 for( int base=0; base<size.getValue().intValue(); base+=sizeOf_kinfo_proc) {
                     int pid = m.getInt(base+ kinfo_proc_pid_offset);
                     int ppid = m.getInt(base+ kinfo_proc_ppid_offset);
-//                    int effective_uid = m.getInt(base+304);
-//                    byte[] comm = new byte[16];
-//                    m.read(base+163,comm,0,16);
 
                     super.processes.put(pid,new DarwinProcess(pid,ppid));
                 }
@@ -1884,6 +1884,225 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     }
 
     /**
+     * Implementation for FreeBSD based on sysctl(3).
+     */
+    private static class FreeBSD extends Unix {
+
+        // Taken from sys/errno.h
+        private static final int ENOMEM = 12;
+
+        // Taken from sys/sysctl.h
+        private static final int CTL_KERN = 1;
+        private static final int KERN_ARGMAX = 8;
+        private static final int KERN_PROC = 14;
+        private static final int KERN_PROC_ALL = 0;
+        private static final int KERN_PROC_ARGS = 7;
+        private static final int KERN_PROC_ENV = 35;
+
+        // Local constants
+        private final long sizeOf_kinfo_proc;
+        private static final long sizeOf_kinfo_proc_32 = 768;
+        private static final long sizeOf_kinfo_proc_64 = 1088;
+        private final int kinfo_proc_pid_offset;
+        private static final int kinfo_proc_pid_offset_32 = 40;
+        private static final int kinfo_proc_pid_offset_64 = 72;
+        private final int kinfo_proc_ppid_offset;
+        private static final int kinfo_proc_ppid_offset_32 = 44;
+        private static final int kinfo_proc_ppid_offset_64 = 76;
+        private static final int sizeOfInt = Native.getNativeSize(int.class);
+
+        FreeBSD(boolean vetoersExist) {
+            super(vetoersExist);
+
+            String arch = System.getProperty("sun.arch.data.model");
+            if ("64".equals(arch)) {
+                sizeOf_kinfo_proc = sizeOf_kinfo_proc_64;
+                kinfo_proc_pid_offset = kinfo_proc_pid_offset_64;
+                kinfo_proc_ppid_offset = kinfo_proc_ppid_offset_64;
+            } else {
+                sizeOf_kinfo_proc = sizeOf_kinfo_proc_32;
+                kinfo_proc_pid_offset = kinfo_proc_pid_offset_32;
+                kinfo_proc_ppid_offset = kinfo_proc_ppid_offset_32;
+            }
+            try {
+                NativeLongByReference size = new NativeLongByReference(new NativeLong(0));
+                Memory m;
+                int nRetry = 0;
+                while (true) {
+                    // Find out how much memory we need for kern.proc.all.
+                    if (LIBC.sysctl(
+                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ALL},
+                                    3,
+                                    NULL,
+                                    size,
+                                    NULL,
+                                    new NativeLong(0))
+                            != 0) {
+                        throw new IOException(
+                                "Failed to get memory requirement: "
+                                        + LIBC.strerror(Native.getLastError()));
+                    }
+
+                    // Add some padding to account for new processes.
+                    long len = size.getValue().longValue();
+                    len += len / 10L;
+
+                    // Now get kern.proc.all.
+                    m = new Memory(len);
+                    size.setValue(new NativeLong(len));
+                    if (LIBC.sysctl(
+                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ALL},
+                                    3,
+                                    m,
+                                    size,
+                                    NULL,
+                                    new NativeLong(0))
+                            != 0) {
+                        if (Native.getLastError() == ENOMEM && nRetry++ < 16) {
+                            continue; // retry
+                        }
+                        throw new IOException(
+                                "Failed to get kern.proc.all: "
+                                        + LIBC.strerror(Native.getLastError()));
+                    }
+                    break;
+                }
+
+                long count = size.getValue().longValue() / sizeOf_kinfo_proc;
+                LOGGER.fine(() -> "Found " + count + " processes");
+
+                for (long base = 0; base < size.getValue().longValue(); base += sizeOf_kinfo_proc) {
+                    int pid = m.getInt(base + kinfo_proc_pid_offset);
+                    int ppid = m.getInt(base + kinfo_proc_ppid_offset);
+                    super.processes.put(pid, new FreeBSDProcess(pid, ppid));
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to obtain process list", e);
+            }
+        }
+
+        private class FreeBSDProcess extends UnixProcess {
+
+            private final int ppid;
+            private EnvVars envVars;
+            private List<String> arguments;
+
+            FreeBSDProcess(int pid, int ppid) {
+                super(pid);
+                this.ppid = ppid;
+            }
+
+            @Override
+            @CheckForNull
+            public OSProcess getParent() {
+                return get(ppid);
+            }
+
+            @Override
+            @NonNull
+            public synchronized EnvVars getEnvironmentVariables() {
+                if (envVars != null) {
+                    return envVars;
+                }
+                try {
+                    /*
+                     * Allocate first so that parse errors will result in empty data and avoid
+                     * retry.
+                     */
+                    envVars = new EnvVars();
+
+                    int argmax = getArgmax();
+                    Memory m = new Memory(argmax);
+                    NativeLongByReference size = new NativeLongByReference(new NativeLong(argmax));
+                    if (LIBC.sysctl(
+                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ENV, pid},
+                                    4,
+                                    m,
+                                    size,
+                                    NULL,
+                                    new NativeLong(0))
+                            != 0) {
+                        throw new IOException(
+                                "Failed to get kern.proc.env: "
+                                        + LIBC.strerror(Native.getLastError()));
+                    }
+
+                    parse(m, size.getValue(), envVars::addLine);
+                } catch (IOException e) {
+                    // This happens with insufficient permissions, so just ignore the problem.
+                }
+                return envVars;
+            }
+
+            @Override
+            @NonNull
+            public List<String> getArguments() {
+                if (arguments != null) {
+                    return arguments;
+                }
+                try {
+                    /*
+                     * Allocate first so that parse errors will result in empty data and avoid
+                     * retry.
+                     */
+                    arguments = new ArrayList<>();
+
+                    int argmax = getArgmax();
+                    Memory m = new Memory(argmax);
+                    NativeLongByReference size = new NativeLongByReference(new NativeLong(argmax));
+                    if (LIBC.sysctl(
+                                    new int[] {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, pid},
+                                    4,
+                                    m,
+                                    size,
+                                    NULL,
+                                    new NativeLong(0))
+                            != 0) {
+                        throw new IOException(
+                                "Failed to get kern.proc.args: "
+                                        + LIBC.strerror(Native.getLastError()));
+                    }
+
+                    parse(m, size.getValue(), arguments::add);
+                } catch (IOException e) {
+                    // This happens with insufficient permissions, so just ignore the problem.
+                }
+                return arguments;
+            }
+
+            private int getArgmax() throws IOException {
+                IntByReference argmaxRef = new IntByReference(0);
+                NativeLongByReference size = new NativeLongByReference(new NativeLong(sizeOfInt));
+                if (LIBC.sysctl(
+                                new int[] {CTL_KERN, KERN_ARGMAX},
+                                2,
+                                argmaxRef.getPointer(),
+                                size,
+                                NULL,
+                                new NativeLong(0))
+                        != 0) {
+                    throw new IOException(
+                            "Failed to get kern.argmax: " + LIBC.strerror(Native.getLastError()));
+                }
+                return argmaxRef.getValue();
+            }
+
+            private void parse(Memory m, NativeLong size, Consumer<String> consumer) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte ch;
+                long offset = 0;
+                while (offset < size.longValue()) {
+                    while ((ch = m.getByte(offset++)) != '\0') {
+                        baos.write(ch);
+                    }
+                    consumer.accept(baos.toString());
+                    baos.reset();
+                }
+            }
+        }
+    }
+
+    /**
      * Represents a local process tree, where this JVM and the process tree run on the same system.
      * (The opposite of {@link Remote}.)
      */
@@ -1995,22 +2214,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ Object writeReplace() throws ObjectStreamException {
         return new Remote(this, getChannelForSerialization());
     }
-
-//    public static void main(String[] args) {
-//        // dump everything
-//        LOGGER.setLevel(Level.ALL);
-//        ConsoleHandler h = new ConsoleHandler();
-//        h.setLevel(Level.ALL);
-//        LOGGER.addHandler(h);
-//
-//        Solaris killer = (Solaris)get();
-//        Solaris.SolarisSystem s = killer.createSystem();
-//        Solaris.SolarisProcess p = s.get(Integer.parseInt(args[0]));
-//        System.out.println(p.getEnvVars());
-//
-//        if(args.length==2)
-//            p.kill();
-//    }
 
     /*
         On MacOS X, there's no procfs <http://www.osxbook.com/book/bonus/chapter11/procfs/>

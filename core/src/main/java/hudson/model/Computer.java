@@ -791,7 +791,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
         Node node = getNode();
-        return (node != null) ? node.getAssignedLabels() : Collections.emptySet();
+        return node != null ? node.getAssignedLabels() : Collections.emptySet();
     }
 
     /**
@@ -799,7 +799,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public List<AbstractProject> getTiedJobs() {
         Node node = getNode();
-        return (node != null) ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
+        return node != null ? node.getSelfLabel().getTiedJobs() : Collections.emptyList();
     }
 
     public RunList getBuilds() {
@@ -1088,7 +1088,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public @NonNull String getDescription() {
         Node node = getNode();
-        return (node != null) ? node.getNodeDescription() : "";
+        return node != null ? node.getNodeDescription() : "";
     }
 
 
@@ -1624,7 +1624,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(Computer.class.getName() + ".skipPermissionCheck");
 
     /**
      * Gets the current {@link Computer} that the build is running.

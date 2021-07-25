@@ -107,10 +107,6 @@ THE SOFTWARE.
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
     <!--
       For compatibility only; not included into the BOM for the same reason. TODO once
       https://github.com/jenkinsci/scm-api-plugin/pull/88 is widely adopted, this
@@ -473,6 +469,17 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
+    </dependency>
+    <dependency><!-- StAX implementation. See JENKINS-2547. -->
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>wstx-asl</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>stax</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>

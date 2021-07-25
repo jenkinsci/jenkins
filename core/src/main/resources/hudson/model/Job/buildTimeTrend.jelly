@@ -44,7 +44,7 @@ THE SOFTWARE.
             <j:new var="handler" className="jenkins.widgets.BuildTimeTrend"/>
             ${handler.setBuilds(it.builds)}
             <l:progressiveRendering handler="${handler}" callback="buildTimeTrend_displayBuilds"/>
-            <table class="sortable" id="trend"
+            <table class="sortable" id="trend" 
                    data-is-distributed-build-enabled="${isDistributedBuildEnabled}">
               <tr>
                 <th><st:nbsp/></th>
