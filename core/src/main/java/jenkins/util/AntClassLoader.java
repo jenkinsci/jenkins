@@ -28,6 +28,7 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.util.LoaderUtils;
+import org.apache.tools.ant.util.ReflectUtil;
 import org.apache.tools.ant.util.VectorSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -61,6 +62,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipFile;
 
 /**
  * Used to load classes within ant with a different classpath from
@@ -83,6 +85,30 @@ import java.util.stream.Stream;
 public class AntClassLoader extends ClassLoader implements SubBuildListener, Closeable {
 
     private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
+
+    private static final boolean IS_ATLEAST_JAVA9 = JavaEnvUtils.isAtLeastJavaVersion(JavaEnvUtils.JAVA_9);
+    // constructs needed to create (via reflection) a java.util.jar.JarFile instance when Java runtime version is >= 9
+    private static final Class[] MR_JARFILE_CTOR_ARGS;
+    private static final Object MR_JARFILE_CTOR_RUNTIME_VERSION_VAL;
+
+    static {
+        if (IS_ATLEAST_JAVA9) {
+            Class[] ctorArgs = null;
+            Object runtimeVersionVal = null;
+            try {
+                final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
+                ctorArgs = new Class[] {File.class, boolean.class, int.class, runtimeVersionClass};
+                runtimeVersionVal = Runtime.class.getDeclaredMethod("version").invoke(null);
+            } catch (Exception e) {
+                // ignore - we consider this as multi-release jar unsupported
+            }
+            MR_JARFILE_CTOR_ARGS = ctorArgs;
+            MR_JARFILE_CTOR_RUNTIME_VERSION_VAL = runtimeVersionVal;
+        } else {
+            MR_JARFILE_CTOR_ARGS = null;
+            MR_JARFILE_CTOR_RUNTIME_VERSION_VAL = null;
+        }
+    }
 
     /**
      * An enumeration of all resources of a given name found within the
@@ -504,7 +530,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
                 + pathComponent.lastModified() + "-" + pathComponent.length();
         String classpath = pathMap.get(absPathPlusTimeAndLength);
         if (classpath == null) {
-            try (JarFile jarFile = new JarFile(pathComponent)) {
+            try (JarFile jarFile = newJarFile(pathComponent)) {
                 final Manifest manifest = jarFile.getManifest();
                 if (manifest == null) {
                     return;
@@ -789,7 +815,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
             } else {
                 if (jarFile == null) {
                     if (file.exists()) {
-                        jarFile = new JarFile(file);
+                        jarFile = newJarFile(file);
                         jarFiles.put(file, jarFile);
                     } else {
                         return null;
@@ -1017,7 +1043,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
             } else {
                 if (jarFile == null) {
                     if (file.exists()) {
-                        jarFile = new JarFile(file);
+                        jarFile = newJarFile(file);
                         jarFiles.put(file, jarFile);
                     } else {
                         return null;
@@ -1565,4 +1591,19 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         return new AntClassLoader(parent, project, path, parentFirst);
     }
 
+    /**
+     *
+     * @param file The file representing the jar
+     * @return Returns a {@link JarFile} instance, which is constructed based upon the Java runtime version.
+     *         Depending on the Java runtime version, the returned instance may or may not be {@code multi-release}
+     *         aware (a feature introduced in Java 9)
+     * @throws IOException
+     */
+    private static JarFile newJarFile(final File file) throws IOException {
+        if (!IS_ATLEAST_JAVA9 || MR_JARFILE_CTOR_ARGS == null || MR_JARFILE_CTOR_RUNTIME_VERSION_VAL == null) {
+            return new JarFile(file);
+        }
+        return ReflectUtil.newInstance(JarFile.class, MR_JARFILE_CTOR_ARGS,
+                new Object[] {file, true, ZipFile.OPEN_READ, MR_JARFILE_CTOR_RUNTIME_VERSION_VAL});
+    }
 }
