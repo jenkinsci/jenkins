@@ -696,7 +696,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
-                if (!f.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
+                if (!f.getCanonicalFile().toPath().startsWith(dir.getCanonicalPath())) {
                     throw new IOException(
                         "Zip " + zipFile.getPath() + " contains illegal file name that breaks out of the target directory: " + e.getName());
                 }
