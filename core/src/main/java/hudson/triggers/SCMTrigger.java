@@ -170,7 +170,6 @@ public class SCMTrigger extends Trigger<Item> {
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
      * to trigger a build at a specific revision number.
      * 
-     * @param additionalActions
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
@@ -503,7 +502,7 @@ public class SCMTrigger extends Trigger<Item> {
     public final class SCMAction implements Action {
         public AbstractProject<?,?> getOwner() {
             Item item = getItem();
-            return item instanceof AbstractProject ? ((AbstractProject) item) : null;
+            return item instanceof AbstractProject ? (AbstractProject) item : null;
         }
 
         /**

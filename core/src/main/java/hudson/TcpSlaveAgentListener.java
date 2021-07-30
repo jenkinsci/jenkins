@@ -371,7 +371,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * This extension provides a Ping protocol that allows people to verify that the TcpSlaveAgentListener is alive.
+     * This extension provides a Ping protocol that allows people to verify that the {@link TcpSlaveAgentListener} is alive.
      * We also use this to wake the acceptor thread on termination.
      *
      * @since 1.653

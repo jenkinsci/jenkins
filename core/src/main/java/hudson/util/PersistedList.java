@@ -237,7 +237,7 @@ public class PersistedList<T> extends AbstractList<T> {
      * Gets all the {@link Describable}s in an array.
      */
     @Override
-    public <T> T[] toArray(T[] array) {
+    public <X> X[] toArray(X[] array) {
         return data.toArray(array);
     }
 

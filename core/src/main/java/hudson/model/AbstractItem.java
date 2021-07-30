@@ -54,6 +54,7 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
@@ -187,8 +188,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * This method exists so that the Job configuration pages can use 
      * getDisplayNameOrNull so that nothing is shown in the display name text
      * box if the display name is not set.
-     * @param displayName
-     * @throws IOException
      */
     public void setDisplayNameOrNull(String displayName) throws IOException {
         setDisplayName(displayName);
@@ -961,10 +960,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
         if (!SKIP_PERMISSION_CHECK) {
-            if (!getACL().hasPermission(Item.DISCOVER)) {
+            if (!hasPermission(Item.DISCOVER)) {
                 return null;
             }
-            getACL().checkPermission(Item.READ);
+            checkPermission(Item.READ);
         }
         return this;
     }
@@ -974,7 +973,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(AbstractItem.class.getName() + ".skipPermissionCheck");
 
     /**
      * Used for CLI binding.

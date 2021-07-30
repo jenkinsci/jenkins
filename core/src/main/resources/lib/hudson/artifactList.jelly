@@ -40,9 +40,14 @@ THE SOFTWARE.
   </st:documentation>
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it,attrs.permission)}">
     <j:set var="artifacts" value="${build.getArtifactsUpTo(build.TREE_CUTOFF+1)}" />
-    <j:if test="${!build.building and !empty(artifacts)}">
+    <j:if test="${!empty(artifacts)}">
       <t:summary icon="package.png">
         <a href="${baseURL}artifact/">${caption}</a>
+        <j:if test="${build.building}">
+          <p>
+            ${%building}
+          </p>
+        </j:if>
         <j:choose>
           <j:when test="${size(artifacts) le build.LIST_CUTOFF}">
             <!-- if not too many, just list them -->

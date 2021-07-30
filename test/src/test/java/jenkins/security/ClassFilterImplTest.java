@@ -74,7 +74,7 @@ public class ClassFilterImplTest {
     public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
     @Test
-    public void masterToSlaveBypassesWhitelist() throws Exception {
+    public void controllerToAgentBypassesWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
@@ -87,7 +87,7 @@ public class ClassFilterImplTest {
             listener.getLogger().println("sent " + launcher.getChannel().call(new M2S()));
             return true;
         }
-        @TestExtension("masterToSlaveBypassesWhitelist")
+        @TestExtension("controllerToAgentBypassesWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
             @Override
@@ -107,7 +107,7 @@ public class ClassFilterImplTest {
     // Note that currently even M2S callables are rejected when using classes blacklisted in ClassFilter.STANDARD, such as JSONObject.
 
     @Test
-    public void slaveToMasterRequiresWhitelist() throws Exception {
+    public void agentToControllerRequiresWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
@@ -120,7 +120,7 @@ public class ClassFilterImplTest {
             listener.getLogger().println("received " + launcher.getChannel().call(new S2M()));
             return true;
         }
-        @TestExtension("slaveToMasterRequiresWhitelist")
+        @TestExtension("agentToControllerRequiresWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
             @Override

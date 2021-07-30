@@ -28,8 +28,8 @@ import hudson.security.ACL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -136,7 +136,7 @@ public class SecurityContextExecutorServiceTest {
     @Test
     @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     public void testCallableCollectionAgainstAllContexts() throws Exception {
-        Collection<Callable<SecurityContext>> callables = new LinkedList<>();
+        Collection<Callable<SecurityContext>> callables = new ArrayList<>();
         Callable<SecurityContext> c = new Callable<SecurityContext>() {
             @Override
             public SecurityContext call() throws Exception {

@@ -1,19 +1,18 @@
 package jenkins.util;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Vector;
 
 /**
  * As of 1.8.0, {@link org.apache.tools.ant.AntClassLoader} doesn't implement {@link #findResource(String)}
  * in any meaningful way, which breaks fast lookup. Implement it properly.
  */
-public class AntWithFindResourceClassLoader extends AntClassLoader implements Closeable {
-    private final ArrayList<File> pathComponents;
+public class AntWithFindResourceClassLoader extends AntClassLoader {
+    private final Vector<File> pathComponents;
 
     public AntWithFindResourceClassLoader(ClassLoader parent, boolean parentFirst) {
         super(parent, parentFirst);
@@ -21,7 +20,7 @@ public class AntWithFindResourceClassLoader extends AntClassLoader implements Cl
         try {
             Field $pathComponents = AntClassLoader.class.getDeclaredField("pathComponents");
             $pathComponents.setAccessible(true);
-            pathComponents = (ArrayList<File>)$pathComponents.get(this);
+            pathComponents = (Vector<File>)$pathComponents.get(this);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new LinkageError(e.getMessage(), e);
         }
@@ -30,11 +29,6 @@ public class AntWithFindResourceClassLoader extends AntClassLoader implements Cl
     public void addPathFiles(Collection<File> paths) throws IOException {
         for (File f : paths)
             addPathFile(f);
-    }
-
-    @Override
-    public void close() throws IOException {
-        cleanup();
     }
 
     @Override

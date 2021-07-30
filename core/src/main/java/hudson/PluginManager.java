@@ -110,7 +110,6 @@ import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -482,8 +481,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                             }
 
                                             @Override
-                                            protected void reactOnCycle(PluginWrapper q, List<PluginWrapper> cycle)
-                                                    throws hudson.util.CyclicGraphDetector.CycleDetectedException {
+                                            protected void reactOnCycle(PluginWrapper q, List<PluginWrapper> cycle) {
 
                                                 LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root=" + q + ", deactivating all involved) " + cycle.stream().map(Object::toString).collect(Collectors.joining(" -> ")));
                                                 for (PluginWrapper pluginWrapper : cycle) {
@@ -1071,8 +1069,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
-        try {
-            URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
+        try (URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi})){
             InputStream in=null;
             try {
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
@@ -1082,8 +1079,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             } finally {
                 Util.closeAndLogFailures(in, LOGGER, PluginWrapper.MANIFEST_FILENAME, bundledJpi.toString());
-                if (cl instanceof Closeable)
-                    ((Closeable)cl).close();
             }
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse manifest of "+bundledJpi, e);
@@ -1109,7 +1104,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final String entryName = jarURLConnection.getEntryName();
             
             try(JarFile jarFile = jarURLConnection.getJarFile()) {
-                final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
+                final JarEntry entry = entryName != null && jarFile != null ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
                     try(InputStream i = jarFile.getInputStream(entry)) {
                         byte[] manifestBytes = IOUtils.toByteArray(i);
@@ -2430,5 +2425,5 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(PluginManager.class.getName() + ".skipPermissionCheck");
 }

@@ -130,7 +130,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = Boolean.getBoolean(User.class.getName() + ".skipPermissionCheck");
+    public static /* Script Console modifiable */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(User.class.getName() + ".skipPermissionCheck");
 
     /**
      * Jenkins now refuses to let the user login if he/she doesn't exist in {@link SecurityRealm},
@@ -868,7 +868,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         for (UserPropertyDescriptor d : UserProperty.all()) {
             UserProperty p = getProperty(d.clazz);
 
-            JSONObject o = json.optJSONObject("userProperty" + (i++));
+            JSONObject o = json.optJSONObject("userProperty" + i++);
             if (o != null) {
                 if (p != null) {
                     p = p.reconfigure(req, o);

@@ -183,7 +183,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      */
     @Deprecated
     public String getEncryptedPassword() {
-        return (secretPassword == null) ? null : secretPassword.getEncryptedValue();
+        return secretPassword == null ? null : secretPassword.getEncryptedValue();
     }
 
     public String getTestUrl() {
@@ -344,7 +344,6 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     /**
      * If the first URL we try to access with a HTTP proxy is HTTPS then the authentication cache will not have been
      * pre-populated, so we try to access at least one HTTP URL before the very first HTTPS url.
-     * @param proxy
      * @param url the actual URL being opened.
      */
     private void jenkins48775workaround(Proxy proxy, URL url) {

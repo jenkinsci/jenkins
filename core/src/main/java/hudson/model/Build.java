@@ -157,7 +157,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 for( BuildWrapper w : wrappers ) {
                     Environment e = w.setUp((AbstractBuild<?,?>)Build.this, launcher, listener);
                     if(e==null)
-                        return (r = FAILURE);
+                        return r = FAILURE;
                     buildEnvironments.add(e);
                 }
 

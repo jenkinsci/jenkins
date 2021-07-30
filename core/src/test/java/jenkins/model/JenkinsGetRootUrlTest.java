@@ -193,7 +193,7 @@ public class JenkinsGetRootUrlTest {
         final StaplerRequest req = mock(StaplerRequest.class);
         when(req.getScheme()).thenReturn(url.getProtocol());
         when(req.getServerName()).thenReturn(url.getHost());
-        when(req.getServerPort()).thenReturn(url.getPort() == -1 ? ("https".equals(url.getProtocol()) ? 443 : 80) : url.getPort());
+        when(req.getServerPort()).thenReturn(url.getPort() == -1 ? "https".equals(url.getProtocol()) ? 443 : 80 : url.getPort());
         when(req.getContextPath()).thenReturn(url.getPath().replaceAll("/$", ""));
         when(req.getIntHeader(anyString())).thenAnswer(new Answer<Integer>() {
             @Override public Integer answer(InvocationOnMock invocation) throws Throwable {

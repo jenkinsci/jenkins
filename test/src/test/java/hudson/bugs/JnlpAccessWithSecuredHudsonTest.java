@@ -91,7 +91,7 @@ public class JnlpAccessWithSecuredHudsonTest {
         JenkinsRule.WebClient jnlpAgent = r.createWebClient();
 
         // parse the JNLP page into DOM to list up the jars.
-        XmlPage jnlp = (XmlPage) wc.goTo("computer/test/slave-agent.jnlp","application/x-java-jnlp-file");
+        XmlPage jnlp = (XmlPage) wc.goTo("computer/test/jenkins-agent.jnlp","application/x-java-jnlp-file");
         URL baseUrl = jnlp.getUrl();
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
         for( Object jar : dom.selectNodes("//jar") ) {
@@ -108,7 +108,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Test
     public void anonymousCannotGetSecrets() throws Exception {
         r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
-        r.createWebClient().assertFails("computer/test/slave-agent.jnlp", HttpURLConnection.HTTP_FORBIDDEN);
+        r.createWebClient().assertFails("computer/test/jenkins-agent.jnlp", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
@@ -117,14 +117,14 @@ public class JnlpAccessWithSecuredHudsonTest {
     public void serviceUsingDirectSecret() throws Exception {
         Slave slave = createNewJnlpSlave("test");
         r.jenkins.setNodes(Collections.singletonList(slave));
-        r.createWebClient().goTo("computer/test/slave-agent.jnlp?encrypt=true", "application/octet-stream");
+        r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
         String secret = slave.getComputer().getJnlpMac();
         // To watch it fail: secret = secret.replace('1', '2');
         File slaveJar = tmp.newFile();
-        FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
+        FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
         Proc p = new hudson.Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().
             stdout(System.out).stderr(System.err).
-            cmds(JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(), "-jnlpUrl", r.getURL() + "computer/test/slave-agent.jnlp", "-secret", secret).
+            cmds(JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(), "-jnlpUrl", r.getURL() + "computer/test/jenkins-agent.jnlp", "-secret", secret).
             start();
         try {
             r.waitOnline(slave);

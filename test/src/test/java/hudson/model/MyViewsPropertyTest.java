@@ -234,7 +234,7 @@ public class MyViewsPropertyTest {
         property.setUser(user);
         user.addProperty(property);
         for(Permission p : Permission.getAll()){
-            assertEquals("Property should have the same ACL as its user", property.getACL().hasPermission(p), user.getACL().hasPermission(p));
+            assertEquals("Property should have the same ACL as its user", property.hasPermission(p), user.hasPermission(p));
         }
     }
 
