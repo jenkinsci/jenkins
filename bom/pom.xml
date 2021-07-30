@@ -140,7 +140,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-annotation</artifactId>
-        <version>${access-modifier-annotation.version}</version>
+        <version>${access-modifier.version}</version>
       </dependency>
       <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
