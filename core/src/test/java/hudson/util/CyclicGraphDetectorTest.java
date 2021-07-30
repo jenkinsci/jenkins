@@ -1,7 +1,7 @@
 package hudson.util;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import org.junit.Test;
@@ -61,20 +61,19 @@ public class CyclicGraphDetectorTest {
             }.run(nodes());
         }
 
-        void mustContainCycle(String... members) throws Exception {
-            try {
-                check();
-                fail("Cycle expected");
-            } catch (CycleDetectedException e) {
-                String msg = "Expected cycle of " + Arrays.asList(members) + " but found " + e.cycle;
-                for (String s : members)
-                    assertTrue(msg, e.cycle.contains(s));
+        void mustContainCycle(String... members) {
+            final CycleDetectedException e = assertThrows("Cycle expected",
+                    CycleDetectedException.class, this::check);
+
+            final String msg = "Expected cycle of " + Arrays.asList(members) + " but found " + e.cycle;
+            for (String s : members) {
+                assertTrue(msg, e.cycle.contains(s));
             }
         }
     }
 
     @Test
-    public void cycle1() throws Exception {
+    public void cycle1() {
         new Graph().e("A","B").e("B","C").e("C","A").mustContainCycle("A","B","C");
     }
 
@@ -84,7 +83,7 @@ public class CyclicGraphDetectorTest {
     }
 
     @Test
-    public void cycle3() throws Exception {
+    public void cycle3() {
         new Graph().e("A","B").e("B","C").e("C","D").e("B","E").e("E","D").e("E","A").mustContainCycle("A","B","E");
     }
 }

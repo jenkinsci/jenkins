@@ -236,8 +236,6 @@ public class Functions {
 
     /**
      * Returns a localized string for the specified date, not including time.
-     * @param date
-     * @return
      */
     @Restricted(NoExternalUse.class)
     public static String localDate(Date date) {
@@ -250,9 +248,6 @@ public class Functions {
 
     /**
      * Returns a human-readable string describing the time difference between now and the specified date.
-     *
-     * @param date
-     * @return
      */
     @Restricted(NoExternalUse.class)
     public static String getTimeSpanString(Date date) {
@@ -1690,7 +1685,7 @@ public class Functions {
         if (Util.isOverridden(Throwable.class, t.getClass(), "printStackTrace", PrintWriter.class)) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
-            s.append(sw.toString());
+            s.append(sw);
             return;
         }
         Throwable lower = t.getCause();

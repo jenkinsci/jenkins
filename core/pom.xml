@@ -87,6 +87,11 @@ THE SOFTWARE.
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <exclusions>
+        <exclusion>
+          <!-- Provided by spring-aop via spring-security-web -->
+          <groupId>aopalliance</groupId>
+          <artifactId>aopalliance</artifactId>
+        </exclusion>
         <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
           <groupId>com.google.guava</groupId>
           <artifactId>guava</artifactId>
@@ -98,18 +103,9 @@ THE SOFTWARE.
       <groupId>org.connectbot.jbcrypt</groupId>
       <artifactId>jbcrypt</artifactId>
     </dependency>
-    <dependency> <!-- for compatibility only; all new code should use JNR. Not included into BOM due to the same reason -->
-      <groupId>org.jruby.ext.posix</groupId>
-      <artifactId>jna-posix</artifactId>
-      <version>1.0.3-jenkins-1</version>
-    </dependency>
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
     </dependency>
     <!--
       For compatibility only; not included into the BOM for the same reason. TODO once
@@ -454,6 +450,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
       <artifactId>txw2</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>javax.xml.stream</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -470,6 +473,13 @@ THE SOFTWARE.
     <dependency><!-- StAX implementation. See JENKINS-2547. -->
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>wstx-asl</artifactId>
+      <exclusions>
+        <!-- StAX is now bundled in the JRE -->
+        <exclusion>
+          <groupId>stax</groupId>
+          <artifactId>stax-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>

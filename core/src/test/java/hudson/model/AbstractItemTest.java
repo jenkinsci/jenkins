@@ -2,7 +2,7 @@ package hudson.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -115,15 +115,11 @@ public class AbstractItemTest {
         NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
 
         //WHEN
-        try {
-            item.renameTo("NewName");
-            fail("An item with isNameEditable false must throw exception when trying to rename it.");
-        } catch (IOException e) {
+        final IOException e = assertThrows("An item with isNameEditable false must throw exception when trying to rename it.",
+                IOException.class, () -> item.renameTo("NewName"));
 
-            //THEN
-            assertEquals("Trying to rename an item that does not support this operation.", e.getMessage());
-            assertEquals("NameNotEditableItem",item.getName());
-        }
+        assertEquals("Trying to rename an item that does not support this operation.", e.getMessage());
+        assertEquals("NameNotEditableItem", item.getName());
     }
 
     @Test
@@ -134,15 +130,10 @@ public class AbstractItemTest {
         NameNotEditableItem item = new NameNotEditableItem(null,"NameNotEditableItem");
 
         //WHEN
-        try {
-            item.doConfirmRename("MyNewName");
-            fail("An item with isNameEditable false must throw exception when trying to call doConfirmRename.");
-        } catch (Failure f) {
-
-            //THEN
-            assertEquals("Trying to rename an item that does not support this operation.", f.getMessage());
-            assertEquals("NameNotEditableItem",item.getName());
-        }
+        final Failure f = assertThrows("An item with isNameEditable false must throw exception when trying to call doConfirmRename.",
+                Failure.class, () -> item.doConfirmRename("MyNewName"));
+        assertEquals("Trying to rename an item that does not support this operation.", f.getMessage());
+        assertEquals("NameNotEditableItem", item.getName());
     }
 
 }

@@ -28,7 +28,7 @@ public class ChangeLogSetTest {
         } catch (Throwable t) {
             fail(t.getMessage());
         }
-        assertEquals((new FakeChangeLogSCM.EntryImpl()).getMsg(), change.getMsg());
+        assertEquals(new FakeChangeLogSCM.EntryImpl().getMsg(), change.getMsg());
     }
 
     @Extension

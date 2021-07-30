@@ -175,7 +175,7 @@ public class ChunkedInputStream extends InputStream {
     private void readCRLF() throws IOException {
         int cr = in.read();
         int lf = in.read();
-        if ((cr != '\r') || (lf != '\n')) {
+        if (cr != '\r' || lf != '\n') {
             throw new IOException(
                 "CRLF expected at end of chunk: " + cr + "/" + lf);
         }
@@ -264,7 +264,7 @@ public class ChunkedInputStream extends InputStream {
         //parse data
         String dataString = new String(baos.toByteArray(), StandardCharsets.US_ASCII);
         int separator = dataString.indexOf(';');
-        dataString = (separator > 0)
+        dataString = separator > 0
             ? dataString.substring(0, separator).trim()
             : dataString.trim();
 
@@ -284,25 +284,6 @@ public class ChunkedInputStream extends InputStream {
     private void parseTrailerHeaders() throws IOException {
         // I feel lazy. No trailing header support
         readCRLF();
-
-//        Header[] footers = null;
-//        try {
-//            String charset = "US-ASCII";
-//            if (this.method != null) {
-//                charset = this.method.getParams().getHttpElementCharset();
-//            }
-//            footers = HttpParser.parseHeaders(in, charset);
-//        } catch(HttpException e) {
-//            LOG.error("Error parsing trailer headers", e);
-//            IOException ioe = new IOException(e.getMessage());
-//            ExceptionUtil.initCause(ioe, e);
-//            throw ioe;
-//        }
-//        if (this.method != null) {
-//            for (int i = 0; i < footers.length; i++) {
-//                this.method.addResponseFooter(footers[i]);
-//            }
-//        }
     }
 
     /**

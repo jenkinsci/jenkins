@@ -25,6 +25,7 @@ package hudson.cli.handlers;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -179,22 +180,15 @@ public class ViewOptionHandlerTest {
     }
 
     @Test public void reportViewSpaceNameRequestAsIAE() {
-        try {
-            assertNull(handler.getView(" "));
-            fail("No exception thrown. Expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("No view named   inside view Jenkins", e.getMessage());
-            verifyNoInteractions(setter);
-        }
+        final IllegalArgumentException e = assertThrows("No exception thrown. Expected IllegalArgumentException",
+                IllegalArgumentException.class, () -> assertNull(handler.getView(" ")));
+        assertEquals("No view named   inside view Jenkins", e.getMessage());
+        verifyNoInteractions(setter);
     }
 
     @Test public void reportNullViewAsNPE() {
-        try {
-            handler.getView(null);
-            fail("No exception thrown. Expected NullPointerException");
-        } catch (NullPointerException e) {
-            verifyNoInteractions(setter);
-        }
+        assertThrows(NullPointerException.class, () -> handler.getView(null));
+        verifyNoInteractions(setter);
     }
 
     @Test public void refuseToReadOuterView() throws Exception {

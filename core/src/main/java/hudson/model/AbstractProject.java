@@ -1834,7 +1834,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public DirectoryBrowserSupport doWs( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, InterruptedException {
         checkPermission(Item.WORKSPACE);
         FilePath ws = getSomeWorkspace();
-        if ((ws == null) || (!ws.exists())) {
+        if (ws == null || !ws.exists()) {
             // if there's no workspace, report a nice error message
             // Would be good if when asked for *plain*, do something else!
             // (E.g. return 404, or send empty doc.)

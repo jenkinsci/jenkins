@@ -75,7 +75,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1565.v51970ebd7896</version>
+      <version>1589.vc23fca066d5c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.15</version>
+      <version>6.16</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -105,7 +105,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>2.6.7</version>
+      <version>2.6.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -129,7 +129,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.49</version>
+      <version>1.51</version>
       <scope>test</scope>
     </dependency>
     <dependency>

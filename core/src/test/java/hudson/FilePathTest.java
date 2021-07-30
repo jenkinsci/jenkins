@@ -31,6 +31,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
@@ -81,7 +82,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
@@ -163,49 +163,44 @@ public class FilePathTest {
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
         List<Callable<Integer>> r = new ArrayList<>();
         for (int i=0; i<100; i++) {
-            r.add(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    class Sink extends OutputStream {
-                        private Exception closed;
-                        private volatile int count;
+            r.add(() -> {
+                class Sink extends OutputStream {
+                    private Exception closed;
+                    private final AtomicInteger count = new AtomicInteger();
 
-                        private void checkNotClosed() throws IOException {
-                            if (closed != null)
-                                throw new IOException(closed);
-                        }
-
-                        @Override
-                        public void write(int b) throws IOException {
-                            count++;
-                            checkNotClosed();
-                        }
-
-                        @Override
-                        public void write(byte[] b) throws IOException {
-                            count+=b.length;
-                            checkNotClosed();
-                        }
-
-                        @Override
-                        public void write(byte[] b, int off, int len) throws IOException {
-                            count+=len;
-                            checkNotClosed();
-                        }
-
-                        @Override
-                        public void close() throws IOException {
-                            closed = new Exception();
-                            //if (size!=count)
-                            //    fail();
-                        }
+                    private void checkNotClosed() throws IOException {
+                        if (closed != null)
+                            throw new IOException(closed);
                     }
 
-                    FilePath f = new FilePath(channels.french, file.getPath());
-                    Sink sink = new Sink();
-                    f.copyTo(sink);
-                    return sink.count;
+                    @Override
+                    public void write(int b) throws IOException {
+                        count.incrementAndGet();
+                        checkNotClosed();
+                    }
+
+                    @Override
+                    public void write(byte[] b) throws IOException {
+                        count.addAndGet(b.length);
+                        checkNotClosed();
+                    }
+
+                    @Override
+                    public void write(byte[] b, int off, int len) throws IOException {
+                        count.addAndGet(len);
+                        checkNotClosed();
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+                        closed = new Exception();
+                    }
                 }
+
+                FilePath f = new FilePath(channels.french, file.getPath());
+                Sink sink = new Sink();
+                f.copyTo(sink);
+                return sink.count.get();
             });
         }
 
@@ -570,12 +565,7 @@ public class FilePathTest {
             assertNull(d.validateAntFileMask("d1/d2/**/f.txt"));
             assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
-            try {
-                d.validateAntFileMask("**/*.js", 10);
-                fail();
-            } catch (InterruptedException x) {
-                // good
-            }
+            assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
     }
     
     @Issue("JENKINS-5253")
@@ -788,12 +778,8 @@ public class FilePathTest {
         File f = temp.newFolder("folder");
         FilePath fp = new FilePath(f);
         int invalidMode = 01770; // Full permissions for owner and group plus sticky bit.
-        try {
-            chmodAndMode(fp, invalidMode);
-            fail("Setting sticky bit should fail");
-        } catch (IOException e) {
-            assertEquals("Invalid mode: " + invalidMode, e.getMessage());
-        }
+        final IOException e = assertThrows("Setting sticky bit should fail", IOException.class, () -> chmodAndMode(fp, invalidMode));
+        assertEquals("Invalid mode: " + invalidMode, e.getMessage());
     }
 
     private int chmodAndMode(FilePath path, int mode) throws Exception {

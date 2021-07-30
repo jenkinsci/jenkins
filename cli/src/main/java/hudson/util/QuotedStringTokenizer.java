@@ -472,7 +472,7 @@ public class QuotedStringTokenizer
                                 (convertHexDigit((byte)s.charAt(i++))<<24)+
                                 (convertHexDigit((byte)s.charAt(i++))<<16)+
                                 (convertHexDigit((byte)s.charAt(i++))<<8)+
-                                (convertHexDigit((byte)s.charAt(i++)))
+                                convertHexDigit((byte)s.charAt(i++))
                                 )
                         );
                         break;
@@ -534,9 +534,9 @@ public class QuotedStringTokenizer
      */
     public static byte convertHexDigit( byte b )
     {
-        if ((b >= '0') && (b <= '9')) return (byte)(b - '0');
-        if ((b >= 'a') && (b <= 'f')) return (byte)(b - 'a' + 10);
-        if ((b >= 'A') && (b <= 'F')) return (byte)(b - 'A' + 10);
+        if (b >= '0' && b <= '9') return (byte) (b - '0');
+        if (b >= 'a' && b <= 'f') return (byte) (b - 'a' + 10);
+        if (b >= 'A' && b <= 'F') return (byte) (b - 'A' + 10);
         return 0;
     }
 

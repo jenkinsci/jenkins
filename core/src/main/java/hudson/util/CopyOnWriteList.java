@@ -142,7 +142,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
         this.core = new ArrayList<>();
     }
 
-    public <E> E[] toArray(E[] array) {
+    public <T> T[] toArray(T[] array) {
         return core.toArray(array);
     }
 

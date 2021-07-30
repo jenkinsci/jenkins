@@ -32,9 +32,7 @@ public class InstallUncaughtExceptionHandler {
 
     @Initializer
     public static void init(final Jenkins j) throws IOException {
-        CompressionFilter.setUncaughtExceptionHandler(j.servletContext, (e, context, req, rsp) -> {
-            handleException(j, e, req, rsp, 500);
-        });
+        CompressionFilter.setUncaughtExceptionHandler(j.servletContext, (e, context, req, rsp) -> handleException(j, e, req, rsp, 500));
         try {
             Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler());
             LOGGER.log(Level.FINE, "Successfully installed a global UncaughtExceptionHandler.");

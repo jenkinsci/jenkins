@@ -90,7 +90,7 @@ public class NodeProvisionerTest {
     }
 
     /**
-     * Scenario: schedule a build and see if one slave is provisioned.
+     * Scenario: schedule a build and see if one agent is provisioned.
      */
     // TODO fragile
     @Test public void autoProvision() throws Exception {
@@ -125,13 +125,13 @@ public class NodeProvisionerTest {
     }
 
     /**
-     * Scenario: make sure we take advantage of statically configured slaves.
+     * Scenario: make sure we take advantage of statically configured agents.
      */
     // TODO fragile
     @Test public void baselineSlaveUsage() throws Exception {
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
-            // add slaves statically upfront
+            // add agents statically upfront
             r.createSlave().toComputer().connect(false).get();
             r.createSlave().toComputer().connect(false).get();
 
@@ -179,7 +179,7 @@ public class NodeProvisionerTest {
 
     private FreeStyleProject createJob(Builder builder) throws IOException {
         FreeStyleProject p = r.createFreeStyleProject();
-        p.setAssignedLabel(null);   // let it roam free, or else it ties itself to the master since we have no slaves
+        p.setAssignedLabel(null);   // let it roam free, or else it ties itself to the built-in node since we have no agents
         p.getBuildersList().add(builder);
         return p;
     }
@@ -189,7 +189,7 @@ public class NodeProvisionerTest {
         DummyCloudImpl cloud = new DummyCloudImpl(r, delay);
         r.jenkins.clouds.add(cloud);
 
-        // no build on the master, to make sure we get everything from the cloud
+        // no build on the built-in node, to make sure we get everything from the cloud
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.emptyList());
         return cloud;
@@ -198,7 +198,7 @@ public class NodeProvisionerTest {
     private List<FreeStyleProject> create5SlowJobs(Latch l) throws IOException {
         List<FreeStyleProject> jobs = new ArrayList<>();
         for( int i=0; i<l.init; i++)
-            //set a large delay, to simulate the situation where we need to provision more slaves
+            //set a large delay, to simulate the situation where we need to provision more agents
             // to keep up with the load
             jobs.add(createJob(l.createBuilder()));
         return jobs;

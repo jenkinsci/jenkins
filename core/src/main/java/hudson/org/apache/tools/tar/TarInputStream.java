@@ -172,7 +172,7 @@ public class TarInputStream extends FilterInputStream {
             }
             skip -= numRead;
         }
-        return (numToSkip - skip);
+        return numToSkip - skip;
     }
 
     /**
@@ -329,7 +329,7 @@ public class TarInputStream extends FilterInputStream {
             return -1;
         }
 
-        if ((numToRead + this.entryOffset) > this.entrySize) {
+        if (numToRead + this.entryOffset > this.entrySize) {
             numToRead = (int) (this.entrySize - this.entryOffset);
         }
 

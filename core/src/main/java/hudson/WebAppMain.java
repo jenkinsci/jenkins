@@ -341,7 +341,7 @@ public class WebAppMain implements ServletContextListener {
      */
     private void recordBootAttempt(File home) {
         try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            o.write((new Date().toString() + System.getProperty("line.separator", "\n")).getBytes());
+            o.write((new Date() + System.getProperty("line.separator", "\n")).getBytes());
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
         }

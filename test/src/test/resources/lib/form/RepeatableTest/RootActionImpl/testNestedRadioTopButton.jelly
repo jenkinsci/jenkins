@@ -28,22 +28,22 @@ THE SOFTWARE.
   <l:main-panel>
     <f:form method="post" name="config" action="submitTest">
       <f:repeatable var="item" items="${it.list}" name="items" enableTopButton="true">
-        <table>
+        <div>
           <f:entry>
             <f:radio name="outer" value="one"/> One
             <f:radio name="outer" value="two"/> Two
           </f:entry>
           <f:nested>
             <f:repeatable var="moo" items="${item.list}" add="Add Moo" enableTopButton="true">
-              <table>
+              <div>
                 <f:entry>
                   <f:radio name="inner" value="inone"/>
                   <f:radio name="inner" value="intwo"/>
                 </f:entry>
-              </table>
+              </div>
             </f:repeatable>
           </f:nested>
-        </table>
+        </div>
       </f:repeatable>
       <f:entry>
         <f:submit value="submit"/>

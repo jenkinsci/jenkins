@@ -3,7 +3,7 @@
  */
 function buildTimeTrend_displayBuilds(data) {
 	var p = document.getElementById('trend');
-	var isMasterSlaveEnabled = 'true' === p.getAttribute("data-is-master-slave-enabled");
+	var isDistributedBuildsEnabled = 'true' === p.getAttribute("data-is-distributed-build-enabled");
 	var imagesURL = document.head.getAttribute('data-imagesurl');
 	var rootURL = document.head.getAttribute('data-rooturl');
 	
@@ -18,7 +18,7 @@ function buildTimeTrend_displayBuilds(data) {
 		update(e.displayName.escapeHTML())));
 		tr.insert(new Element('td', {data: e.duration}).
 		update(e.durationString.escapeHTML()));
-		if (isMasterSlaveEnabled) {
+		if (isDistributedBuildsEnabled) {
 			var buildInfo = null;
 			var buildInfoStr = (e.builtOnStr || '').escapeHTML();
 			if(e.builtOn) {
