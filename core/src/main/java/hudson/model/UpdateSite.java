@@ -1050,8 +1050,8 @@ public class UpdateSite {
             return null;
     }
 
-    static final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get(((JSONObject)x), "name") != null;
-    static final Predicate<Object> IS_NOT_OPTIONAL = x-> "false".equals(get(((JSONObject)x), "optional"));
+    static final Predicate<Object> IS_DEP_PREDICATE = x -> x instanceof JSONObject && get((JSONObject) x, "name") != null;
+    static final Predicate<Object> IS_NOT_OPTIONAL = x -> "false".equals(get((JSONObject) x, "optional"));
 
     public final class Plugin extends Entry {
         /**

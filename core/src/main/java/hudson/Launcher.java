@@ -813,7 +813,7 @@ public abstract class Launcher {
             } else
                 buf.append(c);
         }
-        listener.getLogger().println(buf.toString());
+        listener.getLogger().println(buf);
         listener.getLogger().flush();
     }
 
@@ -1110,7 +1110,7 @@ public abstract class Launcher {
         public Proc launch(ProcStarter ps) throws IOException {
             final OutputStream out = ps.stdout == null || ps.stdoutListener != null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
-            final InputStream  in  = (ps.stdin==null || ps.stdin==NULL_INPUT_STREAM) ? null : new RemoteInputStream(ps.stdin,false);
+            final InputStream in = ps.stdin == null || ps.stdin == NULL_INPUT_STREAM ? null : new RemoteInputStream(ps.stdin, false);
             
             final FilePath psPwd = ps.pwd;
             final String workDir = psPwd==null ? null : psPwd.getRemote();

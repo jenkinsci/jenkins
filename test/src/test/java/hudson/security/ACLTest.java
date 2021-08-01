@@ -46,6 +46,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.model.Job;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
@@ -193,6 +194,11 @@ public class ACLTest {
                     throw new AssertionError("should not have needed to check " + permission + " for " + a);
                 }
             };
+        }
+
+        @Override
+        public ACL getACL(Job<?, ?> project) {
+            throw new AssertionError("should not have even needed to call getACL");
         }
 
         @NonNull

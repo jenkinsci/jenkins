@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -157,13 +158,7 @@ public class AbstractLazyLoadRunMapTest {
     @Test
     public void firstKey() {
         assertEquals(5, a.firstKey().intValue());
-
-        try {
-            b.firstKey();
-            fail();
-        } catch (NoSuchElementException e) {
-            // as expected
-        }
+        assertThrows(NoSuchElementException.class, () -> b.firstKey());
     }
 
     @Issue("JENKINS-26690")

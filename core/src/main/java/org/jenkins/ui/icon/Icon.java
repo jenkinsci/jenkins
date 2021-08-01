@@ -234,7 +234,7 @@ public class Icon {
             return null;
         }
         String normalizedSizeClass = iconDims.get(string.trim());
-        return (normalizedSizeClass != null ? normalizedSizeClass : string);
+        return normalizedSizeClass != null ? normalizedSizeClass : string;
     }
 
     /**

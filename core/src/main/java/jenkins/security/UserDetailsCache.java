@@ -122,7 +122,7 @@ public final class UserDetailsCache {
                 return detailsCache.get(idOrFullName, new Retriever(idOrFullName));
             } catch (ExecutionException | UncheckedExecutionException e) {
                 if (e.getCause() instanceof UsernameNotFoundException) {
-                    throw ((UsernameNotFoundException)e.getCause());
+                    throw (UsernameNotFoundException) e.getCause();
                 } else {
                     throw e;
                 }

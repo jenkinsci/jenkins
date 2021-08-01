@@ -35,7 +35,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
@@ -121,6 +120,7 @@ import jenkins.SoloFilePathFilter;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -526,7 +526,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     @Restricted(NoExternalUse.class)
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner,
                        String verificationRoot, boolean noFollowLinks) throws IOException, InterruptedException {
-        final OutputStream out = (channel!=null)?new RemoteOutputStream(os):os;
+        final OutputStream out = channel != null ? new RemoteOutputStream(os) : os;
         return act(new Archive(factory, out, scanner, verificationRoot, noFollowLinks));
     }
     private class Archive extends SecureFileCallable<Integer> {
@@ -696,7 +696,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
-                if (!f.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
+                if (!f.getCanonicalFile().toPath().startsWith(dir.getCanonicalPath())) {
                     throw new IOException(
                         "Zip " + zipFile.getPath() + " contains illegal file name that breaks out of the target directory: " + e.getName());
                 }
@@ -1894,11 +1894,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         // Anyway the existing calls already skip this method if on Windows.
         if (File.pathSeparatorChar==';')  return; // noop
 
-        if (Util.NATIVE_CHMOD_MODE) {
-            PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
-        } else {
-            Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
-        }
+        Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
     }
 
     private static boolean CHMOD_WARNED = false;
@@ -2920,7 +2916,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.592
      */
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
+    public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.

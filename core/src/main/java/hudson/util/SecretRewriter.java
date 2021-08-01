@@ -110,7 +110,7 @@ public class SecretRewriter {
                         copied = eidx;
                     }
                     buf.append(line.substring(copied));
-                    out.println(buf.toString());
+                    out.println(buf);
                 }
             }
 
