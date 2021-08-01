@@ -12,6 +12,7 @@
 
   <name>Jenkins cli</name>
   <description>Command line interface for Jenkins</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
     <!-- TODO: remove once Medium level is set in the core (JENKINS-36716) -->

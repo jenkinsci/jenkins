@@ -36,6 +36,7 @@ THE SOFTWARE.
 
   <name>Jenkins war</name>
   <description>Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and some HTML files.</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
