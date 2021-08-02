@@ -29,7 +29,7 @@ import java.io.Serializable;
 /**
  * Case-insensitive string comparator.
  *
- * @deprecated use {@link String.CASE_INSENSITIVE_ORDER} directly
+ * @deprecated use {@link String#CASE_INSENSITIVE_ORDER} directly
  * @author Kohsuke Kawaguchi
  */
 @Deprecated
