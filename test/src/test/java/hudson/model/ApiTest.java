@@ -26,6 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.console.ModelHyperlinkNote;
 import net.sf.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -172,6 +173,88 @@ public class ApiTest {
         assertEquals(
                 "<parameter _class=\"hudson.model.StringParameterValue\"><name>foo</name><value>bar&#x1b;</value></parameter>",
                 page.getWebResponse().getContentAsString());
+    }
+
+    private static class HyperlinkCause extends Cause.UpstreamCause {
+
+        private final Run<?, ?> us;
+
+        HyperlinkCause(Run<?, ?> us) {
+            super(us);
+            this.us = us;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return "Started by "
+                    + ModelHyperlinkNote.encodeTo("/" + us.getUrl(), us.getFullDisplayName());
+        }
+    }
+
+    @Issue("JENKINS-66269")
+    @Test
+    public void consoleNote() throws Exception {
+        FreeStyleProject us = j.createFreeStyleProject("us");
+        Run<FreeStyleProject, FreeStyleBuild> run = j.buildAndAssertSuccess(us);
+
+        FreeStyleProject ds = j.createFreeStyleProject("ds");
+        j.assertBuildStatusSuccess(ds.scheduleBuild2(0, new CauseAction(new HyperlinkCause(run))));
+
+        Page page =
+                j.createWebClient()
+                        .goTo(
+                                ds.getUrl() + "api/xml?tree=builds[actions[causes[*]]]",
+                                "application/xml");
+        assertThat(
+                page.getWebResponse().getContentAsString(),
+                containsString(
+                        "<shortDescription>Started by "
+                                + us.getFullName()
+                                + " #"
+                                + run.getNumber()
+                                + "</shortDescription>"));
+
+        page =
+                j.createWebClient()
+                        .goTo(
+                                ds.getUrl()
+                                        + "api/xml?tree=builds[actions[causes[*]]]&xpath=//shortDescription",
+                                "application/xml");
+        assertEquals(
+                "<shortDescription>Started by "
+                        + us.getFullName()
+                        + " #"
+                        + run.getNumber()
+                        + "</shortDescription>",
+                page.getWebResponse().getContentAsString());
+
+        page =
+                j.createWebClient()
+                        .goTo(
+                                ds.getUrl() + "api/python?tree=builds[actions[causes[*]]]",
+                                "text/x-python");
+        assertThat(
+                page.getWebResponse().getContentAsString(),
+                containsString(
+                        "\"shortDescription\":\"Started by "
+                                + us.getFullName()
+                                + " #"
+                                + run.getNumber()
+                                + "\""));
+
+        page =
+                j.createWebClient()
+                        .goTo(
+                                ds.getUrl() + "api/json?tree=builds[actions[causes[*]]]",
+                                "application/json");
+        assertThat(
+                page.getWebResponse().getContentAsString(),
+                containsString(
+                        "\"shortDescription\":\"Started by "
+                                + us.getFullName()
+                                + " #"
+                                + run.getNumber()
+                                + "\""));
     }
 
     @Test

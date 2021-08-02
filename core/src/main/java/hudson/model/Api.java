@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import hudson.console.ConsoleNote;
 import jenkins.util.xml.FilteredFunctionContext;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;
@@ -39,11 +40,14 @@ import org.dom4j.io.XMLWriter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.ExportConfig;
+import org.kohsuke.stapler.export.ExportInterceptor;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.Flavor;
 import org.kohsuke.stapler.export.Model;
 import org.kohsuke.stapler.export.ModelBuilder;
 import org.kohsuke.stapler.export.NamedPathPruner;
+import org.kohsuke.stapler.export.Property;
 import org.kohsuke.stapler.export.SchemaGenerator;
 import org.kohsuke.stapler.export.TreePruner;
 import org.kohsuke.stapler.export.TreePruner.ByDepth;
@@ -55,6 +59,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -108,7 +113,7 @@ public class Api extends AbstractModelObject {
 
         if(xpath==null && excludes==null) {
             // serve the whole thing
-            rsp.serveExposedBean(req,bean,Flavor.XML);
+            rsp.serveExposedBean(req, bean, getExportConfig(req, Flavor.XML));
             return;
         }
 
@@ -117,7 +122,10 @@ public class Api extends AbstractModelObject {
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());
         TreePruner pruner = tree != null ? new NamedPathPruner(tree) : new ByDepth(1 - depth);
-        p.writeTo(bean,pruner,Flavor.XML.createDataWriter(bean,sw));
+        p.writeTo(
+                bean,
+                pruner,
+                Flavor.XML.createDataWriter(bean, sw, getExportConfig(req, Flavor.XML)));
 
         // apply XPath
         FilteredFunctionContext functionContext = new FilteredFunctionContext();
@@ -228,7 +236,11 @@ public class Api extends AbstractModelObject {
     public void doJson(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if (req.getParameter("jsonp") == null || permit(req)) {
             setHeaders(rsp);
-            rsp.serveExposedBean(req,bean, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP);
+            rsp.serveExposedBean(
+                    req,
+                    bean,
+                    getExportConfig(
+                            req, req.getParameter("jsonp") == null ? Flavor.JSON : Flavor.JSONP));
         } else {
             rsp.sendError(HttpURLConnection.HTTP_FORBIDDEN, "jsonp forbidden; implement jenkins.security.SecureRequester");
         }
@@ -239,7 +251,7 @@ public class Api extends AbstractModelObject {
      */
     public void doPython(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         setHeaders(rsp);
-        rsp.serveExposedBean(req,bean, Flavor.PYTHON);
+        rsp.serveExposedBean(req, bean, getExportConfig(req, Flavor.PYTHON));
     }
 
     private boolean permit(StaplerRequest req) {
@@ -259,6 +271,43 @@ public class Api extends AbstractModelObject {
         rsp.setHeader("X-Content-Type-Options", "nosniff");
         // recommended by OWASP: https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html#security-headers
         rsp.setHeader("X-Frame-Options", "deny");
+    }
+
+    private static final ExportInterceptor REMOVE_CONSOLE_NOTES =
+            new ExportInterceptor() {
+                @Override
+                public Object getValue(Property property, Object model, ExportConfig config)
+                        throws IOException {
+                    try {
+                        Object obj = property.getValue(model);
+                        if (obj instanceof String) {
+                            String str = (String) obj;
+                            return ConsoleNote.removeNotes(str);
+                        } else {
+                            return obj;
+                        }
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        if (config.isSkipIfFail()) {
+                            LOGGER.log(
+                                    Level.WARNING,
+                                    "Failed to get \""
+                                            + property.name
+                                            + "\" from a "
+                                            + model.getClass().getName(),
+                                    e);
+                            return SKIP;
+                        }
+                        throw new IOException(
+                                "Failed to write " + property.name + ":" + e.getMessage(), e);
+                    }
+                }
+            };
+
+    private static ExportConfig getExportConfig(StaplerRequest req, Flavor flavor) {
+        return new ExportConfig()
+                .withFlavor(flavor)
+                .withExportInterceptor(REMOVE_CONSOLE_NOTES)
+                .withPrettyPrint(req.hasParameter("pretty"));
     }
 
     private static final Logger LOGGER = Logger.getLogger(Api.class.getName());
