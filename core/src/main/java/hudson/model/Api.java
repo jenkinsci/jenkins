@@ -113,6 +113,8 @@ public class Api extends AbstractModelObject {
         }
 
         StringWriter sw = new StringWriter();
+        // The following is needed to ensure that escaped control characters don't result in parsing errors.
+        sw.write("<?xml version=\"1.1\"?>");
 
         // first write to String
         Model p = MODEL_BUILDER.get(bean.getClass());

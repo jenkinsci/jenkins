@@ -40,7 +40,7 @@ THE SOFTWARE.
 
   <properties>
     <slf4jVersion>1.7.32</slf4jVersion>
-    <stapler.version>1563.v3da2d02f9572</stapler.version>
+    <stapler.version>1566.vd81b422e04d6</stapler.version> <!-- TODO https://github.com/stapler/stapler/pull/248 -->
     <groovy.version>2.4.12</groovy.version>
   </properties>
 

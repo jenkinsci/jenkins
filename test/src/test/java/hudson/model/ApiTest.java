@@ -27,7 +27,6 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import net.sf.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -159,7 +158,6 @@ public class ApiTest {
     }
 
     @Issue("JENKINS-22566")
-    @Ignore("TODO currently fails with: org.dom4j.DocumentException: Error on line 1 of document  : An invalid XML character (Unicode: 0x1b) was found in the element content of the document")
     @Test
     public void escapedParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
@@ -167,11 +165,32 @@ public class ApiTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0, new ParametersAction(new StringParameterValue("foo", "bar\u001B"))));
 
         Page page = j.createWebClient().goTo(
+                p.getUrl() + "api/xml?tree=builds[actions[parameters[name,value]]]",
+                "application/xml");
+        assertThat(
+                page.getWebResponse().getContentAsString(),
+                containsString("<parameter _class='hudson.model.StringParameterValue'><name>foo</name><value>bar&#27;</value></parameter>"));
+
+        page = j.createWebClient().goTo(
                 p.getUrl() + "api/xml?tree=builds[actions[parameters[name,value]]]&xpath=freeStyleProject/build/action/parameter",
                 "application/xml");
         assertEquals(
-                "<parameter _class=\"hudson.model.StringParameterValue\"><name>foo</name><value>bar&#x1b;</value></parameter>",
+                "<parameter _class=\"hudson.model.StringParameterValue\"><name>foo</name><value>bar&#27;</value></parameter>",
                 page.getWebResponse().getContentAsString());
+
+        page = j.createWebClient().goTo(
+                p.getUrl() + "api/python?tree=builds[actions[parameters[name,value]]]",
+                "text/x-python");
+        assertThat(
+                page.getWebResponse().getContentAsString(),
+                containsString("{\"_class\":\"hudson.model.StringParameterValue\",\"name\":\"foo\",\"value\":\"bar\\u001b\"}"));
+
+        page = j.createWebClient().goTo(
+                p.getUrl() + "api/json?tree=builds[actions[parameters[name,value]]]",
+                "application/json");
+        assertThat(
+                page.getWebResponse().getContentAsString(),
+                containsString("{\"_class\":\"hudson.model.StringParameterValue\",\"name\":\"foo\",\"value\":\"bar\\u001b\"}"));
     }
 
     @Test
