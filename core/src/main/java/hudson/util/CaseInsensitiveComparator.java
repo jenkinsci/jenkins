@@ -29,8 +29,10 @@ import java.io.Serializable;
 /**
  * Case-insensitive string comparator.
  *
+ * @deprecated use {@link String#CASE_INSENSITIVE_ORDER} directly
  * @author Kohsuke Kawaguchi
  */
+@Deprecated
 public final class CaseInsensitiveComparator implements Comparator<String>, Serializable {
     public static final Comparator<String> INSTANCE = new CaseInsensitiveComparator();
 
