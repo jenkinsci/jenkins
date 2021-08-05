@@ -29,7 +29,9 @@ import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.util.LoaderUtils;
 import org.apache.tools.ant.util.ReflectUtil;
+import org.apache.tools.ant.util.StringUtils;
 import org.apache.tools.ant.util.VectorSet;
+import org.apache.tools.zip.ZipLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -403,6 +405,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
                 } catch (final BuildException e) {
                     // ignore path elements which are invalid
                     // relative to the project
+                    log("Ignoring path element " + pathElement + " from " +
+                            "classpath due to exception " + e, Project.MSG_DEBUG);
                 }
             }
         }
@@ -441,6 +445,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
     protected void log(final String message, final int priority) {
         if (project != null) {
             project.log(message, priority);
+        } else if (priority < Project.MSG_INFO) {
+            System.err.println(message);
         }
     }
 
@@ -1043,6 +1049,12 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
             } else {
                 if (jarFile == null) {
                     if (file.exists()) {
+                        if (!isZip(file)) {
+                            final String msg = "CLASSPATH element " + file
+                                + " is not a JAR.";
+                            log(msg, Project.MSG_WARN);
+                            return null;
+                        }
                         jarFile = newJarFile(file);
                         jarFiles.put(file, jarFile);
                     } else {
@@ -1063,8 +1075,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         } catch (final Exception e) {
             final String msg = "Unable to obtain resource from " + file + ": ";
             log(msg + e, Project.MSG_WARN);
-            System.err.println(msg);
-            e.printStackTrace();
+            log(StringUtils.getStackTrace(e), Project.MSG_WARN);
         }
         return null;
     }
@@ -1589,6 +1600,37 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
                                                    final Path path,
                                                    final boolean parentFirst) {
         return new AntClassLoader(parent, project, path, parentFirst);
+    }
+
+    private static final ZipLong EOCD_SIG = new ZipLong(0X06054B50L);
+    private static final ZipLong SINGLE_SEGMENT_SPLIT_MARKER =
+        new ZipLong(0X30304B50L);
+
+    private static boolean isZip(final File file) throws IOException {
+        final byte[] sig = new byte[4];
+        if (readFully(file, sig)) {
+            final ZipLong start = new ZipLong(sig);
+            return ZipLong.LFH_SIG.equals(start) // normal file
+                || EOCD_SIG.equals(start) // empty zip
+                || ZipLong.DD_SIG.equals(start) // split zip
+                || SINGLE_SEGMENT_SPLIT_MARKER.equals(start);
+        }
+        return false;
+    }
+
+    private static boolean readFully(final File f, final byte[] b) throws IOException {
+        try (InputStream fis = Files.newInputStream(f.toPath())) {
+            final int len = b.length;
+            int count = 0, x = 0;
+            while (count != len) {
+                x = fis.read(b, count, len - count);
+                if (x == -1) {
+                    break;
+                }
+                count += x;
+            }
+            return count == len;
+        }
     }
 
     /**
