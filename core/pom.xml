@@ -36,6 +36,7 @@ THE SOFTWARE.
 
   <name>Jenkins core</name>
   <description>Jenkins core code and view files to render HTML.</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
     <staplerFork>true</staplerFork>

@@ -39,6 +39,7 @@ THE SOFTWARE.
 
   <name>Jenkins main module</name>
   <description>The module that constitutes the main jenkins.war</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <licenses>
     <license>
