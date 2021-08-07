@@ -921,7 +921,11 @@ public class Util {
 
     /**
      * Encode a single path component for use in an HTTP URL.
-     * Escapes all special characters for use in JNLP shell command.
+     * Escapes all special characters including those outside
+     * of the characters specified in RFC1738.
+     * Encoded characters are space an {@code "!#%$'&*()+,-./=:;< >?@_[\]^ `{|}~}
+     * Note that slash ({@code /}) is encoded, so the given string should be a
+     * single path component used in constructing a URL.
      */
     @NonNull
     public static String fullEncode(@NonNull String s){
