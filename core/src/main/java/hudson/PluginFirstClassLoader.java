@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-import jenkins.util.AntWithFindResourceClassLoader;
+import jenkins.util.AntClassLoader;
 
 /**
  * classLoader which use first /WEB-INF/lib/*.jar and /WEB-INF/classes before core classLoader
@@ -41,7 +41,7 @@ import jenkins.util.AntWithFindResourceClassLoader;
  * @since 1.371
  */
 public class PluginFirstClassLoader
-    extends AntWithFindResourceClassLoader
+    extends AntClassLoader
 {
 
     public PluginFirstClassLoader() {
