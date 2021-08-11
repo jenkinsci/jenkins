@@ -136,6 +136,7 @@ public final class XmlFile {
      * @param force Whether or not to flush the page cache to the storage device with {@link
      *     FileChannel#force} (i.e., {@code fsync}} or {@code FlushFileBuffers}) before this method
      *     returns. If you set this to {@code false}, you will lose data integrity.
+     * @since 2.304
      */
     public XmlFile(XStream xs, File file, boolean force) {
         this.xs = xs;
