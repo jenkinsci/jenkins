@@ -431,7 +431,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>8.45</version>
+              <version>8.45.1</version>
             </dependency>
           </dependencies>
           <!-- Version specified in parent POM -->
