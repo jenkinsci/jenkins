@@ -82,7 +82,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
@@ -566,12 +565,7 @@ public class FilePathTest {
             assertNull(d.validateAntFileMask("d1/d2/**/f.txt"));
             assertNull(d.validateAntFileMask("d1/d2/**/f.txt", 10));
             assertEquals(Messages.FilePath_validateAntFileMask_portionMatchButPreviousNotMatchAndSuggest("**/*.js", "**", "**/*.js"), d.validateAntFileMask("**/*.js", 1000));
-            try {
-                d.validateAntFileMask("**/*.js", 10);
-                fail();
-            } catch (InterruptedException x) {
-                // good
-            }
+            assertThrows(InterruptedException.class, () -> d.validateAntFileMask("**/*.js", 10));
     }
     
     @Issue("JENKINS-5253")
