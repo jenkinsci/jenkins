@@ -25,7 +25,7 @@ contributor(ctx) {
         for (def f=ct.containingFile.virtualFile; f!=null && !roots.contains(f); f=f.parent) {
             contentPaths << f.name
         }
-        if (contentPaths.size()>0) {
+        if (contentPaths.size()>1) {
             // directory portion matches the FQCN
             def fqcn = contentPaths.reverse()[0..<contentPaths.size()-1].join('.')
 
