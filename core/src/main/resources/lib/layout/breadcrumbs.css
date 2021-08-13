@@ -100,7 +100,7 @@
 #breadcrumbs LI.children:after, #breadcrumbs LI.separator:after {
     /* Right arrow */
     content: "";
-    border-left: 0.25em solid #bcbcbc;
+    border-left: 0.25em solid currentColor;
     border-top: 0.25em solid transparent;
     border-bottom: 0.25em solid transparent;
     border-right: 0;

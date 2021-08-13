@@ -123,7 +123,7 @@ a.yui-button:visited {
   box-sizing: border-box;
   // vertical padding:
   // 0.375rem == 6px == 32px (target height) - 4px (borders) - 16 (line) / 2
-  padding: 0.375rem 1rem;
+  padding: 0.375rem 0.5rem;
   margin-right: 0.25rem;
   margin-left: 0.25rem;
   min-width: 4.5rem;
@@ -167,11 +167,11 @@ a.yui-button:visited {
   }
 
   .leading-icon {
-    margin-right: 0.25rem;
+    margin-right: 0.5rem;
   }
 
   .trailing-icon {
-    margin-left: 0.25rem;
+    margin-left: 0.5rem;
   }
 }
 
@@ -303,4 +303,22 @@ a.yui-button.icon-button.large-button {
     height: 1.25rem;
     font-size: 1.25rem;
   }
+}
+
+.jenkins-buttons-row {
+  display: flex;
+  
+  .yui-button {
+    margin-left: 0!important;
+    margin-right: 0.5rem!important;
+  }
+  
+  &--invert {
+    justify-content: flex-end;
+    
+    .yui-button {
+      margin-left: 0.5rem!important;
+      margin-right: 0!important;
+    }
+  }  
 }
