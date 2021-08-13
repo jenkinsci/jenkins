@@ -42,11 +42,11 @@ THE SOFTWARE.
     -->
     <span class="build-rss-links">
         <a class="build-rss-all-link" href="${it.baseUrl}/rssAll">
-          <span class="build-rss-all-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px" /></span>
+          <span class="build-rss-all-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)" href="${imagesURL}/material-icons/feed.svg#feed" /></span>
             Atom feed ${%for all}
         </a>
         <a class="build-rss-failed-link" href="${it.baseUrl}/rssFailed">
-          <span class="build-rss-failed-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" href="${imagesURL}/material-icons/svg-sprite-communication-symbol.svg#ic_rss_feed_24px" /></span>
+          <span class="build-rss-failed-icon"><l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)" href="${imagesURL}/material-icons/feed.svg#feed" /></span>
           Atom feed ${%for failures}
         </a>
     </span>
