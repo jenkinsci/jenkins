@@ -469,6 +469,16 @@ public class IconSet {
         icons.addIcon(new Icon("icon-up icon-md", "24x24/up.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-user icon-md", "24x24/user.png", Icon.ICON_MEDIUM_STYLE));
 
+        icons.addIcon(new Icon("icon-up icon-md", "scalable/up.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-search icon-md", "scalable/search.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-clock icon-md", "scalable/clock.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-edit-delete icon-md", "scalable/edit-delete.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-gear2 icon-md", "scalable/gear.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-new-package icon-md", "scalable/new-package.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-notepad icon-md", "scalable/notepad.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-user icon-md", "scalable/user.svg", Icon.ICON_MEDIUM_STYLE));
+        icons.addIcon(new Icon("icon-folder icon-md", "scalable/folder.svg", Icon.ICON_MEDIUM_STYLE));
+
         // Large icons.
         // .png versions will override .gif versions => only time a gif should be returned by
         // name is when it's an animated status icon ("-anime")

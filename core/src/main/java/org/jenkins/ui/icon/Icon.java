@@ -216,7 +216,7 @@ public class Icon {
         if (string == null) {
             return null;
         }
-        if (string.endsWith(".png") || string.endsWith(".gif")) {
+        if (string.endsWith(".png") || string.endsWith(".gif") || string.endsWith(".svg")) {
             string = string.substring(0, string.length() - 4);
         }
         return string.replace('_', '-');
