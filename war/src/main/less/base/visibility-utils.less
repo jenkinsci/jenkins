@@ -141,3 +141,27 @@
     display: none !important;
   }
 }
+
+/// Hide an element visually, but have it available for screen readers
+.jenkins-visually-hidden {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  // If margin is set to a negative value it can cause text to be announced in
+  // the wrong order in VoiceOver for OSX
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+
+  border: 0;
+
+  // For long content, line feeds are not interpreted as spaces and small width
+  // causes content to wrap 1 word per line:
+  // https://medium.com/@jessebeach/beware-smushed-off-screen-accessible-text-5952a4c2cbfe
+  white-space: nowrap;
+}
