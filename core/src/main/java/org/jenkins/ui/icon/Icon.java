@@ -24,6 +24,7 @@
 package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -216,7 +217,7 @@ public class Icon {
         if (string == null) {
             return null;
         }
-        if (string.endsWith(".png") || string.endsWith(".gif") || string.endsWith(".svg")) {
+        if (StringUtils.endsWithAny(string, new String[] {"svg", "png", "gif"})) {
             string = string.substring(0, string.length() - 4);
         }
         return string.replace('_', '-');
