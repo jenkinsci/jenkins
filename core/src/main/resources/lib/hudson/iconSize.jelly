@@ -49,9 +49,9 @@ THE SOFTWARE.
     <div class="jenkins-icon-size__items jenkins-buttons-row" xmlns:local="local">
       <span>${%Icon}:</span>
       <ol>
-        <local:iconSizeLink title="${%Small}" sz="16x16" />
-        <local:iconSizeLink title="${%Medium}" sz="24x24" />
-        <local:iconSizeLink title="${%Large}" sz="32x32" />
+        <local:iconSizeLink title="${%S}" sz="16x16" />
+        <local:iconSizeLink title="${%M}" sz="24x24" />
+        <local:iconSizeLink title="${%L}" sz="32x32" />
       </ol>
     </div>
 

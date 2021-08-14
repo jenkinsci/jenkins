@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div id="rss-bar" class="jenkins-buttons-row jenkins-buttons-row--invert">
-    <a href="${rootURL}/legend" class="yui-button link-button rss-bar-legend-link">${%Icon legend}</a>
+    <a href="${rootURL}/legend" class="yui-button link-button rss-bar-legend-link">${%Legend}</a>
       <a href="rssAll" class="yui-button link-button">
         <span class="leading-icon">
           <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="viewbox (default 0 0 16 16)"
