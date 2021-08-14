@@ -194,7 +194,7 @@ THE SOFTWARE.
     <div id="page-head">
       <l:pageHeader title="${%title}"
                     logoAlt="${%jenkinshead.alt}"
-                    searchPlaceholder="${%Search}"
+                    searchPlaceholder="${%search}"
                     searchHelpUrl="${%searchBox.url}"
                     logout="${%logout}"/>
 
