@@ -47,10 +47,10 @@ THE SOFTWARE.
           </span>
           <j:choose>
             <j:when test="${empty(it.description)}">
-              ${%Add description}
+              ${%add description}
             </j:when>
             <j:otherwise>
-              ${%Edit description}
+              ${%edit description}
             </j:otherwise>
           </j:choose>
         </a>
