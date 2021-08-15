@@ -31,16 +31,15 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <form action="submitDescription" method="post">
-        <j:set var="description" value="${it == app ? it.primaryView.description : it.description}" />
         <table>
           <f:entry help="${app.markupFormatter.helpUrl}">
             <!-- JENKINS-37360: Since Jenkins has a description (system message), prevent that from showing here.
              Instead, use primary view's, as Jenkins's cannot be edited anyway (see Jenkins#submitDescription) -->
-            <f:textarea name="description" value="${description}"
+            <f:textarea name="description" value="${it == app ? it.primaryView.description : it.description}"
                         codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
         </table>
-        <f:submit value="${empty(description) ? '%Submit' : '%Save'}" />
+        <f:submit value="${%Save}" />
       </form>
     </l:main-panel>
   </l:layout>
