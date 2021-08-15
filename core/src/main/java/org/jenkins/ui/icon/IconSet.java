@@ -25,6 +25,9 @@ package org.jenkins.ui.icon;
 
 import org.apache.commons.jelly.JellyContext;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -469,16 +472,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-up icon-md", "24x24/up.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-user icon-md", "24x24/user.png", Icon.ICON_MEDIUM_STYLE));
 
-        icons.addIcon(new Icon("icon-up icon-md", "svgs/up.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-search icon-md", "svgs/search.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-clock icon-md", "svgs/clock.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-edit-delete icon-md", "svgs/edit-delete.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-gear2 icon-md", "svgs/gear.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-new-package icon-md", "svgs/new-package.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-notepad icon-md", "svgs/notepad.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-user icon-md", "svgs/user.svg", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-folder icon-md", "svgs/folder.svg", Icon.ICON_MEDIUM_STYLE));
-
         // Large icons.
         // .png versions will override .gif versions => only time a gif should be returned by
         // name is when it's an animated status icon ("-anime")
@@ -632,7 +625,93 @@ public class IconSet {
         icons.addIcon(new Icon("icon-user icon-xlg", "48x48/user.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-warning icon-xlg", "48x48/warning.png", Icon.ICON_XLARGE_STYLE));
 
+        initializeSVGs();
+
         // Capture a list of the core icons.
         icons.coreIcons.putAll(icons.iconsByCSSSelector);
+    }
+
+    private static void initializeSVGs() {
+      Map<String, String> sizes = new HashMap<>();
+      sizes.put("icon-sm", Icon.ICON_SMALL_STYLE);
+      sizes.put("icon-md", Icon.ICON_MEDIUM_STYLE);
+      sizes.put("icon-lg", Icon.ICON_LARGE_STYLE);
+      sizes.put("icon-xlg", Icon.ICON_XLARGE_STYLE);
+
+      List<String> images = new ArrayList<>();
+      images.add("computer");
+      images.add("delete-document");
+      images.add("accept");
+      images.add("application-certificate");
+      images.add("attribute");
+      images.add("bookmark-new");
+      images.add("certificate");
+      images.add("clipboard-list-solid");
+      images.add("clipboard");
+      images.add("clock");
+      images.add("computer-user-offline");
+      images.add("computer-x");
+      images.add("document");
+      images.add("edit-delete");
+      images.add("emblem-urgent");
+      images.add("error");
+      images.add("fingerprint");
+      images.add("folder-delete");
+      images.add("folder");
+      images.add("gear");
+      images.add("go-down");
+      images.add("go-top");
+      images.add("go-up");
+      images.add("graph");
+      images.add("grey");
+      images.add("headless");
+      images.add("headshot");
+      images.add("help");
+      images.add("hourglass");
+      images.add("installer");
+      images.add("keys");
+      images.add("light-grey");
+      images.add("lock");
+      images.add("logo");
+      images.add("monitor");
+      images.add("network");
+      images.add("new-computer");
+      images.add("new-document");
+      images.add("new-package");
+      images.add("new-user");
+      images.add("next");
+      images.add("notepad");
+      images.add("orange-square");
+      images.add("package");
+      images.add("person");
+      images.add("plugin");
+      images.add("previous");
+      images.add("redo");
+      images.add("refresh");
+      images.add("save-new");
+      images.add("save");
+      images.add("search");
+      images.add("secure");
+      images.add("setting");
+      images.add("shield");
+      images.add("star-gold");
+      images.add("star-large-gold");
+      images.add("star-large");
+      images.add("star");
+      images.add("stop");
+      images.add("system-log-out");
+      images.add("terminal");
+      images.add("undo");
+      images.add("up");
+      images.add("user");
+      images.add("video");
+      images.add("warning");
+      
+      for (Map.Entry<String, String> size : sizes.entrySet()) {
+        for (String image : images) {
+          icons.addIcon(new Icon("icon-" +image + " " + size.getKey(),
+            "svgs/" + image + ".svg", size.getValue()));
+        }
+      }
     }
 }
