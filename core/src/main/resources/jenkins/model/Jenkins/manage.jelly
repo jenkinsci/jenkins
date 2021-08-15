@@ -37,7 +37,7 @@ THE SOFTWARE.
   </j:if>
 
   <l:main-panel>
-    <h1>${%Manage Jenkins}</h1>
+    <h1 class="jenkins-settings__title">${%Manage Jenkins}</h1>
 
     <div class="manage-messages">
     <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
@@ -47,8 +47,8 @@ THE SOFTWARE.
     </div>
 
     <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
-      <section class="manage-page__category">
-        <h2>${category.key.label}</h2>
+      <section class="jenkins-settings__section">
+        <h2 class="jenkins-settings__section-title">${category.key.label}</h2>
         ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
         <div class="manage-page__row">
         <j:forEach var="m" items="${category.value}">
@@ -61,7 +61,6 @@ THE SOFTWARE.
           <j:if test="${iconMetadata == null}">
             <j:set var="iconMetadata" value="${icons.getIconByUrl(icon)}"/>
           </j:if>
-          
           
           <j:if test="${icon!=null}">
             <div class="manage-option manage-page__column">
@@ -109,7 +108,7 @@ THE SOFTWARE.
                 </f:link>
               </j:when>
               <j:otherwise>
-                <a href="${m.urlName}" title="${m.displayName}">
+                <a href="${m.urlName}">
                   <j:choose>
                     <j:when test="${iconMetadata != null}">
                       <l:icon class="${iconMetadata.classSpec}"
