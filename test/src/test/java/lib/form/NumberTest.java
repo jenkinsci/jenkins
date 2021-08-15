@@ -1,6 +1,8 @@
 package lib.form;
 
-import com.gargoylesoftware.htmlunit.html.*;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;

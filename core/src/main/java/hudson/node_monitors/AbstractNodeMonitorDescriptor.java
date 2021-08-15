@@ -97,6 +97,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     private void schedule(long interval) {
         Timer.get()
             .scheduleAtFixedRate(new SafeTimerTask() {
+                @Override
                 public void doRun() {
                     triggerUpdate();
                 }
@@ -193,8 +194,6 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     public String getTimestampString() {
         if (record==null)
             return Messages.AbstractNodeMonitorDescriptor_NoDataYet();
-//        return Messages.AbstractNodeMonitorDescriptor_DataObtainedSometimeAgo(
-//                Util.getTimeSpanString(System.currentTimeMillis()-record.timestamp));
         return Util.getTimeSpanString(System.currentTimeMillis()-record.timestamp);
     }
 

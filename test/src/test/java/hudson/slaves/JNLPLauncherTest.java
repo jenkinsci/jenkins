@@ -57,7 +57,7 @@ import static org.junit.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.awt.*;
+import java.awt.GraphicsEnvironment;
 import java.util.logging.Level;
 import static org.hamcrest.Matchers.instanceOf;
 import org.junit.rules.TemporaryFolder;
@@ -197,13 +197,13 @@ public class JNLPLauncherTest {
     }
 
     private static class DelegatingComputerLauncherImpl extends DelegatingComputerLauncher {
-        public DelegatingComputerLauncherImpl(ComputerLauncher launcher) {
+        DelegatingComputerLauncherImpl(ComputerLauncher launcher) {
             super(launcher);
         }
     }
 
     private static class ComputerLauncherFilterImpl extends ComputerLauncherFilter {
-        public ComputerLauncherFilterImpl(ComputerLauncher launcher) {
+        ComputerLauncherFilterImpl(ComputerLauncher launcher) {
             super(launcher);
         }
     }
@@ -279,6 +279,7 @@ public class JNLPLauncherTest {
     }
 
     private static class NoopTask extends SlaveToMasterCallable<String,RuntimeException> {
+        @Override
         public String call() {
             return "done";
         }
@@ -307,7 +308,7 @@ public class JNLPLauncherTest {
 
     @Test
     public void testObsoletedJnlpFileDownload() throws Exception {
-        assertJnlpFileDownload("/slave-agent.jnlp");
+        assertJnlpFileDownload("/slave-agent.jnlp"); // deliberately uses old URL
     }
 
     private void assertJnlpFileDownload(String filename) throws Exception {

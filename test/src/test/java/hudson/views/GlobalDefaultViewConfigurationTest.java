@@ -25,7 +25,7 @@ package hudson.views;
 
 import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
 import org.junit.Assert;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;

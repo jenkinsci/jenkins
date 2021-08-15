@@ -43,6 +43,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
             return Messages.UserSearchProperty_DisplayName();
         }
 
+        @Override
         public UserProperty newInstance(User user) {
             return new UserSearchProperty(DEFAULT_SEARCH_CASE_INSENSITIVE_MODE);
         }

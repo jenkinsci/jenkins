@@ -35,7 +35,9 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
 import java.util.Locale;
 
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -297,6 +299,7 @@ public class MultiStageTimeSeries implements Serializable {
         /**
          * Renders this object as an image.
          */
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             ChartUtil.generateGraph(req, rsp, createChart(), 500, 400);
         }

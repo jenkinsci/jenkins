@@ -15,7 +15,6 @@ import java.nio.file.StandardOpenOption;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
 public class FileChannelWriterTest {
     @Rule

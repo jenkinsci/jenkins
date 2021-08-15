@@ -56,7 +56,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
     /**
      * The default case insensitive strategy.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "used in several plugins")
     public static IdStrategy CASE_INSENSITIVE = new CaseInsensitive();
 
     /**
@@ -297,7 +297,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         public String keyFor(@NonNull String id) {
             int index = id.lastIndexOf('@'); // The @ can be used in local-part if quoted correctly
             // => the last @ is the one used to separate the domain and local-part
-            return index == -1 ? id : id.substring(0, index) + (id.substring(index).toLowerCase(Locale.ENGLISH));
+            return index == -1 ? id : id.substring(0, index) + id.substring(index).toLowerCase(Locale.ENGLISH);
         }
 
         @Override

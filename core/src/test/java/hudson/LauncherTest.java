@@ -72,7 +72,7 @@ public class LauncherTest {
             Thread.sleep(2000); // more delay to make sure it's gone
             assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp, Charset.defaultCharset()).trim())));
 
-            // Manual version of test: set up instance w/ one slave. Now in script console
+            // Manual version of test: set up instance w/ one agent. Now in script console
             // new hudson.FilePath(new java.io.File("/tmp")).createLauncher(new hudson.util.StreamTaskListener(System.err)).
             //   launch().cmds("sleep", "1d").stdout(System.out).stderr(System.err).start().kill()
             // returns immediately and pgrep sleep => nothing. But without fix
@@ -82,6 +82,7 @@ public class LauncherTest {
     }
 
     private static class NoopCallable extends MasterToSlaveCallable<Object,RuntimeException> {
+        @Override
         public Object call() throws RuntimeException {
             return null;
         }
@@ -101,7 +102,7 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByEnvMaintainsIsUnix() throws Exception {
+    @Test public void decoratedByEnvMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
@@ -113,7 +114,7 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByPrefixMaintainsIsUnix() throws Exception {
+    @Test public void decoratedByPrefixMaintainsIsUnix() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);

@@ -18,7 +18,6 @@ import java.util.List;
 
 import hudson.tasks.Publisher;
 import hudson.tasks.BuildStepDescriptor;
-import hudson.model.HelpLinkTest.HelpNotFoundBuilder.DescriptorImpl;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -107,6 +106,7 @@ public class HelpLinkTest {
 
     public static class HelpNotFoundBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -117,6 +117,7 @@ public class HelpLinkTest {
             }
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }
@@ -128,7 +129,7 @@ public class HelpLinkTest {
      */
     @Test
     public void negative() throws Exception {
-        DescriptorImpl d = new DescriptorImpl();
+        HelpNotFoundBuilder.DescriptorImpl d = new HelpNotFoundBuilder.DescriptorImpl();
         Publisher.all().add(d);
         try {
             FreeStyleProject p = j.createFreeStyleProject();

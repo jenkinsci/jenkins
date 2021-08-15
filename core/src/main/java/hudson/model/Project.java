@@ -100,6 +100,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         getBuildWrappersList().setOwner(this);
     }
 
+    @Override
     public AbstractProject<?, ?> asProject() {
         return this;
     }
@@ -137,6 +138,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return builders;
     }
     
+    @Override
     public DescribableList<Publisher,Descriptor<Publisher>> getPublishersList() {
         if (publishers == null) {
             publishersSetter.compareAndSet(this,null,new DescribableList<Publisher,Descriptor<Publisher>>(this));
@@ -148,6 +150,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return getBuildWrappersList().toMap();
     }
 
+    @Override
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
         if (buildWrappers == null) {
             buildWrappersSetter.compareAndSet(this,null,new DescribableList<BuildWrapper,Descriptor<BuildWrapper>>(this));
@@ -209,6 +212,7 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
         return getPublishersList().get(Fingerprinter.class)!=null;
     }
 
+    @Override
     public MavenInstallation inferMavenInstallation() {
         Maven m = getBuildersList().get(Maven.class);
         if (m!=null)    return m.getMaven();

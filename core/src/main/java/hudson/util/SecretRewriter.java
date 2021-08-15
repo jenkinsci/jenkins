@@ -110,7 +110,7 @@ public class SecretRewriter {
                         copied = eidx;
                     }
                     buf.append(line.substring(copied));
-                    out.println(buf.toString());
+                    out.println(buf);
                 }
             }
 
@@ -156,7 +156,7 @@ public class SecretRewriter {
             for (File child : children) {
                 String cn = child.getName();
                 if (cn.endsWith(".xml")) {
-                    if ((count++)%100==0)
+                    if (count++ % 100 == 0)
                         listener.getLogger().println("Scanning "+child);
                     try {
                         if (rewrite(child)) {

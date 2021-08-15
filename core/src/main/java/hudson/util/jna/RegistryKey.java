@@ -287,6 +287,7 @@ public class RegistryKey implements AutoCloseable {
         handle = 0;
     }
 
+    @Override
     public void close() {
         dispose();
     }

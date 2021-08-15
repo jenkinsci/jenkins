@@ -25,10 +25,10 @@
 package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Build;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.Run;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import java.util.Collection;
@@ -46,6 +46,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.model.Job;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
@@ -146,7 +147,7 @@ public class ACLTest {
 
         try (ACLContext ignored = ACL.as2(manager.impersonate2())) {
             Exception e = Assert.assertThrows(AccessDeniedException.class,
-                    () -> jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Build.ARTIFACTS));
+                    () -> jenkins.getACL().checkAnyPermission(Item.WIPEOUT, Run.ARTIFACTS));
             Assert.assertEquals("manager is missing a permission, one of Job/WipeOut, Run/Artifacts is required", e.getMessage());
         }
     }
@@ -193,6 +194,11 @@ public class ACLTest {
                     throw new AssertionError("should not have needed to check " + permission + " for " + a);
                 }
             };
+        }
+
+        @Override
+        public ACL getACL(Job<?, ?> project) {
+            throw new AssertionError("should not have even needed to call getACL");
         }
 
         @NonNull

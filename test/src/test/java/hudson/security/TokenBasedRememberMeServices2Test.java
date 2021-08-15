@@ -3,7 +3,7 @@ package hudson.security;
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
@@ -128,7 +128,7 @@ public class TokenBasedRememberMeServices2Test {
         wc.executeOnServer(() -> {
             Authentication a = Jenkins.getAuthentication2();
             assertEquals("bob", a.getName());
-            assertEquals(ImmutableList.of("authenticated", "myteam"), a.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+            assertEquals(Arrays.asList("authenticated", "myteam"), a.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
             return null;
         });
     }

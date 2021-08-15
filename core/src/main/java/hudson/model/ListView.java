@@ -32,7 +32,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
@@ -41,7 +40,15 @@ import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -78,7 +85,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * List of job names. This is what gets serialized.
      */
     @GuardedBy("this")
-    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+    /*package*/ /*almost-final*/ SortedSet<String> jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     
     private DescribableList<ViewJobFilter, Descriptor<ViewJobFilter>> jobFilters;
 
@@ -143,7 +150,7 @@ public class ListView extends View implements DirectlyModifiableView {
         }
         synchronized(this) {
             if (jobNames == null) {
-                jobNames = new TreeSet<>(CaseInsensitiveComparator.INSTANCE);
+                jobNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
             }
         }
         initColumns();
@@ -486,7 +493,6 @@ public class ListView extends View implements DirectlyModifiableView {
 
     /**
      * Deprecated see, {@link StatusFilter}
-     * @param statusFilter
      */
     @Deprecated
     @DataBoundSetter

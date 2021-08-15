@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.regex.Pattern;
 
+import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -74,8 +75,8 @@ public class FileParameterValue extends ParameterValue {
      */
     @Restricted(NoExternalUse.class)
     @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE = 
-            Boolean.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
+    public static /* Script Console modifiable */ boolean ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE =
+            SystemProperties.getBoolean(FileParameterValue.class.getName() + ".allowFolderTraversalOutsideWorkspace");
 
     private final transient FileItem file;
 
@@ -133,6 +134,7 @@ public class FileParameterValue extends ParameterValue {
     @Override
     public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
         return new VariableResolver<String>() {
+            @Override
             public String resolve(String name) {
                 return FileParameterValue.this.name.equals(name) ? originalFileName : null;
             }
@@ -172,6 +174,12 @@ public class FileParameterValue extends ParameterValue {
                     }
                     FilePath locationFilePath = ws.child(location);
                     locationFilePath.getParent().mkdirs();
+
+                    // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
+                    if (locationFilePath.exists() && !locationFilePath.isDirectory()) {
+                        locationFilePath.delete();
+                    }
+
             	    locationFilePath.copyFrom(file);
                     locationFilePath.copyTo(new FilePath(getLocationUnderBuild(build)));
             	}
@@ -185,7 +193,7 @@ public class FileParameterValue extends ParameterValue {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ ((location == null) ? 0 : location.hashCode());
+				+ (location == null ? 0 : location.hashCode());
 		return result;
 	}
 
@@ -222,9 +230,6 @@ public class FileParameterValue extends ParameterValue {
 
     /**
      * Serve this file parameter in response to a {@link StaplerRequest}.
-     *
-     * @param request
-     * @param response
      */
     public DirectoryBrowserSupport doDynamic(StaplerRequest request, StaplerResponse response) {
         AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
@@ -259,6 +264,7 @@ public class FileParameterValue extends ParameterValue {
             this.file = file;
         }
 
+        @Override
         public InputStream getInputStream() throws IOException {
             try {
                 return Files.newInputStream(file.toPath());
@@ -267,22 +273,27 @@ public class FileParameterValue extends ParameterValue {
             }
         }
 
+        @Override
         public String getContentType() {
             return null;
         }
 
+        @Override
         public String getName() {
             return file.getName();
         }
 
+        @Override
         public boolean isInMemory() {
             return false;
         }
 
+        @Override
         public long getSize() {
             return file.length();
         }
 
+        @Override
         public byte[] get() {
             try {
                 try (InputStream inputStream = Files.newInputStream(file.toPath())) {
@@ -293,36 +304,45 @@ public class FileParameterValue extends ParameterValue {
             }
         }
 
+        @Override
         public String getString(String encoding) throws UnsupportedEncodingException {
             return new String(get(), encoding);
         }
 
+        @Override
         public String getString() {
             return new String(get());
         }
 
+        @Override
         public void write(File to) throws Exception {
             new FilePath(file).copyTo(new FilePath(to));
         }
 
+        @Override
         public void delete() {
             file.delete();
         }
 
+        @Override
         public String getFieldName() {
             return null;
         }
 
+        @Override
         public void setFieldName(String name) {
         }
 
+        @Override
         public boolean isFormField() {
             return false;
         }
 
+        @Override
         public void setFormField(boolean state) {
         }
 
+        @Override
         @Deprecated
         public OutputStream getOutputStream() throws IOException {
             try {

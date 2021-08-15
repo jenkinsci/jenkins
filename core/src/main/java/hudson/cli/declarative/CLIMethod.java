@@ -59,7 +59,7 @@ import java.lang.annotation.Target;
  */
 @Indexed
 @Retention(RUNTIME)
-@Target({METHOD})
+@Target(METHOD)
 @Documented
 public @interface CLIMethod {
     /**

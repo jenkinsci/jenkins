@@ -46,11 +46,14 @@ import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeThat;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -71,7 +74,7 @@ public class ClassFilterImplTest {
     public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
     @Test
-    public void masterToSlaveBypassesWhitelist() throws Exception {
+    public void controllerToAgentBypassesWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
@@ -84,7 +87,7 @@ public class ClassFilterImplTest {
             listener.getLogger().println("sent " + launcher.getChannel().call(new M2S()));
             return true;
         }
-        @TestExtension("masterToSlaveBypassesWhitelist")
+        @TestExtension("controllerToAgentBypassesWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
             @Override
@@ -104,7 +107,7 @@ public class ClassFilterImplTest {
     // Note that currently even M2S callables are rejected when using classes blacklisted in ClassFilter.STANDARD, such as JSONObject.
 
     @Test
-    public void slaveToMasterRequiresWhitelist() throws Exception {
+    public void agentToControllerRequiresWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
@@ -117,7 +120,7 @@ public class ClassFilterImplTest {
             listener.getLogger().println("received " + launcher.getChannel().call(new S2M()));
             return true;
         }
-        @TestExtension("slaveToMasterRequiresWhitelist")
+        @TestExtension("agentToControllerRequiresWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
             @Override
@@ -151,7 +154,7 @@ public class ClassFilterImplTest {
         assertEquals("modified", config.unrelated);
         Map<Saveable, OldDataMonitor.VersionRange> data = ExtensionList.lookupSingleton(OldDataMonitor.class).getData();
         assertEquals(Collections.singleton(config), data.keySet());
-        assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://jenkins.io/redirect/class-filter/")));
+        assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://www.jenkins.io/redirect/class-filter/")));
     }
 
     @Test

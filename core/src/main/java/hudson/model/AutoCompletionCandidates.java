@@ -68,6 +68,7 @@ public class AutoCompletionCandidates implements HttpResponse {
         return values;
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object o) throws IOException, ServletException {
         Search.Result r = new Search.Result();
         for (String value : values) {

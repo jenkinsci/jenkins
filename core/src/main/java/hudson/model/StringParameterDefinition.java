@@ -153,6 +153,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         return value;
     }
 
+    @Override
     public ParameterValue createValue(String str) {
         StringParameterValue value = new StringParameterValue(getName(), str, getDescription());
         if (isTrim()) {

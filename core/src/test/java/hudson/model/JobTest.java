@@ -8,6 +8,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.Issue;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.MockRepository;
@@ -61,7 +62,7 @@ public class JobTest {
         MockRepository.removeClassMethodInvocationControl(Platform.class);
 
         Job<?, ?> job = Mockito.mock(FreeStyleProject.class);
-        Mockito.when(job.getEnvironment(Mockito.any(Node.class), Mockito.any(TaskListener.class))).thenCallRealMethod();
+        Mockito.when(job.getEnvironment(ArgumentMatchers.any(Node.class), ArgumentMatchers.any(TaskListener.class))).thenCallRealMethod();
         Mockito.when(job.getCharacteristicEnvVars()).thenReturn(emptyEnv);
 
         Computer c = Mockito.mock(Computer.class);
@@ -70,7 +71,7 @@ public class JobTest {
             slaveEnv.put("PATH", "/bin/bash");
         }
         Mockito.when(c.getEnvironment()).thenReturn(slaveEnv);
-        Mockito.when(c.buildEnvironment(Mockito.any(TaskListener.class))).thenReturn(emptyEnv);
+        Mockito.when(c.buildEnvironment(ArgumentMatchers.any(TaskListener.class))).thenReturn(emptyEnv);
 
         Node node = PowerMockito.mock(Node.class);
         PowerMockito.doReturn(c).when(node).toComputer();

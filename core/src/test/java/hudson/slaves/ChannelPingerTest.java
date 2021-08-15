@@ -1,11 +1,12 @@
 package hudson.slaves;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
-import com.google.common.testing.EqualsTester;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,11 +18,12 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import hudson.remoting.Channel;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ChannelPinger.class })
+@PrepareForTest(ChannelPinger.class)
 @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ChannelPingerTest {
 
@@ -117,9 +119,31 @@ public class ChannelPingerTest {
 
     @Test
     public void testSetUpRemotePingEquality() {
-         new EqualsTester()
-             .addEqualityGroup(new ChannelPinger.SetUpRemotePing(1, 2), new ChannelPinger.SetUpRemotePing(1, 2))
-             .addEqualityGroup(new ChannelPinger.SetUpRemotePing(2, 3), new ChannelPinger.SetUpRemotePing(2, 3))
-             .testEquals();
+        ChannelPinger.SetUpRemotePing pinger1a = new ChannelPinger.SetUpRemotePing(1, 2);
+        ChannelPinger.SetUpRemotePing pinger1b = new ChannelPinger.SetUpRemotePing(1, 2);
+        ChannelPinger.SetUpRemotePing pinger2a = new ChannelPinger.SetUpRemotePing(2, 3);
+        ChannelPinger.SetUpRemotePing pinger2b = new ChannelPinger.SetUpRemotePing(2, 3);
+
+        for (ChannelPinger.SetUpRemotePing item : Arrays.asList(pinger1a, pinger1b, pinger2a, pinger2b)) {
+            assertNotEquals(null, item);
+            assertEquals(item, item);
+            assertEquals(item.hashCode(), item.hashCode());
+        }
+
+        assertEquals(pinger1a, pinger1b);
+        assertEquals(pinger1b, pinger1a);
+        assertEquals(pinger1a.hashCode(), pinger1b.hashCode());
+        assertNotEquals(pinger1a, pinger2a);
+        assertNotEquals(pinger1a, pinger2b);
+        assertNotEquals(pinger1b, pinger2a);
+        assertNotEquals(pinger1b, pinger2b);
+
+        assertEquals(pinger2a, pinger2b);
+        assertEquals(pinger2b, pinger2a);
+        assertEquals(pinger2a.hashCode(), pinger2b.hashCode());
+        assertNotEquals(pinger2a, pinger1a);
+        assertNotEquals(pinger2a, pinger1b);
+        assertNotEquals(pinger2b, pinger1a);
+        assertNotEquals(pinger2b, pinger1b);
     }
 }

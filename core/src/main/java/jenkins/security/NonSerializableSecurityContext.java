@@ -60,11 +60,11 @@ public class NonSerializableSecurityContext implements SecurityContext {
         if (obj instanceof SecurityContext) {
             SecurityContext test = (SecurityContext) obj;
 
-            if ((this.getAuthentication() == null) && (test.getAuthentication() == null)) {
+            if (this.getAuthentication() == null && test.getAuthentication() == null) {
                 return true;
             }
 
-            if ((this.getAuthentication() != null) && (test.getAuthentication() != null)
+            if (this.getAuthentication() != null && test.getAuthentication() != null
                 && this.getAuthentication().equals(test.getAuthentication())) {
                 return true;
             }
@@ -73,6 +73,7 @@ public class NonSerializableSecurityContext implements SecurityContext {
         return false;
     }
 
+    @Override
     public Authentication getAuthentication() {
         return authentication;
     }
@@ -86,6 +87,7 @@ public class NonSerializableSecurityContext implements SecurityContext {
         }
     }
 
+    @Override
     public void setAuthentication(Authentication authentication) {
         this.authentication = authentication;
     }

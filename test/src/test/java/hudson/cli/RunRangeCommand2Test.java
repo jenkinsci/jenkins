@@ -26,7 +26,7 @@ package hudson.cli;
 
 import hudson.Functions;
 import hudson.model.FreeStyleProject;
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.model.labels.LabelAtom;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
@@ -61,7 +61,7 @@ public class RunRangeCommand2Test {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(), equalTo(1));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ)
+                .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs("", "1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -73,7 +73,7 @@ public class RunRangeCommand2Test {
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(), equalTo(1));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ)
+                .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(" ", "1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
@@ -97,7 +97,7 @@ public class RunRangeCommand2Test {
         }
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ)
+                .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
@@ -115,7 +115,7 @@ public class RunRangeCommand2Test {
                 project.isBuilding(), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Job.READ)
+                .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));

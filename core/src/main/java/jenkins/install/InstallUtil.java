@@ -45,7 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import com.google.common.base.Function;
+import java.util.function.Function;
 import com.thoughtworks.xstream.XStream;
 
 import hudson.Functions;
@@ -298,7 +298,6 @@ public class InstallUtil {
 
     /**
      * Persists a list of installing plugins; this is used in the case Jenkins fails mid-installation and needs to be restarted
-     * @param installingPlugins
      */
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();

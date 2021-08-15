@@ -90,7 +90,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @Issue("JENKINS-50164")
     @Test
     public void badValueForBuildsDir() {
-        story.then((rule) -> {
+        story.then(rule -> {
             final List<String> badValues = new ArrayList<>(Arrays.asList(
                     "blah",
                     "$JENKINS_HOME",
@@ -118,7 +118,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @Issue("JENKINS-50164")
     @Test
     public void goodValueForBuildsDir() {
-        story.then((rule) -> {
+        story.then(rule -> {
             final List<String> badValues = Arrays.asList(
                     "$JENKINS_HOME/foo/$ITEM_FULL_NAME",
                     "${ITEM_ROOTDIR}/builds");

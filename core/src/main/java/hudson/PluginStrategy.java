@@ -70,8 +70,6 @@ public interface PluginStrategy extends ExtensionPoint {
 	/**
 	 * Optionally start services provided by the plugin. Should be called
 	 * when all plugins are loaded.
-	 * 
-	 * @param plugin
 	 */
 	void initializeComponents(PluginWrapper plugin);
 

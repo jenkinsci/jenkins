@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map.Entry;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
@@ -99,6 +98,7 @@ public class BuildCommand extends CLICommand {
 
     protected static final String BUILD_SCHEDULING_REFUSED = "Build scheduling Refused by an extension, hence not in Queue.";
 
+    @Override
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
 
@@ -111,7 +111,7 @@ public class BuildCommand extends CLICommand {
             //TODO: switch to type annotations after the migration to Java 1.8
             List<ParameterValue> values = new ArrayList<>();
 
-            for (Entry<String, String> e : parameters.entrySet()) {
+            for (Map.Entry<String, String> e : parameters.entrySet()) {
                 String name = e.getKey();
                 ParameterDefinition pd = pdp.getParameterDefinition(name);
                 if (pd==null) {

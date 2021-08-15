@@ -14,7 +14,6 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -61,24 +60,25 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         }
     }
 
-    public void report(@NonNull final String trigger, @NonNull final String msg) {
+    public void report(@NonNull final Class<? extends TriggerDescriptor> trigger, @NonNull final String fullJobName, long duration) {
 
         synchronized (errors) {
-            if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger)) {
+            if (errors.size() >= MAX_ENTRIES && !errors.containsKey(trigger.getName())) {
                 String oldest_trigger = null;
                 LocalDateTime oldest_time = null;
                 for (Map.Entry<String, Value> entry : errors.entrySet()) {
                     String local_trigger = entry.getKey();
                     if (oldest_trigger == null
-                            || entry.getValue().getTimeLDT().compareTo(oldest_time) < 0) {
+                            || entry.getValue().time.compareTo(oldest_time) < 0) {
                         oldest_trigger = local_trigger;
-                        oldest_time = entry.getValue().getTimeLDT();
+                        oldest_time = entry.getValue().time;
                     }
                 }
                 errors.remove(oldest_trigger);
             }
         }
-        errors.put(trigger, new Value(msg));
+        // TODO: We do not record multiple occurrences of the same trigger; on which instance would 10 different trigger types take forever? Figure out a better presentation.
+        errors.put(trigger.getName(), new Value(trigger, fullJobName, duration));
     }
 
     @NonNull
@@ -89,7 +89,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     @Restricted(DoNotUse.class)
     @RequirePOST
     @NonNull
-    public HttpResponse doClear() throws IOException {
+    public HttpResponse doClear() {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         clear();
         return HttpResponses.redirectViaContextPath("/manage");
@@ -98,26 +98,33 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     public class Value {
 
         private final LocalDateTime time;
-        private final String msg;
+        private Class<? extends TriggerDescriptor> trigger;
+        private final String fullJobName;
+        private final long duration;
 
-        Value(@NonNull String msg) {
-            this.msg = msg;
+        Value(Class<? extends TriggerDescriptor> trigger, @NonNull String fullJobName, long duration) {
+            this.trigger = trigger;
+            this.fullJobName = fullJobName;
+            this.duration = duration;
             this.time = LocalDateTime.now();
         }
 
         @NonNull
-        public String getTime() {
+        public String getTimeString() {
             return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(time);
         }
 
         @NonNull
-        protected LocalDateTime getTimeLDT() {
-            return time;
+        public String getFullJobName() {
+            return fullJobName;
         }
 
-        @NonNull
-        public String getMsg() {
-            return msg;
+        public Class<? extends TriggerDescriptor> getTrigger() {
+            return trigger;
+        }
+
+        public long getDuration() {
+            return duration;
         }
     }
 }

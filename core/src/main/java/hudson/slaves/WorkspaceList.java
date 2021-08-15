@@ -137,6 +137,7 @@ public final class WorkspaceList {
          */
         public static Lease createDummyLease(@NonNull FilePath p) {
             return new Lease(p) {
+                @Override
                 public void release() {
                     // noop
                 }
@@ -149,6 +150,7 @@ public final class WorkspaceList {
          */
         public static Lease createLinkedDummyLease(@NonNull FilePath p, final Lease parent) {
             return new Lease(p) {
+                @Override
                 public void release() {
                     parent.release();
                 }
@@ -277,6 +279,7 @@ public final class WorkspaceList {
     private Lease lease(@NonNull FilePath p) {
         return new Lease(p) {
             final AtomicBoolean released = new AtomicBoolean();
+            @Override
             public void release() {
                 _release(path);
             }

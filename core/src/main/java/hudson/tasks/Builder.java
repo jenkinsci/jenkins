@@ -65,6 +65,7 @@ public abstract class Builder extends BuildStepCompatibilityLayer implements Des
         return BuildStepMonitor.NONE;
     }
 
+    @Override
     public Descriptor<Builder> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(getClass());
     }

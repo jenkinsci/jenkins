@@ -325,7 +325,7 @@ public class BuildTriggerTest {
             }
         }
 
-        public SlowTrigger(String childProjects) {
+        SlowTrigger(String childProjects) {
             super(childProjects, true);
         }
 

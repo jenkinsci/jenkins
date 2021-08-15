@@ -57,16 +57,19 @@ public class CharacterEncodingFilter implements Filter {
     private static final Boolean FORCE_ENCODING
             = SystemProperties.getBoolean(CharacterEncodingFilter.class.getName() + ".forceEncoding");
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         LOGGER.log(Level.FINE,
                 "CharacterEncodingFilter initialized. DISABLE_FILTER: {0} FORCE_ENCODING: {1}",
                 new Object[]{DISABLE_FILTER, FORCE_ENCODING});
     }
 
+    @Override
     public void destroy() {
         LOGGER.fine("CharacterEncodingFilter destroyed.");
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 

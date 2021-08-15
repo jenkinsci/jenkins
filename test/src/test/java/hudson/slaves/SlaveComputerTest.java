@@ -24,7 +24,10 @@
 package hudson.slaves;
 
 import com.gargoylesoftware.htmlunit.WebResponse;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;
@@ -167,7 +170,7 @@ public class SlaveComputerTest {
 
     /**
      * Get remote path through json api
-     * @param node slave node
+     * @param node agent node
      * @param user the user for webClient
      * @return remote path
      * @throws IOException in case of communication problem.

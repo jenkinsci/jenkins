@@ -30,7 +30,7 @@ public final class SoloFilePathFilter extends FilePathFilter {
 
     private boolean noFalse(String op, File f, boolean b) {
         if (!b)
-            throw new SecurityException("agent may not " + op + " " + f+"\nSee https://jenkins.io/redirect/security-144 for more details");
+            throw new SecurityException("agent may not " + op + " " + f+"\nSee https://www.jenkins.io/redirect/security-144 for more details");
         return true;
     }
     

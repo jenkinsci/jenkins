@@ -30,7 +30,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import javax.inject.Inject;
 import javax.inject.Qualifier;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -106,6 +106,7 @@ public class ExtensionFinderTest {
 
     @Extension
     public static class ModuleImpl extends AbstractModule {
+        @Override
         protected void configure() {
             TestEnvironment environment = TestEnvironment.get();
             // JMH benchmarks do not initialize TestEnvironment, so check for null

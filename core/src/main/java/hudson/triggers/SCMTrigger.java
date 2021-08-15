@@ -25,7 +25,6 @@
 package hudson.triggers;
 
 import antlr.ANTLRException;
-import com.google.common.base.Preconditions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
@@ -171,7 +170,6 @@ public class SCMTrigger extends Trigger<Item> {
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
      * to trigger a build at a specific revision number.
      * 
-     * @param additionalActions
      * @since 1.375
      */
     public void run(Action[] additionalActions) {
@@ -256,6 +254,7 @@ public class SCMTrigger extends Trigger<Item> {
             return this;
         }
 
+        @Override
         public boolean isApplicable(Item item) {
             return SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(item) != null;
         }
@@ -404,6 +403,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         private boolean on;
 
+        @Override
         public boolean isActivated() {
             return on;
         }
@@ -447,14 +447,17 @@ public class SCMTrigger extends Trigger<Item> {
             return new File(run.getRootDir(),"polling.log");
         }
 
+        @Override
         public String getIconFileName() {
             return "clipboard.png";
         }
 
+        @Override
         public String getDisplayName() {
             return Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "pollingLog";
         }
@@ -499,7 +502,7 @@ public class SCMTrigger extends Trigger<Item> {
     public final class SCMAction implements Action {
         public AbstractProject<?,?> getOwner() {
             Item item = getItem();
-            return item instanceof AbstractProject ? ((AbstractProject) item) : null;
+            return item instanceof AbstractProject ? (AbstractProject) item : null;
         }
 
         /**
@@ -509,10 +512,12 @@ public class SCMTrigger extends Trigger<Item> {
             return job().asItem();
         }
 
+        @Override
         public String getIconFileName() {
             return "clipboard.png";
         }
 
+        @Override
         public String getDisplayName() {
             Set<SCMDescriptor<?>> descriptors = new HashSet<>();
             for (SCM scm : job().getSCMs()) {
@@ -521,6 +526,7 @@ public class SCMTrigger extends Trigger<Item> {
             return descriptors.size() == 1 ? Messages.SCMTrigger_getDisplayName(descriptors.iterator().next().getDisplayName()) : Messages.SCMTrigger_BuildAction_DisplayName();
         }
 
+        @Override
         public String getUrlName() {
             return "scmPollLog";
         }
@@ -556,8 +562,11 @@ public class SCMTrigger extends Trigger<Item> {
             this(null);
         }
         
+        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "False positive")
         public Runner(Action[] actions) {
-            Preconditions.checkNotNull(job, "Runner can't be instantiated when job is null");
+            if (job == null) {
+                throw new NullPointerException("Runner can't be instantiated when job is null");
+            }
 
             if (actions == null) {
                 additionalActions = new Action[0];
@@ -625,6 +634,7 @@ public class SCMTrigger extends Trigger<Item> {
             }
         }
 
+        @Override
         public void run() {
             if (job == null) {
                 return;

@@ -77,6 +77,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -375,14 +376,17 @@ public class JenkinsTest {
     public static class RootActionImpl implements UnprotectedRootAction {
         private int count;
 
+        @Override
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getUrlName() {
             return "foobar";
         }
@@ -429,14 +433,17 @@ public class JenkinsTest {
     @TestExtension("testErrorPageShouldBeAnonymousAccessible")
     public static class ReportError implements UnprotectedRootAction {
 
+        @Override
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getUrlName() {
             return "error";
         }
@@ -453,7 +460,7 @@ public class JenkinsTest {
             listener.onRestart();
 
         ArgumentCaptor<OfflineCause> captor = ArgumentCaptor.forClass(OfflineCause.class);
-        Mockito.verify(listenerMock).onOffline(Mockito.eq(j.jenkins.toComputer()), captor.capture());
+        Mockito.verify(listenerMock).onOffline(ArgumentMatchers.eq(j.jenkins.toComputer()), captor.capture());
         assertTrue(captor.getValue().toString().contains("restart"));
     }
 

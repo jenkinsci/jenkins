@@ -46,6 +46,7 @@ import java.io.Serializable;
  */
 @Restricted(Beta.class)
 public interface EnvVarsFilterGlobalRule extends Describable<EnvVarsFilterGlobalRule>, EnvVarsFilterRule, ExtensionPoint, Serializable {
+    @Override
     @SuppressWarnings("unchecked")
     default Descriptor<EnvVarsFilterGlobalRule> getDescriptor() {
         return (Descriptor<EnvVarsFilterGlobalRule>) Jenkins.get().getDescriptorOrDie(getClass());

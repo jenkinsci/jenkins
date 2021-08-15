@@ -172,6 +172,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return new VariableResolver.Union<String>(resolvers);
     }
     
+    @Override
     public Iterator<ParameterValue> iterator() {
         return getParameters().iterator();
     }
@@ -190,6 +191,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return null;
     }
 
+    @Override
     public Label getAssignedLabel(SubTask task) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
@@ -199,14 +201,17 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ParameterAction_DisplayName();
     }
 
+    @Override
     public String getIconFileName() {
         return "document-properties.png";
     }
 
+    @Override
     public String getUrlName() {
         return "parameters";
     }
@@ -214,6 +219,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     /**
      * Allow an other build of the same project to be scheduled, if it has other parameters.
      */
+    @Override
     public boolean shouldSchedule(List<Action> actions) {
         List<ParametersAction> others = Util.filter(actions, ParametersAction.class);
         if (others.isEmpty()) {

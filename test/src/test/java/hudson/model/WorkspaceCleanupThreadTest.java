@@ -205,7 +205,7 @@ public class WorkspaceCleanupThreadTest {
 
     private static final class VetoSCM extends NullSCM {
         private final boolean answer;
-        public VetoSCM(boolean answer) {
+        VetoSCM(boolean answer) {
             this.answer = answer;
         }
 
@@ -221,7 +221,7 @@ public class WorkspaceCleanupThreadTest {
         private static final long serialVersionUID = 1L;
         private final long time;
 
-        public Touch(long time) {
+        Touch(long time) {
             this.time = time;
         }
 

@@ -38,7 +38,7 @@ import java.net.URLConnection;
 /**
  * Sets a Jenkins specific user-agent HTTP header for {@link HttpURLConnection}.
  *
- * @since TODO
+ * @since 2.286
  */
 @Extension
 @Restricted(NoExternalUse.class)

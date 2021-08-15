@@ -3,7 +3,6 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.scm.RunWithSCM;
 import org.kohsuke.args4j.Option;
@@ -67,7 +66,7 @@ public class ListChangesCommand extends RunRangeCommand {
             for (Run<?, ?> build : builds) {
                 if (build instanceof RunWithSCM) {
                     for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
+                        for (ChangeLogSet.Entry e : cs) {
                             stdout.printf("%s,%s%n",
                                     QuotedStringTokenizer.quote(e.getAuthor().getId()),
                                     QuotedStringTokenizer.quote(e.getMsg()));
@@ -80,7 +79,7 @@ public class ListChangesCommand extends RunRangeCommand {
             for (Run<?, ?> build : builds) {
                 if (build instanceof RunWithSCM) {
                     for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
+                        for (ChangeLogSet.Entry e : cs) {
                             stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
                             for (String p : e.getAffectedPaths()) {
                                 stdout.println("  " + p);

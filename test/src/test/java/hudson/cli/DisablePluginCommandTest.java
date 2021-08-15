@@ -188,7 +188,7 @@ public class DisablePluginCommandTest {
     @Ignore("TODO calling restart seems to break Surefire")
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi", })
+    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
     public void restartAfterDisablePluginsAndErrors() {
         assumeNotWindows();
         assertThat(disablePluginsCLiCommand("-restart", "variant", "dependee", "depender", "plugin-first", "mandatory-depender"), failedWith(RETURN_CODE_NOT_DISABLED_DEPENDANTS));
@@ -205,7 +205,7 @@ public class DisablePluginCommandTest {
      */
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi", })
+    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
     public void disablePluginsStrategyAll() {
         assertPluginEnabled("dependee");
         assertPluginEnabled("depender");
@@ -223,7 +223,7 @@ public class DisablePluginCommandTest {
      */
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi", })
+    @WithPlugin({"variant.hpi", "depender-0.0.2.hpi", "mandatory-depender-0.0.2.hpi", "plugin-first.hpi", "dependee-0.0.2.hpi"})
     public void disablePluginsStrategyMandatory() {
         assertThat(disablePluginsCLiCommand("-strategy", "mandatory", "variant", "dependee", "plugin-first"), succeeded());
         assertPluginDisabled("variant");
@@ -239,7 +239,7 @@ public class DisablePluginCommandTest {
      */
     @Test
     @Issue("JENKINS-27177")
-    @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi", })
+    @WithPlugin({"depender-0.0.2.hpi", "dependee-0.0.2.hpi"})
     public void disablePluginsMessageAlreadyDisabled() {
         CLICommandInvoker.Result result = disablePluginsCLiCommand("-strategy", "all", "dependee", "depender");
         assertThat(result, succeeded());

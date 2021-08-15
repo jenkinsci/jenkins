@@ -104,7 +104,7 @@ public class EditDistance {
             flip();
             cost[0] = j+1;
             for( int i=0; i<a.length(); i++ ) {
-                int match = (a.charAt(i)==b.charAt(j))?0:1;
+                int match = a.charAt(i) == b.charAt(j) ? 0 : 1;
                 cost[i+1] = min( back[i]+match, cost[i]+1, back[i+1]+1 );
             }
         }

@@ -197,11 +197,13 @@ public final class TreeString implements Serializable {
     public static final class ConverterImpl implements Converter {
         public ConverterImpl(final XStream xs) {}
 
+        @Override
         public void marshal(final Object source, final HierarchicalStreamWriter writer,
                 final MarshallingContext context) {
             writer.setValue(source == null ? null : source.toString());
         }
 
+        @Override
         public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
             TreeStringBuilder builder = (TreeStringBuilder)context.get(TreeStringBuilder.class);
             if (builder == null) {
@@ -210,6 +212,7 @@ public final class TreeString implements Serializable {
                 // dedup at the end
                 final TreeStringBuilder _builder = builder;
                 context.addCompletionCallback(new Runnable() {
+                    @Override
                     public void run() {
                         _builder.dedup();
                     }
@@ -218,6 +221,7 @@ public final class TreeString implements Serializable {
             return builder.intern(reader.getValue());
         }
 
+        @Override
         public boolean canConvert(final Class type) {
             return type == TreeString.class;
         }

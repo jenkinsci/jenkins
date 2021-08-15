@@ -53,7 +53,7 @@ public class NodeCanTakeTaskTest {
     @Issue({"JENKINS-6598", "JENKINS-38514"})
     @Test
     public void takeBlockedByProperty() throws Exception {
-        // Set master executor count to zero to force all jobs to slaves
+        // Set built-in node executor count to zero to force all jobs to agents
         r.jenkins.setNumExecutors(0);
         Slave slave = r.createSlave();
         FreeStyleProject project = r.createFreeStyleProject();

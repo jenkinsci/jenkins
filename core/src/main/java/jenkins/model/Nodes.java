@@ -141,17 +141,10 @@ public class Nodes implements Saveable {
 
         Node oldNode = nodes.get(node.getNodeName());
         if (node != oldNode) {
-            // TODO we should not need to lock the queue for adding nodes but until we have a way to update the
-            // computer list for just the new node
             AtomicReference<Node> old = new AtomicReference<>();
-            Queue.withLock(new Runnable() {
-                @Override
-                public void run() {
-                    old.set(nodes.put(node.getNodeName(), node));
-                    jenkins.updateComputerList();
-                    jenkins.trimLabels();
-                }
-            });
+            old.set(nodes.put(node.getNodeName(), node));
+            jenkins.updateNewComputer(node);
+            jenkins.trimLabels();
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             try {
                 persistNode(node);
@@ -247,6 +240,7 @@ public class Nodes implements Saveable {
         if (oldOne == nodes.get(oldOne.getNodeName())) {
             // use the queue lock until Nodes has a way of directly modifying a single node.
             Queue.withLock(new Runnable() {
+                @Override
                 public void run() {
                     Nodes.this.nodes.remove(oldOne.getNodeName());
                     Nodes.this.nodes.put(newOne.getNodeName(), newOne);
@@ -341,6 +335,7 @@ public class Nodes implements Saveable {
     public void load() throws IOException {
         final File nodesDir = getNodesDir();
         final File[] subdirs = nodesDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File child) {
                 return child.isDirectory();
             }
@@ -374,7 +369,6 @@ public class Nodes implements Saveable {
      * Returns the directory that the nodes are stored in.
      *
      * @return the directory that the nodes are stored in.
-     * @throws IOException
      */
     private File getNodesDir() throws IOException {
         final File nodesDir = new File(jenkins.getRootDir(), "nodes");

@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 public class SCMListenerTest {
 
     @Issue("JENKINS-23522")
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings("rawtypes")
     @Test public void onChangeLogParsed() throws Exception {
         SCM scm = Mockito.mock(SCM.class);
         BuildListener bl = Mockito.mock(BuildListener.class);
@@ -74,13 +74,13 @@ public class SCMListenerTest {
     }
 
     private static class L1 extends L {
-        @Override public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) throws Exception {
+        @Override public void onChangeLogParsed(AbstractBuild<?,?> build, BuildListener listener, ChangeLogSet<?> changelog) {
             cnt++;
         }
     }
 
     private static class L2 extends L {
-        @Override public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) throws Exception {
+        @Override public void onChangeLogParsed(Run<?,?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) {
             cnt++;
         }
     }

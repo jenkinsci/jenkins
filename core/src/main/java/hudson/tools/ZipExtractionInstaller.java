@@ -78,6 +78,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
         return subdir;
     }
 
+    @Override
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = preferredLocation(tool, node);
         if (dir.installIfNecessaryFrom(new URL(url), log, "Unpacking " + url + " to " + dir + " on " + node.getDisplayName())) {
@@ -126,6 +127,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
      */
     static class ChmodRecAPlusX extends MasterToSlaveFileCallable<Void> {
         private static final long serialVersionUID = 1L;
+        @Override
         public Void invoke(File d, VirtualChannel channel) throws IOException {
             if(!Functions.isWindows())
                 process(d);

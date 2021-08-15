@@ -1,6 +1,5 @@
 package hudson.model;
 
-import com.google.common.base.Throwables;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -15,6 +14,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -185,7 +185,7 @@ public class UserPropertyTest {
                 File userFile = getUserFile();
                 writeStringToFile(userFile, String.valueOf(currentTimeMillis()), true);
             } catch (IOException e) {
-                Throwables.propagate(e);
+                throw new UncheckedIOException(e);
             }
         }
 

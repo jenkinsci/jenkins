@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.WARNING;
 
 /**
  * Rules of whitelisting for {@link RoleSensitive} objects and {@link FilePath}s.
@@ -162,7 +162,7 @@ public class AdminWhitelistRule implements StaplerProxy {
     @RequirePOST
     public HttpResponse doSubmit(StaplerRequest req) throws IOException {
         StringBuilder whitelist = new StringBuilder(Util.fixNull(req.getParameter("whitelist")));
-        if ((whitelist.length() > 0) && (whitelist.charAt(whitelist.length() - 1) != '\n'))
+        if (whitelist.length() > 0 && whitelist.charAt(whitelist.length() - 1) != '\n')
             whitelist.append("\n");
 
         Enumeration e = req.getParameterNames();

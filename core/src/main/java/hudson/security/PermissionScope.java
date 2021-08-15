@@ -23,7 +23,6 @@
  */
 package hudson.security;
 
-import com.google.common.collect.ImmutableSet;
 import hudson.model.Build;
 import hudson.model.Computer;
 import hudson.model.Item;
@@ -34,6 +33,9 @@ import hudson.model.Node;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -69,7 +71,7 @@ public final class PermissionScope {
 
     public PermissionScope(Class<? extends ModelObject> modelClass, PermissionScope... containers) {
         this.modelClass = modelClass;
-        this.containers = ImmutableSet.copyOf(containers);
+        this.containers = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(containers)));
     }
 
     /**

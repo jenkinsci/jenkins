@@ -408,7 +408,7 @@ public abstract class Cause {
          */
         public UserIdCause() {
             User user = User.current();
-            this.userId = (user == null) ? null : user.getId();
+            this.userId = user == null ? null : user.getId();
         }
 
         /**

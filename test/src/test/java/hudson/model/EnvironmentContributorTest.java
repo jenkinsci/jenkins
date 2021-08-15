@@ -26,7 +26,7 @@ public class EnvironmentContributorTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         assertEquals("Issac Newton", c.getEnvVars().get("ABC"));
-        assertEquals("master", c.getEnvVars().get("NODE_NAME"));
+        assertEquals("built-in", c.getEnvVars().get("NODE_NAME"));
     }
 
     @TestExtension("projectScoped")

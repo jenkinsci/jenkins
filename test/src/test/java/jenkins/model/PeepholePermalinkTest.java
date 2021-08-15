@@ -6,7 +6,7 @@ import hudson.model.Job;
 import hudson.model.Run;
 import java.nio.file.Files;
 import java.util.logging.Level;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;

@@ -61,6 +61,7 @@ public class ArchitectureMonitor extends NodeMonitor {
      * Obtains the string that represents the architecture.
      */
     private static class GetArchTask extends MasterToSlaveCallable<String,IOException> {
+        @Override
         public String call() {
             String os = System.getProperty("os.name");
             String arch = System.getProperty("os.arch");

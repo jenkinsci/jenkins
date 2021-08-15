@@ -23,7 +23,6 @@
  */
 package hudson.security;
 
-import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import java.io.IOException;
@@ -35,6 +34,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -78,7 +78,7 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
         } else {
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
-            if(!Strings.isNullOrEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
+            if(!StringUtils.isEmpty(req.getQueryString())) uriFrom += "?" + req.getQueryString();
             String loginForm = req.getContextPath() + loginFormUrl;
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);

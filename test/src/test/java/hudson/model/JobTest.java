@@ -74,8 +74,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
@@ -129,6 +129,7 @@ public class JobTest {
             this.passed = false;
         }
 
+        @Override
         public void run() {
             try {
                 start.await();
@@ -147,7 +148,7 @@ public class JobTest {
                                 return;
                             }
                             savedBuildNumber = Integer.parseInt(f.readTrim());
-                            if (buildNumber != (savedBuildNumber-1)) {
+                            if (buildNumber != savedBuildNumber - 1) {
                                 this.message = "Build numbers don't match (" + buildNumber + ", " + (savedBuildNumber-1) + ")";
                                 this.passed = false;
                                 return;
@@ -175,7 +176,7 @@ public class JobTest {
             }
             catch (InterruptedException e) {}
             catch (IOException e) {
-                fail("Failed to assign build number");
+                throw new AssertionError("Failed to assign build number", e);
             }
             finally {
                 stop.countDown();
@@ -201,6 +202,7 @@ public class JobTest {
         }
 
         private static final class DescriptorImpl extends JobPropertyDescriptor {
+            @Override
             public String getDisplayName() {
                 return "";
             }
@@ -290,14 +292,11 @@ public class JobTest {
     
     @Test public void projectNamingStrategy() throws Exception {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("DUMMY.*", false));
-        final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
-        assertNotNull("no project created", p);
         try {
-            j.createFreeStyleProject("project");
-            fail("should not get here, the project name is not allowed, therefore the creation must fail!");
-        } catch (Failure e) {
-            // OK, expected
-        }finally{
+            final FreeStyleProject p = j.createFreeStyleProject("DUMMY_project");
+            assertNotNull("no project created", p);
+            assertThrows(Failure.class, () -> j.createFreeStyleProject("project"));
+        } finally {
             // set it back to the default naming strategy, otherwise all other tests would fail to create jobs!
             j.jenkins.setProjectNamingStrategy(ProjectNamingStrategy.DEFAULT_NAMING_STRATEGY);
         }
@@ -553,7 +552,7 @@ public class JobTest {
     static class NameChangingNode extends Slave {
         private String virtualName;
 
-        public NameChangingNode(JenkinsRule j, String name) throws Exception {
+        NameChangingNode(JenkinsRule j, String name) throws Exception {
             super(name, "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, new ArrayList<>());
         }
 

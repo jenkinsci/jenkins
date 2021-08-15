@@ -66,6 +66,7 @@ public class EnumTest {
             System.out.println(json);
         }
 
+        @Override
         public Form.DescriptorImpl getDescriptor() {
             return Jenkins.get().getDescriptorByType(Form.DescriptorImpl.class);
         }

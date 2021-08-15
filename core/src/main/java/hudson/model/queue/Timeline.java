@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
 
 /**
 * Represents a mutable q(t), a discrete value that changes over the time.
@@ -104,7 +104,7 @@ final class Timeline {
         while (true) {
             long t = start;
             // check if 'start' satisfies the two conditions by moving t across [start,start+duration)
-            while ((t-start)<duration) {
+            while (t - start < duration) {
                 if (at(t)>n) {
                     // value too big. what's the next t that's worth trying?
                     Long nxt = next(t);

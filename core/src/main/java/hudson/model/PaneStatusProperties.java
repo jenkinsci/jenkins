@@ -35,6 +35,7 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
 		}
 	}
 	
+	@Override
 	public void save() throws IOException {
         user.save();
     }

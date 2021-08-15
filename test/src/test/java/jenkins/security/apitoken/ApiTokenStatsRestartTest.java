@@ -36,12 +36,11 @@ import jenkins.security.ApiTokenProperty;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 
 import java.io.File;
 import java.net.URL;
@@ -62,20 +61,17 @@ import static org.junit.Assert.fail;
 public class ApiTokenStatsRestartTest {
     
     @Rule
-    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
+    public JenkinsSessionRule sessions = new JenkinsSessionRule();
     
     @Test
     @Issue("SECURITY-1072")
-    public void roundtripWithRestart() {
+    public void roundtripWithRestart() throws Throwable {
         AtomicReference<String> tokenValue = new AtomicReference<>();
         AtomicReference<String> tokenUuid = new AtomicReference<>();
         String TOKEN_NAME = "New Token Name";
         int NUM_CALL_WITH_TOKEN = 5;
         
-        rr.addStep(new Statement() {
-               @Override
-               public void evaluate() throws Throwable {
-                   JenkinsRule j = rr.j;
+        sessions.then(j -> {
                    j.jenkins.setCrumbIssuer(null);
                    j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
                    
@@ -123,13 +119,9 @@ public class ApiTokenStatsRestartTest {
 
                    File apiTokenStatsFile = new File(u.getUserFolder(), "apiTokenStats.xml");
                    assertTrue("apiTokenStats.xml file should exist", apiTokenStatsFile.exists());
-               }
            });
     
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                JenkinsRule j = rr.j;
+        sessions.then(j -> {
                 j.jenkins.setCrumbIssuer(null);
                 
                 User u = User.getById("foo", false);
@@ -145,7 +137,7 @@ public class ApiTokenStatsRestartTest {
                 HtmlSpan useCounterSpan = config.getDocumentElement().getOneHtmlElementByAttribute("span", "class", "token-use-counter");
                 assertThat(useCounterSpan.getTextContent(), containsString("" + NUM_CALL_WITH_TOKEN));
                 
-                revokeToken(wc, u.getId(), tokenUuid.get());
+                revokeToken(j, wc, u.getId(), tokenUuid.get());
                 
                 // token is no more valid
                 WebClient restWc = j.createWebClient().withBasicCredentials(u.getId(), tokenValue.get());
@@ -155,11 +147,10 @@ public class ApiTokenStatsRestartTest {
                 assertEquals(200, configWithoutToken.getWebResponse().getStatusCode());
                 assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(tokenUuid.get())));
                 assertThat(configWithoutToken.getWebResponse().getContentAsString(), not(containsString(TOKEN_NAME)));
-            }
         });
     }
     
-    private void checkUserIsConnected(WebClient wc, String username) throws Exception {
+    private static void checkUserIsConnected(WebClient wc, String username) throws Exception {
         XmlPage xmlPage = wc.goToXml("whoAmI/api/xml");
         assertThat(xmlPage, hasXPath("//name", is(username)));
         assertThat(xmlPage, hasXPath("//anonymous", is("false")));
@@ -167,7 +158,7 @@ public class ApiTokenStatsRestartTest {
         assertThat(xmlPage, hasXPath("//authority", is("authenticated")));
     }
     
-    private void checkUserIsNotConnected(WebClient wc) throws Exception {
+    private static void checkUserIsNotConnected(WebClient wc) throws Exception {
         try {
             wc.goToXml("whoAmI/api/xml");
             fail();
@@ -176,9 +167,9 @@ public class ApiTokenStatsRestartTest {
         }
     }
     
-    private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {
+    private static void revokeToken(JenkinsRule j, WebClient wc, String login, String tokenUuid) throws Exception {
         WebRequest request = new WebRequest(
-                new URL(rr.j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
+                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
                 HttpMethod.POST
         );
         Page p = wc.getPage(request);

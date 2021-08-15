@@ -1,6 +1,5 @@
 package jenkins;
 
-import com.google.common.collect.Lists;
 import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
@@ -25,6 +24,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.util.logging.Level.SEVERE;
 import org.kohsuke.accmod.Restricted;
@@ -61,7 +62,7 @@ public class InitReactorRunner {
      * As such there's no way for plugins to participate into this process.
      */
     private ReactorListener buildReactorListener() throws IOException {
-        List<ReactorListener> r = Lists.newArrayList(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()));
+        List<ReactorListener> r = StreamSupport.stream(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()).spliterator(), false).collect(Collectors.toList());
         r.add(new ReactorListener() {
             final Level level = Level.parse( SystemProperties.getString(Jenkins.class.getName() + "." + "initLogLevel", "FINE") );
             @Override

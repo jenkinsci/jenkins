@@ -30,10 +30,12 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import org.junit.After;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeNoException;
+import static org.junit.Assume.assumeThat;
 import org.junit.Before;
 import org.junit.Test;
 

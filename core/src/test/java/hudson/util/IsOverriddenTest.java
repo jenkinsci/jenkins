@@ -96,14 +96,38 @@ public class IsOverriddenTest {
     @Issue("JENKINS-62723")
     @Test
     public void finalOverrides() {
-        errors.checkSucceeds(() -> {assertThat("X1 overrides X.m1", Util.isOverridden(X.class, X1.class, "m1"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("X1 does not override X.m2", Util.isOverridden(X.class, X1.class, "m2"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("X2 overrides X.m1", Util.isOverridden(X.class, X2.class, "m1"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("X2 does not override X.m2", Util.isOverridden(X.class, X2.class, "m2"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("X3 overrides X.m1", Util.isOverridden(X.class, X3.class, "m1"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("X3 overrides X.m2", Util.isOverridden(X.class, X3.class, "m2"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("X4 overrides X.m1", Util.isOverridden(X.class, X4.class, "m1"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("X4 overrides X.m2", Util.isOverridden(X.class, X4.class, "m2"), is(true)); return null;});
+        errors.checkSucceeds(() -> {
+            assertThat("X1 overrides X.m1", Util.isOverridden(X.class, X1.class, "m1"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("x1 does not override x.m2", Util.isOverridden(X.class, X1.class, "m2"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("X2 overrides X.m1", Util.isOverridden(X.class, X2.class, "m1"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("X2 does not override X.m2", Util.isOverridden(X.class, X2.class, "m2"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("X3 overrides X.m1", Util.isOverridden(X.class, X3.class, "m1"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("X3 overrides X.m2", Util.isOverridden(X.class, X3.class, "m2"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("X4 overrides X.m1", Util.isOverridden(X.class, X4.class, "m1"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("X4 overrides X.m2", Util.isOverridden(X.class, X4.class, "m2"), is(true));
+            return null;
+        });
     }
     public interface X {
         void m1();
@@ -130,19 +154,55 @@ public class IsOverriddenTest {
     @Test
     public void baseInterface() {
         // Normal case: classes implementing interface methods
-        errors.checkSucceeds(() -> {assertThat("I1 does not override I1.foo", Util.isOverridden(I1.class, I1.class, "foo"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("I2 does not override I1.foo", Util.isOverridden(I1.class, I2.class, "foo"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C1 does not override I1.foo", Util.isOverridden(I1.class, C1.class, "foo"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C2 does not override I1.foo", Util.isOverridden(I1.class, C2.class, "foo"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C3 overrides I1.foo", Util.isOverridden(I1.class, C3.class, "foo"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C4 overrides I1.foo", Util.isOverridden(I1.class, C4.class, "foo"), is(true)); return null;});
+        errors.checkSucceeds(() -> {
+            assertThat("I1 does not override I1.foo", Util.isOverridden(I1.class, I1.class, "foo"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("I2 does not override I1.foo", Util.isOverridden(I1.class, I2.class, "foo"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C1 does not override I1.foo", Util.isOverridden(I1.class, C1.class, "foo"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C2 does not override I1.foo", Util.isOverridden(I1.class, C2.class, "foo"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C3 overrides I1.foo", Util.isOverridden(I1.class, C3.class, "foo"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C4 overrides I1.foo", Util.isOverridden(I1.class, C4.class, "foo"), is(true));
+            return null;
+        });
         // Special case: interfaces providing default implementation of base interface
-        errors.checkSucceeds(() -> {assertThat("I1 does not override I1.bar", Util.isOverridden(I1.class, I1.class, "bar"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("I2 overrides I1.bar", Util.isOverridden(I1.class, I2.class, "bar"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C1 does not override I1.bar", Util.isOverridden(I1.class, C1.class, "bar"), is(false)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C2 overrides I1.bar (via I2)", Util.isOverridden(I1.class, C2.class, "bar"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C3 overrides I1.bar (via I2)", Util.isOverridden(I1.class, C3.class, "bar"), is(true)); return null;});
-        errors.checkSucceeds(() -> {assertThat("C4 overrides I1.bar", Util.isOverridden(I1.class, C4.class, "bar"), is(true)); return null;});
+        errors.checkSucceeds(() -> {
+            assertThat("I1 does not override I1.bar", Util.isOverridden(I1.class, I1.class, "bar"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("I2 overrides I1.bar", Util.isOverridden(I1.class, I2.class, "bar"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C1 does not override I1.bar", Util.isOverridden(I1.class, C1.class, "bar"), is(false));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C2 overrides I1.bar (via I2)", Util.isOverridden(I1.class, C2.class, "bar"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C3 overrides I1.bar (via I2)", Util.isOverridden(I1.class, C3.class, "bar"), is(true));
+            return null;
+        });
+        errors.checkSucceeds(() -> {
+            assertThat("C4 overrides I1.bar", Util.isOverridden(I1.class, C4.class, "bar"), is(true));
+            return null;
+        });
     }
     private interface I1 {
         String foo();
@@ -165,4 +225,3 @@ public class IsOverriddenTest {
 
 
 }
-

@@ -128,8 +128,8 @@ public class InstallerTranslatorTest {
                 ? new BatchCommandInstaller("wrong1", "echo hello", "C:\\jdk")
                 : new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
         final AbstractCommandInstaller ci2 = Functions.isWindows()
-                ? new BatchCommandInstaller("master", "echo hello", "C:\\jdk2")
-                : new CommandInstaller("master", "echo hello", "/opt/jdk2");
+                ? new BatchCommandInstaller("built-in", "echo hello", "C:\\jdk2")
+                : new CommandInstaller("built-in", "echo hello", "/opt/jdk2");
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, ci2));
 
         JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));

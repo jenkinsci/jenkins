@@ -64,6 +64,7 @@ public class ChainedServletFilter implements Filter {
         this.filters = filters.toArray(new Filter[0]);
     }
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         if (LOGGER.isLoggable(Level.FINEST))
             for (Filter f : filters)
@@ -110,6 +111,7 @@ public class ChainedServletFilter implements Filter {
 
     }
 
+    @Override
     public void destroy() {
         for (Filter f : filters)
             f.destroy();

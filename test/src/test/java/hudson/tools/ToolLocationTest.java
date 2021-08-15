@@ -38,7 +38,7 @@ public class ToolLocationTest {
 
         JDK[] jdk = j.jenkins.getDescriptorByType(JDK.DescriptorImpl.class).getInstallations();
         assertEquals(Arrays.asList(jdk), j.jenkins.getJDKs());
-        assertEquals(2, jdk.length); // HudsonTestCase adds a 'default' JDK
+        assertEquals(2, jdk.length); // JenkinsRule adds a 'default' JDK
         assertEquals("default", jdk[1].getName()); // make sure it's really that we're seeing
         assertEquals("FOOBAR", jdk[0].getHome());
         assertEquals("FOOBAR", jdk[0].getJavaHome());

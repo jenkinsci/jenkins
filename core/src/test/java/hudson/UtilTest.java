@@ -46,7 +46,11 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -129,7 +133,7 @@ public class UtilTest {
         assertEquals(Messages.Util_millisecond(17), Util.getTimeSpanString(17L));
         // 1ms
         assertEquals(Messages.Util_millisecond(1), Util.getTimeSpanString(1L));
-        // Test HUDSON-2843 (locale with comma as fraction separator got exception for <10 sec)
+        // Test JENKINS-2843 (locale with comma as fraction separator got exception for <10 sec)
         Locale saveLocale = Locale.getDefault();
         Locale.setDefault(Locale.GERMANY);
         try {
@@ -339,11 +343,12 @@ public class UtilTest {
 
 		private String error;
 
-		public DigesterThread(String string, String expectedDigest) {
+		DigesterThread(String string, String expectedDigest) {
     		this.string = string;
     		this.expectedDigest = expectedDigest;
     	}
 
+		@Override
 		public void run() {
 			for (int i=0; i < 1000; i++) {
 				String digest = Util.getDigestOf(this.string);
@@ -594,9 +599,7 @@ public class UtilTest {
 
     @Test
     public void ifOverriddenFailure() {
-        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> {
-            Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method");
-        });
+        AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method"));
         assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
     }
 

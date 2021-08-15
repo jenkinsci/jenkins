@@ -84,6 +84,7 @@ public abstract class SafeTimerTask extends TimerTask {
      */
     private static boolean ALREADY_LOGGED = false;
 
+    @Override
     public final void run() {
         // background activity gets system credential,
         // just like executors get it.

@@ -141,10 +141,12 @@ public class RobustReflectionConverter implements Converter {
         }
     }
 
+    @Override
     public boolean canConvert(Class type) {
         return true;
     }
 
+    @Override
     public void marshal(Object original, final HierarchicalStreamWriter writer, final MarshallingContext context) {
         final Object source = serializationMethodInvoker.callWriteReplace(original);
 
@@ -217,6 +219,7 @@ public class RobustReflectionConverter implements Converter {
 
         // Child elements not covered already processed as attributes ...
         reflectionProvider.visitSerializableFields(source, new ReflectionProvider.Visitor() {
+            @Override
             public void visit(String fieldName, Class fieldType, Class definedIn, Object newObj) {
                 if (!seenAsAttributes.contains(fieldName) && newObj != null) {
                     Mapper.ImplicitCollectionMapping mapping = mapper.getImplicitCollectionDefForFieldName(source.getClass(), fieldName);
@@ -275,6 +278,7 @@ public class RobustReflectionConverter implements Converter {
         context.convertAnother(newObj, converter);
     }
 
+    @Override
     public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
         Object result = instantiateNewInstance(reader, context);
         result = doUnmarshal(result, reader, context);

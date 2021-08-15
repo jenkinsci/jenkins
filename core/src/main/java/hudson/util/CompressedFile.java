@@ -144,6 +144,7 @@ public class CompressedFile {
      */
     public void compress() {
         compressionThread.submit(new Runnable() {
+            @Override
             public void run() {
                 try {
                     try (InputStream in = read();

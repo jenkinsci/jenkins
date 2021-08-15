@@ -496,7 +496,7 @@ public class FingerprintTest {
                     return msg.isEmpty();
                 }
                 else {
-                    return msg.isEmpty() ? false : e.getMessage().contains(msg);
+                    return !msg.isEmpty() && e.getMessage().contains(msg);
                 }
             }
         }

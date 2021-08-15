@@ -80,6 +80,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return getDescriptor().getDisplayName();
     }
 
+    @Override
     public AbstractNodeMonitorDescriptor<?> getDescriptor() {
         return (AbstractNodeMonitorDescriptor<?>) Jenkins.get().getDescriptorOrDie(getClass());
     }

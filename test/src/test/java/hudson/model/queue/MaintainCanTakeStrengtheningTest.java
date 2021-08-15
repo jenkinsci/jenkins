@@ -1,9 +1,9 @@
 package hudson.model.queue;
 
 import hudson.model.FreeStyleProject;
+import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
-import hudson.model.labels.LabelExpression;
 import hudson.slaves.DumbSlave;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class MaintainCanTakeStrengtheningTest {
     private QueueTaskFuture scheduleBuild(String name, String label) throws Exception {
         FreeStyleProject project = r.createFreeStyleProject(name);
 
-        project.setAssignedLabel(LabelExpression.get(label));
+        project.setAssignedLabel(Label.get(label));
         return project.scheduleBuild2(0);
     }
 
@@ -37,11 +37,11 @@ public class MaintainCanTakeStrengtheningTest {
     @Test
     public void testExceptionOnNodeProperty() throws Exception {
         // A node throwing the exception because of the canTake method of the attached FaultyNodeProperty
-        DumbSlave faultyAgent = r.createOnlineSlave(LabelExpression.get("faulty"));
+        DumbSlave faultyAgent = r.createOnlineSlave(Label.get("faulty"));
         faultyAgent.getNodeProperties().add(new FaultyNodeProperty());
 
         // A good agent
-        r.createOnlineSlave(LabelExpression.get("good"));
+        r.createOnlineSlave(Label.get("good"));
 
         // Only the good ones will be run and the latest doesn't get hung because of the second
         QueueTaskFuture[] taskFuture = new QueueTaskFuture[3];

@@ -93,10 +93,10 @@ public class WebSocketAgentsTest {
             r.jenkins.addNode(s);
             String secret = ((SlaveComputer) s.toComputer()).getJnlpMac();
             File slaveJar = tmp.newFile();
-            FileUtils.copyURLToFile(new Slave.JnlpJar("slave.jar").getURL(), slaveJar);
+            FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
             proc.set(r.createLocalLauncher().launch().cmds(
                 JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(),
-                "-jnlpUrl", r.getURL() + "computer/remote/slave-agent.jnlp",
+                "-jnlpUrl", r.getURL() + "computer/remote/jenkins-agent.jnlp",
                 "-secret", secret
             ).stdout(System.out).start());
             r.waitOnline(s);

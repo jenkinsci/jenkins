@@ -25,7 +25,7 @@
 package hudson.cli;
 
 import hudson.model.FreeStyleProject;
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.model.ListView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
@@ -91,7 +91,7 @@ public abstract class ViewManipulationTestBase {
         j.createFreeStyleProject("aProject");
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ)
                 .invokeWithArgs("aView", "aProject");
 
         assertThat(result, failedWith(6));
@@ -107,7 +107,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("All").contains(project), equalTo(true));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("All", "aProject");
 
         assertThat(result, failedWith(4));
@@ -123,7 +123,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
 
         CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "never_created");
 
         assertThat(result, failedWith(3));
@@ -135,7 +135,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
 
         result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1");
 
         assertThat(result, failedWith(3));
@@ -151,7 +151,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "");
 
         assertThat(result, failedWith(3));
@@ -170,7 +170,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "never_created", "aProject1", "aProject2");
 
         assertThat(result, failedWith(3));
@@ -191,7 +191,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "never_created", "aProject2");
 
         assertThat(result, failedWith(3));
@@ -212,7 +212,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "aProject2", "never_created");
 
         assertThat(result, failedWith(3));
@@ -233,7 +233,7 @@ public abstract class ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
 
         final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, View.READ, Job.READ, View.CONFIGURE)
+                .authorizedTo(Jenkins.READ, View.READ, Item.READ, View.CONFIGURE)
                 .invokeWithArgs("aView", "aProject1", "never_created", "aProject2", "never_created");
 
         assertThat(result, failedWith(3));

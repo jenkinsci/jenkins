@@ -28,7 +28,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.groovy.GroovyHookScript;
 
 
-import static hudson.init.InitMilestone.*;
+import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 
 /**
  * Run the initialization script, if it exists.

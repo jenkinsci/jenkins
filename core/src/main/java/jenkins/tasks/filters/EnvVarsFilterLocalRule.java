@@ -41,6 +41,7 @@ import java.io.Serializable;
  */
 @Restricted(Beta.class)
 public interface EnvVarsFilterLocalRule extends Describable<EnvVarsFilterLocalRule>, EnvVarsFilterRule, ExtensionPoint, Serializable {
+    @Override
     default EnvVarsFilterLocalRuleDescriptor getDescriptor() {
         return (EnvVarsFilterLocalRuleDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

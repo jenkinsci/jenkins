@@ -76,6 +76,7 @@ public class CLIRegisterer extends ExtensionFinder {
         return ExtensionComponentSet.EMPTY;
     }
 
+    @Override
     public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
         if (type==CLICommand.class)
             return (List)discover(jenkins);
@@ -269,6 +270,7 @@ public class CLIRegisterer extends ExtensionFinder {
                             printError(errorMessage);
                         }
 
+                        @Override
                         protected int run() throws Exception {
                             throw new UnsupportedOperationException();
                         }

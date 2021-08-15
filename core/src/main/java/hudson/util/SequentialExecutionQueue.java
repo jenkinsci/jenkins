@@ -59,6 +59,7 @@ public class SequentialExecutionQueue implements Executor {
     }
 
 
+    @Override
     public synchronized void execute(@NonNull Runnable item) {
         QueueEntry e = entries.get(item);
         if(e==null) {
@@ -109,6 +110,7 @@ public class SequentialExecutionQueue implements Executor {
             executors.submit(this);
         }
 
+        @Override
         public void run() {
             try {
                 synchronized (SequentialExecutionQueue.this) {

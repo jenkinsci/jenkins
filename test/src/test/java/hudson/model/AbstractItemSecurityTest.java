@@ -47,7 +47,7 @@ public class AbstractItemSecurityTest {
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
@@ -73,7 +73,7 @@ public class AbstractItemSecurityTest {
 
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testUpdateByXmlDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +

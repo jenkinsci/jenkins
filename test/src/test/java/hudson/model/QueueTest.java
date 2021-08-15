@@ -52,7 +52,6 @@ import hudson.model.Cause.UserIdCause;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
@@ -112,6 +111,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -148,8 +148,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.jvnet.hudson.test.LoggerRule;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -353,6 +353,7 @@ public class QueueTest {
         FreeStyleProject project = r.createFreeStyleProject();
         // Make build sleep a while so it blocks new builds
         project.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 buildStarted.signal();
                 buildShouldComplete.block();
@@ -737,7 +738,7 @@ public class QueueTest {
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class){
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
-                return (FreeStyleProject) new FreeStyleProject(parent,name){
+                return new FreeStyleProject(parent,name){
                      @Override
                     public Label getAssignedLabel(){
                         throw new IllegalArgumentException("Test exception"); //cause dead of executor
@@ -792,22 +793,14 @@ public class QueueTest {
         p.setAssignedNode(slave);
 
         QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(0);
-        try {
-            f.get(3, TimeUnit.SECONDS);
-            fail("Should time out (as the slave is offline).");
-        } catch (TimeoutException e) {
-        }
+        assertThrows("Should time out (as the agent is offline)", TimeoutException.class, () -> f.get(3, TimeUnit.SECONDS));
 
         Queue.Item item = Queue.getInstance().getItem(p);
         assertNotNull(item);
         Queue.getInstance().doCancelItem(item.getId());
         assertNull(Queue.getInstance().getItem(p));
 
-        try {
-            f.get(10, TimeUnit.SECONDS);
-            fail("Should not get (as it is cancelled).");
-        } catch (CancellationException e) {
-        }
+        assertThrows("Should not get (as it is cancelled)", CancellationException.class, () -> f.get(10, TimeUnit.SECONDS));
     }
 
     @Test public void waitForStartAndCancelBeforeStart() throws Exception {
@@ -824,16 +817,15 @@ public class QueueTest {
             public void run() {
                    try {
                        Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException | ServletException e) {
-                       e.printStackTrace();
+                   } catch (IOException e) {
+                       throw new UncheckedIOException(e);
+                   } catch (ServletException e) {
+                       throw new RuntimeException(e);
                    }
             }
             }, 2, TimeUnit.SECONDS);
 
-        try {
-            f.waitForStart();
-            fail("Expected an CancellationException to be thrown");
-        } catch (CancellationException e) {}
+        assertThrows(CancellationException.class, () -> f.waitForStart());
     }
 
     @Ignore("TODO flakes in CI")
@@ -881,7 +873,7 @@ public class QueueTest {
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         r.jenkins.clouds.add(dummyCloud);
@@ -900,7 +892,7 @@ public class QueueTest {
                 new Axis("axis", "a", "b")
         ));
 
-        Label label = LabelExpression.get("aws-linux-dummy");
+        Label label = Label.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
         BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();
@@ -1124,7 +1116,7 @@ public class QueueTest {
         r.jenkins.setCrumbIssuer(null);
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ, Item.CANCEL).everywhere().to("admin")
+                .grant(Jenkins.READ, Item.READ, Item.CANCEL).everywhere().to("admin")
                 .grant(Jenkins.READ).everywhere().to("user")
         );
 

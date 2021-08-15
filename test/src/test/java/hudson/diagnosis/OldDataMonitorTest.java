@@ -136,7 +136,7 @@ public class OldDataMonitorTest {
         File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
         xml.deleteOnExit();
         OldDataMonitor.changeListener
-                .onChange(new Saveable() {public void save() {}},
+                .onChange(new Saveable() {@Override public void save() {}},
                         new XmlFile(xml));
 
         preventExit.countDown();

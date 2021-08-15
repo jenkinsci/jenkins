@@ -41,13 +41,15 @@ import javax.xml.xpath.XPathExpressionException;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
+
 import org.jvnet.hudson.test.Issue;
 import org.xml.sax.SAXException;
 
 public class XMLUtilsTest {
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testSafeTransformDoesNotProcessForeignResources() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
@@ -80,7 +82,7 @@ public class XMLUtilsTest {
 
 
     @Issue("SECURITY-167")
-    @Test()
+    @Test
     public void testUpdateByXmlIDoesNotFail() throws Exception {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<project>\n" +
@@ -117,19 +119,15 @@ public class XMLUtilsTest {
     }
     
     @Test
-    public void testParse_with_XXE() throws IOException, XPathExpressionException {
-        try {
-            final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<!DOCTYPE foo [\n" +
-                    "   <!ELEMENT foo ANY >\n" +
-                    "   <!ENTITY xxe SYSTEM \"http://abc.com/temp/test.jsp\" >]> " +
-                    "<foo>&xxe;</foo>";
+    public void testParse_with_XXE() {
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE foo [\n" +
+                "   <!ELEMENT foo ANY >\n" +
+                "   <!ENTITY xxe SYSTEM \"http://abc.com/temp/test.jsp\" >]> " +
+                "<foo>&xxe;</foo>";
 
-            StringReader stringReader = new StringReader(xml);
-            XMLUtils.parse(stringReader);
-            Assert.fail("Expecting SAXException for XXE.");
-        } catch (SAXException e) {
-            assertThat(e.getMessage(), containsString("\"http://apache.org/xml/features/disallow-doctype-decl\""));
-        }
+        StringReader stringReader = new StringReader(xml);
+        final SAXException e = assertThrows(SAXException.class, () -> XMLUtils.parse(stringReader));
+        assertThat(e.getMessage(), containsString("\"http://apache.org/xml/features/disallow-doctype-decl\""));
     }    
 }

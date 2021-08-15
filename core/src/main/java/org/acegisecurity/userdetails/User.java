@@ -43,7 +43,7 @@ public class User implements UserDetails {
     private GrantedAuthority[] authorities;
 
     public User(String username, String password, boolean enabled, GrantedAuthority[] authorities) {
-        this(username, password, true, true, true, true, authorities);
+        this(username, password, enabled, true, true, true, authorities);
     }
 
     public User(String username, String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, GrantedAuthority[] authorities) {

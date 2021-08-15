@@ -74,7 +74,7 @@ public class LabelAtomTest {
 
         private final List<Label> labels;
 
-        public TestCloud(String name, String labelString) {
+        TestCloud(String name, String labelString) {
             super(name);
             labels = new ArrayList<>();
             for (String l : labelString.split(" ")) {

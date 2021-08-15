@@ -82,6 +82,7 @@ public class ConsistentHash<T> {
             this.item = item;
         }
 
+        @Override
         public int compareTo(Point that) {
             return Integer.compare(this.hash, that.hash);
         }
@@ -146,15 +147,17 @@ public class ConsistentHash<T> {
             return new DuplicateFilterIterator<>(new Iterator<T>() {
                 int pos = 0;
 
+                @Override
                 public boolean hasNext() {
                     return pos < owner.length;
                 }
 
+                @Override
                 public T next() {
                     if (!hasNext()) {
                         throw new NoSuchElementException();
                     }
-                    return (T) owner[(start + (pos++)) % owner.length];
+                    return (T) owner[(start + pos++) % owner.length];
                 }
 
                 @Override

@@ -253,14 +253,17 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     public static Iterable<Descriptor> listLegacyInstances() {
         return new Iterable<Descriptor>() {
+            @Override
             public Iterator<Descriptor> iterator() {
                 return new AdaptedIterator<ExtensionComponent<Descriptor>,Descriptor>(
                     new FlattenIterator<ExtensionComponent<Descriptor>,CopyOnWriteArrayList<ExtensionComponent<Descriptor>>>(legacyDescriptors.values()) {
+                        @Override
                         protected Iterator<ExtensionComponent<Descriptor>> expand(CopyOnWriteArrayList<ExtensionComponent<Descriptor>> v) {
                             return v.iterator();
                         }
                     }) {
 
+                    @Override
                     protected Descriptor adapt(ExtensionComponent<Descriptor> item) {
                         return item.getInstance();
                     }

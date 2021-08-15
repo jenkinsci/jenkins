@@ -4,10 +4,10 @@
   the path to this directory on the agent. It is best to use
   an absolute path, such as <tt>/var/jenkins</tt> or <tt>c:\jenkins</tt>.
   This should be a path local to the agent machine. There is no need for
-  this path to be visible from the master.
+  this path to be visible from the controller.
   <p>
   Agents do not maintain important data; all job configurations, build logs and
-  artifacts are stored on the master, so it would be possible to use a temporary
+  artifacts are stored on the controller, so it would be possible to use a temporary
   directory as the agent root directory.
   <br>
   However, by giving an agent a directory that is not deleted after a machine

@@ -140,7 +140,7 @@ public class NodesTest {
         // JEP-200 whitelist changes prevent this field (and thus instances of this class) from being serialized.
         private ClassLoader cl = InvalidNode.class.getClassLoader();
 
-        public InvalidNode(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
+        InvalidNode(String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super(name, remoteFS, launcher);
         }
     }

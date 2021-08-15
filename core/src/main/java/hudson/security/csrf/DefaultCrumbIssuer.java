@@ -99,7 +99,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     public boolean validateCrumb(ServletRequest request, String salt, String crumb) {
         if (request instanceof HttpServletRequest) {
             String newCrumb = issueCrumb(request, salt);
-            if ((newCrumb != null) && (crumb != null)) {
+            if (newCrumb != null && crumb != null) {
                 // String.equals() is not constant-time, but this is
                 return MessageDigest.isEqual(newCrumb.getBytes(StandardCharsets.US_ASCII),
                         crumb.getBytes(StandardCharsets.US_ASCII));

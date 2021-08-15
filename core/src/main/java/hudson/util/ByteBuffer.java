@@ -53,6 +53,7 @@ public class ByteBuffer extends OutputStream {
         size+=len;
     }
 
+    @Override
     public synchronized void write(int b) throws IOException {
         ensureCapacity(1);
         buf[size++] = (byte)b;
@@ -71,6 +72,7 @@ public class ByteBuffer extends OutputStream {
         this.buf = n;
     }
 
+    @Override
     public synchronized String toString() {
         return new String(buf,0,size);
     }
@@ -88,6 +90,7 @@ public class ByteBuffer extends OutputStream {
     public InputStream newInputStream() {
         return new InputStream() {
             private int pos = 0;
+            @Override
             public int read() throws IOException {
                 synchronized(ByteBuffer.this) {
                     if(pos>=size)   return -1;

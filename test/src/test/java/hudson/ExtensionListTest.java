@@ -95,6 +95,7 @@ public class ExtensionListTest {
     public abstract static class FishDescriptor extends Descriptor<Fish> {}
 
     public abstract static class Fish implements Describable<Fish> {
+        @Override
         public Descriptor<Fish> getDescriptor() {
             return Jenkins.get().getDescriptor(getClass());
         }

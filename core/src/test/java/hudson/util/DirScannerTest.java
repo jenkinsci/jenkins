@@ -90,10 +90,11 @@ public class DirScannerTest {
         
         public final String filename;
         
-        public MatchingFileVisitor(String filename) {
+        MatchingFileVisitor(String filename) {
             this.filename = filename;
         }
     
+        @Override
         public void visit(File f, String relativePath) throws IOException {
             if (relativePath.endsWith(filename)) {
                 found = true;

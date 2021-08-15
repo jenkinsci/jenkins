@@ -124,30 +124,36 @@ public class StaplerRoutableGetterTest extends StaplerAbstractTest {
             return "test-child";
         }
         
+        @Override
         @StaplerDispatchable
         public Renderable getParentKoButChildOk() {
             return new Renderable();
         }
         
+        @Override
         public Renderable getParentKoButChildNone() {
             return new Renderable();
         }
         
+        @Override
         @StaplerDispatchable
         public Renderable getParentNoneButChildOk() {
             return new Renderable();
         }
         
+        @Override
         @StaplerNotDispatchable
         public Renderable getParentNoneButChildKo() {
             return new Renderable();
         }
         
+        @Override
         @StaplerNotDispatchable
         public Renderable getParentOkButChildKo() {
             return new Renderable();
         }
         
+        @Override
         public Renderable getParentOkButChildNone() {
             return new Renderable();
         }

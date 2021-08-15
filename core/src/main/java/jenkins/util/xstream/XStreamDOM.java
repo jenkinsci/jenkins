@@ -35,11 +35,14 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.util.VariableResolver;
 
 import hudson.util.XStream2;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -49,7 +52,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Stack;
 
 /**
@@ -151,7 +153,7 @@ public class XStreamDOM {
     private String[] toAttributeList(Map<String, String> attributes) {
         String[] r = new String[attributes.size()*2];
         int i=0;
-        for (Entry<String, String> e : attributes.entrySet()) {
+        for (Map.Entry<String, String> e : attributes.entrySet()) {
             r[i++] = e.getKey();
             r[i++] = e.getValue();
         }
@@ -332,31 +334,38 @@ public class XStreamDOM {
             return pointers.peek();
         }
 
+        @Override
         public Object getCurrent() {
             return current().node;
         }
 
+        @Override
         public boolean hasMoreChildren() {
             return current().hasMoreChildren();
         }
 
+        @Override
         public HierarchicalStreamReader underlyingReader() {
             return this;
         }
 
+        @Override
         public void moveDown() {
             Pointer p = current();
             pointers.push(new Pointer(p.node.children.get(p.pos++)));
         }
 
+        @Override
         public void moveUp() {
             pointers.pop();
         }
 
+        @Override
         public Iterator getAttributeNames() {
             return new AttributeNameIterator(this);
         }
 
+        @Override
         public void appendErrors(ErrorWriter errorWriter) {
             StringBuilder buf = new StringBuilder();
             Pointer parent = null;
@@ -371,6 +380,7 @@ public class XStreamDOM {
             errorWriter.add("xpath", buf.toString());
         }
 
+        @Override
         public void close() {
         }
 
@@ -379,26 +389,32 @@ public class XStreamDOM {
             return current().peekNextChild();
         }
 
+        @Override
         public String getNodeName() {
             return unescapeXmlName(current().node.tagName);
         }
 
+        @Override
         public String getValue() {
             return Util.fixNull(current().node.value);
         }
 
+        @Override
         public String getAttribute(String name) {
             return current().node.getAttribute(name);
         }
 
+        @Override
         public String getAttribute(int index) {
             return current().node.getAttribute(index);
         }
 
+        @Override
         public int getAttributeCount() {
             return current().node.getAttributeCount();
         }
 
+        @Override
         public String getAttributeName(int index) {
             return unescapeXmlName(current().node.getAttributeName(index));
         }
@@ -432,30 +448,36 @@ public class XStreamDOM {
             pendings.push(new Pending(null));   // to get the final result
         }
 
+        @Override
         public void startNode(String name) {
             pendings.push(new Pending(escapeXmlName(name)));
         }
 
 
 
+        @Override
         public void endNode() {
             XStreamDOM dom = pendings.pop().toDOM();
             pendings.peek().addChild(dom);
         }
 
+        @Override
         public void addAttribute(String name, String value) {
             List<String> atts = pendings.peek().attributes;
             atts.add(escapeXmlName(name));
             atts.add(value);
         }
 
+        @Override
         public void setValue(String text) {
             pendings.peek().value = text;
         }
 
+        @Override
         public void flush() {
         }
 
+        @Override
         public void close() {
         }
 
@@ -471,6 +493,7 @@ public class XStreamDOM {
     }
 
     public static class ConverterImpl implements Converter {
+        @Override
         public boolean canConvert(Class type) {
             return type==XStreamDOM.class;
         }
@@ -490,6 +513,7 @@ public class XStreamDOM {
             return REPLACER.escapeName(s);
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter w, MarshallingContext context) {
             XStreamDOM dom = (XStreamDOM)source;
             w.startNode(unescape(dom.tagName));
@@ -508,6 +532,7 @@ public class XStreamDOM {
         /**
          * Unmarshals a single child element.
          */
+        @Override
         public XStreamDOM unmarshal(HierarchicalStreamReader r, UnmarshallingContext context) {
             r.moveDown();
             XStreamDOM dom = unmarshalElement(r,context);
@@ -540,6 +565,7 @@ public class XStreamDOM {
         }
     }
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.TODO")
+    public static final XmlFriendlyReplacer REPLACER = new XmlFriendlyReplacer();
 }

@@ -42,7 +42,7 @@ public class XmlFileTest {
 
         XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
-            assertThrows(SAXParseException.class, () -> xmlFile.read());
+            assertThrows(SAXParseException.class, xmlFile::read);
         }
     }
 

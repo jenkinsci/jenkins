@@ -11,7 +11,7 @@ import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

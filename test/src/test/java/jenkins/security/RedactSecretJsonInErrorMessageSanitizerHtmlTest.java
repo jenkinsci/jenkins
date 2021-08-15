@@ -230,6 +230,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
             throw new IllegalArgumentException("Try to steal my password");
         }
         
+        @Override
         public DescriptorImpl getDescriptor() {
             return Jenkins.get().getDescriptorByType(TestDescribable.DescriptorImpl.class);
         }

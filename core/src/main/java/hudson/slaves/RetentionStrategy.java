@@ -27,7 +27,11 @@ import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Computer;
+import hudson.model.Descriptor;
+import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -156,6 +160,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public Always() {
         }
 
+        @Override
         @GuardedBy("hudson.model.Queue.lock")
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())

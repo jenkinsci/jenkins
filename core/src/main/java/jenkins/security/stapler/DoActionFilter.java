@@ -49,6 +49,7 @@ public class DoActionFilter implements FunctionList.Filter {
      */
     private static final Pattern DO_METHOD_REGEX = Pattern.compile("^do[^a-z].*");
     
+    @Override
     public boolean keep(@NonNull Function m) {
 
         if (m.getAnnotation(StaplerNotDispatchable.class) != null) {

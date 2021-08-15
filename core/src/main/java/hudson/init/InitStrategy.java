@@ -132,6 +132,7 @@ public class InitStrategy {
             this.extensions = Arrays.asList(extensions);
         }
 
+        @Override
         public boolean accept(File dir, String name) {
             for (String extension : extensions) {
                 if (name.endsWith(extension))

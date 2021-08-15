@@ -254,9 +254,6 @@ public class PluginManagerTest {
     
     /**
      * call org.jenkinsci.plugins.dependencytest.depender.Depender.getValue().
-     * 
-     * @return
-     * @throws Exception
      */
     private String callDependerValue() throws Exception {
         Class<?> c = r.jenkins.getPluginManager().uberClassLoader.loadClass("org.jenkinsci.plugins.dependencytest.depender.Depender");
@@ -267,8 +264,6 @@ public class PluginManagerTest {
     /**
      * Load "dependee" and then load "depender".
      * Asserts that "depender" can access to "dependee".
-     * 
-     * @throws Exception
      */
     @Test public void installDependingPluginWithoutRestart() throws Exception {
         // Load dependee.
@@ -301,8 +296,6 @@ public class PluginManagerTest {
     /**
      * Load "depender" and then load "dependee".
      * Asserts that "depender" can access to "dependee".
-     * 
-     * @throws Exception
      */
     @Issue("JENKINS-19976")
     @Test public void installDependedPluginWithoutRestart() throws Exception {
@@ -342,8 +335,6 @@ public class PluginManagerTest {
     /**
      * Load "optional-depender" and then load "dependee".
      * Asserts that "depender" can access to "dependee".
-     *
-     * @throws Exception
      */
     @Issue("JENKINS-60449")
     @WithPlugin("variant.hpi")
@@ -545,8 +536,8 @@ public class PluginManagerTest {
                 if(job instanceof UpdateCenter.DownloadJob) {
 		    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob)job;
 		    assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
-                    done &= !(((j.status instanceof UpdateCenter.DownloadJob.Pending) || 
-			(j.status instanceof UpdateCenter.DownloadJob.Installing)));
+                    done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
+			j.status instanceof UpdateCenter.DownloadJob.Installing);
                 }		
             }
         } while(!done);
@@ -631,7 +622,7 @@ public class PluginManagerTest {
         assertTrue(iconShim.isDeprecated());
         List<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
         assertEquals(1, deprecations.size());
-        assertEquals("https://jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
+        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
         assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin", iconShim.getInfo().wiki);
 
         final PluginWrapper tokenMacro = pm.getPlugin("token-macro");
@@ -646,7 +637,7 @@ public class PluginManagerTest {
         assertTrue(variant.isDeprecated());
         deprecations = variant.getDeprecations();
         assertEquals(1, deprecations.size());
-        assertEquals("https://jenkins.io/deprecations/variant/", deprecations.get(0).url);
+        assertEquals("https://www.jenkins.io/deprecations/variant/", deprecations.get(0).url);
         assertNull(variant.getInfo());
     }
 

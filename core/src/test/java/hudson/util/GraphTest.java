@@ -26,7 +26,7 @@ package hudson.util;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.awt.*;
+import java.awt.Dimension;
 
 public class GraphTest {
 
@@ -34,7 +34,7 @@ public class GraphTest {
     public static final int DEFAULT_H = 300;
 
     @Test
-    public void testDimensions() throws Exception {
+    public void testDimensions() {
         final Dimension keep = Graph.safeDimension(Graph.MAX_AREA/1_000, 1000, DEFAULT_W, DEFAULT_H);
         Assert.assertEquals(Graph.MAX_AREA/1_000, keep.width);
         Assert.assertEquals(1_000, keep.height);

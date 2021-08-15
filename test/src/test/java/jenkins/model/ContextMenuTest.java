@@ -33,7 +33,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import static jenkins.model.ModelObjectWithContextMenu.*;
+import static jenkins.model.ModelObjectWithContextMenu.ContextMenu;
+import static jenkins.model.ModelObjectWithContextMenu.ContextMenuVisibility;
+import static jenkins.model.ModelObjectWithContextMenu.MenuItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 

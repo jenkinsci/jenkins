@@ -16,6 +16,7 @@ public class ToolConfigurationCategory extends GlobalConfigurationCategory {
         return Messages.ConfigureTools_Description();
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ConfigureTools_DisplayName();
     }

@@ -76,7 +76,6 @@ import hudson.triggers.SafeTimerTask;
 import java.util.concurrent.TimeUnit;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
-import hudson.util.ConsistentHash.Hash;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,7 +113,6 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.util.AtmostOneTaskExecutor;
-import org.jenkinsci.bytecode.AdaptField;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -305,6 +303,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Is this executor ready to accept some tasks?
          */
+        @Override
         public boolean isAvailable() {
             return workUnit == null && !executor.getOwner().isOffline() && executor.getOwner().isAcceptingTasks();
         }
@@ -452,6 +451,7 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Persists the queue contents to the disk.
      */
+    @Override
     public void save() {
         if(BulkChange.contains(this))  return;
         if (Jenkins.getInstanceOrNull() == null) {
@@ -611,7 +611,7 @@ public class Queue extends ResourceController implements Saveable {
                     shouldScheduleItem |= action.shouldSchedule(actions);
                 }
                 for (QueueAction action : Util.filter(actions, QueueAction.class)) {
-                    shouldScheduleItem |= action.shouldSchedule((new ArrayList<>(item.getAllActions())));
+                    shouldScheduleItem |= action.shouldSchedule(new ArrayList<>(item.getAllActions()));
                 }
                 if (!shouldScheduleItem) {
                     duplicatesInQueue.add(item);
@@ -747,6 +747,9 @@ public class Queue extends ResourceController implements Saveable {
     @RequirePOST
     public HttpResponse doCancelItem(@QueryParameter long id) throws IOException, ServletException {
         Item item = getItem(id);
+        if (item != null && !hasReadPermission(item, true)) {
+            item = null;
+        }
         if (item != null) {
             if(item.hasCancelPermission()){
                 if(cancel(item)) {
@@ -798,14 +801,27 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private List<Item> checkPermissionsAndAddToList(List<Item> r, Item t) {
-        if (t.task instanceof AccessControlled) {
-            AccessControlled taskAC = (AccessControlled) t.task;
-            if (taskAC.hasPermission(hudson.model.Item.READ)
-                    || taskAC.hasPermission(Permission.READ)) {
-                r.add(t);
-            }
+        // TODO Changing the second arg to 'true' should reveal some tasks currently hidden for no obvious reason
+        if (hasReadPermission(t.task, false)) {
+            r.add(t);
         }
         return r;
+    }
+
+    private static boolean hasReadPermission(Item t, boolean valueIfNotAccessControlled) {
+        return hasReadPermission(t.task, valueIfNotAccessControlled);
+    }
+
+    private static boolean hasReadPermission(Queue.Task t, boolean valueIfNotAccessControlled) {
+        if (t instanceof AccessControlled) {
+            AccessControlled taskAC = (AccessControlled) t;
+            if (taskAC.hasPermission(hudson.model.Item.READ)
+                    || taskAC.hasPermission(Permission.READ)) { // TODO should be unnecessary given the 'implies' relationship
+                return true;
+            }
+            return false;
+        }
+        return valueIfNotAccessControlled;
     }
 
     /**
@@ -1778,7 +1794,7 @@ public class Queue extends ResourceController implements Saveable {
         };
     }
 
-    private static final Hash<Node> NODE_HASH = Node::getNodeName;
+    private static final ConsistentHash.Hash<Node> NODE_HASH = Node::getNodeName;
 
     private boolean makePending(BuildableItem p) {
         // LOGGER.info("Making "+p.task+" pending"); // REMOVE
@@ -2098,7 +2114,6 @@ public class Queue extends ResourceController implements Saveable {
          * Unique ID (per master) that tracks the {@link Task} as it moves through different stages
          * in the queue (each represented by different subtypes of {@link Item} and into any subsequent
          * {@link Run} instance (see {@link Run#getQueueId()}).
-         * @return
          * @since 1.601
          */
         @Exported
@@ -2106,7 +2121,6 @@ public class Queue extends ResourceController implements Saveable {
             return id;
         }
 
-        @AdaptField(was=int.class, name="id")
         @Deprecated
         public int getIdLegacy() {
             if (id > Integer.MAX_VALUE) {
@@ -2305,10 +2319,12 @@ public class Queue extends ResourceController implements Saveable {
             return task.hasAbortPermission();
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public String getSearchUrl() {
             return null;
         }
@@ -2511,6 +2527,7 @@ public class Queue extends ResourceController implements Saveable {
             return COUNTER.intValue();
         }
 
+        @Override
         public int compareTo(WaitingItem that) {
             int r = this.timestamp.getTime().compareTo(that.timestamp.getTime());
             if (r != 0) return r;
@@ -2518,6 +2535,7 @@ public class Queue extends ResourceController implements Saveable {
             return Long.compare(this.getId(), that.getId());
         }
 
+        @Override
         public CauseOfBlockage getCauseOfBlockage() {
             long diff = timestamp.getTimeInMillis() - System.currentTimeMillis();
             if (diff >= 0)
@@ -2608,6 +2626,7 @@ public class Queue extends ResourceController implements Saveable {
             this.causeOfBlockage = causeOfBlockage;
         }
 
+        @Override
         public CauseOfBlockage getCauseOfBlockage() {
             if (causeOfBlockage != null) {
                 return causeOfBlockage;
@@ -2617,6 +2636,7 @@ public class Queue extends ResourceController implements Saveable {
             return getCauseOfBlockageForItem(this);
         }
 
+                    @Override
         /*package*/ void enter(Queue q) {
             LOGGER.log(Level.FINE, "{0} is blocked", this);
             blockedProjects.add(this);
@@ -2630,6 +2650,7 @@ public class Queue extends ResourceController implements Saveable {
             }
         }
 
+                    @Override
         /*package*/ boolean leave(Queue q) {
             boolean r = blockedProjects.remove(this);
             if (r) {
@@ -2670,6 +2691,7 @@ public class Queue extends ResourceController implements Saveable {
             super(ni);
         }
 
+        @Override
         public CauseOfBlockage getCauseOfBlockage() {
             Jenkins jenkins = Jenkins.get();
             if(isBlockedByShutdown(task))
@@ -2912,6 +2934,7 @@ public class Queue extends ResourceController implements Saveable {
             Timer.get().scheduleWithFixedDelay(this, interval, interval, TimeUnit.MILLISECONDS);
         }
 
+        @Override
         protected void doRun() {
             Queue q = queue.get();
             if (q != null)

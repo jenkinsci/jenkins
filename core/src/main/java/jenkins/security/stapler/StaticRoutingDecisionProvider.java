@@ -81,6 +81,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
      * @see Function#getSignature()
      * @see FieldRef#getSignature()
      */
+    @Override
     @NonNull
     public synchronized Decision decide(@NonNull String signature) {
         if (whitelistSignaturesFromFixedList == null || whitelistSignaturesFromUserControlledList == null ||
@@ -188,6 +189,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
     /**
      * Saves the configuration info to the disk.
      */
+    @Override
     public synchronized void save() {
         if (BulkChange.contains(this)) {
             return;

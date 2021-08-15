@@ -51,6 +51,7 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     protected Runnable wrap(final Runnable r) {
         final SecurityContext callingContext = getContext();
         return new Runnable() {
+            @Override
             public void run() {
                 SecurityContext old = getContext();
                 setContext(callingContext);
@@ -67,6 +68,7 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     protected <V> Callable<V> wrap(final Callable<V> c) {
         final SecurityContext callingContext = getContext();
         return new Callable<V>() {
+            @Override
             public V call() throws Exception {
                 SecurityContext old = getContext();
                 setContext(callingContext);

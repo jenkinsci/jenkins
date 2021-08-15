@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -65,7 +64,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -364,8 +363,10 @@ public class Fingerprint implements ModelObject, Saveable {
         public Iterable<Integer> listNumbers() {
             final List<Range> ranges = getRanges();
             return new Iterable<Integer>() {
+                @Override
                 public Iterator<Integer> iterator() {
                     return new Iterators.FlattenIterator<Integer,Range>(ranges) {
+                        @Override
                         protected Iterator<Integer> expand(Range range) {
                             return Iterators.sequence(range.start,range.end).iterator();
                         }
@@ -374,33 +375,16 @@ public class Fingerprint implements ModelObject, Saveable {
             };
         }
 
-//        /**
-//         * List up builds.
-//         */
-//        public <J extends Job<J,R>,R extends Run<J,R>>  Iterable<R> listBuilds(final J job) {
-//            return new Iterable<R>() {
-//                public Iterator<R> iterator() {
-//                    return new Iterators.FilterIterator<R>(new AdaptedIterator<Integer,R>(listNumbers().iterator()) {
-//                        protected R adapt(Integer n) {
-//                            return job.getBuildByNumber(n);
-//                        }
-//                    }) {
-//                        protected boolean filter(R r) {
-//                            return r!=null;
-//                        }
-//                    };
-//                }
-//            };
-//        }
-
         /**
          * List all numbers in this range set in the descending order.
          */
         public Iterable<Integer> listNumbersReverse() {
             final List<Range> ranges = getRanges();
             return new Iterable<Integer>() {
+                @Override
                 public Iterator<Integer> iterator() {
                     return new Iterators.FlattenIterator<Integer,Range>(Iterators.reverse(ranges)) {
+                        @Override
                         protected Iterator<Integer> expand(Range range) {
                             return Iterators.reverseSequence(range.start,range.end).iterator();
                         }
@@ -786,10 +770,12 @@ public class Fingerprint implements ModelObject, Saveable {
             /**
              * Check if the given class can be converted (i.e. check if it is of type RangeSet).
              */
+            @Override
             public boolean canConvert(Class type) {
                 return type==RangeSet.class;
             }
 
+            @Override
             public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
                 RangeSet src = (RangeSet) source;
                 writer.setValue(serialize(src));
@@ -811,6 +797,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 return buf.toString();
             }
 
+            @Override
             public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
                 if(reader.hasMoreChildren()) {
                     /* old format where <range> elements are nested like
@@ -819,7 +806,7 @@ public class Fingerprint implements ModelObject, Saveable {
                               <end>1479</end>
                             </range>
                      */
-                    return new RangeSet((List<Range>)(collectionConv.unmarshal(reader,context)));
+                    return new RangeSet((List<Range>)collectionConv.unmarshal(reader,context));
                 } else {
                     return RangeSet.fromString(reader.getValue(),true);
                 }
@@ -916,6 +903,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return null;
     }
 
+    @Override
     public @NonNull String getDisplayName() {
         return fileName;
     }
@@ -1003,7 +991,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public @NonNull List<RangeItem> _getUsages() {
         List<RangeItem> r = new ArrayList<>();
         final Jenkins instance = Jenkins.get();
-        for (Entry<String, RangeSet> e : usages.entrySet()) {
+        for (Map.Entry<String, RangeSet> e : usages.entrySet()) {
             final String itemName = e.getKey();
             if (instance.hasPermission(Jenkins.ADMINISTER) || canDiscoverItem(itemName)) {
                 r.add(new RangeItem(itemName, e.getValue()));
@@ -1068,7 +1056,7 @@ public class Fingerprint implements ModelObject, Saveable {
         if(original!=null && original.isAlive())
             return true;
 
-        for (Entry<String,RangeSet> e : usages.entrySet()) {
+        for (Map.Entry<String,RangeSet> e : usages.entrySet()) {
             Job j = Jenkins.get().getItemByFullName(e.getKey(),Job.class);
             if(j==null)
                 continue;
@@ -1095,7 +1083,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public synchronized boolean trim() throws IOException {
         boolean modified = false;
 
-        for (Entry<String,RangeSet> e : new Hashtable<>(usages).entrySet()) {// copy because we mutate
+        for (Map.Entry<String,RangeSet> e : new Hashtable<>(usages).entrySet()) {// copy because we mutate
             Job j = Jenkins.get().getItemByFullName(e.getKey(),Job.class);
             if(j==null) {// no such job any more. recycle the record
                 modified = true;
@@ -1170,7 +1158,7 @@ public class Fingerprint implements ModelObject, Saveable {
             for (TransientFingerprintFacetFactory fff : TransientFingerprintFacetFactory.all()) {
                 fff.createFor(this,transientFacets);
             }
-            this.transientFacets = ImmutableList.copyOf(transientFacets);
+            this.transientFacets = Collections.unmodifiableList(transientFacets);
         }
 
         return new AbstractCollection<FingerprintFacet>() {
@@ -1218,6 +1206,7 @@ public class Fingerprint implements ModelObject, Saveable {
     public @NonNull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
         r.sort(new Comparator<FingerprintFacet>() {
+            @Override
             public int compare(FingerprintFacet o1, FingerprintFacet o2) {
                 long a = o1.getTimestamp();
                 long b = o2.getTimestamp();
@@ -1255,6 +1244,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Save the Fingerprint in the Fingerprint Storage
      * @throws IOException Save error
      */
+    @Override
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this)) {
             return;
@@ -1428,7 +1418,7 @@ public class Fingerprint implements ModelObject, Saveable {
     }
 
     @Override public String toString() {
-        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + ((usages == null) ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
+        return "Fingerprint[original=" + original + ",hash=" + getHashString() + ",fileName=" + fileName + ",timestamp=" + DATE_CONVERTER.toString(timestamp) + ",usages=" + (usages == null ? "null" : new TreeMap<>(getUsages())) + ",facets=" + facets + "]";
     }
     
     /**

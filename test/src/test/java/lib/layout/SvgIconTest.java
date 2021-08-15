@@ -119,7 +119,7 @@ public class SvgIconTest  {
         assertFalse("XSS not prevented (alert)", alertTriggered.get());
     }
 
-    @TestExtension()
+    @TestExtension
     public static class TestRootAction implements UnprotectedRootAction {
         public String tooltipContent = "";
 

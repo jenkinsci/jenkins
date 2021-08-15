@@ -44,6 +44,7 @@ public class MonitorMarkedNodeOffline extends AdministrativeMonitor {
 
     public boolean active = false;
 
+    @Override
     public boolean isActivated() {
         return active;
     }

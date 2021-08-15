@@ -51,6 +51,7 @@ public class DependencyRunner implements Runnable {
         this.runnable = runnable;
     }
 
+    @Override
     public void run() {
         try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
             Set<AbstractProject> topLevelProjects = new HashSet<>();

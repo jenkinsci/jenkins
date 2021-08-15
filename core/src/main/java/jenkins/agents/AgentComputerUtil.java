@@ -35,26 +35,36 @@ public final class AgentComputerUtil {
     }
 
     /**
-     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the master.
-     * This method can be called from any thread on the master, or from agent (more precisely,
+     * Obtains a {@link VirtualChannel} that allows some computation to be performed on the controller.
+     * This method can be called from any thread on the controller, or from agent (more precisely,
      * it only works from the remoting request-handling thread in agents, which means if you've started
      * separate thread on agents, that'll fail.)
      *
-     * @return null if the calling thread doesn't have any trace of where its master is.
-     * @since 2.235
+     * @return null if the calling thread doesn't have any trace of where its controller is.
+     * @since TODO
      */
     @CheckForNull
-    public static VirtualChannel getChannelToMaster() {
+    public static VirtualChannel getChannelToController() {
         if (JenkinsJVM.isJenkinsJVM()) {
             return FilePath.localChannel;
         }
 
         // if this method is called from within the agent computation thread, this should work
         Channel c = Channel.current();
-        if (c != null && Boolean.TRUE.equals(c.getProperty("slave"))) {
+        if (c != null && Boolean.TRUE.equals(c.getProperty("agent"))) {
             return c;
         }
 
         return null;
+    }
+
+    /**
+     * @deprecated Use {{@link #getChannelToController()}}.
+     * @since 2.235
+     */
+    @Deprecated
+    @CheckForNull
+    public static VirtualChannel getChannelToMaster() {
+        return getChannelToController();
     }
 }

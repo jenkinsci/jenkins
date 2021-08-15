@@ -30,7 +30,11 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.model.*;
+import hudson.model.AbstractModelObject;
+import hudson.model.AutoCompletionCandidates;
+import hudson.model.Computer;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
 import hudson.util.HttpResponses;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.model.Jenkins;
@@ -44,7 +48,11 @@ import hudson.util.XStream2;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
@@ -52,7 +60,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -311,10 +332,12 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         new WeakLogHandler(handler,Logger.getLogger(""));
     }
 
+    @Override
     public String getDisplayName() {
         return name;
     }
 
+    @Override
     public String getSearchUrl() {
         return Util.rawEncode(name);
     }
@@ -378,6 +401,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Save the settings to a file.
      */
+    @Override
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
         getConfigFile().write(this);
@@ -433,6 +457,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         Map<Computer,List<LogRecord>> result = new TreeMap<>(new Comparator<Computer>() {
             final Collator COLL = Collator.getInstance();
 
+            @Override
             public int compare(Computer c1, Computer c2) {
                 return COLL.compare(c1.getDisplayName(), c2.getDisplayName());
             }

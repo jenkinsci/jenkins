@@ -36,12 +36,8 @@ import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 import static org.hamcrest.Matchers.containsString;
 
-import jenkins.security.SuspiciousRequestFilter;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Rule;
@@ -62,16 +58,6 @@ public class CrumbExclusionTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
-    @BeforeClass
-    public static void prepare() {
-        SuspiciousRequestFilter.allowSemicolonsInPath = true;
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        SuspiciousRequestFilter.allowSemicolonsInPath = false;
-    }
-
     @Issue("SECURITY-1774")
     @Test
     public void pathInfo() throws Exception {
@@ -81,8 +67,16 @@ public class CrumbExclusionTest {
             try {
                 fail(path + " should have been rejected: " + r.createWebClient().login("admin").getPage(new WebRequest(new URL(r.getURL(), path + "?script=11*11"), HttpMethod.POST)).getWebResponse().getContentAsString());
             } catch (FailingHttpStatusCodeException x) {
-                assertEquals("status code using " + path, 403, x.getStatusCode());
-                assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("No valid crumb was included in the request"));
+                switch (x.getStatusCode()) {
+                case 403:
+                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("No valid crumb was included in the request"));
+                    break;
+                case 400: // from Jetty
+                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("Ambiguous path parameter in URI"));
+                    break;
+                default:
+                    fail("unexpected error code");
+                }
             }
         }
     }
@@ -98,16 +92,19 @@ public class CrumbExclusionTest {
 
         public boolean posted = false;
 
+        @Override
         @CheckForNull
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         @CheckForNull
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         @CheckForNull
         public String getUrlName() {
             return "root";

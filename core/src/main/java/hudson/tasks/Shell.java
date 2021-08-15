@@ -96,6 +96,7 @@ public class Shell extends CommandInterpreter {
         return s;
     }
 
+    @Override
     public String[] buildCommandLine(FilePath script) {
         if(command.startsWith("#!")) {
             // interpreter override
@@ -109,10 +110,12 @@ public class Shell extends CommandInterpreter {
             return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xe", script.getRemote()};
     }
 
+    @Override
     protected String getContents() {
         return addLineFeedForNonASCII(LineEndingConversion.convertEOL(command,LineEndingConversion.EOLType.Unix));
     }
 
+    @Override
     protected String getFileExtension() {
         return ".sh";
     }
@@ -152,6 +155,7 @@ public class Shell extends CommandInterpreter {
          */
         private String shell;
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -247,6 +251,7 @@ public class Shell extends CommandInterpreter {
 
             private static final long serialVersionUID = 1L;
 
+            @Override
             public String call() throws IOException {
                 return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
             }

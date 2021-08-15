@@ -293,7 +293,7 @@ public class HistoryPageFilter<T> {
     }
 
     private boolean isFull() {
-        return (size() >= maxEntries);
+        return size() >= maxEntries;
     }
 
     /**
@@ -302,7 +302,7 @@ public class HistoryPageFilter<T> {
      * @return The number of items required to fill the page.
      */
     private int getFillCount() {
-        return Math.max(0, (maxEntries - size()));
+        return Math.max(0, maxEntries - size());
     }
 
     private boolean fitsSearchParams(@NonNull Queue.Item item) {

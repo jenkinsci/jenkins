@@ -43,6 +43,7 @@ public class ConsoleLink extends ManagementLink {
         return "notepad.png";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ConsoleLink_DisplayName();
     }

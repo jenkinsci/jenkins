@@ -26,30 +26,57 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.*;
+import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.Functions;
+import hudson.Launcher;
+import hudson.Util;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
-import jenkins.model.*;
+import jenkins.model.ArtifactManager;
+import jenkins.model.ArtifactManagerConfiguration;
+import jenkins.model.ArtifactManagerFactory;
+import jenkins.model.ArtifactManagerFactoryDescriptor;
+import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.*;
+import org.jvnet.hudson.test.Email;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -57,8 +84,11 @@ import java.util.zip.ZipFile;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -124,6 +154,7 @@ public class DirectoryBrowserSupportTest {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
+            @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
                 return true;
@@ -183,6 +214,85 @@ public class DirectoryBrowserSupportTest {
         zipfile.delete();
     }
 
+    @Test
+    public void zipDownloadFileLeakMx_hypothesis() throws Exception {
+        // this test is meant to just ensure zipDownloadFileLeakMx hypothesis about the UI work fine
+
+        String content = "Hello world!";
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("artifact.out", content));
+        p.getPublishersList().add(new ArtifactArchiver("*", "", true));
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+        Page downloadPage = page.getAnchorByHref("artifact.out").click();
+        assertEquals(content, downloadPage.getWebResponse().getContentAsString());
+    }
+
+    @Test
+    @Issue({"JENKINS-64632", "JENKINS-61121"})
+    public void zipDownloadFileLeakMx() throws Exception {
+        Assume.assumeFalse(Functions.isWindows());
+
+        int numOfClicks = 10;
+        int totalRuns = 10;
+        boolean freeFromLeak = false;
+        long[][] openFds = new long[totalRuns][2];
+        for (int runs = 0; runs < totalRuns && !freeFromLeak; runs++) {
+            long initialOpenFds = getOpenFdCount();
+            FreeStyleProject p = j.createFreeStyleProject();
+
+            // add randomness just to prevent any potential caching issue
+            p.setScm(new SingleFileSCM("artifact.out", "Hello world! " + Math.random()));
+            p.getPublishersList().add(new ArtifactArchiver("*", "", true));
+            assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+            HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
+            for (int clicks = 0; clicks < numOfClicks; clicks++) {
+                page.getAnchorByHref("artifact.out").click();
+            }
+            long finalOpenFds = getOpenFdCount();
+
+            if (finalOpenFds < initialOpenFds + numOfClicks) {
+                // when there was a file leak, the number of open file handle was always 
+                // greater or equal to the number of download
+                // in reverse, since the correction, the likelihood to overpass the limit was less than 1%
+                freeFromLeak = true;
+            }
+
+            openFds[runs][0] = initialOpenFds;
+            openFds[runs][1] = finalOpenFds;
+        }
+
+        List<String> messages = new ArrayList<>();
+        Map<Long, Long> differences = new TreeMap<>();
+        for (int runs = 0; runs < totalRuns; runs++) {
+            long difference = openFds[runs][1] - openFds[runs][0];
+            Long storedDifference = differences.get(difference);
+            if (storedDifference == null) {
+                differences.put(difference, 1L);
+            } else {
+                differences.put(difference, ++storedDifference);
+            }
+            messages.add("Initial=" + openFds[runs][0] + ", Final=" + openFds[runs][1] + ", difference=" + difference);
+        }
+        for (Long difference : differences.keySet()) {
+            messages.add("Difference=" + difference + " occurs " + differences.get(difference) + " times");
+        }
+
+        String summary = String.join("\n", messages);
+        System.out.println("Summary of the test: \n"+ summary);
+        assertTrue("There should be no difference greater than "+numOfClicks+", but the output was: \n"+ summary, freeFromLeak);
+    }
+
+    private long getOpenFdCount() {
+        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+        if(os instanceof UnixOperatingSystemMXBean){
+            return ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount();
+        }
+        return -1;
+    }
+
     @Issue("SECURITY-95")
     @Test
     public void contentSecurityPolicy() throws Exception {
@@ -201,8 +311,9 @@ public class DirectoryBrowserSupportTest {
         try {
             System.setProperty(propName, "");
             page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+            List<String> headers = page.getWebResponse().getResponseHeaders().stream().map(NameValuePair::getName).collect(Collectors.toList());
             for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
-                assertFalse("Header not set: " + header, page.getWebResponse().getResponseHeaders().contains(header));
+                assertThat(headers, not(hasItem(header)));
             }
         } finally {
             if (initialValue == null) {

@@ -118,6 +118,7 @@ final class ParsedQuickSilver {
             this.method = method;
         }
 
+        @Override
         Object get(Object obj) {
             try {
                 return method.invoke(obj);
@@ -142,6 +143,7 @@ final class ParsedQuickSilver {
             this.field = field;
         }
 
+        @Override
         Object get(Object obj) {
             try {
                 return field.get(obj);
@@ -160,14 +162,17 @@ final class ParsedQuickSilver {
     public void addTo(SearchIndexBuilder builder, final Object instance) {
         for (final Getter getter : getters)
             builder.add(new SearchItem() {
+                @Override
                 public String getSearchName() {
                     return getter.searchName;
                 }
 
+                @Override
                 public String getSearchUrl() {
                     return getter.url;
                 }
 
+                @Override
                 public SearchIndex getSearchIndex() {
                     Object child = getter.get(instance);
                     if(child==null) return SearchIndex.EMPTY;

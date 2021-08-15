@@ -96,7 +96,7 @@ public final class Secret implements Serializable {
     @Deprecated
     public String toString() {
         final String from = new Throwable().getStackTrace()[1].toString();
-        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://jenkins.io/redirect/hudson.util.Secret/");
+        LOGGER.warning("Use of toString() on hudson.util.Secret from "+from+". Prefer getPlainText() or getEncryptedValue() depending your needs. see https://www.jenkins.io/redirect/hudson.util.Secret/");
         return value;
     }
 
@@ -141,11 +141,11 @@ public final class Secret implements Serializable {
             payload[pos++] = (byte)(iv.length >> 24);
             payload[pos++] = (byte)(iv.length >> 16);
             payload[pos++] = (byte)(iv.length >> 8);
-            payload[pos++] = (byte)(iv.length);
+            payload[pos++] = (byte)iv.length;
             payload[pos++] = (byte)(encrypted.length >> 24);
             payload[pos++] = (byte)(encrypted.length >> 16);
             payload[pos++] = (byte)(encrypted.length >> 8);
-            payload[pos++] = (byte)(encrypted.length);
+            payload[pos++] = (byte)encrypted.length;
             System.arraycopy(iv, 0, payload, pos, iv.length);
             pos+=iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);
@@ -268,15 +268,18 @@ public final class Secret implements Serializable {
         public ConverterImpl() {
         }
 
+        @Override
         public boolean canConvert(Class type) {
             return type==Secret.class;
         }
 
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Secret src = (Secret) source;
             writer.setValue(src.getEncryptedValue());
         }
 
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, final UnmarshallingContext context) {
             return fromString(reader.getValue());
         }
@@ -311,6 +314,7 @@ public final class Secret implements Serializable {
 
     static {
         Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+            @Override
             public Secret convert(Class type, Object value) {
                 if (value == null) {
                     return null;
@@ -323,6 +327,7 @@ public final class Secret implements Serializable {
         }, Secret.class);
         if (AUTO_ENCRYPT_PASSWORD_CONTROL) {
             Stapler.CONVERT_UTILS.register(new org.apache.commons.beanutils.Converter() {
+                @Override
                 public String convert(Class type, Object value) {
                     if (value == null) {
                         return null;

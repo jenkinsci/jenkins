@@ -36,7 +36,6 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
 import hudson.util.FormValidation;
-import static hudson.util.FormValidation.Kind.WARNING;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -121,9 +120,9 @@ public class SlaveTest {
         DumbSlave.DescriptorImpl d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class);
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("c:\\"));
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("/tmp"));
-        assertEquals(WARNING, d.doCheckRemoteFS("relative/path").kind);
-        assertEquals(WARNING, d.doCheckRemoteFS("/net/foo/bar/zot").kind);
-        assertEquals(WARNING, d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind);
+        assertEquals(FormValidation.Kind.WARNING, d.doCheckRemoteFS("relative/path").kind);
+        assertEquals(FormValidation.Kind.WARNING, d.doCheckRemoteFS("/net/foo/bar/zot").kind);
+        assertEquals(FormValidation.Kind.WARNING, d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind);
     }
 
     @Test

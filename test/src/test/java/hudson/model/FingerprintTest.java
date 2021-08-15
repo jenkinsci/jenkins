@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -411,6 +412,26 @@ public class FingerprintTest {
         // could also be reached using static/<anything>/
         Page page2 = rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + fp.getHashString() + "/")));
         assertEquals(200, page2.getWebResponse().getStatusCode());
+    }
+
+    @Test
+    @Issue("JENKINS-65611")
+    public void canModifyFacets() {
+        Fingerprint fingerprint = new Fingerprint(new Fingerprint.BuildPtr("foo", 3),
+                "stuff&more.jar", Util.fromHexString(SOME_MD5));
+        TestFacet testFacet = new TestFacet(fingerprint, 0, "test");
+        assertThat(fingerprint.getFacets().size(), is(0));
+        fingerprint.getFacets().add(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(1));
+        assertTrue(fingerprint.getFacets().contains(testFacet));
+        fingerprint.getFacets().remove(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(0));
+        fingerprint.getFacets().add(testFacet);
+        assertThat(fingerprint.getFacets().size(), is(1));
+        Iterator<FingerprintFacet> itr = fingerprint.getFacets().iterator();
+        itr.next();
+        itr.remove();
+        assertThat(fingerprint.getFacets().size(), is(0));
     }
 
     @Test

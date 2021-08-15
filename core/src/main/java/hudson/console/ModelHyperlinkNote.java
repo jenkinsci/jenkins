@@ -1,7 +1,13 @@
 package hudson.console;
 
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Item;
+import hudson.model.Label;
+import hudson.model.ModelObject;
+import hudson.model.Node;
+import hudson.model.Run;
+import hudson.model.User;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -50,7 +56,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         if (c != null) {
             return encodeTo("/" + c.getUrl(), node.getDisplayName());
         }
-        String nodePath = node == Jenkins.get() ? "(master)" : node.getNodeName();
+        String nodePath = node == Jenkins.get() ? "(built-in)" : node.getNodeName();
         return encodeTo("/computer/" + nodePath, node.getDisplayName());
     }
 

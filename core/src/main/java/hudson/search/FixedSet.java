@@ -46,6 +46,7 @@ public class FixedSet implements SearchIndex {
         this(Arrays.asList(items));
     }
 
+    @Override
     public void find(String token, List<SearchItem> result) {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
         for (SearchItem i : items) {
@@ -56,6 +57,7 @@ public class FixedSet implements SearchIndex {
         }
     }
 
+    @Override
     public void suggest(String token, List<SearchItem> result) {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
         for (SearchItem i : items) {

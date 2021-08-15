@@ -27,14 +27,6 @@ com.google.common.collect.SingletonImmutableList
 com.google.common.collect.SingletonImmutableMap
 com.google.common.collect.SingletonImmutableSet
 
-# TODO remove when maven-plugin 3.1 is widely adopted
-hudson.maven.MavenInformation
-
-# TODO remove when https://github.com/jenkinsci/kubernetes-pipeline-plugin/pull/66 is widely adopted
-io.fabric8.docker.api.model.Config
-io.fabric8.docker.api.model.GraphDriverData
-io.fabric8.docker.api.model.ImageInspect
-
 java.io.File
 java.lang.Boolean
 java.lang.Byte
@@ -136,38 +128,9 @@ java.util.logging.Level
 java.util.logging.LogRecord
 java.util.regex.Pattern
 
-# TODO remove when https://github.com/jenkinsci/job-dsl-plugin/pull/1092 is widely adopted
-javaposse.jobdsl.dsl.GeneratedJob
-
-# TODO remove when https://github.com/jenkinsci/monitoring-plugin/pull/6 is widely adopted
-net.bull.javamelody.internal.model.CacheInformations
-net.bull.javamelody.internal.model.HeapHistogram
-net.bull.javamelody.internal.model.HeapHistogram$ClassInfo
-net.bull.javamelody.internal.model.JavaInformations
-net.bull.javamelody.internal.model.JobInformations
-net.bull.javamelody.internal.model.MBeanNode
-net.bull.javamelody.internal.model.MBeanNode$MBeanAttribute
-net.bull.javamelody.internal.model.MemoryInformations
-net.bull.javamelody.internal.model.ProcessInformations
-net.bull.javamelody.internal.model.ThreadInformations
-net.bull.javamelody.internal.model.TomcatInformations
-
 org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
 org.apache.tools.ant.Location
-
-# TODO remove when git-client 2.7.1+ is widely adopted
-org.eclipse.jgit.lib.ObjectId
-org.eclipse.jgit.lib.ObjectIdOwnerMap$Entry
-org.eclipse.jgit.lib.PersonIdent
-org.eclipse.jgit.revwalk.RevCommit
-org.eclipse.jgit.revwalk.RevObject
-org.eclipse.jgit.revwalk.RevTree
-org.eclipse.jgit.transport.URIish
-
-# TODO remove when https://github.com/jenkinsci/workflow-support-plugin/pull/50 is widely adopted
-org.jboss.marshalling.TraceInformation$FieldInfo
-org.jboss.marshalling.TraceInformation$ObjectInfo
 
 # TODO see main ruby-runtime section below
 org.jenkinsci.jruby.JRubyMapper$DynamicProxy
@@ -200,11 +163,6 @@ org.jruby.runtime.builtin.IRubyObject
 org.jvnet.hudson.MemoryUsage
 org.jvnet.localizer.Localizable
 org.jvnet.localizer.ResourceBundleHolder
-
-# TODO remove when https://github.com/jenkinsci/dependency-check-plugin/pull/20 is widely adopted
-org.owasp.dependencycheck.dependency.Reference
-org.owasp.dependencycheck.dependency.Vulnerability
-org.owasp.dependencycheck.dependency.VulnerableSoftware
 
 org.springframework.security.core.userdetails.User
 

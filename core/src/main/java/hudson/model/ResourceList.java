@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 /**
@@ -83,7 +82,7 @@ public final class ResourceList {
             ResourceList r = new ResourceList();
             for (ResourceList l : lists) {
                 r.all.addAll(l.all);
-                for (Entry<Resource, Integer> e : l.write.entrySet())
+                for (Map.Entry<Resource, Integer> e : l.write.entrySet())
                     r.write.put(e.getKey(), unbox(r.write.get(e.getKey()))+e.getValue());
             }
             return r;
@@ -125,7 +124,7 @@ public final class ResourceList {
     }
 
     private Resource _getConflict(ResourceList lhs, ResourceList rhs) {
-        for (Entry<Resource,Integer> r : lhs.write.entrySet()) {
+        for (Map.Entry<Resource,Integer> r : lhs.write.entrySet()) {
             for (Resource l : rhs.all) {
                 Integer v = rhs.write.get(l);
                 if(v!=null) // this is write/write conflict.
@@ -146,7 +145,7 @@ public final class ResourceList {
         Map<Resource,String> m = new HashMap<>();
         for (Resource r : all)
             m.put(r,"R");
-        for (Entry<Resource,Integer> e : write.entrySet())
+        for (Map.Entry<Resource,Integer> e : write.entrySet())
             m.put(e.getKey(),"W"+e.getValue());
         return m.toString();
     }

@@ -167,6 +167,7 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
         rsp.serveExposedBean(req,this,Flavor.JSON);
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         writeTo(req,rsp);
     }
