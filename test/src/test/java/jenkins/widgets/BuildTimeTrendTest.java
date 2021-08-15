@@ -117,10 +117,10 @@ public class BuildTimeTrendTest {
         // for the build on agent
         assertTrue(anchor.isPresent());
 
-        String masterName = hudson.model.Messages.Hudson_Computer_DisplayName();
+        String builtInNode = hudson.model.Messages.Hudson_Computer_DisplayName();
         DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
         Optional<DomNode> td = tds.stream()
-                .filter(t -> t.getTextContent().equals(masterName))
+                .filter(t -> t.getTextContent().equals(builtInNode))
                 .findFirst();
         // for the build on built-in node
         assertTrue(td.isPresent());

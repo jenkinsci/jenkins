@@ -195,9 +195,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /*package*/ final List<ProcessKiller> getKillers() throws InterruptedException {
         if (killers==null)
             try {
-                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
-                if (channelToMaster!=null) {
-                    killers = channelToMaster.call(new ListAll());
+                VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
+                if (channelToController!=null) {
+                    killers = channelToController.call(new ListAll());
                 } else {
                     // used in an environment that doesn't support talk-back to the master.
                     // let's do with what we have.
@@ -294,10 +294,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             // Quick check, does anything exist to check against
             if (!skipVetoes) {
                 try {
-                    VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
-                    if (channelToMaster!=null) {
+                    VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
+                    if (channelToController!=null) {
                         CheckVetoes vetoCheck = new CheckVetoes(this);
-                        causeMessage = channelToMaster.call(vetoCheck);
+                        causeMessage = channelToController.call(vetoCheck);
                     }
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "I/O Exception while checking for vetoes", e);
@@ -438,9 +438,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         // Check for the existance of vetoers if I don't know already
         if (vetoersExist == null) {
             try {
-                VirtualChannel channelToMaster = AgentComputerUtil.getChannelToMaster();
-                if (channelToMaster != null) {
-                    vetoersExist = channelToMaster.call(new DoVetoersExist());
+                VirtualChannel channelToController = AgentComputerUtil.getChannelToController();
+                if (channelToController != null) {
+                    vetoersExist = channelToController.call(new DoVetoersExist());
                 }
             }
             catch (InterruptedException ie) {

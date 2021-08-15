@@ -41,7 +41,7 @@ import java.util.List;
 @Extension
 public class OnlineNodeCommand extends CLICommand {
 
-    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for master", required = true, multiValued = true)
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for built-in node", required = true, multiValued = true)
     private List<String> nodes;
 
     @Override

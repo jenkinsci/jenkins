@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 public class ConnectNodeCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(metaVar="NAME", usage="Slave name, or empty string for master; comma-separated list is supported", required=true, multiValued=true)
+    @Argument(metaVar="NAME", usage="Agent name, or empty string for built-in node; comma-separated list is supported", required=true, multiValued=true)
     private List<String> nodes;
 
     @Option(name="-f", usage="Cancel any currently pending connect operation and retry from scratch")

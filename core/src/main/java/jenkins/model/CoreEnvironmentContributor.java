@@ -60,7 +60,7 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
             Executor e = (Executor) t;
             env.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
             if (e.getOwner() instanceof MasterComputer) {
-                env.put("NODE_NAME", "master");
+                env.put("NODE_NAME", Jenkins.get().getSelfLabel().getName());
             } else {
                 env.put("NODE_NAME", e.getOwner().getName());
             }

@@ -21,7 +21,7 @@ import java.io.IOException;
  * @since 1.587 / 1.580.1
  * @author Kohsuke Kawaguchi
  */
-@Extension @Symbol("slaveToMasterAccessControl")
+@Extension @Symbol({"agentToControllerAccessControl", "slaveToMasterAccessControl"})
 public class AdminCallableMonitor extends AdministrativeMonitor {
     @Inject
     Jenkins jenkins;
@@ -30,7 +30,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     AdminWhitelistRule rule;
 
     public AdminCallableMonitor() {
-        super("slaveToMasterAccessControl");
+        super("slaveToMasterAccessControl"); // TODO Can we change this while retaining compatibility?
     }
 
     @Override
