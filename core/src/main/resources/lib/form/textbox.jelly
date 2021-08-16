@@ -88,7 +88,7 @@ THE SOFTWARE.
 
   <f:possibleReadOnlyField>
       <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-               class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
+               class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
                name="${name}"
                value="${value}"
                type="text"

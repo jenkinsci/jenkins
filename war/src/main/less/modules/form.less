@@ -1,0 +1,102 @@
+h1 {
+  margin-bottom: 30px;
+}
+
+#main-panel {
+  padding: 30px;
+}
+
+.jenkins-form-item {
+  margin-bottom: 30px;
+}
+
+.jenkins-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.jenkins-form-label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.jenkins-input {
+  display: block;
+  border: 3px solid rgba(0,0,0,0.2);
+  padding: 8px;
+  border-radius: 6px;
+  width: 300px;
+  transition: 0.2s ease;
+
+  &:hover {
+    border-color: rgba(0,0,0,0.5);
+  }
+
+  &:active,
+  &:focus {
+    outline: none;
+    border-color: rgba(0,0,0,1);
+  }
+}
+
+.jenkins-radio {
+  &:not(:last-of-type) {
+    margin-bottom: 20px;
+  }
+
+  &__input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  &__label {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 0;
+    padding: 1px 34px 5px;
+    cursor: pointer;
+    font-weight: bold;
+    // remove 300ms pause on mobile
+    touch-action: manipulation;
+
+    &::before {
+      content: "";
+      box-sizing: border-box;
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      width: 24px;
+      height: 24px;
+
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      background: transparent;
+      opacity: 0.2;
+
+      transition: 0.2s ease;
+    }
+
+    &:hover::before {
+      border-width: 5px;
+      opacity: .5;
+    }
+  }
+
+  &__input:focus + &__label:before {
+    border-width: 8px;
+    opacity: 0.5;
+  }
+
+  &__input:checked + &__label:before {
+    border-width: 8px;
+    opacity: 1;
+  }
+
+  &__description {
+    margin: 0 0 0 34px;
+    opacity: 0.5;
+  }
+}
