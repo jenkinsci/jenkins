@@ -296,7 +296,6 @@ public class IconSet {
         icons.addIcon(new WeatherIcon("icon-health-40to59 icon-sm", Icon.ICON_SMALL_STYLE, WeatherIcon.Status.CLOUDY));
         icons.addIcon(new WeatherIcon("icon-health-60to79 icon-sm", Icon.ICON_SMALL_STYLE, WeatherIcon.Status.PARTLY_CLOUDY));
         icons.addIcon(new WeatherIcon("icon-health-80plus icon-sm", Icon.ICON_SMALL_STYLE, WeatherIcon.Status.SUNNY));
-        icons.addIcon(new Icon("icon-help icon-sm", "16x16/help.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-hourglass icon-sm", "16x16/hourglass.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-lock icon-sm", "16x16/lock.gif", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-nobuilt icon-sm", "build-status/build-status-sprite.svg#never-built", Icon.ICON_SMALL_STYLE));
@@ -342,7 +341,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-gear2 icon-sm", "16x16/gear2.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-go-next icon-sm", "16x16/go-next.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-grey icon-sm", "16x16/grey.png", Icon.ICON_SMALL_STYLE));
-        icons.addIcon(new Icon("icon-help icon-sm", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_SMALL_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-hourglass icon-sm", "16x16/hourglass.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-lock icon-sm", "16x16/lock.png", Icon.ICON_SMALL_STYLE));
         icons.addIcon(new Icon("icon-notepad icon-sm", "16x16/notepad.png", Icon.ICON_SMALL_STYLE));
@@ -399,7 +397,6 @@ public class IconSet {
         icons.addIcon(new WeatherIcon("icon-health-40to59 icon-md", Icon.ICON_MEDIUM_STYLE, WeatherIcon.Status.CLOUDY));
         icons.addIcon(new WeatherIcon("icon-health-60to79 icon-md",  Icon.ICON_MEDIUM_STYLE, WeatherIcon.Status.PARTLY_CLOUDY));
         icons.addIcon(new WeatherIcon("icon-health-80plus icon-md",  Icon.ICON_MEDIUM_STYLE, WeatherIcon.Status.SUNNY));
-        icons.addIcon(new Icon("icon-help icon-md", "24x24/help.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-installer icon-md", "24x24/installer.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-md", "24x24/monitor.gif", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-new-computer icon-md", "24x24/new-computer.gif", Icon.ICON_MEDIUM_STYLE));
@@ -446,7 +443,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-gear2 icon-md", "24x24/gear2.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-graph icon-md", "24x24/graph.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-grey icon-md", "24x24/grey.png", Icon.ICON_MEDIUM_STYLE));
-        icons.addIcon(new Icon("icon-help icon-md", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_MEDIUM_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-installer icon-md", "24x24/installer.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-lock icon-md", "24x24/lock.png", Icon.ICON_MEDIUM_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-md", "24x24/monitor.png", Icon.ICON_MEDIUM_STYLE));
@@ -564,7 +560,6 @@ public class IconSet {
         icons.addIcon(new WeatherIcon("icon-health-40to59 icon-xlg", Icon.ICON_XLARGE_STYLE, WeatherIcon.Status.CLOUDY));
         icons.addIcon(new WeatherIcon("icon-health-60to79 icon-xlg", Icon.ICON_XLARGE_STYLE, WeatherIcon.Status.PARTLY_CLOUDY));
         icons.addIcon(new WeatherIcon("icon-health-80plus icon-xlg", Icon.ICON_XLARGE_STYLE, WeatherIcon.Status.SUNNY));
-        icons.addIcon(new Icon("icon-help icon-xlg", "48x48/help.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-installer icon-xlg", "48x48/installer.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-xlg", "48x48/monitor.gif", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-network icon-xlg", "48x48/network.gif", Icon.ICON_XLARGE_STYLE));
@@ -604,7 +599,6 @@ public class IconSet {
         icons.addIcon(new Icon("icon-gear2 icon-xlg", "48x48/gear2.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-graph icon-xlg", "48x48/graph.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-grey icon-xlg", "48x48/grey.png", Icon.ICON_XLARGE_STYLE));
-        icons.addIcon(new Icon("icon-help icon-xlg", "material-icons/svg-sprite-action-symbol.svg#ic_help_24px", Icon.ICON_XLARGE_STYLE, IconFormat.EXTERNAL_SVG_SPRITE));
         icons.addIcon(new Icon("icon-installer icon-xlg", "48x48/installer.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-lock icon-xlg", "48x48/lock.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-monitor icon-xlg", "48x48/monitor.png", Icon.ICON_XLARGE_STYLE));
@@ -632,86 +626,98 @@ public class IconSet {
     }
 
     private static void initializeSVGs() {
-      Map<String, String> sizes = new HashMap<>();
-      sizes.put("icon-sm", Icon.ICON_SMALL_STYLE);
-      sizes.put("icon-md", Icon.ICON_MEDIUM_STYLE);
-      sizes.put("icon-lg", Icon.ICON_LARGE_STYLE);
-      sizes.put("icon-xlg", Icon.ICON_XLARGE_STYLE);
+        Map<String, String> sizes = new HashMap<>();
+        sizes.put("icon-sm", Icon.ICON_SMALL_STYLE);
+        sizes.put("icon-md", Icon.ICON_MEDIUM_STYLE);
+        sizes.put("icon-lg", Icon.ICON_LARGE_STYLE);
+        sizes.put("icon-xlg", Icon.ICON_XLARGE_STYLE);
 
-      List<String> images = new ArrayList<>();
-      images.add("computer");
-      images.add("delete-document");
-      images.add("accept");
-      images.add("application-certificate");
-      images.add("attribute");
-      images.add("bookmark-new");
-      images.add("certificate");
-      images.add("clipboard-list-solid");
-      images.add("clipboard");
-      images.add("clock");
-      images.add("computer-user-offline");
-      images.add("computer-x");
-      images.add("document");
-      images.add("edit-delete");
-      images.add("emblem-urgent");
-      images.add("error");
-      images.add("fingerprint");
-      images.add("folder-delete");
-      images.add("folder");
-      images.add("gear");
-      images.add("go-down");
-      images.add("go-top");
-      images.add("go-up");
-      images.add("graph");
-      images.add("grey");
-      images.add("headless");
-      images.add("headshot");
-      images.add("help");
-      images.add("hourglass");
-      images.add("installer");
-      images.add("keys");
-      images.add("light-grey");
-      images.add("lock");
-      images.add("logo");
-      images.add("monitor");
-      images.add("network");
-      images.add("new-computer");
-      images.add("new-document");
-      images.add("new-package");
-      images.add("new-user");
-      images.add("next");
-      images.add("notepad");
-      images.add("orange-square");
-      images.add("package");
-      images.add("person");
-      images.add("plugin");
-      images.add("previous");
-      images.add("redo");
-      images.add("refresh");
-      images.add("save-new");
-      images.add("save");
-      images.add("search");
-      images.add("secure");
-      images.add("setting");
-      images.add("shield");
-      images.add("star-gold");
-      images.add("star-large-gold");
-      images.add("star-large");
-      images.add("star");
-      images.add("stop");
-      images.add("system-log-out");
-      images.add("terminal");
-      images.add("undo");
-      images.add("up");
-      images.add("user");
-      images.add("video");
-      images.add("warning");
-      
-      for (Map.Entry<String, String> size : sizes.entrySet()) {
-        for (String image : images) {
-          icons.addIcon(new Icon("icon-" +image + " " + size.getKey(),
-            "svgs/" + image + ".svg", size.getValue()));
+        List<String> images = new ArrayList<>();
+        images.add("computer");
+        images.add("delete-document");
+        images.add("accept");
+        images.add("application-certificate");
+        images.add("attribute");
+        images.add("bookmark-new");
+        images.add("certificate");
+        images.add("clipboard-list-solid");
+        images.add("clipboard");
+        images.add("clock");
+        images.add("computer-user-offline");
+        images.add("computer-x");
+        images.add("document");
+        images.add("edit-delete");
+        images.add("emblem-urgent");
+        images.add("error");
+        images.add("fingerprint");
+        images.add("folder-delete");
+        images.add("folder");
+        images.add("gear");
+        images.add("go-down");
+        images.add("go-top");
+        images.add("go-up");
+        images.add("graph");
+        images.add("grey");
+        images.add("headless");
+        images.add("headshot");
+        images.add("hourglass");
+        images.add("installer");
+        images.add("keys");
+        images.add("light-grey");
+        images.add("lock");
+        images.add("logo");
+        images.add("monitor");
+        images.add("network");
+        images.add("new-computer");
+        images.add("new-document");
+        images.add("new-package");
+        images.add("new-user");
+        images.add("next");
+        images.add("notepad");
+        images.add("orange-square");
+        images.add("package");
+        images.add("person");
+        images.add("plugin");
+        images.add("previous");
+        images.add("redo");
+        images.add("refresh");
+        images.add("save-new");
+        images.add("save");
+        images.add("search");
+        images.add("secure");
+        images.add("setting");
+        images.add("shield");
+        images.add("star-gold");
+        images.add("star-large-gold");
+        images.add("star-large");
+        images.add("star");
+        images.add("stop");
+        images.add("system-log-out");
+        images.add("terminal");
+        images.add("undo");
+        images.add("up");
+        images.add("user");
+        images.add("video");
+        images.add("warning");
+
+        Map<String, String> materialIcons = new HashMap<>();
+        materialIcons.put("help", "svg-sprite-action-symbol.svg#ic_help_24px");
+
+        for (Map.Entry<String, String> size : sizes.entrySet()) {
+            for (String image : images) {
+                icons.addIcon(new Icon("icon-" + image + " " + size.getKey(),
+                        "svgs/" + image + ".svg", size.getValue()));
+            }
+
+            for (String image : materialIcons.keySet()) {
+                icons.addIcon(new Icon(
+                        "icon-" + image + " " + size.getKey(),
+                                "material-icons/" + materialIcons.get(image),
+                                size.getValue(),
+                                IconFormat.EXTERNAL_SVG_SPRITE
+                        )
+                );
+            }
         }
-      }
     }
 }
