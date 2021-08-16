@@ -138,11 +138,13 @@ public class IconTest  {
         DomElement tasksDiv = p.getElementById("tasks");
         List<DomElement> taskDivs = StreamSupport.stream(tasksDiv.getChildElements().spliterator(), false).collect(Collectors.toList());
 
-        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/24x24/up.png", "icon-up icon-md");
+        assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/svgs/up.svg", "icon-up icon-md");
+        // this is loading the png from cloudbees-folder plugin
+        // when this is swapped to an SVG and the dep updated this test will need to change
         assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/24x24/folder.png", "icon-folder icon-md");
-        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/16x16/package.png", "icon-package icon-sm");
-        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/16x16/package.png", "icon-package icon-sm");
-        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/16x16/package.png", "icon-package icon-sm");
+        assertIconToImageOkay(taskDivs.get(2).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-sm");
+        assertIconToImageOkay(taskDivs.get(3).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-sm");
+        assertIconToImageOkay(taskDivs.get(4).getElementsByTagName("img").get(0), "/images/svgs/package.svg", "icon-package icon-sm");
 
         assertIconToImageOkay(taskDivs.get(5).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
         assertIconToImageOkay(taskDivs.get(6).getElementsByTagName("img").get(0), "/plugin/xxx/icon.png");
