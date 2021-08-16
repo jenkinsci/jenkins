@@ -28,17 +28,25 @@ h1 {
   padding: 8px;
   border-radius: 6px;
   width: 300px;
+  box-shadow: 0 0 0 10px transparent;
   transition: 0.2s ease;
 
   &:hover {
     border-color: rgba(0,0,0,0.5);
+    box-shadow: 0 0 0 5px var(--focus-color);
   }
 
   &:active,
   &:focus {
     outline: none;
     border-color: rgba(0,0,0,1);
+    box-shadow: 0 0 0 5px var(--focus-color);
   }
+}
+
+:root {
+  --focus-color: rgba(0, 0, 0, 0.1);
+  --focus-hover-color: rgba(0, 0, 0, 0.05);
 }
 
 .jenkins-radio {
@@ -75,6 +83,7 @@ h1 {
       border-radius: 50%;
       background: transparent;
       opacity: 0.2;
+      box-shadow: 0 0 0 15px transparent;
 
       transition: 0.2s ease;
     }
@@ -82,12 +91,13 @@ h1 {
     &:hover::before {
       border-width: 5px;
       opacity: .5;
+      box-shadow: 0 0 0 5px var(--focus-color);
     }
   }
 
-  &__input:focus + &__label:before {
-    border-width: 8px;
-    opacity: 0.5;
+  &__input:focus + &__label:before, &__input:active + &__label:before {
+    box-shadow: 0 0 0 5px var(--focus-color)!important;
+    opacity: 1;
   }
 
   &__input:checked + &__label:before {
@@ -98,5 +108,36 @@ h1 {
   &__description {
     margin: 0 0 0 34px;
     opacity: 0.5;
+  }
+}
+
+.jenkins-button {
+  position: relative;
+  border: none!important;
+  padding: 10px 8px!important;
+  border-radius: 6px!important;
+  box-shadow: 0 0 0 10px transparent;
+  transition: 0.2s ease!important;
+  background: black!important;
+  color: white!important;
+  margin: 0!important;
+  min-width: 90px!important;
+  min-height: 0!important;
+  font-weight: 600;
+  cursor: pointer;
+  
+  &:hover {
+    box-shadow: 0 0 0 5px var(--focus-hover-color)!important;
+    opacity: 0.85;
+  }
+  
+  &:active, &:focus {
+    box-shadow: 0 0 0 5px var(--focus-color)!important;
+    opacity: 0.7;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
   }
 }

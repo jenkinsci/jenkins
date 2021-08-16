@@ -141,9 +141,9 @@ $.when(getItems()).done(function(data) {
 
     function drawCategory(category) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
-      var $items = $('<ul/>').addClass('j-item-options');
-      var $catHeader = $('<div class="header" />');
-      var title = '<h2>' + category.name + '</h2>';
+      var $items = $('<div/>');
+      var $catHeader = $('<div />');
+      var title = '<label class="jenkins-form-label">' + category.name + '</label>';
       var description = '<p>' + category.description + '</p>';
 
       // Add items
@@ -160,30 +160,26 @@ $.when(getItems()).done(function(data) {
     }
 
     function drawItem(elem) {
-      var item = document.createElement('li');
-      item.tabIndex = 0;
-      item.className = cleanClassName(elem.class);
-      item.setAttribute('role', 'radio');
-      item.setAttribute('aria-checked', 'false');
+      var item = document.createElement('div');
+      item.className = 'jenkins-radio';
 
-      var label = item.appendChild(document.createElement('label'));
-
-      var radio = label.appendChild(document.createElement('input'));
+      var radio = item.appendChild(document.createElement('input'));
       radio.type = 'radio';
       radio.name = 'mode';
+      radio.className= 'jenkins-radio__input';
       radio.value = elem.class;
 
-      var displayName = label.appendChild(document.createElement('span'));
-      displayName.className = 'label';
+      var displayName = item.appendChild(document.createElement('span'));
+      displayName.className = 'jenkins-radio__label';
 
       displayName.appendChild(document.createTextNode(elem.displayName));
 
       var desc = item.appendChild(document.createElement('div'));
-      desc.className = 'desc';
+      desc.className = 'jenkins-radio__description';
       desc.innerHTML = checkForLink(elem.description);
 
-      var iconDiv = drawIcon(elem);
-      item.appendChild(iconDiv);
+      // var iconDiv = drawIcon(elem);
+      // item.appendChild(iconDiv);
 
       function select(e) {
         e.preventDefault();
@@ -267,7 +263,7 @@ $.when(getItems()).done(function(data) {
     $('#add-item-panel').removeAttr('style');
 
     // Render all categories
-    var $categories = $('div.categories');
+    var $categories = $('#items');
     $.each(data.categories, function(i, elem) {
       drawCategory(elem).appendTo($categories);
     });
@@ -279,8 +275,14 @@ $.when(getItems()).done(function(data) {
     $('input[name="name"]', '#createItem').on("blur input", function() {
       if (!isItemNameEmpty()) {
         var itemName = $('input[name="name"]', '#createItem').val();
+
+        console.log(itemName)
+
         $.get("checkJobName", { value: itemName }).done(function(data) {
           var message = parseResponseFromCheckJobName(data);
+
+          console.log(message)
+
           if (message !== '') {
             activateValidationMessage('#itemname-invalid', '.add-item-name', message);
           } else {
