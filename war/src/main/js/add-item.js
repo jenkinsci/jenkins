@@ -45,7 +45,7 @@ $.when(getItems()).done(function(data) {
     }
 
     function isItemNameEmpty() {
-      var itemName = $('input[name="name"]', '#createItem').val();
+      var itemName = $('#name', '#createItem').val();
       return (itemName === '') ? true : false;
     }
 
@@ -135,7 +135,6 @@ $.when(getItems()).done(function(data) {
       setFieldValidationStatus('from', false);
     }
 
-
     //////////////////////////////////
     // Draw functions
 
@@ -144,7 +143,7 @@ $.when(getItems()).done(function(data) {
       var $items = $('<div/>');
       var $catHeader = $('<div />');
       var title = '<label class="jenkins-form-label">' + category.name + '</label>';
-      var description = '<p>' + category.description + '</p>';
+      var description = '<p class="jenkins-form-description">' + category.description + '</p>';
 
       // Add items
       $.each(category.items, function(i, elem) {
@@ -272,22 +271,21 @@ $.when(getItems()).done(function(data) {
     $("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('input[name="name"]', '#createItem').on("blur input", function() {
+    $('#name', '#createItem').on("blur input", function() {
+      
       if (!isItemNameEmpty()) {
-        var itemName = $('input[name="name"]', '#createItem').val();
+        var itemName = $('#name', '#createItem').val();
 
         console.log(itemName)
 
         $.get("checkJobName", { value: itemName }).done(function(data) {
           var message = parseResponseFromCheckJobName(data);
 
-          console.log(message)
-
           if (message !== '') {
-            activateValidationMessage('#itemname-invalid', '.add-item-name', message);
+            activateValidationMessage('#itemname-invalid', '#name', message);
           } else {
-            cleanValidationMessages('.add-item-name');
-            showInputHelp('.add-item-name');
+            cleanValidationMessages('#name');
+            showInputHelp('#name');
             setFieldValidationStatus('name', true);
             if (getFormValidationStatus()) {
               enableSubmit(true);
@@ -297,8 +295,8 @@ $.when(getItems()).done(function(data) {
       } else {
         enableSubmit(false);
         setFieldValidationStatus('name', false);
-        cleanValidationMessages('.add-item-name');
-        activateValidationMessage('#itemname-required', '.add-item-name');
+        cleanValidationMessages('#name');
+        activateValidationMessage('#itemname-required', '#name');
       }
     });
 
@@ -311,7 +309,7 @@ $.when(getItems()).done(function(data) {
         $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
         setFieldValidationStatus('from', true);
         if (!getFieldValidationStatus('name')) {
-          activateValidationMessage('#itemname-required', '.add-item-name');
+          activateValidationMessage('#itemname-required', '#name');
           setTimeout(function() {
             $('input[name="name"][type="text"]', '#createItem').focus();
           }, 400);
@@ -328,11 +326,11 @@ $.when(getItems()).done(function(data) {
       if (!getFormValidationStatus()) {
         event.preventDefault();
         if (!getFieldValidationStatus('name')) {
-          activateValidationMessage('#itemname-required', '.add-item-name');
+          activateValidationMessage('#itemname-required', '#name');
           $('input[name="name"][type="text"]', '#createItem').focus();
         } else {
           if (!getFieldValidationStatus('items') && !getFieldValidationStatus('from'))  {
-            activateValidationMessage('#itemtype-required', '.add-item-name');
+            activateValidationMessage('#itemtype-required', '#name');
             $('input[name="name"][type="text"]', '#createItem').focus();
           }
         }

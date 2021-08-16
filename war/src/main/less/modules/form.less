@@ -6,6 +6,10 @@ h1 {
   padding: 30px;
 }
 
+.jenkins-form {
+  max-width: 80ch;
+}
+
 .jenkins-form-item {
   margin-bottom: 30px;
 }
@@ -19,7 +23,15 @@ h1 {
 .jenkins-form-label {
   display: block;
   font-weight: bold;
+  margin-top: 0;
   margin-bottom: 10px;
+}
+
+.jenkins-form-description {
+  display: block;
+  opacity: 0.5;
+  margin-top: 0;
+  margin-bottom: 12px;
 }
 
 .jenkins-input {
@@ -109,6 +121,11 @@ h1 {
     margin: 0 0 0 34px;
     opacity: 0.5;
   }
+
+  &__content {
+    margin: 0 0 0 34px;
+    margin-top: 8px;
+  }
 }
 
 .jenkins-button {
@@ -139,5 +156,25 @@ h1 {
   &:disabled {
     opacity: 0.5;
     pointer-events: none;
+  }
+}
+
+#add-item-panel {
+
+  .input-help {
+    color: #666;
+    font-style: italic;
+    font-size: var(--font-size-sm);
+    padding-top: 2px;
+  }
+
+  .input-validation-message {
+    color: red;
+    padding-top: 2px;
+    font-weight: bold;
+  }
+
+  .input-message-disabled {
+    display: none;
   }
 }

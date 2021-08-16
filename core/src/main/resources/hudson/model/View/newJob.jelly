@@ -29,17 +29,16 @@ THE SOFTWARE.
   <l:layout type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
 
     <l:js src="jsbundles/add-item.js" />
-    <l:css src="jsbundles/add-itaem.css" />
 
     <l:main-panel>
       <h1>${%New item}</h1>
 
-    <div class="" id="add-item-panel" style="display: none;">
+    <div class="jenkins-form" id="add-item-panel">
       <div >
         <div>
           <form method="post" action="createItem" name="createItem" id="createItem">
 
-            <div class="jenkins-form-item add-item-name">
+            <div class="jenkins-form-item">
               <label for="name" class="jenkins-form-label">${%ItemName.label}</label>
               <input name="name" class="jenkins-input" id="name" data-valid="false" type="text" tabindex="0" />
               <div class="input-help">&#187; ${%ItemName.help}</div>
@@ -48,21 +47,23 @@ THE SOFTWARE.
               <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
             </div>
 
-            <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
-
-            <j:if test="${!empty(app.itemMap)}">
-              <div class="item-copy">
-                <p class="description"></p>
-                <div class="add-item-copy jenkins-radio">
-                  <input class="jenkins-radio__input" type="radio" name="mode" value="copy" />
-                  <label class="jenkins-radio__label">${%CopyOption.label}</label>
-                  <p class="jenkins-radio__description">${%CopyOption.description}</p>
-                  <div>
-                    <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+            <div class="jenkins-form-item">
+              <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
+  
+              <j:if test="${!empty(app.itemMap)}">
+                <div class="item-copy">
+                  <p class="description"></p>
+                  <div class="add-item-copy jenkins-radio">
+                    <input class="jenkins-radio__input" id="copy" type="radio" name="mode" value="copy" />
+                    <label class="jenkins-radio__label" for="copy">${%CopyOption.label}</label>
+                    <p class="jenkins-radio__description">${%CopyOption.description}</p>
+                    <div class="jenkins-radio__content">
+                      <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </j:if>
+              </j:if>
+            </div>
 
             <div class="footer">
               <div class="btn-decorator">
