@@ -71,7 +71,7 @@ public class BootFailureTest {
             ServletContext ws = createWebServer((context, server) -> {
                 NoListenerConfiguration noListenerConfiguration = context.getBean(NoListenerConfiguration.class);
                 // future-proof
-                Assert.notNull(noListenerConfiguration);
+                Assert.notNull(noListenerConfiguration, "Value must not be null");
                 if (noListenerConfiguration != null) {
                     context.removeBean(noListenerConfiguration);
                     context.addBean(new AbstractLifeCycle() {

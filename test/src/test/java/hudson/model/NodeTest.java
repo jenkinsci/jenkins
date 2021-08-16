@@ -408,13 +408,11 @@ public class NodeTest {
             }
 
             // Gather information for failure message just in case.
-            containsFailureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
+            containsFailureMessage.append("{").append(entry.item).append(", ").append(entry.weight).append("}");
         }
 
         // If a label should be part of the cloud label then fail.
-        if (contains) {
-            fail(containsFailureMessage.toString() + "]");
-        }
+        assertFalse(containsFailureMessage + "]", contains);
     }
 
     /**

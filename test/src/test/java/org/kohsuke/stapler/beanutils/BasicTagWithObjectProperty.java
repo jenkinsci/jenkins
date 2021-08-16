@@ -14,7 +14,7 @@ public class BasicTagWithObjectProperty extends TagSupport {
     }
 
     @Override
-    public void doTag(XMLOutput output) throws MissingAttributeException, JellyTagException {
+    public void doTag(XMLOutput output) throws JellyTagException {
         try {
             output.writeComment("Tag with object property\n");
             output.writeCDATA(getClass().getName() + ":" + clazz);

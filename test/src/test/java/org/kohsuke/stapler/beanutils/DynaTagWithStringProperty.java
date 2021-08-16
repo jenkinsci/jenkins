@@ -15,7 +15,7 @@ public class DynaTagWithStringProperty extends TagSupport implements DynaTag {
     }
 
     @Override
-    public void doTag(XMLOutput output) throws MissingAttributeException, JellyTagException {
+    public void doTag(XMLOutput output) throws JellyTagException {
         try {
             output.writeComment("Tag with string property\n");
             output.writeCDATA(getClass().getName() + ":" + clazz);
