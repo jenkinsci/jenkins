@@ -47,8 +47,6 @@ public class UserAvatarResolverTest {
 
     @Test
     public void defaultImageIsReturnedIfRegexFails() {
-        String avatar = UserAvatarResolver.resolve(User.get("USER"), "meh");
-        assertTrue(avatar.endsWith("/images/meh/user.png"));
         String avatar = UserAvatarResolver.resolve(User.getOrCreateByIdOrFullName("USER"), "meh");
         assertThat(avatar, endsWith("/images/svgs/person.svg"));
     }
