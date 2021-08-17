@@ -354,6 +354,7 @@ public class IconSet {
         icons.addIcon(new Icon("icon-green-anime icon-lg", "32x32/green_anime.gif", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-grey icon-lg", "32x32/grey.gif", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new Icon("icon-grey-anime icon-lg", "32x32/grey_anime.gif", Icon.ICON_LARGE_STYLE));
+        icons.addIcon(new Icon("icon-empty icon-lg", "32x32/empty.png", Icon.ICON_LARGE_STYLE));
         icons.addIcon(new WeatherIcon("icon-health-00to19 icon-lg", Icon.ICON_LARGE_STYLE, WeatherIcon.Status.POURING));
         icons.addIcon(new WeatherIcon("icon-health-20to39 icon-lg", Icon.ICON_LARGE_STYLE, WeatherIcon.Status.RAINY));
         icons.addIcon(new WeatherIcon("icon-health-40to59 icon-lg", Icon.ICON_LARGE_STYLE, WeatherIcon.Status.CLOUDY));
@@ -390,6 +391,7 @@ public class IconSet {
         icons.addIcon(new BuildStatusIcon("icon-red-anime icon-xlg", "build-status/build-status-sprite.svg#last-failed", Icon.ICON_XLARGE_STYLE, true));
         icons.addIcon(new BuildStatusIcon("icon-yellow icon-xlg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new BuildStatusIcon("icon-yellow-anime icon-xlg", "build-status/build-status-sprite.svg#last-unstable", Icon.ICON_XLARGE_STYLE, true));
+        icons.addIcon(new Icon("icon-empty icon-xlg", "48x48/empty.png", Icon.ICON_XLARGE_STYLE));
         icons.addIcon(new Icon("icon-grey icon-xlg", "48x48/grey.png", Icon.ICON_XLARGE_STYLE));
 
         initializeSVGs();

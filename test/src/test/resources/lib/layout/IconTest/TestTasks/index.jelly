@@ -32,9 +32,9 @@ THE SOFTWARE.
     <l:tasks>
       <l:task href=".." icon="icon-up icon-md" title="Title"/>
       <l:task href=".." icon="folder.png" title="Title"/>
-      <l:task href=".." icon="16x16/package.gif" title="Title"/>
-      <l:task href=".." icon="images/16x16/package.gif" title="Title"/>
-      <l:task href=".." icon="/images/16x16/package.gif" title="Title"/>
+      <l:task href=".." icon="svgs/package.svg" title="Title"/>
+      <l:task href=".." icon="images/svgs/package.svg" title="Title"/>
+      <l:task href=".." icon="/images/svgs/package.svg" title="Title"/>
 
       <!-- unknown icon urls... -->
       <l:task href=".." icon="/plugin/xxx/icon.png" title="Title"/>
