@@ -36,6 +36,7 @@ THE SOFTWARE.
 
   <name>Jenkins war</name>
   <description>Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and some HTML files.</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
@@ -105,7 +106,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>5.19</version>
+      <version>5.20</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -416,7 +417,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.42.v20210604</version>
+        <version>9.4.43.v20210629</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)

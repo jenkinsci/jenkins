@@ -24,7 +24,6 @@
 package hudson;
 
 import hudson.remoting.VirtualChannel;
-import hudson.util.CaseInsensitiveComparator;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
 import hudson.util.VariableResolver;
@@ -105,7 +104,7 @@ public class EnvVars extends TreeMap<String,String> {
         this.platform = platform;
     }
     public EnvVars() {
-        super(CaseInsensitiveComparator.INSTANCE);
+        super(String.CASE_INSENSITIVE_ORDER);
     }
 
     public EnvVars(@NonNull Map<String,String> m) {

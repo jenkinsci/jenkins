@@ -36,6 +36,7 @@ THE SOFTWARE.
 
   <name>Jenkins core</name>
   <description>Jenkins core code and view files to render HTML.</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
     <staplerFork>true</staplerFork>
@@ -469,17 +470,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>memory-monitor</artifactId>
-    </dependency>
-    <dependency><!-- StAX implementation. See JENKINS-2547. -->
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>wstx-asl</artifactId>
-      <exclusions>
-        <!-- StAX is now bundled in the JRE -->
-        <exclusion>
-          <groupId>stax</groupId>
-          <artifactId>stax-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>

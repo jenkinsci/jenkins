@@ -70,9 +70,9 @@ THE SOFTWARE.
 
       <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
           <span class="build-status-icon__outer">
-            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" />
+            <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
           </span>
-          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
       </span>
     </j:when>
 

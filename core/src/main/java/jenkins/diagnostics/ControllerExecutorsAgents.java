@@ -37,7 +37,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import java.io.IOException;
 
 @Extension
-@Symbol("controllerExecutorsWithAgents")
+@Symbol({"executorsOnBuiltInNodeWithAgents", "controllerExecutorsWithAgents"})
 @Restricted(NoExternalUse.class)
 public class ControllerExecutorsAgents extends AdministrativeMonitor {
 
@@ -63,7 +63,7 @@ public class ControllerExecutorsAgents extends AdministrativeMonitor {
             disable(true);
             rsp.sendRedirect(req.getContextPath() + "/manage");
         } else if (req.hasParameter("yes")) {
-            rsp.sendRedirect(req.getContextPath() + "/computer/(master)/configure");
+            rsp.sendRedirect(req.getContextPath() + "/computer/(built-in)/configure");
         }
     }
 

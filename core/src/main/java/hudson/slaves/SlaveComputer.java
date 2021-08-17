@@ -1061,7 +1061,7 @@ public class SlaveComputer extends Computer {
             }
 
             try {
-                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the agent side.
+                getChannelOrFail().setProperty("agent",Boolean.TRUE); // indicate that this side of the channel is the agent side.
             } catch (ChannelClosedException e) {
                 throw new IllegalStateException(e);
             }
@@ -1080,11 +1080,11 @@ public class SlaveComputer extends Computer {
      *
      * @return null if the calling thread doesn't have any trace of where its controller is.
      * @since 1.362
-     * @deprecated Use {@link AgentComputerUtil#getChannelToMaster()} instead.
+     * @deprecated Use {@link AgentComputerUtil#getChannelToController()} instead.
      */
     @Deprecated
     public static VirtualChannel getChannelToMaster() {
-        return AgentComputerUtil.getChannelToMaster();
+        return AgentComputerUtil.getChannelToController();
     }
 
     /**

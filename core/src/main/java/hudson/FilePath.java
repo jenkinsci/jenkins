@@ -1012,7 +1012,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     timestamp.touch(sourceTimestamp);
                     return true;
                 } catch (IOException x) {
-                    Functions.printStackTrace(x, listener.error("Failed to download " + archive + " from agent; will retry from master"));
+                    Functions.printStackTrace(x, listener.error("Failed to download " + archive + " from agent; will retry from controller"));
                 }
             }
 

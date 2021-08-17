@@ -28,11 +28,13 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.apache.tools.ant.util.LoaderUtils;
+import org.apache.tools.ant.util.ReflectUtil;
+import org.apache.tools.ant.util.StringUtils;
 import org.apache.tools.ant.util.VectorSet;
+import org.apache.tools.zip.ZipLong;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -45,6 +47,7 @@ import java.nio.file.Files;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -61,6 +64,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipFile;
 
 /**
  * Used to load classes within ant with a different classpath from
@@ -83,6 +87,30 @@ import java.util.stream.Stream;
 public class AntClassLoader extends ClassLoader implements SubBuildListener, Closeable {
 
     private static final FileUtils FILE_UTILS = FileUtils.getFileUtils();
+
+    private static final boolean IS_ATLEAST_JAVA9 = JavaEnvUtils.isAtLeastJavaVersion(JavaEnvUtils.JAVA_9);
+    // constructs needed to create (via reflection) a java.util.jar.JarFile instance when Java runtime version is >= 9
+    private static final Class[] MR_JARFILE_CTOR_ARGS;
+    private static final Object MR_JARFILE_CTOR_RUNTIME_VERSION_VAL;
+
+    static {
+        if (IS_ATLEAST_JAVA9) {
+            Class[] ctorArgs = null;
+            Object runtimeVersionVal = null;
+            try {
+                final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
+                ctorArgs = new Class[] {File.class, boolean.class, int.class, runtimeVersionClass};
+                runtimeVersionVal = Runtime.class.getDeclaredMethod("version").invoke(null);
+            } catch (Exception e) {
+                // ignore - we consider this as multi-release jar unsupported
+            }
+            MR_JARFILE_CTOR_ARGS = ctorArgs;
+            MR_JARFILE_CTOR_RUNTIME_VERSION_VAL = runtimeVersionVal;
+        } else {
+            MR_JARFILE_CTOR_ARGS = null;
+            MR_JARFILE_CTOR_RUNTIME_VERSION_VAL = null;
+        }
+    }
 
     /**
      * An enumeration of all resources of a given name found within the
@@ -256,7 +284,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
      * @param classpath The classpath to use to load classes.
      */
     public AntClassLoader(final ClassLoader parent, final Project project, final Path classpath) {
-        super(parent);  // KK patch for JENKINS-21579
         setParent(parent);
         setClassPath(classpath);
         setProject(project);
@@ -343,7 +370,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
      *                    load the a class through this loader.
      */
     public AntClassLoader(final ClassLoader parent, final boolean parentFirst) {
-        super(parent);  // KK patch for JENKINS-21579
         setParent(parent);
         project = null;
         this.parentFirst = parentFirst;
@@ -377,6 +403,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
                 } catch (final BuildException e) {
                     // ignore path elements which are invalid
                     // relative to the project
+                    log("Ignoring path element " + pathElement + " from " +
+                            "classpath due to exception " + e, Project.MSG_DEBUG);
                 }
             }
         }
@@ -415,6 +443,8 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
     protected void log(final String message, final int priority) {
         if (project != null) {
             project.log(message, priority);
+        } else if (priority < Project.MSG_INFO) {
+            System.err.println(message);
         }
     }
 
@@ -482,6 +512,12 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         pathComponents.addElement(file);
     }
 
+    public void addPathFiles(Collection<File> paths) throws IOException {
+        for (File f : paths) {
+            addPathFile(f);
+        }
+    }
+
     /**
      * Add a file to the path.
      * Reads the manifest, if available, and adds any additional class path jars
@@ -504,7 +540,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
                 + pathComponent.lastModified() + "-" + pathComponent.length();
         String classpath = pathMap.get(absPathPlusTimeAndLength);
         if (classpath == null) {
-            try (JarFile jarFile = new JarFile(pathComponent)) {
+            try (JarFile jarFile = newJarFile(pathComponent)) {
                 final Manifest manifest = jarFile.getManifest();
                 if (manifest == null) {
                     return;
@@ -789,7 +825,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
             } else {
                 if (jarFile == null) {
                     if (file.exists()) {
-                        jarFile = new JarFile(file);
+                        jarFile = newJarFile(file);
                         jarFiles.put(file, jarFile);
                     } else {
                         return null;
@@ -870,9 +906,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         if (url != null) {
             log("Resource " + name + " loaded from parent loader", Project.MSG_DEBUG);
         } else {
-            // try and load from this loader if the parent either didn't find
-            // it or wasn't consulted.
-            url = getUrl(pathComponents, name);
+            url = getUrl(name);
         }
         if (url == null && !isParentFirst(name)) {
             // this loader was first but it didn't find it - try the parent
@@ -892,15 +926,17 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
     }
 
     /**
-     * Finds a matching file by iterating pathComponents.
+     * Finds a matching file by iterating through path components.
      *
-     * @param pathComponents Path to a folder, split into the individual folder names
      * @param name File to find
-     * @return Url to found object
+     * @return A {@code URL} object for reading the resource, or {@code null} if the
+     *     resource could not be found
      */
-    @CheckForNull
-    protected URL getUrl(Iterable<File> pathComponents, String name) {
+    private URL getUrl(String name) {
         URL url = null;
+
+        // try and load from this loader if the parent either didn't find
+        // it or wasn't consulted.
         for (final File pathComponent : pathComponents) {
             url = getResourceURL(pathComponent, name);
             if (url != null) {
@@ -908,6 +944,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
                 break;
             }
         }
+
         return url;
     }
 
@@ -915,9 +952,6 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
      * Finds all the resources with the given name. A resource is some
      * data (images, audio, text, etc) that can be accessed by class
      * code in a way that is independent of the location of the code.
-     *
-     * <p>Would override getResources if that wasn't final in Java
-     * 1.4.</p>
      *
      * @param name name of the resource
      * @return possible URLs as enumeration
@@ -928,6 +962,18 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
     public Enumeration<URL> getNamedResources(final String name)
         throws IOException {
         return findResources(name, false);
+    }
+
+    /**
+     * Finds the resource with the given name.
+     *
+     * @param name The resource name
+     * @return A {@code URL} object for reading the resource, or {@code null} if the
+     *     resource could not be found
+     */
+    @Override
+    public URL findResource(final String name) {
+        return getUrl(name);
     }
 
     /**
@@ -950,26 +996,21 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
      *
      * @param name The resource name to search for.
      *             Must not be {@code null}.
-     * @param parentHasBeenSearched whether ClassLoader.this.parent
-     * has been searched - will be true if the method is (indirectly)
-     * called from ClassLoader.getResources
+     * @param skipParent whether to skip searching the parent first - will be false if the method is
+     *     invoked from {@link #getResources(String)} or {@link #getNamedResources(String)} and true
+     *     if the method is invoked from {@link #findResources(String)}.
      * @return an enumeration of URLs for the resources
      * @exception IOException if I/O errors occurs (can't happen)
      */
     protected Enumeration<URL> findResources(final String name,
-                                             final boolean parentHasBeenSearched)
+                                             final boolean skipParent)
         throws IOException {
         final Enumeration<URL> mine = new ResourceEnumeration(name);
         Enumeration<URL> base;
-        if (parent != null && (!parentHasBeenSearched || parent != getParent())) {
+        if (parent != null && !skipParent) {
             // Delegate to the parent:
             base = parent.getResources(name);
-            // Note: could cause overlaps in case
-            // ClassLoader.this.parent has matches and
-            // parentHasBeenSearched is true
         } else {
-            // ClassLoader.this.parent is already delegated to for example from
-            // ClassLoader.getResources, no need:
             base = Collections.emptyEnumeration();
         }
         if (isParentFirst(name)) {
@@ -1017,7 +1058,13 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
             } else {
                 if (jarFile == null) {
                     if (file.exists()) {
-                        jarFile = new JarFile(file);
+                        if (!isZip(file)) {
+                            final String msg = "CLASSPATH element " + file
+                                + " is not a JAR.";
+                            log(msg, Project.MSG_WARN);
+                            return null;
+                        }
+                        jarFile = newJarFile(file);
                         jarFiles.put(file, jarFile);
                     } else {
                         return null;
@@ -1037,8 +1084,7 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         } catch (final Exception e) {
             final String msg = "Unable to obtain resource from " + file + ": ";
             log(msg + e, Project.MSG_WARN);
-            System.err.println(msg);
-            e.printStackTrace();
+            log(StringUtils.getStackTrace(e), Project.MSG_WARN);
         }
         return null;
     }
@@ -1543,6 +1589,27 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         return "AntClassLoader[" + getClasspath() + "]";
     }
 
+    /**
+     * Public version of {@link ClassLoader#findLoadedClass(String)}
+     */
+    public Class<?> findLoadedClass2(String name) {
+        return findLoadedClass(name);
+    }
+
+    /**
+     * Public version of {@link ClassLoader#getClassLoadingLock(String)}
+     */
+    @Override
+    public Object getClassLoadingLock(String className) {
+        return super.getClassLoadingLock(className);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        return getNamedResources(name);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void close() {
@@ -1565,4 +1632,50 @@ public class AntClassLoader extends ClassLoader implements SubBuildListener, Clo
         return new AntClassLoader(parent, project, path, parentFirst);
     }
 
+    private static final ZipLong EOCD_SIG = new ZipLong(0X06054B50L);
+    private static final ZipLong SINGLE_SEGMENT_SPLIT_MARKER =
+        new ZipLong(0X30304B50L);
+
+    private static boolean isZip(final File file) throws IOException {
+        final byte[] sig = new byte[4];
+        if (readFully(file, sig)) {
+            final ZipLong start = new ZipLong(sig);
+            return ZipLong.LFH_SIG.equals(start) // normal file
+                || EOCD_SIG.equals(start) // empty zip
+                || ZipLong.DD_SIG.equals(start) // split zip
+                || SINGLE_SEGMENT_SPLIT_MARKER.equals(start);
+        }
+        return false;
+    }
+
+    private static boolean readFully(final File f, final byte[] b) throws IOException {
+        try (InputStream fis = Files.newInputStream(f.toPath())) {
+            final int len = b.length;
+            int count = 0, x = 0;
+            while (count != len) {
+                x = fis.read(b, count, len - count);
+                if (x == -1) {
+                    break;
+                }
+                count += x;
+            }
+            return count == len;
+        }
+    }
+
+    /**
+     *
+     * @param file The file representing the jar
+     * @return Returns a {@link JarFile} instance, which is constructed based upon the Java runtime version.
+     *         Depending on the Java runtime version, the returned instance may or may not be {@code multi-release}
+     *         aware (a feature introduced in Java 9)
+     * @throws IOException
+     */
+    private static JarFile newJarFile(final File file) throws IOException {
+        if (!IS_ATLEAST_JAVA9 || MR_JARFILE_CTOR_ARGS == null || MR_JARFILE_CTOR_RUNTIME_VERSION_VAL == null) {
+            return new JarFile(file);
+        }
+        return ReflectUtil.newInstance(JarFile.class, MR_JARFILE_CTOR_ARGS,
+                new Object[] {file, true, ZipFile.OPEN_READ, MR_JARFILE_CTOR_RUNTIME_VERSION_VAL});
+    }
 }

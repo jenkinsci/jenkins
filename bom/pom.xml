@@ -140,7 +140,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-annotation</artifactId>
-        <version>${access-modifier-annotation.version}</version>
+        <version>${access-modifier.version}</version>
       </dependency>
       <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
@@ -170,7 +170,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
-        <version>1.14</version>
+        <version>1.15</version>
       </dependency>
 
       <dependency>
@@ -257,11 +257,6 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
         <version>1.9</version>
-      </dependency>
-      <dependency><!-- StAX implementation. See JENKINS-2547. -->
-        <groupId>org.codehaus.woodstox</groupId>
-        <artifactId>wstx-asl</artifactId>
-        <version>3.2.9</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>

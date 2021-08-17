@@ -36,7 +36,6 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.AntClassLoader;
-import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
@@ -302,7 +301,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
         }
 
-        AntWithFindResourceClassLoader classLoader = new AntWithFindResourceClassLoader(parent, true);
+        AntClassLoader classLoader = new AntClassLoader(parent, true);
         classLoader.addPathFiles(paths);
         return classLoader;
     }

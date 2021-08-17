@@ -1448,11 +1448,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {
             VirtualChannel vc = getChannel();
             if (vc instanceof Channel) {
-                w.println("Master to slave");
+                w.println("Controller to agent");
                 ((Channel) vc).dumpExportTable(w);
                 w.flush(); // flush here once so that even if the dump from the agent fails, the client gets some useful info
 
-                w.println("\n\n\nSlave to master");
+                w.println("\n\n\nAgent to controller");
                 w.print(vc.call(new DumpExportTableTask()));
             } else {
                 w.println(Messages.Computer_BadChannel());
@@ -1656,7 +1656,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIResolver
     public static Computer resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for master") String name) throws CmdLineException {
+            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for built-in node") String name) throws CmdLineException {
         Jenkins h = Jenkins.get();
         Computer item = h.getComputer(name);
         if (item==null) {
@@ -1677,6 +1677,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @see #getLogFile()
      */
+    // TODO(terminology) migrate from slaves/ to agents/
     @Initializer
     public static void relocateOldLogs() {
         relocateOldLogs(Jenkins.get().getRootDir());
