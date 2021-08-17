@@ -54,7 +54,7 @@ public class SecretRewriter {
         this();
     }
 
-    private String tryRewrite(String s) throws IOException, InvalidKeyException {
+    private String tryRewrite(String s) throws InvalidKeyException {
         if (s.length()<24)
             return s;   // Encrypting "" in Secret produces 24-letter characters, so this must be the minimum length
         if (!isBase64(s))
@@ -82,7 +82,7 @@ public class SecretRewriter {
 
     public boolean rewrite(File f) throws InvalidKeyException, IOException {
 
-        AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
+        AtomicFileWriter w = new AtomicFileWriter(f.toPath(), StandardCharsets.UTF_8);
         try {
             boolean modified = false; // did we actually change anything?
             try (PrintWriter out = new PrintWriter(new BufferedWriter(w));
