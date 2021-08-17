@@ -2,7 +2,6 @@ package org.kohsuke.stapler.beanutils;
 
 import org.apache.commons.jelly.DynaTag;
 import org.apache.commons.jelly.JellyTagException;
-import org.apache.commons.jelly.MissingAttributeException;
 import org.apache.commons.jelly.TagSupport;
 import org.apache.commons.jelly.XMLOutput;
 import org.xml.sax.SAXException;
