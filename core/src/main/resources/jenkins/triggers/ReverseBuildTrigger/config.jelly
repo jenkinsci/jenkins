@@ -41,11 +41,7 @@ THE SOFTWARE.
                title="${%Trigger even if the build fails}" value="FAILURE"/>
     </f:entry>
     <f:entry title="">
-        <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='NOT_BUILT'}"
-               title="${%Trigger even if the build fails or not built}" value="NOT_BUILT"/>
-    </f:entry>
-    <f:entry title="">
         <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='ABORTED'}"
-               title="${%Trigger even if the build fails, not built, or aborted}" value="ABORTED"/>
+               title="${%Trigger even if the build is aborted}" value="ABORTED"/>
     </f:entry>
 </j:jelly>
