@@ -313,7 +313,7 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetQueueItems() throws IOException, Exception{
+    public void testGetQueueItems() throws Exception{
         ListView view1 = listView("view1");
         view1.filterQueue = true;
         ListView view2 = listView("view2");
@@ -367,7 +367,7 @@ public class ViewTest {
     }
 
     @Test
-    public void testGetComputers() throws IOException, Exception{
+    public void testGetComputers() throws Exception{
         ListView view1 = listView("view1");
         ListView view2 = listView("view2");
         ListView view3 = listView("view3");

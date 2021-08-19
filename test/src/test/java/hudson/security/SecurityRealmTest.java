@@ -143,7 +143,7 @@ public class SecurityRealmTest {
                 }
             }
         }
-        System.err.println(builder.toString());
+        System.err.println(builder);
         assertThat(unexpectedSessionCookies, is(0));
     }
 
